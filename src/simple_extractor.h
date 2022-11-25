@@ -89,6 +89,8 @@ public:
 
   void parseAsHtml(std::ostream &out_stream) const;
 
+  void parseAsCsv(std::ostream &out_stream) const;
+
   /**
    * @brief Extracts the meta data from the file.
    * @return parsed meta data as plain text

@@ -145,6 +145,19 @@ public:
 };
 
 /**
+ * @brief Exporter class for CSV output.
+ */
+class DllExport CsvExporter: public Exporter
+{
+public:
+  CsvExporter();
+  /**
+   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
+   */
+  CsvExporter(std::ostream &out_stream);
+};
+
+/**
  * @brief Exporter class for meta data.
  * Important: Exports only meta data as a plain text.
  */

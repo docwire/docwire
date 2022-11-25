@@ -75,7 +75,7 @@ HtmlWriter::write_footer(std::ostream &stream) const
 }
 
 void
-HtmlWriter::write_to(const doctotext::Info &info, std::ostream &stream) const
+HtmlWriter::write_to(const doctotext::Info &info, std::ostream &stream)
 {
   auto writer_iterator = writers.find(info.tag_name);
   if (writer_iterator != writers.end())

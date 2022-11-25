@@ -132,9 +132,9 @@ int main(int argc, char* argv[])
   std::string file_name = argv[1];
 
   doctotext::FormattingStyle formatting_style;
-  bool html_output = false;
+  enum class OutputType { PLAIN_TEXT, HTML, CSV, METADATA };
+  OutputType output_type {OutputType::PLAIN_TEXT};
   doctotext::Language language{ doctotext::Language::english };
-  bool metadata_output = false;
   std::string plugins_path = "";
 
   std::optional<unsigned int> min_creation_time;
@@ -170,12 +170,17 @@ int main(int argc, char* argv[])
     }
     if (arg.find("--html_output", 0) != -1)
     {
-      html_output = true;
+      output_type = OutputType::HTML;
+      continue;
+    }
+    if (arg.find("--csv_output", 0) != -1)
+    {
+      output_type = OutputType::CSV;
       continue;
     }
     if (arg.find("--meta", 0) != -1)
     {
-      metadata_output = true;
+      output_type = OutputType::METADATA;
       continue;
     }
     if (arg.find("--min_creation_time", 0) != -1)
@@ -269,20 +274,20 @@ int main(int argc, char* argv[])
   }
   try
   {
-      if (metadata_output)
+      switch (output_type)
       {
-        std::cout << extractor.getMetaData();
-      }
-      else
-      {
-        if (html_output)
-        {
-          extractor.parseAsHtml(std::cout);
-        }
-        else
-        {
+        case OutputType::PLAIN_TEXT:
           extractor.parseAsPlainText(std::cout);
-        }
+          break;
+		case OutputType::HTML:
+          extractor.parseAsHtml(std::cout);
+          break;
+		case OutputType::CSV:
+          extractor.parseAsCsv(std::cout);
+          break;
+		case OutputType::METADATA:
+          extractor.getMetaData();
+          break;
       }
   }
   catch (doctotext::Exception& ex)

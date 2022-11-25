@@ -32,6 +32,7 @@
 
 #include "importer.h"
 #include "html_writer.h"
+#include "csv_writer.h"
 #include "plain_text_writer.h"
 #include "meta_data_writer.h"
 #include "exporter.h"
@@ -179,6 +180,14 @@ PlainTextExporter::PlainTextExporter()
 
 PlainTextExporter::PlainTextExporter(std::ostream &out_stream)
 : Exporter(std::make_unique<PlainTextWriter>(), out_stream)
+{}
+
+CsvExporter::CsvExporter()
+  : Exporter(std::make_unique<CsvWriter>())
+{}
+
+CsvExporter::CsvExporter(std::ostream &out_stream)
+: Exporter(std::make_unique<CsvWriter>(), out_stream)
 {}
 
 MetaDataExporter::MetaDataExporter()
