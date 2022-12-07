@@ -61,11 +61,6 @@ namespace experimental
  */
 class DllExport CsvWriter : public Writer
 {
-private:
-  bool m_in_table { false };
-  std::vector<std::string> m_curr_line;
-  std::string m_curr_cell;
-
 public:
   /**
    * @brief Converts text from callback to CSV format
@@ -77,6 +72,11 @@ public:
    * @brief creates a new instance of HtmlWriter
    */
   virtual Writer* clone() const override;
+
+private:
+  bool m_in_table { false };
+  std::vector<std::string> m_curr_line;
+  std::string m_curr_cell;
 };
 
 } // namespace experimental

@@ -31,7 +31,7 @@
 /***************************************************************************************************************************************************/
 
 #include "csv_writer.h"
-#include "parser.hpp"
+#include "parser.h"
 
 namespace doctotext
 {
@@ -50,11 +50,13 @@ CsvWriter::write_to(const doctotext::Info &info, std::ostream &stream)
     m_in_table = false;
   else if (info.tag_name == StandardTag::TAG_CLOSE_TR)
   {
-    for (int i = 0; i < m_curr_line.size(); i++)
+    if (!m_curr_line.empty())
     {
-      if (i > 0)
-        stream << ',';
-      stream << m_curr_line[i];
+      stream << m_curr_line[0];
+      for (auto cell = m_curr_line.cbegin() + 1; cell != m_curr_line.cend(); ++cell)
+      {
+        stream << ',' << *cell;
+      } 
     }
     stream << "\r\n";
     m_curr_line.clear();
@@ -71,7 +73,7 @@ CsvWriter::write_to(const doctotext::Info &info, std::ostream &stream)
 Writer*
 CsvWriter::clone() const
 {
-return new CsvWriter(*this);
+  return new CsvWriter(*this);
 }
 
 } // namespace experimental

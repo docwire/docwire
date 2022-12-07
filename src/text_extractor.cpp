@@ -279,13 +279,13 @@ int main(int argc, char* argv[])
         case OutputType::PLAIN_TEXT:
           extractor.parseAsPlainText(std::cout);
           break;
-		case OutputType::HTML:
+        case OutputType::HTML:
           extractor.parseAsHtml(std::cout);
           break;
-		case OutputType::CSV:
+        case OutputType::CSV:
           extractor.parseAsCsv(std::cout);
           break;
-		case OutputType::METADATA:
+        case OutputType::METADATA:
           extractor.getMetaData();
           break;
       }
