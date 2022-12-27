@@ -144,6 +144,9 @@ public:
 
 };
 
+namespace experimental
+{
+
 /**
  * @brief Exporter class for CSV output.
  */
@@ -156,6 +159,8 @@ public:
    */
   CsvExporter(std::ostream &out_stream);
 };
+
+} // namespace experimental
 
 /**
  * @brief Exporter class for meta data.

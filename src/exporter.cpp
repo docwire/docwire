@@ -182,6 +182,9 @@ PlainTextExporter::PlainTextExporter(std::ostream &out_stream)
 : Exporter(std::make_unique<PlainTextWriter>(), out_stream)
 {}
 
+namespace experimental
+{
+
 CsvExporter::CsvExporter()
   : Exporter(std::make_unique<CsvWriter>())
 {}
@@ -189,6 +192,8 @@ CsvExporter::CsvExporter()
 CsvExporter::CsvExporter(std::ostream &out_stream)
 : Exporter(std::make_unique<CsvWriter>(), out_stream)
 {}
+
+} // namespace experimental
 
 MetaDataExporter::MetaDataExporter()
   : Exporter(std::make_unique<MetaDataWriter>())

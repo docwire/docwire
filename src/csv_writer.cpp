@@ -1,40 +1,42 @@
-/*************************************************************************************************************/
-/*  DocToText - Converts DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP),                                      */
-/*              OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE),                                   */
-/*              ODFXML (FODP, FODS, FODT), PDF, EML, HTML, Outlook (PST, OST),                               */
-/*              Image (JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP) and DICOM (DCM) documents to plain text.  */
-/*              Extracts metadata and annotations.                                                           */
-/*                                                                                                           */
-/*  Copyright (c) 2006-2022, SILVERCODERS Ltd                                                                */
-/*  http://silvercoders.com                                                                                  */
-/*                                                                                                           */
-/*  Project homepage: http://silvercoders.com/en/products/doctotext                                          */
-/*                                                                                                           */
-/*  This program may be distributed and/or modified under the terms of the                                   */
-/*  GNU General Public License version 2 as published by the Free Software                                   */
-/*  Foundation and appearing in the file COPYING.GPL included in the                                         */
-/*  packaging of this file.                                                                                  */
-/*                                                                                                           */
-/*  Please remember that any attempt to workaround the GNU General Public                                    */
-/*  License using wrappers, pipes, client/server protocols, and so on                                        */
-/*  is considered as license violation. If your program, published on license                                */
-/*  other than GNU General Public License version 2, calls some part of this                                 */
-/*  code directly or indirectly, you have to buy commercial license.                                         */
-/*  If you do not like our point of view, simply do not use the product.                                     */
-/*                                                                                                           */
-/*  Licensees holding valid commercial license for this product                                              */
-/*  may use this file in accordance with the license published by                                            */
-/*  SILVERCODERS and appearing in the file COPYING.COM                                                       */
-/*                                                                                                           */
-/*  This program is distributed in the hope that it will be useful,                                          */
-/*  but WITHOUT ANY WARRANTY; without even the implied warranty of                                           */
-/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                                                     */
-/*************************************************************************************************************/
+/***************************************************************************************************************************************************/
+/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
+/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
+/*                                                                                                                                                 */
+/*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
+/*  DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT),           */
+/*  PDF, EML, HTML, Outlook (PST, OST), Image (JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP) and DICOM (DCM)                                         */
+/*                                                                                                                                                 */
+/*  Copyright (c) SILVERCODERS Ltd                                                                                                                 */
+/*  http://silvercoders.com                                                                                                                        */
+/*                                                                                                                                                 */
+/*  Project homepage:                                                                                                                              */
+/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://www.docwire.io/                                                                                                                        */
+/*                                                                                                                                                 */
+/*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
+/*  the distribution and/or modification of this application.                                                                                      */
+/*                                                                                                                                                 */
+/*  Please keep in mind that any attempt to circumvent the terms of the GNU General Public License by employing wrappers, pipelines,               */
+/*  client/server protocols, etc. is illegal. You must purchase a commercial license if your program, which is distributed under a license         */
+/*  other than the GNU General Public License version 2, directly or indirectly calls any portion of this code.                                    */
+/*  Simply stop using the product if you disagree with this viewpoint.                                                                             */
+/*                                                                                                                                                 */
+/*  According to the terms of the license provided by SILVERCODERS and included in the file COPYING.COM, licensees in possession of                */
+/*  a current commercial license for this product may use this file.                                                                               */
+/*                                                                                                                                                 */
+/*  This program is provided WITHOUT ANY WARRANTY, not even the implicit warranty of merchantability or fitness for a particular purpose.          */
+/*  It is supplied in the hope that it will be useful.                                                                                             */
+/***************************************************************************************************************************************************/
 
 #include "csv_writer.h"
 #include "parser.hpp"
 
 namespace doctotext
+{
+
+namespace experimental
 {
 
 void
@@ -63,7 +65,7 @@ CsvWriter::write_to(const doctotext::Info &info, std::ostream &stream)
     m_curr_cell = "";
   }
   else if (info.tag_name == StandardTag::TAG_TEXT)
-    m_curr_cell += info.plainText;
+    m_curr_cell += info.plain_text;
 }
 
 Writer*
@@ -71,5 +73,7 @@ CsvWriter::clone() const
 {
 return new CsvWriter(*this);
 }
+
+} // namespace experimental
 
 } // namespace doctotext
