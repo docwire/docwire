@@ -176,6 +176,22 @@ struct EMLParser::Implementation
     return result;
   }
 
+	std::string parseText(const std::string &text, const std::string &type)
+	{
+		std::string parsed_text;
+		auto callback = [&parsed_text](const doctotext::Info &info){parsed_text += info.plain_text;};
+		auto parser_builder = m_parser_manager->findParserByExtension(type);
+		if (parser_builder)
+		{
+			auto parser = (*parser_builder)->withParserManager(m_parser_manager)
+							.withParameters(m_owner->m_parameters)
+							.build(text.c_str(), text.length());
+			parser->addOnNewNodeCallback(callback);
+			parser->parse();
+		}
+		return parsed_text;
+	}
+
 	void extractPlainText(const MimeEntity& mime_entity, std::string& output, const FormattingStyle& formatting)
 	{
 		const Header& header = mime_entity.header();
@@ -198,17 +214,7 @@ struct EMLParser::Implementation
 				{
 					if (m_parser_manager)
 					{
-						std::string parsed_text;
-						auto callback = [&parsed_text](const doctotext::Info &info){parsed_text += info.plain_text;};
-						auto parser_builder = m_parser_manager->findParserByExtension("html");
-						if (parser_builder)
-						{
-							auto parser = (*parser_builder)->withParserManager(m_parser_manager)
-								.build(plain.c_str(), plain.length());
-							parser->addOnNewNodeCallback(callback);
-							parser->parse();
-						}
-						plain = parsed_text;
+						plain = parseText(plain, "html");
 					}
 					//Update positions of the links.
 					if (m_links.size() > 0)
@@ -231,19 +237,7 @@ struct EMLParser::Implementation
 					{
 						if (m_parser_manager)
 						{
-							std::string parsed_text;
-							auto callback = [&parsed_text](const doctotext::Info &info){parsed_text += info.plain_text;};
-							auto parser_builder = m_parser_manager->findParserByExtension("txt");
-							if (parser_builder)
-							{
-								auto parser = (*parser_builder)->withParserManager(m_parser_manager)
-												.withParameters({"log_stream", m_log_stream})
-												.withParameters({"verbose_logging", m_verbose_logging})
-												.build(plain.c_str(), plain.length());
-								parser->addOnNewNodeCallback(callback);
-								parser->parse();
-							}
-							plain = parsed_text;
+							plain = parseText(plain, "txt");
 						}
 					}
 					catch (Exception& ex)
