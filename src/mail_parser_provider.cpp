@@ -34,93 +34,28 @@
 #include <string>
 #include <vector>
 
-#include "basic_parser_provider.h"
+#include "mail_parser_provider.h"
 #include "parser_wrapper.h"
-#include "html_parser.h"
-#include "doc_parser.h"
-#include "pdf_parser.h"
-#include "odfxml_parser.h"
-#include "xls_parser.h"
-#include "xlsb_parser.h"
-#include "iwork_parser.h"
-#include "ppt_parser.h"
-#include "rtf_parser.h"
-#include "odf_ooxml_parser.h"
-#include "txt_parser.h"
 
-void
-BasicParserProvider::addExtensions(const std::vector<std::string> &extensions)
-{
-  available_extensions.insert(extensions.begin(), extensions.end());
-}
+#include "eml_parser.h"
+#include "pst_parser.h"
 
-BasicParserProvider::BasicParserProvider()
+MailParserProvider::MailParserProvider()
 {
-  addExtensions(HTMLParser::getExtensions());
-  addExtensions(DOCParser::getExtensions());
-  addExtensions(PDFParser::getExtensions());
-  addExtensions(XLSParser::getExtensions());
-  addExtensions(XLSBParser::getExtensions());
-  addExtensions(IWorkParser::getExtensions());
-  addExtensions(PPTParser::getExtensions());
-  addExtensions(RTFParser::getExtensions());
-  addExtensions(ODFXMLParser::getExtensions());
-  addExtensions(ODFOOXMLParser::getExtensions());
-  addExtensions(TXTParser::getExtensions());
-}
-
-bool
-BasicParserProvider::isExtensionInVector(const std::string &extension, const std::vector<std::string> &extension_list) const
-{
-  return std::find(extension_list.begin(), extension_list.end(), extension) != extension_list.end();
+  addExtensions(EMLParser::getExtensions());
+  addExtensions(PSTParser::getExtensions());
 }
 
 std::optional<doctotext::ParserBuilder*>
-BasicParserProvider::findParserByExtension(const std::string &inExtension) const
+MailParserProvider::findParserByExtension(const std::string &inExtension) const
 {
-  if (isExtensionInVector(inExtension, HTMLParser::getExtensions()))
+  if (isExtensionInVector(inExtension, EMLParser::getExtensions()))
   {
-    return new ParserBuilderWrapper<parser_creator<HTMLParser>>();
+    return new doctotext::ParserBuilderWrapper<doctotext::parser_creator<EMLParser>>();
   }
-  else if (isExtensionInVector(inExtension, DOCParser::getExtensions()))
+  else if(isExtensionInVector(inExtension, PSTParser::getExtensions()))
   {
-    return new ParserBuilderWrapper<parser_creator<DOCParser>>();
-  }
-  else if (isExtensionInVector(inExtension, PDFParser::getExtensions()))
-  {
-    return new ParserBuilderWrapper<parser_creator<PDFParser>>();
-  }
-  else if (isExtensionInVector(inExtension, XLSParser::getExtensions()))
-  {
-    return new ParserBuilderWrapper<wrapper_parser_creator<XLSParser>>();
-  }
-  else if (isExtensionInVector(inExtension, XLSBParser::getExtensions()))
-  {
-    return new ParserBuilderWrapper<wrapper_parser_creator<XLSBParser>>();
-  }
-  else if (isExtensionInVector(inExtension, IWorkParser::getExtensions()))
-  {
-    return new ParserBuilderWrapper<wrapper_parser_creator<IWorkParser>>();
-  }
-  else if (isExtensionInVector(inExtension, PPTParser::getExtensions()))
-  {
-    return new ParserBuilderWrapper<wrapper_parser_creator<PPTParser>>();
-  }
-  else if (isExtensionInVector(inExtension, RTFParser::getExtensions()))
-  {
-    return new ParserBuilderWrapper<parser_creator<RTFParser>>();
-  }
-  else if (isExtensionInVector(inExtension, ODFXMLParser::getExtensions()))
-  {
-    return new ParserBuilderWrapper<parser_creator<ODFXMLParser>>();
-  }
-  else if (isExtensionInVector(inExtension, ODFOOXMLParser::getExtensions()))
-  {
-    return new ParserBuilderWrapper<parser_creator<ODFOOXMLParser>>();
-  }
-  else if (isExtensionInVector(inExtension, TXTParser::getExtensions()))
-  {
-    return new ParserBuilderWrapper<parser_creator<TXTParser>>();
+    return new doctotext::ParserBuilderWrapper<doctotext::parser_creator<PSTParser>>();
   }
   return std::nullopt;
 }
@@ -141,54 +76,34 @@ is_valid(const char* buffer, size_t size)
   return (parser.*valid_method)();
 }
 
-std::optional<ParserBuilder*>
-BasicParserProvider::findParserByData(const std::vector<char>& buffer) const
+std::optional<doctotext::ParserBuilder*>
+MailParserProvider::findParserByData(const std::vector<char>& buffer) const
 {
-  if (is_valid<HTMLParser, &HTMLParser::isHTML>(buffer.data(), buffer.size()))
+  if (is_valid<EMLParser, &EMLParser::isEML>(buffer.data(), buffer.size()))
   {
-    return new ParserBuilderWrapper<parser_creator<HTMLParser>>();
+    return new doctotext::ParserBuilderWrapper<doctotext::wrapper_parser_creator<EMLParser>>();
   }
-  else if (is_valid<DOCParser, &DOCParser::isDOC>(buffer.data(), buffer.size()))
+  else if (is_valid<PSTParser, &PSTParser::isPST>(buffer.data(), buffer.size()))
   {
-    return new ParserBuilderWrapper<parser_creator<DOCParser>>();
-  }
-  else if (is_valid<PDFParser, &PDFParser::isPDF>(buffer.data(), buffer.size()))
-  {
-    return new ParserBuilderWrapper<parser_creator<PDFParser>>();
-  }
-  else if (is_valid<XLSParser, &XLSParser::isXLS>(buffer.data(), buffer.size()))
-  {
-    return new ParserBuilderWrapper<wrapper_parser_creator<XLSParser>>();
-  }
-  else if (is_valid<XLSBParser, &XLSBParser::isXLSB>(buffer.data(), buffer.size()))
-  {
-    return new ParserBuilderWrapper<wrapper_parser_creator<XLSBParser>>();
-  }
-  else if (is_valid<IWorkParser, &IWorkParser::isIWork>(buffer.data(), buffer.size()))
-  {
-    return new ParserBuilderWrapper<wrapper_parser_creator<IWorkParser>>();
-  }
-  else if (is_valid<PPTParser, &PPTParser::isPPT>(buffer.data(), buffer.size()))
-  {
-    return new ParserBuilderWrapper<wrapper_parser_creator<PPTParser>>();
-  }
-  else if (is_valid<RTFParser, &RTFParser::isRTF>(buffer.data(), buffer.size()))
-  {
-    return new ParserBuilderWrapper<parser_creator<RTFParser>>();
-  }
-  else if (is_valid<ODFOOXMLParser, &ODFOOXMLParser::isODFOOXML>(buffer.data(), buffer.size()))
-  {
-    return new ParserBuilderWrapper<parser_creator<ODFOOXMLParser>>();
-  }
-  else if (is_valid<ODFXMLParser, &ODFXMLParser::isODFXML>(buffer.data(), buffer.size()))
-  {
-    return new ParserBuilderWrapper<parser_creator<ODFXMLParser>>();
+    return new doctotext::ParserBuilderWrapper<doctotext::parser_creator<PSTParser>>();
   }
   return std::nullopt;
 }
 
 std::set<std::string>
-BasicParserProvider::getAvailableExtensions() const
+MailParserProvider::getAvailableExtensions() const
 {
   return available_extensions;
+}
+
+void
+MailParserProvider::addExtensions(const std::vector<std::string> &inExtensions)
+{
+  available_extensions.insert(inExtensions.begin(), inExtensions.end());
+}
+
+bool
+MailParserProvider::isExtensionInVector(const std::string &extension, const std::vector<std::string> &extension_list) const
+{
+  return std::find(extension_list.begin(), extension_list.end(), extension) != extension_list.end();
 }

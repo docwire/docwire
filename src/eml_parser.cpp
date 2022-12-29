@@ -32,23 +32,17 @@
 
 #include <algorithm>
 #include <string>
-#include <boost/signals2.hpp>
 
 #include "eml_parser.h"
 
-#include "data_stream.h"
 #include "attachment.h"
 #include "exception.h"
-#include "html_parser.h"
-#include <fstream>
 #include "htmlcxx/html/CharsetConverter.h"
 #include <iostream>
 #include "metadata.h"
 #include <pthread.h>
-#include <stdint.h>
 #include "mimetic/mimetic.h"
 #include "mimetic/rfc822/rfc822.h"
-#include "txt_parser.h"
 
 using namespace mimetic;
 
@@ -202,13 +196,20 @@ struct EMLParser::Implementation
 			{
 				try
 				{
-					HTMLParser html(plain.c_str(), plain.length());
-					html.setLogStream(*m_log_stream);
-					html.setVerboseLogging(m_verbose_logging);
-					if (skip_charset_decoding)
-						html.skipCharsetDecoding();
-					plain = html.plainText(formatting);
-					html.getLinks(m_links);
+					if (m_parser_manager)
+					{
+						std::string parsed_text;
+						auto callback = [&parsed_text](const doctotext::Info &info){parsed_text += info.plain_text;};
+						auto parser_builder = m_parser_manager->findParserByExtension("html");
+						if (parser_builder)
+						{
+							auto parser = (*parser_builder)->withParserManager(m_parser_manager)
+								.build(plain.c_str(), plain.length());
+							parser->addOnNewNodeCallback(callback);
+							parser->parse();
+						}
+						plain = parsed_text;
+					}
 					//Update positions of the links.
 					if (m_links.size() > 0)
 					{
@@ -228,10 +229,22 @@ struct EMLParser::Implementation
 				{
 					try
 					{
-						TXTParser txt(plain.c_str(), plain.length());
-						txt.setLogStream(*m_log_stream);
-						txt.setVerboseLogging(m_verbose_logging);
-						plain = txt.plainText();
+						if (m_parser_manager)
+						{
+							std::string parsed_text;
+							auto callback = [&parsed_text](const doctotext::Info &info){parsed_text += info.plain_text;};
+							auto parser_builder = m_parser_manager->findParserByExtension("txt");
+							if (parser_builder)
+							{
+								auto parser = (*parser_builder)->withParserManager(m_parser_manager)
+												.withParameters({"log_stream", m_log_stream})
+												.withParameters({"verbose_logging", m_verbose_logging})
+												.build(plain.c_str(), plain.length());
+								parser->addOnNewNodeCallback(callback);
+								parser->parse();
+							}
+							plain = parsed_text;
+						}
 					}
 					catch (Exception& ex)
 					{

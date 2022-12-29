@@ -77,7 +77,6 @@ add_library(doctotext_parsers SHARED
         xml_fixer.cpp
         xml_stream.cpp
         html_parser.cpp
-        eml_parser.cpp
         doc_parser.cpp
         common_xml_document_parser.cpp
         iwork_parser.cpp
@@ -89,7 +88,6 @@ add_library(doctotext_parsers SHARED
         txt_parser.cpp
         xls_parser.cpp
         xlsb_parser.cpp
-        pst_parser.cpp
         basic_parser_provider.cpp)
 
 include(FindLibXml2)
@@ -118,8 +116,6 @@ if(MSVC)
             general htmlcxx
             general ${LIBXML2_LIBRARIES}
             general charsetdetect
-            general libbfio
-            general libpff
             general doctotext_core
             debug freetyped
             optimized freetype
@@ -143,8 +139,6 @@ else()
         z
         charsetdetect
         mimetic
-        bfio
-        pff
         doctotext_core
         )
 endif()
@@ -166,6 +160,29 @@ if(MSVC)
     target_compile_options(doctotext_ocr PUBLIC "/Zc:__cplusplus")
 else()
     target_link_libraries(doctotext_ocr PRIVATE lept tesseract doctotext_core)
+endif()
+
+add_library(doctotext_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
+if(MSVC)
+    set_property(TARGET doctotext_mail PROPERTY
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    target_link_libraries(doctotext_mail
+            general libbfio
+            general libpff
+            general doctotext_core
+            general htmlcxx
+            debug libmimetic_d
+            optimized libmimetic
+            debug ${pthread_d}
+            optimized ${pthread})
+    target_include_directories(doctotext_mail PUBLIC
+            ../
+            .
+            "C:/include"
+            )
+    target_compile_options(doctotext_mail PUBLIC "/Zc:__cplusplus")
+else()
+    target_link_libraries(doctotext_mail PRIVATE bfio pff mimetic htmlcxx pthread doctotext_core)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -193,6 +210,8 @@ install(TARGETS c_text_extractor
 install(TARGETS text_extractor
    DESTINATION ${CMAKE_BINARY_DIR})
 install(TARGETS doctotext_ocr
+        DESTINATION ${CMAKE_BINARY_DIR}/plugins)
+install(TARGETS doctotext_mail
         DESTINATION ${CMAKE_BINARY_DIR}/plugins)
 install(TARGETS doctotext_parsers
         DESTINATION ${CMAKE_BINARY_DIR}/plugins)
