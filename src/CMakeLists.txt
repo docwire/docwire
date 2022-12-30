@@ -164,8 +164,6 @@ endif()
 
 add_library(doctotext_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
 if(MSVC)
-    set_property(TARGET doctotext_mail PROPERTY
-            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     target_link_libraries(doctotext_mail
             general libbfio
             general libpff
