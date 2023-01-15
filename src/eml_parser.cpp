@@ -40,6 +40,7 @@
 #include "htmlcxx/html/CharsetConverter.h"
 #include <iostream>
 #include "metadata.h"
+#include "plain_text_writer.h"
 #include <pthread.h>
 #include "mimetic/mimetic.h"
 #include "mimetic/rfc822/rfc822.h"
@@ -179,7 +180,9 @@ struct EMLParser::Implementation
 	std::string parseText(const std::string &text, const std::string &type)
 	{
 		std::string parsed_text;
-		auto callback = [&parsed_text](const doctotext::Info &info){parsed_text += info.plain_text;};
+		PlainTextWriter writer;
+		std::stringstream stream;
+		auto callback = [&writer, &stream](const doctotext::Info &info){writer.write_to(info, stream);};
 		auto parser_builder = m_parser_manager->findParserByExtension(type);
 		if (parser_builder)
 		{
@@ -189,7 +192,7 @@ struct EMLParser::Implementation
 			parser->addOnNewNodeCallback(callback);
 			parser->parse();
 		}
-		return parsed_text;
+		return stream.str();
 	}
 
 	void extractPlainText(const MimeEntity& mime_entity, std::string& output, const FormattingStyle& formatting)
