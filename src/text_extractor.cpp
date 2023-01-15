@@ -286,7 +286,7 @@ int main(int argc, char* argv[])
           extractor.parseAsCsv(std::cout);
           break;
         case OutputType::METADATA:
-          extractor.getMetaData();
+          std::cout << extractor.getMetaData();
           break;
       }
   }
