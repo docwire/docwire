@@ -1,6 +1,7 @@
 Unreleased:
     * CsvWriter class added
     * Moved pst/ost parser and eml parser to separated plugin
+    * TAG_IMAGE added with plain text exporter support
 
 Version 5.0.9:
     * Replace README file with more detailed README.md prepared for public GitHub repository

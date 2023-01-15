@@ -71,6 +71,7 @@ public:
   inline static const std::string TAG_TEXT = "#text"; ///< Tag for text.
   inline static const std::string TAG_LINK = "a"; ///< Tag for link. Attributes: "url": std::string
   inline static const std::string TAG_CLOSE_LINK = "/a"; ///< Tag for link.
+  inline static const std::string TAG_IMAGE = "img"; ///< Tag for image. Attributes: "src": std::string, "alt": std::string
   inline static const std::string TAG_STYLE = "style"; ///< Tag for style.
   inline static const std::string TAG_CLOSE_STYLE = "/style"; ///< Tag for close style.
 

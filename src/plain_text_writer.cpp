@@ -222,6 +222,17 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
+  write_image(const doctotext::Info &info)
+  {
+    auto alt = info.getAttributeValue<std::string>("alt");
+    if (alt)
+    {
+      return std::make_shared<TextElement>(*alt);
+    }
+    return std::make_shared<TextElement>("");
+  }
+
+  std::shared_ptr<TextElement>
   turn_on_table_mode(const doctotext::Info &info)
   {
     return std::make_shared<TextElement>("");
@@ -330,6 +341,7 @@ struct PlainTextWriter::Implementation
         {StandardTag::TAG_TABLE, [this](const doctotext::Info &info){return turn_on_table_mode(info);}},
         {StandardTag::TAG_CLOSE_TABLE, [this](const doctotext::Info &info){return turn_off_table_mode(info);}},
         {StandardTag::TAG_LINK, [this](const doctotext::Info &info){return write_link(info);}},
+        {StandardTag::TAG_IMAGE, [this](const doctotext::Info &info){return write_image(info);}},
         {StandardTag::TAG_LIST, [this](const doctotext::Info &info){return write_list(info);}},
         {StandardTag::TAG_CLOSE_LIST, [this](const doctotext::Info &info){return write_close_list(info);}},
         {StandardTag::TAG_LIST_ITEM, [this](const doctotext::Info &info){return write_list_item(info);}},
