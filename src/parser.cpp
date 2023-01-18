@@ -69,6 +69,8 @@ doctotext::Parser::Parser(const std::shared_ptr<doctotext::ParserManager> &inPar
 doctotext::Info
 doctotext::Parser::sendTag(const std::string& tag_name, const std::string& text, const std::map<std::string, std::any> &attributes) const
 {
+  if (isVerboseLogging())
+    getLogOutStream() << "Sending tag \"" << tag_name << "\" with text [" << text << "]" << std::endl;
   return base_impl->sendTag(tag_name, text, attributes);
 }
 

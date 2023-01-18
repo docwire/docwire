@@ -75,7 +75,7 @@ public:
   inline static const std::string TAG_STYLE = "style"; ///< Tag for style.
   inline static const std::string TAG_CLOSE_STYLE = "/style"; ///< Tag for close style.
 
-  inline static const std::string TAG_LIST = "list"; ///< Tag for list. Attributes: "is_ordered": bool (def. is false), "list_style_prefix": std::string
+  inline static const std::string TAG_LIST = "list"; ///< Tag for list. Attributes: "type": std::string (decimal | disc | none | custom string), "is_ordered": bool (def. is false, DEPRECATED), "list_style_prefix": std::string (DEPRECATED)
   inline static const std::string TAG_CLOSE_LIST = "/list"; ///< Tag for closing list
   inline static const std::string TAG_LIST_ITEM = "list-item"; ///< Tag for list item
   inline static const std::string TAG_CLOSE_LIST_ITEM = "/list-item"; ///< Tag for closing list item
