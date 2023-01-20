@@ -250,7 +250,7 @@ struct PlainTextWriter::Implementation
     list_mode = true;
     list_counter = 1;
     list_type = info.getAttributeValue<std::string>("type").value_or("");
-    if (list_type == "")
+    if (list_type.empty())
     {
       if (info.getAttributeValue<bool>("is_ordered").value_or(false))
         list_type = "decimal";

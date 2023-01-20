@@ -35,7 +35,6 @@
 #include <algorithm>
 #include <regex>
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/signals2.hpp>
 #include "data_stream.h"
 #include "exception.h"
 #include "entities.h"
@@ -66,7 +65,7 @@ typedef std::set<std::string, StrCaseInsensitiveLess> CaseInsensitiveStringSet;
 bool str_iequals(const std::string& lhs, const std::string& rhs)
 {
 	return strcasecmp(lhs.c_str(), rhs.c_str()) == 0;
-};
+}
 
 } // unnamed namespace
 
@@ -234,7 +233,9 @@ class DocToTextSaxParser : public ParserSax
 			{
 				// https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements
 				// TODO: elements can have also block style in CSS
-				CaseInsensitiveStringSet block_level_elements({"address", "article", "aside", "blockquote", "details", "dialog", "dd", "div", "dl", "dt", "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "hr", "li", "main", "nav", "ol", "p", "pre", "section", "table", "ul"});
+				CaseInsensitiveStringSet block_level_elements({"address", "article", "aside", "blockquote", "details", "dialog", "dd", "div", "dl",
+					"dt", "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "hr", "li",
+					"main", "nav", "ol", "p", "pre", "section", "table", "ul"});
 				// We treat the following elements like block-level elements. It should be more clear when CSS support is better.
 				CaseInsensitiveStringSet similar_to_block_level_elements({"html", "body", "td", "tr", "th"});
 				if (block_level_elements.count(tag_name) || similar_to_block_level_elements.count(tag_name))
@@ -289,6 +290,14 @@ class DocToTextSaxParser : public ParserSax
 				else if (str_iequals(tag_name, "li"))
 				{
 					m_parser->sendTag(StandardTag::TAG_CLOSE_LIST_ITEM);
+				}
+				else if (str_iequals(tag_name, "b"))
+				{
+					m_parser->sendTag(StandardTag::TAG_CLOSE_B);
+				}
+				else if (str_iequals(tag_name, "u"))
+				{
+					m_parser->sendTag(StandardTag::TAG_CLOSE_U);
 				}
 			}
 			else if (strcasecmp(node.tagName().c_str(), "title") == 0)
@@ -378,6 +387,14 @@ class DocToTextSaxParser : public ParserSax
 			else if (str_iequals(tag_name, "td") || str_iequals(tag_name, "th"))
 			{
 				m_parser->sendTag(StandardTag::TAG_TD);
+			}
+			else if (str_iequals(tag_name, "b"))
+			{
+				m_parser->sendTag(StandardTag::TAG_B);
+			}
+			else if (str_iequals(tag_name, "u"))
+			{
+				m_parser->sendTag(StandardTag::TAG_U);
 			}
 			else if (strcasecmp(node.tagName().c_str(), "body") == 0)
 			{

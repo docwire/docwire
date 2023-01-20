@@ -3,6 +3,8 @@ Unreleased:
     * Moved pst/ost parser and eml parser to separated plugin
     * TAG_IMAGE added with plain text exporter support
     * HTML parser refactored - sending tags for document elements incrementally
+    * HTML to plain text conversion use better table layout algorithm from plain text exporter
+    * Improved whitespaces support (inline formatting context) in HTML parser
 
 Version 5.0.9:
     * Replace README file with more detailed README.md prepared for public GitHub repository
