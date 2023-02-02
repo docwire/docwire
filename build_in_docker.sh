@@ -8,6 +8,7 @@ echo $out
 
 if [[ $out -eq 1 ]]; then
   echo "Error"
+  echo "$docker_password" | docker login -u "$docker_login" --password-stdin
   docker build -t docwire/doctotext_env_mingw:$shm_id -f build_env.dockerfile .
   docker push docwire/doctotext_env_mingw:$shm_id
 fi

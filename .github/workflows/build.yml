@@ -1,6 +1,9 @@
 name: Build
 on: [pull_request, workflow_dispatch]
 jobs:
+  env:
+    docker_login: ${{ secrets.DOCKER_LOGIN }}
+    docker_password: ${{ secrets.DOCKER_PASSWORD }}
   build_x86_64_linux:
     runs-on: ubuntu-latest
     timeout-minutes: 150
