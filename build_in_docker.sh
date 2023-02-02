@@ -1,6 +1,19 @@
 #!/bin/bash
+
+shm_id=$(sha1sum  build_env.dockerfile | awk '{print $1}')
+echo $shm_id
+out=$(docker manifest inspect docwire/doctotext_env_mingw:$shm_id > /dev/null ; echo $?)
+echo "info"
+echo $out
+
+if [[ $out -eq 1 ]]; then
+  echo "Error"
+  docker build -t docwire/doctotext_env_mingw:$shm_id -f build_env.dockerfile .
+  docker push docwire/doctotext_env_mingw:$shm_id
+fi
+
 set -e
-docker build -t doctotext_build_env:latest -f build_env.dockerfile .
+
 test -t 0 && USE_TTY="-t"
 echo USE_TTY=$USE_TTY
 
@@ -159,7 +172,7 @@ docker run --rm \
 	-v /etc/passwd:/etc/passwd:ro \
 	-v `pwd`:`pwd` \
 	-w `pwd` \
-	doctotext_build_env:latest \
+	docwire/doctotext_env_mingw:$shm_id \
 	bash -c "$BUILD_COMMAND && $COPY_COMMAND && $STRIP_COMMAND"
 
 docker build -t doctotext_test_env:latest -f test_env.dockerfile .
