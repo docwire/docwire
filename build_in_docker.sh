@@ -1,19 +1,18 @@
 #!/bin/bash
+set -e
 
-shm_id=$(sha1sum  build_env.dockerfile | awk '{print $1}')
-echo $shm_id
-out=$(docker manifest inspect docwire/doctotext_env_mingw:$shm_id > /dev/null ; echo $?)
-echo "info"
-echo $out
+docker_image_id=$(sha1sum  build_env.dockerfile | awk '{print $1}')
+out=$(docker manifest inspect docwire/doctotext_env_mingw:$docker_image_id > /dev/null ; echo $?)
 
 if [[ $out -eq 1 ]]; then
-  echo "Error"
-  echo "$docker_password" | docker login -u "$docker_login" --password-stdin
-  docker build -t docwire/doctotext_env_mingw:$shm_id -f build_env.dockerfile .
-  docker push docwire/doctotext_env_mingw:$shm_id
+  echo "Build image"
+  docker build -t docwire/doctotext_env_mingw:$docker_image_id -f build_env.dockerfile .
+  if [[ -v $docker_login ]]; then
+    echo "Push image"
+    echo "$docker_password" | docker login -u "$docker_login" --password-stdin
+    docker push docwire/doctotext_env_mingw:$docker_image_id
+  fi
 fi
-
-set -e
 
 test -t 0 && USE_TTY="-t"
 echo USE_TTY=$USE_TTY
@@ -173,7 +172,7 @@ docker run --rm \
 	-v /etc/passwd:/etc/passwd:ro \
 	-v `pwd`:`pwd` \
 	-w `pwd` \
-	docwire/doctotext_env_mingw:$shm_id \
+	docwire/doctotext_env_mingw:$docker_image_id \
 	bash -c "$BUILD_COMMAND && $COPY_COMMAND && $STRIP_COMMAND"
 
 docker build -t doctotext_test_env:latest -f test_env.dockerfile .
