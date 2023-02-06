@@ -347,6 +347,7 @@ struct PlainTextWriter::Implementation
         {StandardTag::TAG_CLOSE_ATTACHMENT, [this](const doctotext::Info &info){return write_close_attachment(info);}},
         {StandardTag::TAG_BR, [this](const doctotext::Info &info){return write_new_line(info);}},
         {StandardTag::TAG_CLOSE_P, [this](const doctotext::Info &info){return write_new_paragraph(info);}},
+        {StandardTag::TAG_CLOSE_SECTION, [this](const doctotext::Info &info){return write_new_paragraph(info);}},
         {StandardTag::TAG_TABLE, [this](const doctotext::Info &info){return turn_on_table_mode(info);}},
         {StandardTag::TAG_CLOSE_TABLE, [this](const doctotext::Info &info){return turn_off_table_mode(info);}},
         {StandardTag::TAG_LINK, [this](const doctotext::Info &info){return write_link(info);}},

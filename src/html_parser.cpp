@@ -248,8 +248,8 @@ class DocToTextSaxParser : public ParserSax
 				m_parser->sendTag(StandardTag::TAG_TEXT, m_buffered_text);
 				m_buffered_text = "";
 			}
-			// All html elements that will emit TAG_P (as we do not have DIV or H1)
-			CaseInsensitiveStringSet paragraph_elements({"div", "h1", "h2", "h3", "h4", "h5", "h6", "p"});
+			// All html elements that will emit TAG_P (as we do not have H1 etc)
+			CaseInsensitiveStringSet paragraph_elements({"h1", "h2", "h3", "h4", "h5", "h6", "p"});
 			if (isEnd)
 			{
 				if (strcasecmp(node.tagName().c_str(), "title") == 0)
@@ -262,6 +262,14 @@ class DocToTextSaxParser : public ParserSax
 				else if (paragraph_elements.count(tag_name))
 				{
 					m_parser->sendTag(StandardTag::TAG_CLOSE_P);
+				}
+				else if (str_iequals(tag_name, "div"))
+				{
+					m_parser->sendTag(StandardTag::TAG_CLOSE_SECTION);
+				}
+				else if (str_iequals(tag_name, "span"))
+				{
+					m_parser->sendTag(StandardTag::TAG_CLOSE_SPAN);
 				}
 				else if (str_iequals(tag_name, "a"))
 				{
@@ -307,6 +315,14 @@ class DocToTextSaxParser : public ParserSax
 			else if (paragraph_elements.count(node.tagName()))
 			{
 				m_parser->sendTag(StandardTag::TAG_P);
+			}
+			else if (str_iequals(tag_name, "div"))
+			{
+				m_parser->sendTag(StandardTag::TAG_SECTION);
+			}
+			else if (str_iequals(tag_name, "span"))
+			{
+				m_parser->sendTag(StandardTag::TAG_SPAN);
 			}
 			else if (strcasecmp(node.tagName().c_str(), "ol") == 0
 					 || strcasecmp(node.tagName().c_str(), "ul") == 0)

@@ -55,6 +55,10 @@ class StandardTag
 public:
   inline static const std::string TAG_P = "p"; ///< Tag for paragraph.
   inline static const std::string TAG_CLOSE_P = "/p"; ///< Tag for closing paragraph.
+  inline static const std::string TAG_SECTION = "div"; ///< Tag for document section.
+  inline static const std::string TAG_CLOSE_SECTION = "/div"; ///< Tag for closing document section.
+  inline static const std::string TAG_SPAN = "span"; ///< Tag for text span.
+  inline static const std::string TAG_CLOSE_SPAN = "/span"; ///< Tag for closing text span.
   inline static const std::string TAG_BR = "br"; ///< Tag for line break.
   inline static const std::string TAG_B = "b"; ///< Tag for bold.
   inline static const std::string TAG_CLOSE_B = "/b"; ///< Tag for closing bold.

@@ -40,6 +40,10 @@ using doctotext::StandardTag;
 std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext::Info &info)>> writers = {
   {StandardTag::TAG_P, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<p>"); }},
   {StandardTag::TAG_CLOSE_P, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</p>"); }},
+  {StandardTag::TAG_SECTION, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<div>"); }},
+  {StandardTag::TAG_CLOSE_SECTION, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</div>"); }},
+  {StandardTag::TAG_SPAN, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<span>"); }},
+  {StandardTag::TAG_CLOSE_SPAN, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</span>"); }},
   {StandardTag::TAG_B, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<b>"); }},
   {StandardTag::TAG_CLOSE_B, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</b>"); }},
   {StandardTag::TAG_I, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<i>"); }},
