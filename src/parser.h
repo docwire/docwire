@@ -100,10 +100,12 @@ public:
   inline static const std::string TAG_CLOSE_PAGE = "/new-page"; ///< Tag for closing page.
 };
 
+typedef std::map<std::string, std::any> Attributes;
+
 struct DllExport Info
 {
   std::string tag_name; //!< tag name
-  std::map<std::string, std::any> attributes; //!< tag attributes
+  Attributes attributes; //!< tag attributes
   bool cancel = false; //!< cancel flag. If set true then parsing process will be stopped.
   bool skip = false; //!< skip flag. If set true then tag will be skipped.
   std::string plain_text; //!< Stores text from last parsed node.
@@ -168,6 +170,10 @@ protected:
   bool isVerboseLogging() const;
 
   Info sendTag(const std::string& tag_name, const std::string& text = "", const std::map<std::string, std::any> &attributes = {}) const;
+  Info sendTag(const std::string& tag_name, const std::map<std::string, std::any> &attributes) const
+  {
+	  return sendTag(tag_name, "", attributes);
+  }
   Info sendTag(const Info &info) const;
 
   std::shared_ptr<doctotext::ParserManager> m_parser_manager;

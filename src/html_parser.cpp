@@ -67,6 +67,23 @@ bool str_iequals(const std::string& lhs, const std::string& rhs)
 	return strcasecmp(lhs.c_str(), rhs.c_str()) == 0;
 }
 
+std::map<std::string, std::any> html_node_attributes(const Node& node)
+{
+	std::map<std::string, std::any> attrs;
+	for (auto a: node.attributes())
+	{
+		attrs.insert(make_pair("html:" + a.first, a.second));
+	};
+	return attrs;
+}
+
+Attributes operator+(const Attributes& lhs, const Attributes& rhs)
+{
+	Attributes result = lhs;
+	result.merge(Attributes(rhs));
+	return result;
+}
+
 } // unnamed namespace
 
 class DocToTextSaxParser : public ParserSax
@@ -314,15 +331,18 @@ class DocToTextSaxParser : public ParserSax
 				m_in_style = true;
 			else if (paragraph_elements.count(node.tagName()))
 			{
-				m_parser->sendTag(StandardTag::TAG_P);
+				node.parseAttributes();
+				m_parser->sendTag(StandardTag::TAG_P, html_node_attributes(node));
 			}
 			else if (str_iequals(tag_name, "div"))
 			{
-				m_parser->sendTag(StandardTag::TAG_SECTION);
+				node.parseAttributes();
+				m_parser->sendTag(StandardTag::TAG_SECTION, html_node_attributes(node));
 			}
 			else if (str_iequals(tag_name, "span"))
 			{
-				m_parser->sendTag(StandardTag::TAG_SPAN);
+				node.parseAttributes();
+				m_parser->sendTag(StandardTag::TAG_SPAN, html_node_attributes(node));
 			}
 			else if (strcasecmp(node.tagName().c_str(), "ol") == 0
 					 || strcasecmp(node.tagName().c_str(), "ul") == 0)
@@ -342,16 +362,18 @@ class DocToTextSaxParser : public ParserSax
 					else if (style_attributes["list-style"] == "none")
 						style_type_none = true;
 				}
-				m_parser->sendTag(StandardTag::TAG_LIST, "", {{"type", std::string(style_type_none ? "none": (str_iequals(tag_name, "ol") ? "decimal" : "disc"))}});
+				m_parser->sendTag(StandardTag::TAG_LIST, Attributes{{"type", std::string(style_type_none ? "none": (str_iequals(tag_name, "ol") ? "decimal" : "disc"))}} + html_node_attributes(node));
 			}
 			else if (strcasecmp(node.tagName().c_str(), "br") == 0)
 			{
+				node.parseAttributes();
 				m_last_char_in_inline_formatting_context = '\0';
-				m_parser->sendTag(StandardTag::TAG_BR);
+				m_parser->sendTag(StandardTag::TAG_BR, html_node_attributes(node));
 			}
 			else if (str_iequals(tag_name, "li"))
 			{
-				m_parser->sendTag(StandardTag::TAG_LIST_ITEM);
+				node.parseAttributes();
+				m_parser->sendTag(StandardTag::TAG_LIST_ITEM, html_node_attributes(node));
 			}
 			else if (strcasecmp(node.tagName().c_str(), "script") == 0 || strcasecmp(node.tagName().c_str(), "iframe") == 0)
 			{
@@ -371,7 +393,7 @@ class DocToTextSaxParser : public ParserSax
 					else
 						convertToUtf8(url);
 				}
-				m_parser->sendTag(StandardTag::TAG_LINK, "", {{"url", url}});
+				m_parser->sendTag(StandardTag::TAG_LINK, Attributes{{"url", url}} + html_node_attributes(node));
 			}
 			else if (strcasecmp(node.tagName().c_str(), "img") == 0)
 			{
@@ -390,27 +412,32 @@ class DocToTextSaxParser : public ParserSax
 					alt = alt_attr.second;
 					convertToUtf8(alt);
 				}
-				m_parser->sendTag(StandardTag::TAG_IMAGE, "", {{"src", src}, {"alt", alt}});
+				m_parser->sendTag(StandardTag::TAG_IMAGE, Attributes{{"src", src}, {"alt", alt}} + html_node_attributes(node));
 			}
 			else if (strcasecmp(node.tagName().c_str(), "table") == 0)
 			{
-				m_parser->sendTag(StandardTag::TAG_TABLE);
+				node.parseAttributes();
+				m_parser->sendTag(StandardTag::TAG_TABLE, html_node_attributes(node));
 			}
 			else if (str_iequals(tag_name, "tr"))
 			{
-				m_parser->sendTag(StandardTag::TAG_TR);
+				node.parseAttributes();
+				m_parser->sendTag(StandardTag::TAG_TR, html_node_attributes(node));
 			}
 			else if (str_iequals(tag_name, "td") || str_iequals(tag_name, "th"))
 			{
-				m_parser->sendTag(StandardTag::TAG_TD);
+				node.parseAttributes();
+				m_parser->sendTag(StandardTag::TAG_TD, html_node_attributes(node));
 			}
 			else if (str_iequals(tag_name, "b"))
 			{
-				m_parser->sendTag(StandardTag::TAG_B);
+				node.parseAttributes();
+				m_parser->sendTag(StandardTag::TAG_B, html_node_attributes(node));
 			}
 			else if (str_iequals(tag_name, "u"))
 			{
-				m_parser->sendTag(StandardTag::TAG_U);
+				node.parseAttributes();
+				m_parser->sendTag(StandardTag::TAG_U, html_node_attributes(node));
 			}
 			else if (strcasecmp(node.tagName().c_str(), "body") == 0)
 			{
