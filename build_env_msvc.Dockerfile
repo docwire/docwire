@@ -6,6 +6,8 @@ FROM mcr.microsoft.com/windows/servercore:ltsc2019
 # Restore the default Windows shell for correct batch processing.
 SHELL ["cmd", "/S", "/C"]
 
+RUN echo "build image"
+
 RUN `
     # Download the Build Tools bootstrapper.
     curl -SL --output vs_buildtools.exe https://aka.ms/vs/17/release/vs_buildtools.exe `
@@ -37,10 +39,6 @@ RUN cd vcpkg`
     && git config --global --add safe.directory C:/vcpkg`
     && git checkout tags/2022.08.15`
     && call ".\bootstrap-vcpkg.bat"
-    
-RUN cd vcpkg`
-    && vcpkg install libiconv:x64-windows`
-    && cd ..
 
 RUN vcpkg\vcpkg install zlib:x64-windows
 
@@ -53,8 +51,6 @@ RUN vcpkg\vcpkg install podofo:x64-windows
 RUN vcpkg\vcpkg install boost-filesystem:x64-windows
 
 RUN vcpkg\vcpkg install boost-system:x64-windows
-
-RUN vcpkg\vcpkg install libxml2:x64-windows
 
 RUN vcpkg\vcpkg install pthreads:x64-windows
 
@@ -76,10 +72,6 @@ RUN dir
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\boost-signals2_x64-windows\include\boost\*' -Destination 'C:\include\boost' -Recurse
 
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\pthreads_x64-windows\include\*.h' -Destination 'C:\include'
-
-RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\include\libxml' -Destination 'C:\include' -Recurse
-
-RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\include\libxml2' -Destination 'C:\include' -Recurse
 
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\boost-system_x64-windows\include\boost\*' -Destination 'C:\include\boost' -Recurse
 
@@ -115,18 +107,6 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\include\lib
 
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\include\libpff.h' -Destination 'C:\include'
 
-RUN git clone https://github.com/docwire/wv2.git `
-    && cd wv2`
-    && mkdir build`
-    && cd build `
-    && cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake  -DCMAKE_INSTALL_PREFIX:PATH="C:\\"  `
-    && cmake --build . --config Release `
-    && cmake --build . --config Release --target install `
-    && cd ..\.. `
-    && powershell Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/wv2-0.2.3_patched_4-private_headers.tar.bz2 -OutFile C:\wv2-0.2.3_patched_4-private_headers.tar.bz2 `
-    && arc unarchive wv2-0.2.3_patched_4-private_headers.tar.bz2 `
-    && powershell Move-Item -Path wv2-0.2.3_patched_4-private_headers\*.h -Destination 'C:\include\wv2'
-
 
 RUN git clone https://github.com/docwire/mimetic.git`
     && cd mimetic\win32`
@@ -146,7 +126,6 @@ RUN powershell mkdir 'C:\include\mimetic' `
 # libs
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\podofo_x64-windows\lib\*' -Destination 'C:\lib' -Recurse `
     && powershell Copy-Item -Path 'C:\vcpkg\packages\freetype_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force`
-    && powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force`
     && powershell Copy-Item -Path 'C:\vcpkg\packages\pthreads_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force`
     && powershell Copy-Item -Path 'C:\vcpkg\packages\zlib_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force`
     && powershell Copy-Item -Path 'C:\vcpkg\packages\boost-filesystem_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force`
@@ -211,21 +190,10 @@ RUN powershell Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/
 RUN vcpkg\vcpkg install leptonica:x64-windows
 
 #tesseract
-RUN powershell Invoke-WebRequest -Uri https://software-network.org/client/sw-master-windows-client.zip -OutFile sw-master-windows-client.zip `
+RUN powershell Invoke-WebRequest -Uri https://github.com/SoftwareNetwork/binaries/raw/master/sw-master-windows_x86_64-client.zip -OutFile sw-master-windows-client.zip `
     && dir `
     && arc unarchive sw-master-windows-client.zip `
     && .\sw.exe setup
-
-RUN powershell Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tesseract/archive/refs/tags/5.1.0.tar.gz -OutFile C:\ocr.tar.gz `
-	&& powershell arc unarchive ocr.tar.gz `
-	&& cd ocr\tesseract-5.1.0 `
-    && mkdir build `
-    && cd build `
-    && cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH="C:\\" CMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded$<$<CONFIG:Debug>:Debug>"  `
-    && cmake --build . --config Release`
-    && cmake --build . --config Release --target install `
-    && cd .. `
-    && cd ..
 
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\leptonica_x64-windows\include\leptonica' -Destination 'C:\include' -Recurse
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\leptonica_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force
@@ -253,6 +221,17 @@ RUN git clone https://github.com/docwire/bfio.git`
     && powershell Copy-Item -Path 'C:\bfio\include\*.h' -Destination 'C:\include' `
     && powershell Copy-Item -Path 'C:\bfio\include\libbfio' -Destination 'C:\include' -Recurse
 
+RUN cd vcpkg`
+    && git checkout master`
+    && git pull `
+    && call ".\bootstrap-vcpkg.bat"
+
+RUN cd vcpkg`
+    && vcpkg install libiconv:x64-windows`
+    && cd ..
+
+RUN vcpkg\vcpkg install libxml2:x64-windows
+
 RUN git clone https://github.com/docwire/htmlcxx.git`
     && cd htmlcxx`
     && mkdir build`
@@ -262,5 +241,36 @@ RUN git clone https://github.com/docwire/htmlcxx.git`
     && cmake --build . --config Release --target install `
     && cd ../..
 
+RUN git clone https://github.com/docwire/wv2.git `
+    && cd wv2`
+    && mkdir build`
+    && cd build `
+    && cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake  -DCMAKE_INSTALL_PREFIX:PATH="C:\\"  `
+    && cmake --build . --config Release `
+    && cmake --build . --config Release --target install `
+    && cd ..\.. `
+    && powershell Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/wv2-0.2.3_patched_4-private_headers.tar.bz2 -OutFile C:\wv2-0.2.3_patched_4-private_headers.tar.bz2 `
+    && arc unarchive wv2-0.2.3_patched_4-private_headers.tar.bz2 `
+    && powershell Move-Item -Path wv2-0.2.3_patched_4-private_headers\*.h -Destination 'C:\include\wv2'
+
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\lib\*' -Destination 'C:\lib' -Recurse
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\include\*.h' -Destination 'C:\include' -Recurse
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\include\libxml' -Destination 'C:\include' -Recurse
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\include\libxml2' -Destination 'C:\include' -Recurse
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force
+
+#RUN cd vcpkg`
+#    && git config --global --add safe.directory C:/vcpkg`
+#    && git checkout tags/2022.08.15`
+#    && call ".\bootstrap-vcpkg.bat"
+
+RUN git clone https://github.com/tesseract-ocr/tesseract.git `
+	&& cd tesseract `
+    && git checkout tags/5.3.0 `
+    && mkdir build `
+    && cd build `
+    && cmake .. -G "Visual Studio 17 2022" -A x64 -DBUILD_TRAINING_TOOLS=OFF -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH="C:\\" CMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded$<$<CONFIG:Debug>:Debug>"  `
+    && cmake --build . --config Release`
+    && cmake --build . --config Release --target install `
+    && cd .. `
+    && cd ..
