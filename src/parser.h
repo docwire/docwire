@@ -59,7 +59,7 @@ public:
   inline static const std::string TAG_CLOSE_SECTION = "/div"; ///< Tag for closing document section.
   inline static const std::string TAG_SPAN = "span"; ///< Tag for text span.
   inline static const std::string TAG_CLOSE_SPAN = "/span"; ///< Tag for closing text span.
-  inline static const std::string TAG_BR = "br"; ///< Tag for line break.
+  inline static const std::string TAG_BR = "br/"; ///< Tag for line break.
   inline static const std::string TAG_B = "b"; ///< Tag for bold.
   inline static const std::string TAG_CLOSE_B = "/b"; ///< Tag for closing bold.
   inline static const std::string TAG_I = "i"; ///< Tag for italic.
@@ -72,10 +72,10 @@ public:
   inline static const std::string TAG_CLOSE_TR = "/tr"; ///< Tag for closing table row.
   inline static const std::string TAG_TD = "td"; ///< Tag for table cell.
   inline static const std::string TAG_CLOSE_TD = "/td"; ///< Tag for closing table cell.
-  inline static const std::string TAG_TEXT = "#text"; ///< Tag for text.
+  inline static const std::string TAG_TEXT = "text/"; ///< Tag for text.
   inline static const std::string TAG_LINK = "a"; ///< Tag for link. Attributes: "url": std::string
   inline static const std::string TAG_CLOSE_LINK = "/a"; ///< Tag for link.
-  inline static const std::string TAG_IMAGE = "img"; ///< Tag for image. Attributes: "src": std::string, "alt": std::string
+  inline static const std::string TAG_IMAGE = "img/"; ///< Tag for image. Attributes: "src": std::string, "alt": std::string
   inline static const std::string TAG_STYLE = "style"; ///< Tag for style.
   inline static const std::string TAG_CLOSE_STYLE = "/style"; ///< Tag for close style.
 
@@ -93,8 +93,8 @@ public:
   inline static const std::string TAG_FOLDER = "folder"; ///< Tag for folder. If you set skip in this tag, then the folder won't be parsed. Attributes: "name": std::string.
   inline static const std::string TAG_CLOSE_FOLDER = "/folder"; ///< Tag for closing folder.
 
-  inline static const std::string TAG_METADATA = "metadata"; ///< Tag for metadata.
-  inline static const std::string TAG_COMMENT = "comment"; ///< Tag for comments. Attributes: "author": std::string, "time": std::string (format:(yyyy-mm-ddThh:mm:ss)), "comment": std::string
+  inline static const std::string TAG_METADATA = "metadata/"; ///< Tag for metadata.
+  inline static const std::string TAG_COMMENT = "comment/"; ///< Tag for comments. Attributes: "author": std::string, "time": std::string (format:(yyyy-mm-ddThh:mm:ss)), "comment": std::string
 
   inline static const std::string TAG_PAGE = "new-page"; ///< Tag for page. This tag is sent before parsing the page, so if we set in this tag, then the page won't be parsed.
   inline static const std::string TAG_CLOSE_PAGE = "/new-page"; ///< Tag for closing page.

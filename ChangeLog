@@ -9,6 +9,7 @@ Unreleased:
     * Remove wrong usage of TAG_STYLE
     * HTML parser passes all attributes to tags with "html:" prefix
     * Improved support for subparsers tag signals in EML parser
+    * All tags that have no closing tag are marged with / symbol at the end (XHTML way)
 
 Version 5.0.9:
     * Replace README file with more detailed README.md prepared for public GitHub repository
