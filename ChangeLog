@@ -6,6 +6,7 @@ Unreleased:
     * HTML to plain text conversion use better table layout algorithm from plain text exporter
     * Improved whitespaces support (inline formatting context) in HTML parser
     * TAG_SECTION and TAG_SPAN added with HTML parser, HTML exporter and plain text exporter support
+    * Remove wrong usage of TAG_STYLE
 
 Version 5.0.9:
     * Replace README file with more detailed README.md prepared for public GitHub repository

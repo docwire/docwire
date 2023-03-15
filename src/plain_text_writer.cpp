@@ -269,13 +269,6 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  turn_on_style_mode()
-  {
-    style_mode = true;
-    return std::make_shared<TextElement>("");
-  }
-
-  std::shared_ptr<TextElement>
   write_list_item(const doctotext::Info &info)
   {
     if (list_type == "none")
@@ -324,17 +317,9 @@ struct PlainTextWriter::Implementation
 		return std::make_shared<TextElement>(text);
 	}
 
-  std::shared_ptr<TextElement>
-  turn_off_style_mode(const doctotext::Info &info)
-  {
-    style_mode = false;
-    return std::make_shared<TextElement>("");
-  }
-
   std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext::Info &info)>> plain_text_writers;
 
   Implementation()
-  : style_mode(false)
   {
     plain_text_writers =
       {
@@ -356,16 +341,9 @@ struct PlainTextWriter::Implementation
         {StandardTag::TAG_CLOSE_LIST, [this](const doctotext::Info &info){return write_close_list(info);}},
         {StandardTag::TAG_LIST_ITEM, [this](const doctotext::Info &info){return write_list_item(info);}},
         {StandardTag::TAG_CLOSE_LIST_ITEM, [this](const doctotext::Info &info){return write_close_list_item(info);}},
-        {StandardTag::TAG_STYLE, [this](const doctotext::Info &info){return turn_on_style_mode();}},
-        {StandardTag::TAG_CLOSE_STYLE, [this](const doctotext::Info &info){return turn_off_style_mode(info);}},
         {StandardTag::TAG_COMMENT, [this](const doctotext::Info &info){return write_comment(info);}}
       };
   };
-
-  bool is_style_mode() const
-  {
-    return style_mode;
-  }
 
   std::string add_shift(int count)
   {
@@ -488,10 +466,7 @@ struct PlainTextWriter::Implementation
       if (writer_iterator != plain_text_writers.end())
       {
         auto text_element = writer_iterator->second(info);
-        if (!is_style_mode())
-        {
-          text_element->write_to(stream);
-        }
+        text_element->write_to(stream);
       }
     }
   }
@@ -502,7 +477,6 @@ struct PlainTextWriter::Implementation
   int list_counter;
   bool first_cell_in_row;
   bool list_mode{ false };
-  bool style_mode;
   std::vector<std::vector<Cell>> table;
 };
 
@@ -519,7 +493,6 @@ PlainTextWriter::PlainTextWriter(const PlainTextWriter &plainTextWriter)
   impl->list_counter = plainTextWriter.impl->list_counter;
   impl->first_cell_in_row = plainTextWriter.impl->first_cell_in_row;
   impl->list_mode = plainTextWriter.impl->list_mode;
-  impl->style_mode = plainTextWriter.impl->style_mode;
   impl->table = plainTextWriter.impl->table;
 }
 
@@ -531,7 +504,6 @@ PlainTextWriter::operator=(const PlainTextWriter &plainTextWriter)
   impl->list_counter = plainTextWriter.impl->list_counter;
   impl->first_cell_in_row = plainTextWriter.impl->first_cell_in_row;
   impl->list_mode = plainTextWriter.impl->list_mode;
-  impl->style_mode = plainTextWriter.impl->style_mode;
   impl->table = plainTextWriter.impl->table;
 
   return *this;
