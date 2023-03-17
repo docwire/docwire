@@ -37,6 +37,53 @@ namespace doctotext
 {
 using doctotext::StandardTag;
 
+  std::string encoded(const std::string& value)
+  {
+    std::string encoded;
+    encoded.reserve(value.size());
+    for (auto& ch: value)
+    {
+      switch(ch)
+      {
+        case '&': encoded += "&amp;"; break;
+        case '\"': encoded += "&quot;"; break;
+        case '\'': encoded += "&apos;"; break;
+        case '<': encoded += "&lt;"; break;
+        case '>': encoded += "&gt;"; break;
+        default: encoded += ch; break;
+      }
+    }
+    return encoded;
+  }
+
+  std::shared_ptr<TextElement> write_link(const Info& info)
+  {
+    auto url_attr = encoded(info.getAttributeValue<std::string>("url").value());
+    return std::make_shared<TextElement>("<a href=\"" + url_attr + "\">");
+  }
+
+  std::shared_ptr<TextElement> write_image(const Info& info)
+  {
+    auto src_attr = encoded(info.getAttributeValue<std::string>("src").value());
+    auto alt_attr = encoded(info.getAttributeValue<std::string>("alt").value_or(""));
+    return std::make_shared<TextElement>("<img src=\"" + src_attr + "\" alt=\"" + alt_attr + "\" />");
+  }
+
+  std::shared_ptr<TextElement> write_list(const Info& info)
+  {
+    std::string list_type = info.getAttributeValue<std::string>("type").value_or("");
+    if (list_type.empty())
+    {
+      if (info.getAttributeValue<bool>("is_ordered").value_or(false))
+        list_type = "decimal";
+      else
+        list_type = info.getAttributeValue<std::string>("list_style_prefix").value_or("disc");
+    }
+    if (list_type != "decimal" && list_type != "disc" && list_type != "none")
+      list_type = encoded('"' + list_type + '"');
+    return std::make_shared<TextElement>("<ul style=\"list-style-type: " + list_type + "\">");
+  }
+
 std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext::Info &info)>> writers = {
   {StandardTag::TAG_P, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<p>"); }},
   {StandardTag::TAG_CLOSE_P, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</p>"); }},
@@ -57,7 +104,14 @@ std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext
   {StandardTag::TAG_TD, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<td>"); }},
   {StandardTag::TAG_CLOSE_TD, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</td>"); }},
   {StandardTag::TAG_BR, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<br />"); }},
-  {StandardTag::TAG_TEXT, [](const doctotext::Info &info) { return std::make_shared<TextElement>(info.plain_text); }}};
+  {StandardTag::TAG_TEXT, [](const doctotext::Info &info) { return std::make_shared<TextElement>(info.plain_text); }},
+  {StandardTag::TAG_LINK, [](const doctotext::Info &info) { return write_link(info); }},
+  {StandardTag::TAG_CLOSE_LINK, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</a>"); }},
+  {StandardTag::TAG_IMAGE, [](const doctotext::Info &info) { return write_image(info); }},
+  {StandardTag::TAG_LIST, [](const doctotext::Info &info) { return write_list(info); }},
+  {StandardTag::TAG_CLOSE_LIST, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</ul>"); }},
+  {StandardTag::TAG_LIST_ITEM, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<li>"); }},
+  {StandardTag::TAG_CLOSE_LIST_ITEM, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</li>"); }}};
 
 void
 HtmlWriter::write_header(std::ostream &stream) const
