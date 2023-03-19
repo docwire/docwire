@@ -166,12 +166,12 @@ Exporter::get_output() const
   return impl->get_output();
 }
 
-HtmlExporter::HtmlExporter()
-  : Exporter(std::make_unique<HtmlWriter>())
+HtmlExporter::HtmlExporter(OriginalAttributesMode original_attributes_mode)
+  : Exporter(std::make_unique<HtmlWriter>(static_cast<HtmlWriter::OriginalAttributesMode>(original_attributes_mode)))
 {}
 
-HtmlExporter::HtmlExporter(std::ostream &out_stream)
-: Exporter(std::make_unique<HtmlWriter>(), out_stream)
+HtmlExporter::HtmlExporter(std::ostream &out_stream, OriginalAttributesMode original_attributes_mode)
+: Exporter(std::make_unique<HtmlWriter>(static_cast<HtmlWriter::OriginalAttributesMode>(original_attributes_mode)), out_stream)
 {}
 
 PlainTextExporter::PlainTextExporter()

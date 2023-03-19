@@ -123,11 +123,22 @@ private:
 class DllExport HtmlExporter: public Exporter
 {
 public:
-  HtmlExporter();
+  enum class OriginalAttributesMode
+  {
+    skip, ///< Do not restore original HTML attributes
+    restore ///< Restore original HTML attributes
+  };
+
+  /**
+   * @param original_attributes_mode set how to handle original html attributes extracted by html parser
+   */
+  HtmlExporter(OriginalAttributesMode original_attributes_mode = OriginalAttributesMode::skip);
+
   /**
    * @param out_stream Exporter output stream. Exporter will be writing to this stream.
+   * @param original_attributes_mode set how to handle original html attributes extracted by html parser
    */
-  HtmlExporter(std::ostream &out_stream);
+  HtmlExporter(std::ostream &out_stream, OriginalAttributesMode original_attributes_mode = OriginalAttributesMode::skip);
 };
 
 /**

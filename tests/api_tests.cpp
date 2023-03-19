@@ -570,6 +570,17 @@ TEST_P(MultiPageFilterTest, SimpleExtractorTests)
 
 }
 
+namespace
+{
+	std::string read_test_file(const std::string& file_name)
+	{
+		std::ifstream stream;
+		stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		stream.open("../../tests/" + file_name);
+		return std::string{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
+	}
+}
+
 INSTANTIATE_TEST_SUITE_P(
         BasicTests, MultiPageFilterTest,
         ::testing::Values(
@@ -579,3 +590,15 @@ INSTANTIATE_TEST_SUITE_P(
           std::string name = std::string{ std::get<2>(info.param) } + "_multi_page_filter_tests";
           return name;
         });
+
+TEST(HtmlWriter, RestoreAttributes)
+{
+  using namespace doctotext;
+	std::shared_ptr<doctotext::ParserManager> parser_manager(new doctotext::ParserManager{ "../plugins" });
+	std::stringstream output;
+	std::ifstream in("../../tests/1.html");
+	Importer(in, doctotext::ParserParameters(), parser_manager)
+		| HtmlExporter(output, HtmlExporter::OriginalAttributesMode::restore);
+
+	EXPECT_EQ(read_test_file("1.html.restore_attributes.out.html"), output.str());
+}

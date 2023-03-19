@@ -59,6 +59,20 @@ namespace doctotext
 class DllExport HtmlWriter : public Writer
 {
 public:
+
+  enum class OriginalAttributesMode
+  {
+    skip, ///< Do not restore original HTML attributes
+    restore ///< Restore original HTML attributes
+  };
+
+  /**
+   * @param original_attributes_mode set how to handle original html attributes extracted by html parser
+   */
+  explicit HtmlWriter(OriginalAttributesMode original_attributes_mode = OriginalAttributesMode::skip);
+
+  HtmlWriter(const HtmlWriter& html_writer);
+
   /**
    * @brief Writes html header to output stream. It's necessary to call this function before writing any data
    * to get valid html document.
@@ -81,6 +95,11 @@ public:
    * @brief creates a new instance of HtmlWriter
    */
   virtual Writer* clone() const override;
+
+private:
+  struct DllExport Implementation;
+  struct DllExport ImplementationDeleter { void operator() (Implementation*); };
+  std::unique_ptr<Implementation, ImplementationDeleter> impl;
 };
 } // namespace doctotext
 
