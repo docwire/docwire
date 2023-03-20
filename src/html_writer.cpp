@@ -47,6 +47,33 @@ struct HtmlWriter::Implementation
   }
 
   HtmlWriter::OriginalAttributesMode m_original_attributes_mode;
+  bool m_header_is_open { false };
+
+  std::shared_ptr<TextElement>
+  write_open_header()
+  {
+    std::string header = {"<!DOCTYPE html>\n"
+           "<html>\n"
+           "<head>\n"
+           "<meta charset=\"utf-8\">\n"
+           "<title>DocToText</title>\n"};
+    m_header_is_open = true;
+    return std::make_shared<TextElement>(header);
+  }
+
+  std::shared_ptr<TextElement> write_close_header_open_body()
+  {
+    m_header_is_open = false;
+    return std::make_shared<TextElement>("</head>\n<body>\n");
+  }
+
+  std::shared_ptr<TextElement>
+  write_footer()
+  {
+    std::string footer = {"</body>\n"
+           "</html>\n"};
+    return std::make_shared<TextElement>(footer);
+  }
 
   std::string encoded(const std::string& value)
   {
@@ -129,25 +156,11 @@ struct HtmlWriter::Implementation
     return tag_with_attributes("ul", attrs);
   }
 
-  std::shared_ptr<TextElement>
-  write_header()
+  std::shared_ptr<TextElement> write_style(const Info& info)
   {
-    std::string header = {"<!DOCTYPE html>\n"
-           "<html>\n"
-           "<head>\n"
-           "<meta charset=\"utf-8\">\n"
-           "<title>DocToText</title>\n"
-           "</head>\n"
-           "<body>\n"};
-    return std::make_shared<TextElement>(header);
-  }
-
-  std::shared_ptr<TextElement>
-  write_footer()
-  {
-    std::string footer = {"</body>\n"
-           "</html>\n"};
-    return std::make_shared<TextElement>(footer);
+    return std::make_shared<TextElement>(
+      m_original_attributes_mode != OriginalAttributesMode::skip ?
+        "<style type=\"text/css\">" + info.getAttributeValue<std::string>("css_text").value() + "</style>\n" : "");
   }
 
 std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext::Info &info)>> writers = {
@@ -178,11 +191,14 @@ std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext
   {StandardTag::TAG_CLOSE_LIST, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</ul>"); }},
   {StandardTag::TAG_LIST_ITEM, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<li>"); }},
   {StandardTag::TAG_CLOSE_LIST_ITEM, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</li>"); }},
-  {StandardTag::TAG_DOCUMENT, [this](const doctotext::Info &info) { return write_header(); }},
-  {StandardTag::TAG_CLOSE_DOCUMENT, [this](const doctotext::Info &info) { return write_footer(); }}};
+  {StandardTag::TAG_DOCUMENT, [this](const doctotext::Info &info) { return write_open_header(); }},
+  {StandardTag::TAG_CLOSE_DOCUMENT, [this](const doctotext::Info &info) { return write_footer(); }},
+  {StandardTag::TAG_STYLE, [this](const doctotext::Info &info) { return write_style(info); }}};
 
   void write_to(const doctotext::Info &info, std::ostream &stream)
   {
+    if (info.tag_name != StandardTag::TAG_STYLE && m_header_is_open)
+      write_close_header_open_body()->write_to(stream);
     auto writer_iterator = writers.find(info.tag_name);
     if (writer_iterator != writers.end())
     {

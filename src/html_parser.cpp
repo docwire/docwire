@@ -275,6 +275,8 @@ class DocToTextSaxParser : public ParserSax
 				{
 					m_in_style = false;
 					parseCSS();
+					m_parser->sendTag(StandardTag::TAG_STYLE, {{"css_text", m_style_text}});
+					m_style_text.clear();
 				}
 				else if (paragraph_elements.count(tag_name))
 				{

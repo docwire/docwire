@@ -76,8 +76,7 @@ public:
   inline static const std::string TAG_LINK = "a"; ///< Tag for link. Attributes: "url": std::string
   inline static const std::string TAG_CLOSE_LINK = "/a"; ///< Tag for link.
   inline static const std::string TAG_IMAGE = "img/"; ///< Tag for image. Attributes: "src": std::string, "alt": std::string
-  inline static const std::string TAG_STYLE = "style"; ///< Tag for style.
-  inline static const std::string TAG_CLOSE_STYLE = "/style"; ///< Tag for close style.
+  inline static const std::string TAG_STYLE = "style/"; ///< Tag for style. Attributes: "css_text": std::string
 
   inline static const std::string TAG_LIST = "list"; ///< Tag for list. Attributes: "type": std::string (decimal | disc | none | custom string), "is_ordered": bool (def. is false, DEPRECATED), "list_style_prefix": std::string (DEPRECATED)
   inline static const std::string TAG_CLOSE_LIST = "/list"; ///< Tag for closing list
