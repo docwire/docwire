@@ -159,7 +159,7 @@ struct HtmlWriter::Implementation
   std::shared_ptr<TextElement> write_style(const Info& info)
   {
     return std::make_shared<TextElement>(
-      m_original_attributes_mode != OriginalAttributesMode::skip ?
+      m_restore_original_attributes == RestoreOriginalAttributes{true} ?
         "<style type=\"text/css\">" + info.getAttributeValue<std::string>("css_text").value() + "</style>\n" : "");
   }
 
