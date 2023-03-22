@@ -601,7 +601,7 @@ TEST(HtmlWriter, RestoreAttributes)
 	std::ifstream in("../../tests/1.html");
 	Input(&in)
 		| Importer(doctotext::ParserParameters(), parser_manager)
-		| HtmlExporter(output, HtmlExporter::OriginalAttributesMode::restore);
+		| HtmlExporter(output, HtmlExporter::RestoreOriginalAttributes{true});
 
 	EXPECT_EQ(read_test_file("1.html.restore_attributes.out.html"), output.str());
 }

@@ -33,6 +33,7 @@
 #include "boost/algorithm/string/predicate.hpp"
 #include <memory>
 #include "html_writer.h"
+#include <numeric>
 #include "parser.h"
 namespace doctotext
 {
@@ -41,12 +42,12 @@ using doctotext::StandardTag;
 
 struct HtmlWriter::Implementation
 {
-  Implementation(HtmlWriter::OriginalAttributesMode original_attributes_mode)
-    : m_original_attributes_mode(original_attributes_mode)
+  Implementation(HtmlWriter::RestoreOriginalAttributes restore_original_attributes)
+    : m_restore_original_attributes(restore_original_attributes)
   {
   }
 
-  HtmlWriter::OriginalAttributesMode m_original_attributes_mode;
+  HtmlWriter::RestoreOriginalAttributes m_restore_original_attributes;
   bool m_header_is_open { false };
 
   std::shared_ptr<TextElement>
@@ -99,28 +100,24 @@ struct HtmlWriter::Implementation
   HtmlAttrs restored_original_attributes(const Info& info)
   {
     HtmlAttrs attrs;
-    if (m_original_attributes_mode != OriginalAttributesMode::skip)
-    for (auto a: info.attributes)
-    {
-      if (boost::starts_with(a.first, "html:"))
-      attrs.insert({a.first.substr(5), std::any_cast<std::string>(a.second)});
-    }
+    if (m_restore_original_attributes == RestoreOriginalAttributes{true})
+      for (auto a: info.attributes)
+      {
+        if (boost::starts_with(a.first, "html:"))
+          attrs.insert({a.first.substr(5), std::any_cast<std::string>(a.second)});
+      }
     return attrs;
   }
 
-  std::string attributes_string(const HtmlAttrs& attrs)
+  std::string to_string(const HtmlAttrs& attrs)
   {
-    std::string attrs_string;
-    for (auto a: attrs)
-    {
-      attrs_string += " " + a.first + "=\"" + encoded(a.second) + "\"";
-    }
-    return attrs_string;
+    return std::accumulate(attrs.begin(), attrs.end(), std::string{},
+      [this](const std::string &attrs_string, const auto &a){return attrs_string + " " + a.first + "=\"" + encoded(a.second) + "\""; });
   }
 
   std::shared_ptr<TextElement> tag_with_attributes(const std::string& tag_name, const HtmlAttrs& attributes)
   {
-    return std::make_shared<TextElement>("<" + tag_name + attributes_string(attributes) + ">");
+    return std::make_shared<TextElement>("<" + tag_name + to_string(attributes) + ">");
   }
 
   std::shared_ptr<TextElement> write_link(const Info& info)
@@ -133,8 +130,11 @@ struct HtmlWriter::Implementation
   std::shared_ptr<TextElement> write_image(const Info& info)
   {
     HtmlAttrs attrs = restored_original_attributes(info);
-    attrs.insert({"src", info.getAttributeValue<std::string>("src").value() });
-    attrs.insert({ "alt", info.getAttributeValue<std::string>("alt").value_or("") });
+    attrs.insert(
+    {
+      { "src", info.getAttributeValue<std::string>("src").value() },
+      { "alt", info.getAttributeValue<std::string>("alt").value_or("") }
+    });
     return tag_with_attributes("img", attrs);
   }
 
@@ -212,13 +212,13 @@ void HtmlWriter::ImplementationDeleter::operator()(Implementation *impl)
   delete impl;
 }
 
-HtmlWriter::HtmlWriter(OriginalAttributesMode original_attributes_mode)
-  : impl(new Implementation(original_attributes_mode))
+HtmlWriter::HtmlWriter(RestoreOriginalAttributes restore_original_attributes)
+  : impl(new Implementation(restore_original_attributes))
 {
 }
 
 HtmlWriter::HtmlWriter(const HtmlWriter& html_writer)
-  : HtmlWriter(html_writer.impl->m_original_attributes_mode)
+  : HtmlWriter(html_writer.impl->m_restore_original_attributes)
 {
 }
 
