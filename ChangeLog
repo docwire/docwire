@@ -1,0 +1,304 @@
+Version 5.0.8:
+    * Update libpff to newest version in Linux, Mingw/Win32 and MacOSX builds to fix compilation error
+    * DICOM parser plugin sources removed as this is an additional commercial plugin and will be developed in separate repository
+    * Fixed libtiff install issue in MacOSX build
+
+Version 5.0.7:
+    * Added exception if proper parser was not found
+    * Fixed recursive splitting debug symbols
+    * 2-times nested tables support in plain text writer fixed
+    * Unused update_version.sh script removed
+    * Fixed get_self_path() function
+    * Removed unnecessary scripts
+
+Version 5.0.6:
+    * Fixed wrong plugin path for OSX
+    * Nested tables support in plain text writer fixed
+    * MS Word Templates parsing (DOT files) enabled with a simple fix
+    * Added missing suffix in version string
+
+Version 5.0.5:
+    * Changed attribute type from cont char* to std::string for TAG_LIST
+    * fixed OSX build scripts
+    * removed unnecessary files
+    * added description for console application
+    * fixed bad_alloc exception handling
+    * fixed header of html output
+    * removed TAG_SPACE and TAG_TAB
+
+Version 5.0.4:
+    * Building with CMake for full version numbers fixed
+
+Version 5.0.3:
+    * Ordered and unordered lists API redesigned.
+    * Fixed memory problem for OSX
+    * PST parser API redesigned (tags)
+    * Page close tag renamed
+
+Version 5.0.2:
+    * Fixed pdf parsing if CMap is unavailable
+    * Fixed namespaces
+    * tableStyleId tag support added to fix crash with some PPTX documents
+    * Ignore all XML text nodes that contains only whitespaces to fix crashes with some ODF and OOXML documents
+    * Add support for T tag in OOXML formats with whitespace preserve attribute
+
+Version 5.0.1:
+    * Empty table row problem fixed in plain text exporter
+    * Fixed problem with char width calculation in pdf parser
+    * Added exception if file doesn't exist
+    * Added debug version for MSVC
+    * Added sendTag method in Parser class
+    * Added TAG_PAGE tag in pdf parser
+    * Added section about tags to documentation
+    * Added section about parser parameters to documentation
+    * Added Info structure constructor
+    * Changed extension from hpp to h for several files
+    * Fixed location of temporary pst files to system defined temporary directory
+    * Fixed problem with incorrect support for chars in html parser
+    * Fixes problem with sending tags in pst parser
+
+Version 5.0.0:
+    * Introduced boost signals mechanism
+    * Added examples for doctotext api
+    * Updated documentation
+    * Added next level api (Importer, Exporter, Transformer)
+    * Refactoring
+    * Added plugins mechanism for parser providers
+    * Added support for hyperlinks in new api
+    * Added support for msvc
+    * 3rdparty directory removed (moved to build environment)
+    * Made CMake script platform independent
+    * Added support for lists in new api (ODF)
+    * Fixed file validation
+    * support table for Open Document Formats
+    * Added support for hyperlinks in new api
+    * Fixed support for odp files
+    * Support attachments in eml in new api
+    * Fixed xlsx parser (table formatting)
+    * Fixed logs for encrypted files
+    * Fixed comment support
+    * Removed old api
+    * Fixed formatting table - multiple line in cell
+
+Version 4.6.1:
+	* Fixed problem with unsupported exceptions in c api
+	* Switch to DCMTK version 3.6.7 on windows version
+	* Build 3rd party libraries with C++17 standard flags
+
+Version 4.6.0:
+	*  Updated tesseract library to version 5
+	*  Implemented color inversion from white to black text
+
+Version 4.5.0:
+	* Added callbacks for style tags in odfooxml parser
+	* Added HtmlWriter
+	* Added tags with attributes for pst parser (mail-header, folder-header, attachment-header, mail-body, attachment-body)
+	* Added filter mechanism for callbacks
+	* Added set of standard filters (filterByFolderName, filterByAttachmentType, filterByMailMinCreationTime, filterByMailMaxCreationTime)
+	* Fixed bug in pdf parser (missing check if object is valid string or hex string)
+	* Added missing api headers: parser_builder.h parser_parameters.h, parser_provider.hpp, parser_wrapper.h, standard_filter.h, writer.h plain_text_writer.h html_writer.h
+
+Version 4.4.2:
+	* Added functions in old APIs to choose different "tessdata" directory for
+	OCR parsing
+
+Version 4.4.1:
+	* Significant binary files size optimization
+
+Version 4.4.0:
+	* Significant OCR parser speed improvements
+	* Filters support added to PST/OST parser
+	* Possibility to cancel OCR parser process added to new API
+	* Build environment updated to Debian Bullseye
+	* Formatting style support for PST/OST and HTML parser in new API
+	* Hardcoded OCR process timeout added to old API
+	* CI environment separated from build environment
+	* Multithreaded build and automatic tests
+
+Version 4.3.0:
+	* DICOM (Digital Imaging and Communications in Medicine) file format parser added
+	* Small improvements in new API
+	* Missing support for reading data buffer in OCR parser added
+	* Unitialized formatting value error in HTML parser in new API fixed
+	* Documentation and copyrights headers updated with new file formats
+
+Version 4.2.2:
+	* Remove CMake cache from binary packages
+	* Add missing ChangeLog file to binary packages
+	* Update documentation with new API and new file formats
+	* Fix library file name after CMake introduction
+	* Fix automatic tests after CTest introduction
+
+Version 4.2.1:
+	* Multithreading problems fixed: libmimetic, getpwuid, gmtime
+	* CMake and CTest introduced instead of handwritten Makefiles
+	* ODF_OOXML parser, image (OCR) parser, TXT parser and RTF parser added to new experimental API
+	* PST/OST parser added to old API (with hardcoded limit for number of e-mails processed)
+	* OCR parser support in old C API fixed
+	* Automatic tests for old C API fixed and improved
+
+Version 4.2.0:
+	* Image parser (OCR) added with support for tiff, jpeg, bmp, png, pnm, jfif, jpg and webp file formats
+	* Personal Storage Table (.pst) and Off-line Storage Table (.ost) parser added with support for Microsoft Outlook and Microsoft Exchange files
+	* New experimental API added with callback support for quick handling of partial results and preserving the structure of documents
+
+Version 4.1.2:
+	* PDF parser improved significally (documents that did not open, word spacing, etc.)
+	* PDF parser refactoring started.
+	* Added support for EML and ODF_OOXML parsers in C API.
+	* Fixed problem with duplicated content in EML parser.
+
+Version 4.1.1:
+	* Debug symbols separated to addditional files.
+
+Version 4.1.0:
+	* PlainTextExtractor can throw exceptions (doctotext::Exception)
+	* Improved whitespace support in OpenDocument formats.
+	* Debug symbols enabled by default.
+	* Building Linux version process cleanups.
+	* Building Win32 version process cleanups.
+	* Memory error in EML parser fixed.
+
+Version 4.0:
+	* fixed bug in utf8 encoding for RT_TextBytesAtom record in PPT parser
+	* Initial Open Document Flat XML Parser (fodt, fods, fodg, fodp)
+	* Initial EML Parser (with ability to extract attachments)
+	* Capabilities of C API has been expanded.
+	* Better charset detection in HTML parser.
+	* New TXT parser (Can be used to change encoding to UTF8)
+	* ListStyle is a class now (not an enum).
+	* Initial PDF parser.
+	* Whole public interface of DocToText (PlainTextExctractor, Metadata, Link, Exception, FormattingStyle) is available under doctotext namespace.
+	* DocToText supports exceptions now (Exception class).
+	* Reorganization of url handling. PlainTextExtractor can now return list of links. Supported parsers: HTML/EML/ODF_OOXML/ODFXML.
+	* PlainTextExtractor allows now for parsing files from memory buffer.
+	* Independence from glib, libgsf, gettext. Pthreads are used instead of gthreads, build-in OLEReader is used instead of libgsf.
+	* New iWork parser.
+	* New XLSB parser.
+	* Extracting number of pages from ODG files fixed.
+	* ODG files added to automatic tests.
+	* Support for Object Linking and Embedding (OLE) in ODF formats added.
+	* Managing libxml2 (initialization and cleanup) can be disabled.
+	* Thread-safety fixed in ODF, OOXML and DOC parsers.
+	* Better handling of fields in DOC and DOT files.
+	* Better handling of headings in ODF documents.
+	* Fixes for x86_64 architecture.
+	* Improved stability in multithreaded environments.
+	* Embedded XLS Workbooks in DOC files supported without creating temporary files.
+	* Cleanups in ODF and OOXML parsers.
+	* Memory consumption of ODF and OOXML parsers significantly reduced.
+	* Better handling of fields in DOCX files.
+	* Fixed crash in RTF parser for invalid files.
+	* Fixes in XLS parser.
+	* Initial port to win64 architecture.
+	* Function enter and exit tracking feature useful for debugging.
+
+Version 0.14.0:
+	* Initial HTML format support.
+	* Initial implementation of metadata extractor (author, creation time, last modified by, last modification time, page count, word count
+	* Font commands in XLSX header or footer do not corrupt output any more.
+	* Estimate not existing meta values using different techniques.
+	* Initial implementation of annotations support (ODT, DOC, DOCX, RTF formats).
+	* Download and use precompiled wv2 binaries
+	* Initial API documentation (Doxygen)
+	* Fallback to other parsers if specified parser fails
+	* Fixes and improvements in XLS parser.
+	* C++ API extended to allow communicating without STL objects (to mix two STL implementations for example).
+	* Line break handling in ODF and OOXML formats fixed.
+
+Version 0.13.0
+	* Initial Mac OS X port
+	* Initial implementation of shared library
+	* C language API added to allow using C++ library from C and other languages
+	* Universal binary (i386, x86_64) for Mac OS X
+	* Static linking of 3rdparty libraries option for Mac OS X
+	* Cleanups
+	* First parser selection is according to file extension
+	* First parser used can be choosen via command line
+	* Embedded XLS Workbooks support in DOC files
+	* Table cells encoding problems in DOC files fixed.
+	* Case insensitive file extension matching.
+	* Do not try other parsers if parser selected by file extension fails.
+	* New XLS parser.
+	* Small fix in XLS numbers formatting.
+	* Small fix in parsing XLS shared string table.
+	* Locating files in zip archives (ODF, OOXML) optimized.
+	* Initial PPT format support. ODP, PPT, PPTX files added to automatic tests.
+	* Fixes in DOC and XLS parsers.
+	* Verbose logging can be turned on and off.
+	* Logs can be redirected to other C++ stream than standard cerr.
+	* Redesigned C++ API.
+	* Debug and release versions separated.
+	* End of paragraph special symbols support fixed.
+	* Download and use more precompiled libraries
+	* Small and big compilation fixes
+	* Headers and footers support in DOC files added
+
+Version 0.12.0:
+	* Formatting tables optimized
+	* Build-in libxml2 library upgraded to version 2.7.7
+	* Initial xls format support
+	* Better default table formatting
+	* Support for DOC format moved to DOCParser class
+	* RTFParser API uses standard string class only
+	* Cleanups
+	* Error message is not displayed when checking for ODF or OOXML format fails
+	* Table parsing in DOC files improved
+	* Link parsing in DOC files improved
+	* Cleanups
+	* Copyright headers updated
+	* Packages in bzip2 format instead of gzip
+	* ODS (OpenOffice Calc) files added to automatic tests
+	* VERSION file added to binary packages
+	* Download and use precompiled libiconv binaries
+	* Encoding problems in XLS format support on win32 fixed
+	* Use MAKE variable executing make recursively
+
+Version 0.11.0:
+	* zip archives (ODF, OOXML) support moved to DocToTextUnzip class
+	* --unzip-cmd option implemented to use specified command to unzip files from archives (ODF, OOXML) instead of build-in decompression library
+	* --unzip-cmd fixed on win32 - replacing slashes with backslashes in filename
+	* --fix-xml option implemented to try to fix corrupted xml files (ODF, OOXML) using custom recursive descent parser before processing
+	* some ODF and OOXML formatting issues fixed
+	* UTF-8 support in corrupted xml files (ODF, OOXML) fixing routines
+	* Makefile dependencies fixed
+	* --strip-xml option implemented to strip xml tags instead of parsing them (ODF, OOXML)
+	* Entities support in corrupted xml files (ODF, OOXML) fixing routines
+	* max tag depth security limit of libxml supported in corrupted xml files (ODF, OOXML) fixing routines
+	* a lot of compilation warnings fixed
+	* small fix for encoding support in RTF parser
+	* --strip-xml option removes duplicated attributes
+	* ChangeLog file added to binary releases
+	* copyright headers updated
+
+Version 0.10.0:
+	* Command line arguments added to change tables, lists and links formatting (for odt files only)
+	* glib upgraded to 2.14.5
+	* initial OOXML formats support
+	* Parsing tables in DOC fixed
+	* support for mixed character encodings RTF files created using MS WordPad or MS Word (thanks to John Estrada)
+	* ioapi of unzip library changed from winapi to fopen api in win32 version - winapi io in unzip library caused some problems, for example xlsx file could not be open when is open in MS Word
+	* allocating memory using expotential grow in UString - big performance boost in rtf parser
+	* copyright headers updated
+
+
+Version 0.9.0:
+	* patch for gettext fixing duplicate case value errors
+	* glib upgraded to 2.12.11 - duplicate case value errors
+	* wstring changed to UString in rtf parser - problems on mingw
+	* initial support of charset in rtf parser
+	* initial odt format support
+	* performing automatic tests after the source code is compiled
+	* memory error fixed - unzReadCurrentFile() does not put NULL at the end of the buffer
+	* counting function added
+	* number of characters read from file was changed to corect value
+
+
+Version 0.2.0:
+	* rtf format support
+
+Version 0.1.0:
+	* initial implementation
+	* output in utf-8 encoding
+	* help, copyright headers, README
+	* paragraphs support

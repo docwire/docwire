@@ -1,0 +1,53 @@
+/*! \mainpage DocWire DocToText
+ *
+ *	\section intro Introduction
+ *
+ *	DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.
+ *	Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.
+ *	To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.
+ *	It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.
+ *
+ *	This document parser is able to extract metadata along with annotations and supports a list of formats that include:
+ *	DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT),
+ *	PDF, EML, HTML, Outlook (PST, OST), Image (JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP) and DICOM (DCM)
+ *
+ *	\section usage Usage
+ *
+ *	\subsection GCC	How to use distributed, compiled binaries with GCC
+ *
+ *	Binaries have been compiled using GCC, so usage will be very simple here.
+ *	We distribute binaries within one single catalog, where we can find all necessary files
+ *	(include files -> .h, library files -> .dll, .so, .dylib).
+ *	So, all we have to do is to modify few options: LDFLAGS (-L/path/to/doctotext_core)
+ *	and CXXFLAGS (-I/path/to/doctotext_core). Also, do not forget to specify LD_LIBRARY_PATH.
+ *	It must also contain path to doctotext_core. If we forget about this, we may get undefined references.
+ *	Finally, we have to add one more option to the linker: "-ldoctotext_core". Now we can create example file, main.cpp.
+ *
+ * \snippet example_0.cpp example_cpp
+ *
+ *	The shortest way to build example program is to execute this command:
+ *	LD_LIBRARY_PATH=./doctotext g++ -o example main.cpp -I./doctotext/ -L./doctotext/ -ldoctotext_core
+ *	Of course, ./doctotext is a catalog with include and library files we distribute.
+ *	Create some .doc file named example.doc. Put within executable file.
+ *	Now we can run application:
+ *	LD_LIBRARY_PATH=./text_extractor example
+ *	We should be able to see extracted text, author of the file, and a person who last has modified it.
+ *	There is one more thing to remember: There is "resources" catalog inside our "doctotext" dir. It is used
+ *	by PDF parser. We have to put this catalog in the same path where executable is, otherwise PDF
+ *	parser may fail sometimes.
+ *
+ * \subsection MSVC How to use the distributed, compiled binaries with MSVC
+ *
+ *	Binaries for windows have been compiled also with msvc compiler, so you can use it with msvc project. The important thing
+ *	is that doctotext have been compiled for x64 and it doesn't work correctly for x86. If you would like to use doctotext
+ *	in your project you should link doctotext_core lib and set paths to directory with binaries lib and directory with includes.
+ *
+ *	\subsection Plugins
+ *	Doctotext imports all parsers from plugin directory. By default the "plugin" directory should be in the same directory where
+ *	our main application. If you would like change this localization please have a look to doctotext::ParserManager.
+ *	If you would like to add custom plugin have a look to chapter \ref plugins.
+ *
+ *	\subsection c_api C api
+ *	We develop also c api for our libraries, and we can use it in case when we have problem with ABI compatibility or in
+ *	case to port api to another language (e.g. python). For more information about c api see \ref doctotext_c_api.h
+ */

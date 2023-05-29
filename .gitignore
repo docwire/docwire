@@ -1,0 +1,6 @@
+src/*.o
+build/
+doc/html/
+VERSION
+version.h
+doc/Doxyfile

@@ -1,0 +1,12 @@
+ Test of significant whitespaces. 
+Two spaces between digits: 1  2
+Three spaces between digits: 1   2
+Whitespace at the beginning of the next line:
+ 1
+Tab between digits: 1	2
+Two tabs between digits: 1		2
+Tab at the beginning of the next line:
+	1
+Line break (shift+enter) between digits: 1
+2
+

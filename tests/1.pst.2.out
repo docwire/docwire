@@ -1,0 +1,16 @@
+folder: SPAM Search Folder 2
+folder: Najwyższy poziom pliku danych programu Outlook
+	folder: Elementy usunięte
+	folder: Skrzynka odbiorcza
+	folder: Skrzynka nadawcza
+	folder: Błędy synchronizacji (tylko ten komputer)
+		folder: Awarie lokalne (tylko ten komputer)
+	folder: [Gmail]
+		folder: Kosz
+		folder: Wysłane
+		folder: Oznaczone gwiazdką
+		folder: Spam
+		folder: Ważne
+		folder: Wersje robocze
+folder: Folder główny wyszukiwania
+

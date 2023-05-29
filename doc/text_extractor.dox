@@ -1,0 +1,16 @@
+/*!
+ * \page Text extractor - console application
+ * \subsection text_extractor Text extractor - console application
+ * Text extractor is a console application to extract text from documents. To run program you should type:
+ * \code
+ * ./text_extractor <file_name>
+ * \endcode
+ * Additional parameters for text_extractor:
+ *   - plugins_path - path to directory with plugins (by default ./)
+ *   - html_output - output as html
+ *   - meta - parse meta data
+ *   - min_creation_time - filter out documents older than <unix timestamp> (at this moment works only for emails in pst/ost files)
+ *   - max_creation_time - filter out documents newer than <unix timestamp> (at this moment works only for emails in pst/ost files)
+ *   - language - set language for ocr parser (available values: eng - english, spa - spanish, rus - russian, pol - polish)
+ *
+ */

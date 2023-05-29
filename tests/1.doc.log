@@ -1,0 +1,5 @@
+Using DOC parser.
+Opening ../../tests/1.doc as OLE file to parse all embedded objects in supported formats.
+No ObjectPool found, embedded OLE objects probably do not exist.
+No annotations.
+Extracting metadata.
