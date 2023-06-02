@@ -43,3 +43,8 @@ Product is double licensed:
 ## Authors
 - [Silvercoders Ltd](https://silvercoders.com)
 - [DocWire LLC](https://docwire.io)
+
+### External links
+- [Project homepage - DocWire](https://docwire.io)
+- [SourceForge project page](https://sourceforge.net/projects/doctotext)
+- [Project homepage - Silvercoders](https://silvercoders.com/en/products/doctotext)
