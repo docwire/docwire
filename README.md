@@ -31,6 +31,10 @@ DocWire DocToText is a C++ data processing library/SDK with SourceForge Communit
 - Custom parsing chain elements can be added (importers, transformers, exporters)
 - Small binaries, fast native C++ code
 
+## Awards
+- SourceForge Community Choice (2023) - project has qualified for this award out of over 500,000 open source projects on SourceForge
+- Microsoft for Startups grant (2022) - project was selected by Microsoft to accelerate its grow by providing Expert Guidance, development tools, Azure and GitHub cloud infrastructure and OpenAI machine learning utilities
+
 ## License
 Product is double licensed:
 - Can be used in open source projects using the GNU General Public License version 2
