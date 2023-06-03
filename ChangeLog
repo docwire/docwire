@@ -1,3 +1,6 @@
+Unreleased:
+    * Replace README file with more detailed README.md prepared for public GitHub repository
+
 Version 5.0.8:
     * Update libpff to newest version in Linux, Mingw/Win32 and MacOSX builds to fix compilation error
     * DICOM parser plugin sources removed as this is an additional commercial plugin and will be developed in separate repository
