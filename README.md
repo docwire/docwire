@@ -47,4 +47,5 @@ Product is double licensed:
 ### External links
 - [Project homepage - DocWire](https://docwire.io)
 - [SourceForge project page](https://sourceforge.net/projects/doctotext)
+- [LinkedIn page](https://www.linkedin.com/company/docwire-it-services-consulting)
 - [Project homepage - Silvercoders](https://silvercoders.com/en/products/doctotext)
