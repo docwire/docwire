@@ -79,7 +79,7 @@ doctotext::FormattingStyle updateFormattingStyle(const std::string &arg, const d
 
 static void readme()
 {
-  // warning TODO: Generate readme string literal from README file automatically.
+  // warning TODO: Generate readme string literal automatically.
   std::cout <<
        "***************************************************************************************************************************************************\n"
        "*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              *\n"
