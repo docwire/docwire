@@ -2,6 +2,14 @@
 
 DocWire DocToText is a C++ data processing library/SDK with SourceForge Community Choice award and Microsoft for Startups support. Parses DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT), PST, OST and more. Contains embedded OCR engine and CLI utiity.
 
+## Table Of Contents
+- [The Goal](#the-goal)
+- [Features](#features)
+- [Awards](#awards)
+- [License](#license)
+- [Authors](#authors)
+- [External links](#external-links)
+
 ## The Goal
 The goal of this project is to create a data processing SDK/API/engine to drastically speed up data processing development.
 This programming library/framework offers pre-made configurable components that can be joined together to create a processing
