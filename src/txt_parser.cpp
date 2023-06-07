@@ -198,8 +198,8 @@ std::string TXTParser::plainText() const
 				{
 					*impl->m_log_stream << "Could not detect encoding. Document is assumed to be encoded in ASCII\n";
 					*impl->m_log_stream << "But it can be also binary. Sequences of printable characters will be extracted." << std::endl;
-					content = sequences_of_printable_characters(content);
 				}
+				content = sequences_of_printable_characters(content);
 			}
 		}
 		if (encoding != "utf-8" && encoding != "UTF-8")
