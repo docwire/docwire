@@ -179,22 +179,13 @@ std::string TXTParser::plainText() const
 			text = converter->convert(content);
 			delete converter;
 			converter = NULL;
-			return text;
 		}
-		return content;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (converter)
-			delete converter;
-		converter = NULL;
-		if (charset_detector)
-			csd_close(charset_detector);
-		charset_detector = NULL;
-		throw;
+		else
+			text = content;
 	}
 	catch (Exception& ex)
 	{
+		impl->m_data_stream->close();
 		if (converter)
 			delete converter;
 		converter = NULL;
@@ -203,7 +194,7 @@ std::string TXTParser::plainText() const
 		charset_detector = NULL;
 		throw;
 	}
-	impl->m_data_stream->close();
+	text.erase(std::remove(text.begin(), text.end(), '\r'), text.end());
 	return text;
 }
 

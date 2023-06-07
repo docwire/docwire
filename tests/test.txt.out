@@ -1,2 +1,4 @@
 Hello World!
-
+This line ends with LF character.
+This line ends with CRLF characters.
+This line does not end with CR or LF characters.
