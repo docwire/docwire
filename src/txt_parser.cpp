@@ -125,7 +125,9 @@ namespace
 std::string sequences_of_printable_characters(const std::string& text, size_t min_seq_len = 4, char seq_delim = '\n')
 {
 	std::string result;
+	result.reserve(text.length());
 	std::string printable_field;
+	printable_field.reserve(text.length());
 	size_t printable_count = 0;
 	size_t non_printable_count = 0;
 	for (auto const& ch: text)
@@ -142,15 +144,15 @@ std::string sequences_of_printable_characters(const std::string& text, size_t mi
 			{
 				result += printable_field;
 				if (non_printable_count == 0)
-					res += seq_delim;
+					result += seq_delim;
 			}
-			printable_field = "";
+			printable_field.clear();
 			printable_count = 0;
 			non_printable_count++;
 		}
 	}
 	result += printable_field;
-	return res;
+	return result;
 }
 
 } // anonymous namespace
@@ -196,7 +198,7 @@ std::string TXTParser::plainText() const
 				{
 					*impl->m_log_stream << "Could not detect encoding. Document is assumed to be encoded in ASCII\n";
 					*impl->m_log_stream << "But it can be also binary. Sequences of printable characters will be extracted." << std::endl;
-					content = extract_sequences_of_printable_characters(content);
+					content = sequences_of_printable_characters(content);
 				}
 			}
 		}
