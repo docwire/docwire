@@ -119,6 +119,42 @@ void TXTParser::setLogStream(std::ostream& log_stream)
 	impl->m_log_stream = &log_stream;
 }
 
+namespace
+{
+
+std::string sequences_of_printable_characters(const std::string& text, size_t min_seq_len = 4, char seq_delim = '\n')
+{
+	std::string result;
+	std::string printable_field;
+	size_t printable_count = 0;
+	size_t non_printable_count = 0;
+	for (auto const& ch: text)
+	{
+		if (std::isprint(ch))
+		{
+			printable_field += ch;
+			printable_count++;
+			non_printable_count = 0;
+		}
+		else
+		{
+			if (printable_count >= min_seq_len)
+			{
+				result += printable_field;
+				if (non_printable_count == 0)
+					res += seq_delim;
+			}
+			printable_field = "";
+			printable_count = 0;
+			non_printable_count++;
+		}
+	}
+	result += printable_field;
+	return res;
+}
+
+} // anonymous namespace
+
 std::string TXTParser::plainText() const
 {
 	std::string text;
@@ -157,7 +193,11 @@ std::string TXTParser::plainText() const
 			{
 				encoding = "ASCII";
 				if (impl->m_verbose_logging)
+				{
 					*impl->m_log_stream << "Could not detect encoding. Document is assumed to be encoded in ASCII\n";
+					*impl->m_log_stream << "But it can be also binary. Sequences of printable characters will be extracted." << std::endl;
+					content = extract_sequences_of_printable_characters(content);
+				}
 			}
 		}
 		if (encoding != "utf-8" && encoding != "UTF-8")
