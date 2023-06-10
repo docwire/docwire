@@ -1,0 +1,4 @@
+body:before {
+	content: "Hello Word!";
+	color: green;
+}

@@ -363,7 +363,15 @@ INSTANTIATE_TEST_SUITE_P(
         "comments_libreoffice_3.5.docx",
         "comments_libreoffice_3.5.rtf",
         "gb18030_without_bom.text",
-        "utf16_with_bom.text"
+        "utf16_with_bom.text",
+        "test.asp",
+        "test.aspx",
+        "test.css",
+        "test.fpp",
+        "test.js",
+        "test.json",
+        "test.txt",
+        "test.xml"
                       ),
     [](const ::testing::TestParamInfo<MiscDocumentTest::ParamType>& info) {
         std::string file_name = info.param;

@@ -33,12 +33,17 @@ Entering the artificial intelligence/neural networks area is planned to offer it
     - Microsoft Office old binary formats: DOC, XLS, XLSB, PPT files
     - OpenOffice/LibreOffice Open Document Format (ODF): ODT, ODS, ODP files
     - Portable Document Format: PDF files
-    - HTML files
+    - Webpages: HTML, HTM and CSS files
     - Rich Text Format: RTF files
     - Email formats with attachments: EML files, MS Outlook PST, OST files
     - Image formats: JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP with OCR capabilities
     - Apple iWork: PAGES, NUMBERS, KEYNOTE files
     - ODFXML (FODP, FODS, FODT)
+    - Scripts and source codes: ASM, ASP, ASPX, BAS, BAT, C, CC, CMAKE, CS, CPP, CXX, D, F, FPP, FS, GO, H, HPP, HXX, JAVA, JS, JSP, LUA, PAS, PHP, PL, PERL, PY, R, SH, TCL, VB, VBS, WS files
+    - XML format family: XML, XSD, XSL files
+    - Comma-Separated Values: CSV files
+    - Other structured text formats: JSON, YML, YAML, RSS, CONF files
+    - Other unstructured text formats: MD, LOG files
     - DICOM (DCM) as an additional commercial plugin
 - Equipped with multiple exporters:
     - Plain text

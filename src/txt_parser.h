@@ -49,7 +49,7 @@ class TXTParser : public doctotext::Parser
     void parse() const override;
     Parser& addOnNewNodeCallback(doctotext::NewNodeCallback callback) override;
 		Parser& withParameters(const doctotext::ParserParameters &parameters) override;
-    static std::vector <std::string> getExtensions() {return {"txt", "text"};}
+		static std::vector <std::string> getExtensions();
 
 		TXTParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
 		TXTParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
