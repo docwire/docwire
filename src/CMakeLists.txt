@@ -19,6 +19,7 @@ set(DOCTOTEXT_SOURCES
         parser_manager.cpp
         parser_parameters.cpp
         html_writer.cpp
+        csv_writer.cpp
         plain_text_writer.cpp
         standard_filter.cpp
         simple_extractor.cpp
@@ -220,6 +221,7 @@ configure_file(${CMAKE_SOURCE_DIR}/src/standard_filter.h ${CMAKE_BINARY_DIR}/sta
 configure_file(${CMAKE_SOURCE_DIR}/src/writer.h ${CMAKE_BINARY_DIR}/writer.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/plain_text_writer.h ${CMAKE_BINARY_DIR}/plain_text_writer.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/html_writer.h ${CMAKE_BINARY_DIR}/html_writer.h COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/src/csv_writer.h ${CMAKE_BINARY_DIR}/csv_writer.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/importer.h ${CMAKE_BINARY_DIR}/importer.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/exporter.h ${CMAKE_BINARY_DIR}/exporter.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/transformer.h ${CMAKE_BINARY_DIR}/transformer.h COPYONLY)

@@ -76,7 +76,7 @@ public:
    * @param info data from callback
    * @param stream output stream
    */
-  void write_to(const doctotext::Info &info, std::ostream &stream) const override;
+  void write_to(const doctotext::Info &info, std::ostream &stream) override;
   /**
    * @brief creates a new instance of HtmlWriter
    */

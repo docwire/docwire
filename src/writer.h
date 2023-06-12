@@ -38,6 +38,8 @@
 namespace doctotext
 {
 
+struct Info;
+
 class TextElement
 {
 public:
@@ -77,7 +79,7 @@ public:
    * @param info structures using by the callback
    * @param file output stream
    */
-  virtual void write_to(const doctotext::Info &info, std::ostream &file) const = 0;
+  virtual void write_to(const doctotext::Info &info, std::ostream &file) = 0;
 
   /**
    * @brief creates a new instance of Writer

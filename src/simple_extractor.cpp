@@ -154,6 +154,11 @@ public:
     parseText<HtmlExporter>(out_stream);
   }
 
+  void parseAsCsv(std::ostream &out_stream) const
+  {
+    parseText<experimental::CsvExporter>(out_stream);
+  }
+
   std::string
   getMetaData() const
   {
@@ -227,6 +232,12 @@ void
 SimpleExtractor::parseAsHtml(std::ostream &out_stream) const
 {
   impl->parseAsHtml(out_stream);
+}
+
+void
+SimpleExtractor::parseAsCsv(std::ostream &out_stream) const
+{
+  impl->parseAsCsv(out_stream);
 }
 
 std::string

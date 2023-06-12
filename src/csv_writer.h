@@ -30,153 +30,57 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef EXPORTER_H
-#define EXPORTER_H
+#ifndef CSV_WRITER_H
+#define CSV_WRITER_H
 
-#include <algorithm>
-#include <memory>
-
-#include "parser.h"
-#include "parser_builder.h"
-#include "parser_manager.h"
-#include "parser_parameters.h"
-#include "writer.h"
 #include "defines.h"
+#include <iostream>
+#include "writer.h"
+#include <vector>
 
 namespace doctotext
 {
-
-class Importer;
-class Transformer;
-
-/**
- *  @brief Exporter class is responsible for exporting the parsed data from importer or transformer to an output stream.
- *  @code
- *  Importer(parser_manager, "file.pdf") | PlainTextExporter() | std::cout; // Imports file.pdf and exports it to std::cout as plain text
- *  @endcode
- */
-class DllExport Exporter
-{
-public:
-  /**
-   * @param writer writer to use.
-   */
-  Exporter(std::unique_ptr<Writer> writer);
-
-  /**
-   * @param writer writer to use.
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  Exporter(std::unique_ptr<Writer> writer, std::ostream &out_stream);
-
-  Exporter(const Exporter &other);
-
-  Exporter(const Exporter &&other);
-
-  virtual ~Exporter();
-
-  /**
-   * @brief Creates clone of this exporter.
-   * @return new exporter
-   */
-  virtual Exporter* clone() const;
-
-  /**
-   * @brief Sets output stream.
-   * @param out_stream reference to output stream.
-   */
-  void set_out_stream(std::ostream &out_stream);
-
-  /**
-   * @brief Check if exporter contains valid output.
-   * @brief True if output is valid.
-   */
-  bool is_valid() const;
-
-  /**
-   * @brief Exxports data from Info structure to output stream.
-   * @param info data from callback function.
-   */
-  void export_to(doctotext::Info &info) const;
-
-  /**
-   * @brief Sets writer to use.
-   */
-  void begin() const;
-
-  /**
-   * @brief Ends writing.
-   */
-  void end() const;
-
-protected:
-  std::ostream& get_output() const;
-
-private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
-};
-
-/**
- * @brief Exporter class for HTML output.
- */
-class DllExport HtmlExporter: public Exporter
-{
-public:
-  HtmlExporter();
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  HtmlExporter(std::ostream &out_stream);
-};
-
-/**
- * @brief Exporter class for plain text output.
- */
-class DllExport PlainTextExporter: public Exporter
-{
-public:
-  PlainTextExporter();
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  PlainTextExporter(std::ostream &out_stream);
-
-};
+  struct Info;
 
 namespace experimental
 {
 
 /**
- * @brief Exporter class for CSV output.
+ * @brief The CsvWriter class
+ *
+ * This class is used to converts the parsed data from callbacks into CSV format.
+ *
+ * example:
+ * @code
+ * ODFOOXMLParser parser("test.docx");
+ * CsvWriter writer;
+ * parser.onNewNode([&writer](doctotext::Info &info) {
+ *      writer.write_to(info, std::cout); // convert callback to csv and writes to std::cout
+ *      });
+ * @endcode
  */
-class DllExport CsvExporter: public Exporter
+class DllExport CsvWriter : public Writer
 {
 public:
-  CsvExporter();
   /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
+   * @brief Converts text from callback to CSV format
+   * @param info data from callback
+   * @param stream output stream
    */
-  CsvExporter(std::ostream &out_stream);
+  void write_to(const doctotext::Info &info, std::ostream &stream) override;
+  /**
+   * @brief creates a new instance of HtmlWriter
+   */
+  virtual Writer* clone() const override;
+
+private:
+  bool m_in_table { false };
+  std::vector<std::string> m_curr_line;
+  std::string m_curr_cell;
 };
 
 } // namespace experimental
 
-/**
- * @brief Exporter class for meta data.
- * Important: Exports only meta data as a plain text.
- */
-class DllExport MetaDataExporter: public Exporter
-{
-public:
-  MetaDataExporter();
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  MetaDataExporter(std::ostream &out_stream);
-
-};
-
 } // namespace doctotext
 
-#endif //EXPORTER_H
+#endif //CSV_WRITER_H

@@ -529,7 +529,7 @@ PlainTextWriter::write_footer(std::ostream &stream) const
 }
 
 void
-PlainTextWriter::write_to(const doctotext::Info &info, std::ostream &stream) const
+PlainTextWriter::write_to(const doctotext::Info &info, std::ostream &stream)
 {
   impl->write_to(info, stream);
 }
@@ -539,4 +539,5 @@ PlainTextWriter::clone() const
 {
   return new PlainTextWriter();
 }
+
 } // namespace doctotext

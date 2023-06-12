@@ -48,7 +48,8 @@ Entering the artificial intelligence/neural networks area is planned to offer it
 - Equipped with multiple exporters:
     - Plain text
     - HTML
-    - CSV and XLSX are coming
+    - CSV
+    - XLSX and more are coming
 - Equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition
 - Incremental parsing returning data as soon as they are available
 - Cross platform: Linux, Windows, MacOSX (and more is coming)
