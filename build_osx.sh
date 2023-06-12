@@ -1,6 +1,6 @@
 set -e
 brew update
-brew --prefix
+cd $(brew --repository) && git checkout 439a7b3bef716b0632d309a7ded7c26cd69b503d
 
 brew install md5sha1sum automake autogen doxygen
 
