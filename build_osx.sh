@@ -2,9 +2,9 @@ set -e
 brew update
 brew --prefix
 
-brew install --overwrite md5sha1sum automake autogen doxygen
+brew install --overwrite --force md5sha1sum automake autogen doxygen
 
-brew install --overwrite libiconv podofo freetype libxml2 zlib leptonica tesseract && tesseract --list-langs
+brew install --overwrite --force libiconv podofo freetype libxml2 zlib leptonica tesseract && tesseract --list-langs
 
 wget -nc https://sourceforge.net/projects/htmlcxx/files/v0.87/htmlcxx-0.87.tar.gz
 echo "ac7b56357d6867f649e0f1f699d9a4f0f03a6e80  htmlcxx-0.87.tar.gz" | shasum -c
