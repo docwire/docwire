@@ -1,6 +1,6 @@
 set -e
 brew update
-brew --prefix
+brew upgrade
 
 brew install md5sha1sum automake autogen doxygen
 
