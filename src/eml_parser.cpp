@@ -32,23 +32,17 @@
 
 #include <algorithm>
 #include <string>
-#include <boost/signals2.hpp>
 
 #include "eml_parser.h"
 
-#include "data_stream.h"
 #include "attachment.h"
 #include "exception.h"
-#include "html_parser.h"
-#include <fstream>
 #include "htmlcxx/html/CharsetConverter.h"
 #include <iostream>
 #include "metadata.h"
 #include <pthread.h>
-#include <stdint.h>
 #include "mimetic/mimetic.h"
 #include "mimetic/rfc822/rfc822.h"
-#include "txt_parser.h"
 
 using namespace mimetic;
 
@@ -182,6 +176,22 @@ struct EMLParser::Implementation
     return result;
   }
 
+	std::string parseText(const std::string &text, const std::string &type)
+	{
+		std::string parsed_text;
+		auto callback = [&parsed_text](const doctotext::Info &info){parsed_text += info.plain_text;};
+		auto parser_builder = m_parser_manager->findParserByExtension(type);
+		if (parser_builder)
+		{
+			auto parser = (*parser_builder)->withParserManager(m_parser_manager)
+							.withParameters(m_owner->m_parameters)
+							.build(text.c_str(), text.length());
+			parser->addOnNewNodeCallback(callback);
+			parser->parse();
+		}
+		return parsed_text;
+	}
+
 	void extractPlainText(const MimeEntity& mime_entity, std::string& output, const FormattingStyle& formatting)
 	{
 		const Header& header = mime_entity.header();
@@ -202,13 +212,10 @@ struct EMLParser::Implementation
 			{
 				try
 				{
-					HTMLParser html(plain.c_str(), plain.length());
-					html.setLogStream(*m_log_stream);
-					html.setVerboseLogging(m_verbose_logging);
-					if (skip_charset_decoding)
-						html.skipCharsetDecoding();
-					plain = html.plainText(formatting);
-					html.getLinks(m_links);
+					if (m_parser_manager)
+					{
+						plain = parseText(plain, "html");
+					}
 					//Update positions of the links.
 					if (m_links.size() > 0)
 					{
@@ -228,10 +235,10 @@ struct EMLParser::Implementation
 				{
 					try
 					{
-						TXTParser txt(plain.c_str(), plain.length());
-						txt.setLogStream(*m_log_stream);
-						txt.setVerboseLogging(m_verbose_logging);
-						plain = txt.plainText();
+						if (m_parser_manager)
+						{
+							plain = parseText(plain, "txt");
+						}
 					}
 					catch (Exception& ex)
 					{
