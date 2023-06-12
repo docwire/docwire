@@ -2,6 +2,7 @@ set -e
 brew update
 brew --prefix
 
+rm /usr/local/bin/2to3
 brew install --overwrite --force md5sha1sum automake autogen doxygen
 
 brew install --overwrite --force libiconv podofo freetype libxml2 zlib leptonica tesseract && tesseract --list-langs
