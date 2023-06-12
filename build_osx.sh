@@ -1,6 +1,7 @@
 set -e
 brew update
-brew --prefix
+
+rm /usr/local/bin/{2to3,2to3-3.11,idle3,idle3.11,pydoc3,pydoc3.11,python3,python3-config,python3.11,python3.11-config}
 
 brew install md5sha1sum automake autogen doxygen
 
