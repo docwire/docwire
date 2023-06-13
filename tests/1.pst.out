@@ -3,49 +3,59 @@ folder: Najwyższy poziom pliku danych programu Outlook
 	folder: Elementy usunięte
 	folder: Skrzynka odbiorcza
 		mail: Pierwszy html creation time: 2021-12-06 11:37:31 AM
-
 Treść maila
 ABC
 123
 
- <https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=emailclient>
- 	 Wolny od wirusów. <https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=emailclient>www.avast.com 
-  
+
+<https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=emailclient>                                  Wolny od wirusów. <https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=emailclient>www.avast.com
+<>
 
 attachment: 
 
 name: 1DAEC~1.HTM
- 
- *  <../../../pl/products/doctotext>PL 
- *  <../../../en/products/doctotext>EN 
 
-Toggle navigation     </> logo
- 
+* <../../../pl/products/doctotext>PL
+* <../../../en/products/doctotext>EN
 
- *  <../..>O NAS 
- *  <../../products>PRODUKTY  
- *  <../../products/docstorage>DocStorage 
- *  <../../products/fixed_assets>Środki Trwałe 
- *  <../../products/ocr_server>OCR Server 
- *  <../../products/sqlsync>SqlSync 
- *  <../../products/doctotext>DocToText 
 
- *  <../../services>USŁUGI 
- *  <../../services/reduce_it_costs>Obniż koszty IT 
- *  <../../services/modern_infrastructure>Nowoczesna infrastruktura 
- *  <../../services/data_recovery>Odzyskiwanie dokumentów 
- *  <../../services/development>Rozwój produktów 
- *  <../../services/student_work_placements>Praktyki i staże 
 
- *  <../../customers>Nasi klienci 
- *  
- *  <../../contact>KONTAKT 
 
-Nasze Produkty 
+Toggle navigation </>logo
+
+
+* <../..>O NAS
+* <../../products>PRODUKTY 
+* <../../products/docstorage>DocStorage
+* <../../products/fixed_assets>Środki Trwałe
+* <../../products/ocr_server>OCR Server
+* <../../products/sqlsync>SqlSync
+* <../../products/doctotext>DocToText
+
+* <../../services>USŁUGI
+* <../../services/reduce_it_costs>Obniż koszty IT
+* <../../services/modern_infrastructure>Nowoczesna infrastruktura
+* <../../services/data_recovery>Odzyskiwanie dokumentów
+* <../../services/development>Rozwój produktów
+* <../../services/student_work_placements>Praktyki i staże
+
+* <../../customers>Nasi klienci
+
+* <../../contact>KONTAKT
+
+
+Nasze Produkty
 DocToText
-DocToText konwersja dokumentów do postaci tekstowej, przetwarzanie adnotacji i metadanych 
+
+
+
+
+
+DocToText
+konwersja dokumentów do postaci tekstowej, przetwarzanie adnotacji i metadanych
 
 SILVERCODERS DocToText to potężne narzędzie do konwersji dokumentów, w wielu popularnych formatach, do prostego formatu tekstowego (plain text). W skład pakietu, dostępnego dla użytkowników za darmo na otwartoźródłowej licencji GPL wchodzi program konsolowy oraz biblioteka C/C++, umożliwiająca wbudowanie mechanizmu ekstrakcji tekstu z dokumentów w inną aplikację.
+
 
 
 
@@ -62,74 +72,95 @@ DocToText pozwala na konwersję uszkodzonych dokumentów OpenDocument i Office O
 
 Oferujemy także możliwość wykorzystania biblioteki w aplikacjach komercyjnych, wraz z pełnym wsparciem technicznym. Narzędzie jest stale używane i testowane na tysiącach dokumentów przez klientów na całym świecie. W razie zainteresowania prosimy o kontakt.
 
-<http://silvercoders.com/download/doctotext-4.0.1512-x86-linux.tar.bz2>DocToText 4.0.1512 (Linux x86) 
 
-<http://silvercoders.com/download/doctotext-4.0.1512-x86_64-linux.tar.bz2>DocToText 4.0.1512 (Linux x86_64) 
+<http://silvercoders.com/download/doctotext-4.0.1512-x86-linux.tar.bz2>DocToText 4.0.1512 (Linux x86)
+<http://silvercoders.com/download/doctotext-4.0.1512-x86_64-linux.tar.bz2>DocToText 4.0.1512 (Linux x86_64)
+<http://silvercoders.com/download/doctotext-4.0.1512-win32.tar.bz2>DocToText 4.0.1512 (win32)
+<http://silvercoders.com/download/doctotext-4.0.1512-win64.tar.bz2>DocToText 4.0.1512 (win64)
+<http://silvercoders.com/download/doctotext-4.0.1512-i386-x86_64-macosx.tar.bz2>DocToText 4.0.1512 (Mac OS X)
+<http://silvercoders.com/download/doctotext-4.0-20140202.tar.bz2>DocToText 4.0 (źródła 02.02.2014)
 
-<http://silvercoders.com/download/doctotext-4.0.1512-win32.tar.bz2>DocToText 4.0.1512 (win32) 
 
-<http://silvercoders.com/download/doctotext-4.0.1512-win64.tar.bz2>DocToText 4.0.1512 (win64) 
 
-<http://silvercoders.com/download/doctotext-4.0.1512-i386-x86_64-macosx.tar.bz2>DocToText 4.0.1512 (Mac OS X) 
 
-<http://silvercoders.com/download/doctotext-4.0-20140202.tar.bz2>DocToText 4.0 (źródła 02.02.2014) 
 
-Kontakt E-mail: <mailto:silvercoders@silvercoders.com>silvercoders@silvercoders.com 
+Kontakt
+E-mail: <mailto:silvercoders@silvercoders.com>silvercoders@silvercoders.com 
 Tel.: +48 661 736 395
 
 
-Adres SILVERCODERS Ltd.
+Adres
+SILVERCODERS Ltd.
 9 Northbourne Way
 Cliftonville, Margate
-United Kingdom, CT9 3NS 
-Napisz do nas 
-WYŚLIJ 
+United Kingdom, CT9 3NS
+
+Napisz do nas
+
+
+
+WYŚLIJ
+
 
 © SILVERCODERS 2017. All Rights Reserved.
-Back to Top 
-		mail: Drugi plik html creation time: 2021-12-06 11:37:31 AM
 
+
+
+
+<>Back to Top 
+		mail: Drugi plik html creation time: 2021-12-06 11:37:31 AM
 Treść maila
 XYZ
 098
 
- <https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=emailclient>
- 	 Wolny od wirusów. <https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=emailclient>www.avast.com 
-  
+
+<https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=emailclient>                                  Wolny od wirusów. <https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=emailclient>www.avast.com
+<>
 
 attachment: 
 
 name: 25922~1.HTM
- 
- *  <../../../pl/products/doctotext>PL 
- *  <../../../en/products/doctotext>EN 
 
-Toggle navigation     </> logo
- 
+* <../../../pl/products/doctotext>PL
+* <../../../en/products/doctotext>EN
 
- *  <../..>ABOUT 
- *  <../../products>PRODUCTS  
- *  <../../products/docstorage>DocStorage 
- *  <../../products/fixed_assets>Fixed Assets 
- *  <../../products/ocr_server>OCR Server 
- *  <../../products/sqlsync>SqlSync 
- *  <../../products/doctotext>DocToText 
 
- *  <../../services>SERVICES 
- *  <../../services/reduce_it_costs>Reduce IT costs 
- *  <../../services/modern_infrastructure>Modern infrastructure 
- *  <../../services/data_recovery>Document recovery 
- *  <../../services/development>Development 
- *  <../../services/student_work_placements>Student work placements 
 
- *  <../../customers>Our customers 
- *  <../../contact>CONTACT 
 
-Our Products 
+Toggle navigation </>logo
+
+
+* <../..>ABOUT
+* <../../products>PRODUCTS 
+* <../../products/docstorage>DocStorage
+* <../../products/fixed_assets>Fixed Assets
+* <../../products/ocr_server>OCR Server
+* <../../products/sqlsync>SqlSync
+* <../../products/doctotext>DocToText
+
+* <../../services>SERVICES
+* <../../services/reduce_it_costs>Reduce IT costs
+* <../../services/modern_infrastructure>Modern infrastructure
+* <../../services/data_recovery>Document recovery
+* <../../services/development>Development
+* <../../services/student_work_placements>Student work placements
+
+* <../../customers>Our customers
+* <../../contact>CONTACT
+
+
+Our Products
 DocToText
-DocToText converting documents to plain text, processing annotations and metadata 
+
+
+
+
+
+DocToText
+converting documents to plain text, processing annotations and metadata
 
 SILVERCODERS DocToText is a powerful utility that can convert documents in many formats to plain text. The package, available to users for free on open source GPL license, includes console application and C/C++ library, that allows embedding text extraction mechanism into other application.
+
 
 
 
@@ -146,31 +177,42 @@ DocToText is able to convert corrupted OpenDocument and Office Open XML document
 
 We also offer the possibility to use the library in commercial applications, with full technical support. The utility is constantly used and tested on thousands of documents by customers all around the world. If interested, please contact us for details.
 
-<http://silvercoders.com/download/doctotext-4.0.1512-x86-linux.tar.bz2>DocToText 4.0.1512 (Linux x86) 
 
-<http://silvercoders.com/download/doctotext-4.0.1512-x86_64-linux.tar.bz2>DocToText 4.0.1512 (Linux x86_64) 
+<http://silvercoders.com/download/doctotext-4.0.1512-x86-linux.tar.bz2>DocToText 4.0.1512 (Linux x86)
+<http://silvercoders.com/download/doctotext-4.0.1512-x86_64-linux.tar.bz2>DocToText 4.0.1512 (Linux x86_64)
+<http://silvercoders.com/download/doctotext-4.0.1512-win32.tar.bz2>DocToText 4.0.1512 (win32)
+<http://silvercoders.com/download/doctotext-4.0.1512-win64.tar.bz2>DocToText 4.0.1512 (win64)
+<http://silvercoders.com/download/doctotext-4.0.1512-i386-x86_64-macosx.tar.bz2>DocToText 4.0.1512 (Mac OS X)
+<http://silvercoders.com/download/doctotext-4.0-20140202.tar.bz2>DocToText 4.0 (sources 02.02.2014)
 
-<http://silvercoders.com/download/doctotext-4.0.1512-win32.tar.bz2>DocToText 4.0.1512 (win32) 
 
-<http://silvercoders.com/download/doctotext-4.0.1512-win64.tar.bz2>DocToText 4.0.1512 (win64) 
 
-<http://silvercoders.com/download/doctotext-4.0.1512-i386-x86_64-macosx.tar.bz2>DocToText 4.0.1512 (Mac OS X) 
 
-<http://silvercoders.com/download/doctotext-4.0-20140202.tar.bz2>DocToText 4.0 (sources 02.02.2014) 
 
-Contact E-mail: <mailto:silvercoders@silvercoders.com>silvercoders@silvercoders.com 
+Contact
+E-mail: <mailto:silvercoders@silvercoders.com>silvercoders@silvercoders.com 
 Phone: +48 661 736 395
 
 
-Address SILVERCODERS Ltd.
+Address
+SILVERCODERS Ltd.
 9 Northbourne Way
 Cliftonville, Margate
-United Kingdom, CT9 3NS 
-Send a message 
-SEND 
+United Kingdom, CT9 3NS
+
+Send a message
+
+
+
+SEND
+
 
 © SILVERCODERS 2017. All Rights Reserved.
-Back to Top 
+
+
+
+
+<>Back to Top 
 	folder: Skrzynka nadawcza
 	folder: Błędy synchronizacji (tylko ten komputer)
 		folder: Awarie lokalne (tylko ten komputer)

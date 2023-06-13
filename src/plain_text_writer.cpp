@@ -222,6 +222,17 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
+  write_image(const doctotext::Info &info)
+  {
+    auto alt = info.getAttributeValue<std::string>("alt");
+    if (alt)
+    {
+      return std::make_shared<TextElement>(*alt);
+    }
+    return std::make_shared<TextElement>("");
+  }
+
+  std::shared_ptr<TextElement>
   turn_on_table_mode(const doctotext::Info &info)
   {
     return std::make_shared<TextElement>("");
@@ -238,8 +249,14 @@ struct PlainTextWriter::Implementation
   {
     list_mode = true;
     list_counter = 1;
-    list_is_ordered = info.getAttributeValue<bool>("is_ordered").value_or(false);
-    list_style_prefix = info.getAttributeValue<std::string>("list_style_prefix").value_or("");
+    list_type = info.getAttributeValue<std::string>("type").value_or("");
+    if (list_type.empty())
+    {
+      if (info.getAttributeValue<bool>("is_ordered").value_or(false))
+        list_type = "decimal";
+      else
+        list_type = info.getAttributeValue<std::string>("list_style_prefix").value_or("disc");
+    }
     return std::make_shared<TextElement>("\n");
   }
 
@@ -252,26 +269,22 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  turn_on_style_mode()
-  {
-    style_mode = true;
-    return std::make_shared<TextElement>("");
-  }
-
-  std::shared_ptr<TextElement>
   write_list_item(const doctotext::Info &info)
   {
-      if (list_is_ordered)
-        return std::make_shared<TextElement>(std::to_string(list_counter) + ". ");
-      else
-        return std::make_shared<TextElement>(list_style_prefix);
+    if (list_type == "none")
+      return std::make_shared<TextElement>("");
+    else if (list_type == "decimal")
+      return std::make_shared<TextElement>(std::to_string(list_counter) + ". ");
+    else if (list_type == "disc")
+      return std::make_shared<TextElement>("* ");
+    else
+      return std::make_shared<TextElement>(list_type);
   }
 
   std::shared_ptr<TextElement>
   write_close_list_item(const doctotext::Info &info)
   {
-    if (list_is_ordered)
-      ++list_counter;
+    ++list_counter;
     return std::make_shared<TextElement>("\n");
   }
 
@@ -304,17 +317,9 @@ struct PlainTextWriter::Implementation
 		return std::make_shared<TextElement>(text);
 	}
 
-  std::shared_ptr<TextElement>
-  turn_off_style_mode(const doctotext::Info &info)
-  {
-    style_mode = false;
-    return std::make_shared<TextElement>("");
-  }
-
   std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext::Info &info)>> plain_text_writers;
 
   Implementation()
-  : style_mode(false)
   {
     plain_text_writers =
       {
@@ -327,23 +332,18 @@ struct PlainTextWriter::Implementation
         {StandardTag::TAG_CLOSE_ATTACHMENT, [this](const doctotext::Info &info){return write_close_attachment(info);}},
         {StandardTag::TAG_BR, [this](const doctotext::Info &info){return write_new_line(info);}},
         {StandardTag::TAG_CLOSE_P, [this](const doctotext::Info &info){return write_new_paragraph(info);}},
+        {StandardTag::TAG_CLOSE_SECTION, [this](const doctotext::Info &info){return write_new_paragraph(info);}},
         {StandardTag::TAG_TABLE, [this](const doctotext::Info &info){return turn_on_table_mode(info);}},
         {StandardTag::TAG_CLOSE_TABLE, [this](const doctotext::Info &info){return turn_off_table_mode(info);}},
         {StandardTag::TAG_LINK, [this](const doctotext::Info &info){return write_link(info);}},
+        {StandardTag::TAG_IMAGE, [this](const doctotext::Info &info){return write_image(info);}},
         {StandardTag::TAG_LIST, [this](const doctotext::Info &info){return write_list(info);}},
         {StandardTag::TAG_CLOSE_LIST, [this](const doctotext::Info &info){return write_close_list(info);}},
         {StandardTag::TAG_LIST_ITEM, [this](const doctotext::Info &info){return write_list_item(info);}},
         {StandardTag::TAG_CLOSE_LIST_ITEM, [this](const doctotext::Info &info){return write_close_list_item(info);}},
-        {StandardTag::TAG_STYLE, [this](const doctotext::Info &info){return turn_on_style_mode();}},
-        {StandardTag::TAG_CLOSE_STYLE, [this](const doctotext::Info &info){return turn_off_style_mode(info);}},
         {StandardTag::TAG_COMMENT, [this](const doctotext::Info &info){return write_comment(info);}}
       };
   };
-
-  bool is_style_mode() const
-  {
-    return style_mode;
-  }
 
   std::string add_shift(int count)
   {
@@ -466,22 +466,17 @@ struct PlainTextWriter::Implementation
       if (writer_iterator != plain_text_writers.end())
       {
         auto text_element = writer_iterator->second(info);
-        if (!is_style_mode())
-        {
-          text_element->write_to(stream);
-        }
+        text_element->write_to(stream);
       }
     }
   }
 
   int level { 0 };
   std::vector<doctotext::Info> tags;
-  bool list_is_ordered;
-  std::string list_style_prefix;
+  std::string list_type;
   int list_counter;
   bool first_cell_in_row;
   bool list_mode{ false };
-  bool style_mode;
   std::vector<std::vector<Cell>> table;
 };
 
@@ -498,7 +493,6 @@ PlainTextWriter::PlainTextWriter(const PlainTextWriter &plainTextWriter)
   impl->list_counter = plainTextWriter.impl->list_counter;
   impl->first_cell_in_row = plainTextWriter.impl->first_cell_in_row;
   impl->list_mode = plainTextWriter.impl->list_mode;
-  impl->style_mode = plainTextWriter.impl->style_mode;
   impl->table = plainTextWriter.impl->table;
 }
 
@@ -510,7 +504,6 @@ PlainTextWriter::operator=(const PlainTextWriter &plainTextWriter)
   impl->list_counter = plainTextWriter.impl->list_counter;
   impl->first_cell_in_row = plainTextWriter.impl->first_cell_in_row;
   impl->list_mode = plainTextWriter.impl->list_mode;
-  impl->style_mode = plainTextWriter.impl->style_mode;
   impl->table = plainTextWriter.impl->table;
 
   return *this;

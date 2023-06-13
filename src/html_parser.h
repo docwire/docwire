@@ -42,7 +42,6 @@
 
 namespace doctotext
 {
-	struct FormattingStyle;
 	class Metadata;
 }
 
@@ -53,10 +52,11 @@ class HTMLParser : public doctotext::Parser
 	private:
 		struct Implementation;
 		Implementation* impl;
+		friend class DocToTextSaxParser;
+
 	public:
 
     void parse() const override;
-    Parser& addOnNewNodeCallback(doctotext::NewNodeCallback callback) override;
     static std::vector <std::string> getExtensions() {return {"html", "htm"};}
 		Parser& withParameters(const doctotext::ParserParameters &parameters) override;
 
@@ -66,8 +66,6 @@ class HTMLParser : public doctotext::Parser
 		void setVerboseLogging(bool verbose);
 		void setLogStream(std::ostream& log_stream);
 		bool isHTML();
-		void getLinks(std::vector<Link>& links);
-		std::string plainText(const FormattingStyle& formatting) const;
 		Metadata metaData() const;
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).
 		void skipCharsetDecoding();

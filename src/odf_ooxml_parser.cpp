@@ -211,11 +211,11 @@ struct ODFOOXMLParser::ExtendedImplementation
                                std::vector<Link>& links) const
   {
     xml_stream.levelDown();
-    parser.trySendTag(StandardTag::TAG_STYLE);
+    parser.activeEmittingSignals(false);
     text += parser.parseXmlData(xml_stream, mode, options, zipfile, links);
 		xml_stream.levelUp();
     children_processed = true;
-    parser.trySendTag(StandardTag::TAG_CLOSE_STYLE);
+    parser.activeEmittingSignals(true);
   }
 
 	void assertODFFileIsNotEncrypted(const DocToTextUnzip& zipfile)
