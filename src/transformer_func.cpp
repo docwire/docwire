@@ -31,7 +31,7 @@
 /***************************************************************************************************************************************************/
 
 #include "importer.h"
-#include "transformer.h"
+#include "transformer_func.h"
 
 using namespace doctotext;
 

@@ -44,7 +44,7 @@
 #include "input.h"
 #include "importer.h"
 #include "exporter.h"
-#include "transformer.h"
+#include "transformer_func.h"
 #include "parsing_chain.h"
 #include "simple_extractor.h"
 #include "plain_text_writer.h"

@@ -6,7 +6,7 @@
 #include "parser.h"
 #include "importer.h"
 #include "exporter.h"
-#include "transformer.h"
+#include "transformer_func.h"
 #include "parsing_chain.h"
 
 /**
