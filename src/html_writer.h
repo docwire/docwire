@@ -74,18 +74,6 @@ public:
   HtmlWriter(const HtmlWriter& html_writer);
 
   /**
-   * @brief Writes html header to output stream. It's necessary to call this function before writing any data
-   * to get valid html document.
-   * @param stream output stream
-   */
-  void write_header(std::ostream &stream) const override;
-  /**
-   * @brief Writes html footer to output stream. It's necessary to call this function after writing all data
-   * to get a valid html document.
-   * @param stream output stream
-   */
-  void write_footer(std::ostream &stream) const override;
-  /**
    * @brief Converts text from callback to html format
    * @param info data from callback
    * @param stream output stream

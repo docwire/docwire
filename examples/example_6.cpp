@@ -16,7 +16,8 @@ int main(int argc, char* argv[])
   std::string path = argv[1];
   auto parser_builder = parser_manager->findParserByExtension(path); // get the parser builder by extension
   doctotext::PlainTextWriter plain_text_writer; // create a plain text writer
-  plain_text_writer.write_header(std::cout); // write the header to the output stream
+  doctotext::Info open_tag(doctotext::StandardTag::TAG_DOCUMENT);
+  plain_text_writer.write_to(open_tag, std::cout);
   if (parser_builder) // if parser builder exists
   {
     (*parser_builder)->withParserManager(parser_manager) // set the parser manager
@@ -44,7 +45,8 @@ int main(int argc, char* argv[])
                                   })
                      .parse(); // start the parsing process
   }
-  plain_text_writer.write_footer(std::cout); // write the footer to the output stream
+  doctotext::Info close_tag(doctotext::StandardTag::TAG_CLOSE_DOCUMENT);
+  plain_text_writer.write_to(close_tag, std::cout);
   return 0;
 }
 /// [example_cpp]

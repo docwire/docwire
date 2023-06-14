@@ -129,6 +129,27 @@ struct HtmlWriter::Implementation
     return tag_with_attributes("ul", attrs);
   }
 
+  std::shared_ptr<TextElement>
+  write_header()
+  {
+    std::string header = {"<!DOCTYPE html>\n"
+           "<html>\n"
+           "<head>\n"
+           "<meta charset=\"utf-8\">\n"
+           "<title>DocToText</title>\n"
+           "</head>\n"
+           "<body>\n"};
+    return std::make_shared<TextElement>(header);
+  }
+
+  std::shared_ptr<TextElement>
+  write_footer()
+  {
+    std::string footer = {"</body>\n"
+           "</html>\n"};
+    return std::make_shared<TextElement>(footer);
+  }
+
 std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext::Info &info)>> writers = {
   {StandardTag::TAG_P, [this](const doctotext::Info &info) { return tag_with_attributes("p", restored_original_attributes(info)); }},
   {StandardTag::TAG_CLOSE_P, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</p>"); }},
@@ -156,7 +177,9 @@ std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext
   {StandardTag::TAG_LIST, [this](const doctotext::Info &info) { return write_list(info); }},
   {StandardTag::TAG_CLOSE_LIST, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</ul>"); }},
   {StandardTag::TAG_LIST_ITEM, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<li>"); }},
-  {StandardTag::TAG_CLOSE_LIST_ITEM, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</li>"); }}};
+  {StandardTag::TAG_CLOSE_LIST_ITEM, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</li>"); }},
+  {StandardTag::TAG_DOCUMENT, [this](const doctotext::Info &info) { return write_header(); }},
+  {StandardTag::TAG_CLOSE_DOCUMENT, [this](const doctotext::Info &info) { return write_footer(); }}};
 
   void write_to(const doctotext::Info &info, std::ostream &stream)
   {
@@ -181,25 +204,6 @@ HtmlWriter::HtmlWriter(OriginalAttributesMode original_attributes_mode)
 HtmlWriter::HtmlWriter(const HtmlWriter& html_writer)
   : HtmlWriter(html_writer.impl->m_original_attributes_mode)
 {
-}
-
-void
-HtmlWriter::write_header(std::ostream &stream) const
-{
-  stream << "<!DOCTYPE html>\n"
-         << "<html>\n"
-         << "<head>\n"
-         << "<meta charset=\"utf-8\">\n"
-         << "<title>DocToText</title>\n"
-         << "</head>\n"
-         << "<body>\n";
-}
-
-void
-HtmlWriter::write_footer(std::ostream &stream) const
-{
-  stream << "</body>\n"
-         << "</html>\n";
 }
 
 void

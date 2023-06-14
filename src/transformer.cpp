@@ -38,35 +38,44 @@ using namespace doctotext;
 class TransformerFunc::Implementation
 {
 public:
-  Implementation(doctotext::NewNodeCallback transformer_function)
-    : m_transformer_function(transformer_function)
+  Implementation(doctotext::NewNodeCallback transformer_function, TransformerFunc& owner)
+    : m_transformer_function(transformer_function),
+      m_owner(owner)
   {}
 
-  Implementation(const Implementation &other)
-    : m_transformer_function(other.m_transformer_function)
+  Implementation(const Implementation &other, TransformerFunc& owner)
+    : m_transformer_function(other.m_transformer_function),
+      m_owner(owner)
   {}
 
-  Implementation(const Implementation &&other)
-    : m_transformer_function(other.m_transformer_function)
+  Implementation(const Implementation &&other, TransformerFunc& owner)
+    : m_transformer_function(other.m_transformer_function),
+      m_owner(owner)
   {}
 
   void
   transform(doctotext::Info &info) const
   {
     m_transformer_function(info);
+    if (!info.cancel && !info.skip)
+    {
+      m_owner.emit(info);
+    }
   }
 
   doctotext::NewNodeCallback m_transformer_function;
+  TransformerFunc& m_owner;
 };
 
 TransformerFunc::TransformerFunc(doctotext::NewNodeCallback transformer_function)
 {
-  impl = std::unique_ptr<Implementation>{new Implementation{transformer_function}};
+  impl = std::unique_ptr<Implementation>{new Implementation{transformer_function, *this}};
 }
 
 TransformerFunc::TransformerFunc(const TransformerFunc &other)
-: impl(new Implementation{*other.impl})
+: impl(new Implementation{*other.impl, *this})
 {
+  parent = other.parent;
 }
 
 TransformerFunc::~TransformerFunc()

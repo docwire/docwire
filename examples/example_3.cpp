@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 
+#include "input.h"
 #include "parser.h"
 #include "importer.h"
 #include "exporter.h"
@@ -14,7 +15,8 @@
  */
 int main(int argc, char* argv[])
 {
-  doctotext::Importer(argv[1])
+  doctotext::Input(argv[1]) |
+  doctotext::Importer()
     | doctotext::TransformerFunc([](doctotext::Info &info) // Create an importer from file name and connect it to transformer
                                     {
                                       if (info.tag_name == doctotext::StandardTag::TAG_MAIL) // if current node is mail
@@ -29,8 +31,7 @@ int main(int argc, char* argv[])
                                         }
                                       }
                                     })
-    | doctotext::PlainTextExporter() // sets exporter to plain text
-    | std::cout; // sets output stream
+    | doctotext::PlainTextExporter(std::cout); // sets exporter to plain text
   return 0;
 }
 /// [example_cpp]

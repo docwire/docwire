@@ -72,18 +72,6 @@ public:
   }
 
   void
-  begin() const
-  {
-    _writer->write_header(*_output);
-  }
-
-  void
-  end() const
-  {
-    _writer->write_footer(*_output);
-  }
-
-  void
   set_out_stream(std::ostream &out_stream)
   {
     _output = &out_stream;
@@ -130,22 +118,10 @@ Exporter::is_valid() const
   return impl->is_valid();
 }
 
-void
-Exporter::begin() const
+NewNodeCallback
+Exporter::get_function() const
 {
-  impl->begin();
-}
-
-void
-Exporter::end() const
-{
-  impl->end();
-}
-
-Exporter *
-Exporter::clone() const
-{
-  return new Exporter(*this);
+  return [this](doctotext::Info& info){impl->export_to(info);};
 }
 
 void
@@ -179,6 +155,10 @@ PlainTextExporter::PlainTextExporter()
 {}
 
 PlainTextExporter::PlainTextExporter(std::ostream &out_stream)
+: Exporter(std::make_unique<PlainTextWriter>(), out_stream)
+{}
+
+PlainTextExporter::PlainTextExporter(std::ostream &&out_stream)
 : Exporter(std::make_unique<PlainTextWriter>(), out_stream)
 {}
 

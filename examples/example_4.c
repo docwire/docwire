@@ -43,16 +43,18 @@ int main(int argc, char *argv[])
 {
   DocToTextParserManager *manager = doctotext_init_parser_manager("plugins/"); // create a parser manager (load parsers)
   const char *file_name = argv[1];
-  DocToTextImporter *importer = doctotext_create_importer_from_file_name(manager, file_name); // create an importer from file name
+  DocToTextInput *input = doctotext_create_input_from_file_name(file_name); // create an input from file name
+  DocToTextImporter *importer = doctotext_create_importer(manager); // create an importer
   DocToTextExporter *exporter = doctotext_create_plain_text_exporter(stdout); // create an exporter to plain text and set the output stream
   DocToTextInfo *transformer = doctotext_create_transfomer(filterMailsBySubject, NULL); // create a transformer and set the callback function
-  DocToTextParsingChain *chain = doctotext_connect_importer_to_transformer(importer, transformer); // create a parsing chain by connecting importer and transformer
+  DocToTextParsingChain *chain = doctotext_connect_parsing_chain_to_transformer(doctotext_connect_input_to_importer(input, importer), transformer); // create a parsing chain by connecting input, importer and transformer
   struct callbackData callback_data; // create a callback data structure
   callback_data.mail_counter = 0; // initialize the mail counter
   callback_data.max_mails_number = 10; // set the maximum number of mails to 10
   DocToTextInfo *transformer2 = doctotext_create_transfomer(mailsLimitation, &callback_data); // create a transformer and set the callback function and callback data
   chain = doctotext_connect_parsing_chain_to_transformer(chain, transformer2); // connect the parsing chain to the transformer
   chain = doctotext_connect_parsing_chain_to_exporter(chain, exporter); // connect the parsing chain to exporter (This step starts the parsing)
+  doctotext_free_input(input); // free input
   doctotext_free_importer(importer); // free importer
   doctotext_free_transformer(transformer); // free transformer
   doctotext_free_exporter(exporter); // free exporter

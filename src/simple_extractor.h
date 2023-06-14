@@ -41,7 +41,6 @@
 #include "importer.h"
 #include "exporter.h"
 #include "transformer.h"
-#include "parsing_chain.h"
 
 #include "formatting_style.h"
 #include "defines.h"

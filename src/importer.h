@@ -36,6 +36,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "chain_element.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include "parser_manager.h"
@@ -53,7 +54,7 @@ namespace doctotext
  *
  * @see Parser
  */
-class DllExport Importer
+class DllExport Importer : public ChainElement
 {
 public:
   /**
@@ -62,48 +63,33 @@ public:
    */
   explicit Importer(const ParserParameters &parameters = ParserParameters(),
                     const std::shared_ptr<ParserManager> &parser_manager = std::make_shared<ParserManager>());
-  /**
-   * @param file_name name of the file to parse
-   * @param parameters parser parameters
-   * @param parser_manager pointer to the parser manager
-   */
-  Importer(const std::string &file_name,
-           const ParserParameters &parameters = ParserParameters(),
-           const std::shared_ptr<ParserManager> &parser_manager = std::make_shared<ParserManager>());
-
-  /**
-   *
-   * @param input_stream input stream to parse
-   * @param parameters parser parameters
-   * @param parser_manager pointer to the parser manager
-   */
-  Importer(std::istream &input_stream,
-           const ParserParameters &parameters = ParserParameters(),
-           const std::shared_ptr<ParserManager> &parser_manager = std::make_shared<ParserManager>());
 
   Importer(const Importer &other);
 
+  Importer(const Importer &&other);
+
   Importer& operator=(const Importer &other);
+
+  Importer& operator=(const Importer &&other);
 
   virtual ~Importer();
 
+  bool is_leaf() const override
+  {
+    return false;
+  }
+
+  NewNodeCallback get_function() const override
+  {
+    return [this](Info& info){process(info);};
+  }
+
+  Importer* clone() const override;
   /**
    * @brief Sets new input stream to parse
    * @param input_stream new input stream to parse
    */
   void set_input_stream(std::istream &input_stream);
-
-  /**
-   * @brief Check if Importer contains valid input data (path to file or stream).
-   * @return true if valid
-   */
-  bool is_valid() const;
-
-  /**
-   * @brief Adds callback. Callbacks will execute when parser returns new node.
-   * @param listener
-   */
-  void add_callback(const NewNodeCallback &callback);
 
   /**
    * @brief Adds parser parameters.
@@ -114,12 +100,7 @@ public:
   /**
    * @brief Starts parsing process.
    */
-  void process() const;
-
-  /**
-   * @brief Disconnects all listeners.
-   */
-  void disconnect_all();
+  void process(Info& info) const;
 
 private:
   class Implementation;

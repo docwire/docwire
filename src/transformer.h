@@ -36,6 +36,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "chain_element.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include "parser_manager.h"
@@ -55,23 +56,27 @@ class Importer;
  * Importer(parser_manager, "test.pdf") | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
  * @endcode
  */
-class DllExport Transformer
+class DllExport Transformer : public ChainElement
 {
 public:
   Transformer() = default;
   virtual ~Transformer() = default;
 
   /**
-   * @brief Creates clone of the transformer
-   * @return new transformer
-   */
-  virtual Transformer* clone() const = 0;
-
-  /**
    * @brief Transforms document from importer
    * @param info structure from callback function
    */
   virtual void transform(doctotext::Info &info) const = 0;
+
+  bool is_leaf() const override
+  {
+    return false;
+  }
+
+  NewNodeCallback get_function() const override
+  {
+    return [this](Info &info){ transform(info);};
+  }
 };
 
 /**

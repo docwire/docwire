@@ -31,7 +31,11 @@
 /***************************************************************************************************************************************************/
 
 #include <numeric>
+#include <fstream>
 
+#include "chain_element.h"
+#include "input.h"
+#include "parsing_chain.h"
 #include "parser_manager.h"
 #include "simple_extractor.h"
 
@@ -54,28 +58,25 @@ public:
   std::string getText() const
   {
     std::stringstream ss;
-    std::shared_ptr<Importer> importer;
-    if (!m_file_name.empty())
-    {
-      importer = std::make_shared<Importer>(m_file_name, m_parameters, m_parser_manager);
-    }
-    else if(m_input_stream)
-    {
-      importer = std::make_shared<Importer>(*m_input_stream, m_parameters, m_parser_manager);
-    }
+    auto importer = std::make_shared<Importer>(m_parameters, m_parser_manager);
+    ParsingChain chain(*importer);
+
     if (!m_transformers.empty())
     {
-      auto chain = (*importer) | ExtractorType();
       std::for_each(m_transformers.begin(), m_transformers.end(),
                     [&chain](const std::shared_ptr<Transformer> &transformer)
                     {
                       chain = chain | (*transformer);
                     });
-      chain | ss;
     }
-    else
+    chain | ExtractorType(ss);
+    if (!m_file_name.empty())
     {
-      (*importer) | ExtractorType() | ss;
+      Input(m_file_name) | chain;
+    }
+    else if(m_input_stream)
+    {
+      Input(m_input_stream) | chain;
     }
     return ss.str();
   }
@@ -83,28 +84,25 @@ public:
   template<typename ExtractorType>
   void parseText(std::ostream &out_stream) const
   {
-    std::shared_ptr<Importer> importer;
-    if (!m_file_name.empty())
-    {
-      importer = std::make_shared<Importer>(m_file_name, m_parameters, m_parser_manager);
-    }
-    else if(m_input_stream)
-    {
-      importer = std::make_shared<Importer>(*m_input_stream, m_parameters, m_parser_manager);
-    }
+    auto importer = std::make_shared<Importer>(m_parameters, m_parser_manager);;
+    ParsingChain chain(*importer);
+
     if (!m_transformers.empty())
     {
-      auto chain = (*importer) | ExtractorType();
       std::for_each(m_transformers.begin(), m_transformers.end(),
                     [&chain](const std::shared_ptr<Transformer> &transformer)
                     {
                       chain = chain | (*transformer);
                     });
-      chain | out_stream;
     }
-    else
+    chain | ExtractorType(out_stream);
+    if (!m_file_name.empty())
     {
-      (*importer) | ExtractorType() | out_stream;
+      Input(m_file_name) | chain;
+    }
+    else if(m_input_stream)
+    {
+      Input(m_input_stream) | chain;
     }
   }
 

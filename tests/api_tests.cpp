@@ -43,6 +43,7 @@
 #include <optional>
 #include <algorithm>
 #include "pthread.h"
+#include "input.h"
 
 void dots_to_underscores(std::string& str)
 {
@@ -121,8 +122,9 @@ TEST_P(DocumentTests, ReadFromBufferTest)
         auto parser_manager = std::make_shared<doctotext::ParserManager>("../plugins"); // create parser manager
         std::stringstream output_stream{};
 
-        doctotext::Importer(ifs_input, parameters, parser_manager) | doctotext::PlainTextExporter()
-                                     | output_stream;
+        doctotext::Input(&ifs_input) |
+          doctotext::Importer(parameters, parser_manager) |
+          doctotext::PlainTextExporter(output_stream);
 
         std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
             std::istreambuf_iterator<char>{}};
@@ -560,7 +562,7 @@ TEST_P(MultiPageFilterTest, SimpleExtractorTests)
     simple_extractor.addTransformer(new doctotext::TransformerFunc([MAX_PAGES, counter = 0](doctotext::Info &info) mutable
                                    {
                                      if (info.tag_name == doctotext::StandardTag::TAG_PAGE) {++counter;}
-                                     if (counter > MAX_PAGES) {info.cancel = true;}
+                                     if (info.tag_name == doctotext::StandardTag::TAG_PAGE && counter > MAX_PAGES) {info.cancel = true;}
                                    }));
     std::string parsed_text{ simple_extractor.getPlainText() };
 
@@ -597,7 +599,8 @@ TEST(HtmlWriter, RestoreAttributes)
 	std::shared_ptr<doctotext::ParserManager> parser_manager(new doctotext::ParserManager{ "../plugins" });
 	std::stringstream output;
 	std::ifstream in("../../tests/1.html");
-	Importer(in, doctotext::ParserParameters(), parser_manager)
+	Input(&in)
+		| Importer(doctotext::ParserParameters(), parser_manager)
 		| HtmlExporter(output, HtmlExporter::OriginalAttributesMode::restore);
 
 	EXPECT_EQ(read_test_file("1.html.restore_attributes.out.html"), output.str());

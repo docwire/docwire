@@ -3,6 +3,7 @@
 #include <fstream>
 #include <memory>
 
+#include "input.h"
 #include "importer.h"
 #include "exporter.h"
 #include "transformer.h"
@@ -15,16 +16,15 @@
 int main(int argc, char* argv[])
 {
   // parse file and print to output.txt file
-  std::ifstream(argv[1], std::ios_base::in|std::ios_base::binary)
+  doctotext::Input(std::ifstream(argv[1], std::ios_base::in|std::ios_base::binary))
     | doctotext::Importer()
-    | doctotext::PlainTextExporter()
-    | std::ofstream("output.txt");
+    | doctotext::PlainTextExporter(std::ofstream("output.txt"));
 
   // parse file and print to output.html file
-  std::ifstream(argv[1], std::ios_base::in|std::ios_base::binary)
+  doctotext::Input(std::ifstream(argv[1], std::ios_base::in|std::ios_base::binary))
     | doctotext::Importer()
     | doctotext::HtmlExporter()
-    | std::ofstream("output.html");
+    | doctotext::PlainTextExporter(std::ofstream("output.html"));
 
   return 0;
 }

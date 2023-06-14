@@ -30,340 +30,94 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#include "importer.h"
-#include "exporter.h"
-#include "transformer.h"
+#include "input.h"
 #include "parsing_chain.h"
 
 namespace doctotext
 {
-
-class ParsingChain::Implementation
-{
-public:
-  Implementation(const Importer &importer, const Exporter &exporter)
-  : m_importer(importer),
-    m_exporter(std::shared_ptr<Exporter>(exporter.clone()))
+  ParsingChain::ParsingChain(ChainElement& element1, ChainElement& element2)
+  : first_element(std::shared_ptr<ChainElement>(element1.clone())),
+    last_element(std::shared_ptr<ChainElement>(element2.clone())),
+    m_input(nullptr)
   {
-    make_connections();
+    first_element->connect(*last_element);
+    last_element->parent = first_element;
+    element_list = {first_element, last_element};
   }
 
-  Implementation(const Implementation &other)
-    : m_importer(other.m_importer),
-      m_exporter(std::shared_ptr<Exporter>(other.m_exporter->clone())),
-      m_transformers(other.m_transformers)
+  ParsingChain::ParsingChain(const ChainElement& element)
+  : first_element(std::shared_ptr<ChainElement>(element.clone())),
+    m_input(nullptr)
   {
-    make_connections();
+    element_list = {first_element};
   }
 
-  Implementation(const Implementation &&other)
-    : m_importer(other.m_importer),
-      m_exporter(std::shared_ptr<Exporter>(other.m_exporter->clone())),
-      m_transformers(other.m_transformers)
+  ParsingChain::ParsingChain(const InputBase &input, ChainElement& element)
+  : m_input(&input),
+    first_element(std::shared_ptr<ChainElement>(element.clone()))
   {
-    make_connections();
+    element_list = {first_element};
   }
 
-  Implementation &
-  operator=(const Implementation &other)
+  ParsingChain&
+  ParsingChain::operator|(const ChainElement& element)
   {
-    m_importer = other.m_importer;
-    m_exporter = std::shared_ptr<Exporter>(other.m_exporter->clone());
-    m_transformers = other.m_transformers;
-    make_connections();
+    auto element_ptr = std::shared_ptr<ChainElement>(element.clone());
+    element_ptr->parent = last_element;
+    element_list.push_back(element_ptr);
+    if (last_element)
+    {
+      last_element->connect(*element_ptr);
+    }
+    else
+    {
+      first_element->connect(*element_ptr);
+    }
+    last_element = element_ptr;
+
+    if (last_element->is_leaf())
+    {
+      if (m_input)
+      {
+        m_input->process(*first_element);
+      }
+    }
     return *this;
   }
 
-  Implementation &
-  operator=(const Implementation &&other)
+  ParsingChain&
+  ParsingChain::operator|(ChainElement&& element)
   {
-    m_importer = other.m_importer;
-    m_exporter = std::shared_ptr<Exporter>(other.m_exporter->clone());
-    m_transformers = other.m_transformers;
-    make_connections();
+    auto element_ptr = std::shared_ptr<ChainElement>(element.clone());
+    element_list.push_back(element_ptr);
+    element_ptr->parent = last_element;
+    if (last_element)
+    {
+      last_element->connect(*element_ptr);
+    }
+    else
+    {
+      first_element->connect(*element_ptr);
+    }
+    last_element = element_ptr;
+
+    if (last_element->is_leaf())
+    {
+      if (m_input)
+      {
+        m_input->process(*first_element);
+      }
+    }
     return *this;
-  }
-
-  Importer m_importer;
-  std::shared_ptr<Exporter> m_exporter;
-  std::vector<std::shared_ptr<Transformer>> m_transformers;
-
-  bool is_valid() const
-  {
-    bool r = m_importer.is_valid() && m_exporter->is_valid();
-    return r;
-  }
-
-  void make_connections()
-  {
-    m_importer.add_callback([this](doctotext::Info &info)
-                            {
-                              for (auto &transformer: m_transformers) {
-                                if (!info.skip) {
-                                  transformer->transform(info);
-                                }
-                              }
-                              if (!info.skip) {
-                                m_exporter->export_to(info);
-                              }
-                            });
   }
 
   void
-  process() const
+  ParsingChain::process(const InputBase& input) const
   {
-    m_exporter->begin();
-    m_importer.process();
-    m_exporter->end();
+    if (last_element && last_element->is_leaf())
+    {
+      input.process(*first_element);
+    }
   }
-};
-
-ParsingChain::ParsingChain(const Importer &importer, const Exporter &exporter)
-  : impl(new Implementation(importer, exporter))
-{
-  if (impl->is_valid())
-  {
-    impl->process();
-  }
-}
-
-ParsingChain::ParsingChain(const ParsingChain &other)
-  : impl(new Implementation(*other.impl))
-{
-}
-
-ParsingChain::ParsingChain(const ParsingChain &&other)
-  : impl(new Implementation(*other.impl))
-{
-}
-
-ParsingChain::~ParsingChain()
-{
-}
-
-ParsingChain &
-ParsingChain::operator=(const ParsingChain &other)
-{
-  if (this != &other)
-  {
-    *impl = *other.impl;
-  }
-  return *this;
-}
-
-ParsingChain &
-ParsingChain::operator=(const ParsingChain &&other)
-{
-  if (this != &other)
-  {
-    *impl = *other.impl;
-  }
-  return *this;
-}
-
-ParsingChain
-operator|(std::istream &input_stream, ParsingChain &&parsing_process)
-{
-  parsing_process.impl->m_importer.set_input_stream(input_stream);
-  if (parsing_process.impl->is_valid())
-  {
-    parsing_process.impl->process();
-  }
-  return parsing_process;
-}
-
-ParsingChain
-operator|(std::istream &input_stream, ParsingChain &parsing_process)
-{
-  parsing_process.impl->m_importer.set_input_stream(input_stream);
-  if (parsing_process.impl->is_valid())
-  {
-    parsing_process.impl->process();
-  }
-  return parsing_process;
-}
-
-ParsingChain
-operator|(std::istream &&input_stream, ParsingChain &&parsing_process)
-{
-  parsing_process.impl->m_importer.set_input_stream(input_stream);
-  if (parsing_process.impl->is_valid())
-  {
-    parsing_process.impl->process();
-  }
-  return parsing_process;
-}
-
-ParsingChain
-operator|(std::istream &&input_stream, ParsingChain &parsing_process)
-{
-  parsing_process.impl->m_importer.set_input_stream(input_stream);
-  if (parsing_process.impl->is_valid())
-  {
-    parsing_process.impl->process();
-  }
-  return parsing_process;
-}
-
-ParsingChain
-operator|(ParsingChain &&parsing_process, std::ostream &out_stream)
-{
-  auto new_parsing_process = std::move(parsing_process);
-  new_parsing_process.impl->m_exporter->set_out_stream(out_stream);
-  if (new_parsing_process.impl->is_valid())
-  {
-    new_parsing_process.impl->process();
-  }
-  return new_parsing_process;
-}
-
-ParsingChain
-operator|(ParsingChain &parsing_process, std::ostream &out_stream)
-{
-  auto new_parsing_process = parsing_process;
-  new_parsing_process.impl->m_exporter->set_out_stream(out_stream);
-  if (new_parsing_process.impl->is_valid())
-  {
-    new_parsing_process.impl->process();
-  }
-  return new_parsing_process;
-}
-
-ParsingChain
-operator|(ParsingChain &&parsing_process, std::ostream &&out_stream)
-{
-  auto new_parsing_process = std::move(parsing_process);
-  new_parsing_process.impl->m_exporter->set_out_stream(out_stream);
-  if (new_parsing_process.impl->is_valid())
-  {
-    new_parsing_process.impl->process();
-  }
-  return new_parsing_process;
-}
-
-ParsingChain
-operator|(ParsingChain &parsing_process, std::ostream &&out_stream)
-{
-  auto new_parsing_process = parsing_process;
-  new_parsing_process.impl->m_exporter->set_out_stream(out_stream);
-  if (new_parsing_process.impl->is_valid())
-  {
-    new_parsing_process.impl->process();
-  }
-  return new_parsing_process;
-}
-
-ParsingChain
-operator|(ParsingChain &&parsing_process, Transformer &&transformer)
-{
-  parsing_process.impl->m_transformers.push_back(std::shared_ptr<Transformer>(transformer.clone()));
-  return parsing_process;
-}
-
-ParsingChain
-operator|(ParsingChain &&parsing_process, Transformer &transformer)
-{
-  parsing_process.impl->m_transformers.push_back(std::shared_ptr<Transformer>(transformer.clone()));
-  return parsing_process;
-}
-
-ParsingChain
-operator|(ParsingChain &parsing_process, Transformer &&transformer)
-{
-  parsing_process.impl->m_transformers.push_back(std::shared_ptr<Transformer>(transformer.clone()));
-  return parsing_process;
-}
-
-ParsingChain
-operator|(ParsingChain &parsing_process, Transformer &transformer)
-{
-  parsing_process.impl->m_transformers.push_back(std::shared_ptr<Transformer>(transformer.clone()));
-  return parsing_process;
-}
-
-ParsingChain
-operator|(ParsingChain &parsing_process, Exporter &&exporter)
-{
-  parsing_process.impl->m_exporter = std::shared_ptr<Exporter>(exporter.clone());
-  if (parsing_process.impl->is_valid())
-  {
-    parsing_process.impl->process();
-  }
-  return parsing_process;
-}
-
-ParsingChain
-operator|(ParsingChain &parsing_process, Exporter &exporter)
-{
-  parsing_process.impl->m_exporter = std::shared_ptr<Exporter>(exporter.clone());
-  if (parsing_process.impl->is_valid())
-  {
-    parsing_process.impl->process();
-  }
-  return parsing_process;
-}
-
-ParsingChain
-operator|(ParsingChain &&parsing_process, Exporter &&exporter)
-{
-  parsing_process.impl->m_exporter = std::shared_ptr<Exporter>(exporter.clone());
-  if (parsing_process.impl->is_valid())
-  {
-    parsing_process.impl->process();
-  }
-  return parsing_process;
-}
-
-ParsingChain
-operator|(ParsingChain &&parsing_process, Exporter &exporter)
-{
-  parsing_process.impl->m_exporter = std::shared_ptr<Exporter>(exporter.clone());
-  if (parsing_process.impl->is_valid())
-  {
-    parsing_process.impl->process();
-  }
-  return parsing_process;
-}
-
-ParsingChain operator|(std::istream &input_stream, const Importer &importer)
-{
-  auto new_parsing_process = ParsingChain(importer, PlainTextExporter());
-  return input_stream | new_parsing_process;
-}
-
-ParsingChain operator|(std::istream &input_stream, const Importer &&importer)
-{
-  auto new_parsing_process = ParsingChain(importer, PlainTextExporter());
-  return input_stream | new_parsing_process;
-}
-
-ParsingChain operator|(std::istream &&input_stream, const Importer &importer)
-{
-  auto new_parsing_process = ParsingChain(importer, PlainTextExporter());
-  return input_stream | new_parsing_process;
-}
-
-ParsingChain operator|(std::istream &&input_stream, const Importer &&importer)
-{
-  auto new_parsing_process = ParsingChain(importer, PlainTextExporter());
-  return input_stream | new_parsing_process;
-}
-
-ParsingChain operator|(const Importer &importer, Exporter &&exporter)
-{
-  return ParsingChain(importer, exporter);
-}
-
-ParsingChain operator|(const Importer &importer, Transformer &&transformer)
-{
-  auto parsing_process = ParsingChain(importer, PlainTextExporter());
-  return parsing_process | std::move(transformer);
-}
-
-ParsingChain operator|(const Importer &importer, Transformer &transformer)
-{
-  auto parsing_process = ParsingChain(importer, PlainTextExporter());
-  return parsing_process | transformer;
-}
 
 } // namespace doctotext

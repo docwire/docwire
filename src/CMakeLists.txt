@@ -26,8 +26,10 @@ set(DOCTOTEXT_SOURCES
         importer.cpp
         exporter.cpp
         transformer.cpp
+        meta_data_writer.cpp
+        chain_element.cpp
         parsing_chain.cpp
-        meta_data_writer.cpp)
+        input.cpp)
 
 if(MSVC)
     add_definitions(-DMSVC_BUILD)
