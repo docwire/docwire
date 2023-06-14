@@ -92,12 +92,13 @@ public:
    */
   void add_parameters(const ParserParameters &parameters);
 
-private:
+protected:
   /**
    * @brief Starts parsing process.
    */
   void process(Info& info) const override;
 
+private:
   class Implementation;
   std::unique_ptr<Implementation> impl;
 };

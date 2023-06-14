@@ -38,7 +38,6 @@
 #include "formatting_style.h"
 #include "standard_filter.h"
 #include "simple_extractor.h"
-#include "writer.h"
 #include "version.h"
 #include "chain_element.h"
 #include "parsing_chain.h"
