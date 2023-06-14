@@ -48,7 +48,6 @@ namespace doctotext
 {
 
 class Importer;
-class Transformer;
 
 /**
  *  @brief Exporter class is responsible for exporting the parsed data from importer or transformer to an output stream.
@@ -81,7 +80,7 @@ public:
     return true;
   }
 
-  NewNodeCallback get_function() const override;
+  void process(doctotext::Info &info) const override;
 
   /**
    * @brief Sets output stream.

@@ -41,7 +41,7 @@ namespace doctotext
     m_input(nullptr)
   {
     first_element->connect(*last_element);
-    last_element->parent = first_element;
+    last_element->set_parent(first_element);
     element_list = {first_element, last_element};
   }
 
@@ -67,12 +67,12 @@ namespace doctotext
     if (last_element)
     {
       last_element->connect(*element_ptr);
-      element_ptr->parent = last_element;
+      element_ptr->set_parent(last_element);
     }
     else
     {
       first_element->connect(*element_ptr);
-      element_ptr->parent = first_element;
+      element_ptr->set_parent(first_element);
     }
     last_element = element_ptr;
 

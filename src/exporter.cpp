@@ -118,10 +118,10 @@ Exporter::is_valid() const
   return impl->is_valid();
 }
 
-NewNodeCallback
-Exporter::get_function() const
+void
+Exporter::process(doctotext::Info &info) const
 {
-  return [this](doctotext::Info& info){impl->export_to(info);};
+  impl->export_to(info);
 }
 
 void

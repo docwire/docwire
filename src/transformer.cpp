@@ -75,7 +75,7 @@ TransformerFunc::TransformerFunc(doctotext::NewNodeCallback transformer_function
 TransformerFunc::TransformerFunc(const TransformerFunc &other)
 : impl(new Implementation{*other.impl, *this})
 {
-  parent = other.parent;
+  set_parent(other.get_parent());
 }
 
 TransformerFunc::~TransformerFunc()
@@ -83,7 +83,7 @@ TransformerFunc::~TransformerFunc()
 }
 
 void
-TransformerFunc::transform(doctotext::Info &info) const
+TransformerFunc::process(doctotext::Info &info) const
 {
   impl->transform(info);
 }

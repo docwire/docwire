@@ -35,11 +35,11 @@ InputBase::process(ChainElement& chain_element) const
   if (m_stream)
   {
     Info info(StandardTag::TAG_FILE, "", {{"stream", m_stream}});
-    chain_element.get_function()(info);
+    chain_element.process(info);
   }
   else if (!m_path.empty())
   {
     Info info(StandardTag::TAG_FILE, "", {{"path", m_path}});
-    chain_element.get_function()(info);
+    chain_element.process(info);
   }
 }

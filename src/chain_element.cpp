@@ -15,10 +15,9 @@ struct ChainElement::Implementation
   : m_on_new_node_signal(std::make_shared<boost::signals2::signal<void(doctotext::Info &info)>>())
   {}
 
-  int connect(const ChainElement &chain_element)
+  void connect(const ChainElement &chain_element)
   {
-    m_on_new_node_signal->connect([&chain_element](Info &info){chain_element.get_function()(info);});
-    return 0;
+    m_on_new_node_signal->connect([&chain_element](Info &info){chain_element.process(info);});
   }
 
   void emit(Info &info) const
@@ -36,14 +35,14 @@ ChainElement::ChainElement()
 
 ChainElement::ChainElement(const ChainElement& element)
 : base_impl(new Implementation(*(element.base_impl))),
-  parent(element.parent)
+  m_parent(element.m_parent)
 {}
 
 ChainElement&
 ChainElement::operator=(const ChainElement &chain_element)
 {
   base_impl->m_on_new_node_signal = chain_element.base_impl->m_on_new_node_signal;
-  parent = chain_element.parent;
+  m_parent = chain_element.m_parent;
   return *this;
 }
 
@@ -59,10 +58,22 @@ ChainElement::operator|(ChainElement&& chainElement)
   return ParsingChain(*this, chainElement);
 }
 
-int
+void
 ChainElement::connect(const ChainElement &chain_element)
 {
-  return base_impl->connect(chain_element);
+  base_impl->connect(chain_element);
+}
+
+void
+ChainElement::set_parent(const std::shared_ptr<ChainElement>& chainElement)
+{
+  m_parent = chainElement;
+}
+
+std::shared_ptr<ChainElement>
+ChainElement::get_parent() const
+{
+  return m_parent;
 }
 
 void

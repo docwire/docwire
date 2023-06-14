@@ -48,11 +48,11 @@ namespace doctotext
 class Importer;
 
 /**
- * @brief Wraps single function (doctotext::NewNodeCallback) into Transformer object
+ * @brief Wraps single function (doctotext::NewNodeCallback) into ChainElement object
  * @code
  * auto reverse_text = [](doctotext::Info &info) {
  *   std::reverse(info.plain_text.begin(), info.plain_text.end())}; // create function to reverse text in callback
- * TransformerFunc transformer(reverse_text); // wraps into transformer
+ * TransformerFunc transformer(reverse_text); // wraps into ChainElement
  * Importer(parser_manager, "test.pdf") | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
  * @endcode
  */
@@ -74,21 +74,16 @@ public:
    * @see doctotext::Info
    * @param info
    */
-  void transform(doctotext::Info &info) const;
+  void process(doctotext::Info &info) const;
 
   bool is_leaf() const override
   {
     return false;
   }
 
-  NewNodeCallback get_function() const override
-  {
-    return [this](Info &info){ transform(info);};
-  }
-
   /**
-   * @brief Creates clone of the transformer
-   * @return new transformer
+   * @brief Creates clone of the TransformerFunc
+   * @return new TransformerFunc
    */
   TransformerFunc* clone() const override;
 

@@ -79,11 +79,6 @@ public:
     return false;
   }
 
-  NewNodeCallback get_function() const override
-  {
-    return [this](Info& info){process(info);};
-  }
-
   Importer* clone() const override;
   /**
    * @brief Sets new input stream to parse
@@ -101,7 +96,7 @@ private:
   /**
    * @brief Starts parsing process.
    */
-  void process(Info& info) const;
+  void process(Info& info) const override;
 
   class Implementation;
   std::unique_ptr<Implementation> impl;
