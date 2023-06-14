@@ -9,7 +9,7 @@
 namespace doctotext
 {
 
-class InputBase
+class DllExport InputBase
 {
 public:
   explicit InputBase(std::istream* stream)

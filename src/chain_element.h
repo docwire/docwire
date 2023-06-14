@@ -8,7 +8,7 @@ namespace doctotext
 
 class ParsingChain;
 
-class ChainElement
+class DllExport ChainElement
 {
 public:
   ChainElement();
