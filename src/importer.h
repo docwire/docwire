@@ -97,12 +97,12 @@ public:
    */
   void add_parameters(const ParserParameters &parameters);
 
+private:
   /**
    * @brief Starts parsing process.
    */
   void process(Info& info) const;
 
-private:
   class Implementation;
   std::unique_ptr<Implementation> impl;
 };

@@ -21,7 +21,7 @@ struct ChainElement::Implementation
     return 0;
   }
 
-  void emmit(Info &info) const
+  void emit(Info &info) const
   {
     (*m_on_new_node_signal)(info);
   }
@@ -68,7 +68,7 @@ ChainElement::connect(const ChainElement &chain_element)
 void
 ChainElement::emit(Info &info) const
 {
-  base_impl->emmit(info);
+  base_impl->emit(info);
 }
 
 void

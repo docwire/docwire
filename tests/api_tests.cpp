@@ -559,7 +559,7 @@ TEST_P(MultiPageFilterTest, SimpleExtractorTests)
 
     // WHEN
     doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
-    simple_extractor.addTransformer(new doctotext::TransformerFunc([MAX_PAGES, counter = 0](doctotext::Info &info) mutable
+    simple_extractor.addChainElement(new doctotext::TransformerFunc([MAX_PAGES, counter = 0](doctotext::Info &info) mutable
                                    {
                                      if (info.tag_name == doctotext::StandardTag::TAG_PAGE) {++counter;}
                                      if (info.tag_name == doctotext::StandardTag::TAG_PAGE && counter > MAX_PAGES) {info.cancel = true;}

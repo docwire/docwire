@@ -30,8 +30,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef PROCESS_H
-#define PROCESS_H
+#ifndef PARSING_CHAIN_H
+#define PARSING_CHAIN_H
 
 #include <memory>
 #include <iostream>
@@ -53,7 +53,7 @@ class ChainElement;
     ParsingChain& operator|(const ChainElement& element);
     ParsingChain& operator|(ChainElement&& element);
 
-    void process(const InputBase& input) const;
+    void process(InputBase& input);
   private:
     const InputBase* m_input;
     std::shared_ptr<ChainElement> first_element;
@@ -63,4 +63,4 @@ class ChainElement;
 
 } // namespace doctotext
 
-#endif //PROCESS_H
+#endif //PARSING_CHAIN_H

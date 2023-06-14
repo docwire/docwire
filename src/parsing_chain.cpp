@@ -63,15 +63,16 @@ namespace doctotext
   ParsingChain::operator|(const ChainElement& element)
   {
     auto element_ptr = std::shared_ptr<ChainElement>(element.clone());
-    element_ptr->parent = last_element;
     element_list.push_back(element_ptr);
     if (last_element)
     {
       last_element->connect(*element_ptr);
+      element_ptr->parent = last_element;
     }
     else
     {
       first_element->connect(*element_ptr);
+      element_ptr->parent = first_element;
     }
     last_element = element_ptr;
 
@@ -88,32 +89,13 @@ namespace doctotext
   ParsingChain&
   ParsingChain::operator|(ChainElement&& element)
   {
-    auto element_ptr = std::shared_ptr<ChainElement>(element.clone());
-    element_list.push_back(element_ptr);
-    element_ptr->parent = last_element;
-    if (last_element)
-    {
-      last_element->connect(*element_ptr);
-    }
-    else
-    {
-      first_element->connect(*element_ptr);
-    }
-    last_element = element_ptr;
-
-    if (last_element->is_leaf())
-    {
-      if (m_input)
-      {
-        m_input->process(*first_element);
-      }
-    }
-    return *this;
+    return operator|(element);
   }
 
   void
-  ParsingChain::process(const InputBase& input) const
+  ParsingChain::process(InputBase& input)
   {
+    m_input = &input;
     if (last_element && last_element->is_leaf())
     {
       input.process(*first_element);

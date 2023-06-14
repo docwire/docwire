@@ -25,9 +25,9 @@ public:
 
   ParsingChain operator|(ChainElement &&chainElement) const;
 
-  ParsingChain operator|(const ParsingChain &parsingChain) const;
+  ParsingChain operator|(ParsingChain &parsingChain);
 
-  ParsingChain operator|(const ParsingChain &&parsingChain) const;
+  ParsingChain operator|(ParsingChain &&parsingChain);
 
   void process(ChainElement& chain_element) const;
 

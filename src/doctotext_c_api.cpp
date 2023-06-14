@@ -98,7 +98,7 @@ struct DocToTextExporter
 
 struct DocToTextTransformer
 {
-  std::shared_ptr<Transformer> m_transformer;
+  std::shared_ptr<TransformerFunc> m_transformer;
 };
 
 struct DocToTextParsingChain

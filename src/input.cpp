@@ -16,14 +16,14 @@ InputBase::operator|(ChainElement &&chainElement) const
 }
 
 ParsingChain
-InputBase::operator|(const ParsingChain &parsingChain) const
+InputBase::operator|(ParsingChain &parsingChain)
 {
   parsingChain.process(*this);
   return parsingChain;
 }
 
 ParsingChain
-InputBase::operator|(const ParsingChain &&parsingChain) const
+InputBase::operator|(ParsingChain &&parsingChain)
 {
   parsingChain.process(*this);
   return parsingChain;
@@ -37,7 +37,7 @@ InputBase::process(ChainElement& chain_element) const
     Info info(StandardTag::TAG_FILE, "", {{"stream", m_stream}});
     chain_element.get_function()(info);
   }
-  else
+  else if (!m_path.empty())
   {
     Info info(StandardTag::TAG_FILE, "", {{"path", m_path}});
     chain_element.get_function()(info);
