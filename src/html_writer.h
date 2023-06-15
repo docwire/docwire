@@ -60,16 +60,12 @@ class DllExport HtmlWriter : public Writer
 {
 public:
 
-  enum class OriginalAttributesMode
-  {
-    skip, ///< Do not restore original HTML attributes
-    restore ///< Restore original HTML attributes
-  };
+  enum class RestoreOriginalAttributes : bool {};
 
   /**
-   * @param original_attributes_mode set how to handle original html attributes extracted by html parser
+   * @param restore_original_attributes should original html attributes extracted by html parser be restored
    */
-  explicit HtmlWriter(OriginalAttributesMode original_attributes_mode = OriginalAttributesMode::skip);
+  explicit HtmlWriter(RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
 
   HtmlWriter(const HtmlWriter& html_writer);
 

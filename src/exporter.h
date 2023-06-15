@@ -114,22 +114,18 @@ private:
 class DllExport HtmlExporter: public Exporter
 {
 public:
-  enum class OriginalAttributesMode
-  {
-    skip, ///< Do not restore original HTML attributes
-    restore ///< Restore original HTML attributes
-  };
+  enum class RestoreOriginalAttributes : bool {};
 
   /**
-   * @param original_attributes_mode set how to handle original html attributes extracted by html parser
+   * @param restore_original_attributes should original html attributes extracted by html parser be restored
    */
-  HtmlExporter(OriginalAttributesMode original_attributes_mode = OriginalAttributesMode::skip);
+  HtmlExporter(RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
 
   /**
    * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   * @param original_attributes_mode set how to handle original html attributes extracted by html parser
+   * @param restore_original_attributes should original html attributes extracted by html parser be restored
    */
-  HtmlExporter(std::ostream &out_stream, OriginalAttributesMode original_attributes_mode = OriginalAttributesMode::skip);
+  HtmlExporter(std::ostream &out_stream, RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
 
   HtmlExporter* clone() const override
   {
