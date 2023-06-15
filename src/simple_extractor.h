@@ -40,8 +40,7 @@
 
 #include "importer.h"
 #include "exporter.h"
-#include "transformer.h"
-#include "parsing_chain.h"
+#include "transformer_func.h"
 
 #include "formatting_style.h"
 #include "defines.h"
@@ -121,11 +120,11 @@ public:
   /**
    * @brief Adds transformer.
    * @code
-   * extractor.addTransformer(new UpperTextTransformer());
+   * extractor.addChainElement(new UpperTextTransformer());
    * @endcode
    * @param transformer as a raw pointer. The ownership is transferred to the extractor.
    */
-  void addTransformer(Transformer *transformer);
+  void addChainElement(ChainElement *chainElement);
 
 private:
   class Implementation;

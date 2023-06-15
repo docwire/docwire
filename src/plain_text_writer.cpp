@@ -317,6 +317,12 @@ struct PlainTextWriter::Implementation
 		return std::make_shared<TextElement>(text);
 	}
 
+  std::shared_ptr<TextElement>
+  write_footer(const doctotext::Info &info) const
+  {
+    return std::make_shared<TextElement>("\n");
+  }
+
   std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext::Info &info)>> plain_text_writers;
 
   Implementation()
@@ -341,7 +347,8 @@ struct PlainTextWriter::Implementation
         {StandardTag::TAG_CLOSE_LIST, [this](const doctotext::Info &info){return write_close_list(info);}},
         {StandardTag::TAG_LIST_ITEM, [this](const doctotext::Info &info){return write_list_item(info);}},
         {StandardTag::TAG_CLOSE_LIST_ITEM, [this](const doctotext::Info &info){return write_close_list_item(info);}},
-        {StandardTag::TAG_COMMENT, [this](const doctotext::Info &info){return write_comment(info);}}
+        {StandardTag::TAG_COMMENT, [this](const doctotext::Info &info){return write_comment(info);}},
+        {StandardTag::TAG_CLOSE_DOCUMENT, [this](const doctotext::Info &info){return write_footer(info);}}
       };
   };
 
@@ -513,12 +520,6 @@ void
 PlainTextWriter::ImplementationDeleter::operator()(Implementation *impl)
 {
   delete impl;
-}
-
-void
-PlainTextWriter::write_footer(std::ostream &stream) const
-{
-  stream << "\n";
 }
 
 void

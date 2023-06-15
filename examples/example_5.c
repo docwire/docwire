@@ -23,9 +23,7 @@ int main(int argc, char *argv[])
   DocToTextWriter* writer = doctotext_create_html_writer(); // create a writer (html writer)
   callback_data.writer = writer;
   doctotext_parser_add_callback_on_new_node(parser, &onNewNodeCallback, &callback_data); // add callback function for new node
-  doctotext_writer_write_header(writer, stdout); // write the header of the output file
   doctotext_parser_parse(parser); // parse the document
-  doctotext_writer_write_footer(writer, stdout); // write the footer of the output file
   doctotext_free_parser(parser); // free parser
   return 0;
 }

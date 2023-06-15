@@ -1,17 +1,18 @@
 /// [example_cpp]
 #include <iostream>
-#include <memory>
 
+#include "input.h"
 #include "importer.h"
 #include "exporter.h"
-#include "parsing_chain.h"
 
 int main(int argc, char* argv[])
 {
   if (argc > 1)
   {
-    doctotext::Importer(argv[1]) | doctotext::PlainTextExporter()
-                                 | std::cout; // parse file and print to standard output
+    doctotext::Input(argv[1]) |
+      doctotext::Importer() |
+      doctotext::PlainTextExporter() |
+      std::cout; // parse file and print to standard output
   }
   return 0;
 }

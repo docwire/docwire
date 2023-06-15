@@ -30,90 +30,66 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef TRANSFORMER_H
-#define TRANSFORMER_H
+#include "importer.h"
+#include "transformer_func.h"
 
-#include <algorithm>
-#include <memory>
+using namespace doctotext;
 
-#include "parser.h"
-#include "parser_builder.h"
-#include "parser_manager.h"
-#include "parser_parameters.h"
-#include "defines.h"
-
-namespace doctotext
-{
-class Importer;
-
-/**
- * @brief The Transformer transforms data from Importer or from another Transformer.
- * @code
- * auto reverse_text = [](doctotext::Info &info) {
- *   std::reverse(info.plain_text.begin(), info.plain_text.end())}; // create function to reverse text in callback
- * TransformerFunc transformer(reverse_text); // wraps into transformer
- * Importer(parser_manager, "test.pdf") | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
- * @endcode
- */
-class DllExport Transformer
+class TransformerFunc::Implementation
 {
 public:
-  Transformer() = default;
-  virtual ~Transformer() = default;
+  Implementation(doctotext::NewNodeCallback transformer_function, TransformerFunc& owner)
+    : m_transformer_function(transformer_function),
+      m_owner(owner)
+  {}
 
-  /**
-   * @brief Creates clone of the transformer
-   * @return new transformer
-   */
-  virtual Transformer* clone() const = 0;
+  Implementation(const Implementation &other, TransformerFunc& owner)
+    : m_transformer_function(other.m_transformer_function),
+      m_owner(owner)
+  {}
 
-  /**
-   * @brief Transforms document from importer
-   * @param info structure from callback function
-   */
-  virtual void transform(doctotext::Info &info) const = 0;
+  Implementation(const Implementation &&other, TransformerFunc& owner)
+    : m_transformer_function(other.m_transformer_function),
+      m_owner(owner)
+  {}
+
+  void
+  transform(doctotext::Info &info) const
+  {
+    m_transformer_function(info);
+    if (!info.cancel && !info.skip)
+    {
+      m_owner.emit(info);
+    }
+  }
+
+  doctotext::NewNodeCallback m_transformer_function;
+  TransformerFunc& m_owner;
 };
 
-/**
- * @brief Wraps single function (doctotext::NewNodeCallback) into Transformer object
- * @code
- * auto reverse_text = [](doctotext::Info &info) {
- *   std::reverse(info.plain_text.begin(), info.plain_text.end())}; // create function to reverse text in callback
- * TransformerFunc transformer(reverse_text); // wraps into transformer
- * Importer(parser_manager, "test.pdf") | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
- * @endcode
- */
-class DllExport TransformerFunc: public Transformer
+TransformerFunc::TransformerFunc(doctotext::NewNodeCallback transformer_function)
 {
-public:
-  /**
-   * @param transformer_function callback function, which will be called in transform(). It should modify info structure.
-   * @see doctotext::Info
-   */
-  TransformerFunc(doctotext::NewNodeCallback transformer_function);
+  impl = std::unique_ptr<Implementation>{new Implementation{transformer_function, *this}};
+}
 
-  TransformerFunc(const TransformerFunc &other);
+TransformerFunc::TransformerFunc(const TransformerFunc &other)
+: impl(new Implementation{*other.impl, *this})
+{
+  set_parent(other.get_parent());
+}
 
-  virtual ~TransformerFunc();
+TransformerFunc::~TransformerFunc()
+{
+}
 
-  /**
-   * @brief Executes transform operation for given node data.
-   * @see doctotext::Info
-   * @param info
-   */
-  void transform(doctotext::Info &info) const override;
+void
+TransformerFunc::process(doctotext::Info &info) const
+{
+  impl->transform(info);
+}
 
-  /**
-   * @brief Creates clone of the transformer
-   * @return new transformer
-   */
-  TransformerFunc* clone() const override;
-
-private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
-};
-
-} // namespace doctotext
-
-#endif //TRANSFORMER_H
+TransformerFunc*
+TransformerFunc::clone() const
+{
+  return new TransformerFunc(*this);
+}

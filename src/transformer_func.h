@@ -30,57 +30,68 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#include "importer.h"
-#include "transformer.h"
+#ifndef TRANSFORMER_H
+#define TRANSFORMER_H
 
-using namespace doctotext;
+#include <algorithm>
+#include <memory>
 
-class TransformerFunc::Implementation
+#include "chain_element.h"
+#include "parser.h"
+#include "parser_builder.h"
+#include "parser_manager.h"
+#include "parser_parameters.h"
+#include "defines.h"
+
+namespace doctotext
+{
+class Importer;
+
+/**
+ * @brief Wraps single function (doctotext::NewNodeCallback) into ChainElement object
+ * @code
+ * auto reverse_text = [](doctotext::Info &info) {
+ *   std::reverse(info.plain_text.begin(), info.plain_text.end())}; // create function to reverse text in callback
+ * TransformerFunc transformer(reverse_text); // wraps into ChainElement
+ * Importer(parser_manager, "test.pdf") | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
+ * @endcode
+ */
+class DllExport TransformerFunc : public ChainElement
 {
 public:
-  Implementation(doctotext::NewNodeCallback transformer_function)
-    : m_transformer_function(transformer_function)
-  {}
+  /**
+   * @param transformer_function callback function, which will be called in transform(). It should modify info structure.
+   * @see doctotext::Info
+   */
+  TransformerFunc(doctotext::NewNodeCallback transformer_function);
 
-  Implementation(const Implementation &other)
-    : m_transformer_function(other.m_transformer_function)
-  {}
+  TransformerFunc(const TransformerFunc &other);
 
-  Implementation(const Implementation &&other)
-    : m_transformer_function(other.m_transformer_function)
-  {}
+  virtual ~TransformerFunc();
 
-  void
-  transform(doctotext::Info &info) const
+  /**
+   * @brief Executes transform operation for given node data.
+   * @see doctotext::Info
+   * @param info
+   */
+  void process(doctotext::Info &info) const;
+
+  bool is_leaf() const override
   {
-    m_transformer_function(info);
+    return false;
   }
 
-  doctotext::NewNodeCallback m_transformer_function;
+  /**
+   * @brief Creates clone of the TransformerFunc
+   * @return new TransformerFunc
+   */
+  TransformerFunc* clone() const override;
+
+private:
+  class Implementation;
+  std::unique_ptr<Implementation> impl;
 };
 
-TransformerFunc::TransformerFunc(doctotext::NewNodeCallback transformer_function)
-{
-  impl = std::unique_ptr<Implementation>{new Implementation{transformer_function}};
-}
+} // namespace doctotext
 
-TransformerFunc::TransformerFunc(const TransformerFunc &other)
-: impl(new Implementation{*other.impl})
-{
-}
-
-TransformerFunc::~TransformerFunc()
-{
-}
-
-void
-TransformerFunc::transform(doctotext::Info &info) const
-{
-  impl->transform(info);
-}
-
-TransformerFunc*
-TransformerFunc::clone() const
-{
-  return new TransformerFunc(*this);
-}
+#endif //TRANSFORMER_H

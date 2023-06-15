@@ -25,9 +25,11 @@ set(DOCTOTEXT_SOURCES
         simple_extractor.cpp
         importer.cpp
         exporter.cpp
-        transformer.cpp
+        transformer_func.cpp
+        meta_data_writer.cpp
+        chain_element.cpp
         parsing_chain.cpp
-        meta_data_writer.cpp)
+        input.cpp)
 
 if(MSVC)
     add_definitions(-DMSVC_BUILD)
@@ -241,7 +243,7 @@ configure_file(${CMAKE_SOURCE_DIR}/src/html_writer.h ${CMAKE_BINARY_DIR}/html_wr
 configure_file(${CMAKE_SOURCE_DIR}/src/csv_writer.h ${CMAKE_BINARY_DIR}/csv_writer.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/importer.h ${CMAKE_BINARY_DIR}/importer.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/exporter.h ${CMAKE_BINARY_DIR}/exporter.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/transformer.h ${CMAKE_BINARY_DIR}/transformer.h COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/src/transformer_func.h ${CMAKE_BINARY_DIR}/transformer_func.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/parsing_chain.h ${CMAKE_BINARY_DIR}/parsing_chain.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/simple_extractor.h ${CMAKE_BINARY_DIR}/simple_extractor.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/defines.h ${CMAKE_BINARY_DIR}/defines.h COPYONLY)

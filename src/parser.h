@@ -98,6 +98,11 @@ public:
 
   inline static const std::string TAG_PAGE = "new-page"; ///< Tag for page. This tag is sent before parsing the page, so if we set in this tag, then the page won't be parsed.
   inline static const std::string TAG_CLOSE_PAGE = "/new-page"; ///< Tag for closing page.
+
+  inline static const std::string TAG_FILE = "new-file"; ///< Tag for new file.
+  inline static const std::string TAG_CLOSE_FILE = "/new-file"; ///< Tag for close file.
+  inline static const std::string TAG_DOCUMENT = "new-document"; ///< Tag for new file.
+  inline static const std::string TAG_CLOSE_DOCUMENT = "/new-document"; ///< Tag for new file.
 };
 
 typedef std::map<std::string, std::any> Attributes;

@@ -31,7 +31,11 @@
 /***************************************************************************************************************************************************/
 
 #include <numeric>
+#include <fstream>
 
+#include "chain_element.h"
+#include "input.h"
+#include "parsing_chain.h"
 #include "parser_manager.h"
 #include "simple_extractor.h"
 
@@ -54,28 +58,25 @@ public:
   std::string getText() const
   {
     std::stringstream ss;
-    std::shared_ptr<Importer> importer;
+    auto importer = std::make_shared<Importer>(m_parameters, m_parser_manager);
+    ParsingChain chain(*importer);
+
+    if (!m_chain_elements.empty())
+    {
+      std::for_each(m_chain_elements.begin(), m_chain_elements.end(),
+                    [&chain](const std::shared_ptr<ChainElement> &chainElement)
+                    {
+                      chain = chain | (*chainElement);
+                    });
+    }
+    chain | ExtractorType(ss);
     if (!m_file_name.empty())
     {
-      importer = std::make_shared<Importer>(m_file_name, m_parameters, m_parser_manager);
+      Input(m_file_name) | chain;
     }
     else if(m_input_stream)
     {
-      importer = std::make_shared<Importer>(*m_input_stream, m_parameters, m_parser_manager);
-    }
-    if (!m_transformers.empty())
-    {
-      auto chain = (*importer) | ExtractorType();
-      std::for_each(m_transformers.begin(), m_transformers.end(),
-                    [&chain](const std::shared_ptr<Transformer> &transformer)
-                    {
-                      chain = chain | (*transformer);
-                    });
-      chain | ss;
-    }
-    else
-    {
-      (*importer) | ExtractorType() | ss;
+      Input(m_input_stream) | chain;
     }
     return ss.str();
   }
@@ -83,28 +84,25 @@ public:
   template<typename ExtractorType>
   void parseText(std::ostream &out_stream) const
   {
-    std::shared_ptr<Importer> importer;
+    auto importer = std::make_shared<Importer>(m_parameters, m_parser_manager);;
+    ParsingChain chain(*importer);
+
+    if (!m_chain_elements.empty())
+    {
+      std::for_each(m_chain_elements.begin(), m_chain_elements.end(),
+                    [&chain](const std::shared_ptr<ChainElement> &chainElement)
+                    {
+                      chain = chain | (*chainElement);
+                    });
+    }
+    chain | ExtractorType(out_stream);
     if (!m_file_name.empty())
     {
-      importer = std::make_shared<Importer>(m_file_name, m_parameters, m_parser_manager);
+      Input(m_file_name) | chain;
     }
     else if(m_input_stream)
     {
-      importer = std::make_shared<Importer>(*m_input_stream, m_parameters, m_parser_manager);
-    }
-    if (!m_transformers.empty())
-    {
-      auto chain = (*importer) | ExtractorType();
-      std::for_each(m_transformers.begin(), m_transformers.end(),
-                    [&chain](const std::shared_ptr<Transformer> &transformer)
-                    {
-                      chain = chain | (*transformer);
-                    });
-      chain | out_stream;
-    }
-    else
-    {
-      (*importer) | ExtractorType() | out_stream;
+      Input(m_input_stream) | chain;
     }
   }
 
@@ -115,9 +113,9 @@ public:
   }
 
   void
-  addTransformer(Transformer *transformer)
+  addChainElement(ChainElement *chainElement)
   {
-    m_transformers.push_back(std::shared_ptr<Transformer>(transformer));
+    m_chain_elements.push_back(std::shared_ptr<ChainElement>(chainElement));
   }
 
   void
@@ -129,7 +127,7 @@ public:
   void
   addCallbackFunction(NewNodeCallback new_code_callback)
   {
-    addTransformer(new TransformerFunc(new_code_callback));
+    addChainElement(new TransformerFunc(new_code_callback));
   }
 
   std::string
@@ -166,7 +164,7 @@ public:
   }
 
   const std::shared_ptr<ParserManager> m_parser_manager;
-  std::vector<std::shared_ptr<Transformer>> m_transformers;
+  std::vector<std::shared_ptr<ChainElement>> m_chain_elements;
   std::string m_file_name;
   std::istream* m_input_stream;
   doctotext::ParserParameters m_parameters;
@@ -193,9 +191,9 @@ SimpleExtractor::addParameters(const doctotext::ParserParameters &parameters)
 }
 
 void
-SimpleExtractor::addTransformer(Transformer *transformer)
+SimpleExtractor::addChainElement(ChainElement *chainElement)
 {
-  impl->addTransformer(transformer);
+  impl->addChainElement(chainElement);
 }
 
 void

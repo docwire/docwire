@@ -30,8 +30,6 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#include <iostream>
-#include <fstream>
 #include <memory>
 #include <any>
 #include <iostream>
@@ -40,8 +38,10 @@
 #include "formatting_style.h"
 #include "standard_filter.h"
 #include "simple_extractor.h"
-#include "writer.h"
 #include "version.h"
+#include "chain_element.h"
+#include "parsing_chain.h"
+#include "input.h"
 
 doctotext::FormattingStyle updateFormattingStyle(const std::string &arg, const doctotext::FormattingStyle formatting_style)
 {

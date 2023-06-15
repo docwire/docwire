@@ -37,9 +37,7 @@ int main(int argc, char *argv[])
   callback_data.writer = writer;
   doctotext_parser_add_callback_on_new_node(parser, &filterMailsBySubject, NULL); // add callback function for filter by subject text
   doctotext_parser_add_callback_on_new_node(parser, &onNewNodeCallback, &callback_data); // add callback function to write the parsed text to the output stream
-  doctotext_writer_write_header(writer, stdout); // write the header of the output file
   doctotext_parser_parse(parser); // parse the document
-  doctotext_writer_write_footer(writer, stdout); // write the footer of the output file
   doctotext_free_parser(parser); // free parser
   return 0;
 }

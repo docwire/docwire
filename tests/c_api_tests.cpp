@@ -42,30 +42,6 @@ extern "C" {
 #include <iterator>
 #include <array>
 
-struct callbackData
-{
-  bool html_output;
-};
-
-FILE* temp_fptr;
-
-void onNewNodeCallback(DocToTextInfo* info, void* data)
-{
-  struct callbackData* p_callback_data = (struct callbackData*)(data);
-
-  if (p_callback_data->html_output)
-  {
-    DocToTextWriter *writer = doctotext_create_html_writer();
-    doctotext_writer_write(writer, info, temp_fptr);
-    doctotext_free_writer(writer);
-  }
-  else
-  {
-    printf(doctotext_info_get_plain_text(info));
-  }
-}
-
-
 class HTMLWriteTestC : public ::testing::TestWithParam<const char*>
 {
 protected:
@@ -89,23 +65,14 @@ TEST_P(HTMLWriteTestC, CApiTest)
 
     // WHEN
     std::string temp_file_name{ std::string{ name } + ".tmp" };
-    temp_fptr = fopen(temp_file_name.c_str(), "w");
-
-    struct callbackData callback_data;
-    callback_data.html_output = true;
+    FILE* temp_fptr = fopen(temp_file_name.c_str(), "w");
     
     DocToTextParserManager* parser_manager = doctotext_init_parser_manager(plugin_directory.data());
-    DocToTextParser* parser = doctotext_parser_manager_get_parser_by_extension(parser_manager, file_name.c_str());
 
-    ASSERT_TRUE(parser != nullptr) << "Error creating C parser" << file_name << '\n';
-
-    doctotext_parser_add_callback_on_new_node(parser, &onNewNodeCallback, &callback_data);
-    DocToTextWriter *writer = doctotext_create_html_writer();
-    doctotext_writer_write_header(writer, temp_fptr);
-    doctotext_parser_parse(parser);
-    doctotext_writer_write_footer(writer, temp_fptr);
-    doctotext_free_parser(parser);
-
+    DocToTextInput *input = doctotext_create_input_from_file_name(file_name.c_str());
+    DocToTextImporter *importer = doctotext_create_importer(parser_manager);
+    DocToTextExporter *exporter = doctotext_create_html_exporter(temp_fptr);
+    DocToTextParsingChain *parsing_chain = doctotext_connect_parsing_chain_to_exporter(doctotext_connect_input_to_importer(input, importer), exporter);
     fclose(temp_fptr);
 
     std::ifstream parsed_ifs{ temp_file_name };

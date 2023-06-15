@@ -49,11 +49,6 @@ public:
   PlainTextWriter(const PlainTextWriter &plainTextWriter);
 
   /**
-   * @brief Write footer for plain text format.
-   * @param stream output stream
-   */
-  void write_footer(std::ostream &stream) const override;
-  /**
    * @brief Converts text from callback to plain text format.
    * @param info data from callback
    * @param stream output stream

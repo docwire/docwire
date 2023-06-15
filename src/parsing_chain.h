@@ -30,140 +30,37 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef PROCESS_H
-#define PROCESS_H
+#ifndef PARSING_CHAIN_H
+#define PARSING_CHAIN_H
 
+#include <memory>
 #include <iostream>
 #include "defines.h"
 
 namespace doctotext
 {
 
-class Importer;
-class Exporter;
-class Transformer;
+class InputBase;
 
-/**
- * @brief ParsingChain class is a wrapper for all defined steps of the parsing process.
- * @code
- * auto chain = Importer(parser_manager, "test.pdf")
- *            | PlainTextExporter()
- *            | std::cout; // creates a chain of steps as a ParsingChain and starts the parsing process
- * @endcode
- */
-class DllExport ParsingChain
-{
-public:
-  /**
-   * @brief Constructor New parsing process from importer and exporter
-   * @param importer
-   * @param exporter
-   */
-  ParsingChain(const Importer &importer, const Exporter &exporter);
+class ChainElement;
 
-  ParsingChain(const ParsingChain &other);
+  class DllExport ParsingChain
+  {
+  public:
+    explicit ParsingChain(const ChainElement& element);
+    ParsingChain(ChainElement& element1, ChainElement& element2);
+    ParsingChain(const InputBase &input, ChainElement& element);
+    ParsingChain& operator|(const ChainElement& element);
+    ParsingChain& operator|(ChainElement&& element);
 
-  ParsingChain(const ParsingChain &&other);
-
-  virtual ~ParsingChain();
-
-  ParsingChain& operator=(const ParsingChain &other);
-
-  ParsingChain& operator=(const ParsingChain &&other);
-
-  DllExport friend ParsingChain operator|(std::istream &input_stream, ParsingChain &&parsing_process);
-
-  DllExport friend ParsingChain operator|(std::istream &input_stream, ParsingChain &parsing_process);
-
-  DllExport friend ParsingChain operator|(std::istream &&input_stream, ParsingChain &&parsing_process);
-
-  DllExport friend ParsingChain operator|(std::istream &&input_stream, ParsingChain &parsing_process);
-
-  /**
-   * @brief Adds output stream for the parsing process and starts process.
-   * @return ParsingChain with new output stream.
-   */
-  DllExport friend ParsingChain operator|(ParsingChain &&parsing_process, std::ostream &out_stream);
-
-  /**
-   * @brief Adds output stream for the parsing process and starts process.
-   * @return ParsingChain with new output stream.
-   */
-  DllExport friend ParsingChain operator|(ParsingChain &parsing_process, std::ostream &out_stream);
-
-  /**
-   * @brief Adds output stream for the parsing process and starts process.
-   * @return ParsingChain with new output stream.
-   */
-    DllExport friend ParsingChain operator|(ParsingChain &&parsing_process, std::ostream &&out_stream);
-
-  /**
-   * @brief Adds output stream for the parsing process and starts process.
-   * @return ParsingChain with new output stream.
-   */
-    DllExport friend ParsingChain operator|(ParsingChain &parsing_process, std::ostream &&out_stream);
-
-  /**
-   * @brief Adds transformer for the parsing process.
-   * @return ParsingChain with new transformer.
-   */
-    DllExport friend ParsingChain operator|(ParsingChain &&parsing_process, Transformer &&transformer);
-
-  /**
-   * @brief Adds transformer for the parsing process.
-   * @return ParsingChain with new transformer.
-   */
-    DllExport friend ParsingChain operator|(ParsingChain &&parsing_process, Transformer &transformer);
-
-  /**
-   * @brief Adds transformer for the parsing process.
-   * @return ParsingChain with new transformer.
-   */
-    DllExport friend ParsingChain operator|(ParsingChain &parsing_process, Transformer &&transformer);
-
-  /**
-   * @brief Adds transformer for the parsing process.
-   * @return ParsingChain with new transformer.
-   */
-    DllExport friend ParsingChain operator|(ParsingChain &parsing_process, Transformer &transformer);
-
-  /**
-   * @brief Sets exporter for the parsing process.
-   * @return ParsingChain with new exporter.
-   */
-    DllExport friend ParsingChain operator|(ParsingChain &parsing_process, Exporter &&exporter);
-
-  /**
-   * @brief Sets exporter for the parsing process.
-   * @return ParsingChain with new exporter.
-   */
-    DllExport friend ParsingChain operator|(ParsingChain &parsing_process, Exporter &exporter);
-
-  /**
-   * @brief Sets exporter for the parsing process.
-   * @return ParsingChain with new exporter.
-   */
-    DllExport friend ParsingChain operator|(ParsingChain &&parsing_process, Exporter &&exporter);
-
-  /**
-   * @brief Sets exporter for the parsing process.
-   * @return ParsingChain with new exporter.
-   */
-    DllExport friend ParsingChain operator|(ParsingChain &&parsing_process, Exporter &exporter);
-
-private:
-  struct Implementation;
-  std::unique_ptr<Implementation> impl;
-};
-
-DllExport ParsingChain operator|(std::istream &input_stream, const Importer &importer);
-DllExport ParsingChain operator|(std::istream &input_stream, const Importer &&importer);
-DllExport ParsingChain operator|(std::istream &&input_stream, const Importer &importer);
-DllExport ParsingChain operator|(std::istream &&input_stream, const Importer &&importer);
-DllExport ParsingChain operator|(const Importer &importer, Exporter &&exporter);
-DllExport ParsingChain operator|(const Importer &importer, Transformer &&transformer);
-DllExport ParsingChain operator|(const Importer &importer, Transformer &transformer);
+    void process(InputBase& input);
+  private:
+    const InputBase* m_input;
+    std::shared_ptr<ChainElement> first_element;
+    std::shared_ptr<ChainElement> last_element;
+    std::vector<std::shared_ptr<ChainElement>> element_list;
+  };
 
 } // namespace doctotext
 
-#endif //PROCESS_H
+#endif //PARSING_CHAIN_H

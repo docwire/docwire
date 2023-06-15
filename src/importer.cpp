@@ -43,52 +43,23 @@ class Importer::Implementation
 {
 public:
   Implementation(const std::shared_ptr<ParserManager> &parser_manager,
-                 const ParserParameters &parameters)
-    : m_parser_manager(parser_manager),
-      m_parameters(parameters)
-  {}
-
-  Implementation(const std::shared_ptr<ParserManager> &parser_manager,
-                 const std::string &file_name,
-                 const ParserParameters &parameters)
-    : m_parser_manager(parser_manager),
-      m_file_name(file_name),
-      m_parameters(parameters)
-  {}
-
-  Implementation(const std::shared_ptr<ParserManager> &parser_manager,
-                 std::istream &input_stream,
-                 const ParserParameters &parameters)
+                 const ParserParameters &parameters, Importer& owner)
     : m_parser_manager(parser_manager),
       m_parameters(parameters),
-      m_input_stream(&input_stream)
+      m_owner(owner)
   {}
 
-  Implementation(const Implementation &other)
+  Implementation(const Implementation &other, Importer& owner)
     : m_parser_manager(other.m_parser_manager),
-      m_file_name(other.m_file_name),
       m_parameters(other.m_parameters),
-      m_input_stream(other.m_input_stream)
+      m_owner(owner)
   {}
 
-  Implementation(const Implementation &&other)
+  Implementation(const Implementation &&other, Importer& owner)
     : m_parser_manager(other.m_parser_manager),
-      m_file_name(other.m_file_name),
       m_parameters(other.m_parameters),
-      m_input_stream(other.m_input_stream)
+      m_owner(owner)
   {}
-
-  void
-  set_input_stream(std::istream &input_stream)
-  {
-    m_input_stream = &input_stream;
-    m_file_name.clear();
-  }
-
-  bool is_valid() const
-  {
-    return !m_file_name.empty() || m_input_stream != nullptr;
-  }
 
   bool load_file_to_buffer(const std::string &file_name, std::vector<char> &buffer) const
   {
@@ -128,46 +99,63 @@ public:
   }
 
   void
-  process() const
+  process(Info& info)
   {
-		auto log_stream = &getLogOutStream();
+    if (info.tag_name != StandardTag::TAG_FILE)
+    {
+      m_owner.emit(info);
+      return;
+    }
+    Info new_doc(StandardTag::TAG_DOCUMENT);
+    m_owner.emit(new_doc);
+    auto log_stream = &getLogOutStream();
     std::shared_ptr<ParserBuilder> builder;
     std::vector<char> buffer;
-    if (!m_file_name.empty())
+    std::istream* input_stream = nullptr;
+    std::string file_path;
+    if (info.getAttributeValue<std::istream*>("stream"))
     {
-      std::filesystem::path path{m_file_name};
+      input_stream = *info.getAttributeValue<std::istream*>("stream");
+    }
+    else if(info.getAttributeValue<std::string>("path"))
+    {
+      file_path = *info.getAttributeValue<std::string>("path");
+    }
+    if (!file_path.empty())
+    {
+      std::filesystem::path path{file_path};
       if (std::filesystem::exists(path))
       {
         if (isReadable(path))
         {
-          builder = std::shared_ptr<ParserBuilder>(m_parser_manager->findParserByExtension(m_file_name).value_or(nullptr));
+          builder = std::shared_ptr<ParserBuilder>(m_parser_manager->findParserByExtension(file_path).value_or(nullptr));
         }
         else
         {
-          throw doctotext::Exception("file " + m_file_name + " is not readable");
+          throw doctotext::Exception("file " + file_path + " is not readable");
         }
       }
       else
       {
-        throw doctotext::Exception("file " + m_file_name + "  doesn't exist");
+        throw doctotext::Exception("file " + file_path + "  doesn't exist");
       }
     }
-    else if(m_input_stream)
+    else if(input_stream)
     {
-      buffer = std::vector<char>((std::istreambuf_iterator<char>(*m_input_stream)), std::istreambuf_iterator<char>());
+      buffer = std::vector<char>((std::istreambuf_iterator<char>(*input_stream)), std::istreambuf_iterator<char>());
       builder = std::shared_ptr<ParserBuilder>(m_parser_manager->findParserByData(buffer).value_or(nullptr));
     }
     if (builder)
     {
-      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](doctotext::Info &info){m_on_new_node_signal(info);}})
+      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](doctotext::Info &info){ m_owner.emit(info);}})
         .withParserManager(m_parser_manager)
         .withParameters(m_parameters);
 
-      if (!m_file_name.empty())
+      if (!file_path.empty())
       {
         try
         {
-          builder_ref.build(m_file_name)->parse();
+          builder_ref.build(file_path)->parse();
         }
         catch (doctotext::EncryptedFileException &ex)
         {
@@ -175,17 +163,17 @@ public:
         }
         catch (doctotext::Exception &ex)
         {
-					(*log_stream) << "It is possible that wrong parser was selected. Trying different parsers." << std::endl;
+          (*log_stream) << "It is possible that wrong parser was selected. Trying different parsers." << std::endl;
           std::vector<char> buffer;
-          load_file_to_buffer(m_file_name, buffer);
+          load_file_to_buffer(file_path, buffer);
           auto second_builder = m_parser_manager->findParserByData(buffer);
           if (!second_builder)
           {
-            ex.appendError("Error parsing file: " + m_file_name  + ". Tried different parsers, but file could not be recognized as another format. File may be corrupted or encrypted");
+            ex.appendError("Error parsing file: " + file_path  + ". Tried different parsers, but file could not be recognized as another format. File may be corrupted or encrypted");
             throw ex;
           }
           std::shared_ptr<ParserBuilder>(*second_builder)
-                  ->withOnNewNodeCallbacks({[this](doctotext::Info &info){m_on_new_node_signal(info);}})
+                  ->withOnNewNodeCallbacks({[this](doctotext::Info &info){ m_owner.emit(info);}})
                   .withParserManager(m_parser_manager)
                   .withParameters(m_parameters)
                   .build(buffer.data(), buffer.size())->parse();
@@ -200,6 +188,8 @@ public:
     {
       throw doctotext::Exception("File format was not recognized.");
     }
+    Info end_doc(StandardTag::TAG_CLOSE_DOCUMENT);
+    m_owner.emit(end_doc);
   }
 
   void
@@ -208,48 +198,26 @@ public:
     m_parameters += parameters;
   }
 
-  void
-  add_callback(NewNodeCallback callback)
-  {
-    m_on_new_node_signal.connect(callback);
-  }
-
-  void
-  disconnect_all()
-  {
-    m_on_new_node_signal.disconnect_all_slots();
-  }
-
   std::shared_ptr<ParserManager> m_parser_manager;
   std::shared_ptr<ParserBuilder> m_parser_builder;
 
-  boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
-  std::string m_file_name;
-  std::istream *m_input_stream;
   ParserParameters m_parameters;
+  Importer& m_owner;
 };
 
 Importer::Importer(const ParserParameters &parameters, const std::shared_ptr<ParserManager> &parser_manager)
 {
-  impl = std::unique_ptr<Implementation>{new Implementation{parser_manager, parameters}};
-}
-
-Importer::Importer(const std::string &file_name,
-                   const ParserParameters &parameters,
-                   const std::shared_ptr<ParserManager> &parser_manager)
-{
-  impl = std::unique_ptr<Implementation>{new Implementation{parser_manager, file_name, parameters}};
-}
-
-Importer::Importer(std::istream &input_stream,
-                   const ParserParameters &parameters,
-                   const std::shared_ptr<ParserManager> &parser_manager)
-{
-  impl = std::unique_ptr<Implementation>{new Implementation{parser_manager, input_stream, parameters}};
+  impl = std::unique_ptr<Implementation>{new Implementation{parser_manager, parameters, *this}};
 }
 
 Importer::Importer(const Importer &other)
- : impl(new Implementation(*(other.impl)))
+  :  ChainElement(other),
+     impl(new Implementation(*(other.impl), *this))
+{}
+
+Importer::Importer(const Importer &&other)
+  :  ChainElement(other),
+     impl(new Implementation(*(other.impl), *this))
 {}
 
 Importer::~Importer()
@@ -259,42 +227,31 @@ Importer::~Importer()
 Importer&
 Importer::operator=(const Importer &other)
 {
-  impl.reset(new Implementation(*(other.impl)));
+  impl.reset(new Implementation(*(other.impl), *this));
+  return *this;
+}
+
+Importer&
+Importer::operator=(const Importer &&other)
+{
+  impl.reset(new Implementation(*(other.impl), *this));
   return *this;
 }
 
 void
-Importer::set_input_stream(std::istream &input_stream)
+Importer::process(Info& info) const
 {
-  impl->set_input_stream(input_stream);
+  impl->process(info);
 }
 
-bool
-Importer::is_valid() const
+Importer*
+Importer::clone() const
 {
-  return impl->is_valid();
-}
-
-void
-Importer::process() const
-{
-  impl->process();
-}
-
-void
-Importer::add_callback(const NewNodeCallback &callback)
-{
-  impl->add_callback(callback);
+  return new Importer(*this);
 }
 
 void
 Importer::add_parameters(const ParserParameters &parameters)
 {
   impl->add_parameters(parameters);
-}
-
-void
-Importer::disconnect_all()
-{
-  impl->disconnect_all();
 }
