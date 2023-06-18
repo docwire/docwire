@@ -529,3 +529,12 @@ RUN wget http://silvercoders.com/download/3rdparty/mappingresources4pdf_2unicode
 	echo "aaf44cb1e5dd2043c932e641b0e41432aee2ca0d  mappingresources4pdf_2unicode_20091116.tar.Z" | sha1sum -c - && \
 	tar -xvf mappingresources4pdf_2unicode_20091116.tar.Z && \
 	mv ToUnicode /usr/local/share/
+
+RUN apt-get install -y libarchive-dev
+
+RUN git clone --depth 1 --branch 1.0.0 https://github.com/do-m-en/libarchive_cpp_wrapper.git
+RUN cd libarchive_cpp_wrapper && \
+	cp archive*.hpp archive*.ipp /usr/local/include/ && \
+	cat archive*.cpp > /usr/local/include/libarchive_cpp_wrapper.hpp && \
+	cd .. && \
+	rm -rf libarchive_cpp_wrapper

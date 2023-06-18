@@ -10,7 +10,7 @@ build_type=$2
 if [ "$arch_arg" = "ARCH=win64" ]; then
 	arch="win64"
 	BUILD_COMMAND="set -e && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains/mingw-w64-x86_64.cmake .. && cmake --build . && cmake --build . --target doxygen install && cd .."
-	TEST_COMMAND="set -e && cd build/tests/ && mkdir /tmp/wine && WINEARCH=win64 WINEPREFIX=/tmp/wine WINEPATH=.. TESSDATA_PREFIX=../tessdata ctest -j4 -V --timeout 30 --repeat until-pass:3"
+	TEST_COMMAND="set -e && cd build/tests/ && mkdir /tmp/wine && WINEARCH=win64 WINEPREFIX=/tmp/wine WINEPATH=.. ctest -j4 -V --timeout 30 --repeat until-pass:3"
 
 	declare -a LIB_PATHS=("/usr/x86_64-w64-mingw32/bin/libiconv-2.dll"
 						  "/usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll"
@@ -78,7 +78,7 @@ else
 	arch="x86_64_linux"
 
 	BUILD_COMMAND='set -e && cd build && cmake .. && cmake --build . && cmake --build . --target doxygen install && cd ..'
-	TEST_COMMAND='set -e && cd build/tests/ && TESSDATA_PREFIX=../ LD_LIBRARY_PATH=.. ctest -j4 -V'
+	TEST_COMMAND='set -e && cd build/tests/ && LD_LIBRARY_PATH=.. ctest -j4 -V'
 	LIB_EXTENSION='so'
 
 	declare -a LIB_PATHS=("/usr/local/lib/libcharsetdetect.so"
