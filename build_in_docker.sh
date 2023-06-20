@@ -2,16 +2,15 @@
 set -e
 
 docker_image_id=$(sha1sum  build_env.dockerfile | awk '{print $1}')
-out=$(docker manifest inspect docwire/doctotext_env_mingw:$docker_image_id > /dev/null ; echo $?)
-
-if [[ $out -eq 1 ]]; then
-  echo "Build image"
-  docker build -t docwire/doctotext_env_mingw:$docker_image_id -f build_env.dockerfile .
-  if [[ -v $docker_login ]]; then
-    echo "Push image"
-    echo "$docker_password" | docker login -u "$docker_login" --password-stdin
-    docker push docwire/doctotext_env_mingw:$docker_image_id
-  fi
+image_exists_ret=$(docker manifest inspect ghcr.io/docwire/doctotext_build_env:$docker_image_id > /dev/null; echo $?)
+if [ $image_exists_ret -eq 0 ]; then
+	docker pull ghcr.io/docwire/doctotext_build_env:$docker_image_id
+else
+	docker build -t ghcr.io/docwire/doctotext_build_env:$docker_image_id -f build_env.dockerfile .
+	if [[ -v ghcr_login ]]; then
+		echo "$ghcr_password" | docker login ghcr.io -u "$ghcr_login" --password-stdin
+		docker push ghcr.io/docwire/doctotext_build_env:$docker_image_id
+	fi
 fi
 
 test -t 0 && USE_TTY="-t"
@@ -172,7 +171,7 @@ docker run --rm \
 	-v /etc/passwd:/etc/passwd:ro \
 	-v `pwd`:`pwd` \
 	-w `pwd` \
-	docwire/doctotext_env_mingw:$docker_image_id \
+	ghcr.io/docwire/doctotext_build_env:$docker_image_id \
 	bash -c "$BUILD_COMMAND && $COPY_COMMAND && $STRIP_COMMAND"
 
 docker build -t doctotext_test_env:latest -f test_env.dockerfile .
