@@ -544,8 +544,28 @@ RUN wget https://github.com/libarchive/bzip2/archive/1ea1ac188ad4b9cb662e3f83146
 		. && \
 	cmake --build . --config Release && \
 	cmake --install . && \
+	cp /usr/x86_64-w64-mingw32/lib/libbz2.dll /usr/x86_64-w64-mingw32/lib/bz2-1.dll && \
 	cd .. && \
 	rm -rf bzip2-1ea1ac188ad4b9cb662e3f8314673c63df95a589
+
+RUN wget https://github.com/libarchive/xz/archive/refs/tags/v5.2.6.tar.gz && \
+	tar -xzvf v5.2.6.tar.gz && \
+	cd xz-5.2.6 && \
+	#cmake \
+	#	-DCMAKE_SYSTEM_NAME=Windows \
+	#	-DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
+	#	-DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+	#	-DCMAKE_INSTALL_PREFIX=/usr/x86_64-w64-mingw32 \
+	#	-DCMAKE_CXX_STANDARD=17 \
+	#	. && \
+	#cmake --build . --config Release && \
+	#cmake --install . && \
+	./autogen.sh --no-po4a && \
+	./configure --host=x86_64-w64-mingw32 --prefix=/usr/x86_64-w64-mingw32 && \
+	make -j4 && \
+	make install-strip && \
+	cd .. && \
+	rm -rf xz-5.2.6
 
 RUN wget https://github.com/libarchive/libarchive/releases/download/v3.6.2/libarchive-3.6.2.tar.gz && \
 	tar -xzvf libarchive-3.6.2.tar.gz && \

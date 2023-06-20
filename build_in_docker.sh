@@ -34,6 +34,9 @@ if [ "$arch_arg" = "ARCH=win64" ]; then
 						  "/usr/lib/gcc/x86_64-w64-mingw32/10-posix/libstdc++-6.dll"
 						  "/usr/x86_64-w64-mingw32/lib/libboost_filesystem.dll"
 						  "/usr/x86_64-w64-mingw32/lib/libboost_system.dll"
+						  "/usr/x86_64-w64-mingw32/bin/libarchive-13.dll"
+						  "/usr/x86_64-w64-mingw32/lib/bz2-1.dll"
+						  "/usr/x86_64-w64-mingw32/bin/liblzma-5.dll"
     )
 
 	declare -a LIBS=(	"libiconv-2.dll"
@@ -56,6 +59,9 @@ if [ "$arch_arg" = "ARCH=win64" ]; then
 						"libpng16.dll"
 						"libgcc_s_seh-1.dll"
 						"libstdc++-6.dll"
+						"libarchive-13.dll"
+						"bz2-1.dll"
+						"liblzma-5.dll"
 	)
 
 	STRIP_COMMAND="set -e && cd build && x86_64-w64-mingw32-objcopy --only-keep-debug doctotext_core.dll doctotext_core.dll.debug &&
