@@ -5,7 +5,7 @@ rm /usr/local/bin/{2to3,2to3-3.11,idle3,idle3.11,pydoc3,pydoc3.11,python3,python
 
 brew install md5sha1sum automake autogen doxygen
 
-brew install libiconv podofo freetype libxml2 zlib leptonica tesseract libarchive
+brew install libiconv podofo freetype libxml2 zlib leptonica tesseract
 
 tesseract --list-langs
 
@@ -109,6 +109,15 @@ cmake -DCMAKE_CXX_STANDARD=17 .
 cmake --build .
 cmake --install .
 cd ..
+
+wget https://github.com/libarchive/libarchive/releases/download/v3.6.2/libarchive-3.6.2.tar.gz
+tar -xzvf libarchive-3.6.2.tar.gz
+cd libarchive-3.6.2 && \
+./configure --without-iconv --without-openssl --without-cng --disable-static --enable-dynamic
+make
+make install-strip
+cd ..
+rm -rf libarchive-3.6.2
 
 wget https://github.com/do-m-en/libarchive_cpp_wrapper/archive/refs/tags/1.0.0.tar.gz
 tar -xzvf 1.0.0.tar.gz
