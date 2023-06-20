@@ -73,7 +73,7 @@ DecompressArchives::process(doctotext::Info &info) const
 	auto is_supported = [](const std::string& fn)
 	{
 		std::set<std::string> supported_extensions { ".zip", ".tar", ".rar", ".gz", ".bz2", ".xz" };
-		return supported_extensions.count(std::filesystem::path(fn).extension()) > 0;
+		return supported_extensions.count(std::filesystem::path(fn).extension().string()) > 0;
 	};
 	if ((path && !is_supported(*path)) || (name && !is_supported(*name)))
 	{
@@ -81,7 +81,7 @@ DecompressArchives::process(doctotext::Info &info) const
 		emit(info);
 		return;
 	}
-	std::istream* in_stream = path ? new std::ifstream ((*path).c_str()) : *stream;
+	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
 	try
 	{
 		namespace ar = ns_archive::ns_reader;

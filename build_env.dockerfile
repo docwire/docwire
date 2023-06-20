@@ -532,9 +532,37 @@ RUN wget http://silvercoders.com/download/3rdparty/mappingresources4pdf_2unicode
 
 RUN apt-get install -y libarchive-dev
 
-RUN git clone --depth 1 --branch 1.0.0 https://github.com/do-m-en/libarchive_cpp_wrapper.git
-RUN cd libarchive_cpp_wrapper && \
+RUN wget https://github.com/libarchive/bzip2/archive/1ea1ac188ad4b9cb662e3f8314673c63df95a589.zip && \
+	unzip 1ea1ac188ad4b9cb662e3f8314673c63df95a589.zip && \
+	cd bzip2-1ea1ac188ad4b9cb662e3f8314673c63df95a589 && \
+	cmake \
+		-DCMAKE_SYSTEM_NAME=Windows \
+		-DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
+		-DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+		-DCMAKE_INSTALL_PREFIX=/usr/x86_64-w64-mingw32 \
+		-DCMAKE_CXX_STANDARD=17 \
+		. && \
+	cmake --build . --config Release && \
+	cmake --install . && \
+	cd .. && \
+	rm -rf bzip2-1ea1ac188ad4b9cb662e3f8314673c63df95a589
+
+RUN wget https://github.com/libarchive/libarchive/releases/download/v3.6.2/libarchive-3.6.2.tar.gz && \
+	tar -xzvf libarchive-3.6.2.tar.gz && \
+	cd libarchive-3.6.2 && \
+	./configure --host=x86_64-w64-mingw32 --prefix=/usr/x86_64-w64-mingw32 --without-iconv --without-openssl --without-cng --disable-static --enable-dynamic && \
+	make && \
+	make install-strip && \
+	cd .. && \
+	rm -rf libarchive-3.6.2
+
+RUN wget https://github.com/do-m-en/libarchive_cpp_wrapper/archive/refs/tags/1.0.0.tar.gz && \
+	tar -xzvf 1.0.0.tar.gz && \
+	cd libarchive_cpp_wrapper-1.0.0 && \
 	cp archive*.hpp archive*.ipp /usr/local/include/ && \
+	cp archive*.hpp archive*.ipp /usr/x86_64-w64-mingw32/include/ && \
+	sed -i 's,linux/types.h,cstdint,' /usr/x86_64-w64-mingw32/include/archive_entry.hpp && \
 	cat archive*.cpp > /usr/local/include/libarchive_cpp_wrapper.hpp && \
+	cat archive*.cpp > /usr/x86_64-w64-mingw32/include/libarchive_cpp_wrapper.hpp && \
 	cd .. && \
 	rm -rf libarchive_cpp_wrapper
