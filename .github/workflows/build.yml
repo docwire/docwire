@@ -4,6 +4,8 @@ jobs:
   build_x86_64_linux:
     runs-on: ubuntu-latest
     timeout-minutes: 150
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v2
         with:
