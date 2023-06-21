@@ -26,7 +26,7 @@ RUN `
     # Cleanup
     && del /q vs_buildtools.exe
 
-RUN powershell Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+RUN powershell Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; $env:chocolateyVersion='1.4.0'; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
 RUN powershell choco install cmake -y --installargs 'ADD_CMAKE_TO_PATH=System'
 RUN powershell choco install git -y
