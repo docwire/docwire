@@ -29,6 +29,9 @@ jobs:
         with:
           fetch-depth: 0
       - run: ./build_in_docker.sh ARCH=win64 --release
+        env:
+          ghcr_login: ${{ github.actor }}
+          ghcr_password: ${{ github.token }}
       - uses: actions/upload-artifact@v2
         with:
           name: win64_build
@@ -45,6 +48,9 @@ jobs:
           fetch-depth: 0
       - run:
           ./build_in_docker.ps1
+        env:
+          ghcr_login: ${{ github.actor }}
+          ghcr_password: ${{ github.token }}
       - uses: actions/upload-artifact@v2
         with:
           name: msvc_build
@@ -61,6 +67,9 @@ jobs:
           fetch-depth: 0
       - run:
           ./build_in_docker.ps1 Debug
+        env:
+          ghcr_login: ${{ github.actor }}
+          ghcr_password: ${{ github.token }}
       - uses: actions/upload-artifact@v2
         with:
           name: msvc_debug_build
