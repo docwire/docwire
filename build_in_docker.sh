@@ -9,7 +9,7 @@ else
 	docker build -t ghcr.io/docwire/doctotext_build_env:$docker_image_id -f build_env.dockerfile --label "org.opencontainers.image.source=https://github.com/docwire/doctotext" .
 	if [[ -v ghcr_login ]]; then
 		echo "$ghcr_password" | docker login ghcr.io -u "$ghcr_login" --password-stdin
-		docker push ghcr.io/docwire/doctotext_build_env:$docker_image_id
+		docker push ghcr.io/docwire/doctotext_build_env:$docker_image_id || echo "Pushing docker image failed, but building will continue."
 	fi
 fi
 
