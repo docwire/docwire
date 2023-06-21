@@ -6,7 +6,7 @@ image_exists_ret=$(docker manifest inspect ghcr.io/docwire/doctotext_build_env:$
 if [ $image_exists_ret -eq 0 ]; then
 	docker pull ghcr.io/docwire/doctotext_build_env:$docker_image_id
 else
-	docker build -t ghcr.io/docwire/doctotext_build_env:$docker_image_id -f build_env.dockerfile .
+	docker build -t ghcr.io/docwire/doctotext_build_env:$docker_image_id -f build_env.dockerfile --label "org.opencontainers.image.source=https://github.com/docwire/doctotext" .
 	if [[ -v ghcr_login ]]; then
 		echo "$ghcr_password" | docker login ghcr.io -u "$ghcr_login" --password-stdin
 		docker push ghcr.io/docwire/doctotext_build_env:$docker_image_id
