@@ -124,6 +124,8 @@ RUN powershell mkdir 'C:\include\mimetic' `
     && powershell Copy-Item -Path 'C:\mimetic\mimetic\rfc822' -Destination 'C:\include\mimetic' -Recurse
 
 RUN dir C:\mimetic\win32
+RUN dir C:\mimetic\win32\Release
+RUN dir C:\mimetic\win32\x64
 
 # libs
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\podofo_x64-windows\lib\*' -Destination 'C:\lib' -Recurse `
