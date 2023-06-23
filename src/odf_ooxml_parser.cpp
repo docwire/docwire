@@ -41,6 +41,7 @@
 #include <map>
 #include "metadata.h"
 #include "misc.h"
+#include <regex>
 #include <stdlib.h>
 #include <string.h>
 #include <sstream>
@@ -85,6 +86,29 @@ class ODFOOXMLParser::CommandHandlersSet
                            bool& children_processed, std::string& level_suffix, bool first_on_level,
                            std::vector<Link>& links)
     {
+		ODFOOXMLParser& p = (ODFOOXMLParser&)parser;
+		p.setLastOOXMLColNum(0);
+		int expected_row_num = p.lastOOXMLRowNum() + 1;
+		std::string row_num_attr = xml_stream.attribute("r");
+		try
+		{
+			int row_num = std::stoi(row_num_attr);
+			if (row_num > expected_row_num)
+			{
+				int empty_rows_count = row_num - expected_row_num;
+				for (int i = 0; i < empty_rows_count; i++)
+				{
+					parser.trySendTag(StandardTag::TAG_TR);
+					parser.trySendTag(StandardTag::TAG_CLOSE_TR);
+				}
+			}
+			p.setLastOOXMLRowNum(row_num);
+		}
+		catch (std::invalid_argument const& ex)
+		{
+			// we accept when row id attribute is incorrect or missing
+			p.setLastOOXMLRowNum(expected_row_num);
+		}
       parser.trySendTag(StandardTag::TAG_TR);
       xml_stream.levelDown();
       text += parser.parseXmlData(xml_stream, mode, options, zipfile, links);
@@ -97,6 +121,8 @@ class ODFOOXMLParser::CommandHandlersSet
                          bool& children_processed, std::string& level_suffix, bool first_on_level,
                          std::vector<Link>& links)
   {
+	  ODFOOXMLParser& p = (ODFOOXMLParser&)parser;
+	  p.setLastOOXMLRowNum(0);
     parser.trySendTag(StandardTag::TAG_TABLE);
     xml_stream.levelDown();
     text += parser.parseXmlData(xml_stream, mode, options, zipfile, links);
@@ -115,6 +141,35 @@ class ODFOOXMLParser::CommandHandlersSet
       {
 				text += "\t";
       }
+			ODFOOXMLParser& p = (ODFOOXMLParser&)parser;
+			int expected_col_num = p.lastOOXMLColNum() + 1;
+			std::string cell_addr_attr = xml_stream.attribute("r");
+			std::regex cell_addr_rgx("([A-Z]+)([0-9]+)");
+			std::smatch match;
+			if (std::regex_match(cell_addr_attr, match, cell_addr_rgx) && match.size() == 3)
+			{
+				std::string col_addr = match[1].str();
+				std::string row_addr = match[2].str();
+				for (char& ch: col_addr)
+					ch = ch - 'A' + '1';
+				int col_num = std::stoi(col_addr);
+				int row_num = std::stoi(row_addr);
+				if (col_num > expected_col_num)
+				{
+					int empty_cols_count = col_num - expected_col_num;
+					for (int i = 0; i < empty_cols_count; i++)
+					{
+						parser.trySendTag(StandardTag::TAG_TD);
+						parser.trySendTag(StandardTag::TAG_CLOSE_TD);
+					}
+				}
+				p.setLastOOXMLColNum(col_num);
+			}
+			else
+			{
+				// we accept when cell address attribute is incorrect or missing
+				p.setLastOOXMLRowNum(expected_col_num);
+			}
       parser.trySendTag(StandardTag::TAG_TD);
 			if (xml_stream.attribute("t") == "s")
 			{
@@ -201,6 +256,8 @@ struct ODFOOXMLParser::ExtendedImplementation
 	const char* m_buffer;
 	size_t m_buffer_size;
 	std::string m_file_name;
+	int last_ooxml_col_num = 0;
+	int last_ooxml_row_num = 0;
 	ODFOOXMLParser* m_interf;
   boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
 
@@ -400,6 +457,26 @@ ODFOOXMLParser::withParameters(const doctotext::ParserParameters &parameters)
 	setVerboseLogging(isVerboseLogging());
 	setLogStream(getLogOutStream());
 	return *this;
+}
+
+int ODFOOXMLParser::lastOOXMLRowNum()
+{
+	return extended_impl->last_ooxml_row_num;
+}
+
+void ODFOOXMLParser::setLastOOXMLRowNum(int r)
+{
+	extended_impl->last_ooxml_row_num = r;
+}
+
+int ODFOOXMLParser::lastOOXMLColNum()
+{
+	return extended_impl->last_ooxml_col_num;
+}
+
+void ODFOOXMLParser::setLastOOXMLColNum(int c)
+{
+	extended_impl->last_ooxml_col_num = c;
 }
 
 void

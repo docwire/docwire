@@ -15,6 +15,8 @@ Unreleased:
     * Added Input class (wrapper for stream or filename) and ChainElement class (base class for importer, exporter and transformer)
     * HTMLParser send style tags with css text
     * HtmlWriter restores style tags with css text
+    * Generating signals for empty rows and cells that are missing/skipped in original XLSX files
+    * Minimum table row height (empty rows and cells) in plain text writer set to 1 line to better restore document layout
 
 Version 5.0.9:
     * Replace README file with more detailed README.md prepared for public GitHub repository
