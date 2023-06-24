@@ -192,10 +192,10 @@ RUN powershell Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/
 RUN vcpkg\vcpkg install leptonica:x64-windows
 
 #tesseract
-RUN powershell Invoke-WebRequest -Uri https://github.com/SoftwareNetwork/binaries/raw/master/sw-master-windows_x86_64-client.zip -OutFile sw-master-windows-client.zip `
-    && dir `
-    && arc unarchive sw-master-windows-client.zip `
-    && .\sw.exe setup
+#RUN powershell Invoke-WebRequest -Uri https://github.com/SoftwareNetwork/binaries/raw/master/sw-master-windows_x86_64-client.zip -OutFile sw-master-windows-client.zip `
+#    && dir `
+#    && arc unarchive sw-master-windows-client.zip `
+#    && .\sw.exe setup
 
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\leptonica_x64-windows\include\leptonica' -Destination 'C:\include' -Recurse
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\leptonica_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force
