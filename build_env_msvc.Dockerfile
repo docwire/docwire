@@ -266,13 +266,17 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\lib\*' -De
 #    && git checkout tags/2022.08.15`
 #    && call ".\bootstrap-vcpkg.bat"
 
-RUN git clone https://github.com/tesseract-ocr/tesseract.git `
-	&& cd tesseract `
-    && git checkout tags/5.3.0 `
-    && mkdir build `
-    && cd build `
-    && cmake .. -G "Visual Studio 17 2022" -A x64 -DBUILD_TRAINING_TOOLS=OFF -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH="C:\\" CMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded$<$<CONFIG:Debug>:Debug>"  `
-    && cmake --build . --config Release`
-    && cmake --build . --config Release --target install `
-    && cd .. `
-    && cd ..
+#RUN git clone https://github.com/tesseract-ocr/tesseract.git `
+#	&& cd tesseract `
+#   && git checkout tags/5.3.0 `
+#    && mkdir build `
+#    && cd build `
+#    && cmake .. -G "Visual Studio 17 2022" -A x64 -DBUILD_TRAINING_TOOLS=OFF -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH="C:\\" CMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded$<$<CONFIG:Debug>:Debug>"  `
+#    && cmake --build . --config Release`
+#    && cmake --build . --config Release --target install `
+#    && cd .. `
+#    && cd ..
+
+RUN vcpkg\vcpkg install tesseract:x64-windows
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\tesseract_x64-windows\lib\*' -Destination 'C:\lib' -Recurse
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\tesseract_x64-windows\include\*.h' -Destination 'C:\include' -Recurse
