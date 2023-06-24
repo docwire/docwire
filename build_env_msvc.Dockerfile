@@ -133,7 +133,7 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\podofo_x64-windows\lib\*' -Des
     && powershell Copy-Item -Path 'C:\vcpkg\packages\boost-filesystem_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force`
     && powershell Copy-Item -Path 'C:\vcpkg\packages\boost-system_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force`
     && powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force`
-    && powershell Copy-Item -Path 'C:\mimetic\win32\libmimetic.lib' -Destination 'C:\lib'
+    #&& powershell Copy-Item -Path 'C:\mimetic\win32\libmimetic.lib' -Destination 'C:\lib'
 
 #unzip
 RUN powershell Invoke-WebRequest -Uri http://www.winimage.com/zLibDll/unzip101e.zip -OutFile C:\unzip101e.zip `
