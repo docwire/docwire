@@ -278,5 +278,5 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\lib\*' -De
 #    && cd ..
 
 RUN vcpkg\vcpkg install tesseract:x64-windows
-RUN powershell Copy-Item -Path 'C:\vcpkg\packages\tesseract_x64-windows\lib\*' -Destination 'C:\lib' -Recurse
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\tesseract_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\tesseract_x64-windows\include\*.h' -Destination 'C:\include' -Recurse
