@@ -108,11 +108,20 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\include\lib
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\include\libpff.h' -Destination 'C:\include'
 
 
-RUN git clone https://github.com/docwire/mimetic.git`
-    && cd mimetic\win32`
-    && call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\Tools\\VsDevCmd.bat"`
-    && msbuild libmimetic.sln /property:Configuration=Release`
-    && cd ..\..
+#RUN git clone https://github.com/docwire/mimetic.git`
+#    && cd mimetic\win32`
+#    && call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\Tools\\VsDevCmd.bat"`
+#    && msbuild libmimetic.sln /property:Configuration=Release`
+#    && cd ..\..
+
+RUN git clone https://github.com/richiware/mimetic.git
+    cd mimetic `
+    && mkdir build `
+    && cd build `
+    && cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH="C:\\" `
+    && cmake --build . --config Release `
+    && cmake --build . --config Release --target install `
+    && cd ../..    
 
 # copy mimetic includes
 
