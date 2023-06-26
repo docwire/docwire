@@ -125,14 +125,14 @@ RUN git clone https://github.com/richiware/mimetic.git `
 
 # copy mimetic includes
 
-RUN powershell mkdir 'C:\include\mimetic' `
-    && powershell Copy-Item -Path 'C:\mimetic\mimetic\*.h' -Destination 'C:\include\mimetic' `
-    && powershell Copy-Item -Path 'C:\mimetic\mimetic\codec' -Destination 'C:\include\mimetic' -Recurse `
-    && powershell Copy-Item -Path 'C:\mimetic\mimetic\os' -Destination 'C:\include\mimetic' -Recurse `
-    && powershell Copy-Item -Path 'C:\mimetic\mimetic\parser' -Destination 'C:\include\mimetic' -Recurse `
-    && powershell Copy-Item -Path 'C:\mimetic\mimetic\rfc822' -Destination 'C:\include\mimetic' -Recurse
+#RUN powershell mkdir 'C:\include\mimetic' `
+#    && powershell Copy-Item -Path 'C:\mimetic\mimetic\*.h' -Destination 'C:\include\mimetic' `
+#    && powershell Copy-Item -Path 'C:\mimetic\mimetic\codec' -Destination 'C:\include\mimetic' -Recurse `
+#    && powershell Copy-Item -Path 'C:\mimetic\mimetic\os' -Destination 'C:\include\mimetic' -Recurse `
+#    && powershell Copy-Item -Path 'C:\mimetic\mimetic\parser' -Destination 'C:\include\mimetic' -Recurse `
+#    && powershell Copy-Item -Path 'C:\mimetic\mimetic\rfc822' -Destination 'C:\include\mimetic' -Recurse
 
-RUN dir /s C:\mimetic
+#RUN dir /s C:\mimetic
 
 # libs
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\podofo_x64-windows\lib\*' -Destination 'C:\lib' -Recurse `
