@@ -114,7 +114,7 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\include\lib
 #    && msbuild libmimetic.sln /property:Configuration=Release`
 #    && cd ..\..
 
-RUN git clone https://github.com/richiware/mimetic.git
+RUN git clone https://github.com/richiware/mimetic.git `
     cd mimetic `
     && mkdir build `
     && cd build `
