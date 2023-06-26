@@ -115,7 +115,7 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\include\lib
 #    && cd ..\..
 
 RUN git clone https://github.com/richiware/mimetic.git `
-    cd mimetic `
+    && cd mimetic `
     && mkdir build `
     && cd build `
     && cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH="C:\\" `
