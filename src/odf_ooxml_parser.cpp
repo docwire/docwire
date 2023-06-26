@@ -150,9 +150,9 @@ class ODFOOXMLParser::CommandHandlersSet
 			{
 				std::string col_addr = match[1].str();
 				std::string row_addr = match[2].str();
-				for (char& ch: col_addr)
-					ch = ch - 'A' + '1';
-				int col_num = std::stoi(col_addr);
+				int col_num = 0;
+				for (char ch: col_addr)
+					col_num = col_num * 26 + (ch - 'A') + 1;
 				int row_num = std::stoi(row_addr);
 				if (col_num > expected_col_num)
 				{
