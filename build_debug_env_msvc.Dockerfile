@@ -120,7 +120,7 @@ RUN git clone https://github.com/docwire/mimetic.git `
     && cd ..\..
 
 # libs
-RUN powershell Copy-Item -Path 'C:\vcpkg\packages\podofo_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\podofo_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse `
     && powershell Copy-Item -Path 'C:\vcpkg\packages\freetype_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
     && powershell Copy-Item -Path 'C:\vcpkg\packages\pthreads_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
     && powershell Copy-Item -Path 'C:\vcpkg\packages\zlib_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
