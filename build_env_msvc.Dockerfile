@@ -118,6 +118,8 @@ RUN git clone https://github.com/docwire/mimetic.git `
     && powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/CMakeLists.txt -OutFile C:\mimetic\CMakeLists.txt `
     && powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/win-vs140.cmake -OutFile C:\mimetic\win-vs140.cmake `
     && cd mimetic `
+    && mkdir cmake `
+    && powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/cmake/config.cmake.in -OutFile C:\mimetic\cmake\config.cmake.in `
     && mkdir build `
     && cd build `
     && cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH="C:\\" `
