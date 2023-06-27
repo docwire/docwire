@@ -113,8 +113,10 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\include\lib
 #    && call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\Tools\\VsDevCmd.bat"`
 #    && msbuild libmimetic.sln /property:Configuration=Release`
 #    && cd ..\..
-
-RUN git clone https://github.com/richiware/mimetic.git `
+    
+RUN git clone https://github.com/docwire/mimetic.git `
+    && powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/CMakeLists.txt -OutFile C:\mimetic\CMakeLists.txt `
+    && powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/win-vs140.cmake -OutFile C:\mimetic\win-vs140.cmake `
     && cd mimetic `
     && mkdir build `
     && cd build `
