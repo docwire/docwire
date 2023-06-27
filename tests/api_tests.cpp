@@ -375,7 +375,8 @@ INSTANTIATE_TEST_SUITE_P(
         "test.js",
         "test.json",
         "test.txt",
-        "test.xml"
+        "test.xml",
+        "empty_cells.xlsx"
                       ),
     [](const ::testing::TestParamInfo<MiscDocumentTest::ParamType>& info) {
         std::string file_name = info.param;

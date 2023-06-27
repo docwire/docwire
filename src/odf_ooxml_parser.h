@@ -44,6 +44,10 @@ class ODFOOXMLParser : public doctotext::Parser,
     struct ExtendedImplementation;
     ExtendedImplementation* extended_impl;
     class CommandHandlersSet;
+    int lastOOXMLRowNum();
+    void setLastOOXMLRowNum(int r);
+    int lastOOXMLColNum();
+    void setLastOOXMLColNum(int c);
   void onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
                      const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
                      bool& children_processed, std::string& level_suffix, bool first_on_level,
