@@ -26,7 +26,7 @@ RUN `
     # Cleanup
     && del /q vs_buildtools.exe
 
-RUN powershell Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+RUN powershell Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; $env:chocolateyVersion='1.4.0'; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
 RUN powershell choco install cmake -y --installargs 'ADD_CMAKE_TO_PATH=System'
 RUN powershell choco install git -y
@@ -105,20 +105,28 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\include\lib
 
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\include\libpff.h' -Destination 'C:\include'
 
-RUN git clone https://github.com/docwire/mimetic.git`
-    && cd mimetic\win32`
-    && call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\Tools\\VsDevCmd.bat"`
-    && msbuild libmimetic.sln /property:Configuration=Debug`
+RUN git clone https://github.com/docwire/mimetic.git `
+    && powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/CMakeLists.txt -OutFile C:\mimetic\CMakeLists.txt `
+    && powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/win-vs140.cmake -OutFile C:\mimetic\win-vs140.cmake `
+    && powershell -Command "(Get-Content C:\mimetic\win-vs140.cmake) -replace 'MD', 'MT' | Set-Content C:\mimetic\win-vs140.cmake" `
+    && cd mimetic `
+    && mkdir cmake `
+    && powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/cmake/config.cmake.in -OutFile C:\mimetic\cmake\config.cmake.in `
+    && mkdir build `
+    && cd build `
+    && cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH="C:\\" `
+    && cmake --build . --config Debug `
+    && cmake --build . --config Debug --target install `
     && cd ..\..
 
-# copy mimetic includes
-
-RUN powershell mkdir 'C:\include\mimetic' `
-    && powershell Copy-Item -Path 'C:\mimetic\mimetic\*.h' -Destination 'C:\include\mimetic' `
-    && powershell Copy-Item -Path 'C:\mimetic\mimetic\codec' -Destination 'C:\include\mimetic' -Recurse `
-    && powershell Copy-Item -Path 'C:\mimetic\mimetic\os' -Destination 'C:\include\mimetic' -Recurse `
-    && powershell Copy-Item -Path 'C:\mimetic\mimetic\parser' -Destination 'C:\include\mimetic' -Recurse `
-    && powershell Copy-Item -Path 'C:\mimetic\mimetic\rfc822' -Destination 'C:\include\mimetic' -Recurse
+# libs
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\podofo_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
+    && powershell Copy-Item -Path 'C:\vcpkg\packages\freetype_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
+    && powershell Copy-Item -Path 'C:\vcpkg\packages\pthreads_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
+    && powershell Copy-Item -Path 'C:\vcpkg\packages\zlib_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
+    && powershell Copy-Item -Path 'C:\vcpkg\packages\boost-filesystem_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
+    && powershell Copy-Item -Path 'C:\vcpkg\packages\boost-system_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
+    && powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
 
 #unzip
 RUN powershell Invoke-WebRequest -Uri http://www.winimage.com/zLibDll/unzip101e.zip -OutFile C:\unzip101e.zip `
@@ -127,6 +135,7 @@ RUN powershell Invoke-WebRequest -Uri http://www.winimage.com/zLibDll/unzip101e.
     && powershell Write-Output 'cmake_minimum_required(VERSION 3.16)' `
       'project(Unzip)' `
       'set(CMAKE_CXX_STANDARD 17)' `
+      'set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")' `
       'set(UNZIP_SRC ioapi.c unzip.c)'`
       'set(FLAGS -fPIC)'`
       'add_library(unzip STATIC ${UNZIP_SRC})'`
@@ -153,6 +162,7 @@ RUN powershell Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/
     && powershell Write-Output 'cmake_minimum_required(VERSION 3.16)' `
       'project(charsetdetect)' `
       'set(CMAKE_CXX_STANDARD 17)' `
+      'set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")' `
       'set(FLAGS -fPIC)'`
       'include_directories(. nspr-emu mozilla/extensions/universalchardet/src/base/)'`
       'file(GLOB charsetdetect_lib_src mozilla/extensions/universalchardet/src/base/*.cpp)'`
@@ -174,26 +184,10 @@ RUN powershell Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/
 #leptonica
 RUN vcpkg\vcpkg install leptonica:x64-windows
 
-#tesseract
-RUN powershell Invoke-WebRequest -Uri https://github.com/SoftwareNetwork/binaries/raw/master/sw-master-windows_x86_64-client.zip -OutFile sw-master-windows-client.zip `
-    && dir `
-    && arc unarchive sw-master-windows-client.zip `
-    && .\sw.exe setup
-
-RUN git clone https://github.com/tesseract-ocr/tesseract.git `
-    && cd tesseract `
-    && git checkout tags/5.3.0 `
-    && mkdir build `
-    && cd build `
-    && cmake .. -G "Visual Studio 17 2022" -A x64 -DBUILD_TRAINING_TOOLS=OFF -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH="C:\\" `
-    && cmake --build . --config Debug`
-    && cmake --build . --config Debug --target install `
-    && cd .. `
-    && cd ..
-
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\leptonica_x64-windows\include\leptonica' -Destination 'C:\include' -Recurse
-RUN powershell Copy-Item -Path 'C:\vcpkg\packages\leptonica_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force
 
+#tesseract
 RUN mkdir tessdata
 
 RUN powershell Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tessdata_fast/raw/main/eng.traineddata -OutFile eng.traineddata `
@@ -217,15 +211,6 @@ RUN git clone https://github.com/docwire/bfio.git`
     && powershell Copy-Item -Path 'C:\bfio\include\*.h' -Destination 'C:\include' `
     && powershell Copy-Item -Path 'C:\bfio\include\libbfio' -Destination 'C:\include' -Recurse
 
-RUN powershell Remove-Item -Path 'mimetic' -Recurse -Force
-
-RUN git clone https://github.com/docwire/mimetic.git`
-    && cd mimetic `
-    && cd win32 `
-    && call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\Tools\\VsDevCmd.bat"`
-    && msbuild libmimetic.sln /property:Configuration=Debug /property:Platform=x64`
-    && cd ..\..
-
 RUN cd vcpkg`
     && git checkout master`
     && git pull `
@@ -235,13 +220,16 @@ RUN cd vcpkg`
     && vcpkg install libiconv:x64-windows`
     && cd ..
 
-RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\include\*.h' -Destination 'C:\include' -Recurse
-
 RUN vcpkg\vcpkg install libxml2:x64-windows
 
-RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\include\libxml' -Destination 'C:\include' -Recurse
-
-RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\include\libxml2' -Destination 'C:\include' -Recurse
+RUN git clone https://github.com/docwire/htmlcxx.git`
+    && cd htmlcxx`
+    && mkdir build`
+    && cd build`
+    && cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH="C:\\" `
+    && cmake --build . --config Debug `
+    && cmake --build . --config Debug --target install `
+    && cd ../..
 
 RUN git clone https://github.com/docwire/wv2.git `
     && cd wv2`
@@ -255,23 +243,12 @@ RUN git clone https://github.com/docwire/wv2.git `
     && arc unarchive wv2-0.2.3_patched_4-private_headers.tar.bz2 `
     && powershell Move-Item -Path wv2-0.2.3_patched_4-private_headers\*.h -Destination 'C:\include\wv2'
 
-RUN git clone https://github.com/docwire/htmlcxx.git`
-    && cd htmlcxx`
-    && mkdir build`
-    && cd build`
-    && cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH="C:\\" `
-    && cmake --build . --config Debug `
-    && cmake --build . --config Debug --target install `
-    && cd ../..
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\lib\*' -Destination 'C:\lib' -Recurse
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\include\*.h' -Destination 'C:\include' -Recurse
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\include\libxml' -Destination 'C:\include' -Recurse
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\include\libxml2' -Destination 'C:\include' -Recurse
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
 
-RUN powershell Copy-Item -Path 'C:\vcpkg\packages\podofo_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
-    && powershell Copy-Item -Path 'C:\vcpkg\packages\freetype_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
-    && powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
-    && powershell Copy-Item -Path 'C:\vcpkg\packages\pthreads_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
-    && powershell Copy-Item -Path 'C:\vcpkg\packages\zlib_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
-    && powershell Copy-Item -Path 'C:\vcpkg\packages\boost-filesystem_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
-    && powershell Copy-Item -Path 'C:\vcpkg\packages\boost-system_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
-    && powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
-    && powershell Copy-Item -Path 'C:\mimetic\win32\libmimetic_d.lib' -Destination 'C:\lib' -Force`
-    && powershell Copy-Item -Path 'C:\vcpkg\packages\leptonica_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
-    && powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force
+RUN vcpkg\vcpkg install tesseract:x64-windows
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\tesseract_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\tesseract_x64-windows\include\tesseract' -Destination 'C:\include' -Recurse

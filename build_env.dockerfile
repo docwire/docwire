@@ -1,6 +1,5 @@
 FROM amd64/debian:bullseye
 
-
 RUN apt-get update #20211001
 
 RUN echo "Europe/Warsaw" > /etc/timezone && dpkg-reconfigure -f noninteractive tzdata
