@@ -125,8 +125,7 @@ if(MSVC)
             optimized ${pthread}
             debug zlibd
             optimized zlib
-            debug libmimetic_d
-            optimized libmimetic
+            general libmimetic
             )
     target_compile_options(doctotext_parsers PUBLIC "/Zc:__cplusplus")
 else()
@@ -171,8 +170,7 @@ if(MSVC)
             general libpff
             general doctotext_core
             general htmlcxx
-            debug libmimetic_d
-            optimized libmimetic
+            general libmimetic
             debug ${pthread_d}
             optimized ${pthread})
     target_include_directories(doctotext_mail PUBLIC
