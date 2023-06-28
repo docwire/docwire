@@ -126,7 +126,7 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\podofo_x64-windows\debug\lib\*
     && powershell Copy-Item -Path 'C:\vcpkg\packages\zlib_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
     && powershell Copy-Item -Path 'C:\vcpkg\packages\boost-filesystem_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
     && powershell Copy-Item -Path 'C:\vcpkg\packages\boost-system_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
-    && powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
+    && powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force
 
 #unzip
 RUN powershell Invoke-WebRequest -Uri http://www.winimage.com/zLibDll/unzip101e.zip -OutFile C:\unzip101e.zip `
