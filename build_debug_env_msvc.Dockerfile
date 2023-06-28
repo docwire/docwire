@@ -185,7 +185,7 @@ RUN powershell Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/
 RUN vcpkg\vcpkg install leptonica:x64-windows
 
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\leptonica_x64-windows\include\leptonica' -Destination 'C:\include' -Recurse
-RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\leptonica_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force
 
 #tesseract
 RUN mkdir tessdata
@@ -247,7 +247,7 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\lib\*' -D
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\include\*.h' -Destination 'C:\include' -Recurse
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\include\libxml' -Destination 'C:\include' -Recurse
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\include\libxml2' -Destination 'C:\include' -Recurse
-RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libxml2_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force
 
 RUN vcpkg\vcpkg install tesseract:x64-windows
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\tesseract_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force
