@@ -119,6 +119,8 @@ RUN git clone https://github.com/docwire/mimetic.git `
     && cmake --build . --config Debug --target install `
     && cd ..\..
 
+RUN dir C:\lib
+
 # libs
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\podofo_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse `
     && powershell Copy-Item -Path 'C:\vcpkg\packages\freetype_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
