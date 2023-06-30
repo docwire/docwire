@@ -163,7 +163,7 @@ RUN powershell Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/
     && powershell Write-Output 'cmake_minimum_required(VERSION 3.16)' `
       'project(charsetdetect)' `
       'set(CMAKE_CXX_STANDARD 17)' `
-      'set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")' `
+      'set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")' `
       'set(FLAGS -fPIC)'`
       'include_directories(. nspr-emu mozilla/extensions/universalchardet/src/base/)'`
       'file(GLOB charsetdetect_lib_src mozilla/extensions/universalchardet/src/base/*.cpp)'`
