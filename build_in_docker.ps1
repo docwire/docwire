@@ -32,12 +32,28 @@ if ($BuildType -eq "Debug")
                             foreach (`$PATH in `$LIB_PATHS){echo `$PATH; Copy-Item -Path `$PATH -Destination build/};
                             Copy-Item -Path c:/tessdata -Destination build -Recurse"
 
-    docker pull docwire/doctotext_build_debug_env_msvc:latest
+    $docker_image_id=Get-FileHash -Algorithm SHA1 build_debug_env_msvc.Dockerfile | Select-Object -ExpandProperty Hash
+    $image_exists=0
+    docker manifest inspect ghcr.io/docwire/doctotext_build_debug_env_msvc:$docker_image_id > $null; if ($?) {$image_exists=1}
+    if ($image_exists -eq 1)
+    {
+        docker pull ghcr.io/docwire/doctotext_build_debug_env_msvc:$docker_image_id
+    }
+    else
+    {
+        docker build -t ghcr.io/docwire/doctotext_build_debug_env_msvc:$docker_image_id -f build_debug_env_msvc.Dockerfile .
+        if ($ghcr_login)
+        {
+            echo "$ghcr_password" | docker login ghcr.io -u "$ghcr_login" --password-stdin
+            docker push ghcr.io/docwire/doctotext_build_debug_env_msvc:$docker_image_id
+        }
+    }
+
     $BUILD_COMMAND = "git config --global --add safe.directory C:/t1; cd build; cmake .. -G 'Visual Studio 17 2022' -A x64 -DCMAKE_TOOLCHAIN_FILE=C://vcpkg/scripts/buildsystems/vcpkg.cmake; cmake --build . -j6 --config Debug; cmake --build . --config Debug --target doxygen install; cd .."
-    docker run --rm -i --init -v ${pwd}:C:\t1 -w C:\t1 docwire/doctotext_build_debug_env_msvc:latest powershell "$BUILD_COMMAND; $COPY_COMMAND"
+    docker run --rm -i --init -v ${pwd}:C:\t1 -w C:\t1 ghcr.io/docwire/doctotext_build_debug_env_msvc:$docker_image_id powershell "$BUILD_COMMAND; $COPY_COMMAND"
 
     $TEST_COMMAND = "cd build/; ctest -V"
-    docker run --rm -i --init -v ${pwd}:C:\t1 -w C:\t1 docwire/doctotext_build_debug_env_msvc:latest powershell -c $TEST_COMMAND
+    docker run --rm -i --init -v ${pwd}:C:\t1 -w C:\t1 ghcr.io/docwire/doctotext_build_debug_env_msvc:$docker_image_id powershell -c $TEST_COMMAND
 }
 else
 {
@@ -68,12 +84,28 @@ else
                             foreach (`$PATH in `$LIB_PATHS){echo `$PATH; Copy-Item -Path `$PATH -Destination build/};
                             Copy-Item -Path c:/tessdata -Destination build -Recurse"
 
-    docker pull docwire/doctotext_build_env_msvc:latest
+    $docker_image_id=Get-FileHash -Algorithm SHA1 build_env_msvc.Dockerfile | Select-Object -ExpandProperty Hash
+    $image_exists=0
+    docker manifest inspect ghcr.io/docwire/doctotext_build_env_msvc:$docker_image_id > $null; if ($?) {$image_exists=1}
+    if ($image_exists -eq 1)
+    {
+        docker pull ghcr.io/docwire/doctotext_build_env_msvc:$docker_image_id
+    }
+    else
+    {
+        docker build -t ghcr.io/docwire/doctotext_build_env_msvc:$docker_image_id -f build_env_msvc.Dockerfile .
+        if ($ghcr_login)
+        {
+            echo "$ghcr_password" | docker login ghcr.io -u "$ghcr_login" --password-stdin
+            docker push ghcr.io/docwire/doctotext_build_env_msvc:$docker_image_id
+        }
+    }
+
     $BUILD_COMMAND = "git config --global --add safe.directory C:/t1; cd build; cmake .. -G 'Visual Studio 17 2022' -A x64 -DCMAKE_TOOLCHAIN_FILE=C://vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>'; cmake --build . -j6 --config Release; cmake --build . --config Release --target doxygen install; cd .."
-    docker run --rm -i --init -v ${pwd}:C:\t1 -w C:\t1 docwire/doctotext_build_env_msvc:latest powershell "$BUILD_COMMAND; $COPY_COMMAND"
+    docker run --rm -i --init -v ${pwd}:C:\t1 -w C:\t1 ghcr.io/docwire/doctotext_build_env_msvc:$docker_image_id powershell "$BUILD_COMMAND; $COPY_COMMAND"
 
     $TEST_COMMAND = "cd build/; ctest -V"
-    docker run --rm -i --init -v ${pwd}:C:\t1 -w C:\t1 docwire/doctotext_build_env_msvc:latest powershell -c $TEST_COMMAND
+    docker run --rm -i --init -v ${pwd}:C:\t1 -w C:\t1 ghcr.io/docwire/doctotext_build_env_msvc:$docker_image_id powershell -c $TEST_COMMAND
 }
 
 

@@ -125,7 +125,7 @@ if(MSVC)
             optimized ${pthread}
             debug zlibd
             optimized zlib
-            debug libmimetic_d
+            debug libmimeticd
             optimized libmimetic
             )
     target_compile_options(doctotext_parsers PUBLIC "/Zc:__cplusplus")
@@ -150,9 +150,9 @@ if(MSVC)
     set_property(TARGET doctotext_ocr PROPERTY
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     target_link_libraries(doctotext_ocr debug leptonica-1.82.0d
-                                        debug tesseract51d
+                                        debug tesseract53d
                                         optimized leptonica-1.82.0
-                                        optimized tesseract51
+                                        optimized tesseract53
                                         general doctotext_core)
     target_include_directories(doctotext_ocr PUBLIC
             ../
@@ -171,7 +171,7 @@ if(MSVC)
             general libpff
             general doctotext_core
             general htmlcxx
-            debug libmimetic_d
+            debug libmimeticd
             optimized libmimetic
             debug ${pthread_d}
             optimized ${pthread})
