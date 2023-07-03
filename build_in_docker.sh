@@ -1,6 +1,18 @@
 #!/bin/bash
 set -e
-docker build -t doctotext_build_env:latest -f build_env.dockerfile .
+
+docker_image_id=$(sha1sum  build_env.dockerfile | awk '{print $1}')
+image_exists_ret=$(docker manifest inspect ghcr.io/docwire/doctotext_build_env:$docker_image_id > /dev/null; echo $?)
+if [ $image_exists_ret -eq 0 ]; then
+	docker pull ghcr.io/docwire/doctotext_build_env:$docker_image_id
+else
+	docker build -t ghcr.io/docwire/doctotext_build_env:$docker_image_id -f build_env.dockerfile --label "org.opencontainers.image.source=https://github.com/docwire/doctotext" .
+	if [[ -v ghcr_login ]]; then
+		echo "$ghcr_password" | docker login ghcr.io -u "$ghcr_login" --password-stdin
+		docker push ghcr.io/docwire/doctotext_build_env:$docker_image_id || echo "Pushing docker image failed, but building will continue."
+	fi
+fi
+
 test -t 0 && USE_TTY="-t"
 echo USE_TTY=$USE_TTY
 
@@ -165,7 +177,7 @@ docker run --rm \
 	-v /etc/passwd:/etc/passwd:ro \
 	-v `pwd`:`pwd` \
 	-w `pwd` \
-	doctotext_build_env:latest \
+	ghcr.io/docwire/doctotext_build_env:$docker_image_id \
 	bash -c "$BUILD_COMMAND && $COPY_COMMAND && $STRIP_COMMAND"
 
 docker build -t doctotext_test_env:latest -f test_env.dockerfile .

@@ -380,7 +380,7 @@ struct PlainTextWriter::Implementation
     for (const auto &row : table)
     {
       std::string row_result;
-      unsigned int max_row_height = 0;
+      unsigned int max_row_height = 1; // empty rows or rows with all cells empty should be visible
       for (const auto &cell : row)
       {
         max_row_height = std::max(int(max_row_height), cell.height());

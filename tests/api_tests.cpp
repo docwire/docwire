@@ -377,6 +377,7 @@ INSTANTIATE_TEST_SUITE_P(
         "test.json",
         "test.txt",
         "test.xml",
+        "empty_cells.xlsx",
         "test.zip",
         "test.tar",
         "test.tar.gz",
