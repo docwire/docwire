@@ -575,14 +575,3 @@ RUN wget https://github.com/libarchive/libarchive/releases/download/v3.6.2/libar
 	make install-strip && \
 	cd .. && \
 	rm -rf libarchive-3.6.2
-
-RUN wget https://github.com/do-m-en/libarchive_cpp_wrapper/archive/refs/tags/1.0.0.tar.gz && \
-	tar -xzvf 1.0.0.tar.gz && \
-	cd libarchive_cpp_wrapper-1.0.0 && \
-	cp archive*.hpp archive*.ipp /usr/local/include/ && \
-	cp archive*.hpp archive*.ipp /usr/x86_64-w64-mingw32/include/ && \
-	sed -i 's,linux/types.h,cstdint,' /usr/x86_64-w64-mingw32/include/archive_entry.hpp && \
-	cat archive*.cpp > /usr/local/include/libarchive_cpp_wrapper.hpp && \
-	cat archive*.cpp > /usr/x86_64-w64-mingw32/include/libarchive_cpp_wrapper.hpp && \
-	cd .. && \
-	rm -rf libarchive_cpp_wrapper

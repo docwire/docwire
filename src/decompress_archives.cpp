@@ -32,7 +32,8 @@
 
 #include "decompress_archives.h"
 
-#include "libarchive_cpp_wrapper.hpp"
+#include <archive.h>
+#include <archive_entry.h>
 #include "exception.h"
 #include <filesystem>
 #include <fstream>
@@ -53,6 +54,169 @@ DecompressArchives::~DecompressArchives()
 {
 }
 
+class ArchiveReader
+{
+public:
+	class EntryStreamBuf : public std::streambuf
+	{
+	public:
+		EntryStreamBuf(archive* archive)
+			: m_archive(archive)
+		{
+		}
+
+		int_type underflow()
+		{
+			//std::cerr << "underflow()" << std::endl;
+			ssize_t bytes_read = archive_read_data(m_archive, m_buffer, m_buf_size);
+			//std::cerr << "bytes read: " << bytes_read << std::endl;
+			if (bytes_read < 0)
+				throw Exception(archive_error_string(m_archive));
+			if (bytes_read == 0)
+				return traits_type::eof();
+			setg(m_buffer, m_buffer, m_buffer + bytes_read);
+			return traits_type::to_int_type(*gptr());
+		}
+
+	private:
+		archive* m_archive;
+		static constexpr size_t m_buf_size = 16384;
+		char m_buffer[m_buf_size];
+	};
+
+	class EntryIStream : public std::istream
+	{
+	public:
+		EntryIStream(archive* archive)
+			: std::istream(new EntryStreamBuf(archive)) {}
+
+		~EntryIStream() { delete rdbuf(); }
+	};
+
+	class Entry
+	{
+	public:
+		Entry(archive* archive, archive_entry* entry)
+			: m_archive(archive), m_entry(entry) {}
+
+		std::string get_name() { return archive_entry_pathname(m_entry); }
+
+		bool is_dir() { return (archive_entry_mode(m_entry) & AE_IFDIR); }
+
+		EntryIStream create_stream() { return EntryIStream(m_archive); }
+
+		operator bool() { return m_entry != nullptr; }
+
+		bool operator!= (const Entry& r) { return m_entry != r.m_entry; };
+
+	private:
+		archive* m_archive;
+		archive_entry* m_entry;
+	};
+
+	struct Iterator
+	{
+		ArchiveReader* m_reader;
+		Entry m_entry;
+		Iterator(ArchiveReader* reader, Entry entry)
+			: m_reader(reader),
+				m_entry(entry)
+		{
+		}
+		Iterator& operator++() { m_entry = m_reader->get_next_entry(); return *this; }
+		bool operator!= (const Iterator& r) { return m_entry != r.m_entry; };
+		const Entry& operator*() const { return m_entry; }
+	};
+
+	ArchiveReader(std::istream& stream)
+		: data(stream)
+	{
+		m_archive = archive_read_new();
+		archive_read_support_filter_all(m_archive);
+		archive_read_support_format_all(m_archive);
+		int r = archive_read_open(m_archive, &data, nullptr, archive_read_callback, archive_close_callback);
+		if (r != ARCHIVE_OK)
+			throw Exception(archive_error_string(m_archive));
+	}
+
+	~ArchiveReader()
+	{
+		int r = archive_read_free(m_archive);
+		//if (r != ARCHIVE_OK)
+		//	std::cerr << "archive_read_free() error: " << archive_error_string(m_archive) << std::endl;
+	}
+
+	archive* get_archive()
+	{
+		return m_archive;
+	}
+
+	Entry get_next_entry()
+	{
+		archive_entry* entry;
+		int r = archive_read_next_header(m_archive, &entry);
+		if (r == ARCHIVE_EOF)
+		{
+			//std::cerr << "End of archive" << std::endl;
+			return Entry(m_archive, nullptr);
+		}
+		if (r != ARCHIVE_OK)
+		{
+			//std::cerr << "archive_read_next_header() error: " << archive_error_string(m_archive) << std::endl;
+			throw Exception(archive_error_string(m_archive));
+		}
+		return Entry(m_archive, entry);
+	}
+
+	Iterator begin()
+	{
+		return Iterator(this, get_next_entry());
+	}
+
+	Iterator end()
+	{
+		return Iterator(this, Entry(m_archive, nullptr));
+	}
+
+private:
+	struct CallbackClientData
+	{
+		CallbackClientData(std::istream& stream)
+			: m_stream(stream)
+		{
+		}
+		std::istream& m_stream;
+		static constexpr size_t m_buf_size = 16384;
+		char m_buffer[m_buf_size];
+	};
+
+	archive* m_archive;
+	CallbackClientData data;
+
+	static ssize_t archive_read_callback(archive* archive, void* client_data, const void** buf)
+	{
+		//std::cerr << "archive_read_callback()" << std::endl;
+		CallbackClientData* data = (CallbackClientData*)client_data;
+		*buf = data->m_buffer;
+		if (data->m_stream.read(data->m_buffer, data->m_buf_size))
+			return data->m_buf_size;
+		else
+		{
+			if (!data->m_stream.eof())
+			{
+				archive_set_error(archive, EIO, "Stream reading error");
+				return -1;
+			}
+			return data->m_stream.gcount();
+		}
+	}
+
+	static int archive_close_callback(archive* archive, void* client_data)
+	{
+		return ARCHIVE_OK;
+	}
+};
+
 void
 DecompressArchives::process(doctotext::Info &info) const
 {
@@ -66,8 +230,6 @@ DecompressArchives::process(doctotext::Info &info) const
 	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
 	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
 	std::optional<std::string> name = info.getAttributeValue<std::string>("name");
-	/*if (name)
-		std::cerr << "Name: " << *name << std::endl;*/
 	if(!path && !stream)
 		throw Exception("No path or stream in TAG_FILE");
 	auto is_supported = [](const std::string& fn)
@@ -84,20 +246,25 @@ DecompressArchives::process(doctotext::Info &info) const
 	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
 	try
 	{
-		namespace ar = ns_archive::ns_reader;
-		ns_archive::reader reader = ns_archive::reader::make_reader<ar::format::_ALL, ar::filter::_ALL>(*in_stream, 10240);
 		//std::cerr << "Decompressing archive" << std::endl;
-		for(auto entry : reader)
+		ArchiveReader reader(*in_stream);
+		for (ArchiveReader::Entry entry: reader)
 		{
-			if (entry->get_header_value_mode() & AE_IFDIR)
+			std::string entry_name = entry.get_name();
+			//std::cerr << "Processing compressed file " << entry_name << std::endl;
+			if (entry.is_dir())
+			{
+				//std::cerr << "Skipping directory entry" << std::endl;
 				continue;
-			//std::cerr << "Processing compressed file " << entry->get_header_value_pathname() << std::endl;
-			Info info(StandardTag::TAG_FILE, "", {{"stream", &entry->get_stream()}, {"name", entry->get_header_value_pathname()}});
+			}
+			ArchiveReader::EntryIStream entry_stream = entry.create_stream();
+			Info info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&entry_stream}, {"name", entry_name}});
 			process(info);
-			//std::cerr << "End of processing compressed file " << entry->get_header_value_pathname() << std::endl;
+			//std::cerr << "End of processing compressed file " << entry_name << std::endl;
 		}
+		//std::cerr << "Archive decompressed successfully" << std::endl;
 	}
-	catch(ns_archive::archive_exception& e)
+	catch (Exception& e)
 	{
 		//std::cerr << e.what() << std::endl;
 		in_stream->clear();

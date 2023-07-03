@@ -119,15 +119,6 @@ make install-strip
 cd ..
 rm -rf libarchive-3.6.2
 
-wget https://github.com/do-m-en/libarchive_cpp_wrapper/archive/refs/tags/1.0.0.tar.gz
-tar -xzvf 1.0.0.tar.gz
-cd libarchive_cpp_wrapper-1.0.0
-cp archive*.hpp archive*.ipp /usr/local/include/
-sed -i.orig 's,linux/types.h,cstdint,' /usr/local/include/archive_entry.hpp
-cat archive*.cpp > /usr/local/include/libarchive_cpp_wrapper.hpp
-cd ..
-rm -rf libarchive_cpp_wrapper
-
 mkdir -p build
 cd build
 cmake -DCMAKE_CXX_STANDARD=17 ..
