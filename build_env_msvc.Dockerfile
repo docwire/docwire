@@ -264,3 +264,7 @@ RUN git clone https://github.com/docwire/htmlcxx.git`
 
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\lib\*' -Destination 'C:\lib' -Recurse
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\include\*.h' -Destination 'C:\include' -Recurse
+
+RUN vcpkg\vcpkg install libarchive:x64-windows
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libarchive_x64-windows\lib\*' -Destination 'C:\lib' -Recurse
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libarchive_x64-windows\include\*.h' -Destination 'C:\include' -Recurse

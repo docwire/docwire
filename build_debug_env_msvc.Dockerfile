@@ -269,3 +269,7 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\podofo_x64-windows\debug\lib\*
     && powershell Copy-Item -Path 'C:\mimetic\win32\libmimetic_d.lib' -Destination 'C:\lib' -Force`
     && powershell Copy-Item -Path 'C:\vcpkg\packages\leptonica_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force`
     && powershell Copy-Item -Path 'C:\vcpkg\packages\libiconv_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force
+
+RUN vcpkg\vcpkg install libarchive:x64-windows
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libarchive_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libarchive_x64-windows\include\*.h' -Destination 'C:\include' -Recurse
