@@ -255,5 +255,5 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\tesseract_x64-windows\debug\li
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\tesseract_x64-windows\include\tesseract' -Destination 'C:\include' -Recurse
 
 RUN vcpkg\vcpkg install libarchive:x64-windows
-RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libarchive_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse
+RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libarchive_x64-windows\debug\lib\*' -Destination 'C:\lib' -Recurse -Force
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libarchive_x64-windows\include\*.h' -Destination 'C:\include' -Recurse
