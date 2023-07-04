@@ -54,7 +54,8 @@ if(MSVC)
                                                  debug boost_filesystem-vc140-mt-gd
                                                  optimized boost_filesystem-vc140-mt
                                                  debug boost_system-vc140-mt-gd
-                                                 optimized boost_system-vc140-mt)
+                                                 optimized boost_system-vc140-mt
+                                                 general archive)
 
     set_target_properties( doctotext_core
             PROPERTIES
