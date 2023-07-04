@@ -257,3 +257,6 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\tesseract_x64-windows\include\
 RUN vcpkg\vcpkg install libarchive:x64-windows
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libarchive_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libarchive_x64-windows\include\*.h' -Destination 'C:\include' -Recurse
+
+RUN dir C:\vcpkg\packages\libarchive_x64-windows\lib
+RUN dir C:\vcpkg\packages\libarchive_x64-windows\bin
