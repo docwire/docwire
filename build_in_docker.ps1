@@ -81,7 +81,7 @@ else
                             '/vcpkg/packages/libwebp_x64-windows/bin/webp.dll',
                             '/vcpkg/packages/libwebp_x64-windows/bin/webpmux.dll',
                             '/vcpkg/packages/zlib_x64-windows/bin/zlib1.dll',
-                            '/vcpkg/packages/libarchive_x64-windows/bin/libarchive-13.dll');
+                            '/vcpkg/packages/libarchive_x64-windows/bin/archive.dll');
                             foreach (`$PATH in `$LIB_PATHS){echo `$PATH; Copy-Item -Path `$PATH -Destination build/};
                             Copy-Item -Path c:/tessdata -Destination build -Recurse"
 
