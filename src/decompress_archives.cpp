@@ -68,7 +68,7 @@ public:
 		int_type underflow()
 		{
 			//std::cerr << "underflow()" << std::endl;
-			ssize_t bytes_read = archive_read_data(m_archive, m_buffer, m_buf_size);
+			la_ssize_t bytes_read = archive_read_data(m_archive, m_buffer, m_buf_size);
 			//std::cerr << "bytes read: " << bytes_read << std::endl;
 			if (bytes_read < 0)
 				throw Exception(archive_error_string(m_archive));
@@ -193,7 +193,7 @@ private:
 	archive* m_archive;
 	CallbackClientData data;
 
-	static ssize_t archive_read_callback(archive* archive, void* client_data, const void** buf)
+	static la_ssize_t archive_read_callback(archive* archive, void* client_data, const void** buf)
 	{
 		//std::cerr << "archive_read_callback()" << std::endl;
 		CallbackClientData* data = (CallbackClientData*)client_data;
