@@ -258,6 +258,5 @@ RUN vcpkg\vcpkg install libarchive:x64-windows
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libarchive_x64-windows\lib\*' -Destination 'C:\lib' -Recurse -Force
 RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libarchive_x64-windows\include\*.h' -Destination 'C:\include' -Recurse
 
-RUN dir C:\vcpkg\packages\libarchive_x64-windows\lib
-RUN dir C:\vcpkg\packages\libarchive_x64-windows\bin
-RUN dumpbin /DEPENDENTS C:\vcpkg\packages\libarchive_x64-windows\bin\archive.dll
+RUN dir /S C:\vcpkg\packages
+RUN "c:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.14.26428\bin\Hostx64\x64\dumpbin" /DEPENDENTS C:\vcpkg\packages\libarchive_x64-windows\bin\archive.dll
