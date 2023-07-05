@@ -260,3 +260,4 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libarchive_x64-windows\include
 
 RUN dir C:\vcpkg\packages\libarchive_x64-windows\lib
 RUN dir C:\vcpkg\packages\libarchive_x64-windows\bin
+RUN dumpbin /DEPENDENTS C:\vcpkg\packages\libarchive_x64-windows\bin\archive.dll
