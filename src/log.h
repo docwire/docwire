@@ -69,10 +69,8 @@ inline void current_function_helper()
 #if defined(__GNUC__)
 #define doctotext_current_function __PRETTY_FUNCTION__
 #elif defined(__FUNCSIG__)
-#warning No PRETTY_FUNCTION
 #define doctotext_current_function __FUNCSIG__
 #else
-#warning No FUNCSIG
 #define doctotext_current_fuction __func__
 #endif
 }
