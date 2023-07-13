@@ -119,7 +119,7 @@ cd ..
 mkdir -p build
 cd build
 cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE=$PWD/../vcpkg/scripts/buildsystems/vcpkg.cmake \
-	-DCMAKE_CXX_FLAGS=$PWD/../vcpkg/packages/boost-signals2_x64-osx/include \
+	-DCMAKE_CXX_FLAGS="-I$PWD/../vcpkg/packages/boost-signals2_x64-osx/include" \
 	..
 cmake --build .
 cmake --build . --target doxygen install
