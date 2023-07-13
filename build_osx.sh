@@ -118,7 +118,7 @@ cd ..
 
 mkdir -p build
 cd build
-cmake -DCMAKE_CXX_STANDARD=17 ..
+cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE=$PWD/../vcpkg/scripts/buildsystems/vcpkg.cmake ..
 cmake --build .
 cmake --build . --target doxygen install
 cd ..
