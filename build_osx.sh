@@ -21,6 +21,7 @@ cd ..
 ./vcpkg/vcpkg install boost-signals2:x64-osx
 ./vcpkg/vcpkg install boost-config:x64-osx
 ./vcpkg/vcpkg install boost-dll:x64-osx
+./vcpkg/vcpkg install boost-assert:x64-osx
 ./vcpkg/vcpkg install boost-smart-ptr:x64-osx
 
 wget -nc https://sourceforge.net/projects/htmlcxx/files/v0.87/htmlcxx-0.87.tar.gz
@@ -120,7 +121,7 @@ cd ..
 mkdir -p build
 cd build
 cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE=$PWD/../vcpkg/scripts/buildsystems/vcpkg.cmake \
-	-DCMAKE_CXX_FLAGS="-I$PWD/../vcpkg/packages/zlib_x64-osx/include -I$PWD/../vcpkg/packages/podofo_x64-osx/include -I$PWD/../vcpkg/packages/libxml2_x64-osx/include -I$PWD/../vcpkg/packages/leptonica_x64-osx/include -I$PWD/../vcpkg/packages/tesseract_x64-osx/include -I$PWD/../vcpkg/packages/boost-filesystem_x64-osx/include -I$PWD/../vcpkg/packages/boost-system_x64-osx/include -I$PWD/../vcpkg/packages/boost-signals2_x64-osx/include -I$PWD/../vcpkg/packages/boost-config_x64-osx/include -I$PWD/../vcpkg/packages/boost-dll_x64-osx/include -I$PWD/../vcpkg/packages/boost-smart-ptr_x64-osx/include" \
+	-DCMAKE_CXX_FLAGS="-I$PWD/../vcpkg/packages/zlib_x64-osx/include -I$PWD/../vcpkg/packages/podofo_x64-osx/include -I$PWD/../vcpkg/packages/libxml2_x64-osx/include -I$PWD/../vcpkg/packages/leptonica_x64-osx/include -I$PWD/../vcpkg/packages/tesseract_x64-osx/include -I$PWD/../vcpkg/packages/boost-filesystem_x64-osx/include -I$PWD/../vcpkg/packages/boost-system_x64-osx/include -I$PWD/../vcpkg/packages/boost-signals2_x64-osx/include -I$PWD/../vcpkg/packages/boost-config_x64-osx/include -I$PWD/../vcpkg/packages/boost-dll_x64-osx/include -I$PWD/../vcpkg/packages/boost-assert_x64-osx/include -I$PWD/../vcpkg/packages/boost-smart-ptr_x64-osx/include" \
 	..
 cmake --build .
 cmake --build . --target doxygen install
