@@ -4,9 +4,10 @@ brew update
 brew install md5sha1sum automake autogen doxygen
 
 git clone https://github.com/microsoft/vcpkg.git
-cd vcpkg && \
-	git checkout tags/2022.08.15 && \
-	./bootstrap-vcpkg.sh
+cd vcpkg
+git checkout tags/2022.08.15
+./bootstrap-vcpkg.sh
+cd ..
 
 ./vcpkg/vcpkg install libiconv:x64-osx
 ./vcpkg/vcpkg install zlib:x64-osx
