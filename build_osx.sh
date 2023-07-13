@@ -121,7 +121,7 @@ cd ..
 mkdir -p build
 cd build
 cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE=$PWD/../vcpkg/scripts/buildsystems/vcpkg.cmake \
-	-DCMAKE_CXX_FLAGS="-I$PWD/../vcpkg/packages/zlib_x64-osx/include -I$PWD/../vcpkg/packages/podofo_x64-osx/include -I$PWD/../vcpkg/packages/libxml2_x64-osx/include -I$PWD/../vcpkg/packages/leptonica_x64-osx/include -I$PWD/../vcpkg/packages/tesseract_x64-osx/include -I$PWD/../vcpkg/packages/boost-filesystem_x64-osx/include -I$PWD/../vcpkg/packages/boost-system_x64-osx/include -I$PWD/../vcpkg/packages/boost-signals2_x64-osx/include -I$PWD/../vcpkg/packages/boost-config_x64-osx/include -I$PWD/../vcpkg/packages/boost-dll_x64-osx/include -I$PWD/../vcpkg/packages/boost-assert_x64-osx/include -I$PWD/../vcpkg/packages/boost-smart-ptr_x64-osx/include -I$PWD/../vcpkg/packages/boost-core_x64-osx/include" \
+	-DCMAKE_CXX_FLAGS="-I$PWD/../vcpkg/packages/zlib_x64-osx/include -I$PWD/../vcpkg/packages/podofo_x64-osx/include -I$PWD/../vcpkg/packages/libxml2_x64-osx/include -I$PWD/../vcpkg/packages/leptonica_x64-osx/include -I$PWD/../vcpkg/packages/tesseract_x64-osx/include -I$PWD/../vcpkg/packages/boost-filesystem_x64-osx/include -I$PWD/../vcpkg/packages/boost-system_x64-osx/include -I$PWD/../vcpkg/packages/boost-signals2_x64-osx/include -I$PWD/../vcpkg/packages/boost-config_x64-osx/include -I$PWD/../vcpkg/packages/boost-dll_x64-osx/include -I$PWD/../vcpkg/packages/boost-assert_x64-osx/include -I$PWD/../vcpkg/packages/boost-smart-ptr_x64-osx/include -I$PWD/../vcpkg/packages/boost-core_x64-osx/include -I$PWD/../vcpkg/packages/boost-exception_x64-osx/include" \
 	..
 cmake --build .
 cmake --build . --target doxygen install
