@@ -16,6 +16,11 @@ cd ..
 ./vcpkg/vcpkg install libxml2:x64-osx
 ./vcpkg/vcpkg install leptonica:x64-osx
 ./vcpkg/vcpkg install tesseract:x64-osx
+./vcpkg/vcpkg install boost-filesystem:x64-osx
+./vcpkg/vcpkg install boost-system:x64-osx
+./vcpkg/vcpkg install boost-signals2:x64-osx
+./vcpkg/vcpkg install boost-config:x64-osx
+./vcpkg/vcpkg install boost-dll:x64-osx
 
 wget -nc https://sourceforge.net/projects/htmlcxx/files/v0.87/htmlcxx-0.87.tar.gz
 echo "ac7b56357d6867f649e0f1f699d9a4f0f03a6e80  htmlcxx-0.87.tar.gz" | shasum -c
@@ -73,13 +78,6 @@ patch -p1 -i ../mimetic-0.9.7-patches/mimetic_pointer_comparison.patch
 ./configure CXXFLAGS=-std=c++17
 make -j4
 make install-strip
-cd ..
-wget https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/boost_1_79_0.tar.gz
-echo "273f1be93238a068aba4f9735a4a2b003019af067b9c183ed227780b8f36062c  boost_1_79_0.tar.gz" | shasum -c
-tar -xzvf boost_1_79_0.tar.gz
-cd boost_1_79_0
-./bootstrap.sh
-./b2 install link=shared runtime-link=shared --with-filesystem --with-system
 cd ..
 
 git clone https://github.com/libyal/libbfio.git
