@@ -16,7 +16,6 @@ cd ..
 ./vcpkg/vcpkg install libxml2:x64-osx
 ./vcpkg/vcpkg install leptonica:x64-osx
 ./vcpkg/vcpkg install tesseract:x64-osx
-./vcpkg/vcpkg install libpff:x64-osx
 ./vcpkg/vcpkg install boost-filesystem:x64-osx
 ./vcpkg/vcpkg install boost-system:x64-osx
 ./vcpkg/vcpkg install boost-signals2:x64-osx
@@ -85,6 +84,17 @@ git clone https://github.com/libyal/libbfio.git
 cd libbfio
 git checkout 3bb082c
 ./synclibs.sh
+autoreconf -i
+./configure
+make -j4
+make install
+cd ..
+
+git clone https://github.com/libyal/libpff.git
+cd libpff
+git checkout 99a86ef
+./synclibs.sh
+touch ../../config.rpath
 autoreconf -i
 ./configure
 make -j4
