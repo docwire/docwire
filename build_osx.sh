@@ -21,7 +21,7 @@ wget -nc https://sourceforge.net/projects/htmlcxx/files/v0.87/htmlcxx-0.87.tar.g
 echo "ac7b56357d6867f649e0f1f699d9a4f0f03a6e80  htmlcxx-0.87.tar.gz" | shasum -c
 tar -xzvf htmlcxx-0.87.tar.gz
 cd htmlcxx-0.87
-./configure CXXFLAGS=-std=c++17 LDFLAGS="-Lvcpkg/packages/libiconv_x64-osx/lib" LIBS="-liconv" CPPFLAGS="-I/vcpkg/packages/libiconv_x64/include"
+./configure CXXFLAGS=-std=c++17 LDFLAGS="-L../vcpkg/packages/libiconv_x64-osx/lib" LIBS="-liconv" CPPFLAGS="-I../vcpkg/packages/libiconv_x64/include"
 sed -i.bak -e "s/\(allow_undefined=\)yes/\1no/" libtool
 sed -i -r -e 's/css\/libcss_parser_pp.la \\//' Makefile
 sed -i -r -e 's/css\/libcss_parser.la//' Makefile
