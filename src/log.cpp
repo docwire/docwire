@@ -37,6 +37,7 @@
 #include <filesystem>
 #include <iomanip>
 #include <iostream>
+#include <pthread.h>
 #include <sstream>
 
 namespace doctotext
