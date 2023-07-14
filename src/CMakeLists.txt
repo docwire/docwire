@@ -131,13 +131,15 @@ if(MSVC)
             )
     target_compile_options(doctotext_parsers PUBLIC "/Zc:__cplusplus")
 else()
+    find_package(Freetype REQUIRED)
+    find_package(LibXml2 REQUIRED)
     target_link_libraries(doctotext_parsers PRIVATE
         podofo
         freetype
         unzip
         wv2
         htmlcxx
-        ${LIBXML2_LIBRARIES}
+        LibXml2::LibXml2
         pthread
         z
         charsetdetect
