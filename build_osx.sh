@@ -121,10 +121,14 @@ cd ..
 vcpkg_cxx_flags=""
 for vcpkg_inc_dir in $PWD/vcpkg/packages/*/include; do vcpkg_cxx_flags="$vcpkg_cxx_flags -I$vcpkg_inc_dir"; done
 
+vcpkg_linker_flags=""
+for vcpkg_lib_dir in $PWD/vcpkg/packages/*/lib; do vcpkg_linker_flags="$vcpkg_linker_flags -L$vcpkg_lib_dir"; done
+
 mkdir -p build
 cd build
 cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE=$PWD/../vcpkg/scripts/buildsystems/vcpkg.cmake \
 	-DCMAKE_CXX_FLAGS="$vcpkg_cxx_flags" \
+	-DCMAKE_SHARED_LINKER_FLAGS="$vcpkg_linker_flags" \
 	..
 cmake --build .
 cmake --build . --target doxygen install
