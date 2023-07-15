@@ -5,7 +5,7 @@ brew install md5sha1sum automake autogen doxygen
 
 git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
-git checkout tags/2022.08.15
+git checkout tags/2023.01.09
 ./bootstrap-vcpkg.sh
 cd ..
 
