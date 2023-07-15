@@ -60,7 +60,25 @@ if(MSVC)
     target_compile_options(doctotext_core PUBLIC "/Zc:__cplusplus")
 
 else()
-    target_link_libraries(doctotext_core PRIVATE wv2 pthread boost_filesystem boost_system)
+    find_library(wvWare wv2 REQUIRED)
+    get_filename_component(wvWare_libdir ${wvWare} DIRECTORY)
+    set(wvWare_incdir "${wvWare_libdir}/../include")
+    if(APPLE)
+        set(wvWare_libname "libwv2.4.dylib")
+    else()
+        if(EXISTS "${wvWare_libdir}/libwv2.so.4")
+            set(wvWare_libname "libwv2.so.4")
+        else()
+            set(wvWare_libname "libwv2.so.1")
+        endif()
+    endif()
+    configure_file(${wvWare_libdir}/${wvWare_libname} ${CMAKE_BINARY_DIR}/src/${wvWare_libname} COPYONLY)
+    configure_file(${wvWare_libdir}/${wvWare_libname} ${CMAKE_BINARY_DIR}/tests/${wvWare_libname} COPYONLY)
+    find_library(boost_filesystem boost_filesystem REQUIRED)
+    find_library(boost_system boost_system REQUIRED)
+    target_link_libraries(doctotext_core PRIVATE ${wvWare} pthread ${boost_filesystem} ${boost_system})
+    find_path(boost_signals2_inc boost/signals2.hpp REQUIRED)
+    target_include_directories(doctotext_core PUBLIC ${wvWare_incdir} ${boost_signals2_inc})
 endif()
 
 target_compile_options(doctotext_core PUBLIC ${EXTRA_FLAGS})
@@ -94,8 +112,10 @@ add_library(doctotext_parsers SHARED
 include(FindLibXml2)
 find_package(ZLIB REQUIRED)
 
-target_link_directories(doctotext_parsers PUBLIC "C:/lib")
-target_link_directories(doctotext_core PUBLIC "C:/lib")
+if (MSVC)
+    target_link_directories(doctotext_parsers PUBLIC "C:/lib")
+    target_link_directories(doctotext_core PUBLIC "C:/lib")
+endif()
 
 target_include_directories(doctotext_parsers PUBLIC
         ../
@@ -131,30 +151,33 @@ if(MSVC)
             )
     target_compile_options(doctotext_parsers PUBLIC "/Zc:__cplusplus")
 else()
+    find_library(podofo podofo REQUIRED)
     find_package(Freetype REQUIRED)
+    find_library(unzip unzip REQUIRED)
     find_package(LibXml2 REQUIRED)
-    if(APPLE)
-        find_package(JPEG REQUIRED)
-        find_package(PNG REQUIRED)
-        find_package(OpenSSL REQUIRED)
-        find_package(TIFF REQUIRED)
-        set(podofo_deps, "${JPEG_LIBRARIES} PNG::PNG OpenSSL::SSL OpenSSL::Crypto TIFF::TIFF")
-    endif()
+    find_library(wv2 wv2 REQUIRED)
+    find_library(htmlcxx htmlcxx REQUIRED)
+    find_library(charsetdetect charsetdetect REQUIRED)
+    find_library(mimetic mimetic REQUIRED)
+    find_library(bfio bfio REQUIRED)
+    find_library(pff pff REQUIRED)
     target_link_libraries(doctotext_parsers PRIVATE
-        podofo ${podofo_deps}
-        freetype
-        unzip
-        wv2
-        htmlcxx
+        ${podofo}
+        Freetype::Freetype
+        ${unzip}
+        ${wv2}
+        ${htmlcxx}
         LibXml2::LibXml2
         pthread
-        z
-        charsetdetect
-        mimetic
-        bfio
-        pff
+        ZLIB::ZLIB
+        ${charsetdetect}
+        ${mimetic}
+        ${bfio}
+        ${pff}
         doctotext_core
         )
+    find_path(unzip_incdir unzip.h)
+    target_include_directories(doctotext_parsers PRIVATE ${unzip_incdir})
 endif()
 
 add_library(doctotext_ocr SHARED ocr_parser_provider.cpp ocr_parser.cpp)
@@ -173,7 +196,15 @@ if(MSVC)
             )
     target_compile_options(doctotext_ocr PUBLIC "/Zc:__cplusplus")
 else()
-    target_link_libraries(doctotext_ocr PRIVATE lept tesseract doctotext_core)
+    find_package(Leptonica)
+    if (Leptonica_FOUND)
+        find_library(archive archive REQUIRED)
+    else ()
+        find_library(Leptonica_LIBRARIES leptonica REQUIRED)
+        set(archive "")
+    endif()
+    find_library(tesseract tesseract)
+    target_link_libraries(doctotext_ocr PRIVATE ${Leptonica_LIBRARIES} ${tesseract} ${archive} doctotext_core)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
