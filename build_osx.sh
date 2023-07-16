@@ -141,9 +141,9 @@ cd ..
 cd build
 mkdir -p tessdata
 cd tessdata
-wget -nc https://github.com/tesseract-ocr/tessdata_fast/raw/main/eng.traineddata
-wget -nc https://github.com/tesseract-ocr/tessdata_fast/raw/main/osd.traineddata
-wget -nc https://github.com/tesseract-ocr/tessdata_fast/raw/main/pol.traineddata
+wget -nc https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/eng.traineddata
+wget -nc https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/osd.traineddata
+wget -nc https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/pol.traineddata
 cd ..
 cp $deps_prefix/lib/libwv2.4.dylib .
 cp $vcpkg_prefix/lib/libpodofo.0.9.8.dylib .
