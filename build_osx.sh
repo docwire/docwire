@@ -129,6 +129,31 @@ cmake --build .
 cmake --install .
 cd ..
 
+wget http://silvercoders.com/download/3rdparty/cmapresources_korean1-2.tar.z
+echo "e4e36995cff0331d8bd5ad00c1c1453c24ab4c07  cmapresources_korean1-2.tar.z" | sha1sum -c -
+tar -xvf cmapresources_korean1-2.tar.z
+mv ak12 $deps_prefix/share/
+
+wget http://silvercoders.com/download/3rdparty/cmapresources_japan1-6.tar.z
+echo "9467d7ed73c16856d2a49b5897fc5ea477f3a111  cmapresources_japan1-6.tar.z" | sha1sum -c -
+tar -xvf cmapresources_japan1-6.tar.z
+mv aj16 $deps_prefix/share/
+
+wget http://silvercoders.com/download/3rdparty/cmapresources_gb1-5.tar.z
+echo "56e6cbd9e053185f9e00118e54fd5159ca118b39  cmapresources_gb1-5.tar.z" | sha1sum -c -
+tar -xvf cmapresources_gb1-5.tar.z
+mv ag15 $deps_prefix/share/
+
+wget http://silvercoders.com/download/3rdparty/cmapresources_cns1-6.tar.z
+echo "80c92cc904c9189cb9611741b913ffd22bcd4036  cmapresources_cns1-6.tar.z" | sha1sum -c -
+tar -xvf cmapresources_cns1-6.tar.z
+mv ac16 $deps_prefix/share/
+
+wget http://silvercoders.com/download/3rdparty/mappingresources4pdf_2unicode_20091116.tar.Z
+echo "aaf44cb1e5dd2043c932e641b0e41432aee2ca0d  mappingresources4pdf_2unicode_20091116.tar.Z" | sha1sum -c -
+tar -xvf mappingresources4pdf_2unicode_20091116.tar.Z
+mv ToUnicode $deps_prefix/share/
+
 mkdir -p build
 cd build
 cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE=$PWD/../vcpkg/scripts/buildsystems/vcpkg.cmake \
@@ -152,6 +177,14 @@ cp $deps_prefix/lib/libcharsetdetect.dylib .
 cp $deps_prefix/lib/libmimetic.0.dylib .
 cp $deps_prefix/lib/libbfio.1.dylib .
 cp $deps_prefix/lib/libpff.1.dylib .
+mkdir -p resources
+cd resources
+cp $deps_prefix/share/ac16/CMap/* .
+cp $deps_prefix/share/ag15/CMap/* .
+cp $deps_prefix/share/aj16/CMap/* .
+cp $deps_prefix/share/ak12/CMap/* .
+cp $deps_prefix/share/ToUnicode/* .
+cd ..
 cd ..
 
 cd build/tests
