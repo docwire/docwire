@@ -159,8 +159,9 @@ else()
     find_package(LibXml2 REQUIRED)
     if (NOT MINGW)
         find_package(Iconv REQUIRED)
+        set(libxml2_dep_iconv "Iconv::Iconv")
         find_package(LibLZMA REQUIRED)
-        set(libxml2_deps "Iconv::Iconv LibLZMA::LibLZMA")
+        set(libxml2_dep_lzma "LibLZMA::LibLZMA")
     endif()
     find_library(wv2 wv2 REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
@@ -174,7 +175,7 @@ else()
         ${unzip}
         ${wv2}
         ${htmlcxx}
-        LibXml2::LibXml2 ${libxml2_deps}
+        LibXml2::LibXml2 ${libxml2_dep_iconv} ${libxml2_dep_lzma}
         pthread
         ZLIB::ZLIB
         ${charsetdetect}
