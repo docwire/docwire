@@ -64,14 +64,14 @@ jobs:
             ./*.sha1
           if-no-files-found: error
   build_osx:
-    runs-on: macos-latest
+    runs-on: macos-12
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
       - run:
-          ./build_osx.sh
+          ./build_osx.sh --release
       - uses: actions/upload-artifact@v2
         with:
           name: osx_build

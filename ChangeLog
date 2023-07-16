@@ -1,5 +1,6 @@
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed
+    * MacOSX building process refactored to use VCPKG
     * PDF parser infinite loop when font is unknown fixed
 
 Version 5.0.9:
