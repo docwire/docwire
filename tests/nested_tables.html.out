@@ -1,12 +1,11 @@
- 
 Nested tables with links
-
 Znaczki spoza ascii ąśćłóżł
- <header>header 
-  <first_link>first 	 <second_link>second 
- 
-1.   <third_link>third 	 <fourth_link>fourth 
-2.   <fifth_link>fifth 	 <sixth_link>sixth 
-3.  Some text 
-
+<header>header                             
+<first_link>first    <second_link>second   
+                                           
+1. <third_link>third    <fourth_link>fourth
+                                           
+2. <fifth_link>fifth  <sixth_link>sixth    
+                                           
+3. Some text                               
 

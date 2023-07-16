@@ -41,9 +41,10 @@
 #include "doctotext_c_api.h"
 #include "html_writer.h"
 
+#include "input.h"
 #include "importer.h"
 #include "exporter.h"
-#include "transformer.h"
+#include "transformer_func.h"
 #include "parsing_chain.h"
 #include "simple_extractor.h"
 #include "plain_text_writer.h"
@@ -76,11 +77,16 @@ struct DocToTextWriter
   std::unique_ptr<Writer> m_writer;
 };
 
+struct DocToTextInput
+{
+  std::shared_ptr<InputBase> m_input;
+  std::stringstream m_stream;
+  FILE *m_file;
+};
+
 struct DocToTextImporter
 {
   std::shared_ptr<Importer> m_importer;
-  std::stringstream m_stream;
-  FILE *m_file;
 };
 
 struct DocToTextExporter
@@ -92,7 +98,7 @@ struct DocToTextExporter
 
 struct DocToTextTransformer
 {
-  std::shared_ptr<Transformer> m_transformer;
+  std::shared_ptr<TransformerFunc> m_transformer;
 };
 
 struct DocToTextParsingChain
@@ -259,22 +265,6 @@ DOCTOTEXT_CALL doctotext_writer_write(DocToTextWriter* writer, DocToTextInfo* in
   fprintf(out_stream, "%s", stream.str().c_str());
 }
 
-void
-DOCTOTEXT_CALL doctotext_writer_write_header(DocToTextWriter* writer, FILE* out_stream)
-{
-  std::stringstream stream;
-  writer->m_writer->write_header(stream);
-  fprintf(out_stream, "%s", stream.str().c_str());
-}
-
-void
-DOCTOTEXT_CALL doctotext_writer_write_footer(DocToTextWriter* writer, FILE* out_stream)
-{
-  std::stringstream stream;
-  writer->m_writer->write_footer(stream);
-  fprintf(out_stream, "%s", stream.str().c_str());
-}
-
 DocToTextWriter*
 DOCTOTEXT_CALL doctotext_create_html_writer()
 {
@@ -297,18 +287,26 @@ DOCTOTEXT_CALL doctotext_free_writer(DocToTextWriter* writer)
   writer->m_writer.reset();
 }
 
-DocToTextImporter*
-DOCTOTEXT_CALL doctotext_create_importer_from_file_name(DocToTextParserManager *manager, const char *file_name)
+DocToTextInput*
+DOCTOTEXT_CALL doctotext_create_input_from_file_name(const char *file_name)
 {
-  auto importer = new DocToTextImporter;
-  importer->m_importer = std::make_shared<Importer>(file_name, ParserParameters(), manager->m_parser_manager);
-  return importer;
+  auto input = new DocToTextInput;
+  input->m_input = std::make_shared<InputBase>(file_name);
+  return input;
+}
+
+DocToTextInput*
+DOCTOTEXT_CALL doctotext_create_input_from_stream(FILE *input_stream)
+{
+  return nullptr;
 }
 
 DocToTextImporter*
-DOCTOTEXT_CALL doctotext_create_importer_from_stream(DocToTextParserManager *manager, FILE *input_stream)
+DOCTOTEXT_CALL doctotext_create_importer(DocToTextParserManager *manager)
 {
-  return nullptr;
+  auto importer = new DocToTextImporter;
+  importer->m_importer = std::make_shared<Importer>(ParserParameters(), manager->m_parser_manager);
+  return importer;
 }
 
 DocToTextExporter*
@@ -343,6 +341,14 @@ DOCTOTEXT_CALL doctotext_create_transfomer(void (*callback)(DocToTextInfo*, void
   auto transformer = new DocToTextTransformer;
   transformer->m_transformer = std::make_shared<TransformerFunc>(transform_function);
   return transformer;
+}
+
+DocToTextParsingChain*
+DOCTOTEXT_CALL doctotext_connect_input_to_importer(DocToTextInput* input, DocToTextImporter *importer)
+{
+  DocToTextParsingChain *chain = new DocToTextParsingChain;
+  chain->m_parsing_chain = std::make_shared<ParsingChain>(*input->m_input, *importer->m_importer);
+  return chain;
 }
 
 DocToTextParsingChain*
@@ -381,6 +387,13 @@ DOCTOTEXT_CALL doctotext_connect_parsing_chain_to_exporter(DocToTextParsingChain
   *(parsing_chain->m_parsing_chain) = *(parsing_chain->m_parsing_chain) | *(exporter->m_exporter);
   fprintf(exporter->m_file, "%s", exporter->m_stream.str().c_str());
   return parsing_chain;
+}
+
+void
+DOCTOTEXT_CALL doctotext_free_input(DocToTextInput *input)
+{
+  delete input;
+  input = nullptr;
 }
 
 void

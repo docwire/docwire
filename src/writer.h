@@ -38,6 +38,8 @@
 namespace doctotext
 {
 
+struct Info;
+
 class TextElement
 {
 public:
@@ -59,25 +61,11 @@ class DllExport Writer
 {
 public:
   /**
-   * @brief Writes to output specific header (eg. html tags).
-   * @param file output stream
-   */
-  virtual void write_header(std::ostream &file) const
-  {}
-
-  /**
-   * @brief Writes to output specific footer (eg. html tags).
-   * @param file output stream
-   */
-  virtual void write_footer(std::ostream &file) const
-  {}
-
-  /**
    * @brief writes data from struct Info to the specific output stream
    * @param info structures using by the callback
    * @param file output stream
    */
-  virtual void write_to(const doctotext::Info &info, std::ostream &file) const = 0;
+  virtual void write_to(const doctotext::Info &info, std::ostream &file) = 0;
 
   /**
    * @brief creates a new instance of Writer

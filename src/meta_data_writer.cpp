@@ -124,7 +124,7 @@ std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext
   {StandardTag::TAG_METADATA, &write_meta_data}};
 
 void
-MetaDataWriter::write_to(const doctotext::Info &info, std::ostream &file) const
+MetaDataWriter::write_to(const doctotext::Info &info, std::ostream &file)
 {
   auto writer_iterator = meta_data_writers.find(info.tag_name);
   if (writer_iterator != meta_data_writers.end())
@@ -138,4 +138,5 @@ MetaDataWriter::clone() const
 {
   return new MetaDataWriter(*this);
 }
+
 } // namespace doctotext

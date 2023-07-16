@@ -19,14 +19,17 @@ set(DOCTOTEXT_SOURCES
         parser_manager.cpp
         parser_parameters.cpp
         html_writer.cpp
+        csv_writer.cpp
         plain_text_writer.cpp
         standard_filter.cpp
         simple_extractor.cpp
         importer.cpp
         exporter.cpp
-        transformer.cpp
+        transformer_func.cpp
+        meta_data_writer.cpp
+        chain_element.cpp
         parsing_chain.cpp
-        meta_data_writer.cpp)
+        input.cpp)
 
 if(MSVC)
     add_definitions(-DMSVC_BUILD)
@@ -96,7 +99,6 @@ add_library(doctotext_parsers SHARED
         xml_fixer.cpp
         xml_stream.cpp
         html_parser.cpp
-        eml_parser.cpp
         doc_parser.cpp
         common_xml_document_parser.cpp
         iwork_parser.cpp
@@ -108,7 +110,6 @@ add_library(doctotext_parsers SHARED
         txt_parser.cpp
         xls_parser.cpp
         xlsb_parser.cpp
-        pst_parser.cpp
         basic_parser_provider.cpp)
 
 include(FindLibXml2)
@@ -139,8 +140,6 @@ if(MSVC)
             general htmlcxx
             general ${LIBXML2_LIBRARIES}
             general charsetdetect
-            general libbfio
-            general libpff
             general doctotext_core
             debug freetyped
             optimized freetype
@@ -148,7 +147,7 @@ if(MSVC)
             optimized ${pthread}
             debug zlibd
             optimized zlib
-            debug libmimetic_d
+            debug libmimeticd
             optimized libmimetic
             )
     target_compile_options(doctotext_parsers PUBLIC "/Zc:__cplusplus")
@@ -167,8 +166,6 @@ else()
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
     find_library(mimetic mimetic REQUIRED)
-    find_library(bfio bfio REQUIRED)
-    find_library(pff pff REQUIRED)
     target_link_libraries(doctotext_parsers PRIVATE
         ${podofo}
         Freetype::Freetype
@@ -180,8 +177,6 @@ else()
         ZLIB::ZLIB
         ${charsetdetect}
         ${mimetic}
-        ${bfio}
-        ${pff}
         doctotext_core
         )
     find_path(unzip_incdir unzip.h)
@@ -193,9 +188,9 @@ if(MSVC)
     set_property(TARGET doctotext_ocr PROPERTY
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     target_link_libraries(doctotext_ocr debug leptonica-1.82.0d
-                                        debug tesseract51d
+                                        debug tesseract53d
                                         optimized leptonica-1.82.0
-                                        optimized tesseract51
+                                        optimized tesseract53
                                         general doctotext_core)
     target_include_directories(doctotext_ocr PUBLIC
             ../
@@ -231,6 +226,31 @@ else()
     target_link_libraries(doctotext_ocr PRIVATE ${Leptonica_LIBRARIES} ${tesseract} ${archive} ${libxml2_dep_iconv} doctotext_core)
 endif()
 
+add_library(doctotext_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
+if(MSVC)
+    target_link_libraries(doctotext_mail
+            general libbfio
+            general libpff
+            general doctotext_core
+            general htmlcxx
+            debug libmimeticd
+            optimized libmimetic
+            debug ${pthread_d}
+            optimized ${pthread})
+    target_include_directories(doctotext_mail PUBLIC
+            ../
+            .
+            "C:/include"
+            )
+    target_compile_options(doctotext_mail PUBLIC "/Zc:__cplusplus")
+else()
+    find_library(mimetic mimetic REQUIRED)
+    find_library(bfio bfio REQUIRED)
+    find_library(pff pff REQUIRED)
+    find_library(htmlcxx htmlcxx REQUIRED)
+    target_link_libraries(doctotext_mail PRIVATE ${bfio} ${pff} ${mimetic} ${htmlcxx} pthread doctotext_core)
+endif()
+
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
    target_link_libraries(doctotext_parsers PRIVATE
       iconv
@@ -256,6 +276,8 @@ install(TARGETS c_text_extractor
 install(TARGETS text_extractor
    DESTINATION ${CMAKE_BINARY_DIR})
 install(TARGETS doctotext_ocr
+        DESTINATION ${CMAKE_BINARY_DIR}/plugins)
+install(TARGETS doctotext_mail
         DESTINATION ${CMAKE_BINARY_DIR}/plugins)
 install(TARGETS doctotext_parsers
         DESTINATION ${CMAKE_BINARY_DIR}/plugins)
@@ -284,9 +306,10 @@ configure_file(${CMAKE_SOURCE_DIR}/src/standard_filter.h ${CMAKE_BINARY_DIR}/sta
 configure_file(${CMAKE_SOURCE_DIR}/src/writer.h ${CMAKE_BINARY_DIR}/writer.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/plain_text_writer.h ${CMAKE_BINARY_DIR}/plain_text_writer.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/html_writer.h ${CMAKE_BINARY_DIR}/html_writer.h COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/src/csv_writer.h ${CMAKE_BINARY_DIR}/csv_writer.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/importer.h ${CMAKE_BINARY_DIR}/importer.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/exporter.h ${CMAKE_BINARY_DIR}/exporter.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/transformer.h ${CMAKE_BINARY_DIR}/transformer.h COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/src/transformer_func.h ${CMAKE_BINARY_DIR}/transformer_func.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/parsing_chain.h ${CMAKE_BINARY_DIR}/parsing_chain.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/simple_extractor.h ${CMAKE_BINARY_DIR}/simple_extractor.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/defines.h ${CMAKE_BINARY_DIR}/defines.h COPYONLY)

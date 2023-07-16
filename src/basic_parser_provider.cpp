@@ -36,10 +36,8 @@
 
 #include "basic_parser_provider.h"
 #include "parser_wrapper.h"
-#include "pst_parser.h"
 #include "html_parser.h"
 #include "doc_parser.h"
-#include "eml_parser.h"
 #include "pdf_parser.h"
 #include "odfxml_parser.h"
 #include "xls_parser.h"
@@ -58,10 +56,8 @@ BasicParserProvider::addExtensions(const std::vector<std::string> &extensions)
 
 BasicParserProvider::BasicParserProvider()
 {
-  addExtensions(PSTParser::getExtensions());
   addExtensions(HTMLParser::getExtensions());
   addExtensions(DOCParser::getExtensions());
-  addExtensions(EMLParser::getExtensions());
   addExtensions(PDFParser::getExtensions());
   addExtensions(XLSParser::getExtensions());
   addExtensions(XLSBParser::getExtensions());
@@ -82,21 +78,13 @@ BasicParserProvider::isExtensionInVector(const std::string &extension, const std
 std::optional<doctotext::ParserBuilder*>
 BasicParserProvider::findParserByExtension(const std::string &inExtension) const
 {
-  if (isExtensionInVector(inExtension, PSTParser::getExtensions()))
-  {
-    return new ParserBuilderWrapper<parser_creator<PSTParser>>();
-  }
-  else if (isExtensionInVector(inExtension, HTMLParser::getExtensions()))
+  if (isExtensionInVector(inExtension, HTMLParser::getExtensions()))
   {
     return new ParserBuilderWrapper<parser_creator<HTMLParser>>();
   }
   else if (isExtensionInVector(inExtension, DOCParser::getExtensions()))
   {
     return new ParserBuilderWrapper<parser_creator<DOCParser>>();
-  }
-  else if (isExtensionInVector(inExtension, EMLParser::getExtensions()))
-  {
-    return new ParserBuilderWrapper<parser_creator<EMLParser>>();
   }
   else if (isExtensionInVector(inExtension, PDFParser::getExtensions()))
   {
@@ -156,16 +144,7 @@ is_valid(const char* buffer, size_t size)
 std::optional<ParserBuilder*>
 BasicParserProvider::findParserByData(const std::vector<char>& buffer) const
 {
-  if (is_valid<PSTParser, &PSTParser::isPST>(buffer.data(), buffer.size()))
-  {
-    return new ParserBuilderWrapper<parser_creator<PSTParser>>();
-  }
-  //We have to check if file is EML before HTML, because HTML can be included inside EML.
-  else if (is_valid<EMLParser, &EMLParser::isEML>(buffer.data(), buffer.size()))
-  {
-    return new ParserBuilderWrapper<wrapper_parser_creator<EMLParser>>();
-  }
-  else if (is_valid<HTMLParser, &HTMLParser::isHTML>(buffer.data(), buffer.size()))
+  if (is_valid<HTMLParser, &HTMLParser::isHTML>(buffer.data(), buffer.size()))
   {
     return new ParserBuilderWrapper<parser_creator<HTMLParser>>();
   }

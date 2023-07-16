@@ -32,6 +32,7 @@
 
 #include "importer.h"
 #include "html_writer.h"
+#include "csv_writer.h"
 #include "plain_text_writer.h"
 #include "meta_data_writer.h"
 #include "exporter.h"
@@ -68,18 +69,6 @@ public:
   bool is_valid() const
   {
     return _output != nullptr;
-  }
-
-  void
-  begin() const
-  {
-    _writer->write_header(*_output);
-  }
-
-  void
-  end() const
-  {
-    _writer->write_footer(*_output);
   }
 
   void
@@ -130,21 +119,9 @@ Exporter::is_valid() const
 }
 
 void
-Exporter::begin() const
+Exporter::process(doctotext::Info &info) const
 {
-  impl->begin();
-}
-
-void
-Exporter::end() const
-{
-  impl->end();
-}
-
-Exporter *
-Exporter::clone() const
-{
-  return new Exporter(*this);
+  impl->export_to(info);
 }
 
 void
@@ -165,12 +142,12 @@ Exporter::get_output() const
   return impl->get_output();
 }
 
-HtmlExporter::HtmlExporter()
-  : Exporter(std::make_unique<HtmlWriter>())
+HtmlExporter::HtmlExporter(RestoreOriginalAttributes restore_original_attributes)
+  : Exporter(std::make_unique<HtmlWriter>(static_cast<HtmlWriter::RestoreOriginalAttributes>(restore_original_attributes)))
 {}
 
-HtmlExporter::HtmlExporter(std::ostream &out_stream)
-: Exporter(std::make_unique<HtmlWriter>(), out_stream)
+HtmlExporter::HtmlExporter(std::ostream &out_stream, RestoreOriginalAttributes restore_original_attributes)
+: Exporter(std::make_unique<HtmlWriter>(static_cast<HtmlWriter::RestoreOriginalAttributes>(restore_original_attributes)), out_stream)
 {}
 
 PlainTextExporter::PlainTextExporter()
@@ -180,6 +157,23 @@ PlainTextExporter::PlainTextExporter()
 PlainTextExporter::PlainTextExporter(std::ostream &out_stream)
 : Exporter(std::make_unique<PlainTextWriter>(), out_stream)
 {}
+
+PlainTextExporter::PlainTextExporter(std::ostream &&out_stream)
+: Exporter(std::make_unique<PlainTextWriter>(), out_stream)
+{}
+
+namespace experimental
+{
+
+CsvExporter::CsvExporter()
+  : Exporter(std::make_unique<CsvWriter>())
+{}
+
+CsvExporter::CsvExporter(std::ostream &out_stream)
+: Exporter(std::make_unique<CsvWriter>(), out_stream)
+{}
+
+} // namespace experimental
 
 MetaDataExporter::MetaDataExporter()
   : Exporter(std::make_unique<MetaDataWriter>())

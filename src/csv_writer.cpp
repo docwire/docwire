@@ -30,57 +30,52 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#include "importer.h"
-#include "transformer.h"
+#include "csv_writer.h"
+#include "parser.h"
 
-using namespace doctotext;
-
-class TransformerFunc::Implementation
+namespace doctotext
 {
-public:
-  Implementation(doctotext::NewNodeCallback transformer_function)
-    : m_transformer_function(transformer_function)
-  {}
 
-  Implementation(const Implementation &other)
-    : m_transformer_function(other.m_transformer_function)
-  {}
-
-  Implementation(const Implementation &&other)
-    : m_transformer_function(other.m_transformer_function)
-  {}
-
-  void
-  transform(doctotext::Info &info) const
-  {
-    m_transformer_function(info);
-  }
-
-  doctotext::NewNodeCallback m_transformer_function;
-};
-
-TransformerFunc::TransformerFunc(doctotext::NewNodeCallback transformer_function)
+namespace experimental
 {
-  impl = std::unique_ptr<Implementation>{new Implementation{transformer_function}};
-}
-
-TransformerFunc::TransformerFunc(const TransformerFunc &other)
-: impl(new Implementation{*other.impl})
-{
-}
-
-TransformerFunc::~TransformerFunc()
-{
-}
 
 void
-TransformerFunc::transform(doctotext::Info &info) const
+CsvWriter::write_to(const doctotext::Info &info, std::ostream &stream)
 {
-  impl->transform(info);
+  if (!m_in_table && info.tag_name != StandardTag::TAG_TABLE)
+    return;
+  if (info.tag_name == StandardTag::TAG_TABLE)
+    m_in_table = true;
+  else if (info.tag_name == StandardTag::TAG_CLOSE_TABLE)
+    m_in_table = false;
+  else if (info.tag_name == StandardTag::TAG_CLOSE_TR)
+  {
+    if (!m_curr_line.empty())
+    {
+      stream << m_curr_line[0];
+      for (auto cell = m_curr_line.cbegin() + 1; cell != m_curr_line.cend(); ++cell)
+      {
+        stream << ',' << *cell;
+      } 
+    }
+    stream << "\r\n";
+    m_curr_line.clear();
+  }
+  else if (info.tag_name == StandardTag::TAG_CLOSE_TD)
+  {
+    m_curr_line.push_back(m_curr_cell);
+    m_curr_cell = "";
+  }
+  else if (info.tag_name == StandardTag::TAG_TEXT)
+    m_curr_cell += info.plain_text;
 }
 
-TransformerFunc*
-TransformerFunc::clone() const
+Writer*
+CsvWriter::clone() const
 {
-  return new TransformerFunc(*this);
+  return new CsvWriter(*this);
 }
+
+} // namespace experimental
+
+} // namespace doctotext

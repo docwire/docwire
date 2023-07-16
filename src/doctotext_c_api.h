@@ -62,6 +62,7 @@ typedef struct DocToTextInfo DocToTextInfo; ///< @see doctotext::Info
 typedef struct DocToTextParameters DocToTextParameters; ///< @see doctotext::ParserParameters
 typedef struct DocToTextWriter DocToTextWriter; ///< @see doctotext::Writer
 
+typedef struct DocToTextInput DocToTextInput; ///< @see doctotext::Input
 typedef struct DocToTextImporter DocToTextImporter; ///< @see doctotext::Importer
 typedef struct DocToTextExporter DocToTextExporter; ///< @see doctotext::Exporter
 typedef struct DocToTextTransformer DocToTextTransformer; ///< @see doctotext::Transformer
@@ -98,24 +99,29 @@ DllExport void
 DOCTOTEXT_CALL doctotext_simple_extractor_add_callback_function(DocToTextSimpleExtractor* extractor, void (*callback)(DocToTextInfo*, void* data), void* data);
 
 /**
- * @brief Creates a new DocToTextImporter object. This object is used to import a file and parse it using available parsers.
- * Properly parser is selected based on file extension.
- * @param manager parser manager
- * @param file_name path to the file to be imported
+ * @brief Creates a new DocToTextInput object. This object is used to wrap filename or stream.
+ * @param file_name path to the file
  * @return
  */
-DllExport DocToTextImporter*
-DOCTOTEXT_CALL doctotext_create_importer_from_file_name(DocToTextParserManager *manager, const char *file_name);
+DllExport DocToTextInput*
+DOCTOTEXT_CALL doctotext_create_input_from_file_name(const char *file_name);
 
 /**
- * @brief Creates a new DocToTextImporter object. This object is used to import a data from input stream
- * and parse it using available parsers.
- * @param manager parser manager
+ * @brief Creates a new DocToTextInput object. This object is used to wrap filename or stream.
  * @param input_stream stream with input data to parse
  * @return
  */
+DllExport DocToTextInput*
+DOCTOTEXT_CALL doctotext_create_input_from_stream(FILE *input_stream);
+
+/**
+ * @brief Creates a new DocToTextImporter object. This object is used to import a file and parse it using available parsers.
+ * Properly parser is selected based on file extension.
+ * @param manager parser manager
+ * @return
+ */
 DllExport DocToTextImporter*
-DOCTOTEXT_CALL doctotext_create_importer_from_stream(DocToTextParserManager *manager, FILE *input_stream);
+DOCTOTEXT_CALL doctotext_create_importer(DocToTextParserManager *manager);
 
 /**
  * @brief Creates a new DocToTextExporter object. This object is used to export parsed data to output as a plain text.
@@ -132,6 +138,16 @@ DOCTOTEXT_CALL doctotext_create_plain_text_exporter(FILE *output_stream);
  */
 DllExport DocToTextExporter*
 DOCTOTEXT_CALL doctotext_create_html_exporter(FILE *output_stream);
+
+/**
+ * @brief Creates connection between input and importer and returns DocToTextParsingChain which
+ * contains all defined steps of the parsing chain.
+ * @param input
+ * @param importer
+ * @return new ParsingChain object
+ */
+DllExport DocToTextParsingChain*
+DOCTOTEXT_CALL doctotext_connect_input_to_importer(DocToTextInput* input, DocToTextImporter* importer);
 
 /**
  * @brief Creates connection between importer and exporter and returns DocToTextParsingChain which
@@ -189,6 +205,15 @@ DOCTOTEXT_CALL doctotext_connect_parsing_chain_to_exporter(DocToTextParsingChain
  */
 DllExport void
 DOCTOTEXT_CALL doctotext_parsing_chain_set_input(DocToTextParsingChain *parsing_chain, FILE* input_stream);
+
+/**
+ * @brief Frees input and all resources allocated by the input. DocToTextInput is
+ * allocated using operator new (from C++) and is supposed to be deleted by doctotext_free_input (which uses
+ * operator delete).
+ * @param importer
+ */
+DllExport void
+DOCTOTEXT_CALL doctotext_free_input(DocToTextInput *input);
 
 /**
  * @brief Frees importer and all resources allocated by the importer. DocToTextImporter is
@@ -437,9 +462,7 @@ DOCTOTEXT_CALL doctotext_add_string_parameter(DocToTextParameters* parameters, c
  *
  * HtmlWriter* writer = doctotext_create_html_writer();
  * doctotext_parser_add_callback_on_new_node(parser, &onNewNodeCallback, writer);
- * printf("%s", doctotext_writer_write_header(writer)); // print header of html
  * doctotext_parser_parse(parser); // parse document
- * printf("%s", doctotext_writer_write_footer(writer)); // print footer of html
  * doctotext_free_html_writer(writer); // free writer
  * @endcode
  *
@@ -470,20 +493,6 @@ DOCTOTEXT_CALL doctotext_free_writer(DocToTextWriter* writer);
  */
 DllExport void
 DOCTOTEXT_CALL doctotext_writer_write(DocToTextWriter* writer, DocToTextInfo* info, FILE* out_stream);
-
-/**
- * @brief Returns beginning of text from callbacks
- * @param writer HtmlWriter
- */
-DllExport void
-DOCTOTEXT_CALL doctotext_writer_write_header(DocToTextWriter* writer, FILE* out_stream);
-
-/**
- * @brief Returns end of text from callbacks
- * @param writer HtmlWriter
- */
-DllExport void
-DOCTOTEXT_CALL doctotext_writer_write_footer(DocToTextWriter* writer, FILE* out_stream);
 
 #ifdef __cplusplus
 }

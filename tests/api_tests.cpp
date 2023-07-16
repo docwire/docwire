@@ -43,6 +43,7 @@
 #include <optional>
 #include <algorithm>
 #include "pthread.h"
+#include "input.h"
 
 void dots_to_underscores(std::string& str)
 {
@@ -121,8 +122,9 @@ TEST_P(DocumentTests, ReadFromBufferTest)
         auto parser_manager = std::make_shared<doctotext::ParserManager>("../plugins"); // create parser manager
         std::stringstream output_stream{};
 
-        doctotext::Importer(ifs_input, parameters, parser_manager) | doctotext::PlainTextExporter()
-                                     | output_stream;
+        doctotext::Input(&ifs_input) |
+          doctotext::Importer(parameters, parser_manager) |
+          doctotext::PlainTextExporter(output_stream);
 
         std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
             std::istreambuf_iterator<char>{}};
@@ -291,7 +293,9 @@ TEST_P(HTMLWriterTest, SimpleExtractorTest)
 INSTANTIATE_TEST_SUITE_P(
     SimpleExtractorHTMLTest, HTMLWriterTest,
     ::testing::Values(
-        "10.docx"
+        "1.docx", "2.docx", "3.docx", "4.docx", "5.docx", "6.docx", "7.docx", "8.docx", "9.docx", "10.docx",
+        "1.doc", "2.doc", "3.doc", "4.doc", "5.doc", "6.doc", "7.doc", "8.doc", "9.doc",
+        "1.html", "2.html", "3.html", "4.html", "5.html", "6.html", "7.html", "8.html", "9.html"
                       ),
     [](const ::testing::TestParamInfo<HTMLWriterTest::ParamType>& info) {
         std::string file_name = info.param;
@@ -371,7 +375,8 @@ INSTANTIATE_TEST_SUITE_P(
         "test.js",
         "test.json",
         "test.txt",
-        "test.xml"
+        "test.xml",
+        "empty_cells.xlsx"
                       ),
     [](const ::testing::TestParamInfo<MiscDocumentTest::ParamType>& info) {
         std::string file_name = info.param;
@@ -555,10 +560,10 @@ TEST_P(MultiPageFilterTest, SimpleExtractorTests)
 
     // WHEN
     doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
-    simple_extractor.addTransformer(new doctotext::TransformerFunc([MAX_PAGES, counter = 0](doctotext::Info &info) mutable
+    simple_extractor.addChainElement(new doctotext::TransformerFunc([MAX_PAGES, counter = 0](doctotext::Info &info) mutable
                                    {
                                      if (info.tag_name == doctotext::StandardTag::TAG_PAGE) {++counter;}
-                                     if (counter > MAX_PAGES) {info.cancel = true;}
+                                     if (info.tag_name == doctotext::StandardTag::TAG_PAGE && counter > MAX_PAGES) {info.cancel = true;}
                                    }));
     std::string parsed_text{ simple_extractor.getPlainText() };
 
@@ -566,6 +571,17 @@ TEST_P(MultiPageFilterTest, SimpleExtractorTests)
     EXPECT_EQ(expected_text, parsed_text);
   }
 
+}
+
+namespace
+{
+	std::string read_test_file(const std::string& file_name)
+	{
+		std::ifstream stream;
+		stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		stream.open("../../tests/" + file_name);
+		return std::string{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
+	}
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -577,3 +593,16 @@ INSTANTIATE_TEST_SUITE_P(
           std::string name = std::string{ std::get<2>(info.param) } + "_multi_page_filter_tests";
           return name;
         });
+
+TEST(HtmlWriter, RestoreAttributes)
+{
+  using namespace doctotext;
+	std::shared_ptr<doctotext::ParserManager> parser_manager(new doctotext::ParserManager{ "../plugins" });
+	std::stringstream output;
+	std::ifstream in("../../tests/1.html");
+	Input(&in)
+		| Importer(doctotext::ParserParameters(), parser_manager)
+		| HtmlExporter(output, HtmlExporter::RestoreOriginalAttributes{true});
+
+	EXPECT_EQ(read_test_file("1.html.restore_attributes.out.html"), output.str());
+}

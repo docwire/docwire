@@ -36,6 +36,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "chain_element.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include "parser_manager.h"
@@ -47,7 +48,6 @@ namespace doctotext
 {
 
 class Importer;
-class Transformer;
 
 /**
  *  @brief Exporter class is responsible for exporting the parsed data from importer or transformer to an output stream.
@@ -55,7 +55,7 @@ class Transformer;
  *  Importer(parser_manager, "file.pdf") | PlainTextExporter() | std::cout; // Imports file.pdf and exports it to std::cout as plain text
  *  @endcode
  */
-class DllExport Exporter
+class DllExport Exporter : public ChainElement
 {
 public:
   /**
@@ -75,11 +75,12 @@ public:
 
   virtual ~Exporter();
 
-  /**
-   * @brief Creates clone of this exporter.
-   * @return new exporter
-   */
-  virtual Exporter* clone() const;
+  bool is_leaf() const override
+  {
+    return true;
+  }
+
+  void process(doctotext::Info &info) const override;
 
   /**
    * @brief Sets output stream.
@@ -99,16 +100,6 @@ public:
    */
   void export_to(doctotext::Info &info) const;
 
-  /**
-   * @brief Sets writer to use.
-   */
-  void begin() const;
-
-  /**
-   * @brief Ends writing.
-   */
-  void end() const;
-
 protected:
   std::ostream& get_output() const;
 
@@ -123,11 +114,23 @@ private:
 class DllExport HtmlExporter: public Exporter
 {
 public:
-  HtmlExporter();
+  enum class RestoreOriginalAttributes : bool {};
+
+  /**
+   * @param restore_original_attributes should original html attributes extracted by html parser be restored
+   */
+  HtmlExporter(RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
+
   /**
    * @param out_stream Exporter output stream. Exporter will be writing to this stream.
+   * @param restore_original_attributes should original html attributes extracted by html parser be restored
    */
-  HtmlExporter(std::ostream &out_stream);
+  HtmlExporter(std::ostream &out_stream, RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
+
+  HtmlExporter* clone() const override
+  {
+    return new HtmlExporter(*this);
+  }
 };
 
 /**
@@ -142,7 +145,40 @@ public:
    */
   PlainTextExporter(std::ostream &out_stream);
 
+  /**
+   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
+   */
+  PlainTextExporter(std::ostream &&out_stream);
+
+  PlainTextExporter* clone() const override
+  {
+    return new PlainTextExporter(*this);
+  }
+
 };
+
+namespace experimental
+{
+
+/**
+ * @brief Exporter class for CSV output.
+ */
+class DllExport CsvExporter: public Exporter
+{
+public:
+  CsvExporter();
+  /**
+   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
+   */
+  CsvExporter(std::ostream &out_stream);
+
+  CsvExporter* clone() const override
+  {
+    return new CsvExporter(*this);
+  }
+};
+
+} // namespace experimental
 
 /**
  * @brief Exporter class for meta data.
@@ -156,6 +192,12 @@ public:
    * @param out_stream Exporter output stream. Exporter will be writing to this stream.
    */
   MetaDataExporter(std::ostream &out_stream);
+
+  MetaDataExporter* clone() const override
+  {
+    return new MetaDataExporter(*this);
+  }
+
 
 };
 

@@ -1,4 +1,26 @@
 Unreleased:
+    * CsvWriter class added
+    * Moved pst/ost parser and eml parser to separated plugin
+    * TAG_IMAGE added with plain text exporter support
+    * HTML parser refactored - sending tags for document elements incrementally
+    * HTML to plain text conversion use better table layout algorithm from plain text exporter
+    * Improved whitespaces support (inline formatting context) in HTML parser
+    * TAG_SECTION and TAG_SPAN added with HTML parser, HTML exporter and plain text exporter support
+    * Remove wrong usage of TAG_STYLE
+    * HTML parser passes all attributes to tags with "html:" prefix
+    * Improved support for subparsers tag signals in EML parser
+    * All tags that have no closing tag are marged with / symbol at the end (XHTML way)
+    * Missing support for link, image and list tags added to HtmlWriter
+    * HtmlWriter option to restore all attributes with "html:" prefix passed from HTMLParser added
+    * Added Input class (wrapper for stream or filename) and ChainElement class (base class for importer, exporter and transformer)
+    * HTMLParser send style tags with css text
+    * HtmlWriter restores style tags with css text
+    * Generating signals for empty rows and cells that are missing/skipped in original XLSX files
+    * Minimum table row height (empty rows and cells) in plain text writer set to 1 line to better restore document layout
+    * Caching build environment docker images in GitHub Packages
+    * MSVC docker image scripts updated
+
+Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed
     * MacOSX building process refactored to use VCPKG
     * PDF parser infinite loop when font is unknown fixed

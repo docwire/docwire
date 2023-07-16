@@ -30,90 +30,30 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef TRANSFORMER_H
-#define TRANSFORMER_H
+#ifndef DOCTOTEXT_MAIL_PARSER_PROVIDER_H
+#define DOCTOTEXT_MAIL_PARSER_PROVIDER_H
 
-#include <algorithm>
-#include <memory>
 
-#include "parser.h"
-#include "parser_builder.h"
-#include "parser_manager.h"
-#include "parser_parameters.h"
+#include <boost/config.hpp>
+#include "parser_provider.h"
 #include "defines.h"
 
-namespace doctotext
-{
-class Importer;
-
-/**
- * @brief The Transformer transforms data from Importer or from another Transformer.
- * @code
- * auto reverse_text = [](doctotext::Info &info) {
- *   std::reverse(info.plain_text.begin(), info.plain_text.end())}; // create function to reverse text in callback
- * TransformerFunc transformer(reverse_text); // wraps into transformer
- * Importer(parser_manager, "test.pdf") | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
- * @endcode
- */
-class DllExport Transformer
+class DllExport MailParserProvider : public doctotext::ParserProvider
 {
 public:
-  Transformer() = default;
-  virtual ~Transformer() = default;
-
-  /**
-   * @brief Creates clone of the transformer
-   * @return new transformer
-   */
-  virtual Transformer* clone() const = 0;
-
-  /**
-   * @brief Transforms document from importer
-   * @param info structure from callback function
-   */
-  virtual void transform(doctotext::Info &info) const = 0;
-};
-
-/**
- * @brief Wraps single function (doctotext::NewNodeCallback) into Transformer object
- * @code
- * auto reverse_text = [](doctotext::Info &info) {
- *   std::reverse(info.plain_text.begin(), info.plain_text.end())}; // create function to reverse text in callback
- * TransformerFunc transformer(reverse_text); // wraps into transformer
- * Importer(parser_manager, "test.pdf") | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
- * @endcode
- */
-class DllExport TransformerFunc: public Transformer
-{
-public:
-  /**
-   * @param transformer_function callback function, which will be called in transform(). It should modify info structure.
-   * @see doctotext::Info
-   */
-  TransformerFunc(doctotext::NewNodeCallback transformer_function);
-
-  TransformerFunc(const TransformerFunc &other);
-
-  virtual ~TransformerFunc();
-
-  /**
-   * @brief Executes transform operation for given node data.
-   * @see doctotext::Info
-   * @param info
-   */
-  void transform(doctotext::Info &info) const override;
-
-  /**
-   * @brief Creates clone of the transformer
-   * @return new transformer
-   */
-  TransformerFunc* clone() const override;
+  MailParserProvider();
+  std::optional<doctotext::ParserBuilder*> findParserByExtension(const std::string &inExtension) const override;
+  std::optional<doctotext::ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override;
+  std::set<std::string> getAvailableExtensions() const override;
 
 private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
+  void addExtensions(const std::vector<std::string> &inExtensions);
+  bool isExtensionInVector(const std::string &extension, const std::vector<std::string> &extension_list) const;
+  std::set<std::string> available_extensions;
 };
 
-} // namespace doctotext
+extern "C" BOOST_SYMBOL_EXPORT MailParserProvider plugin_parser_provider;
+MailParserProvider plugin_parser_provider;
 
-#endif //TRANSFORMER_H
+
+#endif //DOCTOTEXT_MAIL_PARSER_PROVIDER_H

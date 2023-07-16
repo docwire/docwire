@@ -77,9 +77,7 @@ int main(int argc, char* argv[])
     doctotext_parser_add_callback_on_new_node(parser, &onNewNodeCallback, &callback_data);
     doctotext_parser_add_parameters(parser, parameters);
     DocToTextWriter *writer = doctotext_create_plain_text_writer();
-    doctotext_writer_write_header(writer, stdout);
     doctotext_parser_parse(parser);
-    doctotext_writer_write_footer(writer, stdout);
     doctotext_free_parser(parser);
   }
   else
