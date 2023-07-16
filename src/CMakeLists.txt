@@ -157,7 +157,7 @@ else()
     find_package(Freetype REQUIRED)
     find_library(unzip unzip REQUIRED)
     find_package(LibXml2 REQUIRED)
-    set(libxml2_deps, "iconv")
+    find_package(Iconv REQUIRED)
     find_library(wv2 wv2 REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
@@ -170,7 +170,7 @@ else()
         ${unzip}
         ${wv2}
         ${htmlcxx}
-        LibXml2::LibXml2 ${libxml2_deps}
+        LibXml2::LibXml2 Iconv::Iconv
         pthread
         ZLIB::ZLIB
         ${charsetdetect}
