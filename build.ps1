@@ -5,7 +5,10 @@ git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
 git checkout tags/2023.01.09
 .\bootstrap-vcpkg.bat
-git cherry-pick --no-commit fd766eba2b4cf59c7123d46189be373e2cee959d
+(Get-Content vcpkg\scripts\cmake\vcpkg_acquire_msys.cmake) -replace 'libtool-2.4.6-9-x86_64.pkg.tar.xz', 'libtool-2.4.6-14-x86_64.pkg.tar.zst' | Set-Content vcpkg\scripts\cmake\vcpkg_acquire_msys.cmake
+(Get-Content vcpkg\scripts\cmake\vcpkg_acquire_msys.cmake) -replace 'b309799e5a9d248ef66eaf11a0bd21bf4e8b9bd5c677c627ec83fa760ce9f0b54ddf1b62cbb436e641fbbde71e3b61cb71ff541d866f8ca7717a3a0dbeb00ebf', 'ba983ed9c2996d06b0d21b8fab9505267115f2106341f130e92d6b66dad87b0f0e82707daf0b676a28966bfaa24f6c41b6eef9e1f9bf985611471024f2b0ac97' | Set-Content vcpkg\scripts\cmake\vcpkg_acquire_msys.cmake
+(Get-Content vcpkg\scripts\cmake\vcpkg_acquire_msys.cmake) -replace 'grep-3.0-2-x86_64.pkg.tar.xz', 'grep-1~3.0-6-x86_64.pkg.tar.zst' | Set-Content vcpkg\scripts\cmake\vcpkg_acquire_msys.cmake
+(Get-Content vcpkg\scripts\cmake\vcpkg_acquire_msys.cmake) -replace 'c784d5f8a929ae251f2ffaccf7ab0b3936ae9f012041e8f074826dd6077ad0a859abba19feade1e71b3289cc640626dfe827afe91c272b38a1808f228f2fdd00', '79b4c652082db04c2ca8a46ed43a86d74c47112932802b7c463469d2b73e731003adb1daf06b08cf75dc1087f0e2cdfa6fec0e8386ada47714b4cff8a2d841e1' | Set-Content vcpkg\scripts\cmake\vcpkg_acquire_msys.cmake
 cd ..
 
 $VCPKG_TRIPLET="x64-windows"
