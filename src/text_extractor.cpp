@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
     }
     if (arg.find("--verbose", 0) != -1)
     {
-      doctotext::log_verbosity = doctotext::debug;
+      doctotext::set_log_verbosity(doctotext::debug);
     }
     if (arg.find("--log-file", 0) != -1)
     {
@@ -248,7 +248,7 @@ int main(int argc, char* argv[])
   if (log_file_name)
   {
     log_stream = std::make_unique<std::ofstream>(*log_file_name);
-    doctotext::log_stream = log_stream.get();
+    doctotext::set_log_stream(log_stream.get());
   }
 
   extractor.addParameters(parameters);

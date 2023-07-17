@@ -55,9 +55,24 @@ std::ostream& operator<<(std::ostream& stream, severity_level severity)
 	return stream;
 }
 
-severity_level log_verbosity = info;
+static severity_level log_verbosity = info;
 
-std::ostream* log_stream = &std::clog;
+void set_log_verbosity(severity_level severity)
+{
+	log_verbosity = severity;
+}
+
+bool log_verbosity_includes(severity_level severity)
+{
+	return severity >= log_verbosity;
+}
+
+static std::ostream* log_stream = &std::clog;
+
+void set_log_stream(std::ostream* stream)
+{
+	log_stream = stream;
+}
 
 class default_log_record_stream : public std::ostringstream
 {
@@ -83,11 +98,21 @@ private:
 	source_location m_location;
 };
 
-std::function<std::unique_ptr<std::ostream>(severity_level severity, source_location location)> create_log_record_stream =
+static create_log_record_stream_func_t create_log_record_stream_func =
 [](severity_level severity, source_location location) -> std::unique_ptr<std::ostream>
 {
 	return std::make_unique<default_log_record_stream>(severity, location);
 };
+
+void set_create_log_record_stream_func(create_log_record_stream_func_t func)
+{
+	create_log_record_stream_func = func;
+}
+
+DllExport std::unique_ptr<std::ostream> create_log_record_stream(severity_level severity, source_location location)
+{
+	return create_log_record_stream_func(severity, location);
+}
 
 static pthread_mutex_t cerr_log_redirection_mutex = PTHREAD_MUTEX_INITIALIZER;
 

@@ -58,11 +58,17 @@ struct DllExport source_location
 	std::string function_name;
 };
 
-extern DllExport severity_level log_verbosity;
+DllExport void set_log_verbosity(severity_level severity);
 
-extern DllExport std::ostream* log_stream;
+DllExport bool log_verbosity_includes(severity_level severity);
 
-extern DllExport std::function<std::unique_ptr<std::ostream>(severity_level severity, source_location location)> create_log_record_stream;
+DllExport void set_log_stream(std::ostream* stream);
+
+typedef std::function<std::unique_ptr<std::ostream>(severity_level severity, source_location location)> create_log_record_stream_func_t;
+
+DllExport void set_create_log_record_stream_func(create_log_record_stream_func_t func);
+
+DllExport std::unique_ptr<std::ostream> create_log_record_stream(severity_level severity, source_location location);
 
 inline void current_function_helper()
 {
@@ -73,11 +79,6 @@ inline void current_function_helper()
 #else
 #define doctotext_current_fuction __func__
 #endif
-}
-
-inline bool log_verbosity_includes(severity_level severity)
-{
-	return severity >= log_verbosity;
 }
 
 #define doctotext_current_source_location() \
