@@ -7,7 +7,7 @@ git checkout tags/2023.01.09
 .\bootstrap-vcpkg.bat
 cd ..
 
-$VCPKG_TRIPLET=x64-windows
+$VCPKG_TRIPLET="x64-windows"
 
 vcpkg\vcpkg install libiconv:$VCPKG_TRIPLET
 vcpkg\vcpkg install zlib:$VCPKG_TRIPLET
