@@ -129,3 +129,27 @@ cd ..
 cd build
 ctest -V
 cd ..
+
+Get-ChildItem -Path build\ -Recurse -Filter *.dll | Select-Object -Property Name,@{name="Hash";expression={(Get-FileHash $_.FullName).hash}} > build\SHA1checksums.sha1
+
+$version = Get-Content build/VERSION
+
+mkdir doctotext-$version-msvc
+
+Copy-Item -Path "build\*.dll" -Destination "doctotext-$version-msvc" -Recurse
+Copy-Item -Path "build\*.lib" -Destination "doctotext-$version-msvc" -Recurse
+Copy-Item -Path "build\*.pdb" -Destination "doctotext-$version-msvc" -Recurse
+Copy-Item -Path "build\*.exe" -Destination "doctotext-$version-msvc" -Recurse
+Copy-Item -Path "build\*.h" -Destination "doctotext-$version-msvc" -Recurse
+Copy-Item -Path "build\*.hpp" -Destination "doctotext-$version-msvc" -Recurse
+Copy-Item -Path "build\SHA1checksums.sha1" -Destination "doctotext-$version-msvc" -Recurse
+Copy-Item -Path "build\VERSION" -Destination "doctotext-$version-msvc" -Recurse
+Copy-Item -Path "ChangeLog" -Destination "doctotext-$version-msvc" -Recurse
+Copy-Item -Path "build\plugins" -Destination "doctotext-$version-msvc" -Recurse
+Copy-Item -Path "build\tessdata" -Destination "doctotext-$version-msvc" -Recurse
+Copy-Item -Path "build\doc" -Destination "doctotext-$version-msvc" -Recurse
+
+Compress-Archive -LiteralPath doctotext-$version-msvc -DestinationPath doctotext-$version-msvc.zip
+Get-FileHash -Algorithm SHA1 doctotext-$version-msvc.zip > doctotext-$version-msvc.zip.sha1
+
+Remove-Item -Path doctotext-$version-msvc -Recurse
