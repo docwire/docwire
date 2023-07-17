@@ -75,6 +75,7 @@ cmake --build . --config Release --target install
 cd ..\..
 Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/wv2-0.2.3_patched_4-private_headers.tar.bz2 -OutFile wv2-0.2.3_patched_4-private_headers.tar.bz2
 arc unarchive wv2-0.2.3_patched_4-private_headers.tar.bz2
+dir /s "$deps_dir\include"
 Move-Item -Path wv2-0.2.3_patched_4-private_headers\*.h -Destination "$deps_dir\include\wv2"
 
 git clone https://github.com/docwire/mimetic.git
