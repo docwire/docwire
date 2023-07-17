@@ -34,7 +34,7 @@ git clone https://github.com/docwire/htmlcxx.git
 cd htmlcxx
 mkdir build
 cd build
-cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
 cmake --build . --config Release
 cmake --build . --config Release --target install
 cd ..\..
@@ -58,7 +58,7 @@ Write-Output 'cmake_minimum_required(VERSION 3.16)' `
       > CMakeLists.txt
 mkdir build
 cd build
-cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
 cmake --build . --config Release
 cmake --build . --config Release --target install
 cd ..
@@ -68,7 +68,7 @@ git clone https://github.com/docwire/wv2.git
 cd wv2
 mkdir build
 cd build
-cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain"  -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain"  -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
 cmake --build . --config Release
 cmake --build . --config Release --target install
 cd ..\..
@@ -85,7 +85,7 @@ mkdir cmake
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/cmake/config.cmake.in -OutFile config.cmake.in
 mkdir build
 cd build
-cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_dir"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_dir"
 cmake --build . --config Release
 cmake --build . --config Release --target install
 cd ..\..
@@ -108,7 +108,7 @@ Write-Output 'cmake_minimum_required(VERSION 3.16)' `
       > CMakeLists.txt
 mkdir build
 cd build
-cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_PREFIX_PATH="$vcpkg_prefix" -DCMAKE_INSTALL_PREFIX:PATH="$deps_dir"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_PREFIX_PATH="$vcpkg_prefix" -DCMAKE_INSTALL_PREFIX:PATH="$deps_dir"
 cmake --build . --config Release
 cmake --build . --config Release --target install
 cd ..
@@ -116,7 +116,7 @@ cd ..
 
 mkdir build
 cd build
-cmake .. -G 'Visual Studio 17 2022' -A x64 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>' -DCMAKE_PREFIX_PATH="$deps_prefix"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>' -DCMAKE_PREFIX_PATH="$deps_prefix"
 cmake --build . -j6 --config Release
 cmake --build . --config Release --target doxygen install
 cd ..
