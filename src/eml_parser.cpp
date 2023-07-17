@@ -250,7 +250,7 @@ struct EMLParser::Implementation
 				}
 			}
 
-      m_owner->sendTag(StandardTag::TAG_TEXT, plain + "\n\n");
+			m_owner->sendTag(StandardTag::TAG_TEXT, plain + "\n\n");
 
 			output += plain;
 			output += "\n\n";
@@ -261,25 +261,26 @@ struct EMLParser::Implementation
 			std::string plain;
 			decodeBin(mime_entity, plain);
 
-      if (m_parser_manager)
-      {
-        std::string file_name = getFilename(mime_entity);
-        std::string extension = file_name.substr(file_name.find_last_of(".") + 1);
-        std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-        auto info = m_owner->sendTag(
-          StandardTag::TAG_ATTACHMENT, "", {{"name", file_name}, {"size", plain.length()}, {"extension", extension}});
-
-        if(!info.skip)
-        {
-          auto parser_builder = m_parser_manager->findParserByExtension(file_name);
-
-          auto parser = (*parser_builder)->withParserManager(m_parser_manager)
-            .withOnNewNodeCallbacks({[this](doctotext::Info &info){m_owner->sendTag(info.tag_name, info.plain_text, info.attributes);}})
-            .build(plain.c_str(), plain.length());
-          parser->parse();
-        }
-        m_owner->sendTag(StandardTag::TAG_CLOSE_ATTACHMENT);
-      }
+			if (m_parser_manager)
+			{
+			std::string file_name = getFilename(mime_entity);
+			std::string extension = file_name.substr(file_name.find_last_of(".") + 1);
+			std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+			auto info = m_owner->sendTag(
+				StandardTag::TAG_ATTACHMENT, "", {{"name", file_name}, {"size", plain.length()}, {"extension", extension}});
+			if(!info.skip)
+			{
+				auto parser_builder = m_parser_manager->findParserByExtension(file_name);
+				if (parser_builder)
+				{
+					auto parser = (*parser_builder)->withParserManager(m_parser_manager)
+						.withOnNewNodeCallbacks({[this](doctotext::Info &info){m_owner->sendTag(info.tag_name, info.plain_text, info.attributes);}})
+						.build(plain.c_str(), plain.length());
+						parser->parse();
+				}
+			}
+			m_owner->sendTag(StandardTag::TAG_CLOSE_ATTACHMENT);
+			}
 			m_attachments.push_back(doctotext::Attachment(getFilename(mime_entity)));
 			m_attachments[m_attachments.size() - 1].setBinaryContent(plain);
 			std::string content_type = header.contentType().str();
