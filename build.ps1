@@ -5,6 +5,7 @@ git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
 git checkout tags/2023.01.09
 .\bootstrap-vcpkg.bat
+git cherry-pick --no-commit fd766eba2b4cf59c7123d46189be373e2cee959d
 cd ..
 
 $VCPKG_TRIPLET="x64-windows"
