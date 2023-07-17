@@ -78,8 +78,8 @@ cmake --build . --config Release --target install
 cd ..\..
 Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/wv2-0.2.3_patched_4-private_headers.tar.bz2 -OutFile wv2-0.2.3_patched_4-private_headers.tar.bz2
 arc unarchive wv2-0.2.3_patched_4-private_headers.tar.bz2
-dir /s "$deps_dir\include"
-Move-Item -Path wv2-0.2.3_patched_4-private_headers\*.h -Destination "$deps_dir\include\wv2"
+dir /s "$deps_prefix\include"
+Move-Item -Path wv2-0.2.3_patched_4-private_headers\*.h -Destination "$deps_prefix\include\wv2"
 
 git clone https://github.com/docwire/mimetic.git
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/CMakeLists.txt -OutFile mimetic\CMakeLists.txt
@@ -90,7 +90,7 @@ mkdir cmake
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/cmake/config.cmake.in -OutFile config.cmake.in
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_dir"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
 cmake --build . --config Release
 cmake --build . --config Release --target install
 cd ..\..
@@ -113,7 +113,7 @@ Write-Output 'cmake_minimum_required(VERSION 3.16)' `
       > CMakeLists.txt
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_PREFIX_PATH="$vcpkg_prefix" -DCMAKE_INSTALL_PREFIX:PATH="$deps_dir"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_PREFIX_PATH="$vcpkg_prefix" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
 cmake --build . --config Release
 cmake --build . --config Release --target install
 cd ..
