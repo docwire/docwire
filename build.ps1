@@ -7,7 +7,7 @@ git checkout tags/2023.01.09
 .\bootstrap-vcpkg.bat
 cd ..
 
-VCPKG_TRIPLET=x64-windows
+$VCPKG_TRIPLET=x64-windows
 
 vcpkg\vcpkg install libiconv:$VCPKG_TRIPLET
 vcpkg\vcpkg install zlib:$VCPKG_TRIPLET
@@ -23,11 +23,11 @@ vcpkg\vcpkg install boost-dll:$VCPKG_TRIPLET
 vcpkg\vcpkg install boost-assert:$VCPKG_TRIPLET
 vcpkg\vcpkg install boost-smart-ptr:$VCPKG_TRIPLET
 
-vcpkg_path="$PWD\vcpkg"
-vcpkg_toolchain="$vcpkg_path\scripts\buildsystems\vcpkg.cmake"
-vcpkg_prefix="$vcpkg_path\installed\$VCPKG_TRIPLET"
+$vcpkg_path="$PWD\vcpkg"
+$vcpkg_toolchain="$vcpkg_path\scripts\buildsystems\vcpkg.cmake"
+$vcpkg_prefix="$vcpkg_path\installed\$VCPKG_TRIPLET"
 
-deps_prefix="$PWD\deps"
+$deps_prefix="$PWD\deps"
 mkdir $deps_prefix
 
 git clone https://github.com/docwire/htmlcxx.git
