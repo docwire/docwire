@@ -21,6 +21,11 @@ Unreleased:
     * MSVC docker image scripts updated
     * DecompressArchives chain element added that supports ZIP, TAR, RAR, GZ, BZ2 and XZ formats - enabled by default in CLI utility.
 
+Unreleased:
+    * EML parser crash for unknown attachment file name extensions fixed
+    * MacOSX building process refactored to use VCPKG
+    * PDF parser infinite loop when font is unknown fixed
+
 Version 5.0.9:
     * Replace README file with more detailed README.md prepared for public GitHub repository
     * Added 48 filename extensions/formats as recognized by TXTParser: asm, asp, aspx, bas, bat, c, cc, cmake, cs, conf, cpp, css, csv, cxx, d, f, fpp, fs, go, h, hpp, htm, html, hxx, java, js, json, jsp, log, lua, md, pas, php, pl, perl, py, r, rss, sh, tcl, vb, vbs, xml, xsd, xsl, yml, yaml, ws
