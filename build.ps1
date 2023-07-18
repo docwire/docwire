@@ -88,7 +88,7 @@ Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/maste
 (Get-Content mimetic\win-vs140.cmake) -replace 'MD', 'MT' | Set-Content mimetic\win-vs140.cmake
 cd mimetic
 mkdir cmake
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/cmake/config.cmake.in -OutFile config.cmake.in
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/cmake/config.cmake.in -OutFile cmake\config.cmake.in
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
