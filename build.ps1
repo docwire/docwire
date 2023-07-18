@@ -36,6 +36,9 @@ $vcpkg_path="$PWD\vcpkg"
 $vcpkg_toolchain="$vcpkg_path\scripts\buildsystems\vcpkg.cmake"
 $vcpkg_prefix="$vcpkg_path\installed\$VCPKG_TRIPLET"
 
+dir -s "$vcpkg_prefix\bin"
+dir -s "$vcpkg_prefix\lib"
+
 $deps_prefix="$PWD\deps"
 mkdir $deps_prefix
 
