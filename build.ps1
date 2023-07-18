@@ -31,13 +31,11 @@ vcpkg\vcpkg install boost-config:$VCPKG_TRIPLET
 vcpkg\vcpkg install boost-dll:$VCPKG_TRIPLET
 vcpkg\vcpkg install boost-assert:$VCPKG_TRIPLET
 vcpkg\vcpkg install boost-smart-ptr:$VCPKG_TRIPLET
+vcpkg\vcpkg install podofo:$VCPKG_TRIPLET
 
 $vcpkg_path="$PWD\vcpkg"
 $vcpkg_toolchain="$vcpkg_path\scripts\buildsystems\vcpkg.cmake"
 $vcpkg_prefix="$vcpkg_path\installed\$VCPKG_TRIPLET"
-
-dir -s "$vcpkg_prefix\bin"
-dir -s "$vcpkg_prefix\lib"
 
 $deps_prefix="$PWD\deps"
 mkdir $deps_prefix
@@ -127,6 +125,9 @@ cmake --build . --config Release
 cmake --build . --config Release --target install
 cd ..
 cd ..
+
+dir -s "$vcpkg_prefix\bin"
+dir -s "$vcpkg_prefix\lib"
 
 mkdir build
 cd build
