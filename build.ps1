@@ -111,13 +111,15 @@ Write-Output 'cmake_minimum_required(VERSION 3.16)' `
       'set(UNZIP_SRC ioapi.c unzip.c)'`
       'set(FLAGS -fPIC)'`
       'add_library(unzip STATIC ${UNZIP_SRC})'`
+      'find_path(zlib_incdir zlib.h REQUIRED)
+      'target_include_directories(unzip PUBLIC ${zlib_incdir})' `
       'install(FILES unzip.h ioapi.h DESTINATION include)'`
       'install(TARGETS unzip DESTINATION lib)'`
       'target_compile_options(unzip PRIVATE -fPIC)'`
       > CMakeLists.txt
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_CXX_FLAGS="-I$vcpkg_prefix\include" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_PREFIX_PATH="$deps_prefix" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
 cmake --build . --config Release
 cmake --build . --config Release --target install
 cd ..
