@@ -114,7 +114,7 @@ Write-Output 'cmake_minimum_required(VERSION 3.16)' `
       'set(UNZIP_SRC ioapi.c unzip.c)'`
       'set(FLAGS -fPIC)'`
       'add_library(unzip STATIC ${UNZIP_SRC})'`
-      'find_path(zlib_incdir zlib.h REQUIRED)
+      'find_path(zlib_incdir zlib.h REQUIRED)' `
       'target_include_directories(unzip PUBLIC ${zlib_incdir})' `
       'install(FILES unzip.h ioapi.h DESTINATION include)'`
       'install(TARGETS unzip DESTINATION lib)'`
