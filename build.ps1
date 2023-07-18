@@ -128,6 +128,40 @@ cmake --build . --config Release --target doxygen install
 cd ..
 
 cd build
+mkdir tessdata
+cd tessdata
+Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/eng.traineddata -OutFile eng.traineddata
+Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/osd.traineddata -OutFile osd.traineddata
+Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/pol.traineddata -OutFile pol.traineddata
+cd ..
+cd ..
+$LIB_PATHS=("$deps_prefix/lib/libbfio.dll",
+    "$deps_prefix/bin/htmlcxx.dll",
+    "$deps_prefix/bin/wv2.dll",
+    "$vcpkg_prefix/bin/boost_filesystem-vc143-mt-x64-1_79.dll",
+    "$vcpkg_prefix/bin/brotlicommon.dll",
+    "$vcpkg_prefix/bin/brotlidec.dll",
+    "$vcpkg_prefix/bin/bz2.dll",
+    "$vcpkg_prefix/bin/freetype.dll",
+    "$vcpkg_prefix/bin/gif.dll",
+    "$vcpkg_prefix/bin/iconv-2.dll",
+    "$vcpkg_prefix/bin/jpeg62.dll",
+    "$vcpkg_prefix/bin/leptonica-1.82.0.dll",
+    "$vcpkg_prefix/bin/libcrypto-3-x64.dll",
+    "$vcpkg_prefix/bin/liblzma.dll",
+    "$vcpkg_prefix/bin/libpff.dll",
+    "$vcpkg_prefix/bin/libpng16.dll",
+    "$vcpkg_prefix/bin/libxml2.dll",
+    "$vcpkg_prefix/bin/openjp2.dll",
+    "$vcpkg_prefix/bin/podofo.dll",
+    "$vcpkg_prefix/bin/pthreadVC3.dll",
+    "$vcpkg_prefix/bin/tiff.dll",
+    "$vcpkg_prefix/bin/webp.dll",
+    "$vcpkg_prefix/bin/webpmux.dll",
+    "$vcpkg_prefix/bin/zlib1.dll");
+foreach ($PATH in $LIB_PATHS){echo $PATH; Copy-Item -Path $PATH -Destination build/};
+
+cd build
 ctest -V
 cd ..
 
