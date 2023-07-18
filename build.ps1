@@ -135,7 +135,7 @@ Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/
 Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/pol.traineddata -OutFile pol.traineddata
 cd ..
 cd ..
-$LIB_PATHS=("$deps_prefix/lib/libbfio.dll",
+$LIB_PATHS=(
     "$deps_prefix/bin/htmlcxx.dll",
     "$deps_prefix/bin/wv2.dll",
     "$vcpkg_prefix/bin/boost_filesystem-vc143-mt-x64-1_79.dll",
