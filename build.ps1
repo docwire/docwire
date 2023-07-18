@@ -1,5 +1,5 @@
 choco install archiver -y
-choco install doxygen -y
+choco install doxygen.install -y
 
 git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
