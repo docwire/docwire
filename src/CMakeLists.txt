@@ -42,18 +42,19 @@ else()
 endif()
 
 if(MSVC)
-    configure_file(/bin/wv2.dll ${CMAKE_BINARY_DIR}/wv2.dll COPYONLY)
-    find_library(wvWare wv2 HINTS "C:/lib/static")
-    find_library(pthread_d pthreadVC3d HINTS "C:/vcpkg/packages/pthreads_x64-windows/debug/lib")
-    find_library(pthread pthreadVC3 HINTS "C:/vcpkg/packages/pthreads_x64-windows/lib")
-    target_link_directories(doctotext_core PUBLIC "C:/lib")
+    find_path(wv2_dll_path wv2.dll REQUIRED)
+    configure_file(${wv2_dll_path}/wv2.dll ${CMAKE_BINARY_DIR}/wv2.dll COPYONLY)
+    find_library(wvWare wv2 REQUIRED)
+    #find_library(pthread_d pthreadVC3d HINTS "C:/vcpkg/packages/pthreads_x64-windows/debug/lib")
+    #find_library(pthread pthreadVC3 HINTS "C:/vcpkg/packages/pthreads_x64-windows/lib")
+    find_package(Boost REQUIRED COMPONENTS filesystem system)
+    find_library(boost_filesystem boost_filesystem REQUIRED)
+    find_library(boost_system boost_system REQUIRED)
     target_link_libraries(doctotext_core PRIVATE general ${wvWare}
-                                                 debug ${pthread_d}
-                                                 optimized ${pthread}
-                                                 debug boost_filesystem-vc140-mt-gd
-                                                 optimized boost_filesystem-vc140-mt
-                                                 debug boost_system-vc140-mt-gd
-                                                 optimized boost_system-vc140-mt)
+                                                 #debug ${pthread_d}
+                                                 #optimized ${pthread}
+                                                 Boost::filesystem
+                                                 Boost::system)
 
     set_target_properties( doctotext_core
             PROPERTIES
@@ -112,25 +113,18 @@ add_library(doctotext_parsers SHARED
         xlsb_parser.cpp
         basic_parser_provider.cpp)
 
-include(FindLibXml2)
+find_package(LibXml2 REQUIRED)
 find_package(ZLIB REQUIRED)
-
-if (MSVC)
-    target_link_directories(doctotext_parsers PUBLIC "C:/lib")
-    target_link_directories(doctotext_core PUBLIC "C:/lib")
-endif()
 
 target_include_directories(doctotext_parsers PUBLIC
         ../
         .
         ${LIBXML2_INCLUDE_DIR}
-        "C:/include"
         )
 
 target_include_directories(doctotext_core PUBLIC
         ../
         .
-        "C:/include"
         )
 if(MSVC)
     target_link_libraries(doctotext_parsers PRIVATE
@@ -143,8 +137,8 @@ if(MSVC)
             general doctotext_core
             debug freetyped
             optimized freetype
-            debug ${pthread_d}
-            optimized ${pthread}
+            #debug ${pthread_d}
+            #optimized ${pthread}
             debug zlibd
             optimized zlib
             debug libmimeticd
@@ -195,7 +189,6 @@ if(MSVC)
     target_include_directories(doctotext_ocr PUBLIC
             ../
             .
-            "C:/include"
             )
     target_compile_options(doctotext_ocr PUBLIC "/Zc:__cplusplus")
 else()
@@ -235,12 +228,11 @@ if(MSVC)
             general htmlcxx
             debug libmimeticd
             optimized libmimetic
-            debug ${pthread_d}
-            optimized ${pthread})
+            #debug ${pthread_d}
+            #optimized ${pthread})
     target_include_directories(doctotext_mail PUBLIC
             ../
             .
-            "C:/include"
             )
     target_compile_options(doctotext_mail PUBLIC "/Zc:__cplusplus")
 else()
