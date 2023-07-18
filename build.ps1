@@ -163,7 +163,6 @@ $LIB_PATHS=(
     "$vcpkg_prefix/bin/libxml2.dll",
     "$vcpkg_prefix/bin/openjp2.dll",
     "$vcpkg_prefix/bin/podofo.dll",
-    "$vcpkg_prefix/bin/pthreadVC3.dll",
     "$vcpkg_prefix/bin/tiff.dll",
     "$vcpkg_prefix/bin/webp.dll",
     "$vcpkg_prefix/bin/webpmux.dll",
