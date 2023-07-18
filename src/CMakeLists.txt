@@ -227,7 +227,7 @@ if(MSVC)
             general doctotext_core
             general htmlcxx
             debug libmimeticd
-            optimized libmimetic
+            optimized libmimetic)
             #debug ${pthread_d}
             #optimized ${pthread})
     target_include_directories(doctotext_mail PUBLIC
