@@ -146,7 +146,7 @@ cd ..
 $LIB_PATHS=(
     "$deps_prefix/bin/htmlcxx.dll",
     "$deps_prefix/bin/wv2.dll",
-    "$vcpkg_prefix/bin/boost_filesystem-vc143-mt-x64-1_81.dll",
+    "$vcpkg_prefix/bin/boost_filesystem-vc142-mt-x64-1_81.dll",
     "$vcpkg_prefix/bin/brotlicommon.dll",
     "$vcpkg_prefix/bin/brotlidec.dll",
     "$vcpkg_prefix/bin/bz2.dll",
