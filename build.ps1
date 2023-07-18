@@ -1,5 +1,6 @@
 choco install archiver -y
 choco install doxygen.install -y
+choco install graphviz -y
 
 git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
