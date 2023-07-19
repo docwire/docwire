@@ -54,7 +54,7 @@ if(MSVC)
                                                  #optimized ${pthread}
                                                  Boost::filesystem
                                                  Boost::system)
-
+    target_include_directories(doctotext_core PUBLIC ${wv2_inc_dir})
     set_target_properties( doctotext_core
             PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/build"
