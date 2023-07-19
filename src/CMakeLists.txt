@@ -49,8 +49,6 @@ if(MSVC)
     #find_library(pthread_d pthreadVC3d HINTS "C:/vcpkg/packages/pthreads_x64-windows/debug/lib")
     #find_library(pthread pthreadVC3 HINTS "C:/vcpkg/packages/pthreads_x64-windows/lib")
     find_package(Boost REQUIRED COMPONENTS filesystem system)
-    find_library(boost_filesystem boost_filesystem REQUIRED)
-    find_library(boost_system boost_system REQUIRED)
     target_link_libraries(doctotext_core PRIVATE general ${wvWare}
                                                  #debug ${pthread_d}
                                                  #optimized ${pthread}
