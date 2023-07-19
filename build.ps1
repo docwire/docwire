@@ -32,6 +32,7 @@ vcpkg\vcpkg install boost-dll:$VCPKG_TRIPLET
 vcpkg\vcpkg install boost-assert:$VCPKG_TRIPLET
 vcpkg\vcpkg install boost-smart-ptr:$VCPKG_TRIPLET
 vcpkg\vcpkg install podofo:$VCPKG_TRIPLET
+vcpkg\vcpkg install pthreads:$VCPKG_TRIPLET
 
 $vcpkg_path="$PWD\vcpkg"
 $vcpkg_toolchain="$vcpkg_path\scripts\buildsystems\vcpkg.cmake"

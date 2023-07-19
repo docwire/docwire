@@ -46,12 +46,10 @@ if(MSVC)
     set(wv2_prefix "${wv2_inc_dir}/..")
     find_library(wvWare wv2 HINTS "${wv2_prefix}/lib/static" REQUIRED)
     configure_file(${wv2_prefix}/bin/wv2.dll ${CMAKE_BINARY_DIR}/wv2.dll COPYONLY)
-    #find_library(pthread_d pthreadVC3d HINTS "C:/vcpkg/packages/pthreads_x64-windows/debug/lib")
-    #find_library(pthread pthreadVC3 HINTS "C:/vcpkg/packages/pthreads_x64-windows/lib")
+    find_package(PThreads4W REQUIRED)
     find_package(Boost REQUIRED COMPONENTS filesystem system)
     target_link_libraries(doctotext_core PRIVATE general ${wvWare}
-                                                 #debug ${pthread_d}
-                                                 #optimized ${pthread}
+                                                 PThreads4W::PThreads4W
                                                  Boost::filesystem
                                                  Boost::system)
     target_include_directories(doctotext_core PUBLIC ${wv2_inc_dir})
@@ -126,6 +124,7 @@ target_include_directories(doctotext_core PUBLIC
         .
         )
 if(MSVC)
+    find_package(PThreads4W REQUIRED)
     target_link_libraries(doctotext_parsers PRIVATE
             general podofo
             general unzip
@@ -136,8 +135,7 @@ if(MSVC)
             general doctotext_core
             debug freetyped
             optimized freetype
-            #debug ${pthread_d}
-            #optimized ${pthread}
+            PThreads4W::PThreads4W
             debug zlibd
             optimized zlib
             debug libmimeticd
@@ -220,15 +218,15 @@ endif()
 
 add_library(doctotext_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
 if(MSVC)
+    find_package(PThreads4W REQUIRED)
     target_link_libraries(doctotext_mail
             general libbfio
             general libpff
             general doctotext_core
             general htmlcxx
             debug libmimeticd
-            optimized libmimetic)
-            #debug ${pthread_d}
-            #optimized ${pthread})
+            optimized libmimetic
+            PThreads4W::PThreads4W)
     target_include_directories(doctotext_mail PUBLIC
             ../
             .
