@@ -106,7 +106,7 @@ cd bfio
 .\synclibs.ps1
 .\autogen.ps1
 cd msvscpp
-C:\Program` Files` `(x86`)\Microsoft` Visual` Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe libbfio.sln /property:Configuration=Release /property:Platform=x64
+C:\Program` Files` `(x86`)\Microsoft` Visual` Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe libbfio.sln /property:Configuration=Release /property:Platform=x64 /p:PlatformToolset=v142
 cd ..
 Copy-Item -Path 'msvscpp\Release\*.lib' -Destination "$deps_prefix\lib" -Recurse
 Copy-Item -Path 'msvscpp\Release\*.dll' -Destination "$deps_prefix\bin" -Recurse
