@@ -25,10 +25,8 @@ if(MSVC)
             RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/build"
             RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/build"
             )
-    find_library(pthread pthreadVC3 HINTS "C:/vcpkg/packages/pthreads_x64-windows/lib")
-    find_library(pthread_d pthreadVC3d HINTS "C:/vcpkg/packages/pthreads_x64-windows/debug/lib")
-    target_link_directories(doctotext_core PUBLIC "C:/lib")
-    target_link_libraries(api_tests PRIVATE debug ${pthread_d} optimized ${pthread})
+    find_package(PThreads4W REQUIRED)
+    target_link_libraries(api_tests PRIVATE PThreads4W::PThreads4W)
 endif()
 target_compile_options(api_tests PRIVATE -O0 -g)
 

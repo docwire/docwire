@@ -47,12 +47,12 @@ if(MSVC)
     find_library(wvWare wv2 HINTS "${wv2_prefix}/lib/static" REQUIRED)
     configure_file(${wv2_prefix}/bin/wv2.dll ${CMAKE_BINARY_DIR}/wv2.dll COPYONLY)
     find_package(PThreads4W REQUIRED)
-    find_package(Boost REQUIRED COMPONENTS filesystem system)
+    find_package(Boost REQUIRED COMPONENTS filesystem system config)
     target_link_libraries(doctotext_core PRIVATE general ${wvWare}
                                                  PThreads4W::PThreads4W
                                                  Boost::filesystem
                                                  Boost::system)
-    target_include_directories(doctotext_core PUBLIC ${wv2_inc_dir})
+    target_include_directories(doctotext_core PUBLIC ${wv2_inc_dir} Boost::config)
     set_target_properties( doctotext_core
             PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/build"
@@ -124,9 +124,10 @@ target_include_directories(doctotext_core PUBLIC
         .
         )
 if(MSVC)
+    find_library(podofo podofo REQUIRED)
     find_package(PThreads4W REQUIRED)
     target_link_libraries(doctotext_parsers PRIVATE
-            general podofo
+            ${podofo}
             general unzip
             general ${wvWare}
             general htmlcxx
@@ -178,10 +179,10 @@ add_library(doctotext_ocr SHARED ocr_parser_provider.cpp ocr_parser.cpp)
 if(MSVC)
     set_property(TARGET doctotext_ocr PROPERTY
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    find_package(Tesseract)
     target_link_libraries(doctotext_ocr debug leptonica-1.82.0d
-                                        debug tesseract53d
+                                        Tesseract::libtesseract
                                         optimized leptonica-1.82.0
-                                        optimized tesseract53
                                         general doctotext_core)
     target_include_directories(doctotext_ocr PUBLIC
             ../
@@ -227,7 +228,9 @@ if(MSVC)
             debug libmimeticd
             optimized libmimetic
             PThreads4W::PThreads4W)
+    find_path(bfio_inc_dir libbfio.h REQUIRED)
     target_include_directories(doctotext_mail PUBLIC
+            ${bfio_inc_dir}
             ../
             .
             )
