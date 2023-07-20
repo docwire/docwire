@@ -47,12 +47,12 @@ if(MSVC)
     find_library(wvWare wv2 HINTS "${wv2_prefix}/lib/static" REQUIRED)
     configure_file(${wv2_prefix}/bin/wv2.dll ${CMAKE_BINARY_DIR}/wv2.dll COPYONLY)
     find_package(PThreads4W REQUIRED)
-    find_package(Boost REQUIRED COMPONENTS filesystem system config)
+    find_package(Boost REQUIRED COMPONENTS filesystem system)
     target_link_libraries(doctotext_core PRIVATE general ${wvWare}
                                                  PThreads4W::PThreads4W
                                                  Boost::filesystem
                                                  Boost::system)
-    target_include_directories(doctotext_core PUBLIC ${wv2_inc_dir} Boost::config)
+    target_include_directories(doctotext_core PUBLIC ${wv2_inc_dir})
     set_target_properties( doctotext_core
             PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/build"

@@ -34,7 +34,6 @@
 #define DOCTOTEXT_MAIL_PARSER_PROVIDER_H
 
 
-#include <boost/config.hpp>
 #include "parser_provider.h"
 #include "defines.h"
 
@@ -52,7 +51,7 @@ private:
   std::set<std::string> available_extensions;
 };
 
-extern "C" BOOST_SYMBOL_EXPORT MailParserProvider plugin_parser_provider;
+extern "C" DllExport MailParserProvider plugin_parser_provider;
 MailParserProvider plugin_parser_provider;
 
 

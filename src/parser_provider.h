@@ -35,7 +35,6 @@
 #define PARSER_PROVIDER_HPP
 
 #include <optional>
-#include <boost/config.hpp>
 
 #include <set>
 #include "parser_builder.h"
@@ -47,7 +46,7 @@ namespace doctotext
 /**
  * @brief The ParserProvider class.
  */
-class DllExport BOOST_SYMBOL_VISIBLE ParserProvider
+class DllExport ParserProvider
 {
 public:
   /**
