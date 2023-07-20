@@ -101,6 +101,18 @@ cmake --build . --config Release
 cmake --build . --config Release --target install
 cd ..\..
 
+git clone https://github.com/docwire/bfio.git
+cd bfio
+.\synclibs.ps1
+.\autogen.ps1
+cd msvscpp
+C:\Program Files` (x86)\Microsoft` Visual` Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe libbfio.sln /property:Configuration=Release /property:Platform=x64
+cd ..
+Copy-Item -Path 'msvscpp\Release\*.lib' -Destination "$deps_prefix\lib" -Recurse
+Copy-Item -Path 'msvscpp\Release\*.dll' -Destination "$deps_prefix\bin" -Recurse
+Copy-Item -Path 'include\*.h' -Destination "$deps_prefix\include"
+Copy-Item -Path 'include\libbfio' -Destination "$deps_prefix\include" -Recurse
+
 vcpkg\vcpkg install libpff:$VCPKG_TRIPLET
 
 Invoke-WebRequest -Uri http://www.winimage.com/zLibDll/unzip101e.zip -OutFile unzip101e.zip
@@ -159,6 +171,7 @@ $LIB_PATHS=(
     "$vcpkg_prefix/bin/leptonica-1.82.0.dll",
     "$vcpkg_prefix/bin/libcrypto-3-x64.dll",
     "$vcpkg_prefix/bin/liblzma.dll",
+    "$vcpkg_prefix/bin/libbfio.dll",
     "$vcpkg_prefix/bin/libpff.dll",
     "$vcpkg_prefix/bin/libpng16.dll",
     "$vcpkg_prefix/bin/libxml2.dll",
