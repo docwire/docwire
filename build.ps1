@@ -172,7 +172,7 @@ $LIB_PATHS=(
     "$vcpkg_prefix/bin/leptonica-1.82.0.dll",
     "$vcpkg_prefix/bin/libcrypto-3-x64.dll",
     "$vcpkg_prefix/bin/liblzma.dll",
-    "$vcpkg_prefix/bin/libbfio.dll",
+    "$deps_prefix/bin/libbfio.dll",
     "$vcpkg_prefix/bin/libpff.dll",
     "$vcpkg_prefix/bin/libpng16.dll",
     "$vcpkg_prefix/bin/libxml2.dll",
