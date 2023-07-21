@@ -112,6 +112,7 @@ Copy-Item -Path 'msvscpp\Release\*.lib' -Destination "$deps_prefix\lib" -Recurse
 Copy-Item -Path 'msvscpp\Release\*.dll' -Destination "$deps_prefix\bin" -Recurse
 Copy-Item -Path 'include\*.h' -Destination "$deps_prefix\include"
 Copy-Item -Path 'include\libbfio' -Destination "$deps_prefix\include" -Recurse
+cd ..
 
 vcpkg\vcpkg install libpff:$VCPKG_TRIPLET
 
