@@ -125,22 +125,24 @@ target_include_directories(doctotext_core PUBLIC
         )
 if(MSVC)
     find_library(podofo podofo REQUIRED)
+    find_package(Freetype REQUIRED)
+    find_library(unzip unzip REQUIRED)
     find_package(PThreads4W REQUIRED)
+    find_library(htmlcxx htmlcxx REQUIRED)
+    find_library(charsetdetect charsetdetect REQUIRED)
+    find_library(mimetic mimetic REQUIRED)
     target_link_libraries(doctotext_parsers PRIVATE
             ${podofo}
-            general unzip
+            ${unzip}
             general ${wvWare}
-            general htmlcxx
+            ${htmlcxx}
             general ${LIBXML2_LIBRARIES}
-            general charsetdetect
+            ${charsetdetect}
             general doctotext_core
-            debug freetyped
-            optimized freetype
+            Freetype::Freetype
             PThreads4W::PThreads4W
-            debug zlibd
-            optimized zlib
-            debug libmimeticd
-            optimized libmimetic
+            ZLIB::ZLIB
+            ${mimetic}
             )
     target_compile_options(doctotext_parsers PUBLIC "/Zc:__cplusplus")
 else()
@@ -179,10 +181,10 @@ add_library(doctotext_ocr SHARED ocr_parser_provider.cpp ocr_parser.cpp)
 if(MSVC)
     set_property(TARGET doctotext_ocr PROPERTY
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    find_package(Leptonica)
     find_package(Tesseract)
-    target_link_libraries(doctotext_ocr debug leptonica-1.82.0d
+    target_link_libraries(doctotext_ocr ${Leptonica_LIBRARIES}
                                         Tesseract::libtesseract
-                                        optimized leptonica-1.82.0
                                         general doctotext_core)
     target_include_directories(doctotext_ocr PUBLIC
             ../
@@ -219,14 +221,17 @@ endif()
 
 add_library(doctotext_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
 if(MSVC)
+    find_library(mimetic mimetic REQUIRED)
+    find_library(bfio bfio REQUIRED)
+    find_library(pff pff REQUIRED)
+    find_library(htmlcxx htmlcxx REQUIRED)
     find_package(PThreads4W REQUIRED)
     target_link_libraries(doctotext_mail
-            general libbfio
-            general libpff
+            ${bfio}
+            ${pff}
             general doctotext_core
-            general htmlcxx
-            debug libmimeticd
-            optimized libmimetic
+            ${htmlcxx}
+            ${mimetic}
             PThreads4W::PThreads4W)
     find_path(bfio_inc_dir libbfio.h REQUIRED)
     target_include_directories(doctotext_mail PUBLIC
