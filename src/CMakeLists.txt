@@ -131,6 +131,7 @@ if(MSVC)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
     find_library(mimetic NAMES mimetic libmimetic REQUIRED)
+    find_package(Iconv REQUIRED)
     target_link_libraries(doctotext_parsers PRIVATE
             ${podofo}
             ${unzip}
@@ -143,6 +144,7 @@ if(MSVC)
             PThreads4W::PThreads4W
             ZLIB::ZLIB
             ${mimetic}
+            Iconv::Iconv
             )
     target_compile_options(doctotext_parsers PUBLIC "/Zc:__cplusplus")
 else()
