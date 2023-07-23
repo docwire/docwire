@@ -223,7 +223,7 @@ add_library(doctotext_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_pa
 if(MSVC)
     find_library(mimetic NAMES mimetic libmimetic REQUIRED)
     find_library(bfio NAMES bfio libbfio REQUIRED)
-    find_library(pff pff REQUIRED)
+    find_library(pff NAMES pff libpff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_package(PThreads4W REQUIRED)
     target_link_libraries(doctotext_mail
