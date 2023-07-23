@@ -1,7 +1,12 @@
 set -e
-brew update
 
-brew install md5sha1sum automake autogen doxygen
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	brew update
+	brew install md5sha1sum automake autogen doxygen
+elif [[ "$OSTYPE" != "linux"* ]]; then
+	echo "Unknown OS type." >&2
+	exit 1
+fi
 
 git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
@@ -9,7 +14,11 @@ git checkout tags/2023.01.09
 ./bootstrap-vcpkg.sh
 cd ..
 
-VCPKG_TRIPLET=x64-osx
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	VCPKG_TRIPLET=x64-osx
+else
+	VCPKG_TRIPLET=x64-linux
+fi
 
 ./vcpkg/vcpkg install libiconv:$VCPKG_TRIPLET
 ./vcpkg/vcpkg install zlib:$VCPKG_TRIPLET
@@ -28,8 +37,11 @@ VCPKG_TRIPLET=x64-osx
 mkdir -p custom-triplets
 cp ./vcpkg/triplets/community/$VCPKG_TRIPLET-dynamic.cmake custom-triplets/$VCPKG_TRIPLET.cmake
 ./vcpkg/vcpkg install podofo:$VCPKG_TRIPLET --overlay-triplets=custom-triplets
+rm -rf custom-triplets
 
-vcpkg_prefix="$PWD/vcpkg/installed/$VCPKG_TRIPLET"
+vcpkg_path="$PWD/vcpkg"
+vcpkg_toolchain="$vcpkg_path/scripts/buildsystems/vcpkg.cmake"
+vcpkg_prefix="$vcpkg_path/installed/$VCPKG_TRIPLET"
 
 deps_prefix="$PWD/deps"
 mkdir -p $deps_prefix
@@ -38,11 +50,15 @@ wget -nc https://sourceforge.net/projects/htmlcxx/files/v0.87/htmlcxx-0.87.tar.g
 echo "ac7b56357d6867f649e0f1f699d9a4f0f03a6e80  htmlcxx-0.87.tar.gz" | shasum -c
 tar -xzvf htmlcxx-0.87.tar.gz
 cd htmlcxx-0.87
-./configure CXXFLAGS=-std=c++17 LDFLAGS="-L$vcpkg_prefix/lib" LIBS="-liconv" CPPFLAGS="-I$vcpkg_prefix/include" --prefix="$deps_prefix"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	./configure CXXFLAGS=-std=c++17 LDFLAGS="-L$vcpkg_prefix/lib" LIBS="-liconv" CPPFLAGS="-I$vcpkg_prefix/include" --prefix="$deps_prefix"
+else
+	./configure CPPFLAGS=-std=c++17 LDFLAGS="-Wl,-no-undefined" --prefix="$deps_prefix" 
+fi
 sed -i.bak -e "s/\(allow_undefined=\)yes/\1no/" libtool
 sed -i -r -e 's/css\/libcss_parser_pp.la \\//' Makefile
 sed -i -r -e 's/css\/libcss_parser.la//' Makefile
-sed -i '' -r -e 's/-DDEFAULT_CSS=\"\\\"\$\{datarootdir\}\/htmlcxx\/css\/default.css\\\"\"//' Makefile
+sed -i.bak -r -e 's/-DDEFAULT_CSS=\"\\\"\$\{datarootdir\}\/htmlcxx\/css\/default.css\\\"\"//' Makefile
 sed -i -r -e 's/css\/libcss_parser_pp.la//' Makefile
 sed -i -r -e 's/css//' Makefile
 sed -i -e 's/throw (Exception)//' html/CharsetConverter.h
@@ -68,7 +84,7 @@ git clone https://github.com/docwire/wv2.git
 cd wv2
 mkdir build
 cd build
-cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix" ..
+cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix" ..
 make install
 cd ..
 wget http://silvercoders.com/download/3rdparty/wv2-0.2.3_patched_4-private_headers.tar.bz2
@@ -76,6 +92,7 @@ echo "6bb3959d975e483128623ee3bff3fba343f096c7  wv2-0.2.3_patched_4-private_head
 tar -xjvf wv2-0.2.3_patched_4-private_headers.tar.bz2
 mv wv2-0.2.3_patched_4-private_headers/*.h $deps_prefix/include/wv2/
 cd ..
+rm -rf wv2
 
 wget -nc http://www.codesink.org/download/mimetic-0.9.7.tar.gz
 echo "568557bbf040be2b17595431c9b0992c32fae6ed  mimetic-0.9.7.tar.gz" | shasum -c
@@ -92,6 +109,8 @@ patch -p1 -i ../mimetic-0.9.7-patches/mimetic_pointer_comparison.patch
 make -j4
 make install-strip
 cd ..
+rm -rf mimetic-0.9.7
+rm -rf mimetic-0.9.7-patches
 
 git clone https://github.com/libyal/libbfio.git
 cd libbfio
@@ -102,19 +121,21 @@ autoreconf -i
 make -j4
 make install
 cd ..
+rm -rf libbfio
 
 git clone https://github.com/libyal/libpff.git
 cd libpff
 git checkout 99a86ef
 ./synclibs.sh
-touch ../../config.rpath
+sed -i.bak "s/2.71/2.69/" configure.ac
 autoreconf -i
 ./configure --prefix="$deps_prefix"
 make -j4
 make install
 cd ..
+rm -rf libpff
 
-wget http://www.winimage.com/zLibDll/unzip101e.zip && \
+wget -nc http://www.winimage.com/zLibDll/unzip101e.zip && \
 unzip -d unzip101e unzip101e.zip && \
 cd unzip101e && \
 printf 'cmake_minimum_required(VERSION 3.7)\n' >> CMakeLists.txt
@@ -124,10 +145,11 @@ printf 'add_library(unzip STATIC ${UNZIP_SRC})\n' >> CMakeLists.txt
 printf 'install(FILES unzip.h ioapi.h DESTINATION include)\n' >> CMakeLists.txt
 printf 'install(TARGETS unzip DESTINATION lib)\n' >> CMakeLists.txt
 printf 'target_compile_options(unzip PRIVATE -fPIC)\n' >> CMakeLists.txt
-cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix" -DCMAKE_CXX_FLAGS="-I$vcpkg_prefix/include" .
+cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_C_FLAGS="-I$vcpkg_prefix/include" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix" .
 cmake --build .
 cmake --install .
 cd ..
+rm -rf unzip101e
 
 wget http://silvercoders.com/download/3rdparty/cmapresources_korean1-2.tar.z
 echo "e4e36995cff0331d8bd5ad00c1c1453c24ab4c07  cmapresources_korean1-2.tar.z" | sha1sum -c -
@@ -156,9 +178,7 @@ mv ToUnicode $deps_prefix/share/
 
 mkdir -p build
 cd build
-cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE=$PWD/../vcpkg/scripts/buildsystems/vcpkg.cmake \
-	-DCMAKE_PREFIX_PATH="$deps_prefix" \
-	..
+cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_PREFIX_PATH="$deps_prefix" ..
 cmake --build .
 cmake --build . --target doxygen install
 cd ..
@@ -170,13 +190,23 @@ wget -nc https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/eng.traineddat
 wget -nc https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/osd.traineddata
 wget -nc https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/pol.traineddata
 cd ..
-cp $deps_prefix/lib/libwv2.4.dylib .
-cp $vcpkg_prefix/lib/libpodofo.0.9.8.dylib .
-cp $deps_prefix/lib/libhtmlcxx.3.dylib .
-cp $deps_prefix/lib/libcharsetdetect.dylib .
-cp $deps_prefix/lib/libmimetic.0.dylib .
-cp $deps_prefix/lib/libbfio.1.dylib .
-cp $deps_prefix/lib/libpff.1.dylib .
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	cp $deps_prefix/lib/libwv2.4.dylib .
+	cp $vcpkg_prefix/lib/libpodofo.0.9.8.dylib .
+	cp $deps_prefix/lib/libhtmlcxx.3.dylib .
+	cp $deps_prefix/lib/libcharsetdetect.dylib .
+	cp $deps_prefix/lib/libmimetic.0.dylib .
+	cp $deps_prefix/lib/libbfio.1.dylib .
+	cp $deps_prefix/lib/libpff.1.dylib .
+else
+	cp $deps_prefix/lib/libwv2.so.4 .
+	cp $vcpkg_prefix/lib/libpodofo.so.0.9.8 .
+	cp $deps_prefix/lib/libhtmlcxx.so.3 .
+	cp $deps_prefix/lib/libcharsetdetect.so .
+	cp $deps_prefix/lib/libmimetic.so.0 .
+	cp $deps_prefix/lib/libbfio.so.1 .
+	cp $deps_prefix/lib/libpff.so.1 .
+fi
 mkdir -p resources
 cd resources
 cp $deps_prefix/share/ac16/CMap/* .
@@ -188,7 +218,11 @@ cd ..
 cd ..
 
 cd build/tests
-DYLD_FALLBACK_LIBRARY_PATH=.. ctest -j4 -V
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	DYLD_FALLBACK_LIBRARY_PATH=.. ctest -j4 -V
+else
+	LD_LIBRARY_PATH=.. ctest -j4 -V
+fi
 cd ../..
 
 build_type=$1
@@ -197,8 +231,13 @@ if [ "$build_type" = "--release" ]; then
 	rm build/Makefile build/CMakeCache.txt build/cmake_install.cmake build/install_manifest.txt build/examples/cmake_install.cmake build/examples/Makefile build/doc/Makefile build/doc/cmake_install.cmake build/doc/Doxyfile.doxygen
 fi
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	LIB_EXTENSION=.dylib
+else
+	LIB_EXTENSION=.so
+fi
 cd build/
-for i in *.dylib*; do
+for i in *.$LIB_EXTENSION*; do
     [ -f "$i" ] || break
     sha1sum $i >> SHA1checksums.sha1
 done
@@ -206,5 +245,10 @@ cd ..
 
 version=`cat build/VERSION`
 
-tar -cjvf doctotext-$version-osx.tar.bz2 build
-sha1sum doctotext-$version-osx.tar.bz2 > doctotext-$version-osx.tar.bz2.sha1
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	arch=osx
+else
+	arch=x86_64_linux
+fi
+tar -cjvf doctotext-$version-$arch.tar.bz2 build
+sha1sum doctotext-$version-$arch.tar.bz2 > doctotext-$version-$arch.tar.bz2.sha1
