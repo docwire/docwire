@@ -48,7 +48,7 @@ if(MSVC)
     configure_file(${wv2_prefix}/bin/wv2.dll ${CMAKE_BINARY_DIR}/wv2.dll COPYONLY)
     find_package(PThreads4W REQUIRED)
     find_package(Boost REQUIRED COMPONENTS filesystem system)
-    target_link_libraries(doctotext_core PRIVATE general ${wvWare}
+    target_link_libraries(doctotext_core PRIVATE ${wvWare}
                                                  PThreads4W::PThreads4W
                                                  Boost::filesystem
                                                  Boost::system)
@@ -134,11 +134,11 @@ if(MSVC)
     target_link_libraries(doctotext_parsers PRIVATE
             ${podofo}
             ${unzip}
-            general ${wvWare}
+            ${wvWare}
             ${htmlcxx}
-            general ${LIBXML2_LIBRARIES}
+            ${LIBXML2_LIBRARIES}
             ${charsetdetect}
-            general doctotext_core
+            doctotext_core
             Freetype::Freetype
             PThreads4W::PThreads4W
             ZLIB::ZLIB
@@ -185,7 +185,7 @@ if(MSVC)
     find_package(Tesseract)
     target_link_libraries(doctotext_ocr ${Leptonica_LIBRARIES}
                                         Tesseract::libtesseract
-                                        general doctotext_core)
+                                        doctotext_core)
     target_include_directories(doctotext_ocr PUBLIC
             ../
             .
@@ -229,7 +229,7 @@ if(MSVC)
     target_link_libraries(doctotext_mail
             ${bfio}
             ${pff}
-            general doctotext_core
+            doctotext_core
             ${htmlcxx}
             ${mimetic}
             PThreads4W::PThreads4W)
