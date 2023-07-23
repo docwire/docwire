@@ -251,9 +251,6 @@ else()
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-   target_link_libraries(doctotext_parsers PRIVATE
-      iconv
-   )
    set_target_properties(doctotext_parsers PROPERTIES PREFIX "")
    set_target_properties(doctotext_core PROPERTIES PREFIX "")
 endif()
