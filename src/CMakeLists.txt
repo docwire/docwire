@@ -130,7 +130,7 @@ if(MSVC)
     find_package(PThreads4W REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
-    find_library(mimetic mimetic REQUIRED)
+    find_library(mimetic NAMES mimetic libmimetic REQUIRED)
     target_link_libraries(doctotext_parsers PRIVATE
             ${podofo}
             ${unzip}
@@ -221,7 +221,7 @@ endif()
 
 add_library(doctotext_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
 if(MSVC)
-    find_library(mimetic mimetic REQUIRED)
+    find_library(mimetic NAMES mimetic libmimetic REQUIRED)
     find_library(bfio bfio REQUIRED)
     find_library(pff pff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
