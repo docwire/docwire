@@ -85,7 +85,7 @@ jobs:
         with:
           fetch-depth: 0
       - run:
-          ./build_osx.sh --release
+          ./build.sh --release
       - uses: actions/upload-artifact@v2
         with:
           name: osx_build
