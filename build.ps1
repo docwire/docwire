@@ -175,17 +175,19 @@ if ($BuildType -eq "Debug")
 {
 	$vcpkg_bin_dir="$vcpkg_prefix/debug/bin"
 	$debug_suffix="d"
+	$boost_arch="vc142-mt-gd-x64"
 }
 else
 {
 	$vcpkg_bin_dir="$vcpkg_prefix/bin"
 	$debug_suffix=""
+	$boost_arch="vc142-mt-x64"
 }
 $LIB_PATHS=(
     "C:\Windows\System32\VCRUNTIME140_1${debug_suffix}.dll",
     "$deps_prefix/bin/htmlcxx.dll",
     "$deps_prefix/bin/wv2.dll",
-    "$vcpkg_bin_dir/boost_filesystem-vc142-mt-x64-1_81.dll",
+    "$vcpkg_bin_dir/boost_filesystem-${boost_arch}-1_81.dll",
     "$vcpkg_bin_dir/brotlicommon.dll",
     "$vcpkg_bin_dir/brotlidec.dll",
     "$vcpkg_bin_dir/bz2${debug_suffix}.dll",
@@ -197,7 +199,7 @@ $LIB_PATHS=(
     "$vcpkg_bin_dir/tesseract-52${debug_suffix}.dll",
     "$vcpkg_bin_dir/libcrypto-3-x64.dll",
     "$vcpkg_bin_dir/liblzma.dll",
-    "$vcpkg_bin_dir/libbfio.dll",
+    "$deps_prefix/bin/libbfio.dll",
     "$vcpkg_bin_dir/libpff.dll",
     "$vcpkg_bin_dir/libpng16${debug_suffix}.dll",
     "$vcpkg_bin_dir/libxml2.dll",
