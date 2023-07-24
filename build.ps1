@@ -159,6 +159,7 @@ Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/
 cd ..
 cd ..
 $LIB_PATHS=(
+    "C:\Windows\System32\VCRUNTIME140_1.dll",
     "$deps_prefix/bin/htmlcxx.dll",
     "$deps_prefix/bin/wv2.dll",
     "$vcpkg_prefix/bin/boost_filesystem-vc142-mt-x64-1_81.dll",
