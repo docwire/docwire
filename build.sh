@@ -6,6 +6,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 elif [[ "$OSTYPE" == "linux"* ]]; then
 	if [[ "$GITHUB_ACTIONS" == "true" ]]; then
 		sudo apt-get install -y autopoint
+		sudo apt-get install -y doxygen
 	fi
 else
 	echo "Unknown OS type." >&2
