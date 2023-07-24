@@ -3,7 +3,11 @@ set -e
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	brew update
 	brew install md5sha1sum automake autogen doxygen
-elif [[ "$OSTYPE" != "linux"* ]]; then
+elif [[ "$OSTYPE" == "linux"* ]]; then
+	if [[ "$GITHUB_ACTIONS" == "true" ]]; then
+		sudo apt-get install -y autopoint
+	fi
+else
 	echo "Unknown OS type." >&2
 	exit 1
 fi
