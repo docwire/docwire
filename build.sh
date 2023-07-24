@@ -259,7 +259,7 @@ version=`cat build/VERSION`
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	arch=osx
-else [[ "$OSTYPE" != "msys"* ]]; then
+elif [[ "$OSTYPE" != "msys"* ]]; then
 	arch=x64_mingw
 else
 	arch=x86_64_linux
