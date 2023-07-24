@@ -120,8 +120,8 @@ else
 }
 C:\Program` Files` `(x86`)\Microsoft` Visual` Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe libbfio.sln /property:Configuration=$bfio_conf /property:Platform=x64 /p:PlatformToolset=v142
 cd ..
-Copy-Item -Path 'msvscpp\$bfio_conf\*.lib' -Destination "$deps_prefix\lib" -Recurse
-Copy-Item -Path 'msvscpp\$bfio_conf\*.dll' -Destination "$deps_prefix\bin" -Recurse
+Copy-Item -Path "msvscpp\$bfio_conf\*.lib" -Destination "$deps_prefix\lib" -Recurse
+Copy-Item -Path "msvscpp\$bfio_conf\*.dll" -Destination "$deps_prefix\bin" -Recurse
 Copy-Item -Path 'include\*.h' -Destination "$deps_prefix\include"
 Copy-Item -Path 'include\libbfio' -Destination "$deps_prefix\include" -Recurse
 cd ..
