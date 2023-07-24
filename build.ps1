@@ -194,6 +194,7 @@ $LIB_PATHS=(
     "$vcpkg_bin_dir/iconv-2.dll",
     "$vcpkg_bin_dir/jpeg62.dll",
     "$vcpkg_bin_dir/leptonica-1.82.0${debug_suffix}.dll",
+    "$vcpkg_bin_dir/tesseract-52${debug_suffix}.dll",
     "$vcpkg_bin_dir/libcrypto-3-x64.dll",
     "$vcpkg_bin_dir/liblzma.dll",
     "$vcpkg_bin_dir/libbfio.dll",
