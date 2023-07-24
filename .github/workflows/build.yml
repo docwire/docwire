@@ -21,20 +21,23 @@ jobs:
             ./*.bz2
             ./*.sha1
           if-no-files-found: error
-  build_win64:
-    runs-on: ubuntu-latest
+  build_x64_mingw:
+    runs-on: windows-2019
     timeout-minutes: 150
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - run: ./build_in_docker.sh ARCH=win64 --release
+      - run: ./build.sh --release
         env:
           ghcr_login: ${{ github.actor }}
           ghcr_password: ${{ github.token }}
       - uses: actions/upload-artifact@v2
         with:
-          name: win64_build
+          name: x64_mingw_build
           path: |
             ./*.bz2
             ./*.sha1

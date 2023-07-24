@@ -8,7 +8,7 @@ elif [[ "$OSTYPE" == "linux"* ]]; then
 		sudo apt-get install -y autopoint
 		sudo apt-get install -y doxygen
 	fi
-else
+elif [[ "$OSTYPE" != "msys"* ]]; then
 	echo "Unknown OS type." >&2
 	exit 1
 fi
@@ -21,6 +21,8 @@ cd ..
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	VCPKG_TRIPLET=x64-osx
+elif [[ "$OSTYPE" == "msys"* ]]; then
+	VCPKG_TRIPLET=x64-mingw-static
 else
 	VCPKG_TRIPLET=x64-linux
 fi
@@ -39,8 +41,13 @@ fi
 ./vcpkg/vcpkg install boost-assert:$VCPKG_TRIPLET
 ./vcpkg/vcpkg install boost-smart-ptr:$VCPKG_TRIPLET
 
+if [[ "$OSTYPE" == "msys"* ]]; then
+	VCPKG_TRIPLET_DYNAMIC=x64-mingw-dynamic
+else
+	VCPKG_TRIPLET_DYNAMIC=$VCPKG_TRIPLET-dynamic
+fi
 mkdir -p custom-triplets
-cp ./vcpkg/triplets/community/$VCPKG_TRIPLET-dynamic.cmake custom-triplets/$VCPKG_TRIPLET.cmake
+cp ./vcpkg/triplets/community/$VCPKG_TRIPLET_DYNAMIC.cmake custom-triplets/$VCPKG_TRIPLET.cmake
 ./vcpkg/vcpkg install podofo:$VCPKG_TRIPLET --overlay-triplets=custom-triplets
 rm -rf custom-triplets
 
@@ -252,6 +259,8 @@ version=`cat build/VERSION`
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	arch=osx
+else [[ "$OSTYPE" != "msys"* ]]; then
+	arch=x64_mingw
 else
 	arch=x86_64_linux
 fi
