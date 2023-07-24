@@ -173,12 +173,12 @@ cd ..
 cd ..
 if ($BuildType -eq "Debug")
 {
-	$vcpkg_bin_dir="$vcpkg_prefix/bin"
+	$vcpkg_bin_dir="$vcpkg_prefix/debug/bin"
 	$debug_suffix="d"
 }
 else
 {
-	$vcpkg_bin_dir="$vcpkg_prefix/debug/bin"
+	$vcpkg_bin_dir="$vcpkg_prefix/bin"
 	$debug_suffix=""
 }
 $LIB_PATHS=(
