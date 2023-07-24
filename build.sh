@@ -17,6 +17,10 @@ git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
 git checkout tags/2023.01.09
 ./bootstrap-vcpkg.sh
+if [[ "$OSTYPE" == "msys"* ]]; then
+	sed -i s/libtool-2.4.6-9-x86_64.pkg.tar.xz/libtool-2.4.6-14-x86_64.pkg.tar.zst/ scripts/cmake/vcpkg_acquire_msys.cmake
+	sed -i s/b309799e5a9d248ef66eaf11a0bd21bf4e8b9bd5c677c627ec83fa760ce9f0b54ddf1b62cbb436e641fbbde71e3b61cb71ff541d866f8ca7717a3a0dbeb00ebf/ba983ed9c2996d06b0d21b8fab9505267115f2106341f130e92d6b66dad87b0f0e82707daf0b676a28966bfaa24f6c41b6eef9e1f9bf985611471024f2b0ac97/ scripts/cmake/vcpkg_acquire_msys.cmake
+fi
 cd ..
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
