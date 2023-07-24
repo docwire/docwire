@@ -139,6 +139,7 @@ cmake --build . --config Release
 cmake --build . --config Release --target install
 cd ..
 cd ..
+Remove-Item -Path unzip101e.zip
 
 dir -s "$vcpkg_prefix\bin"
 dir -s "$vcpkg_prefix\lib"
