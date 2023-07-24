@@ -66,7 +66,7 @@ jobs:
         with:
           fetch-depth: 0
       - run:
-          ./build_in_docker.ps1 Debug
+          ./build.ps1 Debug
         env:
           ghcr_login: ${{ github.actor }}
           ghcr_password: ${{ github.token }}

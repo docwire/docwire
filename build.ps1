@@ -1,3 +1,7 @@
+Param (
+    [string]$BuildType = 'Release'
+)
+
 choco install archiver -y
 choco install doxygen.install -y
 choco install graphviz -y
@@ -70,8 +74,8 @@ Write-Output 'cmake_minimum_required(VERSION 3.16)' `
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
-cmake --build . --config Release
-cmake --build . --config Release --target install
+cmake --build . --config $BuildType
+cmake --build . --config $BuildType --target install
 cd ..
 cd ..
 
@@ -80,8 +84,8 @@ cd wv2
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain"  -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
-cmake --build . --config Release
-cmake --build . --config Release --target install
+cmake --build . --config $BuildType
+cmake --build . --config $BuildType --target install
 cd ..\..
 Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/wv2-0.2.3_patched_4-private_headers.tar.bz2 -OutFile wv2-0.2.3_patched_4-private_headers.tar.bz2
 arc unarchive wv2-0.2.3_patched_4-private_headers.tar.bz2
@@ -97,8 +101,8 @@ Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/maste
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
-cmake --build . --config Release
-cmake --build . --config Release --target install
+cmake --build . --config $BuildType
+cmake --build . --config $BuildType --target install
 cd ..\..
 
 git clone https://github.com/docwire/bfio.git
@@ -106,10 +110,18 @@ cd bfio
 .\synclibs.ps1
 .\autogen.ps1
 cd msvscpp
-C:\Program` Files` `(x86`)\Microsoft` Visual` Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe libbfio.sln /property:Configuration=Release /property:Platform=x64 /p:PlatformToolset=v142
+if ($BuildType -eq "Debug")
+{
+	$bfio_conf="VSDebug"
+}
+else
+{
+	$bfio_conf="Release"
+}
+C:\Program` Files` `(x86`)\Microsoft` Visual` Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe libbfio.sln /property:Configuration=$bfio_conf /property:Platform=x64 /p:PlatformToolset=v142
 cd ..
-Copy-Item -Path 'msvscpp\Release\*.lib' -Destination "$deps_prefix\lib" -Recurse
-Copy-Item -Path 'msvscpp\Release\*.dll' -Destination "$deps_prefix\bin" -Recurse
+Copy-Item -Path 'msvscpp\$bfio_conf\*.lib' -Destination "$deps_prefix\lib" -Recurse
+Copy-Item -Path 'msvscpp\$bfio_conf\*.dll' -Destination "$deps_prefix\bin" -Recurse
 Copy-Item -Path 'include\*.h' -Destination "$deps_prefix\include"
 Copy-Item -Path 'include\libbfio' -Destination "$deps_prefix\include" -Recurse
 cd ..
@@ -135,20 +147,20 @@ Write-Output 'cmake_minimum_required(VERSION 3.16)' `
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_PREFIX_PATH="$deps_prefix" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
-cmake --build . --config Release
-cmake --build . --config Release --target install
+cmake --build . --config $BuildType
+cmake --build . --config $BuildType --target install
 cd ..
 cd ..
 Remove-Item -Path unzip101e.zip
 
-dir -s "$vcpkg_prefix\bin"
-dir -s "$vcpkg_prefix\lib"
+dir -s "$vcpkg_prefix"
+dir -s "$deps_prefix"
 
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>' -DCMAKE_PREFIX_PATH="$deps_prefix"
-cmake --build . -j6 --config Release
-cmake --build . --config Release --target doxygen install
+cmake --build . -j6 --config $BuildType
+cmake --build . --config $BuildType --target doxygen install
 cd ..
 
 cd build
@@ -159,31 +171,41 @@ Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/
 Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/pol.traineddata -OutFile pol.traineddata
 cd ..
 cd ..
+if ($BuildType -eq "Debug")
+{
+	$vcpkg_bin_dir="$vcpkg_prefix/bin"
+	$debug_suffix="d"
+}
+else
+{
+	$vcpkg_bin_dir="$vcpkg_prefix/debug/bin"
+	$debug_suffix=""
+}
 $LIB_PATHS=(
-    "C:\Windows\System32\VCRUNTIME140_1.dll",
+    "C:\Windows\System32\VCRUNTIME140_1${debug_suffix}.dll",
     "$deps_prefix/bin/htmlcxx.dll",
     "$deps_prefix/bin/wv2.dll",
-    "$vcpkg_prefix/bin/boost_filesystem-vc142-mt-x64-1_81.dll",
-    "$vcpkg_prefix/bin/brotlicommon.dll",
-    "$vcpkg_prefix/bin/brotlidec.dll",
-    "$vcpkg_prefix/bin/bz2.dll",
-    "$vcpkg_prefix/bin/freetype.dll",
-    "$vcpkg_prefix/bin/gif.dll",
-    "$vcpkg_prefix/bin/iconv-2.dll",
-    "$vcpkg_prefix/bin/jpeg62.dll",
-    "$vcpkg_prefix/bin/leptonica-1.82.0.dll",
-    "$vcpkg_prefix/bin/libcrypto-3-x64.dll",
-    "$vcpkg_prefix/bin/liblzma.dll",
-    "$deps_prefix/bin/libbfio.dll",
-    "$vcpkg_prefix/bin/libpff.dll",
-    "$vcpkg_prefix/bin/libpng16.dll",
-    "$vcpkg_prefix/bin/libxml2.dll",
-    "$vcpkg_prefix/bin/openjp2.dll",
-    "$vcpkg_prefix/bin/podofo.dll",
-    "$vcpkg_prefix/bin/tiff.dll",
-    "$vcpkg_prefix/bin/webp.dll",
-    "$vcpkg_prefix/bin/webpmux.dll",
-    "$vcpkg_prefix/bin/zlib1.dll");
+    "$vcpkg_bin_dir/boost_filesystem-vc142-mt-x64-1_81.dll",
+    "$vcpkg_bin_dir/brotlicommon.dll",
+    "$vcpkg_bin_dir/brotlidec.dll",
+    "$vcpkg_bin_dir/bz2${debug_suffix}.dll",
+    "$vcpkg_bin_dir/freetype${debug_suffix}.dll",
+    "$vcpkg_bin_dir/gif.dll",
+    "$vcpkg_bin_dir/iconv-2.dll",
+    "$vcpkg_bin_dir/jpeg62.dll",
+    "$vcpkg_bin_dir/leptonica-1.82.0${debug_suffix}.dll",
+    "$vcpkg_bin_dir/libcrypto-3-x64.dll",
+    "$vcpkg_bin_dir/liblzma.dll",
+    "$vcpkg_bin_dir/libbfio.dll",
+    "$vcpkg_bin_dir/libpff.dll",
+    "$vcpkg_bin_dir/libpng16${debug_suffix}.dll",
+    "$vcpkg_bin_dir/libxml2.dll",
+    "$vcpkg_bin_dir/openjp2.dll",
+    "$vcpkg_bin_dir/podofo.dll",
+    "$vcpkg_bin_dir/tiff${debug_suffix}.dll",
+    "$vcpkg_bin_dir/webp.dll",
+    "$vcpkg_bin_dir/webpmux.dll",
+    "$vcpkg_bin_dir/zlib${debug_suffix}1.dll");
 foreach ($PATH in $LIB_PATHS){echo $PATH; Copy-Item -Path $PATH -Destination build/};
 
 cd build
@@ -194,22 +216,31 @@ Get-ChildItem -Path build\ -Recurse -Filter *.dll | Select-Object -Property Name
 
 $version = Get-Content build/VERSION
 
-mkdir doctotext-$version-msvc
+if ($BuildType -eq "Debug")
+{
+	$arch="msvc-debug"
+}
+else
+{
+	$arch="msvc"
+}
 
-Copy-Item -Path "build\*.dll" -Destination "doctotext-$version-msvc" -Recurse
-Copy-Item -Path "build\*.lib" -Destination "doctotext-$version-msvc" -Recurse
-Copy-Item -Path "build\*.pdb" -Destination "doctotext-$version-msvc" -Recurse
-Copy-Item -Path "build\*.exe" -Destination "doctotext-$version-msvc" -Recurse
-Copy-Item -Path "build\*.h" -Destination "doctotext-$version-msvc" -Recurse
-Copy-Item -Path "build\*.hpp" -Destination "doctotext-$version-msvc" -Recurse
-Copy-Item -Path "build\SHA1checksums.sha1" -Destination "doctotext-$version-msvc" -Recurse
-Copy-Item -Path "build\VERSION" -Destination "doctotext-$version-msvc" -Recurse
-Copy-Item -Path "ChangeLog" -Destination "doctotext-$version-msvc" -Recurse
-Copy-Item -Path "build\plugins" -Destination "doctotext-$version-msvc" -Recurse
-Copy-Item -Path "build\tessdata" -Destination "doctotext-$version-msvc" -Recurse
-Copy-Item -Path "build\doc" -Destination "doctotext-$version-msvc" -Recurse
+mkdir doctotext-$version-$arch
 
-Compress-Archive -LiteralPath doctotext-$version-msvc -DestinationPath doctotext-$version-msvc.zip
-Get-FileHash -Algorithm SHA1 doctotext-$version-msvc.zip > doctotext-$version-msvc.zip.sha1
+Copy-Item -Path "build\*.dll" -Destination "doctotext-$version-$arch" -Recurse
+Copy-Item -Path "build\*.lib" -Destination "doctotext-$version-$arch" -Recurse
+Copy-Item -Path "build\*.pdb" -Destination "doctotext-$version-$arch" -Recurse
+Copy-Item -Path "build\*.exe" -Destination "doctotext-$version-$arch" -Recurse
+Copy-Item -Path "build\*.h" -Destination "doctotext-$version-$arch" -Recurse
+Copy-Item -Path "build\*.hpp" -Destination "doctotext-$version-$arch" -Recurse
+Copy-Item -Path "build\SHA1checksums.sha1" -Destination "doctotext-$version-$arch" -Recurse
+Copy-Item -Path "build\VERSION" -Destination "doctotext-$version-$arch" -Recurse
+Copy-Item -Path "ChangeLog" -Destination "doctotext-$version-$arch" -Recurse
+Copy-Item -Path "build\plugins" -Destination "doctotext-$version-$arch" -Recurse
+Copy-Item -Path "build\tessdata" -Destination "doctotext-$version-$arch" -Recurse
+Copy-Item -Path "build\doc" -Destination "doctotext-$version-$arch" -Recurse
 
-Remove-Item -Path doctotext-$version-msvc -Recurse
+Compress-Archive -LiteralPath doctotext-$version-$arch -DestinationPath doctotext-$version-$arch.zip
+Get-FileHash -Algorithm SHA1 doctotext-$version-$arch.zip > doctotext-$version-$arch.zip.sha1
+
+Remove-Item -Path doctotext-$version-$arch -Recurse
