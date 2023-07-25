@@ -21,31 +21,6 @@ jobs:
             ./*.bz2
             ./*.sha1
           if-no-files-found: error
-  build_x64_mingw:
-    runs-on: windows-2019
-    timeout-minutes: 150
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      - uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          install: curl zip unzip ninja tar wget git base-devel mingw-w64-x86_64-toolchain
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - run: ./build.sh --release
-        env:
-          ghcr_login: ${{ github.actor }}
-          ghcr_password: ${{ github.token }}
-      - uses: actions/upload-artifact@v2
-        with:
-          name: x64_mingw_build
-          path: |
-            ./*.bz2
-            ./*.sha1
-          if-no-files-found: error
   build_msvc:
     runs-on: windows-2019
     timeout-minutes: 150
