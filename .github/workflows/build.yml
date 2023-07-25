@@ -26,8 +26,12 @@ jobs:
     timeout-minutes: 150
     defaults:
       run:
-        shell: C:\msys64\usr\bin\bash.exe {0}
+        shell: msys2 {0}
     steps:
+       - uses: msys2/setup-msys2@v2
+         with:
+           update: true
+           install: curl zip unzip tar wget git
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
