@@ -26,7 +26,7 @@ jobs:
     timeout-minutes: 150
     defaults:
       run:
-        shell: bash
+        shell: C:\msys64\usr\bin\bash.exe {0}
     steps:
       - uses: actions/checkout@v2
         with:
