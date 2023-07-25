@@ -22,6 +22,8 @@ if [[ "$OSTYPE" == "msys"* ]]; then
 	sed -i s/b309799e5a9d248ef66eaf11a0bd21bf4e8b9bd5c677c627ec83fa760ce9f0b54ddf1b62cbb436e641fbbde71e3b61cb71ff541d866f8ca7717a3a0dbeb00ebf/ba983ed9c2996d06b0d21b8fab9505267115f2106341f130e92d6b66dad87b0f0e82707daf0b676a28966bfaa24f6c41b6eef9e1f9bf985611471024f2b0ac97/ scripts/cmake/vcpkg_acquire_msys.cmake
 	sed -i s/grep-3.0-2-x86_64.pkg.tar.xz/grep-1~3.0-6-x86_64.pkg.tar.zst/ scripts/cmake/vcpkg_acquire_msys.cmake
 	sed -i s/c784d5f8a929ae251f2ffaccf7ab0b3936ae9f012041e8f074826dd6077ad0a859abba19feade1e71b3289cc640626dfe827afe91c272b38a1808f228f2fdd00/79b4c652082db04c2ca8a46ed43a86d74c47112932802b7c463469d2b73e731003adb1daf06b08cf75dc1087f0e2cdfa6fec0e8386ada47714b4cff8a2d841e1/ scripts/cmake/vcpkg_acquire_msys.cmake
+	sed -i s/msys2-runtime-3.2.0-8-x86_64.pkg.tar.zst/msys2-runtime-3.2.0-15-x86_64.pkg.tar.zst/ scripts/cmake/vcpkg_acquire_msys.cmake
+	sed -i s/fdd86f4ffa6e274d6fef1676a4987971b1f2e1ec556eee947adcb4240dc562180afc4914c2bdecba284012967d3d3cf4d1a392f798a3b32a3668d6678a86e8d3/e054f5e1fc87add7fc3f5cbafd0ff5f3f77a30385073c17d0a8882feb3319a4cba355ccb1cb67ccb9fa704b514c3d05f54c45199011f604c69bb70e52fa33455/ scripts\cmake\vcpkg_acquire_msys.cmake
 fi
 cd ..
 
