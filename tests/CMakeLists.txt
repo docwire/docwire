@@ -4,8 +4,8 @@ include(FetchContent)
 
 FetchContent_Declare(
         googletest
-        URL https://github.com/google/googletest/archive/refs/tags/release-1.12.0.zip
-        URL_HASH SHA1=b98f4d04dd684c1e47c3f48a6a7fa0d24b98f4ac
+        URL https://github.com/google/googletest/archive/refs/tags/release-1.12.1.zip
+        URL_HASH SHA1=973e464e8936d4b79bb24f27b058aaef4150b06e
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
