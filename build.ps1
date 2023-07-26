@@ -73,7 +73,7 @@ Write-Output 'cmake_minimum_required(VERSION 3.16)' `
       > CMakeLists.txt
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
+cmake .. -G "Visual Studio 16 2019" -A x64 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
 cmake --build . --config $BuildType
 cmake --build . --config $BuildType --target install
 cd ..
@@ -83,7 +83,7 @@ git clone https://github.com/docwire/wv2.git
 cd wv2
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain"  -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
+cmake .. -G "Visual Studio 16 2019" -A x64 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain"  -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
 cmake --build . --config $BuildType
 cmake --build . --config $BuildType --target install
 cd ..\..
@@ -100,7 +100,7 @@ mkdir cmake
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/cmake/config.cmake.in -OutFile cmake\config.cmake.in
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
+cmake .. -G "Visual Studio 16 2019" -A x64 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
 cmake --build . --config $BuildType
 cmake --build . --config $BuildType --target install
 cd ..\..
@@ -146,7 +146,7 @@ Write-Output 'cmake_minimum_required(VERSION 3.16)' `
       > CMakeLists.txt
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_PREFIX_PATH="$deps_prefix" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
+cmake .. -G "Visual Studio 16 2019" -A x64 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_PREFIX_PATH="$deps_prefix" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
 cmake --build . --config $BuildType
 cmake --build . --config $BuildType --target install
 cd ..
@@ -158,7 +158,7 @@ dir -s "$deps_prefix"
 
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>' -DCMAKE_PREFIX_PATH="$deps_prefix"
+cmake .. -G "Visual Studio 16 2019" -A x64 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>' -DCMAKE_PREFIX_PATH="$deps_prefix"
 cmake --build . -j6 --config $BuildType
 cmake --build . --config $BuildType --target doxygen install
 cd ..
