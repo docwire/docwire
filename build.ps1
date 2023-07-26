@@ -118,7 +118,9 @@ else
 {
 	$bfio_conf="Release"
 }
-C:\Program` Files` `(x86`)\Microsoft` Visual` Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe libbfio.sln /property:Configuration=$bfio_conf /property:Platform=x64 /p:PlatformToolset=v142
+$msbuild = vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | select-object -first 1
+if ($path) {
+& $msbuild libbfio.sln /property:Configuration=$bfio_conf /property:Platform=x64 /p:PlatformToolset=v142
 cd ..
 Copy-Item -Path "msvscpp\$bfio_conf\*.lib" -Destination "$deps_prefix\lib" -Recurse
 Copy-Item -Path "msvscpp\$bfio_conf\*.dll" -Destination "$deps_prefix\bin" -Recurse
