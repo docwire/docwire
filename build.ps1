@@ -201,6 +201,7 @@ $LIB_PATHS=(
     "$vcpkg_bin_dir/leptonica-1.82.0${debug_suffix}.dll",
     "$vcpkg_bin_dir/tesseract52${debug_suffix}.dll",
     "$vcpkg_bin_dir/archive.dll",
+    "$vcpkg_bin_dir/zstd.dll",
     "$vcpkg_bin_dir/libcurl${debug_suffix2}.dll",
     "$vcpkg_bin_dir/libcrypto-3-x64.dll",
     "$vcpkg_bin_dir/liblzma.dll",
