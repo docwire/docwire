@@ -177,7 +177,7 @@ if ($BuildType -eq "Debug")
 	$vcpkg_bin_dir="$vcpkg_prefix/debug/bin"
 	$debug_suffix="d"
 	$debug_suffix2="-d"
-	$boost_arch="vc143-mt-gd-x64"
+	$boost_arch="vc142-mt-gd-x64"
 }
 else
 {
