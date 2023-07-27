@@ -59,7 +59,7 @@ jobs:
             ./*.sha1
           if-no-files-found: error
   build_debug_msvc:
-    runs-on: windows-2022
+    runs-on: windows-2019
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@v2
