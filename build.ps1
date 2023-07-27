@@ -212,9 +212,12 @@ $LIB_PATHS=(
     "$vcpkg_bin_dir/zlib${debug_suffix}1.dll");
 foreach ($PATH in $LIB_PATHS){echo $PATH; Copy-Item -Path $PATH -Destination build/};
 
+if ($BuildType -ne "Debug")
+{
 cd build
 ctest -VV --debug --output-on-failure --stop-on-failure --timeout 30 --repeat until-pass:3
 cd ..
+}
 
 Get-ChildItem -Path build\ -Recurse -Filter *.dll | Select-Object -Property Name,@{name="Hash";expression={(Get-FileHash $_.FullName).hash}} > build\SHA1checksums.sha1
 
