@@ -40,6 +40,10 @@ RUN cd vcpkg`
     && git checkout tags/2022.08.15`
     && call ".\bootstrap-vcpkg.bat"
 
+RUN cd vcpkg`
+    && mkdir downloads`
+    && powershell Invoke-WebRequest -Uri https://github.com/microsoft/vcpkg/files/7075269/nasm-2.15.05-win32.zip -OutFile downloads\nasm-2.15.05-win32.zip
+
 RUN vcpkg\vcpkg install zlib:x64-windows
 
 RUN powershell choco install archiver -y
