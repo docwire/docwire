@@ -61,7 +61,7 @@ Remove-Item -Path 'CMakeLists.txt'
 Write-Output 'cmake_minimum_required(VERSION 3.16)' `
       'project(charsetdetect)' `
       'set(CMAKE_CXX_STANDARD 17)' `
-      'set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")' `
+      'set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")' `
       'set(FLAGS -fPIC)'`
       'include_directories(. nspr-emu mozilla/extensions/universalchardet/src/base/)'`
       'file(GLOB charsetdetect_lib_src mozilla/extensions/universalchardet/src/base/*.cpp)'`
@@ -135,7 +135,7 @@ cd unzip101e
 Write-Output 'cmake_minimum_required(VERSION 3.16)' `
       'project(Unzip)' `
       'set(CMAKE_CXX_STANDARD 17)' `
-      'set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")' `
+      'set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")' `
       'set(UNZIP_SRC ioapi.c unzip.c)'`
       'set(FLAGS -fPIC)'`
       'add_library(unzip STATIC ${UNZIP_SRC})'`
@@ -159,7 +159,7 @@ dir -s "$deps_prefix"
 
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>' -DCMAKE_PREFIX_PATH="$deps_prefix"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>DLL' -DCMAKE_PREFIX_PATH="$deps_prefix"
 cmake --build . -j6 --config $BuildType
 cmake --build . --config $BuildType --target doxygen install
 cd ..
