@@ -50,8 +50,8 @@ cd htmlcxx
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>DLL' -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
-cmake --build . --config Release
-cmake --build . --config Release --target install
+cmake --build . --config $BuildType
+cmake --build . --config $BuildType --target install
 cd ..\..
 
 Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/libcharsetdetect-master.tar.bz2 -OutFile libcharsetdetect-master.tar.bz2
