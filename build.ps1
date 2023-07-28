@@ -215,6 +215,14 @@ $LIB_PATHS=(
     "$vcpkg_bin_dir/webp.dll",
     "$vcpkg_bin_dir/webpmux.dll",
     "$vcpkg_bin_dir/zlib${debug_suffix}1.dll");
+if ($BuildType -eq "Debug")
+{
+	$LIBS_PATH.Add("C:\Windows\System32\MSVCP140D.dll");
+	$LIBS_PATH.Add("C:\Windows\System32\VCRUNTIME140D.dll");
+	$LIBS_PATH.Add("C:\Windows\System32\ucrtbased.dll");
+	$LIBS_PATH.Add("$vcpkg_bin_dir/pthreadVC3d.dll");
+}
+
 foreach ($PATH in $LIB_PATHS){echo $PATH; Copy-Item -Path $PATH -Destination build/};
 
 if ($BuildType -ne "Debug")
