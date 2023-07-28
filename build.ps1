@@ -94,7 +94,6 @@ Move-Item -Path wv2-0.2.3_patched_4-private_headers\*.h -Destination "$deps_pref
 git clone https://github.com/docwire/mimetic.git
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/CMakeLists.txt -OutFile mimetic\CMakeLists.txt
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/win-vs140.cmake -OutFile mimetic\win-vs140.cmake
-(Get-Content mimetic\win-vs140.cmake) -replace 'MD', 'MT' | Set-Content mimetic\win-vs140.cmake
 cd mimetic
 mkdir cmake
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/cmake/config.cmake.in -OutFile cmake\config.cmake.in
