@@ -49,7 +49,7 @@ git clone https://github.com/docwire/htmlcxx.git
 cd htmlcxx
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>DLL' -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
 cmake --build . --config Release
 cmake --build . --config Release --target install
 cd ..\..
