@@ -18,6 +18,7 @@ Unreleased:
     * Generating signals for empty rows and cells that are missing/skipped in original XLSX files
     * Minimum table row height (empty rows and cells) in plain text writer set to 1 line to better restore document layout
     * Caching build environment docker images in GitHub Packages
+    * Log mechanism refactored
     * MSVC docker image scripts updated
     * VCPKG used to build required dependencies in Linux build instead of deb packages
     * Do not use docker for GitHub CI in Linux build
