@@ -34,7 +34,6 @@
 #ifndef BASIC_PARSER_PROVIDER_HPP
 #define BASIC_PARSER_PROVIDER_HPP
 
-#include <boost/config.hpp>
 #include "parser_provider.h"
 #include "defines.h"
 
@@ -53,7 +52,7 @@ private:
   std::set<std::string> available_extensions;
 };
 
-extern "C" BOOST_SYMBOL_EXPORT BasicParserProvider plugin_parser_provider;
+extern "C" DllExport BasicParserProvider plugin_parser_provider;
 BasicParserProvider plugin_parser_provider;
 
 #endif //BASIC_PARSER_PROVIDER_HPP

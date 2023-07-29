@@ -33,7 +33,6 @@
 #ifndef OCR_PARSER_PROVIDER_H
 #define OCR_PARSER_PROVIDER_H
 
-#include <boost/config.hpp>
 #include "parser_provider.h"
 #include "defines.h"
 
@@ -51,7 +50,7 @@ private:
   std::set<std::string> available_extensions;
 };
 
-extern "C" BOOST_SYMBOL_EXPORT OcrParserProvider plugin_parser_provider;
+extern "C" DllExport OcrParserProvider plugin_parser_provider;
 OcrParserProvider plugin_parser_provider;
 
 #endif //OCR_PARSER_PROVIDER_H

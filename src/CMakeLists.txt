@@ -44,20 +44,19 @@ else()
 endif()
 
 if(MSVC)
-    configure_file(/bin/wv2.dll ${CMAKE_BINARY_DIR}/wv2.dll COPYONLY)
-    find_library(wvWare wv2 HINTS "C:/lib/static")
-    find_library(pthread_d pthreadVC3d HINTS "C:/vcpkg/packages/pthreads_x64-windows/debug/lib")
-    find_library(pthread pthreadVC3 HINTS "C:/vcpkg/packages/pthreads_x64-windows/lib")
-    target_link_directories(doctotext_core PUBLIC "C:/lib")
-    target_link_libraries(doctotext_core PRIVATE general ${wvWare}
-                                                 debug ${pthread_d}
-                                                 optimized ${pthread}
-                                                 debug boost_filesystem-vc140-mt-gd
-                                                 optimized boost_filesystem-vc140-mt
-                                                 debug boost_system-vc140-mt-gd
-                                                 optimized boost_system-vc140-mt
-                                                 general archive)
-
+    find_path(wv2_inc_dir wv2/parser.h REQUIRED)
+    set(wv2_prefix "${wv2_inc_dir}/..")
+    find_library(wvWare wv2 HINTS "${wv2_prefix}/lib/static" REQUIRED)
+    configure_file(${wv2_prefix}/bin/wv2.dll ${CMAKE_BINARY_DIR}/wv2.dll COPYONLY)
+    find_package(PThreads4W REQUIRED)
+    find_package(Boost REQUIRED COMPONENTS filesystem system)
+    find_package(LibArchive REQUIRED)
+    target_link_libraries(doctotext_core PRIVATE ${wvWare}
+                                                 PThreads4W::PThreads4W
+                                                 Boost::filesystem
+                                                 Boost::system
+                                                 LibArchive::LibArchive)
+    target_include_directories(doctotext_core PUBLIC ${wv2_inc_dir})
     set_target_properties( doctotext_core
             PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/build"
@@ -121,43 +120,41 @@ add_library(doctotext_parsers SHARED
         xlsb_parser.cpp
         basic_parser_provider.cpp)
 
-include(FindLibXml2)
+find_package(LibXml2 REQUIRED)
 find_package(ZLIB REQUIRED)
-
-if (MSVC)
-    target_link_directories(doctotext_parsers PUBLIC "C:/lib")
-    target_link_directories(doctotext_core PUBLIC "C:/lib")
-endif()
 
 target_include_directories(doctotext_parsers PUBLIC
         ../
         .
         ${LIBXML2_INCLUDE_DIR}
-        "C:/include"
         )
 
 target_include_directories(doctotext_core PUBLIC
         ../
         .
-        "C:/include"
         )
 if(MSVC)
+    find_library(podofo podofo REQUIRED)
+    find_package(Freetype REQUIRED)
+    find_library(unzip unzip REQUIRED)
+    find_package(PThreads4W REQUIRED)
+    find_library(htmlcxx htmlcxx REQUIRED)
+    find_library(charsetdetect charsetdetect REQUIRED)
+    find_library(mimetic NAMES mimetic mimeticd libmimetic libmimeticd REQUIRED)
+    find_package(Iconv REQUIRED)
     target_link_libraries(doctotext_parsers PRIVATE
-            general podofo
-            general unzip
-            general ${wvWare}
-            general htmlcxx
-            general ${LIBXML2_LIBRARIES}
-            general charsetdetect
-            general doctotext_core
-            debug freetyped
-            optimized freetype
-            debug ${pthread_d}
-            optimized ${pthread}
-            debug zlibd
-            optimized zlib
-            debug libmimeticd
-            optimized libmimetic
+            ${podofo}
+            ${unzip}
+            ${wvWare}
+            ${htmlcxx}
+            ${LIBXML2_LIBRARIES}
+            ${charsetdetect}
+            doctotext_core
+            Freetype::Freetype
+            PThreads4W::PThreads4W
+            ZLIB::ZLIB
+            ${mimetic}
+            Iconv::Iconv
             )
     target_compile_options(doctotext_parsers PUBLIC "/Zc:__cplusplus")
 else()
@@ -196,15 +193,14 @@ add_library(doctotext_ocr SHARED ocr_parser_provider.cpp ocr_parser.cpp)
 if(MSVC)
     set_property(TARGET doctotext_ocr PROPERTY
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-    target_link_libraries(doctotext_ocr debug leptonica-1.82.0d
-                                        debug tesseract53d
-                                        optimized leptonica-1.82.0
-                                        optimized tesseract53
-                                        general doctotext_core)
+    find_package(Leptonica)
+    find_package(Tesseract)
+    target_link_libraries(doctotext_ocr ${Leptonica_LIBRARIES}
+                                        Tesseract::libtesseract
+                                        doctotext_core)
     target_include_directories(doctotext_ocr PUBLIC
             ../
             .
-            "C:/include"
             )
     target_compile_options(doctotext_ocr PUBLIC "/Zc:__cplusplus")
 else()
@@ -237,19 +233,23 @@ endif()
 
 add_library(doctotext_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
 if(MSVC)
+    find_library(mimetic NAMES mimetic mimeticd libmimetic libmimeticd REQUIRED)
+    find_library(bfio NAMES bfio libbfio REQUIRED)
+    find_library(pff NAMES pff libpff REQUIRED)
+    find_library(htmlcxx htmlcxx REQUIRED)
+    find_package(PThreads4W REQUIRED)
     target_link_libraries(doctotext_mail
-            general libbfio
-            general libpff
-            general doctotext_core
-            general htmlcxx
-            debug libmimeticd
-            optimized libmimetic
-            debug ${pthread_d}
-            optimized ${pthread})
+            ${bfio}
+            ${pff}
+            doctotext_core
+            ${htmlcxx}
+            ${mimetic}
+            PThreads4W::PThreads4W)
+    find_path(bfio_inc_dir libbfio.h REQUIRED)
     target_include_directories(doctotext_mail PUBLIC
+            ${bfio_inc_dir}
             ../
             .
-            "C:/include"
             )
     target_compile_options(doctotext_mail PUBLIC "/Zc:__cplusplus")
 else()
@@ -261,9 +261,6 @@ else()
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-   target_link_libraries(doctotext_parsers PRIVATE
-      iconv
-   )
    set_target_properties(doctotext_parsers PROPERTIES PREFIX "")
    set_target_properties(doctotext_core PROPERTIES PREFIX "")
 endif()

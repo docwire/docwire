@@ -4,8 +4,8 @@ include(FetchContent)
 
 FetchContent_Declare(
         googletest
-        URL https://github.com/google/googletest/archive/refs/tags/release-1.12.0.zip
-        URL_HASH SHA1=b98f4d04dd684c1e47c3f48a6a7fa0d24b98f4ac
+        URL https://github.com/google/googletest/archive/refs/tags/release-1.12.1.zip
+        URL_HASH SHA1=973e464e8936d4b79bb24f27b058aaef4150b06e
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
@@ -25,10 +25,8 @@ if(MSVC)
             RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/build"
             RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/build"
             )
-    find_library(pthread pthreadVC3 HINTS "C:/vcpkg/packages/pthreads_x64-windows/lib")
-    find_library(pthread_d pthreadVC3d HINTS "C:/vcpkg/packages/pthreads_x64-windows/debug/lib")
-    target_link_directories(doctotext_core PUBLIC "C:/lib")
-    target_link_libraries(api_tests PRIVATE debug ${pthread_d} optimized ${pthread})
+    find_package(PThreads4W REQUIRED)
+    target_link_libraries(api_tests PRIVATE PThreads4W::PThreads4W)
 endif()
 target_compile_options(api_tests PRIVATE -O0 -g)
 
