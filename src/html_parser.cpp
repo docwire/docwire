@@ -220,15 +220,15 @@ class DocToTextSaxParser : public ParserSax
 					text = m_converter->convert(text);
 			}
 			// warning TODO: Check if libxml2 provides such a functionality. Similar function in html library does not work for some entities
-			if (m_decoded_buffer_size < text.length() * 2)
+			if (m_decoded_buffer_size < text.length() * 2 + 1)
 			{
 				delete[] m_decoded_buffer;
 				m_decoded_buffer = nullptr;
 			}
 			if (!m_decoded_buffer)
 			{
-				m_decoded_buffer = new char[text.length() * 2];
-				m_decoded_buffer_size = text.length() * 2;
+				m_decoded_buffer = new char[text.length() * 2 + 1];
+				m_decoded_buffer_size = text.length() * 2 + 1;
 			}
 			size_t size = decode_html_entities_utf8(m_decoded_buffer, text.data());
 			text = std::string(m_decoded_buffer, size);
