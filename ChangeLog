@@ -18,13 +18,18 @@ Unreleased:
     * Generating signals for empty rows and cells that are missing/skipped in original XLSX files
     * Minimum table row height (empty rows and cells) in plain text writer set to 1 line to better restore document layout
     * Caching build environment docker images in GitHub Packages
+    * Log mechanism refactored
     * MSVC docker image scripts updated
+    * VCPKG used to build required dependencies in Linux build instead of deb packages
+    * Do not use docker for GitHub CI in Linux build
+    * Official support for Mingw build dropped (as there is no official support in VCPKG)
     * DecompressArchives chain element added that supports ZIP, TAR, RAR, GZ, BZ2 and XZ formats - enabled by default in CLI utility.
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed
     * MacOSX building process refactored to use VCPKG
     * PDF parser infinite loop when font is unknown fixed
+    * HTML parser memory write error fixed
 
 Version 5.0.9:
     * Replace README file with more detailed README.md prepared for public GitHub repository
