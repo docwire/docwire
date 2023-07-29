@@ -20,9 +20,11 @@ Unreleased:
     * Caching build environment docker images in GitHub Packages
     * Log mechanism refactored
     * MSVC docker image scripts updated
-    * VCPKG used to build required dependencies in Linux build instead of deb packages
-    * Do not use docker for GitHub CI in Linux build
+    * VCPKG used to build required dependencies on all supported platforms
+    * Do not use docker for GitHub CI
     * Official support for Mingw build dropped (as there is no official support in VCPKG)
+    * Dynamic linking of MSVC runtime for all libraries and executables
+    * Upgrade GoogleTest to 1.12.1
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed
