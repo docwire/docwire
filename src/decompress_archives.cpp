@@ -37,6 +37,7 @@
 #include "exception.h"
 #include <filesystem>
 #include <fstream>
+#include "log.h"
 #include "parser.h"
 
 namespace doctotext
@@ -67,9 +68,9 @@ public:
 
 		int_type underflow()
 		{
-			//std::cerr << "underflow()" << std::endl;
+			doctotext_log(debug) << "Archive reader buffer underflow";
 			la_ssize_t bytes_read = archive_read_data(m_archive, m_buffer, m_buf_size);
-			//std::cerr << "bytes read: " << bytes_read << std::endl;
+			doctotext_log(debug) << bytes_read << " bytes read";
 			if (bytes_read < 0)
 				throw Exception(archive_error_string(m_archive));
 			if (bytes_read == 0)
@@ -142,8 +143,8 @@ public:
 	~ArchiveReader()
 	{
 		int r = archive_read_free(m_archive);
-		//if (r != ARCHIVE_OK)
-		//	std::cerr << "archive_read_free() error: " << archive_error_string(m_archive) << std::endl;
+		if (r != ARCHIVE_OK)
+			doctotext_log(error) << "archive_read_free() error: " << archive_error_string(m_archive);
 	}
 
 	archive* get_archive()
@@ -157,12 +158,12 @@ public:
 		int r = archive_read_next_header(m_archive, &entry);
 		if (r == ARCHIVE_EOF)
 		{
-			//std::cerr << "End of archive" << std::endl;
+			doctotext_log(debug) << "End of archive";
 			return Entry(m_archive, nullptr);
 		}
 		if (r != ARCHIVE_OK)
 		{
-			//std::cerr << "archive_read_next_header() error: " << archive_error_string(m_archive) << std::endl;
+			doctotext_log(error) << "archive_read_next_header() error: " << archive_error_string(m_archive);
 			throw Exception(archive_error_string(m_archive));
 		}
 		return Entry(m_archive, entry);
@@ -195,7 +196,7 @@ private:
 
 	static la_ssize_t archive_read_callback(archive* archive, void* client_data, const void** buf)
 	{
-		//std::cerr << "archive_read_callback()" << std::endl;
+		doctotext_log(debug) << "archive_read_callback()";
 		CallbackClientData* data = (CallbackClientData*)client_data;
 		*buf = data->m_buffer;
 		if (data->m_stream.read(data->m_buffer, data->m_buf_size))
@@ -220,13 +221,12 @@ private:
 void
 DecompressArchives::process(doctotext::Info &info) const
 {
-	//std::cerr << "Decompress archives" << std::endl;
 	if (info.tag_name != StandardTag::TAG_FILE)
 	{
 		emit(info);
 		return;
 	}
-	//std::cerr << "TAG_FILE" << std::endl;
+	doctotext_log(debug) << "TAG_FILE received";
 	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
 	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
 	std::optional<std::string> name = info.getAttributeValue<std::string>("name");
@@ -239,34 +239,34 @@ DecompressArchives::process(doctotext::Info &info) const
 	};
 	if ((path && !is_supported(*path)) || (name && !is_supported(*name)))
 	{
-		//std::cerr << "Filename extension shows it is not an supported archive, skipping." << std::endl;
+		doctotext_log(debug) << "Filename extension shows it is not an supported archive, skipping.";
 		emit(info);
 		return;
 	}
 	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
 	try
 	{
-		//std::cerr << "Decompressing archive" << std::endl;
+		doctotext_log(debug) << "Decompressing archive";
 		ArchiveReader reader(*in_stream);
 		for (ArchiveReader::Entry entry: reader)
 		{
 			std::string entry_name = entry.get_name();
-			//std::cerr << "Processing compressed file " << entry_name << std::endl;
+			doctotext_log(debug) << "Processing compressed file " << entry_name;
 			if (entry.is_dir())
 			{
-				//std::cerr << "Skipping directory entry" << std::endl;
+				doctotext_log(debug) << "Skipping directory entry";
 				continue;
 			}
 			ArchiveReader::EntryIStream entry_stream = entry.create_stream();
 			Info info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&entry_stream}, {"name", entry_name}});
 			process(info);
-			//std::cerr << "End of processing compressed file " << entry_name << std::endl;
+			doctotext_log(debug) << "End of processing compressed file " << entry_name;
 		}
-		//std::cerr << "Archive decompressed successfully" << std::endl;
+		doctotext_log(debug) << "Archive decompressed successfully";
 	}
 	catch (Exception& e)
 	{
-		//std::cerr << e.what() << std::endl;
+		doctotext_log(error) << e.what();
 		in_stream->clear();
 		in_stream->seekg(std::ios::beg);
 		emit(info);
