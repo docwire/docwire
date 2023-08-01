@@ -201,7 +201,8 @@ $LIB_PATHS=(
     "$vcpkg_bin_dir/tiff${debug_suffix}.dll",
     "$vcpkg_bin_dir/webp.dll",
     "$vcpkg_bin_dir/webpmux.dll",
-    "$vcpkg_bin_dir/zlib${debug_suffix}1.dll");
+    "$vcpkg_bin_dir/zlib${debug_suffix}1.dll",
+    "$vcpkg_bin_dir/mailio.dll");
 if ($BuildType -eq "Debug")
 {
 	$LIB_PATHS += "C:\Windows\System32\MSVCP140D.dll"
