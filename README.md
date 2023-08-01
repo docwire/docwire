@@ -39,6 +39,7 @@ Entering the artificial intelligence/neural networks area is planned to offer it
     - Image formats: JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP with OCR capabilities
     - Apple iWork: PAGES, NUMBERS, KEYNOTE files
     - ODFXML (FODP, FODS, FODT)
+    - Archives (ZIP, TAR, RAR, GZ, BZ2, XZ)
     - Scripts and source codes: ASM, ASP, ASPX, BAS, BAT, C, CC, CMAKE, CS, CPP, CXX, D, F, FPP, FS, GO, H, HPP, HXX, JAVA, JS, JSP, LUA, PAS, PHP, PL, PERL, PY, R, SH, TCL, VB, VBS, WS files
     - XML format family: XML, XSD, XSL files
     - Comma-Separated Values: CSV files
