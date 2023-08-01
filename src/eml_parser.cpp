@@ -43,31 +43,15 @@
 #include "metadata.h"
 #include "plain_text_writer.h"
 #include <pthread.h>
-#include "mimetic/mimetic.h"
-#include "mimetic/rfc822/rfc822.h"
+#include <mailio/message.hpp>
 
-using namespace mimetic;
-
-const std::string attachment = "attachment";
-const std::string multipart = "multipart/";
-const std::string multipart_alternative = "multipart/alternative";
-const std::string text = "text/";
-const std::string text_html = "text/html";
-const std::string text_xhtml = "text/xhtml";
-
-static tm rfc_date_time_to_tm(const DateTime& date_time)
+namespace doctotext
 {
-	tm tm_date_time;
-	tm_date_time.tm_year = date_time.year() - 1900;
-	tm_date_time.tm_mon = date_time.month().ordinal() - 1;
-	tm_date_time.tm_mday = date_time.day();
-	tm_date_time.tm_hour = date_time.hour();
-	tm_date_time.tm_min = date_time.minute();
-	tm_date_time.tm_sec = date_time.second();
-	return tm_date_time;
-}
 
-pthread_mutex_t mimetic_content_id_mutex = PTHREAD_MUTEX_INITIALIZER;
+using mailio::mime;
+using mailio::message;
+using mailio::codec;
+
 pthread_mutex_t charset_converter_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 struct EMLParser::Implementation
@@ -76,30 +60,12 @@ struct EMLParser::Implementation
 	bool m_error;
 	std::string m_file_name;
 	std::istream* m_data_stream;
-	std::vector<Link> m_links;
-	std::vector<doctotext::Attachment> m_attachments;
   const std::shared_ptr<doctotext::ParserManager> m_parser_manager;
 
   Implementation(const std::shared_ptr<doctotext::ParserManager> &inParserManager, EMLParser* owner)
     : m_parser_manager(inParserManager),
       m_owner(owner)
   {}
-
-	std::string getFilename(const MimeEntity& mime_entity)
-	{
-		if (mime_entity.hasField(ContentDisposition::label))
-		{
-			const ContentDisposition& cd = mime_entity.header().contentDisposition();
-			if (cd.param("filename").length())
-				return std::string(cd.param("filename").c_str());
-		}
-		else if (mime_entity.hasField(ContentType::label))
-		{
-			const ContentType& ct = mime_entity.header().contentType();
-			return std::string("unnamed_" + ct.type() + "." + ct.subtype()).c_str();
-		}
-		return std::string("Unknown attachment");
-	}
 
 	void convertToUtf8(const std::string& charset, std::string& text)
 	{
@@ -116,62 +82,6 @@ struct EMLParser::Implementation
 			doctotext_log(warning) << "Warning: Cant convert text to UTF-8 from " + charset;
 		}
 	}
-
-	void decodeBin(const MimeEntity& me, std::string& out)
-	{
-		std::stringstream os(std::ios::out);
-		std::ostreambuf_iterator<char> oi(os);
-		const ContentTransferEncoding& cte = me.header().contentTransferEncoding();
-		mimetic::istring enc_algo = cte.mechanism();
-		if (enc_algo == ContentTransferEncoding::base64)
-		{
-			doctotext_log(debug) << "Using base64 decoding";
-			Base64::Decoder b64;
-			decode(me.body().begin(), me.body().end(), b64, oi);
-		}
-		else if (enc_algo == ContentTransferEncoding::quoted_printable)
-		{
-			doctotext_log(debug) << "Using quoted_printable decoding";
-			QP::Decoder qp;
-			decode(me.body().begin(), me.body().end(), qp, oi);
-		}
-		else if (enc_algo == ContentTransferEncoding::eightbit ||
-			enc_algo == ContentTransferEncoding::sevenbit ||
-			enc_algo == ContentTransferEncoding::binary)
-		{
-			doctotext_log(debug) << "Using eightbit/sevenbit/binary decoding";
-			copy(me.body().begin(), me.body().end(), oi);
-		}
-		else
-		{
-			doctotext_log(debug) << "Unknown encoding: " + enc_algo;
-			copy(me.body().begin(), me.body().end(), oi);
-		}
-		os.flush();
-		out = os.rdbuf()->str();
-	}
-
-	MimeEntityList::const_iterator findHtmlNode(const MimeEntityList::const_iterator& begin, const MimeEntityList::const_iterator& end)
-	{
-	  MimeEntityList::const_iterator node_iterator;
-	  for (node_iterator = begin; node_iterator != end; ++node_iterator)
-	  {
-	    const Header& header = (*node_iterator)->header();
-	    if (header.contentType().str().substr(0, text_html.length()) == text_html ||
-	        header.contentType().str().substr(0, text_xhtml.length()) == text_xhtml)
-	      return node_iterator;
-	  }
-	  return node_iterator;
-	}
-
-  bool is_content_exist(const Header &header, const std::string &text)
-  {
-    pthread_mutex_lock(&mimetic_content_id_mutex);
-    bool result = header.contentDisposition().str().find(attachment.c_str()) == std::string::npos &&
-      header.contentType().str().substr(0, text.length()) == text;
-    pthread_mutex_unlock(&mimetic_content_id_mutex);
-    return result;
-  }
 
 	std::string parseText(const std::string &text, const std::string &type)
 	{
@@ -191,36 +101,30 @@ struct EMLParser::Implementation
 		return stream.str();
 	}
 
-	void extractPlainText(const MimeEntity& mime_entity, std::string& output, const FormattingStyle& formatting)
+	void extractPlainText(const mime& mime_entity, std::string& output, const FormattingStyle& formatting)
 	{
-		const Header& header = mime_entity.header();
-		if (is_content_exist(header, text))
+		doctotext_log(debug) << "Extracting plain text from mime entity";
+		if (mime_entity.content_disposition() != mime::content_disposition_t::ATTACHMENT && mime_entity.content_type().type == mime::media_type_t::TEXT)
 		{
-			std::string plain;
-			decodeBin(mime_entity, plain);
+			doctotext_log(debug) << "Text content type detected with inline or none content disposition";
+			std::string plain = mime_entity.content();
+			plain.erase(std::remove(plain.begin(), plain.end(), '\r'), plain.end());
 
 			bool skip_charset_decoding = false;
-			if (header.contentType().param("charset").length())
+			if (!mime_entity.content_type().charset.empty())
 			{
-				std::string charset(header.contentType().param("charset").c_str());
-				convertToUtf8(charset, plain);
+				doctotext_log(debug) << "Charset is specified";
+				convertToUtf8(mime_entity.content_type().charset, plain);
 				skip_charset_decoding = true;
 			}
-			if (header.contentType().str().substr(0, text_html.length()) == text_html ||
-					header.contentType().str().substr(0, text_xhtml.length()) == text_xhtml)
+			if (mime_entity.content_type().subtype == "html" || mime_entity.content_type().subtype == "xhtml")
 			{
+				doctotext_log(debug) << "HTML content subtype detected";
 				try
 				{
 					if (m_parser_manager)
 					{
 						plain = parseText(plain, "html");
-					}
-					//Update positions of the links.
-					if (m_links.size() > 0)
-					{
-						size_t link_offset = output.length();
-						for (size_t i = 0; i <m_links.size(); ++i)
-							m_links[i].setLinkTextPosition(m_links[i].getLinkTextPosition() + link_offset);
 					}
 				}
 				catch (Exception& ex)
@@ -232,6 +136,7 @@ struct EMLParser::Implementation
 			{
 				if (!skip_charset_decoding)
 				{
+					doctotext_log(debug) << "Charset is not specified";
 					try
 					{
 						if (m_parser_manager)
@@ -252,14 +157,15 @@ struct EMLParser::Implementation
 			output += "\n\n";
 			return;
 		}
-		else if (header.contentType().str().substr(0, multipart.length()) != multipart)
+		else if (mime_entity.content_type().type != mime::media_type_t::MULTIPART)
 		{
-			std::string plain;
-			decodeBin(mime_entity, plain);
+			doctotext_log(debug) << "It is not a multipart message. It's attachment probably.";
+			std::string plain = mime_entity.content();
 
 			if (m_parser_manager)
 			{
-			std::string file_name = getFilename(mime_entity);
+			std::string file_name = mime_entity.name();
+			doctotext_log(debug) << "File name: " << file_name;
 			std::string extension = file_name.substr(file_name.find_last_of(".") + 1);
 			std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 			auto info = m_owner->sendTag(
@@ -277,38 +183,26 @@ struct EMLParser::Implementation
 			}
 			m_owner->sendTag(StandardTag::TAG_CLOSE_ATTACHMENT);
 			}
-			m_attachments.push_back(doctotext::Attachment(getFilename(mime_entity)));
-			m_attachments[m_attachments.size() - 1].setBinaryContent(plain);
-			std::string content_type = header.contentType().str();
-			std::string content_disposition = header.contentDisposition().str();
-			std::string content_description = header.contentDescription().str();
-			pthread_mutex_lock(&mimetic_content_id_mutex);
-			std::string content_id = header.contentId().str();
-			pthread_mutex_unlock(&mimetic_content_id_mutex);
-			if (!content_type.empty())
-				m_attachments[m_attachments.size() - 1].addField("Content-Type", content_type);
-			if (!content_disposition.empty())
-				m_attachments[m_attachments.size() - 1].addField("Content-Disposition", content_disposition);
-			if (!content_description.empty())
-				m_attachments[m_attachments.size() - 1].addField("Content-Description", content_description);
-			if (!content_id.empty())
-				m_attachments[m_attachments.size() - 1].addField("Content-ID", content_id);
 		}
-		const MimeEntityList& parts = mime_entity.body().parts();
-		MimeEntityList::const_iterator mbit = parts.begin(), meit = parts.end();
-
-		if (header.contentType().str().substr(0, multipart_alternative.length()) == multipart_alternative)
+		if (mime_entity.content_type().subtype == "alternative")
 		{
-		  MimeEntityList::const_iterator html_node = findHtmlNode(mbit, meit);
-		  if (html_node != meit)
-		    extractPlainText(**html_node, output, formatting);
-		  else if (mbit != meit)
-		    extractPlainText(**mbit, output, formatting);
+			doctotext_log(debug) << "Alternative content subtype detected";
+			bool html_found = false;
+			for (const mime& m: mime_entity.parts())
+				if (m.content_type().subtype == "html" || m.content_type().subtype == "xhtml")
+				{
+					extractPlainText(m, output, formatting);
+					html_found = true;
+				}
+			if (!html_found && mime_entity.parts().size() > 0)
+				extractPlainText(mime_entity.parts()[0], output, formatting);
 		}
 		else
 		{
-		  for(; mbit != meit; ++mbit)
-		    extractPlainText(**mbit, output, formatting);
+			doctotext_log(debug) << "Multipart but not alternative";
+			doctotext_log(debug) << mime_entity.parts().size() << " mime parts found";
+			for (const mime& m: mime_entity.parts())
+				extractPlainText(m, output, formatting);
 		}
 	}
 };
@@ -367,32 +261,35 @@ EMLParser::~EMLParser()
 	}
 }
 
-bool EMLParser::internal_is_eml() const
+namespace
 {
-  MimeEntity mime_entity(*impl->m_data_stream);
-  //"From" and "Date" are obligatory according to the RFC standard.
-  Header header = mime_entity.header();
-  return header.hasField("From") && header.hasField("Date");
+
+message parse_message(std::istream& stream)
+{
+	message mime_entity;
+	mime_entity.line_policy(codec::line_len_policy_t::RECOMMENDED, codec::line_len_policy_t::NONE);
+	try {
+		std::string line;
+		while (getline(stream, line))
+		{
+			mime_entity.parse_by_line(line);
+		}
+		mime_entity.parse_by_line("\r\n");
+	} catch (std::exception& e)
+	{
+		doctotext_log(error) << e.what();
+	}
+	return mime_entity;
 }
+
+} // anonymous namespace
 
 bool EMLParser::isEML() const
 {
 	if (!impl->m_data_stream->good())
 		throw Exception("Error opening file " + impl->m_file_name);
-  pthread_mutex_lock(&mimetic_content_id_mutex);
-  bool is_eml = internal_is_eml();
-  pthread_mutex_unlock(&mimetic_content_id_mutex);
-  return is_eml;
-}
-
-void EMLParser::getLinks(std::vector<Link>& links)
-{
-	links = impl->m_links;
-}
-
-void EMLParser::getAttachments(std::vector<doctotext::Attachment>& attachments)
-{
-	attachments = impl->m_attachments;
+	message mime_entity = parse_message(*impl->m_data_stream);
+	return (!mime_entity.from_to_string().empty()) && (!mime_entity.date_time().is_not_a_date_time());
 }
 
 std::string EMLParser::plainText(const FormattingStyle& formatting) const
@@ -400,8 +297,14 @@ std::string EMLParser::plainText(const FormattingStyle& formatting) const
 	std::string text;
 	if (!isEML())
 		throw Exception("Specified file is not valid EML file");
-	impl->m_data_stream->seekg(0, std::ios_base::beg);
-	MimeEntity mime_entity(*impl->m_data_stream);
+	doctotext_log(debug) << "stream_pos=" << impl->m_data_stream->tellg();
+	impl->m_data_stream->clear();
+	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
+	{
+		doctotext_log(error) << "Stream seek operation failed";
+		throw Exception("Stream seek operation failed");
+	}
+	message mime_entity = parse_message(*impl->m_data_stream);
 	impl->extractPlainText(mime_entity, text, formatting);
 	return text;
 }
@@ -409,52 +312,40 @@ std::string EMLParser::plainText(const FormattingStyle& formatting) const
 Metadata EMLParser::metaData()
 {
 	Metadata metadata;
-  impl->m_data_stream->seekg(0, std::ios_base::beg);
+	impl->m_data_stream->clear();
+	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
+	{
+		doctotext_log(error) << "Stream seek operation failed";
+		throw Exception("Stream seek operation failed");
+	}
 	if (!isEML())
 		throw Exception("Specified file is not valid EML file");
-	impl->m_data_stream->seekg(0, std::ios_base::beg);
-	MimeEntity mime_entity(*impl->m_data_stream);
-	Header header = mime_entity.header();
-	metadata.setAuthor(header.from().str());
-	DateTime creation_date(header.field("Date").value());
-	metadata.setCreationDate(rfc_date_time_to_tm(creation_date));
+	impl->m_data_stream->clear();
+	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
+	{
+		doctotext_log(error) << "Stream seek operation failed";
+		throw Exception("Stream seek operation failed");
+	}
+	message mime_entity = parse_message(*impl->m_data_stream);
+	metadata.setAuthor(mime_entity.from_to_string());
+	metadata.setCreationDate(to_tm(mime_entity.date_time()));
 
 	//in EML file format author is visible under key "From". And creation date is visible under key "Data".
 	//So, should I repeat the same values or skip them?
-	metadata.addField("From", header.from().str());
-	metadata.addField("Date", rfc_date_time_to_tm(creation_date));
+	metadata.addField("From", mime_entity.from_to_string());
+	metadata.addField("Date", to_tm(mime_entity.date_time()));
 
-	std::string to = header.to().str();
+	std::string to = mime_entity.recipients_to_string();
 	if (!to.empty())
 		metadata.addField("To", to);
 
-	std::string subject = header.subject();
+	std::string subject = mime_entity.subject();
 	if (!subject.empty())
 		metadata.addField("Subject", subject);
-	std::string mime_version = header.mimeVersion().str();
-	if (!mime_version.empty())
-		metadata.addField("MIME-Version", mime_version);
-	std::string content_type = header.contentType().str();
-	if (!content_type.empty())
-		metadata.addField("Content-Type", content_type);
-	std::string content_disposition = header.contentDisposition().str();
-	if (!content_disposition.empty())
-		metadata.addField("Content-Disposition", content_disposition);
-	std::string content_description = header.contentDescription().str();
-	if (!content_description.empty())
-		metadata.addField("Content-Description", content_description);
-	pthread_mutex_lock(&mimetic_content_id_mutex);
-	std::string content_id = header.contentId().str();
-	pthread_mutex_unlock(&mimetic_content_id_mutex);
-	if (!content_id.empty())
-		metadata.addField("Content-ID", content_id);
-	std::string message_id = header.messageid().str();
-	if (!message_id.empty())
-		metadata.addField("Message-ID", message_id);
-	std::string reply_to = header.replyto().str();
+	std::string reply_to = mime_entity.reply_address_to_string();
 	if (!reply_to.empty())
 		metadata.addField("Reply-To", reply_to);
-	std::string sender = header.sender().str();
+	std::string sender = mime_entity.sender_to_string();
 	if (!sender.empty())
 		metadata.addField("Sender", sender);
 	return metadata;
@@ -466,3 +357,5 @@ EMLParser::parse() const
 	doctotext_log(debug) << "Using EML parser.";
   plainText(getFormattingStyle());
 }
+
+} // namespace doctotext

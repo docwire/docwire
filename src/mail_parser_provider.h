@@ -37,6 +37,9 @@
 #include "parser_provider.h"
 #include "defines.h"
 
+namespace doctotext
+{
+
 class DllExport MailParserProvider : public doctotext::ParserProvider
 {
 public:
@@ -54,5 +57,6 @@ private:
 extern "C" DllExport MailParserProvider plugin_parser_provider;
 MailParserProvider plugin_parser_provider;
 
+} // namespace doctotext
 
 #endif //DOCTOTEXT_MAIL_PARSER_PROVIDER_H

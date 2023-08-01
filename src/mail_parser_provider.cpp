@@ -40,6 +40,9 @@
 #include "eml_parser.h"
 #include "pst_parser.h"
 
+namespace doctotext
+{
+
 MailParserProvider::MailParserProvider()
 {
   addExtensions(EMLParser::getExtensions());
@@ -107,3 +110,5 @@ MailParserProvider::isExtensionInVector(const std::string &extension, const std:
 {
   return std::find(extension_list.begin(), extension_list.end(), extension) != extension_list.end();
 }
+
+} // namespace doctotext

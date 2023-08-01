@@ -37,6 +37,7 @@ vcpkg\vcpkg install boost-assert:$VCPKG_TRIPLET
 vcpkg\vcpkg install boost-smart-ptr:$VCPKG_TRIPLET
 vcpkg\vcpkg install podofo:$VCPKG_TRIPLET
 vcpkg\vcpkg install pthreads:$VCPKG_TRIPLET
+vcpkg\vcpkg install mailio:$VCPKG_TRIPLET
 
 $vcpkg_path="$PWD\vcpkg"
 $vcpkg_toolchain="$vcpkg_path\scripts\buildsystems\vcpkg.cmake"
@@ -90,19 +91,6 @@ cd ..\..
 Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/wv2-0.2.3_patched_4-private_headers.tar.bz2 -OutFile wv2-0.2.3_patched_4-private_headers.tar.bz2
 arc unarchive wv2-0.2.3_patched_4-private_headers.tar.bz2
 Move-Item -Path wv2-0.2.3_patched_4-private_headers\*.h -Destination "$deps_prefix\include\wv2"
-
-git clone https://github.com/docwire/mimetic.git
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/CMakeLists.txt -OutFile mimetic\CMakeLists.txt
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/win-vs140.cmake -OutFile mimetic\win-vs140.cmake
-cd mimetic
-mkdir cmake
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/cmake/config.cmake.in -OutFile cmake\config.cmake.in
-mkdir build
-cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
-cmake --build . --config $BuildType
-cmake --build . --config $BuildType --target install
-cd ..\..
 
 git clone https://github.com/docwire/bfio.git
 cd bfio

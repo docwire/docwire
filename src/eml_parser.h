@@ -42,19 +42,16 @@
 
 namespace doctotext
 {
-	struct FormattingStyle;
-	class Metadata;
-	class Attachment;
-}
 
-using namespace doctotext;
+struct FormattingStyle;
+class Metadata;
+class Attachment;
 
 class EMLParser : public Parser
 {
 	private:
 		struct Implementation;
 		Implementation* impl;
-    bool internal_is_eml() const;
 
 	public:
 		EMLParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
@@ -64,10 +61,10 @@ class EMLParser : public Parser
 		static std::vector<std::string> getExtensions() {return {"eml"};}
 
 		bool isEML() const;
-		void getLinks(std::vector<Link>& links);
-		void getAttachments(std::vector<Attachment>& attachments);
 		std::string plainText(const FormattingStyle& formatting) const;
 		Metadata metaData();
 };
+
+} // namespace doctotext
 
 #endif

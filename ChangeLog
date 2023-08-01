@@ -25,6 +25,7 @@ Unreleased:
     * Official support for Mingw build dropped (as there is no official support in VCPKG)
     * Dynamic linking of MSVC runtime for all libraries and executables
     * Upgrade GoogleTest to 1.12.1
+    * Mimetic library replaced with MailIO
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed
