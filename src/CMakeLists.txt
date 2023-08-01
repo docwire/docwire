@@ -5,6 +5,7 @@ set(DOCTOTEXT_SOURCES
         doctotext_c_api.cpp
         attachment.cpp
         exception.cpp
+        decompress_archives.cpp
         doctotext_link.cpp
         list_style.cpp
         log.cpp
@@ -49,10 +50,12 @@ if(MSVC)
     configure_file(${wv2_prefix}/bin/wv2.dll ${CMAKE_BINARY_DIR}/wv2.dll COPYONLY)
     find_package(PThreads4W REQUIRED)
     find_package(Boost REQUIRED COMPONENTS filesystem system)
+    find_package(LibArchive REQUIRED)
     target_link_libraries(doctotext_core PRIVATE ${wvWare}
                                                  PThreads4W::PThreads4W
                                                  Boost::filesystem
-                                                 Boost::system)
+                                                 Boost::system
+                                                 LibArchive::LibArchive)
     target_include_directories(doctotext_core PUBLIC ${wv2_inc_dir})
     set_target_properties( doctotext_core
             PROPERTIES
@@ -80,7 +83,13 @@ else()
     endif()
     find_library(boost_filesystem boost_filesystem REQUIRED)
     find_library(boost_system boost_system REQUIRED)
-    target_link_libraries(doctotext_core PRIVATE ${wvWare} pthread ${boost_filesystem} ${boost_system})
+    find_package(LibArchive)
+    if (LibArchive_FOUND)
+        set(archive "LibArchive::LibArchive")
+    else()
+        find_library(archive archive REQUIRED)
+    endif()
+    target_link_libraries(doctotext_core PRIVATE ${wvWare} pthread ${boost_filesystem} ${boost_system} ${archive})
     find_path(boost_signals2_inc boost/signals2.hpp REQUIRED)
     target_include_directories(doctotext_core PUBLIC ${wvWare_incdir} ${boost_signals2_inc})
 endif()
@@ -284,6 +293,7 @@ INSTALL(FILES ${CMAKE_BINARY_DIR}/src/Debug/doctotext_ocr.pdb ${CMAKE_BINARY_DIR
 configure_file(${CMAKE_SOURCE_DIR}/src/doctotext_c_api.h ${CMAKE_BINARY_DIR}/doctotext_c_api.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/metadata.h ${CMAKE_BINARY_DIR}/metadata.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/formatting_style.h ${CMAKE_BINARY_DIR}/formatting_style.h COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/src/decompress_archives.h ${CMAKE_BINARY_DIR}/decompress_archives.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/doctotext_link.h ${CMAKE_BINARY_DIR}/doctotext_link.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/exception.h ${CMAKE_BINARY_DIR}/exception.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/attachment.h ${CMAKE_BINARY_DIR}/attachment.h COPYONLY)

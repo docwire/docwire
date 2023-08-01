@@ -6,7 +6,8 @@
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
 /*  DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT),           */
-/*  PDF, EML, HTML, Outlook (PST, OST), Image (JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP) and DICOM (DCM)                                         */
+/*  PDF, EML, HTML, Outlook (PST, OST), Image (JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP), Archives (ZIP, TAR, RAR, GZ, BZ2, XZ)                  */
+/*  and DICOM (DCM)                                                                                                                                */
 /*                                                                                                                                                 */
 /*  Copyright (c) SILVERCODERS Ltd                                                                                                                 */
 /*  http://silvercoders.com                                                                                                                        */
@@ -328,6 +329,7 @@ TEST_P(MiscDocumentTest, SimpleExtractorTest)
 
     // WHEN
     doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
+    simple_extractor.addParameters({"TESSDATA_PREFIX", std::string("../tessdata")});
     std::string parsed_text{ simple_extractor.getPlainText() };
         
     // THEN
@@ -377,7 +379,13 @@ INSTANTIATE_TEST_SUITE_P(
         "test.json",
         "test.txt",
         "test.xml",
-        "empty_cells.xlsx"
+        "empty_cells.xlsx",
+        "test.zip",
+        "test.tar",
+        "test.tar.gz",
+        "test.tar.bz2",
+        "test.tar.xz",
+        "test.rar"
                       ),
     [](const ::testing::TestParamInfo<MiscDocumentTest::ParamType>& info) {
         std::string file_name = info.param;

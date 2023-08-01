@@ -6,7 +6,8 @@
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
 /*  DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT),           */
-/*  PDF, EML, HTML, Outlook (PST, OST), Image (JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP) and DICOM (DCM)                                         */
+/*  PDF, EML, HTML, Outlook (PST, OST), Image (JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP), Archives (ZIP, TAR, RAR, GZ, BZ2, XZ)                  */
+/*  and DICOM (DCM)                                                                                                                                */
 /*                                                                                                                                                 */
 /*  Copyright (c) SILVERCODERS Ltd                                                                                                                 */
 /*  http://silvercoders.com                                                                                                                        */
@@ -34,6 +35,7 @@
 #include <fstream>
 
 #include "chain_element.h"
+#include "decompress_archives.h"
 #include "input.h"
 #include "parsing_chain.h"
 #include "parser_manager.h"
@@ -58,8 +60,7 @@ public:
   std::string getText() const
   {
     std::stringstream ss;
-    auto importer = std::make_shared<Importer>(m_parameters, m_parser_manager);
-    ParsingChain chain(*importer);
+    ParsingChain chain = DecompressArchives() | Importer(m_parameters, m_parser_manager);
 
     if (!m_chain_elements.empty())
     {
@@ -84,8 +85,7 @@ public:
   template<typename ExtractorType>
   void parseText(std::ostream &out_stream) const
   {
-    auto importer = std::make_shared<Importer>(m_parameters, m_parser_manager);;
-    ParsingChain chain(*importer);
+    ParsingChain chain = DecompressArchives() | Importer(m_parameters, m_parser_manager);
 
     if (!m_chain_elements.empty())
     {
