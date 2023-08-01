@@ -233,7 +233,7 @@ if(MSVC)
     find_library(pff NAMES pff libpff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_package(PThreads4W REQUIRED)
-    target_link_libraries(doctotext_mail
+    target_link_libraries(doctotext_mail PRIVATE
             ${bfio}
             ${pff}
             doctotext_core
