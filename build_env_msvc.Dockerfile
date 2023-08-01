@@ -112,7 +112,6 @@ RUN powershell Copy-Item -Path 'C:\vcpkg\packages\libpff_x64-windows\include\lib
 RUN git clone https://github.com/docwire/mimetic.git `
     && powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/CMakeLists.txt -OutFile C:\mimetic\CMakeLists.txt `
     && powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/win-vs140.cmake -OutFile C:\mimetic\win-vs140.cmake `
-    && powershell -Command "(Get-Content C:\mimetic\win-vs140.cmake) -replace 'MD', 'MT' | Set-Content C:\mimetic\win-vs140.cmake" `
     && cd mimetic `
     && mkdir cmake `
     && powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/richiware/mimetic/master/cmake/config.cmake.in -OutFile C:\mimetic\cmake\config.cmake.in `

@@ -47,8 +47,6 @@ class CustomParserBuilder : public doctotext::ParserBuilder
 
 /// [plugin_example_2]
 
-#include <boost/config.hpp>
-
 class CustomParserProvider : public doctotext::ParserProvider
 {
   std::optional<ParserBuilder*> findParserByExtension(const std::string &extension) const override
@@ -68,7 +66,7 @@ class CustomParserProvider : public doctotext::ParserProvider
 
 };
 
-extern "C" BOOST_SYMBOL_EXPORT CustomParserProvider custom_parser_provider;
+extern "C" DllExport CustomParserProvider custom_parser_provider;
 CustomParserProvider custom_parser_provider;
 
 /// [plugin_example_2]
