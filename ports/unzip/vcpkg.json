@@ -1,6 +1,6 @@
 {
 	"name": "unzip",
-	"version": "1.01e",
+	"version-string": "1.01e",
 	"description": "unzip",
 	"dependencies": [
 		{

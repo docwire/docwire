@@ -1,12 +1,9 @@
-vcpkg_download_distfile(ARCHIVE
-	URLS "https://github.com/batterseapower/libcharsetdetect/archive/7b77a7a9d6359480c2a4c0b6f67610bc79398fea.zip"
-	FILENAME "libcharsetdetect-7b77a7a9d6359480c2a4c0b6f67610bc79398fea.zip"
-	SHA512 cc5d5ec413a4dd9543fabd832f18576e89687e4b494d2ec7d41f6f6d307c723033a20a17fcdad9ada9916b0f74beb1b59eb42e32b0fe2993fd85a1faaef5842b
-)
-
-vcpkg_extract_source_archive_ex(
-	OUT_SOURCE_PATH SOURCE_PATH
-	ARCHIVE ${ARCHIVE}
+vcpkg_from_github(
+        OUT_SOURCE_PATH SOURCE_PATH
+        REPO batterseapower/libcharsetdetect
+        REF 7b77a7a9d6359480c2a4c0b6f67610bc79398fea
+        SHA512 4d3b1e44307274074ad045cce3bcae02add9f654c51baaa06efab25fa1deb89c025572762ac764096edf6132bc7ed40318b4a0f8b76b916943997e260236c575
+        HEAD_REF master
 )
 
 #file(COPY
