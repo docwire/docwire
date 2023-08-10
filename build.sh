@@ -64,7 +64,7 @@ mkdir -p custom-triplets
 cp ./vcpkg/triplets/community/$VCPKG_TRIPLET_DYNAMIC.cmake custom-triplets/$VCPKG_TRIPLET.cmake
 ./vcpkg/vcpkg install podofo:$VCPKG_TRIPLET --overlay-triplets=custom-triplets
 ./vcpkg/vcpkg --overlay-ports=./ports --overlay-triplets=custom-triplets install htmlcxx:$VCPKG_TRIPLET
-./vcpkg/vcpkg --overlay-ports=./ports --overlay-triplets=custom-triplets install wv2:$VCPKG_TRIPLET
+./vcpkg/vcpkg --overlay-ports=./ports --overlay-triplets=custom-triplets install wv2:$VCPKG_TRIPLET || cat ./vcpkg/buildtrees/wv2/install-x64-osx-dbg-out.log
 ./vcpkg/vcpkg --overlay-ports=./ports --overlay-triplets=custom-triplets install libbfio:$VCPKG_TRIPLET
 ./vcpkg/vcpkg --overlay-ports=./ports --overlay-triplets=custom-triplets install libpff:$VCPKG_TRIPLET
 rm -rf custom-triplets
