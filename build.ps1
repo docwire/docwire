@@ -44,7 +44,7 @@ vcpkg\vcpkg --overlay-ports=ports install tessdata-fast:$VCPKG_TRIPLET
 vcpkg\vcpkg --overlay-ports=ports install cmap-resources:$VCPKG_TRIPLET
 vcpkg\vcpkg --overlay-ports=ports install mapping-resources-pdf:$VCPKG_TRIPLET
 vcpkg\vcpkg --overlay-ports=ports install htmlcxx:$VCPKG_TRIPLET
-vcpkg\vcpkg --overlay-ports=ports install wv2:$VCPKG_TRIPLET
+vcpkg\vcpkg --overlay-ports=ports install wv2:$VCPKG_TRIPLET || type vcpkg\buildtrees\wv2\install-x64-windows-dbg-out.log
 vcpkg\vcpkg --overlay-ports=ports install libbfio:$VCPKG_TRIPLET
 vcpkg\vcpkg --overlay-ports=ports install libpff:$VCPKG_TRIPLET
 
