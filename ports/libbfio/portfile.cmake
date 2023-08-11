@@ -10,6 +10,13 @@ vcpkg_extract_source_archive_ex(
 )
 
 if (VCPKG_TARGET_IS_WINDOWS)
+	vcpkg_execute_required_process(
+                COMMAND "devenv.exe"
+                "libbfio.sln"
+                /Upgrade
+                WORKING_DIRECTORY ${SOURCE_PATH}/msvscpp
+                LOGNAME upgrade-libbfio-${TARGET_TRIPLET}
+        )
 	vcpkg_install_msbuild(
 		SOURCE_PATH "${SOURCE_PATH}"
 		PROJECT_SUBPATH "msvscpp/libbfio.sln"
