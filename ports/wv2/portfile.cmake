@@ -6,9 +6,15 @@ vcpkg_from_github(
 	HEAD_REF master
 )
 
+if(VCPKG_TARGET_IS_OSX)
+	set(CXX_STD_OPTION, "-DCMAKE_CXX_STANDARD=17")
+else()
+	set(CXX_STD_OPTION, "")
+endif()
+
 vcpkg_cmake_configure(
 	SOURCE_PATH "${SOURCE_PATH}"
-	OPTIONS -DCMAKE_CXX_STANDARD=17
+	OPTIONS ${CXX_STD_OPTION}
 )
 
 vcpkg_cmake_install()
