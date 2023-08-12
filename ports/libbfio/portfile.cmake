@@ -17,7 +17,7 @@ if (VCPKG_TARGET_IS_WINDOWS)
                 WORKING_DIRECTORY ${SOURCE_PATH}/msvscpp
                 LOGNAME upgrade-libbfio-${TARGET_TRIPLET}
         )
-	file(GLOB_RECURSE project_files *.sln *.vcxproj)
+	file(GLOB_RECURSE project_files ${SOURCE_PATH}/*.sln ${SOURCE_PATH}/*.vcxproj)
 	foreach(file ${project_files})
 		vcpkg_replace_string(${file} Release|Win32 Release|x64)
 		vcpkg_replace_string(${file} VSDebug|Win32 Debug|x64)
