@@ -23,7 +23,7 @@ if (VCPKG_TARGET_IS_WINDOWS)
 		vcpkg_replace_string(${file} VSDebug|Win32 Debug|x64)
 		vcpkg_replace_string(${file} MachineX86 MachineX64)
 	endforeach()
-	vcpkg_replace_string(${SOURCE_PATH}/msvscpp/zlib.vcproj [[..\..\..\zlib]] [[..\..\zlib-1.2.13]])
+	vcpkg_replace_string(${SOURCE_PATH}/msvscpp/zlib/zlib.vcproj [[..\..\..\zlib]] [[..\..\zlib-1.2.13]])
 	vcpkg_download_distfile(ZLIB_ARCHIVE
 		URLS "http://zlib.net/zlib1213.zip"
 		FILENAME "http://zlib.net/zlib1213.zip"
