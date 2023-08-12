@@ -26,7 +26,7 @@ if (VCPKG_TARGET_IS_WINDOWS)
 	vcpkg_replace_string(${SOURCE_PATH}/msvscpp/zlib/zlib.vcproj [[..\..\..\zlib]] [[..\..\zlib-1.2.13]])
 	vcpkg_download_distfile(ZLIB_ARCHIVE
 		URLS "http://zlib.net/zlib1213.zip"
-		FILENAME "http://zlib.net/zlib1213.zip"
+		FILENAME "zlib1213.zip"
 		SHA512 4a1c487db9fd442a4c655dd91b9fbea89af08da189154cae575a095d1e4c10e98283a8e11bb511c164e5e9dcf2f38e5996bda3e17d3f09c02ab5ce4e533505fb
 	)
 	file(ARCHIVE_EXTRACT INPUT ${ZLIB_ARCHIVE} DESTINATION ${SOURCE_PATH})
