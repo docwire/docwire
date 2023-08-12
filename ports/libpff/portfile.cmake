@@ -23,6 +23,7 @@ if (VCPKG_TARGET_IS_WINDOWS)
 		vcpkg_replace_string(${file} VSDebug|Win32 Debug|x64)
 		vcpkg_replace_string(${file} MachineX86 MachineX64)
 	endforeach()
+	vcpkg_replace_string(${SOURCE_PATH}/msvccpp/zlib.vcproj ..\..\.. ..\..)
 	vcpkg_install_msbuild(
 		SOURCE_PATH "${SOURCE_PATH}"
 		PROJECT_SUBPATH "msvscpp/libpff.sln"
