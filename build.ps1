@@ -46,7 +46,7 @@ vcpkg\vcpkg --overlay-ports=ports install mapping-resources-pdf:$VCPKG_TRIPLET
 vcpkg\vcpkg --overlay-ports=ports install htmlcxx:$VCPKG_TRIPLET
 vcpkg\vcpkg --overlay-ports=ports install wv2:$VCPKG_TRIPLET || type vcpkg\buildtrees\wv2\install-x64-windows-dbg-out.log
 vcpkg\vcpkg --overlay-ports=ports install libbfio:$VCPKG_TRIPLET || type vcpkg\buildtrees\libbfio\build-x64-windows-rel-out.log
-vcpkg\vcpkg --overlay-ports=ports install libpff:$VCPKG_TRIPLET || type vcpkg\buildtrees\libpff\build-x64-windows-rel-out.log
+vcpkg\vcpkg install libpff:$VCPKG_TRIPLET
 
 $vcpkg_path="$PWD\vcpkg"
 $vcpkg_toolchain="$vcpkg_path\scripts\buildsystems\vcpkg.cmake"
