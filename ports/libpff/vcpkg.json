@@ -4,6 +4,10 @@
 	"description": "libpff",
 	"dependencies": [
 		{
+			"name": "python3",
+			"platform": "windows"
+		},
+		{
 			"name": "vcpkg-cmake",
 			"host": true
 		}
