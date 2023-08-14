@@ -18,5 +18,14 @@ vcpkg_cmake_configure(
 
 vcpkg_cmake_install()
 
+if(EXISTS "${CURRENT_PACKAGES_DIR}/lib/charsetdetect.dll")
+	file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/bin")
+	file(RENAME "${CURRENT_PACKAGES_DIR}/lib/charsetdetect.dll" "${CURRENT_PACKAGES_DIR}/bin/charsetdetect.dll")
+endif()
+if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/lib/charsetdetect.dll")
+    file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/bin")
+    file(RENAME "${CURRENT_PACKAGES_DIR}/debug/lib/charsetdetect.dll" "${CURRENT_PACKAGES_DIR}/debug/bin/charsetdetect.dll")
+endif()
+
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/copyright" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
