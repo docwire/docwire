@@ -113,6 +113,7 @@ $LIB_PATHS=(
     "$vcpkg_bin_dir/webp.dll",
     "$vcpkg_bin_dir/webpmux.dll",
     "$vcpkg_bin_dir/zlib${debug_suffix}1.dll",
+    "$vcpkg_bin_dir/charsetdetect.dll",
     "$vcpkg_bin_dir/mailio.dll");
 if ($BuildType -eq "Debug")
 {
