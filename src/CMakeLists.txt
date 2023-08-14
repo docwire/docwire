@@ -239,9 +239,7 @@ if(MSVC)
             doctotext_core
             ${htmlcxx}
             PThreads4W::PThreads4W)
-    find_path(bfio_inc_dir libbfio.h REQUIRED)
     target_include_directories(doctotext_mail PUBLIC
-            ${bfio_inc_dir}
             ../
             .
             )
