@@ -26,6 +26,7 @@ Unreleased:
     * Dynamic linking of MSVC runtime for all libraries and executables
     * Upgrade GoogleTest to 1.12.1
     * DecompressArchives chain element added that supports ZIP, TAR, RAR, GZ, BZ2 and XZ formats - enabled by default in CLI utility.
+    * Mimetic library replaced with MailIO
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed

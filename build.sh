@@ -48,6 +48,7 @@ fi
 ./vcpkg/vcpkg install boost-dll:$VCPKG_TRIPLET
 ./vcpkg/vcpkg install boost-assert:$VCPKG_TRIPLET
 ./vcpkg/vcpkg install boost-smart-ptr:$VCPKG_TRIPLET
+./vcpkg/vcpkg install mailio:$VCPKG_TRIPLET
 
 if [[ "$OSTYPE" == "msys"* ]]; then
 	VCPKG_TRIPLET_DYNAMIC=x64-mingw-dynamic
@@ -99,7 +100,6 @@ cd ..
 rm -rf libcharsetdetect-master
 rm libcharsetdetect-master.tar.bz2
 
-
 git clone https://github.com/docwire/wv2.git
 cd wv2
 mkdir build
@@ -113,24 +113,6 @@ tar -xjvf wv2-0.2.3_patched_4-private_headers.tar.bz2
 mv wv2-0.2.3_patched_4-private_headers/*.h $deps_prefix/include/wv2/
 cd ..
 rm -rf wv2
-
-wget -nc http://www.codesink.org/download/mimetic-0.9.7.tar.gz
-echo "568557bbf040be2b17595431c9b0992c32fae6ed  mimetic-0.9.7.tar.gz" | shasum -c
-tar -zxvf mimetic-0.9.7.tar.gz
-wget -nc http://silvercoders.com/download/3rdparty/mimetic-0.9.7-patches.tar.gz
-echo "7e203fb2b2d404ae356674e7dfc293e78fe3362b  mimetic-0.9.7-patches.tar.gz" | shasum -c
-tar -xvzf mimetic-0.9.7-patches.tar.gz
-cd mimetic-0.9.7
-patch -p1 -i ../mimetic-0.9.7-patches/register_keyword.patch
-patch -p1 -i ../mimetic-0.9.7-patches/ContTokenizer.patch
-patch -p1 -i ../mimetic-0.9.7-patches/macro_string.patch
-patch -p1 -i ../mimetic-0.9.7-patches/mimetic_pointer_comparison.patch
-./configure CXXFLAGS=-std=c++17 --prefix="$deps_prefix"
-make -j4
-make install-strip
-cd ..
-rm -rf mimetic-0.9.7
-rm -rf mimetic-0.9.7-patches
 
 git clone https://github.com/libyal/libbfio.git
 cd libbfio
@@ -215,7 +197,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 	cp $vcpkg_prefix/lib/libpodofo.0.9.8.dylib .
 	cp $deps_prefix/lib/libhtmlcxx.3.dylib .
 	cp $deps_prefix/lib/libcharsetdetect.dylib .
-	cp $deps_prefix/lib/libmimetic.0.dylib .
 	cp $deps_prefix/lib/libbfio.1.dylib .
 	cp $deps_prefix/lib/libpff.1.dylib .
 else
@@ -223,7 +204,6 @@ else
 	cp $vcpkg_prefix/lib/libpodofo.so.0.9.8 .
 	cp $deps_prefix/lib/libhtmlcxx.so.3 .
 	cp $deps_prefix/lib/libcharsetdetect.so .
-	cp $deps_prefix/lib/libmimetic.so.0 .
 	cp $deps_prefix/lib/libbfio.so.1 .
 	cp $deps_prefix/lib/libpff.so.1 .
 fi

@@ -140,7 +140,6 @@ if(MSVC)
     find_package(PThreads4W REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
-    find_library(mimetic NAMES mimetic mimeticd libmimetic libmimeticd REQUIRED)
     find_package(Iconv REQUIRED)
     target_link_libraries(doctotext_parsers PRIVATE
             ${podofo}
@@ -153,7 +152,6 @@ if(MSVC)
             Freetype::Freetype
             PThreads4W::PThreads4W
             ZLIB::ZLIB
-            ${mimetic}
             Iconv::Iconv
             )
     target_compile_options(doctotext_parsers PUBLIC "/Zc:__cplusplus")
@@ -171,7 +169,6 @@ else()
     find_library(wv2 wv2 REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
-    find_library(mimetic mimetic REQUIRED)
     target_link_libraries(doctotext_parsers PRIVATE
         ${podofo}
         Freetype::Freetype
@@ -182,7 +179,6 @@ else()
         pthread
         ZLIB::ZLIB
         ${charsetdetect}
-        ${mimetic}
         doctotext_core
         )
     find_path(unzip_incdir unzip.h)
@@ -233,17 +229,15 @@ endif()
 
 add_library(doctotext_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
 if(MSVC)
-    find_library(mimetic NAMES mimetic mimeticd libmimetic libmimeticd REQUIRED)
     find_library(bfio NAMES bfio libbfio REQUIRED)
     find_library(pff NAMES pff libpff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_package(PThreads4W REQUIRED)
-    target_link_libraries(doctotext_mail
+    target_link_libraries(doctotext_mail PRIVATE
             ${bfio}
             ${pff}
             doctotext_core
             ${htmlcxx}
-            ${mimetic}
             PThreads4W::PThreads4W)
     find_path(bfio_inc_dir libbfio.h REQUIRED)
     target_include_directories(doctotext_mail PUBLIC
@@ -253,12 +247,13 @@ if(MSVC)
             )
     target_compile_options(doctotext_mail PUBLIC "/Zc:__cplusplus")
 else()
-    find_library(mimetic mimetic REQUIRED)
     find_library(bfio bfio REQUIRED)
     find_library(pff pff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
-    target_link_libraries(doctotext_mail PRIVATE ${bfio} ${pff} ${mimetic} ${htmlcxx} pthread doctotext_core)
+    target_link_libraries(doctotext_mail PRIVATE ${bfio} ${pff} ${htmlcxx} pthread doctotext_core)
 endif()
+find_package(mailio CONFIG REQUIRED)
+target_link_libraries(doctotext_mail PRIVATE mailio)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
    set_target_properties(doctotext_parsers PROPERTIES PREFIX "")
