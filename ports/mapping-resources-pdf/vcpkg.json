@@ -1,0 +1,11 @@
+{
+	"name": "mapping-resources-pdf",
+	"version-date": "2023-01-18",
+	"description": "mapping-resources-pdf",
+	"dependencies": [
+		{
+			"name": "vcpkg-cmake",
+			"host": true
+		}
+	]
+}

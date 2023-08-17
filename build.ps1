@@ -38,126 +38,37 @@ vcpkg\vcpkg install boost-smart-ptr:$VCPKG_TRIPLET
 vcpkg\vcpkg install podofo:$VCPKG_TRIPLET
 vcpkg\vcpkg install pthreads:$VCPKG_TRIPLET
 vcpkg\vcpkg install mailio:$VCPKG_TRIPLET
+vcpkg\vcpkg --overlay-ports=ports install libcharsetdetect:$VCPKG_TRIPLET
+vcpkg\vcpkg --overlay-ports=ports install unzip:$VCPKG_TRIPLET
+vcpkg\vcpkg --overlay-ports=ports install tessdata-fast:$VCPKG_TRIPLET
+vcpkg\vcpkg --overlay-ports=ports install cmap-resources:$VCPKG_TRIPLET
+vcpkg\vcpkg --overlay-ports=ports install mapping-resources-pdf:$VCPKG_TRIPLET
+vcpkg\vcpkg --overlay-ports=ports install htmlcxx:$VCPKG_TRIPLET
+vcpkg\vcpkg --overlay-ports=ports install wv2:$VCPKG_TRIPLET || type vcpkg\buildtrees\wv2\install-x64-windows-dbg-out.log
+vcpkg\vcpkg --overlay-ports=ports install libbfio:$VCPKG_TRIPLET || type vcpkg\buildtrees\libbfio\build-x64-windows-rel-out.log
+vcpkg\vcpkg install libpff:$VCPKG_TRIPLET
 
 $vcpkg_path="$PWD\vcpkg"
 $vcpkg_toolchain="$vcpkg_path\scripts\buildsystems\vcpkg.cmake"
 $vcpkg_prefix="$vcpkg_path\installed\$VCPKG_TRIPLET"
 
-$deps_prefix="$PWD\deps"
-mkdir $deps_prefix
-
-git clone https://github.com/docwire/htmlcxx.git
-cd htmlcxx
-mkdir build
-cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>DLL' -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
-cmake --build . --config $BuildType
-cmake --build . --config $BuildType --target install
-cd ..\..
-
-Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/libcharsetdetect-master.tar.bz2 -OutFile libcharsetdetect-master.tar.bz2
-arc unarchive libcharsetdetect-master.tar.bz2
-cd libcharsetdetect-master
-Remove-Item -Path 'CMakeLists.txt'
-Write-Output 'cmake_minimum_required(VERSION 3.16)' `
-      'project(charsetdetect)' `
-      'set(CMAKE_CXX_STANDARD 17)' `
-      'set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")' `
-      'set(FLAGS -fPIC)'`
-      'include_directories(. nspr-emu mozilla/extensions/universalchardet/src/base/)'`
-      'file(GLOB charsetdetect_lib_src mozilla/extensions/universalchardet/src/base/*.cpp)'`
-      'set(charsetdetect_lib_src ${charsetdetect_lib_src} charsetdetect.cpp)'`
-      'add_library(charsetdetect STATIC ${charsetdetect_lib_src})'`
-      'set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/build)' `
-      'install(TARGETS charsetdetect DESTINATION lib)'`
-      'install(FILES charsetdetect.h DESTINATION include)'`
-      > CMakeLists.txt
-mkdir build
-cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
-cmake --build . --config $BuildType
-cmake --build . --config $BuildType --target install
-cd ..
-cd ..
-
-git clone https://github.com/docwire/wv2.git
-cd wv2
-mkdir build
-cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain"  -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
-cmake --build . --config $BuildType
-cmake --build . --config $BuildType --target install
-cd ..\..
-Invoke-WebRequest -Uri http://silvercoders.com/download/3rdparty/wv2-0.2.3_patched_4-private_headers.tar.bz2 -OutFile wv2-0.2.3_patched_4-private_headers.tar.bz2
-arc unarchive wv2-0.2.3_patched_4-private_headers.tar.bz2
-Move-Item -Path wv2-0.2.3_patched_4-private_headers\*.h -Destination "$deps_prefix\include\wv2"
-
-git clone https://github.com/docwire/bfio.git
-cd bfio
-.\synclibs.ps1
-.\autogen.ps1
-cd msvscpp
-if ($BuildType -eq "Debug")
-{
-	$bfio_conf="VSDebug"
-}
-else
-{
-	$bfio_conf="Release"
-}
-$msbuild = vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | select-object -first 1
-& $msbuild libbfio.sln /property:Configuration=$bfio_conf /property:Platform=x64 /p:PlatformToolset=v142
-cd ..
-Copy-Item -Path "msvscpp\$bfio_conf\*.lib" -Destination "$deps_prefix\lib" -Recurse
-Copy-Item -Path "msvscpp\$bfio_conf\*.dll" -Destination "$deps_prefix\bin" -Recurse
-Copy-Item -Path 'include\*.h' -Destination "$deps_prefix\include"
-Copy-Item -Path 'include\libbfio' -Destination "$deps_prefix\include" -Recurse
-cd ..
-
-vcpkg\vcpkg install libpff:$VCPKG_TRIPLET
-
-Invoke-WebRequest -Uri http://www.winimage.com/zLibDll/unzip101e.zip -OutFile unzip101e.zip
-arc unarchive unzip101e.zip
-cd unzip101e
-Write-Output 'cmake_minimum_required(VERSION 3.16)' `
-      'project(Unzip)' `
-      'set(CMAKE_CXX_STANDARD 17)' `
-      'set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")' `
-      'set(UNZIP_SRC ioapi.c unzip.c)'`
-      'set(FLAGS -fPIC)'`
-      'add_library(unzip STATIC ${UNZIP_SRC})'`
-      'find_path(zlib_incdir zlib.h REQUIRED)' `
-      'target_include_directories(unzip PUBLIC ${zlib_incdir})' `
-      'install(FILES unzip.h ioapi.h DESTINATION include)'`
-      'install(TARGETS unzip DESTINATION lib)'`
-      'target_compile_options(unzip PRIVATE -fPIC)'`
-      > CMakeLists.txt
-mkdir build
-cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_PREFIX_PATH="$deps_prefix" -DCMAKE_INSTALL_PREFIX:PATH="$deps_prefix"
-cmake --build . --config $BuildType
-cmake --build . --config $BuildType --target install
-cd ..
-cd ..
-Remove-Item -Path unzip101e.zip
-
 dir -s "$vcpkg_prefix"
-dir -s "$deps_prefix"
 
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>DLL' -DCMAKE_PREFIX_PATH="$deps_prefix"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>DLL'
 cmake --build . -j6 --config $BuildType
 cmake --build . --config $BuildType --target doxygen install
 cd ..
 
 cd build
 mkdir tessdata
-cd tessdata
-Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/eng.traineddata -OutFile eng.traineddata
-Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/osd.traineddata -OutFile osd.traineddata
-Invoke-WebRequest -Uri https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/pol.traineddata -OutFile pol.traineddata
-cd ..
+Copy-Item -Path "$vcpkg_prefix\share\tessdata-fast\eng.traineddata" -Destination tessdata/
+Copy-Item -Path "$vcpkg_prefix\share\tessdata-fast\osd.traineddata" -Destination tessdata/
+Copy-Item -Path "$vcpkg_prefix\share\tessdata-fast\pol.traineddata" -Destination tessdata/
+mkdir resources
+Copy-Item -Path "$vcpkg_prefix\share\cmap-resources\*\CMap\*" -Destination resources/
+Copy-Item -Path "$vcpkg_prefix\share\mapping-resources-pdf\pdf2unicode\*" -Destination resources/
 cd ..
 if ($BuildType -eq "Debug")
 {
@@ -175,8 +86,8 @@ else
 }
 $LIB_PATHS=(
     "C:\Windows\System32\VCRUNTIME140_1${debug_suffix}.dll",
-    "$deps_prefix/bin/htmlcxx.dll",
-    "$deps_prefix/bin/wv2.dll",
+    "$vcpkg_bin_dir/htmlcxx.dll",
+    "$vcpkg_bin_dir/wv2.dll",
     "$vcpkg_bin_dir/boost_filesystem-${boost_arch}-1_81.dll",
     "$vcpkg_bin_dir/brotlicommon.dll",
     "$vcpkg_bin_dir/brotlidec.dll",
@@ -192,7 +103,7 @@ $LIB_PATHS=(
     "$vcpkg_bin_dir/libcurl${debug_suffix2}.dll",
     "$vcpkg_bin_dir/libcrypto-3-x64.dll",
     "$vcpkg_bin_dir/liblzma.dll",
-    "$deps_prefix/bin/libbfio.dll",
+    "$vcpkg_bin_dir/libbfio.dll",
     "$vcpkg_bin_dir/libpff.dll",
     "$vcpkg_bin_dir/libpng16${debug_suffix}.dll",
     "$vcpkg_bin_dir/libxml2.dll",
@@ -202,6 +113,7 @@ $LIB_PATHS=(
     "$vcpkg_bin_dir/webp.dll",
     "$vcpkg_bin_dir/webpmux.dll",
     "$vcpkg_bin_dir/zlib${debug_suffix}1.dll",
+    "$vcpkg_bin_dir/charsetdetect.dll",
     "$vcpkg_bin_dir/mailio.dll");
 if ($BuildType -eq "Debug")
 {

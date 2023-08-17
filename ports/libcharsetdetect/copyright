@@ -1,0 +1,5 @@
+"The files libcharsetdetect.{cpp,h} are (c) 2010 Colin Snover and released under an MIT license.
+
+The UCSD is (c) mozilla.org and tri-licensed under MPL 1.1/GPL 2.0/LGPL 2.1.
+
+We incorporate header files from the NSPR emulation library, which is LGPL licensed."
