@@ -49,6 +49,7 @@ fi
 ./vcpkg/vcpkg install boost-assert:$VCPKG_TRIPLET
 ./vcpkg/vcpkg install boost-smart-ptr:$VCPKG_TRIPLET
 ./vcpkg/vcpkg install mailio:$VCPKG_TRIPLET
+./vcpkg/vcpkg install gtest:$VCPKG_TRIPLET
 ./vcpkg/vcpkg --overlay-ports=./ports install libcharsetdetect:$VCPKG_TRIPLET
 ./vcpkg/vcpkg --overlay-ports=./ports install unzip:$VCPKG_TRIPLET
 ./vcpkg/vcpkg --overlay-ports=./ports install tessdata-fast:$VCPKG_TRIPLET
