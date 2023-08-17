@@ -3,6 +3,7 @@ Unreleased:
     * MacOSX building process refactored to use VCPKG
     * PDF parser infinite loop when font is unknown fixed
     * HTML parser memory write error fixed
+    * Extracting version number from ChangeLog instead of Git tag to enable building from source archive
 
 Version 5.0.9:
     * Replace README file with more detailed README.md prepared for public GitHub repository
