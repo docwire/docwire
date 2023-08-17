@@ -1,24 +1,9 @@
 set(CMAKE_CXX_STANDARD 17)
 
-include(FetchContent)
-
-FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/refs/tags/release-1.12.1.zip
-        URL_HASH SHA1=973e464e8936d4b79bb24f27b058aaef4150b06e
-)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-if(CMAKE_CROSSCOMPILING)
-    set(dis_mode "PRE_TEST")
-    set(CMAKE_CROSSCOMPILING_EMULATOR "/usr/bin/wine")
-else()
-    set(dis_mode "POST_BUILD")
-endif()
-FetchContent_MakeAvailable(googletest)
+find_package(GTest CONFIG REQUIRED)
 
 add_executable(api_tests api_tests.cpp)
-target_link_libraries(api_tests PRIVATE doctotext_core gtest_main)
+target_link_libraries(api_tests PRIVATE doctotext_core GTest::gtest_main)
 if(MSVC)
     set_target_properties( api_tests
             PROPERTIES
@@ -28,11 +13,9 @@ if(MSVC)
     find_package(PThreads4W REQUIRED)
     target_link_libraries(api_tests PRIVATE PThreads4W::PThreads4W)
 endif()
-target_compile_options(api_tests PRIVATE -O0 -g)
 
 add_executable(c_api_tests c_api_tests.cpp)
-target_link_libraries(c_api_tests PRIVATE doctotext_core gtest_main)
-target_compile_options(c_api_tests PRIVATE -O0 -g)
+target_link_libraries(c_api_tests PRIVATE doctotext_core GTest::gtest_main)
 
 if(MSVC)
     set_target_properties( c_api_tests
