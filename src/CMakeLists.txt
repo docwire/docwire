@@ -283,10 +283,11 @@ install(TARGETS doctotext_parsers
 install(TARGETS doctotext_core
         DESTINATION ${CMAKE_BINARY_DIR})
 
-INSTALL(FILES ${CMAKE_BINARY_DIR}/src/Debug/doctotext_ocr.pdb ${CMAKE_BINARY_DIR}/src/Debug/doctotext_parsers.pdb
-        DESTINATION  ${CMAKE_BINARY_DIR}/plugins
-        CONFIGURATIONS Debug
-        )
+if(MSVC)
+	INSTALL(FILES ${CMAKE_BINARY_DIR}/src/Debug/doctotext_ocr.pdb ${CMAKE_BINARY_DIR}/src/Debug/doctotext_parsers.pdb
+		DESTINATION  ${CMAKE_BINARY_DIR}/plugins
+		CONFIGURATIONS Debug)
+endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/src/doctotext_c_api.h ${CMAKE_BINARY_DIR}/doctotext_c_api.h COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/metadata.h ${CMAKE_BINARY_DIR}/metadata.h COPYONLY)
