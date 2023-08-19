@@ -52,6 +52,7 @@ vcpkg\vcpkg install libpff:$VCPKG_TRIPLET
 $vcpkg_path="$PWD\vcpkg"
 $vcpkg_toolchain="$vcpkg_path\scripts\buildsystems\vcpkg.cmake"
 $vcpkg_prefix="$vcpkg_path\installed\$VCPKG_TRIPLET"
+$install_dir="$PWD\doctotext"
 
 dir -s "$vcpkg_prefix"
 
@@ -59,18 +60,26 @@ mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>DLL'
 cmake --build . -j6 --config $BuildType
-cmake --build . --config $BuildType --target doxygen install
+cmake --install . --config $BuildType --prefix "$install_dir"
 cd ..
 
-cd build
-mkdir tessdata
-Copy-Item -Path "$vcpkg_prefix\share\tessdata-fast\eng.traineddata" -Destination tessdata/
-Copy-Item -Path "$vcpkg_prefix\share\tessdata-fast\osd.traineddata" -Destination tessdata/
-Copy-Item -Path "$vcpkg_prefix\share\tessdata-fast\pol.traineddata" -Destination tessdata/
-mkdir resources
-Copy-Item -Path "$vcpkg_prefix\share\cmap-resources\*\CMap\*" -Destination resources/
-Copy-Item -Path "$vcpkg_prefix\share\mapping-resources-pdf\pdf2unicode\*" -Destination resources/
-cd ..
+cd doctotext\share
+mkdir tessdata-fast
+cd tessdata-fast
+Copy-Item -Path "$vcpkg_prefix\share\tessdata-fast\eng.traineddata" -Destination .
+Copy-Item -Path "$vcpkg_prefix\share\tessdata-fast\osd.traineddata" -Destination .
+Copy-Item -Path "$vcpkg_prefix\share\tessdata-fast\pol.traineddata" -Destination .
+cd ..\..\..
+
+mkdir doctotext\share\cmap-resources
+foreach ($d in Adobe-Japan1-7 Adobe-Korea1-2 Adobe-CNS1-7 Adobe-GB1-6 deprecated/Adobe-Japan2-0 Adobe-KR-9 Adobe-Identity-0)
+{
+	mkdir doctotext\share\cmap-resources\$d
+	Copy-Item -Path "$vcpkg_prefix\share\cmap-resources\$d\CMap" -Destination doctotext\share\cmap-resources\$d\ -Recurse
+}
+mkdir doctotext\share\mapping-resources-pdf
+Copy-Item -Path "$vcpkg_prefix\share\mapping-resources-pdf\pdf2unicode" -Destination doctotext\share\mapping-resources-pdf\ -Recurse
+
 if ($BuildType -eq "Debug")
 {
 	$vcpkg_bin_dir="$vcpkg_prefix/debug/bin"
@@ -124,13 +133,14 @@ if ($BuildType -eq "Debug")
 	$LIB_PATHS += "$vcpkg_bin_dir/pthreadVC3d.dll"
 }
 
-foreach ($PATH in $LIB_PATHS){echo $PATH; Copy-Item -Path $PATH -Destination build/};
+foreach ($PATH in $LIB_PATHS){echo $PATH; Copy-Item -Path $PATH -Destination doctotext\bin\};
 
 cd build
+$Env:PATH += ";$install_dir\bin"
 ctest -VV --debug --output-on-failure --stop-on-failure --timeout 30 --repeat until-pass:3
 cd ..
 
-Get-ChildItem -Path build\ -Recurse -Filter *.dll | Select-Object -Property Name,@{name="Hash";expression={(Get-FileHash $_.FullName).hash}} > build\SHA1checksums.sha1
+Get-ChildItem -Path doctotext\bin\ -Recurse -Filter *.dll | Select-Object -Property Name,@{name="Hash";expression={(Get-FileHash $_.FullName).hash}} > doctotext\share\doctotext\SHA1checksums.sha1
 
 $version = Get-Content build/VERSION
 
@@ -143,22 +153,7 @@ else
 	$arch="msvc"
 }
 
-mkdir doctotext-$version-$arch
-
-Copy-Item -Path "build\*.dll" -Destination "doctotext-$version-$arch" -Recurse
-Copy-Item -Path "build\*.lib" -Destination "doctotext-$version-$arch" -Recurse
-Copy-Item -Path "build\*.pdb" -Destination "doctotext-$version-$arch" -Recurse
-Copy-Item -Path "build\*.exe" -Destination "doctotext-$version-$arch" -Recurse
-Copy-Item -Path "build\*.h" -Destination "doctotext-$version-$arch" -Recurse
-Copy-Item -Path "build\*.hpp" -Destination "doctotext-$version-$arch" -Recurse
-Copy-Item -Path "build\SHA1checksums.sha1" -Destination "doctotext-$version-$arch" -Recurse
-Copy-Item -Path "build\VERSION" -Destination "doctotext-$version-$arch" -Recurse
-Copy-Item -Path "ChangeLog" -Destination "doctotext-$version-$arch" -Recurse
-Copy-Item -Path "build\plugins" -Destination "doctotext-$version-$arch" -Recurse
-Copy-Item -Path "build\tessdata" -Destination "doctotext-$version-$arch" -Recurse
-Copy-Item -Path "build\doc" -Destination "doctotext-$version-$arch" -Recurse
-
-Compress-Archive -LiteralPath doctotext-$version-$arch -DestinationPath doctotext-$version-$arch.zip
+Compress-Archive -LiteralPath doctotext -DestinationPath doctotext-$version-$arch.zip
 Get-FileHash -Algorithm SHA1 doctotext-$version-$arch.zip > doctotext-$version-$arch.zip.sha1
 
-Remove-Item -Path doctotext-$version-$arch -Recurse
+Remove-Item -Path doctotext -Recurse

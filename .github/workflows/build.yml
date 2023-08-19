@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - run: ./build.sh --release
+      - run: ./build.sh
         env:
           ghcr_login: ${{ github.actor }}
           ghcr_password: ${{ github.token }}
@@ -67,7 +67,7 @@ jobs:
         with:
           fetch-depth: 0
       - run:
-          ./build.sh --release
+          ./build.sh
       - uses: actions/upload-artifact@v2
         with:
           name: osx_build

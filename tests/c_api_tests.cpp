@@ -47,7 +47,6 @@ class HTMLWriteTestC : public ::testing::TestWithParam<const char*>
 {
 protected:
     static constexpr std::string_view test_directory{ "../../tests/" };
-    static constexpr std::string_view plugin_directory{ "../plugins" };
 };
 
 TEST_P(HTMLWriteTestC, CApiTest)
@@ -68,7 +67,7 @@ TEST_P(HTMLWriteTestC, CApiTest)
     std::string temp_file_name{ std::string{ name } + ".tmp" };
     FILE* temp_fptr = fopen(temp_file_name.c_str(), "w");
     
-    DocToTextParserManager* parser_manager = doctotext_init_parser_manager(plugin_directory.data());
+    DocToTextParserManager* parser_manager = doctotext_init_parser_manager("");
 
     DocToTextInput *input = doctotext_create_input_from_file_name(file_name.c_str());
     DocToTextImporter *importer = doctotext_create_importer(parser_manager);

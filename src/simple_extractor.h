@@ -64,12 +64,12 @@ public:
   /**
    * @param file_name name of the file to parse
    */
-  explicit SimpleExtractor(const std::string &file_name, const std::string &plugins_path = "./plugins");
+  explicit SimpleExtractor(const std::string &file_name, const std::string &plugins_path = "");
 
   /**
    * @param input_stream input stream to parse
    */
-  SimpleExtractor(std::istream &input_stream, const std::string &plugins_path = "./plugins");
+  SimpleExtractor(std::istream &input_stream, const std::string &plugins_path = "");
 
   ~SimpleExtractor();
 

@@ -35,6 +35,7 @@
 #include <numeric>
 #include <filesystem>
 #include <boost/dll/import.hpp>
+#include <boost/dll/runtime_symbol_info.hpp>
 #include <iostream>
 
 #include "log.h"
@@ -56,7 +57,8 @@ public:
   explicit Implementation(const std::string &plugins_directory)
   {
     m_plugins_directory = plugins_directory.empty() ?
-                          (std::filesystem::path(get_self_path()) / DEFAULT_PLUGINS_SUFFIX).string() : plugins_directory;
+      (boost::dll::this_line_location().parent_path() / "doctotext_plugins").string() : plugins_directory;
+    doctotext_log(debug) << "Plugins directory: " << m_plugins_directory;
     pthread_mutex_lock(&load_providers_mutex);
     loadProviders();
     pthread_mutex_unlock(&load_providers_mutex);
@@ -88,7 +90,6 @@ public:
       }
     }
   }
-  const std::string DEFAULT_PLUGINS_SUFFIX{"plugins"};
   std::vector<boost::shared_ptr<ParserProvider>> providers;
   std::string m_plugins_directory;
 };

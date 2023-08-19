@@ -38,6 +38,7 @@
 #include <tesseract/ocrclass.h>
 #include <leptonica/allheaders.h>
 
+#include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/signals2.hpp>
 
 #include <filesystem>
@@ -211,7 +212,7 @@ std::string OCRParser::plainText(const doctotext::FormattingStyle& formatting, c
     }
     else
     {
-      impl->m_tessdata_prefix = (std::filesystem::path(get_self_path()) / "tessdata").string();
+      impl->m_tessdata_prefix = (boost::dll::this_line_location().parent_path() / ".." / ".." / "share" / "tessdata-fast").string();
     }
 
     if (api->Init(impl->m_tessdata_prefix.c_str(), doctotext::languageToName(lang).c_str())) {

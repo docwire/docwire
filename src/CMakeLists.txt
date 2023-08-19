@@ -270,59 +270,62 @@ if (DOCTOTEXT_TRACE)
    add_compile_options($<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-finstrument-functions>)
 endif()
 
-install(TARGETS c_text_extractor
-   DESTINATION ${CMAKE_BINARY_DIR})
-install(TARGETS text_extractor
-   DESTINATION ${CMAKE_BINARY_DIR})
-install(TARGETS doctotext_ocr
-        DESTINATION ${CMAKE_BINARY_DIR}/plugins)
-install(TARGETS doctotext_mail
-        DESTINATION ${CMAKE_BINARY_DIR}/plugins)
-install(TARGETS doctotext_parsers
-        DESTINATION ${CMAKE_BINARY_DIR}/plugins)
-install(TARGETS doctotext_core
-        DESTINATION ${CMAKE_BINARY_DIR})
+install(TARGETS c_text_extractor DESTINATION bin)
+install(TARGETS text_extractor DESTINATION bin)
+if (MSVC)
+	set(plugins_dir bin/doctotext_plugins)
+else()
+	set(plugins_dir lib/doctotext_plugins)
+endif()
+install(TARGETS doctotext_ocr DESTINATION $plugins_dir)
+install(TARGETS doctotext_mail DESTINATION $plugins_dir)
+install(TARGETS doctotext_parsers DESTINATION $plugins_dir)
+install(TARGETS doctotext_core)
 
 if(MSVC)
-	INSTALL(FILES ${CMAKE_BINARY_DIR}/src/Debug/doctotext_ocr.pdb ${CMAKE_BINARY_DIR}/src/Debug/doctotext_parsers.pdb
-		DESTINATION  ${CMAKE_BINARY_DIR}/plugins
+	INSTALL(FILES ${CMAKE_BINARY_DIR}/src/Debug/doctotext_ocr.pdb ${CMAKE_BINARY_DIR}/src/Debug/doctotext_mail.pdb ${CMAKE_BINARY_DIR}/src/Debug/doctotext_parsers.pdb
+		DESTINATION $plugins_dir
 		CONFIGURATIONS Debug)
 endif()
 
-configure_file(${CMAKE_SOURCE_DIR}/src/doctotext_c_api.h ${CMAKE_BINARY_DIR}/doctotext_c_api.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/metadata.h ${CMAKE_BINARY_DIR}/metadata.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/formatting_style.h ${CMAKE_BINARY_DIR}/formatting_style.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/decompress_archives.h ${CMAKE_BINARY_DIR}/decompress_archives.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/doctotext_link.h ${CMAKE_BINARY_DIR}/doctotext_link.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/exception.h ${CMAKE_BINARY_DIR}/exception.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/attachment.h ${CMAKE_BINARY_DIR}/attachment.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/variant.h ${CMAKE_BINARY_DIR}/variant.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/parser.h ${CMAKE_BINARY_DIR}/parser.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/parser_manager.h ${CMAKE_BINARY_DIR}/parser_manager.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/parser_builder.h ${CMAKE_BINARY_DIR}/parser_builder.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/parser_parameters.h ${CMAKE_BINARY_DIR}/parser_parameters.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/basic_parser_provider.h ${CMAKE_BINARY_DIR}/basic_parser_provider.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/parser_provider.h ${CMAKE_BINARY_DIR}/parser_provider.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/standard_filter.h ${CMAKE_BINARY_DIR}/standard_filter.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/writer.h ${CMAKE_BINARY_DIR}/writer.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/plain_text_writer.h ${CMAKE_BINARY_DIR}/plain_text_writer.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/html_writer.h ${CMAKE_BINARY_DIR}/html_writer.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/csv_writer.h ${CMAKE_BINARY_DIR}/csv_writer.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/importer.h ${CMAKE_BINARY_DIR}/importer.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/exporter.h ${CMAKE_BINARY_DIR}/exporter.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/transformer_func.h ${CMAKE_BINARY_DIR}/transformer_func.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/parsing_chain.h ${CMAKE_BINARY_DIR}/parsing_chain.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/simple_extractor.h ${CMAKE_BINARY_DIR}/simple_extractor.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/defines.h ${CMAKE_BINARY_DIR}/defines.h COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/log.h ${CMAKE_BINARY_DIR}/log.h COPYONLY)
-
+set(PUBLIC_HEADERS
+	doctotext_c_api.h
+	metadata.h
+	formatting_style.h
+	decompress_archives.h
+	doctotext_link.h
+	exception.h
+	attachment.h
+	variant.h
+	parser.h
+	parser_manager.h
+	parser_builder.h
+	parser_parameters.h
+	basic_parser_provider.h
+	parser_provider.h
+	standard_filter.h
+	writer.h
+	plain_text_writer.h
+	html_writer.h
+	csv_writer.h
+	importer.h
+	exporter.h
+	transformer_func.h
+	parsing_chain.h
+	simple_extractor.h
+	defines.h
+	log.h
+)
+install(FILES ${PUBLIC_HEADERS} DESTINATION include/doctotext)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR APPLE)
     file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.sh "BASEDIR=$(dirname \"$0\")
-    LD_LIBRARY_PATH=$BASEDIR:$$LD_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
+    LD_LIBRARY_PATH=$BASEDIR/../lib:$$LD_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
     execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/text_extractor.sh)
+	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.sh DESTINATION bin)
 
    file(WRITE ${CMAKE_BINARY_DIR}/c_text_extractor.sh "BASEDIR=$(dirname \"$0\")
-   LD_LIBRARY_PATH=$BASEDIR:$$LD_LIBRARY_PATH ./$BASEDIR/c_text_extractor \"$@\"")
+   LD_LIBRARY_PATH=$BASEDIR/../lib:$$LD_LIBRARY_PATH ./$BASEDIR/c_text_extractor \"$@\"")
    execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/c_text_extractor.sh)
+	install(PROGRAMS ${CMAKE_BINARY_DIR}/c_text_extractor.sh DESTINATION bin)
 endif()

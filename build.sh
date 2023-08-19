@@ -73,21 +73,23 @@ rm -rf custom-triplets
 vcpkg_path="$PWD/vcpkg"
 vcpkg_toolchain="$vcpkg_path/scripts/buildsystems/vcpkg.cmake"
 vcpkg_prefix="$vcpkg_path/installed/$VCPKG_TRIPLET"
+install_dir="$PWD/doctotext"
 
 mkdir -p build
 cd build
 cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" ..
 cmake --build .
-cmake --build . --target doxygen install
+cmake --install . --prefix "$install_dir"
 cd ..
 
-cd build
-mkdir -p tessdata
-cd tessdata
+cd doctotext/share
+mkdir tessdata-fast
+cd tessdata-fast
 cp $vcpkg_prefix/share/tessdata-fast/eng.traineddata .
 cp $vcpkg_prefix/share/tessdata-fast/osd.traineddata .
 cp $vcpkg_prefix/share/tessdata-fast/pol.traineddata .
-cd ..
+cd ../..
+cd lib
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	cp $vcpkg_prefix/lib/libwv2.4.dylib .
 	cp $vcpkg_prefix/lib/libpodofo.0.9.8.dylib .
@@ -101,38 +103,36 @@ else
 	cp $vcpkg_prefix/lib/libbfio.so.1 .
 	cp $vcpkg_prefix/lib/libpff.so.1 .
 fi
-mkdir -p resources
-cd resources
-cp $vcpkg_prefix/share/cmap-resources/*/CMap/* .
-cp $vcpkg_prefix/share/mapping-resources-pdf/pdf2unicode/* .
 cd ..
 cd ..
+
+mkdir doctotext/share/cmap-resources
+for d in Adobe-Japan1-7 Adobe-Korea1-2 Adobe-CNS1-7 Adobe-GB1-6 deprecated/Adobe-Japan2-0 Adobe-KR-9 Adobe-Identity-0; do
+	mkdir -p doctotext/share/cmap-resources/$d
+	cp -r $vcpkg_prefix/share/cmap-resources/$d/CMap doctotext/share/cmap-resources/$d/
+done
+mkdir doctotext/share/mapping-resources-pdf
+cp -r $vcpkg_prefix/share/mapping-resources-pdf/pdf2unicode doctotext/share/mapping-resources-pdf/
 
 cd build/tests
 if [[ "$OSTYPE" == "darwin"* ]]; then
-	DYLD_FALLBACK_LIBRARY_PATH=.. ctest -j4 -V
+	DYLD_FALLBACK_LIBRARY_PATH="$install_dir/lib" ctest -j4 -V
 else
-	LD_LIBRARY_PATH=.. ctest -j4 -V
+	LD_LIBRARY_PATH="$install_dir/lib" ctest -j4 -V
 fi
 cd ../..
-
-build_type=$1
-if [ "$build_type" = "--release" ]; then
-	rm -rf build/CMakeFiles build/src build/tests/ build/examples/CMakeFiles build/doc/CMakeFiles
-	rm build/Makefile build/CMakeCache.txt build/cmake_install.cmake build/install_manifest.txt build/examples/cmake_install.cmake build/examples/Makefile build/doc/Makefile build/doc/cmake_install.cmake build/doc/Doxyfile.doxygen
-fi
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	LIB_EXTENSION=.dylib
 else
 	LIB_EXTENSION=.so
 fi
-cd build/
-for i in *.$LIB_EXTENSION*; do
+cd doctotext/lib
+for i in *$LIB_EXTENSION* doctotext_plugins/*$LIB_EXTENSION*; do
     [ -f "$i" ] || break
-    sha1sum $i >> SHA1checksums.sha1
+    sha1sum $i >> ../share/doctotext/SHA1checksums.sha1
 done
-cd ..
+cd ../..
 
 version=`cat build/VERSION`
 
@@ -143,5 +143,5 @@ elif [[ "$OSTYPE" == "msys"* ]]; then
 else
 	arch=x86_64_linux
 fi
-tar -cjvf doctotext-$version-$arch.tar.bz2 build
+tar -cjvf doctotext-$version-$arch.tar.bz2 doctotext
 sha1sum doctotext-$version-$arch.tar.bz2 > doctotext-$version-$arch.tar.bz2.sha1

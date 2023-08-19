@@ -90,7 +90,7 @@ TEST_P(DocumentTests, SimpleExtractorTest)
         SCOPED_TRACE("file_name = " + file_name);
 
         // WHEN
-        doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
+        doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
 
         simple_extractor.addParameters(parameters);
 
@@ -121,7 +121,7 @@ TEST_P(DocumentTests, ReadFromBufferTest)
         std::ifstream ifs_input{ file_name, std::ios_base::binary };
 
         // WHEN
-        auto parser_manager = std::make_shared<doctotext::ParserManager>("../plugins"); // create parser manager
+        auto parser_manager = std::make_shared<doctotext::ParserManager>(); // create parser manager
         std::stringstream output_stream{};
 
         doctotext::Input(&ifs_input) |
@@ -197,7 +197,7 @@ TEST_P(MetadataTest, SimpleExtractorTest)
         SCOPED_TRACE("file_name = " + file_name);
 
         // WHEN
-        doctotext::SimpleExtractor extractor{ file_name, "../plugins" };
+        doctotext::SimpleExtractor extractor{ file_name };
         std::string parsed_text{ extractor.getMetaData() };
 
         // THEN
@@ -247,7 +247,7 @@ TEST_P(CallbackTest, SimpleExtractorTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
+    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
 
     simple_extractor.addCallbackFunction(callback);
     simple_extractor.addParameters(parameters);
@@ -285,7 +285,7 @@ TEST_P(HTMLWriterTest, SimpleExtractorTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
+    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
     std::string parsed_text{ simple_extractor.getHtmlText() };
         
     // THEN
@@ -328,8 +328,7 @@ TEST_P(MiscDocumentTest, SimpleExtractorTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
-    simple_extractor.addParameters({"TESSDATA_PREFIX", std::string("../tessdata")});
+    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
     std::string parsed_text{ simple_extractor.getPlainText() };
         
     // THEN
@@ -416,7 +415,7 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
+    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
         
     try 
     {
@@ -454,7 +453,7 @@ void* thread_func(void* data)
 {
 	std::string* file_name = (std::string*)data;
 
-	doctotext::SimpleExtractor extractor{ *file_name, "../plugins" };
+	doctotext::SimpleExtractor extractor{ *file_name };
     try {
       extractor.getPlainText();
       extractor.getMetaData();
@@ -568,7 +567,7 @@ TEST_P(MultiPageFilterTest, SimpleExtractorTests)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
+    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
     simple_extractor.addChainElement(new doctotext::TransformerFunc([MAX_PAGES, counter = 0](doctotext::Info &info) mutable
                                    {
                                      if (info.tag_name == doctotext::StandardTag::TAG_PAGE) {++counter;}
@@ -606,7 +605,7 @@ INSTANTIATE_TEST_SUITE_P(
 TEST(HtmlWriter, RestoreAttributes)
 {
   using namespace doctotext;
-	std::shared_ptr<doctotext::ParserManager> parser_manager(new doctotext::ParserManager{ "../plugins" });
+	std::shared_ptr<doctotext::ParserManager> parser_manager(new doctotext::ParserManager());
 	std::stringstream output;
 	std::ifstream in("../../tests/1.html");
 	Input(&in)
