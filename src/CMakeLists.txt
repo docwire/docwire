@@ -277,14 +277,14 @@ if (MSVC)
 else()
 	set(plugins_dir lib/doctotext_plugins)
 endif()
-install(TARGETS doctotext_ocr DESTINATION $plugins_dir)
-install(TARGETS doctotext_mail DESTINATION $plugins_dir)
-install(TARGETS doctotext_parsers DESTINATION $plugins_dir)
+install(TARGETS doctotext_ocr DESTINATION ${plugins_dir})
+install(TARGETS doctotext_mail DESTINATION ${plugins_dir})
+install(TARGETS doctotext_parsers DESTINATION ${plugins_dir})
 install(TARGETS doctotext_core)
 
 if(MSVC)
 	INSTALL(FILES ${CMAKE_BINARY_DIR}/src/Debug/doctotext_ocr.pdb ${CMAKE_BINARY_DIR}/src/Debug/doctotext_mail.pdb ${CMAKE_BINARY_DIR}/src/Debug/doctotext_parsers.pdb
-		DESTINATION $plugins_dir
+		DESTINATION ${plugins_dir}
 		CONFIGURATIONS Debug)
 endif()
 
