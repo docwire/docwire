@@ -45,15 +45,13 @@ extern "C" {
 
 class HTMLWriteTestC : public ::testing::TestWithParam<const char*>
 {
-protected:
-    static constexpr std::string_view test_directory{ "../../tests/" };
 };
 
 TEST_P(HTMLWriteTestC, CApiTest)
 {
     // GIVEN
     auto name = GetParam();
-    std::string file_name{ std::string{ test_directory.data() } + name };
+    std::string file_name{ name };
 
     std::ifstream ifs{ file_name + ".out.html" };
     ASSERT_TRUE(ifs.good()) <<  "File " << file_name << ".out.html" << " not found\n";
