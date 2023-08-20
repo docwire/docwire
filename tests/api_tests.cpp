@@ -184,7 +184,7 @@ TEST_P(MetadataTest, SimpleExtractorTest)
     for(auto name : names)
     {
         // GIVEN
-        std::string file_name{ name.data() + "." + format };
+        std::string file_name{ std::string{name.data()} + "." + format };
 
         std::ifstream ifs{ file_name + ".out" };
         ASSERT_TRUE(ifs.good()) <<  "File " << file_name << ".out" << " not found\n";
@@ -395,7 +395,7 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
 {
     // GIVEN
     auto format = GetParam();
-    std::string file_name{ "password_protected." + format };
+    std::string file_name{ std::string{"password_protected."} + format };
 
     std::ifstream ifs{ file_name + ".out" };
     ASSERT_TRUE(ifs.good()) <<  "File " << file_name << ".out" << " not found\n";
