@@ -133,4 +133,6 @@ DllExport bool is_encrypted_with_ms_offcrypto(const char* buffer, size_t buffer_
 
 DllExport tm *thread_safe_gmtime (const time_t *timer, struct tm &time_buffer);
 
+DllExport std::filesystem::path locate_resource(const std::filesystem::path& resource_rel_path);
+
 #endif

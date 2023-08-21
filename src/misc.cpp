@@ -33,7 +33,9 @@
 
 #include "misc.h"
 
+#include <boost/algorithm/string.hpp>
 #include "doctotext_link.h"
+#include "exception.h"
 #include <iostream>
 #include "log.h"
 #include <stdio.h>
@@ -514,3 +516,53 @@ std::filesystem::path get_self_path()
   return path.remove_filename();
 }
 #endif
+
+namespace
+{
+
+std::string get_env_var(const std::string& env_var_name)
+{
+	char* value = std::getenv(env_var_name.c_str());
+	if (value)
+	{
+		doctotext_log(debug) << "Value of " << env_var_name << " environment variable is " << value;
+		return std::string(value);
+	}
+	else
+	{
+		doctotext_log(debug) << "Environment variable " << env_var_name << " does not exist";
+		return std::string();
+	}
+}
+
+} // anonymous namespace
+
+std::filesystem::path locate_resource(const std::filesystem::path& resource_rel_path)
+{
+	std::vector<std::string> lib_paths;
+#if defined(_WIN32)
+	std::string path = get_env_var("PATH");
+	boost::split(lib_paths, path, boost::is_any_of(";"));
+#elif defined(__APPLE__)
+	std::string dyld_fallback_library_path = get_env_var("DYLD_FALLBACK_LIBRARY_PATH");
+	boost::split(lib_paths, dyld_fallback_library_path, boost::is_any_of(":"));
+#else
+	std::string ld_library_path = get_env_var("LD_LIBRARY_PATH");
+	boost::split(lib_paths, ld_library_path, boost::is_any_of(":"));
+#endif
+#if !defined(_WIN32)
+	lib_paths.push_back("/usr/lib");
+	lib_paths.push_back("/lib");
+#endif
+	for (auto lib_path: lib_paths)
+	{
+		std::filesystem::path resource_path(std::filesystem::path(lib_path) / ".." / "share" / resource_rel_path);
+		doctotext_log(debug) << "Checking resource path " << resource_path;
+		if (std::filesystem::exists(resource_path))
+		{
+			doctotext_log(debug) << "Resource found";
+			return resource_path;
+		}
+	}
+	throw Exception("Resource not found");
+}
