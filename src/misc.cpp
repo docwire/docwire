@@ -535,10 +535,35 @@ std::string get_env_var(const std::string& env_var_name)
 	}
 }
 
+std::filesystem::path try_lib_path(const std::string& lib_path, const std::filesystem::path& resource_rel_path)
+{
+	std::filesystem::path path(lib_path);
+	doctotext_log(debug) << "Checking library path " << path;
+	std::filesystem::path resource_path(path / ".." / "share" / resource_rel_path);
+	doctotext_log(debug) << "Checking resource path " << resource_path;
+	if (std::filesystem::exists(resource_path))
+	{
+		resource_path = std::filesystem::weakly_canonical(resource_path);
+		doctotext_log(debug) << "Resource located with canonical path " << resource_path;
+		return resource_path;
+	}
+	else if (path.parent_path() != path && !path.parent_path().empty())
+	{
+		doctotext_log(debug) << "Trying parent directory";
+		return try_lib_path(path.parent_path(), resource_rel_path);
+	}
+	else
+	{
+		doctotext_log(debug) << "Cannot locate resource in directory " << path << " and parent paths";
+		return std::filesystem::path();
+	}
+};
+
 } // anonymous namespace
 
 std::filesystem::path locate_resource(const std::filesystem::path& resource_rel_path)
 {
+	doctotext_log(debug) << "Locating resource " << resource_rel_path;
 	std::vector<std::string> lib_paths;
 #if defined(_WIN32)
 	std::string path = get_env_var("PATH");
@@ -552,17 +577,12 @@ std::filesystem::path locate_resource(const std::filesystem::path& resource_rel_
 #endif
 #if !defined(_WIN32)
 	lib_paths.push_back("/usr/lib");
-	lib_paths.push_back("/lib");
 #endif
 	for (auto lib_path: lib_paths)
 	{
-		std::filesystem::path resource_path(std::filesystem::path(lib_path) / ".." / "share" / resource_rel_path);
-		doctotext_log(debug) << "Checking resource path " << resource_path;
-		if (std::filesystem::exists(resource_path))
-		{
-			doctotext_log(debug) << "Resource found";
+		std::filesystem::path resource_path = try_lib_path(lib_path, resource_rel_path);
+		if (!resource_path.empty())
 			return resource_path;
-		}
 	}
 	throw Exception("Resource not found");
 }
