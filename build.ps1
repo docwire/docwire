@@ -19,7 +19,9 @@ cd ..
 $VCPKG_TRIPLET="x64-windows"
 
 $exclude = @("vcpkg", "doctotext*", ".git", "sources-temp.tar")
-Write-Host "PWD=$PWD"
+Write-Host "before PWD"
+Write-Host "PWD: $PWD"
+Write-Host "after PWD"
 $files = Get-ChildItem -Path $PWD -Exclude $exclude
 Write-Host "files="
 $files | Write-Output
