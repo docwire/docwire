@@ -1,7 +1,3 @@
-Param (
-    [string]$BuildType = 'Release'
-)
-
 choco install archiver -y
 choco install doxygen.install -y
 choco install graphviz -y
@@ -22,138 +18,14 @@ cd ..
 
 $VCPKG_TRIPLET="x64-windows"
 
-vcpkg\vcpkg install libiconv:$VCPKG_TRIPLET
-vcpkg\vcpkg install zlib:$VCPKG_TRIPLET
-vcpkg\vcpkg install freetype:$VCPKG_TRIPLET
-vcpkg\vcpkg install libxml2:$VCPKG_TRIPLET
-vcpkg\vcpkg install leptonica:$VCPKG_TRIPLET
-vcpkg\vcpkg install tesseract:$VCPKG_TRIPLET
-vcpkg\vcpkg install boost-filesystem:$VCPKG_TRIPLET
-vcpkg\vcpkg install boost-system:$VCPKG_TRIPLET
-vcpkg\vcpkg install boost-signals2:$VCPKG_TRIPLET
-vcpkg\vcpkg install boost-config:$VCPKG_TRIPLET
-vcpkg\vcpkg install boost-dll:$VCPKG_TRIPLET
-vcpkg\vcpkg install boost-assert:$VCPKG_TRIPLET
-vcpkg\vcpkg install boost-smart-ptr:$VCPKG_TRIPLET
-vcpkg\vcpkg install podofo:$VCPKG_TRIPLET
-vcpkg\vcpkg install pthreads:$VCPKG_TRIPLET
-vcpkg\vcpkg install mailio:$VCPKG_TRIPLET
-vcpkg\vcpkg install gtest:$VCPKG_TRIPLET
-vcpkg\vcpkg --overlay-ports=ports install libcharsetdetect:$VCPKG_TRIPLET
-vcpkg\vcpkg --overlay-ports=ports install unzip:$VCPKG_TRIPLET
-vcpkg\vcpkg --overlay-ports=ports install tessdata-fast:$VCPKG_TRIPLET
-vcpkg\vcpkg --overlay-ports=ports install cmap-resources:$VCPKG_TRIPLET
-vcpkg\vcpkg --overlay-ports=ports install mapping-resources-pdf:$VCPKG_TRIPLET
-vcpkg\vcpkg --overlay-ports=ports install htmlcxx:$VCPKG_TRIPLET
-vcpkg\vcpkg --overlay-ports=ports install wv2:$VCPKG_TRIPLET || type vcpkg\buildtrees\wv2\install-x64-windows-dbg-out.log
-vcpkg\vcpkg --overlay-ports=ports install libbfio:$VCPKG_TRIPLET || type vcpkg\buildtrees\libbfio\build-x64-windows-rel-out.log
-vcpkg\vcpkg install libpff:$VCPKG_TRIPLET
-
-$vcpkg_path="$PWD\vcpkg"
-$vcpkg_toolchain="$vcpkg_path\scripts\buildsystems\vcpkg.cmake"
-$vcpkg_prefix="$vcpkg_path\installed\$VCPKG_TRIPLET"
-$install_dir="$PWD\doctotext"
-
-dir -s "$vcpkg_prefix"
-
-mkdir build
-cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$vcpkg_toolchain" -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>DLL'
-cmake --build . -j6 --config $BuildType
-cmake --install . --config $BuildType --prefix "$install_dir"
-cd ..
-
-cd doctotext\share
-mkdir tessdata-fast
-cd tessdata-fast
-Copy-Item -Path "$vcpkg_prefix\share\tessdata-fast\eng.traineddata" -Destination .
-Copy-Item -Path "$vcpkg_prefix\share\tessdata-fast\osd.traineddata" -Destination .
-Copy-Item -Path "$vcpkg_prefix\share\tessdata-fast\pol.traineddata" -Destination .
-cd ..\..\..
-
-mkdir doctotext\share\cmap-resources
-foreach ($d in Adobe-Japan1-7 Adobe-Korea1-2 Adobe-CNS1-7 Adobe-GB1-6 deprecated/Adobe-Japan2-0 Adobe-KR-9 Adobe-Identity-0)
-{
-	mkdir doctotext\share\cmap-resources\$d
-	Copy-Item -Path "$vcpkg_prefix\share\cmap-resources\$d\CMap" -Destination doctotext\share\cmap-resources\$d\ -Recurse
-}
-mkdir doctotext\share\mapping-resources-pdf
-Copy-Item -Path "$vcpkg_prefix\share\mapping-resources-pdf\pdf2unicode" -Destination doctotext\share\mapping-resources-pdf\ -Recurse
-
-if ($BuildType -eq "Debug")
-{
-	$vcpkg_bin_dir="$vcpkg_prefix/debug/bin"
-	$debug_suffix="d"
-	$debug_suffix2="-d"
-	$boost_arch="vc142-mt-gd-x64"
-}
-else
-{
-	$vcpkg_bin_dir="$vcpkg_prefix/bin"
-	$debug_suffix=""
-	$debug_suffix2=""
-	$boost_arch="vc142-mt-x64"
-}
-$LIB_PATHS=(
-    "C:\Windows\System32\VCRUNTIME140_1${debug_suffix}.dll",
-    "$vcpkg_bin_dir/htmlcxx.dll",
-    "$vcpkg_bin_dir/wv2.dll",
-    "$vcpkg_bin_dir/boost_filesystem-${boost_arch}-1_81.dll",
-    "$vcpkg_bin_dir/brotlicommon.dll",
-    "$vcpkg_bin_dir/brotlidec.dll",
-    "$vcpkg_bin_dir/bz2${debug_suffix}.dll",
-    "$vcpkg_bin_dir/freetype${debug_suffix}.dll",
-    "$vcpkg_bin_dir/gif.dll",
-    "$vcpkg_bin_dir/iconv-2.dll",
-    "$vcpkg_bin_dir/jpeg62.dll",
-    "$vcpkg_bin_dir/leptonica-1.82.0${debug_suffix}.dll",
-    "$vcpkg_bin_dir/tesseract52${debug_suffix}.dll",
-    "$vcpkg_bin_dir/archive.dll",
-    "$vcpkg_bin_dir/zstd.dll",
-    "$vcpkg_bin_dir/libcurl${debug_suffix2}.dll",
-    "$vcpkg_bin_dir/libcrypto-3-x64.dll",
-    "$vcpkg_bin_dir/liblzma.dll",
-    "$vcpkg_bin_dir/libbfio.dll",
-    "$vcpkg_bin_dir/libpff.dll",
-    "$vcpkg_bin_dir/libpng16${debug_suffix}.dll",
-    "$vcpkg_bin_dir/libxml2.dll",
-    "$vcpkg_bin_dir/openjp2.dll",
-    "$vcpkg_bin_dir/podofo.dll",
-    "$vcpkg_bin_dir/tiff${debug_suffix}.dll",
-    "$vcpkg_bin_dir/webp.dll",
-    "$vcpkg_bin_dir/webpmux.dll",
-    "$vcpkg_bin_dir/zlib${debug_suffix}1.dll",
-    "$vcpkg_bin_dir/charsetdetect.dll",
-    "$vcpkg_bin_dir/mailio.dll");
-if ($BuildType -eq "Debug")
-{
-	$LIB_PATHS += "C:\Windows\System32\MSVCP140D.dll"
-	$LIB_PATHS += "C:\Windows\System32\VCRUNTIME140D.dll"
-	$LIB_PATHS += "C:\Windows\System32\ucrtbased.dll"
-	$LIB_PATHS += "$vcpkg_bin_dir/pthreadVC3d.dll"
-}
-
-foreach ($PATH in $LIB_PATHS){echo $PATH; Copy-Item -Path $PATH -Destination doctotext\bin\};
-
-cd build
-$Env:PATH += ";$install_dir\bin"
-ctest -VV --debug --output-on-failure --stop-on-failure --timeout 30 --repeat until-pass:3
-cd ..
-
-Get-ChildItem -Path doctotext\bin\ -Recurse -Filter *.dll | Select-Object -Property Name,@{name="Hash";expression={(Get-FileHash $_.FullName).hash}} > doctotext\share\doctotext\SHA1checksums.sha1
+$exclude = @("vcpkg", "doctotext*", ".git", "sources-temp.tar")
+$files = Get-ChildItem -Path $PWD -Exclude $exclude
+Compress-Archive -Path $files -DestinationPath sources-temp.zip -CompressionLevel NoCompression
+$Env:SOURCES_PATH = "$PWD\sources-temp.zip"
+vcpkg\vcpkg --overlay-ports=ports install doctotext:$VCPKG_TRIPLET
 
 $version = Get-Content build/VERSION
+vcpkg\vcpkg --overlay-ports=ports export doctotext:$VCPKG_TRIPLET --raw --output=doctotext-$version --output-dir=.
 
-if ($BuildType -eq "Debug")
-{
-	$arch="msvc-debug"
-}
-else
-{
-	$arch="msvc"
-}
-
-Compress-Archive -LiteralPath doctotext -DestinationPath doctotext-$version-$arch.zip
-Get-FileHash -Algorithm SHA1 doctotext-$version-$arch.zip > doctotext-$version-$arch.zip.sha1
-
-Remove-Item -Path doctotext -Recurse
+Compress-Archive -LiteralPath doctotext-$version -DestinationPath doctotext-$version-$VCPKG_TRIPLET.zip
+Get-FileHash -Algorithm SHA1 doctotext-$version-$VCPKG_TRIPLET.zip > doctotext-$version-$VCPKG_TRIPLET.zip.sha1

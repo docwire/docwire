@@ -1,0 +1,64 @@
+{
+	"name": "doctotext",
+	"version-date": "2023-08-27",
+	"description": "Data processing library/SDK. Parses DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT), PST, OST and more. Contains embedded OCR engine and CLI utiity.",
+	"dependencies": [
+		{
+			"name": "vcpkg-cmake",
+			"host": true
+		},
+		{
+			"name": "libcharsetdetect"
+		},
+		{
+			"name": "wv2"
+		},
+		{
+			"name": "boost-filesystem"
+		},
+		{
+			"name": "boost-dll"
+		},
+		{
+			"name": "boost-signals2"
+		},
+		{
+			"name": "podofo"
+		},
+		{
+			"name": "unzip"
+		},
+		{
+			"name": "htmlcxx"
+		},
+		{
+			"name": "tesseract"
+		},
+		{
+			"name": "libbfio"
+		},
+		{
+			"name": "libpff-unix",
+			"platform": "!windows"
+		},
+		{
+			"name": "libpff",
+			"platform": "windows"
+		},
+		{
+			"name": "mailio"
+		},
+		{
+			"name": "gtest"
+		},
+		{
+			"name": "tessdata-fast"
+		},
+		{
+			"name": "cmap-resources"
+		},
+		{
+			"name": "mapping-resources-pdf"
+		}
+	]
+}
