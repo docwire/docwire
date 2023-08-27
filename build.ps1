@@ -19,8 +19,11 @@ cd ..
 $VCPKG_TRIPLET="x64-windows"
 
 $exclude = @("vcpkg", "doctotext*", ".git", "sources-temp.tar")
+Write-Host "PWD=$PWD"
 $files = Get-ChildItem -Path $PWD -Exclude $exclude
+Write-Host "files="
 $files | Write-Output
+Write-Host "compressing"
 Compress-Archive -Path $files -DestinationPath sources-temp.zip -CompressionLevel NoCompression
 $Env:SOURCES_PATH = "$PWD\sources-temp.zip"
 vcpkg\vcpkg --overlay-ports=ports install doctotext:$VCPKG_TRIPLET
