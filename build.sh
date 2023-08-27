@@ -1,7 +1,6 @@
 set -e
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-	brew update
 	brew install md5sha1sum automake autogen doxygen
 elif [[ "$OSTYPE" == "linux"* ]]; then
 	if [[ "$GITHUB_ACTIONS" == "true" ]]; then
