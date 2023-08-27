@@ -22,7 +22,7 @@ $exclude = @("vcpkg", "doctotext*", ".git", "sources-temp.tar")
 Write-Host "before PWD"
 Write-Host "PWD: $PWD"
 Write-Host "after PWD"
-$files = Get-ChildItem -Path $PWD -Exclude $exclude
+$files = Get-ChildItem -Exclude $exclude
 Write-Host "files="
 $files | Write-Output
 Write-Host "compressing"
