@@ -25,6 +25,9 @@ Write-Host "after PWD"
 $files = Get-ChildItem -Exclude $exclude
 Write-Host "files="
 $files | Write-Output
+$files_no_exclude = Get-ChildItem
+Write-Host "files_no_exclude="
+$files_no_exclude | Write-Output
 Write-Host "compressing"
 Compress-Archive -Path $files -DestinationPath sources-temp.zip -CompressionLevel NoCompression
 $Env:SOURCES_PATH = "$PWD\sources-temp.zip"
