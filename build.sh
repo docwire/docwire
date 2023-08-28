@@ -26,7 +26,7 @@ fi
 
 tar --version
 tar cvf sources-temp.tar --exclude="vcpkg" --exclude='doctotext*.bz2*' --exclude=".git" --exclude="sources-temp.tar" .
-SOURCES_ARCHIVE=$PWD/sources-temp.tar ./vcpkg/vcpkg --overlay-ports=./ports install doctotext:$VCPKG_TRIPLET || cat vcpkg/buildtrees/doctotext/config-x64-osx-dynamic-out.log
+SOURCES_ARCHIVE=$PWD/sources-temp.tar ./vcpkg/vcpkg --overlay-ports=./ports install doctotext:$VCPKG_TRIPLET || cat vcpkg/buildtrees/doctotext/test-doctotext-x64-osx-dynamic-dbg-out.log
 
 version=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/doctotext/VERSION`
 ./vcpkg/vcpkg --overlay-ports=./ports export doctotext:$VCPKG_TRIPLET --raw --output=doctotext-$version --output-dir=.
