@@ -32,7 +32,7 @@ Write-Host "compressing"
 Compress-Archive -Path $files -DestinationPath sources-temp.zip -CompressionLevel NoCompression
 $Env:SOURCES_PATH = "$PWD\sources-temp.zip"
 vcpkg\vcpkg --overlay-ports=ports install doctotext:$VCPKG_TRIPLET
-cat vcpkg\buildtrees\htmlcxx\config-x64-windows-out.log
+cat vcpkg\buildtrees\doctotext\config-x64-windows-out.log
 
 $version = Get-Content build/VERSION
 vcpkg\vcpkg --overlay-ports=ports export doctotext:$VCPKG_TRIPLET --raw --output=doctotext-$version --output-dir=.
