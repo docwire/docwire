@@ -46,7 +46,7 @@
 			"platform": "windows"
 		},
 		{
-			"name" "pthread",
+			"name": "pthread",
 			"platform": "windows"
 		},
 		{
