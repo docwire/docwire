@@ -550,7 +550,7 @@ std::filesystem::path try_lib_path(const std::string& lib_path, const std::files
 	else if (path.parent_path() != path && !path.parent_path().empty())
 	{
 		doctotext_log(debug) << "Trying parent directory";
-		return try_lib_path(path.parent_path().string(), resource_rel_path);
+		return try_lib_path(path.parent_path().c_str(), resource_rel_path);
 	}
 	else
 	{
