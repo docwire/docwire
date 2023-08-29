@@ -58,7 +58,7 @@ public:
   {
     m_plugins_directory = plugins_directory.empty() ?
       (boost::dll::this_line_location().parent_path() / "doctotext_plugins").string() : plugins_directory;
-    doctotext_log(info) << "Plugins directory: " << m_plugins_directory;
+    doctotext_log(debug) << "Plugins directory: " << m_plugins_directory;
     pthread_mutex_lock(&load_providers_mutex);
     loadProviders();
     pthread_mutex_unlock(&load_providers_mutex);
