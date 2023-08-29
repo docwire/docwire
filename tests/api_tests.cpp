@@ -73,6 +73,7 @@ protected:
 
 TEST_P(DocumentTests, SimpleExtractorTest)
 {
+    doctotext::set_log_verbosity(doctotext::debug);
     const auto [lower, upper, format, style] = GetParam();
 
     for(int i = lower; i <= upper; ++i)
