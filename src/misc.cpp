@@ -535,9 +535,8 @@ std::string get_env_var(const std::string& env_var_name)
 	}
 }
 
-std::filesystem::path try_lib_path(const std::string& lib_path, const std::filesystem::path& resource_rel_path)
+std::filesystem::path try_lib_path(const std::filesystem::path& path, const std::filesystem::path& resource_rel_path)
 {
-	std::filesystem::path path(lib_path);
 	doctotext_log(debug) << "Checking library path " << path;
 	std::filesystem::path resource_path(path / ".." / "share" / resource_rel_path);
 	doctotext_log(debug) << "Checking resource path " << resource_path;
@@ -550,7 +549,7 @@ std::filesystem::path try_lib_path(const std::string& lib_path, const std::files
 	else if (path.parent_path() != path && !path.parent_path().empty())
 	{
 		doctotext_log(debug) << "Trying parent directory";
-		return try_lib_path(path.parent_path().c_str(), resource_rel_path);
+		return try_lib_path(path.parent_path(), resource_rel_path);
 	}
 	else
 	{
