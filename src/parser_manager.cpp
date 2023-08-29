@@ -84,14 +84,21 @@ public:
 
   void loadProviders()
   {
+    doctotext_log(debug) << "Loading plugins";
     providers.clear();
     const std::filesystem::path root{m_plugins_directory};
     try
     {
       if (std::filesystem::is_directory(root))
+      {
         for (auto &dir_entry : std::filesystem::directory_iterator{root})
           if (dir_entry.is_regular_file() && correct_extensions.find(dir_entry.path().extension().u8string()) != correct_extensions.end())
             loadProvider(dir_entry.path());
+          else
+            doctotext_log(error) << "Skipping " << dir_entry.path() << " - not a regular file or incorrect extension";
+      }
+      else
+        doctotext_log(error) << "Plugins directory path does not point to a directory";
     }
     catch (const std::filesystem::filesystem_error& e)
     {
