@@ -212,7 +212,7 @@ std::string OCRParser::plainText(const doctotext::FormattingStyle& formatting, c
     }
     else
     {
-      impl->m_tessdata_prefix = locate_resource("tessdata-fast");
+      impl->m_tessdata_prefix = locate_resource("tessdata-fast").string();
     }
 
     if (api->Init(impl->m_tessdata_prefix.c_str(), doctotext::languageToName(lang).c_str())) {
