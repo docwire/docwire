@@ -1,7 +1,7 @@
 name: Build
 on: [pull_request, workflow_dispatch]
 jobs:
-  build_x86_64_linux:
+  x64-linux-dynamic:
     runs-on: ubuntu-22.04
     timeout-minutes: 150
     permissions:
@@ -16,12 +16,12 @@ jobs:
           ghcr_password: ${{ github.token }}
       - uses: actions/upload-artifact@v2
         with:
-          name: x86_64_linux_build
+          name: x64-linux-dynamic
           path: |
             ./*.bz2
             ./*.sha1
           if-no-files-found: error
-  build_msvc:
+  x64-windows:
     runs-on: windows-2019
     timeout-minutes: 150
     steps:
@@ -35,12 +35,12 @@ jobs:
           ghcr_password: ${{ github.token }}
       - uses: actions/upload-artifact@v2
         with:
-          name: msvc_build
+          name: x64-windows
           path: |
             ./*.zip
             ./*.sha1
           if-no-files-found: error
-  build_osx:
+  x64-osx-dynamic:
     runs-on: macos-12
     timeout-minutes: 60
     steps:
@@ -51,7 +51,7 @@ jobs:
           ./build.sh
       - uses: actions/upload-artifact@v2
         with:
-          name: osx_build
+          name: x64-osx-dynamic
           path: |
             ./*.bz2
             ./*.sha1
