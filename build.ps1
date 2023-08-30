@@ -30,7 +30,7 @@ Write-Host "files_no_exclude="
 $files_no_exclude | Write-Output
 Write-Host "compressing"
 Compress-Archive -Path $files -DestinationPath sources-temp.zip -CompressionLevel NoCompression
-$Env:SOURCES_PATH = "$PWD\sources-temp.zip"
+$Env:SOURCES_ARCHIVE = "$PWD\sources-temp.zip"
 vcpkg\vcpkg --overlay-ports=ports install doctotext:$VCPKG_TRIPLET
 cat vcpkg\buildtrees\doctotext\install-x64-windows-dbg-out.log
 
