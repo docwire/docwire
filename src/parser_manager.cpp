@@ -57,7 +57,7 @@ public:
   explicit Implementation(const std::string &plugins_directory)
   {
     m_plugins_directory = plugins_directory.empty() ?
-      (boost::dll::this_line_location().parent_path() / "doctotext_plugins").string() : plugins_directory;
+      locate_subpath("doctotext_plugins").string() : plugins_directory;
     doctotext_log(debug) << "Plugins directory: " << m_plugins_directory;
     pthread_mutex_lock(&load_providers_mutex);
     loadProviders();
