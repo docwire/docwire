@@ -283,9 +283,10 @@ install(TARGETS doctotext_parsers DESTINATION ${plugins_dir})
 install(TARGETS doctotext_core)
 
 if(MSVC)
-	INSTALL(FILES ${CMAKE_BINARY_DIR}/src/Debug/doctotext_ocr.pdb ${CMAKE_BINARY_DIR}/src/Debug/doctotext_mail.pdb ${CMAKE_BINARY_DIR}/src/Debug/doctotext_parsers.pdb
-		DESTINATION ${plugins_dir}
-		CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:doctotext_ocr> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:doctotext_mail> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:doctotext_parsers> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:doctotext_core> DESTINATION bin CONFIGURATIONS Debug)
 endif()
 
 set(PUBLIC_HEADERS
