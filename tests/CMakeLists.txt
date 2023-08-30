@@ -28,13 +28,13 @@ endif()
 include(GoogleTest)
 
 gtest_discover_tests(api_tests
-        DISCOVERY_MODE ${dis_mode}
+        DISCOVERY_MODE PRE_TEST
         DISCOVERY_TIMEOUT 30
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 gtest_discover_tests(c_api_tests
-        DISCOVERY_MODE ${dis_mode}
+        DISCOVERY_MODE PRE_TEST
         DISCOVERY_TIMEOUT 30
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
