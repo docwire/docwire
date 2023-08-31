@@ -29,11 +29,9 @@ jobs:
         with:
           fetch-depth: 0
       - uses: actions/cache@v3
-        env:
-          cache-name: cache-vcpkg-binary
         with:
           path: C:\Users\runneradmin\AppData\Local\vcpkg\archives
-          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          key: vcpkg-binary-cache-x64-windows
       - run:
           ./build.ps1
         env:
