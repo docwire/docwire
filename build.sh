@@ -24,7 +24,7 @@ else
 	VCPKG_TRIPLET=x64-linux-dynamic
 fi
 
-tar --version
+date > ./ports/doctotext/.disable_binary_cache
 tar cvf sources-temp.tar --exclude="vcpkg" --exclude='doctotext*.bz2*' --exclude=".git" --exclude="sources-temp.tar" .
 SOURCES_ARCHIVE=$PWD/sources-temp.tar VCPKG_KEEP_ENV_VARS=SOURCES_ARCHIVE ./vcpkg/vcpkg --overlay-ports=./ports install doctotext:$VCPKG_TRIPLET || cat vcpkg/buildtrees/doctotext/test-doctotext-x64-osx-dynamic-dbg-out.log || cat vcpkg/buildtrees/doctotext/install-x64-osx-dynamic-dbg-out.log
 
