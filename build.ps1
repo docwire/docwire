@@ -33,8 +33,7 @@ Compress-Archive -Path $files -DestinationPath sources-temp.zip -CompressionLeve
 $Env:SOURCES_ARCHIVE = "$PWD\sources-temp.zip"
 $Env:VCPKG_KEEP_ENV_VARS = "SOURCES_ARCHIVE"
 vcpkg\vcpkg --overlay-ports=ports install doctotext:$VCPKG_TRIPLET
-cat vcpkg\buildtrees\doctotext\install-x64-windows-dbg-out.log
-cat vcpkg\buildtrees\doctotext\install-x64-windows-dbg-err.log
+cat vcpkg\buildtrees\doctotext\test-doctotext-x64-windows-dbg-out.log
 
 $version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\doctotext\VERSION
 vcpkg\vcpkg --overlay-ports=ports export doctotext:$VCPKG_TRIPLET --raw --output=doctotext-$version --output-dir=.
