@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - uses: actions/cache@v3
+      - uses: actions/cache/restore@v3
         with:
           path: ~\AppData\Local\vcpkg\archives
           key: vcpkg-binary-cache-x64-windows
@@ -37,6 +37,11 @@ jobs:
         env:
           ghcr_login: ${{ github.actor }}
           ghcr_password: ${{ github.token }}
+      - uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: ~\AppData\Local\vcpkg\archives
+          key: vcpkg-binary-cache-x64-windows
       - uses: actions/upload-artifact@v2
         with:
           name: x64-windows
