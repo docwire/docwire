@@ -36,7 +36,7 @@ vcpkg\vcpkg --overlay-ports=ports install doctotext:$VCPKG_TRIPLET
 cat vcpkg\buildtrees\doctotext\install-x64-windows-dbg-out.log
 cat vcpkg\buildtrees\doctotext\install-x64-windows-dbg-err.log
 
-$version = Get-Content build/VERSION
+$version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\doctotext\VERSION
 vcpkg\vcpkg --overlay-ports=ports export doctotext:$VCPKG_TRIPLET --raw --output=doctotext-$version --output-dir=.
 
 Compress-Archive -LiteralPath doctotext-$version -DestinationPath doctotext-$version-$VCPKG_TRIPLET.zip
