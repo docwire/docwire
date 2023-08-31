@@ -18,6 +18,7 @@ cd ..
 
 $VCPKG_TRIPLET="x64-windows"
 
+Get-Date | Out-File -FilePath ports\doctotext\disable_binary_cache.tmp
 $exclude = @("vcpkg", "doctotext*.zip*", ".git", "sources-temp.tar")
 Write-Host "before PWD"
 Write-Host "PWD: $PWD"

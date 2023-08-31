@@ -10,10 +10,21 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - uses: actions/cache/restore@v3
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-binary-cache-x64-linux-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+          restore-keys: |
+            vcpkg-binary-cache-x64-linux-dynamic
       - run: ./build.sh
         env:
           ghcr_login: ${{ github.actor }}
           ghcr_password: ${{ github.token }}
+      - uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-binary-cache-x64-linux-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
       - uses: actions/upload-artifact@v2
         with:
           name: x64-linux-dynamic
@@ -28,11 +39,22 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - uses: actions/cache/restore@v3
+        with:
+          path: ~\AppData\Local\vcpkg\archives
+          key: vcpkg-binary-cache-x64-windows-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+          restore-keys: |
+            vcpkg-binary-cache-x64-windows
       - run:
           ./build.ps1
         env:
           ghcr_login: ${{ github.actor }}
           ghcr_password: ${{ github.token }}
+      - uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: ~\AppData\Local\vcpkg\archives
+          key: vcpkg-binary-cache-x64-windows-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
       - uses: actions/upload-artifact@v2
         with:
           name: x64-windows
@@ -47,8 +69,19 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - uses: actions/cache/restore@v3
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-binary-cache-x64-osx-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+          restore-keys: |
+            vcpkg-binary-cache-x64-osx-dynamic
       - run:
           ./build.sh
+      - uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-binary-cache-x64-osx-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
       - uses: actions/upload-artifact@v2
         with:
           name: x64-osx-dynamic
