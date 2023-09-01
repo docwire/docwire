@@ -20,16 +20,7 @@ $VCPKG_TRIPLET="x64-windows"
 
 Get-Date | Out-File -FilePath ports\doctotext\disable_binary_cache.tmp
 $exclude = @("vcpkg", "doctotext*.zip*", ".git", "sources-temp.tar")
-Write-Host "before PWD"
-Write-Host "PWD: $PWD"
-Write-Host "after PWD"
 $files = Get-ChildItem -Exclude $exclude
-Write-Host "files="
-$files | Write-Output
-$files_no_exclude = Get-ChildItem
-Write-Host "files_no_exclude="
-$files_no_exclude | Write-Output
-Write-Host "compressing"
 Compress-Archive -Path $files -DestinationPath sources-temp.zip -CompressionLevel NoCompression
 $Env:SOURCES_ARCHIVE = "$PWD\sources-temp.zip"
 $Env:VCPKG_KEEP_ENV_VARS = "SOURCES_ARCHIVE"
