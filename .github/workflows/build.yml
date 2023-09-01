@@ -25,14 +25,14 @@ jobs:
         with:
           path: ~/.cache/vcpkg/archives
           key: vcpkg-binary-cache-x64-linux-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: x64-linux-dynamic-binaries
           path: |
             ./*.bz2
             ./*.sha1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: x64-linux-dynamic-logs
@@ -61,14 +61,14 @@ jobs:
         with:
           path: ~\AppData\Local\vcpkg\archives
           key: vcpkg-binary-cache-x64-windows-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: x64-windows-binaries
           path: |
             ./*.zip
             ./*.sha1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: x64-windows-logs
@@ -94,14 +94,14 @@ jobs:
         with:
           path: ~/.cache/vcpkg/archives
           key: vcpkg-binary-cache-x64-osx-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: x64-osx-dynamic-binaries
           path: |
             ./*.bz2
             ./*.sha1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: x64-osx-dynamic-logs
