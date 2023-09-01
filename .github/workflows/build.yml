@@ -27,7 +27,7 @@ jobs:
           key: vcpkg-binary-cache-x64-linux-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
       - uses: actions/upload-artifact@v2
         with:
-          name: x64-linux-dynamic
+          name: x64-linux-dynamic-binaries
           path: |
             ./*.bz2
             ./*.sha1
@@ -63,7 +63,7 @@ jobs:
           key: vcpkg-binary-cache-x64-windows-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
       - uses: actions/upload-artifact@v2
         with:
-          name: x64-windows
+          name: x64-windows-binaries
           path: |
             ./*.zip
             ./*.sha1
@@ -96,7 +96,7 @@ jobs:
           key: vcpkg-binary-cache-x64-osx-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
       - uses: actions/upload-artifact@v2
         with:
-          name: x64-osx-dynamic
+          name: x64-osx-dynamic-binaries
           path: |
             ./*.bz2
             ./*.sha1
