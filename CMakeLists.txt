@@ -9,10 +9,6 @@ include(cmake/utils.cmake)
 
 doctotext_extract_version()
 
-if(APPLE)
-   include(cmake/osx.cmake)
-endif()
-
 project(doctotext VERSION ${SIMPLE_DOCTOTEXT_VERSION} LANGUAGES CXX C)
 message(STATUS "Build doctotext: ${DOCTOTEXT_VERSION}")
 
