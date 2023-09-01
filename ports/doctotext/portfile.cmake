@@ -55,8 +55,7 @@ file(INSTALL "${SOURCE_PATH}/COPYING.GPL" DESTINATION "${CURRENT_PACKAGES_DIR}/s
 
 function(run_tests build_type)
 	set(triplet_build_type ${TARGET_TRIPLET}-${build_type})
-        message(STATUS "Testing ${triplet_build_type}")
-	message(STATUS "Tests working directory: ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}")
+	message(STATUS "Testing ${triplet_build_type}")
 	vcpkg_execute_required_process(
 		COMMAND "ctest"
 			-V

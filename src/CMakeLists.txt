@@ -57,11 +57,6 @@ if(MSVC)
                                                  Boost::system
                                                  LibArchive::LibArchive)
     target_include_directories(doctotext_core PUBLIC ${wv2_inc_dir})
-    set_target_properties( doctotext_core
-            PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/build"
-            RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/build"
-            )
     target_compile_options(doctotext_core PUBLIC "/Zc:__cplusplus")
 
 else()
