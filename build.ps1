@@ -34,6 +34,7 @@ Compress-Archive -Path $files -DestinationPath sources-temp.zip -CompressionLeve
 $Env:SOURCES_ARCHIVE = "$PWD\sources-temp.zip"
 $Env:VCPKG_KEEP_ENV_VARS = "SOURCES_ARCHIVE"
 vcpkg\vcpkg --overlay-ports=ports install doctotext:$VCPKG_TRIPLET
+Get-ChildItem vcpkg\packages\doctotext_x64-windows -recurse | Select-Object Name
 
 $version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\doctotext\VERSION
 vcpkg\vcpkg --overlay-ports=ports export doctotext:$VCPKG_TRIPLET --raw --output=doctotext-$version --output-dir=.
