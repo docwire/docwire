@@ -33,8 +33,6 @@ if(NOT VCPKG_TARGET_IS_WINDOWS)
 	file(RENAME "${CURRENT_PACKAGES_DIR}/bin/text_extractor.sh" "${CURRENT_PACKAGES_DIR}/tools/text_extractor.sh")
 	file(RENAME "${CURRENT_PACKAGES_DIR}/bin/c_text_extractor.sh" "${CURRENT_PACKAGES_DIR}/tools/c_text_extractor.sh")
 endif()
-vcpkg_copy_tool_dependencies(${CURRENT_PACKAGES_DIR}/tools)
-
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/tools)
 file(RENAME
 	"${CURRENT_PACKAGES_DIR}/debug/bin/text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
@@ -48,8 +46,6 @@ if(NOT VCPKG_TARGET_IS_WINDOWS)
 	file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/text_extractor.sh" "${CURRENT_PACKAGES_DIR}/debug/tools/text_extractor.sh")
 	file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/c_text_extractor.sh" "${CURRENT_PACKAGES_DIR}/debug/tools/c_text_extractor.sh")
 endif()
-vcpkg_copy_tool_dependencies(${CURRENT_PACKAGES_DIR}/debug/tools)
-
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static" OR NOT VCPKG_TARGET_IS_WINDOWS)
 	file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin" "${CURRENT_PACKAGES_DIR}/debug/bin")
 endif()
