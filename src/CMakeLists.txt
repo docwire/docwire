@@ -338,11 +338,11 @@ elseif(MSVC)
 	file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.bat
 		"set BASEDIR=%~dp0
 		set PATH=%BASEDIR%\..\bin;%PATH%
-		"%BASEDIR%"\\text_extractor.exe %*")
+		\"%BASEDIR%\\text_extractor.exe\" %*")
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.bat DESTINATION bin)
 	file(WRITE ${CMAKE_BINARY_DIR}/c_text_extractor.bat
 		"set BASEDIR=%~dp0
 		set PATH=%BASEDIR%\..\bin;%PATH%
-		"%BASEDIR%"\\c_text_extractor.exe %*")
+		\"%BASEDIR%\\c_text_extractor.exe\" %*")
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/c_text_extractor.bat DESTINATION bin)
 endif()
