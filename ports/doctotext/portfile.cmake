@@ -18,6 +18,8 @@ vcpkg_cmake_configure(
 	SOURCE_PATH "${SOURCE_PATH}"
 )
 
+set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP FALSE)
+
 vcpkg_cmake_install()
 
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/tools)
