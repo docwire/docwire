@@ -347,6 +347,7 @@ elseif(MSVC)
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/c_text_extractor.bat DESTINATION bin)
 endif()
 
+set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP FALSE)
 if(MSVC)
 	set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION, bin/doctotext_system_libraries)
 else()
