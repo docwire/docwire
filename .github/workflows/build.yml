@@ -29,8 +29,8 @@ jobs:
         with:
           name: x64-linux-dynamic-binaries
           path: |
-            ./*.bz2
-            ./*.sha1
+            ./doctotext*.bz2
+            ./doctotext*.sha1
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         if: always()
@@ -65,8 +65,8 @@ jobs:
         with:
           name: x64-windows-binaries
           path: |
-            ./*.zip
-            ./*.sha1
+            ./doctotext*.zip
+            ./doctotext*.sha1
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         if: always()
@@ -98,8 +98,8 @@ jobs:
         with:
           name: x64-osx-dynamic-binaries
           path: |
-            ./*.bz2
-            ./*.sha1
+            ./doctotext*.bz2
+            ./doctotext*.sha1
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         if: always()
