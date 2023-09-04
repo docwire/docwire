@@ -31,8 +31,8 @@ Get-ChildItem vcpkg\installed\x64-windows -recurse | Write-Output
 $version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\doctotext\VERSION
 vcpkg\vcpkg --overlay-ports=ports export doctotext:$VCPKG_TRIPLET --raw --output=doctotext-$version --output-dir=.
 
-New-Item doctotext-$version\text_extractor.bat -ItemType File -Value "@\"%~dp0\\installed\\x64-windows\\tools\\text_extractor.bat\" %*"
-New-Item doctotext-$version\c_text_extractor.bat -ItemType File -Value "@\"%~dp0\\installed\\x64-windows\\tools\\c_text_extractor.bat\" %*"
+New-Item doctotext-$version\text_extractor.bat -ItemType File -Value "@`"%~dp0\\installed\\x64-windows\\tools\\text_extractor.bat`" %*"
+New-Item doctotext-$version\c_text_extractor.bat -ItemType File -Value "@`"%~dp0\\installed\\x64-windows\\tools\\c_text_extractor.bat`" %*"
 
 Compress-Archive -LiteralPath doctotext-$version -DestinationPath doctotext-$version-$VCPKG_TRIPLET.zip
 Get-FileHash -Algorithm SHA1 doctotext-$version-$VCPKG_TRIPLET.zip > doctotext-$version-$VCPKG_TRIPLET.zip.sha1
