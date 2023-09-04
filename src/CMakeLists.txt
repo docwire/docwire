@@ -317,32 +317,32 @@ install(FILES ${PUBLIC_HEADERS} DESTINATION include/doctotext)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR APPLE)
 	if(APPLE)
 		file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.sh "BASEDIR=$(dirname \"$0\")
-			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
+			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/doctotext_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
 	else()
     file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.sh "BASEDIR=$(dirname \"$0\")
-    LD_LIBRARY_PATH=$BASEDIR/../lib:$LD_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
+    LD_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/doctotext_system_libraries:$LD_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
 	endif()
     execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/text_extractor.sh)
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.sh DESTINATION bin)
 
 	if(APPLE)
 		file(WRITE ${CMAKE_BINARY_DIR}/c_text_extractor.sh "BASEDIR=$(dirname \"$0\")
-			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/c_text_extractor \"$@\"")
+			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/doctotext_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/c_text_extractor \"$@\"")
 	else()
    file(WRITE ${CMAKE_BINARY_DIR}/c_text_extractor.sh "BASEDIR=$(dirname \"$0\")
-   LD_LIBRARY_PATH=$BASEDIR/../lib:$LD_LIBRARY_PATH ./$BASEDIR/c_text_extractor \"$@\"")
+   LD_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/doctotext_system_libraries:$LD_LIBRARY_PATH ./$BASEDIR/c_text_extractor \"$@\"")
 	endif()
    execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/c_text_extractor.sh)
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/c_text_extractor.sh DESTINATION bin)
 elseif(MSVC)
 	file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.bat
 		"set BASEDIR=%~dp0
-		set PATH=%BASEDIR%\\..\\bin;%PATH%
+		set PATH=%BASEDIR%\\..\\bin;%BASEDIR%\\..\\bin\\doctotext_system_libraries;%PATH%
 		\"%BASEDIR%\\text_extractor.exe\" %*")
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.bat DESTINATION bin)
 	file(WRITE ${CMAKE_BINARY_DIR}/c_text_extractor.bat
 		"set BASEDIR=%~dp0
-		set PATH=%BASEDIR%\\..\\bin;%PATH%
+		set PATH=%BASEDIR%\\..\\bin;%BASEDIR%\\..\\bin\\doctotext_system_libraries;%PATH%
 		\"%BASEDIR%\\c_text_extractor.exe\" %*")
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/c_text_extractor.bat DESTINATION bin)
 endif()
