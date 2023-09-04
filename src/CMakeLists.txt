@@ -336,12 +336,14 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR APPLE)
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/c_text_extractor.sh DESTINATION bin)
 elseif(MSVC)
 	file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.bat
-		"set BASEDIR=%~dp0
+		"@echo off
+		set BASEDIR=%~dp0
 		set PATH=%BASEDIR%\\..\\bin;%BASEDIR%\\..\\bin\\doctotext_system_libraries;%PATH%
 		\"%BASEDIR%\\text_extractor.exe\" %*")
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.bat DESTINATION bin)
 	file(WRITE ${CMAKE_BINARY_DIR}/c_text_extractor.bat
-		"set BASEDIR=%~dp0
+		"@echo off
+		set BASEDIR=%~dp0
 		set PATH=%BASEDIR%\\..\\bin;%BASEDIR%\\..\\bin\\doctotext_system_libraries;%PATH%
 		\"%BASEDIR%\\c_text_extractor.exe\" %*")
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/c_text_extractor.bat DESTINATION bin)
