@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
   struct callbackData callback_data;
   callback_data.counter = 0;
   callback_data.max_nodes_number = -1;
-  const char* plugins_path = "plugins";
+  const char* plugins_path = "";
 
   callback_data.html_output = false;
 
