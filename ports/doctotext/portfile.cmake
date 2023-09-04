@@ -22,6 +22,12 @@ set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP FALSE)
 
 vcpkg_cmake_install()
 
+if(VCPKG_TARGET_IS_WINDOWS)
+	set(script_suffix .bat)
+else()
+	set(script_suffix .sh)
+endif()
+
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/tools)
 file(RENAME
 	"${CURRENT_PACKAGES_DIR}/bin/text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
@@ -31,10 +37,8 @@ file(RENAME
 	"${CURRENT_PACKAGES_DIR}/bin/c_text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
 	"${CURRENT_PACKAGES_DIR}/tools/c_text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
 )
-if(NOT VCPKG_TARGET_IS_WINDOWS)
-	file(RENAME "${CURRENT_PACKAGES_DIR}/bin/text_extractor.sh" "${CURRENT_PACKAGES_DIR}/tools/text_extractor.sh")
-	file(RENAME "${CURRENT_PACKAGES_DIR}/bin/c_text_extractor.sh" "${CURRENT_PACKAGES_DIR}/tools/c_text_extractor.sh")
-endif()
+file(RENAME "${CURRENT_PACKAGES_DIR}/bin/text_extractor${script_suffix}" "${CURRENT_PACKAGES_DIR}/tools/text_extractor${script_suffix}")
+file(RENAME "${CURRENT_PACKAGES_DIR}/bin/c_text_extractor${script_suffix}" "${CURRENT_PACKAGES_DIR}/tools/c_text_extractor${script_suffix}")
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/tools)
 file(RENAME
 	"${CURRENT_PACKAGES_DIR}/debug/bin/text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
@@ -44,10 +48,8 @@ file(RENAME
 	"${CURRENT_PACKAGES_DIR}/debug/bin/c_text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
 	"${CURRENT_PACKAGES_DIR}/debug/tools/c_text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
 )
-if(NOT VCPKG_TARGET_IS_WINDOWS)
-	file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/text_extractor.sh" "${CURRENT_PACKAGES_DIR}/debug/tools/text_extractor.sh")
-	file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/c_text_extractor.sh" "${CURRENT_PACKAGES_DIR}/debug/tools/c_text_extractor.sh")
-endif()
+file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/text_extractor${script_suffix}" "${CURRENT_PACKAGES_DIR}/debug/tools/text_extractor${script_suffix}")
+file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/c_text_extractor${script_suffix}" "${CURRENT_PACKAGES_DIR}/debug/tools/c_text_extractor${script_suffix}")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static" OR NOT VCPKG_TARGET_IS_WINDOWS)
 	file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin" "${CURRENT_PACKAGES_DIR}/debug/bin")
 endif()
