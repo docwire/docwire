@@ -119,7 +119,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake ..
 You're all set! You've successfully installed the DocToText library using vcpkg. You can now use the DocToText library in your code to perform text extraction from documents. 
 
 ### Compatibility Note
-Please note that DocToText is currently compatible with vcpkg tagged as version 2023.01.09. While this version is recommended for use, be aware that updates may become available in the near future.
+Please note that DocToText is currently compatible with vcpkg tagged as version 2023.01.09. While this version is recommended for use, be aware that updates may become available in the near future. Supported triplets are: x64-linux-dynamic, x64-windows and x64-osx-dynamic.
 
 ## License
 Product is double licensed:
