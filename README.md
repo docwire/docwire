@@ -6,6 +6,7 @@ DocWire DocToText is a C++ data processing library/SDK with SourceForge Communit
 - [The Goal](#the-goal)
 - [Features](#features)
 - [Awards](#awards)
+- [Installation](#installation)
 - [License](#license)
 - [Authors](#authors)
 - [External links](#external-links)
@@ -64,6 +65,61 @@ Entering the artificial intelligence/neural networks area is planned to offer it
 ## Awards
 - SourceForge Community Choice (2023) - project has qualified for this award out of over 500,000 open source projects on SourceForge
 - Microsoft for Startups grant (2022) - project was selected by Microsoft to accelerate its grow by providing Expert Guidance, development tools, Azure and GitHub cloud infrastructure and OpenAI machine learning utilities
+
+## Installation
+
+### Why Choose vcpkg for DocToText Installation?
+DocToText has embraced vcpkg as the preferred installation method for several compelling reasons:
+- **Microsoft's Trusted Solution:** vcpkg is a package manager developed and backed by Microsoft, ensuring reliability, ongoing support, and compatibility.
+- **Cross-Platform Simplicity:** With vcpkg, DocToText installation becomes a breeze on Windows, Linux, and macOS, providing a unified and hassle-free experience.
+- **Effortless Dependency Management:** vcpkg takes care of resolving and installing dependencies automatically, reducing manual configuration efforts for developers.
+- **Swift Binary Package Deployment:** The availability of pre-built binary packages in vcpkg accelerates installation, minimizing the need for time-consuming manual compilation.
+- **Seamless CMake Integration:** vcpkg seamlessly integrates with the CMake build system, simplifying the incorporation of DocToText into CMake-based projects.
+By selecting vcpkg, DocToText ensures that programmers benefit from a trusted, user-friendly, and well-supported solution that guarantees a smooth installation experience.
+
+### Installation Steps
+1. **Install vcpkg:**
+If you haven't already installed vcpkg, you can do so by following the instructions in the [vcpkg documentation.](https://github.com/microsoft/vcpkg).
+2. **Integrate vcpkg:**
+Ensure that vcpkg is integrated with your development environment by running the following command:
+```
+vcpkg integrate install
+```
+3. **Clone the DocToText Repository:**
+Clone the DocToText repository from GitHub if you haven't already:
+```
+git clone https://github.com/docwire/doctotext.git
+```
+4. **Set Up Overlay:**
+To configure vcpkg to recognize the DocToText overlay, use the following command:
+```
+vcpkg overlay add doctotext/ports
+```
+This command ensures that vcpkg adds the DocToText overlay for subsequent installations.
+
+5. **Install DocToText:**
+Now that the overlay is set up, you can use vcpkg to install the DocToText library:
+```
+vcpkg install doctotext
+```
+6. **Download Binary Archives (Alternative):**
+As an alternative to building from source, users can also download pre-built binary archives that contain the results of the vcpkg export command for DocToText. These archives can be found in the "Releases" section of the DocToText GitHub repository.
+7. **Link with Your Project:**
+After installation, configure your project settings to link with the DocToText library and its dependencies. You can use one of the following example CMake commands to build your project:
+- Using vcpkg toolchain file from downloaded prebuilt binaries:
+```
+cmake -DCMAKE_TOOLCHAIN_FILE=doctotext/scripts/buildsystems/vcpkg.cmake ..
+```
+- Using vcpkg toolchain file from the vcpkg repository:
+```
+cmake -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake ..
+```
+
+### Usage and Conclusion
+You're all set! You've successfully installed the DocToText library using vcpkg. You can now use the DocToText library in your code to perform text extraction from documents. 
+
+### Compatibility Note
+Please note that DocToText is currently compatible with vcpkg tagged as version 2023.01.09. While this version is recommended for use, be aware that updates may become available in the near future.
 
 ## License
 Product is double licensed:
