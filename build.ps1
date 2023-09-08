@@ -19,11 +19,8 @@ cd ..
 $VCPKG_TRIPLET="x64-windows"
 
 Get-Date | Out-File -FilePath ports\doctotext\disable_binary_cache.tmp
-$exclude = @("vcpkg", "doctotext*.zip*", ".git", "sources-temp.tar")
-$files = Get-ChildItem -Exclude $exclude
-Compress-Archive -Path $files -DestinationPath sources-temp.zip -CompressionLevel NoCompression
-$Env:SOURCES_ARCHIVE = "$PWD\sources-temp.zip"
-$Env:VCPKG_KEEP_ENV_VARS = "SOURCES_ARCHIVE"
+$Env:SOURCE_PATH = "$PWD"
+$Env:VCPKG_KEEP_ENV_VARS = "SOURCE_PATH"
 vcpkg\vcpkg --overlay-ports=ports install doctotext:$VCPKG_TRIPLET
 
 $version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\doctotext\VERSION
