@@ -27,6 +27,15 @@ Unreleased:
     * Upgrade GoogleTest to 1.12.1
     * DecompressArchives chain element added that supports ZIP, TAR, RAR, GZ, BZ2 and XZ formats - enabled by default in CLI utility.
     * Mimetic library replaced with MailIO
+    * Using GitHub Actions Cache to store compiled dependencies
+    * Upload build-time logs to GitHub artifacts
+    * GitHub Actions warnings fixed with upgrading actions scripts
+    * Use VCPKG triplet names as platform suffixes
+    * Added VCPKG port for SDK and build binaries using VCPKG
+    * Use vcpkg export command to create binary archives
+    * Cleanups in CMake scripts
+    * Dockerfiles and related scripts removed
+    * New strategy of searching for plugins, resources and test files
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed

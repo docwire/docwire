@@ -1,12 +1,8 @@
 {
-	"name": "libpff",
+	"name": "libpff-unix",
 	"version-date": "2021-11-14",
 	"description": "libpff",
 	"dependencies": [
-		{
-			"name": "python3",
-			"platform": "windows"
-		},
 		{
 			"name": "vcpkg-cmake",
 			"host": true

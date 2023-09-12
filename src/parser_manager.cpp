@@ -56,39 +56,55 @@ public:
   explicit Implementation(const std::string &plugins_directory)
   {
     m_plugins_directory = plugins_directory.empty() ?
-                          (std::filesystem::path(get_self_path()) / DEFAULT_PLUGINS_SUFFIX).string() : plugins_directory;
+      locate_subpath("doctotext_plugins").string() : plugins_directory;
+    doctotext_log(debug) << "Plugins directory: " << m_plugins_directory;
     pthread_mutex_lock(&load_providers_mutex);
     loadProviders();
     pthread_mutex_unlock(&load_providers_mutex);
   }
 
-  void loadProviders()
+  void loadProvider(const std::filesystem::path path)
   {
-    providers.clear();
-    const std::filesystem::path root{m_plugins_directory};
-    if (std::filesystem::is_directory(root))
+    doctotext_log(debug) << "Loading plugin " << path;
+    try
     {
-      for (auto &dir_entry : std::filesystem::directory_iterator{root})
-      {
-          if (dir_entry.is_regular_file() && correct_extensions.find(dir_entry.path().extension().u8string()) != correct_extensions.end())
-          {
-            try
-            {
-              boost::shared_ptr<doctotext::ParserProvider>plugin_provider =
-              boost::dll::import_symbol<doctotext::ParserProvider>(dir_entry.path().c_str(),
+      boost::shared_ptr<doctotext::ParserProvider>plugin_provider =
+      boost::dll::import_symbol<doctotext::ParserProvider>(path.c_str(),
                                                               "plugin_parser_provider",
                                                               boost::dll::load_mode::append_decorations);
-              providers.push_back(plugin_provider);
-            }
-            catch (const boost::system::system_error &e)
-            {
-              doctotext_log(error) << "Error loading plugin: " << e.what();
-            }
-          }
-      }
+      providers.push_back(plugin_provider);
+      doctotext_log(debug) << "Plugin " << path << " loaded successfuly";
+    }
+    catch (const boost::system::system_error &e)
+    {
+      doctotext_log(error) << "Error loading plugin: " << e.what();
     }
   }
-  const std::string DEFAULT_PLUGINS_SUFFIX{"plugins"};
+
+  void loadProviders()
+  {
+    doctotext_log(debug) << "Loading plugins";
+    providers.clear();
+    const std::filesystem::path root{m_plugins_directory};
+    try
+    {
+      if (std::filesystem::is_directory(root))
+      {
+        for (auto &dir_entry : std::filesystem::directory_iterator{root})
+          if (dir_entry.is_regular_file() && correct_extensions.find(dir_entry.path().extension().u8string()) != correct_extensions.end())
+            loadProvider(dir_entry.path());
+          else
+            doctotext_log(error) << "Skipping " << dir_entry.path() << " - not a regular file or incorrect extension";
+      }
+      else
+        doctotext_log(error) << "Plugins directory path does not point to a directory";
+    }
+    catch (const std::filesystem::filesystem_error& e)
+    {
+      doctotext_log(error) << "Error traversing plugins directory: " << e.what();
+    }
+  }
+
   std::vector<boost::shared_ptr<ParserProvider>> providers;
   std::string m_plugins_directory;
 };

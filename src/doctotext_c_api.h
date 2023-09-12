@@ -254,7 +254,7 @@ DOCTOTEXT_CALL doctotext_free_parsing_chain(DocToTextParsingChain *parsing_chain
 
 /**
  * @brief Creates new parser manager with all available parsers.
- * @param path_to_plugins Path to plugins directory.
+ * @param path_to_plugins Path to plugins directory (empty string for default).
  * @return Handle to new parser
  */
 DllExport DocToTextParserManager*

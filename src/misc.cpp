@@ -33,7 +33,9 @@
 
 #include "misc.h"
 
+#include <boost/algorithm/string.hpp>
 #include "doctotext_link.h"
+#include "exception.h"
 #include <iostream>
 #include "log.h"
 #include <stdio.h>
@@ -514,3 +516,78 @@ std::filesystem::path get_self_path()
   return path.remove_filename();
 }
 #endif
+
+namespace
+{
+
+std::string get_env_var(const std::string& env_var_name)
+{
+	char* value = std::getenv(env_var_name.c_str());
+	if (value)
+	{
+		doctotext_log(debug) << "Value of " << env_var_name << " environment variable is " << value;
+		return std::string(value);
+	}
+	else
+	{
+		doctotext_log(debug) << "Environment variable " << env_var_name << " does not exist";
+		return std::string();
+	}
+}
+
+std::filesystem::path try_sub_path(const std::filesystem::path& path, const std::filesystem::path& sub_path)
+{
+	doctotext_log(debug) << "Trying path " << path;
+	std::filesystem::path full_path(path / sub_path);
+	doctotext_log(debug) << "Checking if " << full_path << " exists";
+	if (std::filesystem::exists(full_path))
+	{
+		full_path = std::filesystem::weakly_canonical(full_path);
+		doctotext_log(debug) << "Subpath found with canonical path " << full_path;
+		return full_path;
+	}
+	else if (path.parent_path() != path && !path.parent_path().empty())
+	{
+		doctotext_log(debug) << "Trying parent directory";
+		return try_sub_path(path.parent_path(), sub_path);
+	}
+	else
+	{
+		doctotext_log(debug) << "Cannot locate subpath in directory " << path << " and parent paths";
+		return std::filesystem::path();
+	}
+};
+
+} // anonymous namespace
+
+std::filesystem::path locate_subpath(const std::filesystem::path& sub_path)
+{
+	doctotext_log(debug) << "Locating subpath " << sub_path;
+	std::vector<std::string> lib_paths;
+#if defined(_WIN32)
+	std::string path = get_env_var("PATH");
+	boost::split(lib_paths, path, boost::is_any_of(";"));
+#elif defined(__APPLE__)
+	std::string dyld_fallback_library_path = get_env_var("DYLD_FALLBACK_LIBRARY_PATH");
+	boost::split(lib_paths, dyld_fallback_library_path, boost::is_any_of(":"));
+#else
+	std::string ld_library_path = get_env_var("LD_LIBRARY_PATH");
+	boost::split(lib_paths, ld_library_path, boost::is_any_of(":"));
+#endif
+#if !defined(_WIN32)
+	lib_paths.push_back("/usr/lib");
+#endif
+	for (auto lib_path: lib_paths)
+	{
+		std::filesystem::path full_path = try_sub_path(lib_path, sub_path);
+		if (!full_path.empty())
+			return full_path;
+	}
+	throw Exception("Subpath not found");
+}
+
+std::filesystem::path locate_resource(const std::filesystem::path& resource_sub_path)
+{
+	doctotext_log(debug) << "Locating resource " << resource_sub_path;
+	return locate_subpath(std::filesystem::path("..") / "share" / resource_sub_path);
+}

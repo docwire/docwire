@@ -1,77 +1,109 @@
 name: Build
 on: [pull_request, workflow_dispatch]
 jobs:
-  build_x86_64_linux:
+  x64-linux-dynamic:
     runs-on: ubuntu-22.04
     timeout-minutes: 150
     permissions:
       packages: write
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - run: ./build.sh --release
+      - uses: actions/cache/restore@v3
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-binary-cache-x64-linux-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+          restore-keys: |
+            vcpkg-binary-cache-x64-linux-dynamic
+      - run: ./build.sh
         env:
           ghcr_login: ${{ github.actor }}
           ghcr_password: ${{ github.token }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/cache/save@v3
+        if: always()
         with:
-          name: x86_64_linux_build
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-binary-cache-x64-linux-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: x64-linux-dynamic-binaries
           path: |
-            ./*.bz2
-            ./*.sha1
+            ./doctotext*.bz2
+            ./doctotext*.sha1
           if-no-files-found: error
-  build_msvc:
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: x64-linux-dynamic-logs
+          path: vcpkg/buildtrees/doctotext/*.log
+          if-no-files-found: error
+  x64-windows:
     runs-on: windows-2019
     timeout-minutes: 150
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - uses: actions/cache/restore@v3
+        with:
+          path: ~\AppData\Local\vcpkg\archives
+          key: vcpkg-binary-cache-x64-windows-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+          restore-keys: |
+            vcpkg-binary-cache-x64-windows
       - run:
           ./build.ps1
         env:
           ghcr_login: ${{ github.actor }}
           ghcr_password: ${{ github.token }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/cache/save@v3
+        if: always()
         with:
-          name: msvc_build
+          path: ~\AppData\Local\vcpkg\archives
+          key: vcpkg-binary-cache-x64-windows-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: x64-windows-binaries
           path: |
-            ./*.zip
-            ./*.sha1
+            ./doctotext*.zip
+            ./doctotext*.sha1
           if-no-files-found: error
-  build_debug_msvc:
-    runs-on: windows-2019
-    timeout-minutes: 150
-    steps:
-      - uses: actions/checkout@v2
+      - uses: actions/upload-artifact@v3
+        if: always()
         with:
-          fetch-depth: 0
-      - run:
-          ./build.ps1 Debug
-        env:
-          ghcr_login: ${{ github.actor }}
-          ghcr_password: ${{ github.token }}
-      - uses: actions/upload-artifact@v2
-        with:
-          name: msvc_debug_build
-          path: |
-            ./*.zip
-            ./*.sha1
+          name: x64-windows-logs
+          path: vcpkg/buildtrees/doctotext/*.log
           if-no-files-found: error
-  build_osx:
+  x64-osx-dynamic:
     runs-on: macos-12
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - run:
-          ./build.sh --release
-      - uses: actions/upload-artifact@v2
+      - uses: actions/cache/restore@v3
         with:
-          name: osx_build
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-binary-cache-x64-osx-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+          restore-keys: |
+            vcpkg-binary-cache-x64-osx-dynamic
+      - run:
+          ./build.sh
+      - uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-binary-cache-x64-osx-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: x64-osx-dynamic-binaries
           path: |
-            ./*.bz2
-            ./*.sha1
+            ./doctotext*.bz2
+            ./doctotext*.sha1
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: x64-osx-dynamic-logs
+          path: vcpkg/buildtrees/doctotext/*.log
           if-no-files-found: error

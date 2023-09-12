@@ -60,7 +60,6 @@ void dots_to_underscores(std::string& str)
 
 class DocumentTests :public ::testing::TestWithParam<std::tuple<int, int, const char*, std::optional<doctotext::FormattingStyle>>> {
 protected:
-    static constexpr std::string_view test_directory{ "../../tests/" };
     doctotext::ParserParameters parameters{};
 
     void SetUp() override
@@ -79,7 +78,7 @@ TEST_P(DocumentTests, SimpleExtractorTest)
     for(int i = lower; i <= upper; ++i)
     {
         // GIVEN
-        std::string file_name{ test_directory.data() + std::to_string(i) + "." + format };
+        std::string file_name{ std::to_string(i) + "." + format };
 
         std::ifstream ifs{ file_name + ".out" };
         ASSERT_TRUE(ifs.good()) <<  "File " << file_name << ".out" << " not found\n";
@@ -90,7 +89,7 @@ TEST_P(DocumentTests, SimpleExtractorTest)
         SCOPED_TRACE("file_name = " + file_name);
 
         // WHEN
-        doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
+        doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
 
         simple_extractor.addParameters(parameters);
 
@@ -108,7 +107,7 @@ TEST_P(DocumentTests, ReadFromBufferTest)
     for(int i = lower; i <= upper; ++i)
     {
         // GIVEN
-        std::string file_name{ test_directory.data() + std::to_string(i) + "." + format };
+        std::string file_name{ std::to_string(i) + "." + format };
 
         std::ifstream ifs{ file_name + ".out" };
         ASSERT_TRUE(ifs.good()) <<  "File " << file_name << ".out" << " not found\n";
@@ -121,7 +120,7 @@ TEST_P(DocumentTests, ReadFromBufferTest)
         std::ifstream ifs_input{ file_name, std::ios_base::binary };
 
         // WHEN
-        auto parser_manager = std::make_shared<doctotext::ParserManager>("../plugins"); // create parser manager
+        auto parser_manager = std::make_shared<doctotext::ParserManager>(); // create parser manager
         std::stringstream output_stream{};
 
         doctotext::Input(&ifs_input) |
@@ -170,7 +169,6 @@ INSTANTIATE_TEST_SUITE_P(
 class MetadataTest : public ::testing::TestWithParam<const char*>
 {
 protected:
-    static constexpr std::string_view test_directory{ "../../tests/" };
 
     static constexpr std::array<std::string_view, 2> names
     {
@@ -186,7 +184,7 @@ TEST_P(MetadataTest, SimpleExtractorTest)
     for(auto name : names)
     {
         // GIVEN
-        std::string file_name{ std::string{ test_directory.data() } + name.data() + "." + format };
+        std::string file_name{ std::string{name.data()} + "." + format };
 
         std::ifstream ifs{ file_name + ".out" };
         ASSERT_TRUE(ifs.good()) <<  "File " << file_name << ".out" << " not found\n";
@@ -197,7 +195,7 @@ TEST_P(MetadataTest, SimpleExtractorTest)
         SCOPED_TRACE("file_name = " + file_name);
 
         // WHEN
-        doctotext::SimpleExtractor extractor{ file_name, "../plugins" };
+        doctotext::SimpleExtractor extractor{ file_name };
         std::string parsed_text{ extractor.getMetaData() };
 
         // THEN
@@ -218,7 +216,6 @@ INSTANTIATE_TEST_SUITE_P(
 class CallbackTest : public ::testing::TestWithParam<std::tuple<const char*, const char*, doctotext::NewNodeCallback>>
 {
 protected:
-    static constexpr std::string_view test_directory{ "../../tests/" };
     doctotext::ParserParameters parameters{};
 
     void SetUp() override
@@ -235,8 +232,8 @@ TEST_P(CallbackTest, SimpleExtractorTest)
     const auto [name, out_name, callback] = GetParam();
 
     // GIVEN
-    std::string file_name{ std::string{ test_directory.data() } + name };
-    std::string output_name{ std::string{ test_directory.data() } + out_name };
+    std::string file_name{ name };
+    std::string output_name{ out_name };
 
     std::ifstream ifs{ output_name };
     ASSERT_TRUE(ifs.good()) <<  "File " << file_name << ".out" << " not found\n";
@@ -247,7 +244,7 @@ TEST_P(CallbackTest, SimpleExtractorTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
+    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
 
     simple_extractor.addCallbackFunction(callback);
     simple_extractor.addParameters(parameters);
@@ -266,15 +263,13 @@ INSTANTIATE_TEST_SUITE_P(
 
 class HTMLWriterTest : public ::testing::TestWithParam<const char*>
 {
-protected:
-    static constexpr std::string_view test_directory{ "../../tests/" };
 };
 
 TEST_P(HTMLWriterTest, SimpleExtractorTest)
 {
     // GIVEN
     auto name = GetParam();
-    std::string file_name{ std::string{ test_directory.data() } + name };
+    std::string file_name{ name };
 
     std::ifstream ifs{ file_name + ".out.html" };
     ASSERT_TRUE(ifs.good()) <<  "File " << file_name << ".out.html" << " not found\n";
@@ -285,7 +280,7 @@ TEST_P(HTMLWriterTest, SimpleExtractorTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
+    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
     std::string parsed_text{ simple_extractor.getHtmlText() };
         
     // THEN
@@ -309,15 +304,13 @@ INSTANTIATE_TEST_SUITE_P(
 
 class MiscDocumentTest : public ::testing::TestWithParam<const char*>
 {
-protected:
-    static constexpr std::string_view test_directory{ "../../tests/" };
 };
 
 TEST_P(MiscDocumentTest, SimpleExtractorTest)
 {
     // GIVEN
     auto name = GetParam();
-    std::string file_name{ std::string{ test_directory.data() } + name };
+    std::string file_name{ name };
 
     std::ifstream ifs{ file_name + ".out" };
     ASSERT_TRUE(ifs.good()) <<  "File " << file_name << ".out" << " not found\n";
@@ -328,8 +321,7 @@ TEST_P(MiscDocumentTest, SimpleExtractorTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
-    simple_extractor.addParameters({"TESSDATA_PREFIX", std::string("../tessdata")});
+    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
     std::string parsed_text{ simple_extractor.getPlainText() };
         
     // THEN
@@ -397,15 +389,13 @@ INSTANTIATE_TEST_SUITE_P(
 
 class PasswordProtectedTest : public ::testing::TestWithParam<const char*>
 {
-protected:
-    static constexpr std::string_view test_directory{ "../../tests/" };
 };
 
 TEST_P(PasswordProtectedTest, MajorTestingModule)
 {
     // GIVEN
     auto format = GetParam();
-    std::string file_name{ std::string{ test_directory.data() } + "password_protected." + format };
+    std::string file_name{ std::string{"password_protected."} + format };
 
     std::ifstream ifs{ file_name + ".out" };
     ASSERT_TRUE(ifs.good()) <<  "File " << file_name << ".out" << " not found\n";
@@ -416,7 +406,7 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
+    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
         
     try 
     {
@@ -446,15 +436,13 @@ INSTANTIATE_TEST_SUITE_P(
 
 class MultithreadedTest : public ::testing::TestWithParam<std::tuple<int, int, const char*>>
 {
-protected:
-    static constexpr std::string_view test_directory{ "../../tests/" };
 };
 
 void* thread_func(void* data)
 {
 	std::string* file_name = (std::string*)data;
 
-	doctotext::SimpleExtractor extractor{ *file_name, "../plugins" };
+	doctotext::SimpleExtractor extractor{ *file_name };
     try {
       extractor.getPlainText();
       extractor.getMetaData();
@@ -475,7 +463,7 @@ TEST_P(MultithreadedTest, SimpleExtractorTests)
 
     std::generate(file_names.begin(), file_names.end(), [format_str = format, i = lower]() mutable
     {
-        return test_directory.data() + std::to_string(i++) + "." + format_str;
+        return std::to_string(i++) + "." + format_str;
     });
 
     for(auto& file_name : file_names)
@@ -542,8 +530,6 @@ INSTANTIATE_TEST_SUITE_P(
 
 class MultiPageFilterTest : public ::testing::TestWithParam<std::tuple<int, int, const char*>>
 {
-protected:
-  static constexpr std::string_view test_directory{ "../../tests/" };
 };
 
 TEST_P(MultiPageFilterTest, SimpleExtractorTests)
@@ -554,7 +540,7 @@ TEST_P(MultiPageFilterTest, SimpleExtractorTests)
   std::vector<std::string> file_names(upper - lower + 1);
   std::generate(file_names.begin(), file_names.end(), [format_str = format, prefix, i = lower]() mutable
   {
-    return test_directory.data() + prefix + std::to_string(i++) + "." + format_str;
+    return prefix + std::to_string(i++) + "." + format_str;
   });
 
   for(auto& file_name : file_names)
@@ -568,7 +554,7 @@ TEST_P(MultiPageFilterTest, SimpleExtractorTests)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name, "../plugins" }; // create a simple extractor
+    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
     simple_extractor.addChainElement(new doctotext::TransformerFunc([MAX_PAGES, counter = 0](doctotext::Info &info) mutable
                                    {
                                      if (info.tag_name == doctotext::StandardTag::TAG_PAGE) {++counter;}
@@ -588,7 +574,7 @@ namespace
 	{
 		std::ifstream stream;
 		stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-		stream.open("../../tests/" + file_name);
+		stream.open(file_name);
 		return std::string{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
 	}
 }
@@ -606,9 +592,9 @@ INSTANTIATE_TEST_SUITE_P(
 TEST(HtmlWriter, RestoreAttributes)
 {
   using namespace doctotext;
-	std::shared_ptr<doctotext::ParserManager> parser_manager(new doctotext::ParserManager{ "../plugins" });
+	std::shared_ptr<doctotext::ParserManager> parser_manager(new doctotext::ParserManager());
 	std::stringstream output;
-	std::ifstream in("../../tests/1.html");
+	std::ifstream in("1.html");
 	Input(&in)
 		| Importer(doctotext::ParserParameters(), parser_manager)
 		| HtmlExporter(output, HtmlExporter::RestoreOriginalAttributes{true});

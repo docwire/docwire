@@ -9,10 +9,6 @@ include(cmake/utils.cmake)
 
 doctotext_extract_version()
 
-if(APPLE)
-   include(cmake/osx.cmake)
-endif()
-
 project(doctotext VERSION ${SIMPLE_DOCTOTEXT_VERSION} LANGUAGES CXX C)
 message(STATUS "Build doctotext: ${DOCTOTEXT_VERSION}")
 
@@ -26,7 +22,7 @@ enable_testing ()
 
 file(WRITE ${CMAKE_SOURCE_DIR}/version.h "#define VERSION \"${DOCTOTEXT_VERSION}\"")
 file(WRITE ${CMAKE_BINARY_DIR}/VERSION "${DOCTOTEXT_VERSION}")
-configure_file(${CMAKE_SOURCE_DIR}/ChangeLog ${CMAKE_BINARY_DIR}/ChangeLog COPYONLY)
+install(FILES ${CMAKE_SOURCE_DIR}/ChangeLog ${CMAKE_BINARY_DIR}/VERSION DESTINATION share/doctotext)
 
 add_subdirectory(src)
 
