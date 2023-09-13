@@ -34,9 +34,11 @@
 #include "ocr_parser.h"
 #include "parser_parameters.h"
 
+#include <leptonica/allheaders.h>
+#include <leptonica/array_internal.h>
+#include <leptonica/pix_internal.h>
 #include <tesseract/baseapi.h>
 #include <tesseract/ocrclass.h>
-#include <leptonica/allheaders.h>
 
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/signals2.hpp>

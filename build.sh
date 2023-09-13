@@ -14,7 +14,7 @@ fi
 
 git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
-git checkout tags/2023.01.09
+git checkout tags/2023.04.15
 ./bootstrap-vcpkg.sh
 cd ..
 

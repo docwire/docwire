@@ -19,6 +19,8 @@ vcpkg_cmake_configure(
 
 vcpkg_cmake_install()
 
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/wvWare)
+
 vcpkg_download_distfile(PRIVATE_HEADERS_ARCHIVE
 	URLS "http://silvercoders.com/download/3rdparty/wv2-0.2.3_patched_4-private_headers.tar.bz2"
 	FILENAME "wv2-0.2.3_patched_4-private_headers.tar.bz2"
