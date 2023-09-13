@@ -58,6 +58,9 @@
 #include "podofo/podofo.h"
 #include <stack>
 
+namespace doctotext
+{
+
 static pthread_mutex_t load_document_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 //some functions specific for this parser
@@ -7986,6 +7989,7 @@ struct PDFParser::Implementation
 		catch (const PoDoFo::PdfError& e)
 		{
       pthread_mutex_unlock(&load_document_mutex);
+			doctotext_log(error) << "PoDoFo::PdfError: " << e.what();//
 			if (e.GetError() == PoDoFo::ePdfError_NotCompiled || e.GetError() == PoDoFo::ePdfError_InternalLogic)
 			{
 				throw EncryptedFileException("File is encrypted");
@@ -8099,3 +8103,5 @@ PDFParser::parse() const
 	impl->loadDocument();
 	impl->parseText();
 }
+
+} // namespace doctotext

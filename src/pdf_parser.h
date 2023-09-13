@@ -42,11 +42,9 @@
 
 namespace doctotext
 {
-	struct FormattingStyle;
-	class Metadata;
-}
 
-using namespace doctotext;
+struct FormattingStyle;
+class Metadata;
 
 class PDFParser : public Parser
 {
@@ -65,5 +63,7 @@ class PDFParser : public Parser
 		void getLinks(std::vector<Link>& links);
 		Metadata metaData();
 };
+
+} // namespace doctotext
 
 #endif
