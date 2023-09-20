@@ -35,6 +35,7 @@
 #define DOCTOTEXT_LOG_H
 
 #include "defines.h"
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <string>
@@ -86,6 +87,7 @@ public:
 	log_record_stream& operator<<(const end_complex&);
 	log_record_stream& operator<<(const std::type_index& t);
 	log_record_stream& operator<<(const std::thread::id& i);
+	log_record_stream& operator<<(const std::filesystem::path& p);
 	log_record_stream& operator<<(severity_level severity);
 	log_record_stream& operator<<(const begin_pair& b);
 	log_record_stream& operator<<(const end_pair&);

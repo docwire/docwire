@@ -37,7 +37,6 @@
 #include <boost/json.hpp>
 #include <chrono>
 #include <ctime>
-#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <pthread.h>
@@ -96,7 +95,7 @@ log_record_stream::log_record_stream(severity_level severity, source_location lo
 	*this
 		<< std::make_pair("timestamp", time_stream.str())
 		<< std::make_pair("severity", severity)
-		<< std::make_pair("file", std::filesystem::path(location.file_name).filename().native())
+		<< std::make_pair("file", std::filesystem::path(location.file_name).filename())
 		<< std::make_pair("line", location.line)
 		<< std::make_pair("function", location.function_name)
 		<< std::make_pair("thread_id", std::this_thread::get_id())
@@ -211,6 +210,12 @@ log_record_stream& log_record_stream::operator<<(const std::thread::id& i)
 	std::ostringstream s;
 	s << i;
 	*this << s.str();
+	return *this;
+}
+
+log_record_stream& log_record_stream::operator<<(const std::filesystem::path& p)
+{
+	*this << p.string();
 	return *this;
 }
 
