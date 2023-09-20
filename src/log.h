@@ -65,11 +65,11 @@ DllExport bool log_verbosity_includes(severity_level severity);
 
 DllExport void set_log_stream(std::ostream* stream);
 
-struct hex {};
-struct begin_complex {};
-struct end_complex {};
-struct begin_pair { std::string key; };
-struct end_pair {};
+struct DllExport hex {};
+struct DllExport begin_complex {};
+struct DllExport end_complex {};
+struct DllExport begin_pair { std::string key; };
+struct DllExport end_pair {};
 
 #define type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
 
