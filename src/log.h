@@ -38,6 +38,8 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <thread>
+#include <typeindex>
 
 namespace doctotext
 {
@@ -49,8 +51,6 @@ enum severity_level
 	warning,
 	error
 };
-
-DllExport std::ostream& operator<<(std::ostream& stream, severity_level severity);
 
 struct DllExport source_location
 {
@@ -65,11 +65,46 @@ DllExport bool log_verbosity_includes(severity_level severity);
 
 DllExport void set_log_stream(std::ostream* stream);
 
-typedef std::function<std::unique_ptr<std::ostream>(severity_level severity, source_location location)> create_log_record_stream_func_t;
+struct hex {};
+struct begin_complex {};
+struct end_complex {};
+struct begin_pair { std::string key; };
+struct end_pair {};
+
+#define type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
+
+class DllExport log_record_stream
+{
+public:
+	log_record_stream(severity_level severity, source_location location);
+	~log_record_stream();
+	log_record_stream& operator<<(const char* msg);
+	log_record_stream& operator<<(long int val);
+	log_record_stream& operator<<(const std::string& str);
+	log_record_stream& operator<<(const hex& h);
+	log_record_stream& operator<<(const begin_complex&);
+	log_record_stream& operator<<(const end_complex&);
+	log_record_stream& operator<<(const std::type_index& t);
+	log_record_stream& operator<<(const std::thread::id& i);
+	log_record_stream& operator<<(severity_level severity);
+	log_record_stream& operator<<(const begin_pair& b);
+	log_record_stream& operator<<(const end_pair&);
+	template<class T> log_record_stream& operator<<(const std::pair<const char*, T>& p)
+	{
+		*this << begin_pair{p.first} << p.second << end_pair();
+		return *this;
+	}
+	log_record_stream& operator<<(const std::exception& e);
+private:
+	struct implementation;
+	std::unique_ptr<implementation> m_impl;
+};
+
+typedef std::function<std::unique_ptr<log_record_stream>(severity_level severity, source_location location)> create_log_record_stream_func_t;
 
 DllExport void set_create_log_record_stream_func(create_log_record_stream_func_t func);
 
-DllExport std::unique_ptr<std::ostream> create_log_record_stream(severity_level severity, source_location location);
+DllExport std::unique_ptr<log_record_stream> create_log_record_stream(severity_level severity, source_location location);
 
 inline void current_function_helper()
 {
@@ -102,7 +137,8 @@ public:
 
 private:
 	bool m_redirected;
-	std::unique_ptr<std::ostream> m_log_record_stream;
+	struct implementation;
+	std::unique_ptr<implementation> m_impl;
 	std::streambuf* m_cerr_buf_backup;
 	source_location m_location;
 };

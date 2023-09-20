@@ -263,7 +263,7 @@ struct PPTParser::Implementation
 				std::string indend;
 				for (int i = 0; i < container_ends.size(); i++)
 					indend += "\t";
-				doctotext_log(debug) << indend << "record=0x" << std::hex << rec_type << ", begin=0x" << pos << ", end=0x" << pos + rec_len - 1;
+				doctotext_log(debug) << indend << "record" << hex() << rec_type << "begin" << pos << "end" << pos + rec_len - 1;
 				container_ends.push(pos + rec_len - 1);
 			}
 			try

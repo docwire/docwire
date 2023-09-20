@@ -23,6 +23,9 @@
 			"name": "boost-signals2"
 		},
 		{
+			"name": "boost-json"
+		},
+		{
 			"name": "podofo"
 		},
 		{

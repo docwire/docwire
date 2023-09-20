@@ -537,6 +537,12 @@ const static unsigned int ZapfDingbatsEncodingUtf8[256] =
 	0xe29eb8, 0xe29eb9, 0xe29eba, 0xe29ebb, 0xe29ebc, 0xe29ebd, 0xe29ebe, 0x0
 };
 
+log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfError& e)
+{
+	s << begin_complex() << type_of(e) << std::make_pair("what()", e.what()) << end_complex();
+	return s;
+}
+
 struct PDFParser::Implementation
 {
 	PoDoFo::PdfMemDocument m_pdf_document;
@@ -7989,7 +7995,7 @@ struct PDFParser::Implementation
 		catch (const PoDoFo::PdfError& e)
 		{
       pthread_mutex_unlock(&load_document_mutex);
-			doctotext_log(error) << "PoDoFo::PdfError: " << e.what();//
+			doctotext_log(error) << e;
 			if (e.GetError() == PoDoFo::ePdfError_NotCompiled || e.GetError() == PoDoFo::ePdfError_InternalLogic)
 			{
 				throw EncryptedFileException("File is encrypted");

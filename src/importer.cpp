@@ -153,7 +153,7 @@ public:
         }
         catch (doctotext::Exception &ex)
         {
-          doctotext_log(doctotext::info) << "It is possible that wrong parser was selected. Trying different parsers." << std::endl;
+          doctotext_log(doctotext::info) << "It is possible that wrong parser was selected. Trying different parsers.";
           std::vector<char> buffer;
           load_file_to_buffer(file_path, buffer);
           auto second_builder = m_parser_manager->findParserByData(buffer);
