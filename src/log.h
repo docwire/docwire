@@ -72,7 +72,7 @@ struct DllExport end_complex {};
 struct DllExport begin_pair { std::string key; };
 struct DllExport end_pair {};
 
-#define type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
+#define doctotext_log_type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
 
 class DllExport log_record_stream
 {

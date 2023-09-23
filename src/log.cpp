@@ -270,7 +270,7 @@ log_record_stream& log_record_stream::operator<<(const end_pair&)
 
 log_record_stream& log_record_stream::operator<<(const std::exception& e)
 {
-	*this << begin_complex() << type_of(e) << std::make_pair("what()", e.what()) << end_complex();
+	*this << begin_complex() << doctotext_log_type_of(e) << std::make_pair("what()", e.what()) << end_complex();
 	return *this;
 }
 
