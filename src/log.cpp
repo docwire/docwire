@@ -128,7 +128,7 @@ log_record_stream& log_record_stream::operator<<(const char* msg)
 	return *this;
 }
 
-log_record_stream& log_record_stream::operator<<(long int val)
+log_record_stream& log_record_stream::operator<<(std::int64_t val)
 {
 	boost::json::value new_v;
 	if (m_impl->hex_numbers)
@@ -143,7 +143,7 @@ log_record_stream& log_record_stream::operator<<(long int val)
 	return *this;
 }
 
-log_record_stream& log_record_stream::operator<<(unsigned long int val)
+log_record_stream& log_record_stream::operator<<(std::uint64_t val)
 {
 	boost::json::value new_v;
 	if (m_impl->hex_numbers)
@@ -160,13 +160,13 @@ log_record_stream& log_record_stream::operator<<(unsigned long int val)
 
 log_record_stream& log_record_stream::operator<<(int val)
 {
-	*this << (long int)val;
+	*this << (std::int64_t)val;
 	return *this;
 }
 
 log_record_stream& log_record_stream::operator<<(unsigned int val)
 {
-	*this << (unsigned long int)val;
+	*this << (std::uint64_t)val;
 	return *this;
 }
 
