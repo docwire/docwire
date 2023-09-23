@@ -161,8 +161,12 @@ inline void current_function_helper()
 #define doctotext_log_vars_6(v, ...) doctotext_log_vars_1(v) doctotext_log_vars_5(__VA_ARGS__)
 #define doctotext_log_vars_7(v, ...) doctotext_log_vars_1(v) doctotext_log_vars_6(__VA_ARGS__)
 #define doctotext_log_vars_8(v, ...) doctotext_log_vars_1(v) doctotext_log_vars_7(__VA_ARGS__)
-#define doctotext_log_vars(...) doctotext_log(debug) doctotext_log_vars_concatenate(doctotext_log_vars_, doctotext_log_vars_args_count(__VA_ARGS__))(__VA_ARGS__)
+#define doctotext_log_vars_impl(...) doctotext_log_vars_concatenate(doctotext_log_vars_, doctotext_log_vars_args_count(__VA_ARGS__))(__VA_ARGS__)
+#define doctotext_log_vars(...) doctotext_log(debug) doctotext_log_vars_impl(__VA_ARGS__)
 #define doctotext_log_var(v) doctotext_log_vars(v)
+
+#define doctotext_log_func() doctotext_log(debug) << "Entering function" << std::make_pair("funtion_name", doctotext_current_function)
+#define doctotext_log_func_with_args(...) doctotext_log_func() doctotext_log_vars_impl(__VA_ARGS__)
 
 class DllExport cerr_log_redirection
 {
