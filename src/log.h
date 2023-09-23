@@ -129,6 +129,22 @@ inline void current_function_helper()
 	else \
 		(*doctotext::create_log_record_stream(severity, doctotext_current_source_location()))
 
+#define doctotext_log_named_variable(v) std::make_pair(#v, v)
+#define doctotext_log_vars_args_count_helper(a1, a2, a3, a4, a5, a6, a7, a8, count, ...) count
+#define doctotext_log_vars_args_count(...) doctotext_log_vars_args_count_helper(__VA_ARGS__, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+#define doctotext_log_vars_concatenate(a, b) doctotext_log_vars_concatenate_2(a, b)
+#define doctotext_log_vars_concatenate_2(a, b) a##b
+#define doctotext_log_vars_1(v) << doctotext_log_named_variable(v)
+#define doctotext_log_vars_2(v, ...) doctotext_log_vars_1(v) doctotext_log_vars_1(__VA_ARGS__)
+#define doctotext_log_vars_3(v, ...) doctotext_log_vars_1(v) doctotext_log_vars_2(__VA_ARGS__)
+#define doctotext_log_vars_4(v, ...) doctotext_log_vars_1(v) doctotext_log_vars_3(__VA_ARGS__)
+#define doctotext_log_vars_5(v, ...) doctotext_log_vars_1(v) doctotext_log_vars_4(__VA_ARGS__)
+#define doctotext_log_vars_6(v, ...) doctotext_log_vars_1(v) doctotext_log_vars_5(__VA_ARGS__)
+#define doctotext_log_vars_7(v, ...) doctotext_log_vars_1(v) doctotext_log_vars_6(__VA_ARGS__)
+#define doctotext_log_vars_8(v, ...) doctotext_log_vars_1(v) doctotext_log_vars_7(__VA_ARGS__)
+#define doctotext_log_vars(...) doctotext_log(debug) doctotext_log_vars_concatenate(doctotext_log_vars_, doctotext_log_vars_args_count(__VA_ARGS__))(__VA_ARGS__)
+#define doctotext_log_var(v) doctotext_log_vars(v)
+
 class DllExport cerr_log_redirection
 {
 public:
