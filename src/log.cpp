@@ -182,6 +182,20 @@ log_record_stream& log_record_stream::operator<<(bool val)
 	return *this;
 }
 
+#ifdef WIN32
+log_record_stream& log_record_stream::operator<<(ssize_t val)
+{
+	*this << (long int)val;
+	return *this;
+}
+#endif
+
+log_record_stream& log_record_stream::operator<<(std::streampos val)
+{
+	*this << (long int)val;
+	return *this;
+}
+
 log_record_stream& log_record_stream::operator<<(const std::string& str)
 {
 	m_impl->insert_simple_value(str.c_str());
