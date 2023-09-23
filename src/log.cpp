@@ -274,6 +274,20 @@ log_record_stream& log_record_stream::operator<<(const std::exception& e)
 	return *this;
 }
 
+log_record_stream& log_record_stream::operator<<(const begin_array&)
+{
+	*this << begin_complex();
+	boost::json::value& v = *m_impl->obj_stack.top();
+	v = boost::json::array();
+	return *this;
+}
+
+log_record_stream& log_record_stream::operator<<(const end_array&)
+{
+	*this << end_complex();
+	return *this;
+}
+
 class Exiter
 {
 public:

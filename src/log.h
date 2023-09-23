@@ -71,6 +71,8 @@ struct DllExport begin_complex {};
 struct DllExport end_complex {};
 struct DllExport begin_pair { std::string key; };
 struct DllExport end_pair {};
+struct DllExport begin_array {};
+struct DllExport end_array {};
 
 #define doctotext_log_type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
 
@@ -97,6 +99,23 @@ public:
 		return *this;
 	}
 	log_record_stream& operator<<(const std::exception& e);
+	log_record_stream& operator<<(const begin_array&);
+	log_record_stream& operator<<(const end_array&);
+	template<class T> log_record_stream& operator<<(const std::vector<T>& v)
+	{
+		*this << begin_array();
+		for (auto i: v)
+			*this << i;
+		*this << end_array();
+		return *this;
+	}
+	template<typename T>
+	typename std::enable_if<std::is_member_function_pointer<decltype(&T::log_to_record_stream)>::value, log_record_stream&>::type
+	operator<<(const T& v)
+	{
+		v.log_to_record_stream(*this);
+		return *this;
+	}
 private:
 	struct implementation;
 	std::unique_ptr<implementation> m_impl;
