@@ -77,6 +77,20 @@ struct log_record_stream::implementation
 	{
 		obj_stack.push(&root);
 	}
+
+	void insert_simple_value(const boost::json::value new_v)
+	{
+		boost::json::value& v = *obj_stack.top();
+		if (v.is_null())
+			v = new_v;
+		else if (v.is_array())
+			v.as_array().push_back(new_v);
+		else
+		{
+			v = boost::json::array({ v });
+			v.as_array().push_back(new_v);
+		}
+	}
 };
 
 log_record_stream::log_record_stream(severity_level severity, source_location location)
@@ -110,17 +124,7 @@ log_record_stream::~log_record_stream()
 
 log_record_stream& log_record_stream::operator<<(const char* msg)
 {
-	boost::json::value new_v = msg;
-	boost::json::value& v = *m_impl->obj_stack.top();
-	if (v.is_null())
-		v = new_v;
-	else if (v.is_array())
-		v.as_array().push_back(new_v);
-	else
-	{
-		v = boost::json::array({ v });
-		v.as_array().push_back(new_v);
-	}
+	m_impl->insert_simple_value(msg);
 	return *this;
 }
 
@@ -135,32 +139,52 @@ log_record_stream& log_record_stream::operator<<(long int val)
 	}
 	else
 		new_v = val;
-	boost::json::value& v = *m_impl->obj_stack.top();
-	if (v.is_null())
-		v = new_v;
-	else if (v.is_array())
-		v.as_array().push_back(new_v);
-	else
+	m_impl->insert_simple_value(new_v);
+	return *this;
+}
+
+log_record_stream& log_record_stream::operator<<(unsigned long int val)
+{
+	boost::json::value new_v;
+	if (m_impl->hex_numbers)
 	{
-		v = boost::json::array({ v });
-		v.as_array().push_back(new_v);
+		std::ostringstream s;
+		s << "0x" << std::hex << val;
+		new_v = s.str().c_str();
 	}
+	else
+		new_v = val;
+	m_impl->insert_simple_value(new_v);
+	return *this;
+}
+
+log_record_stream& log_record_stream::operator<<(int val)
+{
+	*this << (long int)val;
+	return *this;
+}
+
+log_record_stream& log_record_stream::operator<<(unsigned int val)
+{
+	*this << (unsigned long int)val;
+	return *this;
+}
+
+log_record_stream& log_record_stream::operator<<(double val)
+{
+	m_impl->insert_simple_value(val);
+	return *this;
+}
+
+log_record_stream& log_record_stream::operator<<(bool val)
+{
+	m_impl->insert_simple_value(val);
 	return *this;
 }
 
 log_record_stream& log_record_stream::operator<<(const std::string& str)
 {
-	boost::json::value new_v = str.c_str();
-	boost::json::value& v = *m_impl->obj_stack.top();
-	if (v.is_null())
-		v = new_v;
-	else if (v.is_array())
-		v.as_array().push_back(new_v);
-	else
-	{
-		v = boost::json::array({ v });
-		v.as_array().push_back(new_v);
-	}
+	m_impl->insert_simple_value(str.c_str());
 	return *this;
 }
 

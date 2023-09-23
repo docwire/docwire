@@ -83,6 +83,11 @@ public:
 	~log_record_stream();
 	log_record_stream& operator<<(const char* msg);
 	log_record_stream& operator<<(long int val);
+	log_record_stream& operator<<(unsigned long int val);
+	log_record_stream& operator<<(int val);
+	log_record_stream& operator<<(unsigned int val);
+	log_record_stream& operator<<(double val);
+	log_record_stream& operator<<(bool val);
 	log_record_stream& operator<<(const std::string& str);
 	log_record_stream& operator<<(const hex& h);
 	log_record_stream& operator<<(const begin_complex&);
