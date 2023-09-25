@@ -123,12 +123,22 @@ public:
 		return *this;
 	}
 	template<typename T>
-	typename std::enable_if<std::is_member_function_pointer<decltype(&T::log_to_record_stream)>::value, log_record_stream&>::type
+	typename std::enable_if<std::is_member_function_pointer_v<decltype(&T::log_to_record_stream)>, log_record_stream&>::type
 	operator<<(const T& v)
 	{
 		v.log_to_record_stream(*this);
 		return *this;
 	}
+
+	template<typename T> log_record_stream& operator<<(const T* pointer)
+	{
+		if (pointer)
+			*this << begin_complex() << doctotext_log_type_of(pointer) << std::make_pair("dereferenced", std::cref(*pointer)) << end_complex();
+		else
+			*this << nullptr;
+		return *this;
+	}
+
 private:
 	struct implementation;
 	std::unique_ptr<implementation> m_impl;
