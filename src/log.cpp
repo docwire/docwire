@@ -183,9 +183,9 @@ log_record_stream& log_record_stream::operator<<(bool val)
 }
 
 #ifdef WIN32
-log_record_stream& log_record_stream::operator<<(ssize_t val)
+log_record_stream& log_record_stream::operator<<(__int64 val)
 {
-	*this << (long int)val;
+	*this << (std::int64_t)val;
 	return *this;
 }
 #endif
