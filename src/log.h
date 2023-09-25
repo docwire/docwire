@@ -84,8 +84,8 @@ public:
 	log_record_stream& operator<<(const char* msg);
 	log_record_stream& operator<<(std::int64_t val);
 	log_record_stream& operator<<(std::uint64_t val);
-	log_record_stream& operator<<(int val);
-	log_record_stream& operator<<(unsigned int val);
+	log_record_stream& operator<<(std::int32_t val);
+	log_record_stream& operator<<(std::uint32_t val);
 	log_record_stream& operator<<(double val);
 	log_record_stream& operator<<(bool val);
 	log_record_stream& operator<<(std::streampos val);
