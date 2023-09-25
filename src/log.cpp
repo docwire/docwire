@@ -158,18 +158,6 @@ log_record_stream& log_record_stream::operator<<(std::uint64_t val)
 	return *this;
 }
 
-log_record_stream& log_record_stream::operator<<(std::int32_t val)
-{
-	*this << (std::int64_t)val;
-	return *this;
-}
-
-log_record_stream& log_record_stream::operator<<(std::uint32_t val)
-{
-	*this << (std::uint64_t)val;
-	return *this;
-}
-
 log_record_stream& log_record_stream::operator<<(double val)
 {
 	m_impl->insert_simple_value(val);
@@ -179,12 +167,6 @@ log_record_stream& log_record_stream::operator<<(double val)
 log_record_stream& log_record_stream::operator<<(bool val)
 {
 	m_impl->insert_simple_value(val);
-	return *this;
-}
-
-log_record_stream& log_record_stream::operator<<(std::streampos val)
-{
-	*this << (long int)val;
 	return *this;
 }
 

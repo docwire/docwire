@@ -84,11 +84,18 @@ public:
 	log_record_stream& operator<<(const char* msg);
 	log_record_stream& operator<<(std::int64_t val);
 	log_record_stream& operator<<(std::uint64_t val);
-	log_record_stream& operator<<(std::int32_t val);
-	log_record_stream& operator<<(std::uint32_t val);
 	log_record_stream& operator<<(double val);
 	log_record_stream& operator<<(bool val);
-	log_record_stream& operator<<(std::streampos val);
+	template<typename T> typename std::enable_if<std::is_signed_v<T>, log_record_stream&>::type operator<<(T val)
+	{
+		*this << (std::int64_t)val;
+		return *this;
+	}
+	template<typename T> typename std::enable_if<std::is_unsigned_v<T>, log_record_stream&>::type operator<<(T val)
+	{
+		*this << (std::uint64_t)val;
+		return *this;
+	}
 	log_record_stream& operator<<(const std::string& str);
 	log_record_stream& operator<<(const hex& h);
 	log_record_stream& operator<<(const begin_complex&);
