@@ -182,13 +182,6 @@ log_record_stream& log_record_stream::operator<<(bool val)
 	return *this;
 }
 
-#ifdef WIN32
-log_record_stream& log_record_stream::operator<<(__int64 val)
-{
-	*this << (std::int64_t)val;
-	return *this;
-}
-#endif
 
 log_record_stream& log_record_stream::operator<<(std::streampos val)
 {
