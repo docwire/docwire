@@ -427,7 +427,7 @@ struct XLSParser::Implementation
 
 	void processRecord(int rec_type, const std::vector<unsigned char>& rec, std::string& text)
 	{
-		doctotext_log(debug) << std::hex << "record=0x" << rec_type;
+		doctotext_log(debug) << hex() << "record" << rec_type;
 		if (rec_type != XLS_CONTINUE && m_prev_rec_type == XLS_SST)
 			parseSharedStringTable(m_shared_string_table_buf);
 		switch (rec_type)
