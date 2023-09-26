@@ -226,6 +226,9 @@ inline std::string prepare_var_name(const std::string& var_name)
 #define doctotext_log_vars(...) doctotext_log(debug) << doctotext_log_named_variables(__VA_ARGS__)
 #define doctotext_log_var(v) doctotext_log_vars(v)
 
+#define doctotext_log_streamable_obj(obj, ...) \
+	begin_complex() << doctotext_log_type_of(obj) << doctotext_log_named_variables(__VA_ARGS__) << end_complex()
+
 #define doctotext_log_func() doctotext_log(debug) << "Entering function" << std::make_pair("funtion_name", doctotext_current_function)
 #define doctotext_log_func_with_args(...) doctotext_log_func() << doctotext_log_named_variables(__VA_ARGS__)
 
