@@ -539,7 +539,7 @@ const static unsigned int ZapfDingbatsEncodingUtf8[256] =
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfError& e)
 {
-	s << begin_complex() << doctotext_log_type_of(e) << std::make_pair("what()", e.what()) << end_complex();
+	s << doctotext_log_streamable_obj(e, e.what());
 	return s;
 }
 
