@@ -74,7 +74,7 @@ struct DllExport end_pair {};
 struct DllExport begin_array {};
 struct DllExport end_array {};
 
-#define doctotext_log_type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
+#define doctotext_log_streamable_type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
 
 class DllExport log_record_stream
 {
@@ -133,7 +133,7 @@ public:
 	template<typename T> log_record_stream& operator<<(const T* pointer)
 	{
 		if (pointer)
-			*this << begin_complex() << doctotext_log_type_of(pointer) << std::make_pair("dereferenced", std::cref(*pointer)) << end_complex();
+			*this << begin_complex() << doctotext_log_streamable_type_of(pointer) << std::make_pair("dereferenced", std::cref(*pointer)) << end_complex();
 		else
 			*this << nullptr;
 		return *this;
@@ -177,7 +177,7 @@ inline std::string prepare_var_name(const std::string& var_name)
 	return (pos == std::string::npos ? var_name : var_name.substr(pos + 1));
 }
 
-#define doctotext_log_named_variable(v) std::make_pair(prepare_var_name(#v).c_str(), v)
+#define doctotext_log_streamable_var(v) std::make_pair(prepare_var_name(#v).c_str(), v)
 
 #define doctotext_log_args_count_helper( \
 	a01, a02, a03, a04, a05, a06, a07, a08, a09, a10, a11, a12, a13, a14, a15, a16, \
@@ -189,48 +189,48 @@ inline std::string prepare_var_name(const std::string& var_name)
 		16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 #define doctotext_log_concatenate(a, b) doctotext_log_concatenate_2(a, b)
 #define doctotext_log_concatenate_2(a, b) a##b
-#define doctotext_log_named_variables_1(v) doctotext_log_named_variable(v)
-#define doctotext_log_named_variables_2(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_1(__VA_ARGS__)
-#define doctotext_log_named_variables_3(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_2(__VA_ARGS__)
-#define doctotext_log_named_variables_4(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_3(__VA_ARGS__)
-#define doctotext_log_named_variables_5(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_4(__VA_ARGS__)
-#define doctotext_log_named_variables_6(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_5(__VA_ARGS__)
-#define doctotext_log_named_variables_7(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_6(__VA_ARGS__)
-#define doctotext_log_named_variables_8(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_7(__VA_ARGS__)
-#define doctotext_log_named_variables_9(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_8(__VA_ARGS__)
-#define doctotext_log_named_variables_10(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_9(__VA_ARGS__)
-#define doctotext_log_named_variables_11(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_10(__VA_ARGS__)
-#define doctotext_log_named_variables_12(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_11(__VA_ARGS__)
-#define doctotext_log_named_variables_13(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_12(__VA_ARGS__)
-#define doctotext_log_named_variables_14(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_13(__VA_ARGS__)
-#define doctotext_log_named_variables_15(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_14(__VA_ARGS__)
-#define doctotext_log_named_variables_16(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_15(__VA_ARGS__)
-#define doctotext_log_named_variables_17(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_16(__VA_ARGS__)
-#define doctotext_log_named_variables_18(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_17(__VA_ARGS__)
-#define doctotext_log_named_variables_19(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_18(__VA_ARGS__)
-#define doctotext_log_named_variables_20(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_19(__VA_ARGS__)
-#define doctotext_log_named_variables_21(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_20(__VA_ARGS__)
-#define doctotext_log_named_variables_22(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_21(__VA_ARGS__)
-#define doctotext_log_named_variables_23(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_22(__VA_ARGS__)
-#define doctotext_log_named_variables_24(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_23(__VA_ARGS__)
-#define doctotext_log_named_variables_25(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_24(__VA_ARGS__)
-#define doctotext_log_named_variables_26(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_25(__VA_ARGS__)
-#define doctotext_log_named_variables_27(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_26(__VA_ARGS__)
-#define doctotext_log_named_variables_28(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_27(__VA_ARGS__)
-#define doctotext_log_named_variables_29(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_28(__VA_ARGS__)
-#define doctotext_log_named_variables_30(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_29(__VA_ARGS__)
-#define doctotext_log_named_variables_31(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_30(__VA_ARGS__)
-#define doctotext_log_named_variables_32(v, ...) doctotext_log_named_variables_1(v) << doctotext_log_named_variables_31(__VA_ARGS__)
+#define doctotext_log_streamable_vars_1(v) doctotext_log_streamable_var(v)
+#define doctotext_log_streamable_vars_2(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_1(__VA_ARGS__)
+#define doctotext_log_streamable_vars_3(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_2(__VA_ARGS__)
+#define doctotext_log_streamable_vars_4(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_3(__VA_ARGS__)
+#define doctotext_log_streamable_vars_5(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_4(__VA_ARGS__)
+#define doctotext_log_streamable_vars_6(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_5(__VA_ARGS__)
+#define doctotext_log_streamable_vars_7(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_6(__VA_ARGS__)
+#define doctotext_log_streamable_vars_8(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_7(__VA_ARGS__)
+#define doctotext_log_streamable_vars_9(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_8(__VA_ARGS__)
+#define doctotext_log_streamable_vars_10(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_9(__VA_ARGS__)
+#define doctotext_log_streamable_vars_11(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_10(__VA_ARGS__)
+#define doctotext_log_streamable_vars_12(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_11(__VA_ARGS__)
+#define doctotext_log_streamable_vars_13(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_12(__VA_ARGS__)
+#define doctotext_log_streamable_vars_14(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_13(__VA_ARGS__)
+#define doctotext_log_streamable_vars_15(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_14(__VA_ARGS__)
+#define doctotext_log_streamable_vars_16(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_15(__VA_ARGS__)
+#define doctotext_log_streamable_vars_17(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_16(__VA_ARGS__)
+#define doctotext_log_streamable_vars_18(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_17(__VA_ARGS__)
+#define doctotext_log_streamable_vars_19(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_18(__VA_ARGS__)
+#define doctotext_log_streamable_vars_20(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_19(__VA_ARGS__)
+#define doctotext_log_streamable_vars_21(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_20(__VA_ARGS__)
+#define doctotext_log_streamable_vars_22(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_21(__VA_ARGS__)
+#define doctotext_log_streamable_vars_23(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_22(__VA_ARGS__)
+#define doctotext_log_streamable_vars_24(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_23(__VA_ARGS__)
+#define doctotext_log_streamable_vars_25(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_24(__VA_ARGS__)
+#define doctotext_log_streamable_vars_26(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_25(__VA_ARGS__)
+#define doctotext_log_streamable_vars_27(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_26(__VA_ARGS__)
+#define doctotext_log_streamable_vars_28(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_27(__VA_ARGS__)
+#define doctotext_log_streamable_vars_29(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_28(__VA_ARGS__)
+#define doctotext_log_streamable_vars_30(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_29(__VA_ARGS__)
+#define doctotext_log_streamable_vars_31(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_30(__VA_ARGS__)
+#define doctotext_log_streamable_vars_32(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_31(__VA_ARGS__)
 
-#define doctotext_log_named_variables(...) doctotext_log_concatenate(doctotext_log_named_variables_, doctotext_log_args_count(__VA_ARGS__))(__VA_ARGS__)
-#define doctotext_log_vars(...) doctotext_log(debug) << doctotext_log_named_variables(__VA_ARGS__)
+#define doctotext_log_streamable_vars(...) doctotext_log_concatenate(doctotext_log_streamable_vars_, doctotext_log_args_count(__VA_ARGS__))(__VA_ARGS__)
+#define doctotext_log_vars(...) doctotext_log(debug) << doctotext_log_streamable_vars(__VA_ARGS__)
 #define doctotext_log_var(v) doctotext_log_vars(v)
 
 #define doctotext_log_streamable_obj(obj, ...) \
-	begin_complex() << doctotext_log_type_of(obj) << doctotext_log_named_variables(__VA_ARGS__) << end_complex()
+	begin_complex() << doctotext_log_streamable_type_of(obj) << doctotext_log_streamable_vars(__VA_ARGS__) << end_complex()
 
 #define doctotext_log_func() doctotext_log(debug) << "Entering function" << std::make_pair("funtion_name", doctotext_current_function)
-#define doctotext_log_func_with_args(...) doctotext_log_func() << doctotext_log_named_variables(__VA_ARGS__)
+#define doctotext_log_func_with_args(...) doctotext_log_func() << doctotext_log_streamable_vars(__VA_ARGS__)
 
 class DllExport cerr_log_redirection
 {
