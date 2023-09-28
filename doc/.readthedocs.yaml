@@ -6,7 +6,7 @@ build:
   apt_packages:
     - cmake
   jobs:
-    post-build:
+    post_build:
       - cd doc && cmake .
       - cd doc && cmake --build . --target doxygen
       - mkdir --parents $READTHEDOCS_OUTPUT/html/
