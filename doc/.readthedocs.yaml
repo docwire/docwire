@@ -6,9 +6,7 @@ build:
   apt_packages:
     - cmake
   commands:
-    - cd doc
-    - pwd
-    - cmake .
-    - cmake --build . --target doxygen
+    - cd doc && cmake .
+    - cd doc && cmake --build . --target doxygen
     - mkdir --parents $READTHEDOCS_OUTPUT/html/
-    - cp --recursive html/* $READTHEDOCS_OUTPUT/html/
+    - cp --recursive doc/html/* $READTHEDOCS_OUTPUT/html/
