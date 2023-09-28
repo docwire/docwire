@@ -3,9 +3,11 @@ build:
   os: "ubuntu-22.04"
   tools:
     python: "3.11"
-  commands:
-    - sudo apt-get install -y cmake
-    - cd doc && cmake .
-    - cd doc && cmake --build . --target doxygen
-    - mkdir --parents $READTHEDOCS_OUTPUT/html/
-    - cp --recursive doc/html/* $READTHEDOCS_OUTPUT/html/
+  apt_packages:
+    - cmake
+  jobs:
+    post-build:
+      - cd doc && cmake .
+      - cd doc && cmake --build . --target doxygen
+      - mkdir --parents $READTHEDOCS_OUTPUT/html/
+      - cp --recursive doc/html/* $READTHEDOCS_OUTPUT/html/
