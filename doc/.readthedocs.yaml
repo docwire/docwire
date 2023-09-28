@@ -4,7 +4,7 @@ build:
   tools:
     python: "3.11"
   commands:
-    - apt-get install -y cmake
+    - sudo apt-get install -y cmake
     - cd doc && cmake .
     - cd doc && cmake --build . --target doxygen
     - mkdir --parents $READTHEDOCS_OUTPUT/html/
