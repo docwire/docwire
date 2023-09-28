@@ -6,10 +6,10 @@ build:
   apt_packages:
     - cmake
   jobs:
+    pre_build:
+      - touch conf.py index.rst
     post_build:
       - cd doc && cmake .
       - cd doc && cmake --build . --target doxygen
       - mkdir --parents $READTHEDOCS_OUTPUT/html/
       - cp --recursive doc/html/* $READTHEDOCS_OUTPUT/html/
-sphinx:
-  configuration: doc/conf.py
