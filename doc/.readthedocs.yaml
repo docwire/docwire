@@ -4,9 +4,9 @@ build:
   tools:
     python: "3.11"
   commands:
-      cd doc
-      pwd
-      cmake .
-      cmake --build . --target doxygen
+    - cd doc
+    - pwd
+    - cmake .
+    - cmake --build . --target doxygen
     - mkdir --parents $READTHEDOCS_OUTPUT/html/
     - cp --recursive html/* $READTHEDOCS_OUTPUT/html/
