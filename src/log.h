@@ -114,7 +114,7 @@ public:
 	log_record_stream& operator<<(const std::exception& e);
 	log_record_stream& operator<<(const begin_array&);
 	log_record_stream& operator<<(const end_array&);
-	template<class T> log_record_stream& operator<<(const std::vector<T>& v)
+	template<class T, typename = std::void_t<decltype(std::begin(std::declval<T>())), decltype(std::end(std::declval<T>()))> > log_record_stream& operator<<(const T& v)
 	{
 		*this << begin_array();
 		for (auto i: v)
