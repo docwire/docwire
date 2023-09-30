@@ -177,7 +177,12 @@ inline std::string prepare_var_name(const std::string& var_name)
 	return (pos == std::string::npos ? var_name : var_name.substr(pos + 1));
 }
 
-#define doctotext_log_streamable_var(v) std::make_pair(prepare_var_name(#v).c_str(), v)
+template<typename T> std::pair<const char*, const T&> streamable_var(const std::string& var_name, T&& var)
+{
+	return std::pair<const char*, const T&>{prepare_var_name(var_name).c_str(), var};
+}
+
+#define doctotext_log_streamable_var(v) streamable_var(#v, v)
 
 #define doctotext_log_args_count_helper( \
 	a01, a02, a03, a04, a05, a06, a07, a08, a09, a10, a11, a12, a13, a14, a15, a16, \
