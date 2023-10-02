@@ -177,9 +177,9 @@ inline std::string prepare_var_name(const std::string& var_name)
 	return (pos == std::string::npos ? var_name : var_name.substr(pos + 1));
 }
 
-template<typename T> std::pair<const char*, const T&> streamable_var(const std::string& var_name, T&& var)
+template<typename T> std::pair<std::string, const T&> streamable_var(const std::string& var_name, T&& var)
 {
-	return std::pair<const char*, const T&>{prepare_var_name(var_name).c_str(), var};
+	return std::pair<std::string, const T&>{prepare_var_name(var_name), var};
 }
 
 #define doctotext_log_streamable_var(v) streamable_var(#v, v)
