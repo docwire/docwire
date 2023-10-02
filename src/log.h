@@ -106,7 +106,7 @@ public:
 	log_record_stream& operator<<(severity_level severity);
 	log_record_stream& operator<<(const begin_pair& b);
 	log_record_stream& operator<<(const end_pair&);
-	template<class T> log_record_stream& operator<<(const std::pair<const char*, T>& p)
+	template<typename T1, typename T2, typename = std::enable_if_t<std::is_convertible_v<T1, std::string_view>>> log_record_stream& operator<<(const std::pair<T1, T2>& p)
 	{
 		*this << begin_pair{p.first} << p.second << end_pair();
 		return *this;
