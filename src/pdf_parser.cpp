@@ -6336,6 +6336,7 @@ struct PDFParser::Implementation
 			std::string m_utf_text;
 			PoDoFo::PdfString m_pdf_string;
 			double m_value;
+
 			void log_to_record_stream(log_record_stream& s) const
 			{
 				s << doctotext_log_streamable_obj(*this, m_is_number);
@@ -6429,6 +6430,11 @@ struct PDFParser::Implementation
 					m_char_space = 0.0;
 					m_rise = 0.0;
 				}
+
+				void log_to_record_stream(log_record_stream& s) const
+				{
+					s << doctotext_log_streamable_obj(*this, /*m_ctm, m_matrix, m_line_matrix,*/ m_font_size, m_scaling, m_leading, m_rise, m_word_space, m_char_space);
+				}
 			};
 
 			struct TextElement
@@ -6481,6 +6487,11 @@ struct PDFParser::Implementation
 						return m_y < compared.m_y;
 					}
 					return m_x > compared.m_x;
+				}
+
+				void log_to_record_stream(log_record_stream& s) const
+				{
+					s << doctotext_log_streamable_obj(*this, m_text, m_x, m_y, m_width, m_height, m_space_size);
 				}
 			};
 
@@ -6642,6 +6653,7 @@ struct PDFParser::Implementation
 				doctotext_log_func_with_args(tj_array, pCurFont);
 				if (!m_font)
 					return;
+				doctotext_log_var(m_current_state);
 				TransformationMatrix tmp_matrix, cid_matrix;
 				cid_matrix = tmp_matrix = m_current_state.m_ctm.combinedWith(m_current_state.m_matrix);
 				double scale = m_current_state.m_scaling / 100.0;
@@ -6662,17 +6674,20 @@ struct PDFParser::Implementation
 					doctotext_log_var(i);
 					if (tj_array[i].m_is_number)
 					{
+						doctotext_log(debug) << "Processing TJ char space" << doctotext_log_streamable_var(tj_array[i].m_value);
 						double distance = (-tj_array[i].m_value * x_scale);
 						m_current_state.m_line_matrix.m_offset_x += distance;
 						doctotext_log_vars(distance, space_size);
 						if (distance >= space_size)
 						{
+							doctotext_log(debug) << "Adding space to output because distance >= space_size" << doctotext_log_streamable_vars(distance, space_size);
 							output += ' ';
 						}
 						add_charspace = true;
 					}
 					else
 					{
+						doctotext_log(debug) << "Processing TJ text" << doctotext_log_streamable_var(tj_array[i].m_utf_text);
 						int idx = 0;
 						for (const auto &c : tj_array[i].m_utf_text)
 						{
@@ -6856,25 +6871,30 @@ struct PDFParser::Implementation
 				double x_end, y, x_begin;
 				while (it != m_text_elements.end())
 				{
+					doctotext_log_var(*it);
 					//some minimum values for new line and space. Calculated experimentally
 					double new_line_size = (*it).m_height * 0.75 < 4.0 ? 4.0 : (*it).m_height * 0.75;
 
           double horizontal_lines_separator_size = (*it).m_height;
+					doctotext_log_vars(new_line_size, horizontal_lines_separator_size, first);
 					if (!first)
 					{
 						double dx = (*it).m_x - x_end;
 						double dy = y - ((*it).m_y + (*it).m_height / 2);
+						doctotext_log_vars(dx, dy);
 
 						if (dy >= new_line_size)
 						{
 							while (dy >= new_line_size)
 							{
+								doctotext_log(debug) << "New line because of y position difference" << doctotext_log_streamable_vars(dy, new_line_size);
 								output += '\n';
 								dy -= new_line_size;
 							}
 						}
 						else if ((*it).m_x < x_begin)	//force new line
 						{
+							doctotext_log(debug) << "New line because of x position difference" << doctotext_log_streamable_vars(it->m_x, x_begin);
 							output += '\n';
 						}
 						else if (dx >= (*it).m_space_size)
@@ -7772,6 +7792,8 @@ struct PDFParser::Implementation
 											break;
 										}
 									}
+									PDFContent::TJArrayElement& new_element = tj_array[tj_array.size() - 1];
+									doctotext_log_var(new_element);
 								}
                 if (pCurFont) {
                   page_text.executeTJ(tj_array, pCurFont);
@@ -7989,6 +8011,7 @@ struct PDFParser::Implementation
 				ex.appendError("Error while parsing page number: " + uint_to_string(page_num));
 				throw;
 			}
+			doctotext_log(debug) << "Page processed" << doctotext_log_streamable_var(page_num);
 		}
 	}
 
