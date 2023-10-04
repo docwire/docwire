@@ -416,9 +416,8 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     catch (doctotext::Exception& ex)
     {
         std::string test_text {
-            "Error processing file " + file_name + ".\n" + ex.getBacktrace()
+            "Error processing file " + file_name + ".\n" + (format == "pdf" ? "" : ex.getBacktrace())
         };
-        std::replace(test_text.begin(), test_text.end(), '\\', '/');
         
         EXPECT_EQ(test_text, expected_text);
     }   
