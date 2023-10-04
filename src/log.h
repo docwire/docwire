@@ -106,7 +106,7 @@ public:
 	log_record_stream& operator<<(severity_level severity);
 	log_record_stream& operator<<(const begin_pair& b);
 	log_record_stream& operator<<(const end_pair&);
-	template<class T> log_record_stream& operator<<(const std::pair<const char*, T>& p)
+	template<typename T1, typename T2, typename = std::enable_if_t<std::is_convertible_v<T1, std::string_view>>> log_record_stream& operator<<(const std::pair<T1, T2>& p)
 	{
 		*this << begin_pair{p.first} << p.second << end_pair();
 		return *this;
@@ -114,7 +114,7 @@ public:
 	log_record_stream& operator<<(const std::exception& e);
 	log_record_stream& operator<<(const begin_array&);
 	log_record_stream& operator<<(const end_array&);
-	template<class T> log_record_stream& operator<<(const std::vector<T>& v)
+	template<class T, typename = std::void_t<decltype(std::begin(std::declval<T>())), decltype(std::end(std::declval<T>()))> > log_record_stream& operator<<(const T& v)
 	{
 		*this << begin_array();
 		for (auto i: v)
@@ -177,7 +177,12 @@ inline std::string prepare_var_name(const std::string& var_name)
 	return (pos == std::string::npos ? var_name : var_name.substr(pos + 1));
 }
 
-#define doctotext_log_streamable_var(v) std::make_pair(prepare_var_name(#v).c_str(), v)
+template<typename T> std::pair<std::string, const T&> streamable_var(const std::string& var_name, T&& var)
+{
+	return std::pair<std::string, const T&>{prepare_var_name(var_name), var};
+}
+
+#define doctotext_log_streamable_var(v) streamable_var(#v, v)
 
 #define doctotext_log_args_count_helper( \
 	a01, a02, a03, a04, a05, a06, a07, a08, a09, a10, a11, a12, a13, a14, a15, a16, \

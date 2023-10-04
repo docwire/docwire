@@ -305,7 +305,8 @@ class Exiter
 public:
 	~Exiter()
 	{
-		*log_stream << std::endl << "]" << std::endl;
+		if (!first_log_in_stream)
+			*log_stream << std::endl << "]" << std::endl;
 	}
 };
 

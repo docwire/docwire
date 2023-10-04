@@ -58,7 +58,7 @@ if(MSVC)
                                                  Boost::json
                                                  LibArchive::LibArchive)
     target_include_directories(doctotext_core PUBLIC ${wv2_inc_dir})
-    target_compile_options(doctotext_core PUBLIC "/Zc:__cplusplus")
+    target_compile_options(doctotext_core PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 
 else()
     find_library(wvWare wv2 REQUIRED)
@@ -151,7 +151,7 @@ if(MSVC)
             ZLIB::ZLIB
             Iconv::Iconv
             )
-    target_compile_options(doctotext_parsers PUBLIC "/Zc:__cplusplus")
+    target_compile_options(doctotext_parsers PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 else()
     find_library(podofo podofo REQUIRED)
     find_package(Freetype REQUIRED)
@@ -195,7 +195,7 @@ if(MSVC)
             ../
             .
             )
-    target_compile_options(doctotext_ocr PUBLIC "/Zc:__cplusplus")
+    target_compile_options(doctotext_ocr PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 else()
     find_package(Leptonica)
     if (Leptonica_FOUND)
@@ -240,7 +240,7 @@ if(MSVC)
             ../
             .
             )
-    target_compile_options(doctotext_mail PUBLIC "/Zc:__cplusplus")
+    target_compile_options(doctotext_mail PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 else()
     find_library(bfio bfio REQUIRED)
     find_library(pff pff REQUIRED)
