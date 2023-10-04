@@ -539,7 +539,16 @@ const static unsigned int ZapfDingbatsEncodingUtf8[256] =
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfString& str)
 {
-	s << doctotext_log_streamable_obj(str, str.GetString());
+	if (str.GetState() == PoDoFo::PdfStringState::RawBuffer)
+		s << doctotext_log_streamable_obj(str, str.IsHex(), str.GetState(), str.GetRawData());
+	else
+		s << doctotext_log_streamable_obj(str, str.IsHex(), str.GetState(), str.GetString());
+	return s;
+}
+
+log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfName& n)
+{
+	s << doctotext_log_streamable_obj(n, n.GetString());
 	return s;
 }
 
@@ -549,51 +558,148 @@ log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfError& e)
 	return s;
 }
 
-log_record_stream& operator<<(log_record_stream& s, const PoDoFo::EPdfContentsType& t)
+log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfEncoding& e)
 {
-	std::string stringified_value;
-	switch (t)
-	{
-		case PoDoFo::ePdfContentsType_Keyword: stringified_value = "ePdfContentsType_Keyword"; break;
-		case PoDoFo::ePdfContentsType_Variant: stringified_value = "ePdfContentsType_Variant"; break;
-		case PoDoFo::ePdfContentsType_ImageData: stringified_value = "ePdfContentsType_ImageData"; break;
-		default: stringified_value = "!incorrect!"; break;
-	}
-	s << doctotext_log_streamable_obj(t, stringified_value);
+	s << doctotext_log_streamable_obj(e, e.IsNull(), e.HasCIDMapping(), e.IsSimpleEncoding(), e.HasParsedLimits(), e.IsDynamicEncoding(), e.GetId(), /*GetLimits(),*/ e.HasValidToUnicodeMap());
 	return s;
 }
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfFont& f)
 {
-	s << doctotext_log_streamable_obj(f, f.GetFontSize(), f.GetFontScale(), f.GetFontCharSpace(), f.GetWordSpace(), f.IsUnderlined(), f.IsBold(), f.IsItalic(), f.IsStrikeOut(), f.GetFontMetrics(), f.IsSubsetting());
+	s << doctotext_log_streamable_obj(f, f.GetType(), f.SupportsSubsetting(), f.IsStandard14Font(), f.IsCIDKeyed(), f.IsObjectLoaded(), f.IsSubsettingEnabled(), f.IsEmbeddingEnabled(), f.GetSubsetPrefix(), /*f.GetIdentifier(),*/ f.GetEncoding(), f.GetMetrics(), f.GetName()/*, f.GetUsedGIDs()*//*, f.GetDescendantFontObject()*/);
 	return s;
 }
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfFontMetrics& m)
 {
-	s << doctotext_log_streamable_obj(m, m.GetLineSpacing(), m.GetLineSpacingMM(), m.GetUnderlineThickness(), m.GetUnderlinePosition(),
-			m.GetUnderlinePositionMM(), m.GetStrikeOutPosition(), m.GetStrikeOutPositionMM(),
-			m.GetStrikeoutThickness(), m.GetStrikeoutThicknessMM(), m.GetFilename(), m.GetFontname(),
-			m.GetWeight(), m.GetAscent(), m.GetPdfAscent(), m.GetDescent(), m.GetPdfDescent(),
-			m.GetItalicAngle(), m.GetFontSize(), m.GetFontScale(), m.GetFontCharSpace(), m.GetWordSpace(),
-			m.GetFontType(), m.IsSymbol());
+	s << doctotext_log_streamable_obj(m, /*GetGlyphCount(),*/ m.HasUnicodeMapping(), m.GetLineSpacing(), m.GetUnderlineThickness(), m.GetUnderlinePosition(), m.GetStrikeThroughPosition(), m.GetStrikeThroughThickness(), m.GetFontFileType(), m.HasFontFileData(), m.GetFontNameSafe(), m.GetBaseFontNameSafe(), /*GetBaseFontName(), GetFontName(),*/ /*GetFontNameRaw(),*/ m.GetFontFamilyName(), m.GetFontStretch(), m.GetWeight(), /*GetWeightRaw(),*/ /*m.GetFlags(),*/ m.GetItalicAngle(), m.GetAscent(), m.GetDescent(), m.GetLeading(), /*GetLeadingRaw(),*/ m.GetCapHeight(), m.GetXHeight(), /*GetXHeightRaw(),*/ m.GetStemV(), m.GetStemH(), /*GetStemHRaw(),*/ m.GetAvgWidth(), /*GetAvgWidthRaw(),*/ m.GetMaxWidth(), /*GetMaxWidthRaw(),*/ m.GetDefaultWidth(), /*GetDefaultWidthRaw(),*/ /*m.GetStyle(),*/ m.IsStandard14FontMetrics(), /*GetMatrix(),*/ m.IsType1Kind(), m.IsTrueTypeKind(), m.IsPdfSymbolic(), /*IsPdfNonSymbolic(),*/ m.GetFilePath()/*, GetFaceIndex()*/);
 	return s;
 }
 
-log_record_stream& operator<<(log_record_stream& s, const PoDoFo::EPdfFontType& t)
+log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfFontType& t)
 {
 	std::string stringified_value;
 	switch (t)
 	{
-		case PoDoFo::ePdfFontType_TrueType: stringified_value = "ePdfFontType_TrueType"; break;
-		case PoDoFo::ePdfFontType_Type1Pfa: stringified_value = "ePdfFontType_Type1Pfa"; break;
-		case PoDoFo::ePdfFontType_Type1Pfb: stringified_value = "ePdfFontType_Type1Pfb"; break;
-		case PoDoFo::ePdfFontType_Type1Base14: stringified_value = "ePdfFontType_Type1Base14"; break;
-		case PoDoFo::ePdfFontType_Type3: stringified_value = "ePdfFontType_Type3"; break;
-		case PoDoFo::ePdfFontType_Unknown: stringified_value = "ePdfFontType_Unknown"; break;
+		case PoDoFo::PdfFontType::Unknown: stringified_value = "Unknown"; break;
+		case PoDoFo::PdfFontType::Type1: stringified_value = "Type1"; break;
+		case PoDoFo::PdfFontType::Type3: stringified_value = "Type3"; break;
+		case PoDoFo::PdfFontType::TrueType: stringified_value = "TrueType"; break;
+		case PoDoFo::PdfFontType::CIDType1: stringified_value = "CIDType1"; break;
+		case PoDoFo::PdfFontType::CIDTrueType: stringified_value = "CIDTrueType"; break;
 		default: stringified_value = "!incorrect!"; break;
 	}
 	s << doctotext_log_streamable_obj(t, stringified_value);
+	return s;
+}
+
+log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfFontFileType& t)
+{
+	std::string stringified_value;
+	switch (t)
+	{
+		case PoDoFo::PdfFontFileType::Unknown: stringified_value = "Unknown"; break;
+		case PoDoFo::PdfFontFileType::Type1: stringified_value = "Type1"; break;
+		case PoDoFo::PdfFontFileType::Type1CCF: stringified_value = "Type1CCF"; break;
+		case PoDoFo::PdfFontFileType::CIDType1: stringified_value = "CIDType1"; break;
+		case PoDoFo::PdfFontFileType::Type3: stringified_value = "Type3"; break;
+		case PoDoFo::PdfFontFileType::TrueType: stringified_value = "TrueType"; break;
+		case PoDoFo::PdfFontFileType::OpenType: stringified_value = "OpenType"; break;
+		default: stringified_value = "!incorrect!"; break;
+	}
+	s << doctotext_log_streamable_obj(t, stringified_value);
+	return s;
+}
+
+log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfFontStretch& st)
+{
+	std::string stringified_value;
+	switch (st)
+	{
+		case PoDoFo::PdfFontStretch::Unknown: stringified_value = "Unknown"; break;
+		case PoDoFo::PdfFontStretch::UltraCondensed: stringified_value = "UltraCondensed"; break;
+		case PoDoFo::PdfFontStretch::ExtraCondensed: stringified_value = "ExtraCondensed"; break;
+		case PoDoFo::PdfFontStretch::Condensed: stringified_value = "Condensed"; break;
+		case PoDoFo::PdfFontStretch::SemiCondensed: stringified_value = "SemiCondensed"; break;
+		case PoDoFo::PdfFontStretch::Normal: stringified_value = "Normal"; break;
+		case PoDoFo::PdfFontStretch::SemiExpanded: stringified_value = "SemiExpanded"; break;
+		case PoDoFo::PdfFontStretch::Expanded: stringified_value = "Expanded"; break;
+		case PoDoFo::PdfFontStretch::ExtraExpanded: stringified_value = "ExtraExpanded"; break;
+		case PoDoFo::PdfFontStretch::UltraExpanded: stringified_value = "UltraExpanded"; break;
+		default: stringified_value = "!incorrect!"; break;
+	}
+	s << doctotext_log_streamable_obj(st, stringified_value);
+	return s;
+}
+
+std::ostream& operator<<(std::ostream& s, const PoDoFo::PdfObject& o);
+
+log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfVariant& v)
+{
+	s << begin_complex() << doctotext_log_streamable_type_of(v) << doctotext_log_streamable_var(v.GetDataTypeString());
+	if (v.IsString())
+		s << doctotext_log_streamable_var(v.GetString());
+	else if (v.IsNumber())
+		s << doctotext_log_streamable_var(v.GetNumber());
+	else if (v.IsArray())
+		s << doctotext_log_streamable_var(v.GetArray());
+	else
+		s << doctotext_log_streamable_var(v.ToString());
+	s << end_complex();
+	return s;
+}
+
+log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfObject& o)
+{
+	s << begin_complex() << doctotext_log_streamable_type_of(o) << doctotext_log_streamable_var(o.GetDataTypeString());
+	if (o.IsString())
+		s << doctotext_log_streamable_var(o.GetString());
+	else if (o.IsNumber())
+		s << doctotext_log_streamable_var(o.GetNumber());
+	else if (o.IsArray())
+		s << doctotext_log_streamable_var(o.GetArray());
+	else
+		s << doctotext_log_streamable_var(o.ToString());
+	s << end_complex();
+	return s;
+}
+
+log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfStringState& st)
+{
+	std::string stringified_value;
+	switch (st)
+	{
+		case PoDoFo::PdfStringState::RawBuffer: stringified_value = "RawBuffer"; break;
+		case PoDoFo::PdfStringState::Ascii: stringified_value = "Ascii"; break;
+		case PoDoFo::PdfStringState::PdfDocEncoding: stringified_value = "PdfDocEncoding"; break;
+		case PoDoFo::PdfStringState::Unicode: stringified_value = "Unicode"; break;
+		default: stringified_value = "!incorrect!"; break;
+	}
+	s << doctotext_log_streamable_obj(st, stringified_value);
+	return s;
+}
+
+log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfContentType& t)
+{
+	std::string stringified_value;
+	switch (t)
+	{
+		case PoDoFo::PdfContentType::Unknown: stringified_value = "Unknown"; break;
+		case PoDoFo::PdfContentType::Operator: stringified_value = "Operator"; break;
+		case PoDoFo::PdfContentType::ImageDictionary: stringified_value = "ImageDictionary"; break;
+		case PoDoFo::PdfContentType::ImageData: stringified_value = "ImageData"; break;
+		case PoDoFo::PdfContentType::DoXObject: stringified_value = "DoXObject"; break;
+		case PoDoFo::PdfContentType::EndXObjectForm: stringified_value = "EndXObjectForm"; break;
+		case PoDoFo::PdfContentType::UnexpectedKeyword: stringified_value = "UnexpectedKeyword"; break;
+		default: stringified_value = "!incorrect!"; break;
+	}
+	s << doctotext_log_streamable_obj(t, stringified_value);
+	return s;
+}
+
+log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfContent& c)
+{
+	s << doctotext_log_streamable_obj(c, c.Type, c.Keyword, c.Stack);
 	return s;
 }
 
@@ -6302,7 +6408,7 @@ struct PDFParser::Implementation
 				return m_cid_len > 0;
 			}
 
-			void setCidString(std::string& cid_str)
+			void setCidString(const std::string& cid_str)
 			{
 				m_cid_begin = (char*)cid_str.c_str();
 				m_cid_len = cid_str.length();
@@ -6496,6 +6602,7 @@ struct PDFParser::Implementation
 			};
 
 			Font* m_font;
+			//PoDoFo::PdfTextState m_state;
 			std::list<TextState> m_text_states;
 			TextState m_current_state;
 			std::multiset<TextElement> m_text_elements;
@@ -6589,21 +6696,21 @@ struct PDFParser::Implementation
 				m_current_state.m_scaling = scale;
 			}
 
-			void executeQuote(const std::string& str, PoDoFo::PdfFont* pCurFont)
+			void executeQuote(const std::string& str, const PoDoFo::PdfFont* pCurFont, double curFontSize)
 			{
 				doctotext_log_func_with_args(str, pCurFont);
 				executeTstar();
-				executeTj(str, pCurFont);
+				executeTj(str, pCurFont, curFontSize);
 			}
 
-			void executeDoubleQuote(const std::string& str, std::vector<double> args, PoDoFo::PdfFont* pCurFont)
+			void executeDoubleQuote(const std::string& str, std::vector<double> args, const PoDoFo::PdfFont* pCurFont, double curFontSize)
 			{
 				doctotext_log_func_with_args(str, args, pCurFont);
 				executeTw(args);
 				args[0] = args[1];
 				args.pop_back();
 				executeTc(args);
-				executeTj(str, pCurFont);
+				executeTj(str, pCurFont, curFontSize);
 			}
 
 			void executeCm(const std::vector<double>& args)
@@ -6620,37 +6727,22 @@ struct PDFParser::Implementation
 			}
 
 			double
-			charWidth(const PoDoFo::PdfString &str, const PoDoFo::PdfFont &font, unsigned int idx)
+			charWidth(const std::string &str, const PoDoFo::PdfFont &font, double curFontSize, unsigned int idx)
 			{
-				doctotext_log_func_with_args(str/*, font*/, idx);
-				std::string utf8_str = encode_to_utf8(str, font);
-				auto c_str = str.GetString();
-				doctotext_log_vars(utf8_str, c_str);
-				if (str.GetLength() == utf8_str.size() && idx < str.GetLength())
-				{
-					doctotext_log(debug) << "handling as utf8";
-					return font.GetFontMetrics()->CharWidth(c_str[idx]);
-				}
-				else
-				{
-					doctotext_log(debug) << "handling as utf16";
-					unsigned int new_idx = idx / 2;
-					const PoDoFo::pdf_utf16be* pStr = reinterpret_cast<const PoDoFo::pdf_utf16be*>(str.GetString());
-					if (new_idx < utf8_str.size())
-					{
-						PoDoFo::pdf_utf16be lCID = (pStr[new_idx] << 8) | (pStr[new_idx] >> 8 );
-						return font.GetFontMetrics()->CharWidth((unsigned char)lCID);
-					}
-					else
-					{
-						return 0.0;
-					}
-				}
+				doctotext_log_func_with_args(str, font, curFontSize, idx);
+				std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
+				std::basic_string<char32_t> u8 = converter.from_bytes(str);
+				char32_t ch = u8[idx];
+				std::string ch_s = converter.to_bytes(ch);
+				doctotext_log_vars(ch, ch_s);
+				PoDoFo::PdfTextState text_state;
+				text_state.FontSize = curFontSize;
+				return font.GetStringLength(ch_s, text_state);
 			}
 
-			void executeTJ(std::vector<TJArrayElement>& tj_array, PoDoFo::PdfFont* pCurFont)
+			void executeTJ(std::vector<TJArrayElement>& tj_array, const PoDoFo::PdfFont* pCurFont, double curFontSize)
 			{
-				doctotext_log_func_with_args(tj_array, pCurFont);
+				doctotext_log_func_with_args(tj_array, pCurFont, curFontSize);
 				if (!m_font)
 					return;
 				doctotext_log_var(m_current_state);
@@ -6700,14 +6792,14 @@ struct PDFParser::Implementation
 							cid_matrix = tmp_matrix.combinedWith(m_current_state.m_line_matrix);
 
 							//get character size
-							double cid_width = charWidth(tj_array[i].m_pdf_string, *pCurFont, idx);
+							double cid_width = charWidth(tj_array[i].m_utf_text, *pCurFont, curFontSize, idx);
 							doctotext_log_var(cid_width);
 							++idx;
 							double advance = cid_width;
 
 							//calculate bounding box
-							double tmp_y = m_current_state.m_rise + pCurFont->GetFontMetrics()->GetDescent();
-							double text_height = pCurFont->GetFontMetrics()->GetLineSpacing();
+							double tmp_y = m_current_state.m_rise + pCurFont->GetMetrics().GetDescent() * curFontSize;
+							double text_height = pCurFont->GetMetrics().GetLineSpacing() * curFontSize;
 							doctotext_log_vars(tmp_y, text_height);
 							double x0 = cid_matrix.transformX(0, tmp_y);
 							double y0 = cid_matrix.transformY(0, tmp_y);
@@ -6723,8 +6815,8 @@ struct PDFParser::Implementation
 							}
 //							if (last)
 								str_width = x0 > x1 ? x0 - x_pos : x1 - x_pos;
-							if (abs(int(y1 - y0)) > str_height)
-								str_height = abs(int(y1 - y0));
+							if (abs(y1 - y0) > str_height)
+								str_height = abs(y1 - y0);
 							doctotext_log_vars(str_width, str_height);
 							if (y_pos > y1)
 								y_pos = y1;
@@ -6845,7 +6937,7 @@ struct PDFParser::Implementation
 			}
 
 
-			void executeTj(const std::string& str, PoDoFo::PdfFont* pCurFont)
+			void executeTj(const std::string& str, const PoDoFo::PdfFont* pCurFont, double curFontSize)
 			{
 				doctotext_log_func_with_args(str, pCurFont);
 				std::vector<TJArrayElement> tj_array;
@@ -6853,7 +6945,7 @@ struct PDFParser::Implementation
 				tj_array[0].m_is_number = false;
 				tj_array[0].m_text = str;
         if (pCurFont) {
-          executeTJ(tj_array, pCurFont);
+          executeTJ(tj_array, pCurFont, curFontSize);
         }
         else
         {
@@ -6942,17 +7034,17 @@ struct PDFParser::Implementation
   PDFContent::FontsByNames parseFonts(const PoDoFo::PdfPage& page)
   {
     PDFContent::FontsByNames fonts_for_page;
-    const PoDoFo::PdfDictionary* res_dictionary = to_dictionary(page.GetResources());
+    const PoDoFo::PdfDictionary* res_dictionary = to_dictionary(&page.GetResources()->GetObject());
     if (!res_dictionary)
       return fonts_for_page;
 
     const PoDoFo::PdfDictionary* fonts_dictionary = to_dictionary(res_dictionary->GetKey("Font"));
     if (fonts_dictionary)
     {
-      for (auto& k : fonts_dictionary->GetKeys())
+      for (auto k = fonts_dictionary->begin(); k != fonts_dictionary->end(); k++)
       {
-        PoDoFo::PdfName font_code = k.first.GetName();
-        const PoDoFo::PdfDictionary* font_dictionary = to_dictionary(k.second);
+        PoDoFo::PdfName font_code = k->first.GetString();
+        const PoDoFo::PdfDictionary* font_dictionary = to_dictionary(&k->second);
         if (font_dictionary)
         {
           PDFContent::Font* font = NULL;
@@ -6969,19 +7061,19 @@ struct PDFParser::Implementation
                 is_new_font = true;
                 font = new PDFContent::Font;
                 font->m_font_dictionary = font_dictionary;
-                fonts_for_page[font_code.GetName()] = font;
+                fonts_for_page[font_code.GetString()] = font;
                 m_pdf_content.m_fonts_by_indexes[index] = font;
                 m_pdf_content.m_fonts.push_back(font);
               }
               else
-                fonts_for_page[font_code.GetName()] = m_pdf_content.m_fonts_by_indexes[index];
+                fonts_for_page[font_code.GetString()] = m_pdf_content.m_fonts_by_indexes[index];
             }
             else
             {
               is_new_font = true;
               font = new PDFContent::Font;
               font->m_font_dictionary = font_dictionary;
-              fonts_for_page[font_code.GetName()] = font;
+              fonts_for_page[font_code.GetString()] = font;
               m_pdf_content.m_fonts.push_back(font);
             }
           }
@@ -7045,9 +7137,9 @@ struct PDFParser::Implementation
 		if (object == nullptr)
 			return def_val;
 		else if (object->IsName())
-			return object->GetName().GetName();
-		else if (object->IsString() || object->IsHexString())
-			return object->GetString().GetStringUtf8();
+			return object->GetName().GetString();
+		else if (object->IsString())
+			return object->GetString().GetString();
     else
       return def_val;
 	}
@@ -7077,7 +7169,7 @@ struct PDFParser::Implementation
 		if (object == nullptr)
 			return nullptr;
 		else if (object->IsReference())
-			return to_dictionary(object->GetOwner()->GetObject(object->GetReference()));
+			return to_dictionary(object->GetDocument()->GetObjects().GetObject(object->GetReference()));
 		else if (object->IsDictionary())
 			return &object->GetDictionary();
 		else
@@ -7089,7 +7181,7 @@ struct PDFParser::Implementation
 		if (object == nullptr)
 			return nullptr;
 		else if (object->IsReference())
-			return to_array(object->GetOwner()->GetObject(object->GetReference()));
+			return to_array(object->GetDocument()->GetObjects().GetObject(object->GetReference()));
 		else if (object->IsArray())
 			return &object->GetArray();
 		else
@@ -7101,13 +7193,11 @@ struct PDFParser::Implementation
 		if (object == nullptr)
 			throw std::invalid_argument("object argument is nullptr");
 		else if (object->IsReference())
-			return to_buffer(object->GetOwner()->GetObject(object->GetReference()));
+			return to_buffer(object->GetDocument()->GetObjects().GetObject(object->GetReference()));
 		else
 		{
-			char* buffer;
-			PoDoFo::pdf_long length;
-			object->GetStream()->GetFilteredCopy(&buffer, &length);
-			return std::vector<char>(buffer, buffer + length);
+			PoDoFo::charbuff buffer = object->GetStream()->GetCopy();
+			return std::vector<char>(buffer.c_str(), buffer.c_str() + buffer.size());
 		}
 	}
 
@@ -7229,7 +7319,7 @@ struct PDFParser::Implementation
 		const PoDoFo::PdfName* encoding_name = to_name(font.m_font_dictionary->GetKey("Encoding"));
 		if (encoding_name)
 		{
-			font.m_font_encoding = encoding_name->GetName();
+			font.m_font_encoding = encoding_name->GetString();
 			PredefinedSimpleEncodings::const_iterator it = m_pdf_predefined_simple_encodings.find(font.m_font_encoding);
 			if (it != m_pdf_predefined_simple_encodings.end())
 			{
@@ -7258,7 +7348,7 @@ struct PDFParser::Implementation
 			const unsigned int* source_table;
 			if (base_encoding_name)
 			{
-				PredefinedSimpleEncodings::const_iterator it = m_pdf_predefined_simple_encodings.find(base_encoding_name->GetName());
+				PredefinedSimpleEncodings::const_iterator it = m_pdf_predefined_simple_encodings.find(base_encoding_name->GetString());
 				if (it != m_pdf_predefined_simple_encodings.end())
 					source_table = it->second;
 				else
@@ -7284,7 +7374,7 @@ struct PDFParser::Implementation
 					{
 						if (difference.IsName())
 						{
-							CharacterNames::const_iterator it = m_pdf_character_names.find(difference.GetName().GetName());
+							CharacterNames::const_iterator it = m_pdf_character_names.find(difference.GetName().GetString());
 							if (it != m_pdf_character_names.end())
 							{
 								font.m_simple_encoding_table[replacements] = it->second;
@@ -7646,22 +7736,37 @@ struct PDFParser::Implementation
 	std::string pdfstring_to_hex(const PoDoFo::PdfString& pdf_string)
 	{
 		// warning TODO: Operating on internal buffer is the only way to get proper hex string data. GetStringUtf8() returns incremented values sometimes. Bug in PoDoFo?
-		return string_to_hex(const_cast<PoDoFo::PdfString&>(pdf_string).GetBuffer().GetBuffer());
+		return string_to_hex(pdf_string.GetString());
 	}
 
 	static std::string encode_to_utf8(const PoDoFo::PdfString& pdf_string, const PoDoFo::PdfFont& font)
 	{
-	  PoDoFo::PdfString unicode = font.GetEncoding()->ConvertToUnicode( pdf_string, &font);
-    return unicode.GetStringUtf8();
+		doctotext_log_func_with_args(pdf_string, font);
+		std::string decoded;
+		std::vector<double> lengths;
+		std::vector<unsigned int> positions;
+		PoDoFo::PdfTextState state;
+		state.Font = &font;
+		try
+		{
+			(void)state.Font->TryScanEncodedString(pdf_string, state, decoded, lengths, positions);
+		}
+		catch (std::exception& e)
+		{
+			doctotext_log(error) << "Exception in TryScanEncodedString()" << doctotext_log_streamable_var(e);
+			return "";
+		}
+		return decoded;
 	}
 
-	std::vector<double> pdfvariant_stack_to_vector_of_double(std::stack<PoDoFo::PdfVariant>& stack, int how_many)
+	std::vector<double> pdfvariant_stack_to_vector_of_double(PoDoFo::PdfVariantStack& stack, int start, int how_many)
 	{
+		doctotext_log_func_with_args(stack, start, how_many);
 		std::vector<double> result;
-		for (int i = 0; i < how_many; i++)
+		for (int i = start; i < how_many; i++)
 		{
-			result.insert(result.begin(), stack.top().GetReal());
-			stack.pop();
+			doctotext_log_vars(i, stack[i]);
+			result.insert(result.begin(), stack[i].GetReal());
 		}
 		return result;
 	}
@@ -7669,7 +7774,7 @@ struct PDFParser::Implementation
 	void parseText()
 	{
 		doctotext_log_func();
-		int page_count = m_pdf_document.GetPageCount();
+		int page_count = m_pdf_document.GetPages().GetCount();
 		doctotext_log_var(page_count);
 		for (size_t page_num = 0; page_num < page_count; page_num++)
 		{
@@ -7686,105 +7791,107 @@ struct PDFParser::Implementation
 			try
 			{
 				PDFContent::PageText page_text;
-				PoDoFo::PdfFont* pCurFont = nullptr;
-				PoDoFo::PdfPage* page = m_pdf_document.GetPage(page_num);
+				const PoDoFo::PdfFont* pCurFont = nullptr;
+				double curFontSize = -1;
+				PoDoFo::PdfPage* page = &m_pdf_document.GetPages().GetPageAt(page_num);
 				PDFContent::FontsByNames fonts_for_page = parseFonts(*page);
-				PoDoFo::PdfContentsTokenizer tokenizer(page);
-				std::stack<PoDoFo::PdfVariant> variant_stack;
+				PoDoFo::PdfContentStreamReader reader(*page);
 				bool in_text = false;
 
-				PoDoFo::EPdfContentsType contents_type;
-				const char* keyword_buf = NULL;
-				PoDoFo::PdfVariant variant;
+				PoDoFo::PdfContent content;
 
-				while (tokenizer.ReadNext(contents_type, keyword_buf, variant))
+				while (reader.TryReadNext(content))
 				{
-					doctotext_log_var(contents_type);
-					if (contents_type == PoDoFo::ePdfContentsType_Keyword)
+					doctotext_log(debug) << "PdfContentStreamReader::TryReadNext() succeeded";
+					doctotext_log_var(content);
+					if (content.Type == PoDoFo::PdfContentType::Operator)
 					{
-						std::string pdf_operator(keyword_buf);
-						doctotext_log_var(pdf_operator);
-						switch (PDFReader::getOperatorCode(pdf_operator))
+						switch (content.Operator)
 						{
-							case PDFReader::ET:
+							case PoDoFo::PdfOperator::ET:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::ET";
 								in_text = false;
 								break;
 							}
-							case PDFReader::Tm:
+							case PoDoFo::PdfOperator::Tm:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::Tm";
 								if (!in_text)
 									break;
-								page_text.executeTm(pdfvariant_stack_to_vector_of_double(variant_stack, 6));
+								page_text.executeTm(pdfvariant_stack_to_vector_of_double(content.Stack, 0, 6));
 								break;
 							}
-							case PDFReader::Td:
+							case PoDoFo::PdfOperator::Td:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::Td";
 								if (!in_text)
 									break;
-								page_text.executeTd(pdfvariant_stack_to_vector_of_double(variant_stack, 2));
+								page_text.executeTd(pdfvariant_stack_to_vector_of_double(content.Stack, 0, 2));
 								break;
 							}
-							case PDFReader::T_star:
+							case PoDoFo::PdfOperator::T_Star:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::T_Star";
 								if (!in_text)
 									break;
 								page_text.executeTstar();
 								break;
 							}
-							case PDFReader::TD:
+							case PoDoFo::PdfOperator::TD:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::TD";
 								if (!in_text)
 									break;
-								page_text.executeTD(pdfvariant_stack_to_vector_of_double(variant_stack, 2));
+								page_text.executeTD(pdfvariant_stack_to_vector_of_double(content.Stack, 0, 2));
 									break;
 							}
-							case PDFReader::TJ:
+							case PoDoFo::PdfOperator::TJ:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::TJ";
 								if (!in_text)
 									break;
 								std::vector<PDFContent::TJArrayElement> tj_array;
 								tj_array.reserve(100);
-								PoDoFo::PdfArray& a = variant_stack.top().GetArray();
+								const PoDoFo::PdfArray& a = content.Stack[0].GetArray();
 								for (size_t j = 0; j < a.GetSize(); ++j)
 								{
 									switch (a[j].GetDataType())
 									{
-										case PoDoFo::ePdfDataType_String:
-										case PoDoFo::ePdfDataType_HexString:
+										case PoDoFo::PdfDataType::String:
 										{
 											tj_array.push_back(PDFContent::TJArrayElement());
 											tj_array[tj_array.size() - 1].m_is_number = false;
 											if (pCurFont)
 											{
+												tj_array[tj_array.size() - 1].m_utf_text = encode_to_utf8(a[j].GetString(), *pCurFont);
 												if (a[j].GetString().IsHex())
 												{
-													tj_array[tj_array.size() - 1].m_text = a[j].GetString().GetString();
+													tj_array[tj_array.size() - 1].m_text = pdfstring_to_hex(a[j].GetString());
 												}
 												else
 												{
 													tj_array[tj_array.size() - 1].m_text = pdfstring_to_hex(a[j].GetString());
 												}
-												tj_array[tj_array.size() - 1].m_utf_text = encode_to_utf8(a[j].GetString(), *pCurFont);
 												tj_array[tj_array.size() - 1].m_pdf_string = a[j].GetString();
 											}
 											else
 											{
+												tj_array[tj_array.size() - 1].m_utf_text = a[j].GetString().GetString();
 												if (a[j].GetString().IsHex())
 												{
-													tj_array[tj_array.size() - 1].m_text = a[j].GetString().GetString();
+													tj_array[tj_array.size() - 1].m_text = pdfstring_to_hex(a[j].GetString());
 												}
 												else
 												{
 													tj_array[tj_array.size() - 1].m_text = pdfstring_to_hex(a[j].GetString());
 												}
-												tj_array[tj_array.size() - 1].m_utf_text = a[j].GetString().GetString();
 												tj_array[tj_array.size() - 1].m_pdf_string = a[j].GetString();
 											}
 											break;
 										}
-										case PoDoFo::ePdfDataType_Number:
-										case PoDoFo::ePdfDataType_Real:
+										case PoDoFo::PdfDataType::Number:
+										case PoDoFo::PdfDataType::Real:
 										{
 											tj_array.push_back(PDFContent::TJArrayElement());
 											tj_array[tj_array.size() - 1].m_is_number = true;
@@ -7795,17 +7902,19 @@ struct PDFParser::Implementation
 									PDFContent::TJArrayElement& new_element = tj_array[tj_array.size() - 1];
 									doctotext_log_var(new_element);
 								}
-                if (pCurFont) {
-                  page_text.executeTJ(tj_array, pCurFont);
-                }
-                else{
-                  page_text.executeTJ(tj_array);
-                }
-								variant_stack.pop();
+								if (pCurFont)
+								{
+									page_text.executeTJ(tj_array, pCurFont, curFontSize);
+								}
+								else
+								{
+									page_text.executeTJ(tj_array);
+								}
 								break;
 							}
-							case PDFReader::Tj:
+							case PoDoFo::PdfOperator::Tj:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::Tj";
 								if (!in_text)
 									break;
 
@@ -7814,121 +7923,123 @@ struct PDFParser::Implementation
 								tj_array[tj_array.size() - 1].m_is_number = false;
 								if (pCurFont)
 								{
-									auto text = variant_stack.top().GetString();
+									auto text = content.Stack[0].GetString();
+									tj_array[tj_array.size() - 1].m_utf_text = encode_to_utf8(text, *pCurFont);
+									tj_array[tj_array.size() - 1].m_pdf_string = text;
 									if (text.IsHex())
 									{
-										tj_array[tj_array.size() - 1].m_text = text.GetString();
+										tj_array[tj_array.size() - 1].m_text = pdfstring_to_hex(text);
 									}
 									else
 									{
 										tj_array[tj_array.size() - 1].m_text = pdfstring_to_hex(text);
 									}
-									tj_array[tj_array.size() - 1].m_utf_text = encode_to_utf8(text, *pCurFont);
-									tj_array[tj_array.size() - 1].m_pdf_string = text;
 								}
 								else
 								{
-									auto text = variant_stack.top().GetString();
+									auto text = content.Stack[0].GetString();
+									tj_array[tj_array.size() - 1].m_utf_text = text.GetString();
+									tj_array[tj_array.size() - 1].m_pdf_string = text;
 									if (text.IsHex())
 									{
-										tj_array[tj_array.size() - 1].m_text = text.GetString();
+										tj_array[tj_array.size() - 1].m_text = pdfstring_to_hex(text);
 									}
 									else
 									{
 										tj_array[tj_array.size() - 1].m_text = pdfstring_to_hex(text);
 									}
-									tj_array[tj_array.size() - 1].m_utf_text = text.GetString();
-									tj_array[tj_array.size() - 1].m_pdf_string = text;
 								}
-								if (pCurFont) {
-									page_text.executeTJ(tj_array, pCurFont);
+								if (pCurFont)
+								{
+									page_text.executeTJ(tj_array, pCurFont, curFontSize);
 								}
 								else{
 									page_text.executeTJ(tj_array);
 								}
-								variant_stack.pop();
 								break;
 							}
-							case PDFReader::Tw:
+							case PoDoFo::PdfOperator::Tw:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::Tw";
 								if (!in_text)
 									break;
-                auto values = pdfvariant_stack_to_vector_of_double(variant_stack, 1);
+								auto values = pdfvariant_stack_to_vector_of_double(content.Stack, 0, 1);
 								page_text.executeTw(values);
-                if (pCurFont) {
-                  pCurFont->SetWordSpace(values[0]);
-                }
+								if (pCurFont)
+								{
+									//state.WordSpacing = values[0];
+								}
 								break;
 							}
-							case PDFReader::Tc:
+							case PoDoFo::PdfOperator::Tc:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::Tc";
 								if (!in_text)
 									break;
-                auto values = pdfvariant_stack_to_vector_of_double(variant_stack, 1);
+								auto values = pdfvariant_stack_to_vector_of_double(content.Stack, 0, 1);
 								page_text.executeTc(values);
-                if (pCurFont) {
-                  pCurFont->SetFontCharSpace(values[0]);
-                }
+								if (pCurFont)
+								{
+									//state.CharSpacing = values[0];
+								}
 								break;
 							}
-							case PDFReader::Ts:
+							case PoDoFo::PdfOperator::Ts:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::Ts";
 								if (!in_text)
 									break;
-								page_text.executeTs(pdfvariant_stack_to_vector_of_double(variant_stack, 1));
+								page_text.executeTs(pdfvariant_stack_to_vector_of_double(content.Stack, 0, 1));
 								break;
 							}
-							case PDFReader::quote:
+							case PoDoFo::PdfOperator::Quote:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::Quote";
 								if (!in_text)
 									break;
-                if (pCurFont)
-                {
-                  page_text.executeQuote(encode_to_utf8(variant_stack.top().GetString(), *pCurFont), pCurFont);
-                }
-                else
-                {
-                  page_text.executeQuote(variant_stack.top().GetString().GetStringUtf8(), pCurFont);
-                }
-
-								variant_stack.pop();
+								if (pCurFont)
+								{
+									page_text.executeQuote(content.Stack[0].GetString().GetString(), pCurFont, curFontSize);
+								}
+								else
+								{
+									page_text.executeQuote(content.Stack[0].GetString().GetString(), pCurFont, curFontSize);
+								}
 								break;
 							}
-							case PDFReader::double_quote:
+							case PoDoFo::PdfOperator::DoubleQuote:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::DoubleQuote";
 								if (!in_text)
 									break;
-                if(pCurFont)
-                {
-                  std::string s = encode_to_utf8(variant_stack.top().GetString(), *pCurFont);
-                  page_text.executeDoubleQuote(s, pdfvariant_stack_to_vector_of_double(variant_stack, 2), pCurFont);
-                }
-                else
-                {
-                  page_text.executeDoubleQuote(variant_stack.top().GetString().GetStringUtf8(), pdfvariant_stack_to_vector_of_double(variant_stack, 2), pCurFont);
-                }
-								variant_stack.pop();
+								if(pCurFont)
+								{
+									std::string s = content.Stack[0].GetString().GetString();
+									page_text.executeDoubleQuote(s, pdfvariant_stack_to_vector_of_double(content.Stack, 1, 2), pCurFont, curFontSize);
+								}
+								else
+								{
+									page_text.executeDoubleQuote(content.Stack[0].GetString().GetString(), pdfvariant_stack_to_vector_of_double(content.Stack, 1, 2), pCurFont, curFontSize);
+								}
 								break;
 							}
-							case PDFReader::Tf:
+							case PoDoFo::PdfOperator::Tf:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::Tf";
 								if (!in_text)
 									break;
-								long font_size = variant_stack.top().GetReal();
-								variant_stack.pop();
-								std::string font_name = variant_stack.top().GetName().GetName();
-								PoDoFo::PdfObject* pFont = page->GetFromResources( PoDoFo::PdfName("Font"), variant_stack.top().GetName() );
-								variant_stack.pop();
+								long font_size = content.Stack[0].GetReal();
+								std::string font_name = content.Stack[1].GetName().GetString();
 								if (fonts_for_page.find(font_name) != fonts_for_page.end()) {
 									page_text.executeTf(font_size, *(fonts_for_page)[font_name]);
 								}
 								try
 								{
-									pCurFont = m_pdf_document.GetFont(pFont);
+									pCurFont = page->GetResources()->GetFont(font_name);
 								}
 								catch (PoDoFo::PdfError &error)
 								{
-									if (error.GetError() != PoDoFo::ePdfError_InternalLogic)
+									if (error.GetCode() != PoDoFo::PdfErrorCode::InternalLogic)
 									{
 										throw PoDoFo::PdfError(error);
 									}
@@ -7936,7 +8047,8 @@ struct PDFParser::Implementation
 
 								if (pCurFont)
 								{
-									pCurFont->SetFontSize(font_size);
+									//state.FontSize = font_size;
+									curFontSize = font_size;
 								}
 								else
 								{
@@ -7945,50 +8057,52 @@ struct PDFParser::Implementation
 
 								break;
 							}
-							case PDFReader::BT:
+							case PoDoFo::PdfOperator::BT:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::BT";
 								in_text = true;
 								page_text.executeBT();
 								break;
 							}
-							case PDFReader::TL:
+							case PoDoFo::PdfOperator::TL:
 							{
-								page_text.executeTL(pdfvariant_stack_to_vector_of_double(variant_stack, 1));
+								doctotext_log(debug) << "content.Operator == PdfOperator::TL";
+								page_text.executeTL(pdfvariant_stack_to_vector_of_double(content.Stack, 0, 1));
 								break;
 							}
-							case PDFReader::TZ:
+							case PoDoFo::PdfOperator::Tz:
 							{
-								long scale = variant_stack.top().GetReal();
-								variant_stack.pop();
+								doctotext_log(debug) << "content.Operator == PdfOperator::Tz";
+								long scale = content.Stack[0].GetReal();
 								page_text.executeTZ(scale);
-                if (pCurFont) {
-                  pCurFont->SetFontScale(scale);
-                }
+								if (pCurFont) {
+									//state.FontScale = scale;
+								}
 								break;
 							}
-							case PDFReader::cm:
+							case PoDoFo::PdfOperator::cm:
 							{
-								page_text.executeCm(pdfvariant_stack_to_vector_of_double(variant_stack, 6));
-									break;
+								doctotext_log(debug) << "content.Operator == PdfOperator::cm";
+								page_text.executeCm(pdfvariant_stack_to_vector_of_double(content.Stack, 0, 6));
+								break;
 							}
-							case PDFReader::Q:
+							case PoDoFo::PdfOperator::Q:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::Q";
 								page_text.popState();
 								break;
 							}
-							case PDFReader::q:
+							case PoDoFo::PdfOperator::q:
 							{
+								doctotext_log(debug) << "content.Operator == PdfOperator::q";
 								page_text.pushState();
 								break;
 							}
 						}
 					}
-					else if (contents_type == PoDoFo::ePdfContentsType_Variant)
-					{
-						variant_stack.push(variant);
-					}
 					else
 					{
+						doctotext_log(debug) << "content.Type != PdfContentType::Operator";
 						// warning TODO throw
 					}
 				}
@@ -8124,7 +8238,7 @@ struct PDFParser::Implementation
 				}
 			}
 		}
-		metadata.setPageCount(m_pdf_document.GetPageCount());
+		metadata.setPageCount(m_pdf_document.GetPages().GetCount());
 	}
 
 	void resetDataStream()
@@ -8140,13 +8254,13 @@ struct PDFParser::Implementation
 		resetDataStream();
 		try
 		{
-			m_pdf_document.LoadFromDevice(PoDoFo::PdfRefCountedInputDevice(new PoDoFo::PdfInputDevice(m_data_stream)));
+			m_pdf_document.LoadFromDevice(std::make_shared<PoDoFo::StandardStreamDevice>(*m_data_stream));
 		}
 		catch (const PoDoFo::PdfError& e)
 		{
       pthread_mutex_unlock(&load_document_mutex);
 			doctotext_log(error) << e;
-			if (e.GetError() == PoDoFo::ePdfError_NotCompiled || e.GetError() == PoDoFo::ePdfError_InternalLogic)
+			if (e.GetCode() == PoDoFo::PdfErrorCode::NotCompiled || e.GetCode() == PoDoFo::PdfErrorCode::InternalLogic)
 			{
 				throw EncryptedFileException("File is encrypted");
 			}
