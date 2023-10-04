@@ -34,6 +34,7 @@
 #include "pdf_parser.h"
 
 #include <algorithm>
+#include <codecvt>
 #include "data_stream.h"
 #include "exception.h"
 #include <fstream>
