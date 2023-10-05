@@ -426,7 +426,7 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
 INSTANTIATE_TEST_SUITE_P(
     SimpleExtractorTests, PasswordProtectedTest,
     ::testing::Values(
-        "doc", "docx", "key", "pages", "numbers", "odp", "ppt", "pptx", "xls", "xlsb", "xlsx"
+        "doc", "docx", "key", "pages", "numbers", "odp", "pdf", "ppt", "pptx", "xls", "xlsb", "xlsx"
                       ),
     [](const ::testing::TestParamInfo<PasswordProtectedTest::ParamType>& info) {
         std::string format = info.param;
