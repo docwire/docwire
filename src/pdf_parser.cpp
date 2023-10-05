@@ -6727,14 +6727,31 @@ struct PDFParser::Implementation
 				m_current_state.m_line_matrix = TransformationMatrix();
 			}
 
-			double
-			charWidth(const std::string &str, const PoDoFo::PdfFont &font, double curFontSize, unsigned int idx)
+			std::u32string utf8_to_utf32(const std::string& str)
 			{
-				doctotext_log_func_with_args(str, font, curFontSize, idx);
+				doctotext_log_func_with_args(str);
 				std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
-				std::basic_string<char32_t> u8 = converter.from_bytes(str);
-				char32_t ch = u8[idx];
-				std::string ch_s = converter.to_bytes(ch);
+				return converter.from_bytes(str);
+			}
+
+			std::string utf32_to_utf8(char32_t ch)
+			{
+				doctotext_log_func();
+				std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
+				return converter.to_bytes(ch);
+			}
+
+			double
+			charWidth(const std::u32string& u32_str, const PoDoFo::PdfFont &font, double curFontSize, unsigned int idx)
+			{
+				doctotext_log_func_with_args(u32_str, font, curFontSize, idx);
+				if (idx > u32_str.size())
+				{
+					doctotext_log(error) << "Internal error: idx > u32_str.size()" << doctotext_log_streamable_vars(idx, u32_str.size());
+					throw Exception("Internal error: idx > u32_str.size()");
+				}
+				char32_t ch = u32_str[idx];
+				std::string ch_s = utf32_to_utf8(ch);
 				doctotext_log_vars(ch, ch_s);
 				PoDoFo::PdfTextState text_state;
 				text_state.FontSize = curFontSize;
@@ -6782,10 +6799,11 @@ struct PDFParser::Implementation
 					{
 						doctotext_log(debug) << "Processing TJ text" << doctotext_log_streamable_var(tj_array[i].m_utf_text);
 						int idx = 0;
-						for (const auto &c : tj_array[i].m_utf_text)
+						std::u32string u32_text = utf8_to_utf32(tj_array[i].m_utf_text);
+						for (const auto &c : u32_text)
 						{
 							doctotext_log_vars(c, first);
-              output.push_back(c);
+							output += utf32_to_utf8(c);
 							if (add_charspace)
 								m_current_state.m_line_matrix.m_offset_x += char_space;
 
@@ -6793,7 +6811,7 @@ struct PDFParser::Implementation
 							cid_matrix = tmp_matrix.combinedWith(m_current_state.m_line_matrix);
 
 							//get character size
-							double cid_width = charWidth(tj_array[i].m_utf_text, *pCurFont, curFontSize, idx);
+							double cid_width = charWidth(u32_text, *pCurFont, curFontSize, idx);
 							doctotext_log_var(cid_width);
 							++idx;
 							double advance = cid_width;
