@@ -46,7 +46,7 @@
 namespace doctotext
 {
 
-static severity_level log_verbosity = debug;
+static severity_level log_verbosity = info;
 
 void set_log_verbosity(severity_level severity)
 {
