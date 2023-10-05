@@ -36,6 +36,7 @@ Unreleased:
     * Cleanups in CMake scripts
     * Dockerfiles and related scripts removed
     * New strategy of searching for plugins, resources and test files
+    * Upgrade VCPKG and in the same time all SDK dependencies to 2023.08.09
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed

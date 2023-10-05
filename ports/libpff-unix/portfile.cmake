@@ -40,6 +40,7 @@ else()
 		COPY_SOURCE
 	)
 	vcpkg_install_make()
+	vcpkg_fixup_pkgconfig()
 endif()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")

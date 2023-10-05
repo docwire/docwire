@@ -418,6 +418,7 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
         std::string test_text {
             "Error processing file " + file_name + ".\n" + ex.getBacktrace()
         };
+        std::replace(test_text.begin(), test_text.end(), '\\', '/');
         
         EXPECT_EQ(test_text, expected_text);
     }   
