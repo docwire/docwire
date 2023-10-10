@@ -1,6 +1,6 @@
-# DocWire DocToText SDK
+# DocWire SDK
 
-DocWire DocToText is a C++ data processing library/SDK with SourceForge Community Choice award and Microsoft for Startups support. Parses DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT), PST, OST and more. Contains embedded OCR engine and CLI utiity.
+DocWire SDK (formerly known as DocToText) is a C++ data processing library with SourceForge Community Choice award and Microsoft for Startups support. Parses DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT), PST, OST and more. Contains embedded OCR engine and CLI utiity.
 
 ## Table Of Contents
 - [The Goal](#the-goal)
@@ -69,14 +69,14 @@ Entering the artificial intelligence/neural networks area is planned to offer it
 
 ## Installation
 
-### Why Choose vcpkg for DocToText Installation?
-DocToText has embraced vcpkg as the preferred installation method for several compelling reasons:
+### Why Choose vcpkg for DocWire SDK Installation?
+DocWire has embraced vcpkg as the preferred installation method for several compelling reasons:
 - **Microsoft's Trusted Solution:** vcpkg is a package manager developed and backed by Microsoft, ensuring reliability, ongoing support, and compatibility.
-- **Cross-Platform Simplicity:** With vcpkg, DocToText installation becomes a breeze on Windows, Linux, and macOS, providing a unified and hassle-free experience.
+- **Cross-Platform Simplicity:** With vcpkg, DocWire installation becomes a breeze on Windows, Linux, and macOS, providing a unified and hassle-free experience.
 - **Effortless Dependency Management:** vcpkg takes care of resolving and installing dependencies automatically, reducing manual configuration efforts for developers.
 - **Swift Binary Package Deployment:** The availability of pre-built binary packages in vcpkg accelerates installation, minimizing the need for time-consuming manual compilation.
-- **Seamless CMake Integration:** vcpkg seamlessly integrates with the CMake build system, simplifying the incorporation of DocToText into CMake-based projects.
-By selecting vcpkg, DocToText ensures that programmers benefit from a trusted, user-friendly, and well-supported solution that guarantees a smooth installation experience.
+- **Seamless CMake Integration:** vcpkg seamlessly integrates with the CMake build system, simplifying the incorporation of DocWire into CMake-based projects.
+By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, user-friendly, and well-supported solution that guarantees a smooth installation experience.
 
 ### Installation Steps
 1. **Install vcpkg:**
@@ -86,30 +86,30 @@ Ensure that vcpkg is integrated with your development environment by running the
 ```
 vcpkg integrate install
 ```
-3. **Clone the DocToText Repository:**
-Clone the DocToText repository from GitHub if you haven't already:
+3. **Clone the DocWire Repository:**
+Clone the DocWire repository from GitHub if you haven't already:
 ```
-git clone https://github.com/docwire/doctotext.git
+git clone https://github.com/docwire/docwire.git
 ```
 4. **Set Up Overlay:**
-To configure vcpkg to recognize the DocToText overlay, use the following command:
+To configure vcpkg to recognize the DocWire overlay, use the following command:
 ```
-vcpkg overlay add doctotext/ports
+vcpkg overlay add docwire/ports
 ```
-This command ensures that vcpkg adds the DocToText overlay for subsequent installations.
+This command ensures that vcpkg adds the DocWire overlay for subsequent installations.
 
-5. **Install DocToText:**
-Now that the overlay is set up, you can use vcpkg to install the DocToText library:
+5. **Install DocWire:**
+Now that the overlay is set up, you can use vcpkg to install the DocWire library:
 ```
-vcpkg install doctotext
+vcpkg install docwire
 ```
 6. **Download Binary Archives (Alternative):**
-As an alternative to building from source, users can also download pre-built binary archives that contain the results of the vcpkg export command for DocToText. These archives can be found in the "Releases" section of the DocToText GitHub repository.
+As an alternative to building from source, users can also download pre-built binary archives that contain the results of the vcpkg export command for DocWire. These archives can be found in the "Releases" section of the DocWire GitHub repository.
 7. **Link with Your Project:**
-After installation, configure your project settings to link with the DocToText library and its dependencies. You can use one of the following example CMake commands to build your project:
+After installation, configure your project settings to link with the DocWire library and its dependencies. You can use one of the following example CMake commands to build your project:
 - Using vcpkg toolchain file from downloaded prebuilt binaries:
 ```
-cmake -DCMAKE_TOOLCHAIN_FILE=doctotext/scripts/buildsystems/vcpkg.cmake ..
+cmake -DCMAKE_TOOLCHAIN_FILE=docwire/scripts/buildsystems/vcpkg.cmake ..
 ```
 - Using vcpkg toolchain file from the vcpkg repository:
 ```
@@ -117,28 +117,28 @@ cmake -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake ..
 ```
 
 ### Usage and Conclusion
-You're all set! You've successfully installed the DocToText library using vcpkg. You can now use the DocToText library in your code to perform text extraction from documents. 
+You're all set! You've successfully installed the DocWire library using vcpkg. You can now use the DocWire library in your code to perform text extraction from documents. 
 
 ### Compatibility Note
-Please note that DocToText is currently compatible with vcpkg tagged as version 2023.08.09. While this version is recommended for use, be aware that updates may become available in the near future. Supported triplets are: x64-linux-dynamic, x64-windows and x64-osx-dynamic.
+Please note that DocWire is currently compatible with vcpkg tagged as version 2023.08.09. While this version is recommended for use, be aware that updates may become available in the near future. Supported triplets are: x64-linux-dynamic, x64-windows and x64-osx-dynamic.
 
 ## API Documentation
-The API documentation for the DocToText SDK/library is readily available in various formats to assist you in seamlessly integrating it into your projects. Whether you prefer reading detailed doxygen-style documentation, accessing it through binary packages, or installing it via package managers like Vcpkg, we've got you covered.
+The API documentation for the DocWire SDK/library is readily available in various formats to assist you in seamlessly integrating it into your projects. Whether you prefer reading detailed doxygen-style documentation, accessing it through binary packages, or installing it via package managers like Vcpkg, we've got you covered.
 
 ### ReadTheDocs - Doxygen Format
-Our API documentation is hosted on [ReadTheDocs](https://doctotext.readthedocs.io/), presented in the widely recognized and developer-friendly Doxygen format. This comprehensive documentation provides insights into the functionality, usage, and features of the DocToText library. You can explore it at your own pace to better understand how to harness the power of DocToText within your applications.
+Our API documentation is hosted on [ReadTheDocs](https://docwire.readthedocs.io/), presented in the widely recognized and developer-friendly Doxygen format. This comprehensive documentation provides insights into the functionality, usage, and features of the DocWire library. You can explore it at your own pace to better understand how to harness the power of DocWire within your applications.
 
 ### GitHub Releases
 
-If you're looking for a more direct way to access the documentation, you can find it bundled with our binary packages in the [GitHub Releases](https://github.com/docwire/doctotext/releases) section. Simply download the appropriate release for your platform, and you'll have the API documentation readily available alongside the library itself.
+If you're looking for a more direct way to access the documentation, you can find it bundled with our binary packages in the [GitHub Releases](https://github.com/docwire/docwire/releases) section. Simply download the appropriate release for your platform, and you'll have the API documentation readily available alongside the library itself.
 
 ### Vcpkg Package Manager
 
-For users who prefer to manage their dependencies using Vcpkg, we've made sure that our API documentation is included with the packages you install. This means you can access the same doxygen-style documentation seamlessly as you manage and integrate DocToText into your C++ projects.
+For users who prefer to manage their dependencies using Vcpkg, we've made sure that our API documentation is included with the packages you install. This means you can access the same doxygen-style documentation seamlessly as you manage and integrate DocWire into your C++ projects.
 
 ### Consistency Across Platforms
 
-It's worth noting that no matter where you choose to access our API documentation—whether through ReadTheDocs, GitHub Releases, or Vcpkg—you will find the same comprehensive doxygen-style documentation. This ensures a consistent and reliable resource for understanding and utilizing the DocToText library.
+It's worth noting that no matter where you choose to access our API documentation—whether through ReadTheDocs, GitHub Releases, or Vcpkg—you will find the same comprehensive doxygen-style documentation. This ensures a consistent and reliable resource for understanding and utilizing the DocWire library.
 
 ### Why ReadTheDocs?
 
@@ -150,9 +150,9 @@ You might wonder why we chose ReadTheDocs to host our documentation. While some 
 
 3. **Automation**: ReadTheDocs allows us to automate the documentation publishing process, ensuring that you have the latest documentation whenever you need it without delay.
 
-We believe in making the integration of DocToText as smooth as possible, and providing our documentation through ReadTheDocs is just one way we're committed to simplifying your experience.
+We believe in making the integration of DocWire as smooth as possible, and providing our documentation through ReadTheDocs is just one way we're committed to simplifying your experience.
 
-Explore the documentation, experiment with the library, and feel free to reach out if you have any questions or feedback. We're here to support you on your journey with DocToText.
+Explore the documentation, experiment with the library, and feel free to reach out if you have any questions or feedback. We're here to support you on your journey with DocWire.
 
 ## License
 Product is double licensed:
