@@ -33,7 +33,7 @@ enable_testing ()
 
 file(WRITE ${CMAKE_SOURCE_DIR}/version.h "#define VERSION \"${DOCTOTEXT_VERSION}\"")
 file(WRITE ${CMAKE_BINARY_DIR}/VERSION "${DOCTOTEXT_VERSION}")
-install(FILES ${CMAKE_SOURCE_DIR}/ChangeLog ${CMAKE_BINARY_DIR}/VERSION DESTINATION share/doctotext)
+install(FILES ${CMAKE_SOURCE_DIR}/ChangeLog ${CMAKE_BINARY_DIR}/VERSION DESTINATION share/docwire)
 
 add_subdirectory(src)
 
