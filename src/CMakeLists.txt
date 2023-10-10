@@ -95,7 +95,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(docwire_core PRIVATE dl)
 endif()
 
-add_library(doctotext_parsers SHARED
+add_library(docwire_parsers SHARED
         entities.cpp
         zip_reader.cpp
         oshared.cpp
@@ -118,7 +118,7 @@ add_library(doctotext_parsers SHARED
 find_package(LibXml2 REQUIRED)
 find_package(ZLIB REQUIRED)
 
-target_include_directories(doctotext_parsers PUBLIC
+target_include_directories(docwire_parsers PUBLIC
         ../
         .
         ${LIBXML2_INCLUDE_DIR}
@@ -136,7 +136,7 @@ if(MSVC)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
     find_package(Iconv REQUIRED)
-    target_link_libraries(doctotext_parsers PRIVATE
+    target_link_libraries(docwire_parsers PRIVATE
             ${podofo}
             ${unzip}
             ${wvWare}
@@ -149,7 +149,7 @@ if(MSVC)
             ZLIB::ZLIB
             Iconv::Iconv
             )
-    target_compile_options(doctotext_parsers PUBLIC /Zc:__cplusplus /Zc:preprocessor)
+    target_compile_options(docwire_parsers PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 else()
     find_library(podofo podofo REQUIRED)
     find_package(Freetype REQUIRED)
@@ -164,7 +164,7 @@ else()
     find_library(wv2 wv2 REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
-    target_link_libraries(doctotext_parsers PRIVATE
+    target_link_libraries(docwire_parsers PRIVATE
         ${podofo}
         Freetype::Freetype
         ${unzip}
@@ -177,7 +177,7 @@ else()
         docwire_core
         )
     find_path(unzip_incdir unzip.h)
-    target_include_directories(doctotext_parsers PRIVATE ${unzip_incdir})
+    target_include_directories(docwire_parsers PRIVATE ${unzip_incdir})
 endif()
 
 add_library(doctotext_ocr SHARED ocr_parser_provider.cpp ocr_parser.cpp)
@@ -249,7 +249,7 @@ find_package(mailio CONFIG REQUIRED)
 target_link_libraries(doctotext_mail PRIVATE mailio)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-   set_target_properties(doctotext_parsers PROPERTIES PREFIX "")
+   set_target_properties(docwire_parsers PROPERTIES PREFIX "")
    set_target_properties(docwire_core PROPERTIES PREFIX "")
 endif()
 
@@ -270,13 +270,13 @@ else()
 endif()
 install(TARGETS doctotext_ocr LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
 install(TARGETS doctotext_mail LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
-install(TARGETS doctotext_parsers LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
+install(TARGETS docwire_parsers LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
 install(TARGETS docwire_core)
 
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:doctotext_ocr> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
 	install(FILES $<TARGET_PDB_FILE:doctotext_mail> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
-	install(FILES $<TARGET_PDB_FILE:doctotext_parsers> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:docwire_parsers> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
 	install(FILES $<TARGET_PDB_FILE:docwire_core> DESTINATION bin CONFIGURATIONS Debug)
 endif()
 
