@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(api_tests api_tests.cpp)
-target_link_libraries(api_tests PRIVATE doctotext_core GTest::gtest_main)
+target_link_libraries(api_tests PRIVATE docwire_core GTest::gtest_main)
 if(MSVC)
     find_package(PThreads4W REQUIRED)
     target_link_libraries(api_tests PRIVATE PThreads4W::PThreads4W)

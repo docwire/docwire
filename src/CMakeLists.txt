@@ -36,9 +36,9 @@ if(MSVC)
 endif()
 
 if (DOCTOTEXT_SHARED)
-   add_library(doctotext_core SHARED ${DOCTOTEXT_SOURCES})
+   add_library(docwire_core SHARED ${DOCTOTEXT_SOURCES})
 else()
-   add_library(doctotext_core STATIC ${DOCTOTEXT_SOURCES})
+   add_library(docwire_core STATIC ${DOCTOTEXT_SOURCES})
 endif()
 
 if(MSVC)
@@ -49,14 +49,14 @@ if(MSVC)
     find_package(PThreads4W REQUIRED)
     find_package(Boost REQUIRED COMPONENTS filesystem system json)
     find_package(LibArchive REQUIRED)
-    target_link_libraries(doctotext_core PRIVATE ${wvWare}
+    target_link_libraries(docwire_core PRIVATE ${wvWare}
                                                  PThreads4W::PThreads4W
                                                  Boost::filesystem
                                                  Boost::system
                                                  Boost::json
                                                  LibArchive::LibArchive)
-    target_include_directories(doctotext_core PUBLIC ${wv2_inc_dir})
-    target_compile_options(doctotext_core PUBLIC /Zc:__cplusplus /Zc:preprocessor)
+    target_include_directories(docwire_core PUBLIC ${wv2_inc_dir})
+    target_compile_options(docwire_core PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 
 else()
     find_library(wvWare wv2 REQUIRED)
@@ -84,15 +84,15 @@ else()
     else()
         find_library(archive archive REQUIRED)
     endif()
-    target_link_libraries(doctotext_core PRIVATE ${wvWare} pthread ${boost_filesystem} ${boost_system} ${boost_json} ${archive})
+    target_link_libraries(docwire_core PRIVATE ${wvWare} pthread ${boost_filesystem} ${boost_system} ${boost_json} ${archive})
     find_path(boost_signals2_inc boost/signals2.hpp REQUIRED)
-    target_include_directories(doctotext_core PUBLIC ${wvWare_incdir} ${boost_signals2_inc})
+    target_include_directories(docwire_core PUBLIC ${wvWare_incdir} ${boost_signals2_inc})
 endif()
 
-target_compile_options(doctotext_core PUBLIC ${EXTRA_FLAGS})
+target_compile_options(docwire_core PUBLIC ${EXTRA_FLAGS})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    target_link_libraries(doctotext_core PRIVATE dl)
+    target_link_libraries(docwire_core PRIVATE dl)
 endif()
 
 add_library(doctotext_parsers SHARED
@@ -124,7 +124,7 @@ target_include_directories(doctotext_parsers PUBLIC
         ${LIBXML2_INCLUDE_DIR}
         )
 
-target_include_directories(doctotext_core PUBLIC
+target_include_directories(docwire_core PUBLIC
         ../
         .
         )
@@ -143,7 +143,7 @@ if(MSVC)
             ${htmlcxx}
             ${LIBXML2_LIBRARIES}
             ${charsetdetect}
-            doctotext_core
+            docwire_core
             Freetype::Freetype
             PThreads4W::PThreads4W
             ZLIB::ZLIB
@@ -174,7 +174,7 @@ else()
         pthread
         ZLIB::ZLIB
         ${charsetdetect}
-        doctotext_core
+        docwire_core
         )
     find_path(unzip_incdir unzip.h)
     target_include_directories(doctotext_parsers PRIVATE ${unzip_incdir})
@@ -188,7 +188,7 @@ if(MSVC)
     find_package(Tesseract)
     target_link_libraries(doctotext_ocr ${Leptonica_LIBRARIES}
                                         Tesseract::libtesseract
-                                        doctotext_core)
+                                        docwire_core)
     target_include_directories(doctotext_ocr PUBLIC
             ../
             .
@@ -219,7 +219,7 @@ else()
     else()
         set(libxml2_dep_iconv "")
     endif()
-    target_link_libraries(doctotext_ocr PRIVATE ${Leptonica_LIBRARIES} ${tesseract} ${archive} ${libxml2_dep_iconv} doctotext_core)
+    target_link_libraries(doctotext_ocr PRIVATE ${Leptonica_LIBRARIES} ${tesseract} ${archive} ${libxml2_dep_iconv} docwire_core)
 endif()
 
 add_library(doctotext_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
@@ -231,7 +231,7 @@ if(MSVC)
     target_link_libraries(doctotext_mail PRIVATE
             ${bfio}
             ${pff}
-            doctotext_core
+            docwire_core
             ${htmlcxx}
             PThreads4W::PThreads4W)
     target_include_directories(doctotext_mail PUBLIC
@@ -243,21 +243,21 @@ else()
     find_library(bfio bfio REQUIRED)
     find_library(pff pff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
-    target_link_libraries(doctotext_mail PRIVATE ${bfio} ${pff} ${htmlcxx} pthread doctotext_core)
+    target_link_libraries(doctotext_mail PRIVATE ${bfio} ${pff} ${htmlcxx} pthread docwire_core)
 endif()
 find_package(mailio CONFIG REQUIRED)
 target_link_libraries(doctotext_mail PRIVATE mailio)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
    set_target_properties(doctotext_parsers PROPERTIES PREFIX "")
-   set_target_properties(doctotext_core PROPERTIES PREFIX "")
+   set_target_properties(docwire_core PROPERTIES PREFIX "")
 endif()
 
 add_executable(text_extractor text_extractor.cpp)
-target_link_libraries(text_extractor PRIVATE doctotext_core)
+target_link_libraries(text_extractor PRIVATE docwire_core)
 
 if (DOCTOTEXT_TRACE)
-   target_sources(doctotext_core PRIVATE tracing)
+   target_sources(docwire_core PRIVATE tracing)
    add_compile_definitions(TRACE)
    add_compile_options($<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-finstrument-functions>)
 endif()
@@ -271,13 +271,13 @@ endif()
 install(TARGETS doctotext_ocr LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
 install(TARGETS doctotext_mail LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
 install(TARGETS doctotext_parsers LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
-install(TARGETS doctotext_core)
+install(TARGETS docwire_core)
 
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:doctotext_ocr> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
 	install(FILES $<TARGET_PDB_FILE:doctotext_mail> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
 	install(FILES $<TARGET_PDB_FILE:doctotext_parsers> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
-	install(FILES $<TARGET_PDB_FILE:doctotext_core> DESTINATION bin CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:docwire_core> DESTINATION bin CONFIGURATIONS Debug)
 endif()
 
 set(PUBLIC_HEADERS
