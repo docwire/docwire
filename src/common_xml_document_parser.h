@@ -35,7 +35,6 @@
 #define DOCTOTEXT_COMMON_XML_PARSER_H
 
 #include "formatting_style.h"
-#include "doctotext_link.h"
 #include "parser.h"
 #include <string>
 #include <vector>
@@ -78,24 +77,21 @@ class CommonXMLDocumentParser
 			std::string m_author;
 			std::string m_time;
 			std::string m_text;
-			std::vector<Link> m_links;
 			Comment() {}
-			Comment(const std::string& author, const std::string& time, const std::string& text, const std::vector<Link>& links)
-				: m_author(author), m_time(time), m_text(text), m_links(links) {}
+			Comment(const std::string& author, const std::string& time, const std::string& text)
+				: m_author(author), m_time(time), m_text(text) {}
 		};
 
 		struct SharedString
 		{
 			std::string m_text;
-			std::vector<Link> m_links;
 		};
 
 		typedef std::vector<ODFOOXMLListStyle> ListStyleVector;
 
   typedef std::function<void(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
                                  const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-                                 bool& children_processed, std::string& level_suffix, bool first_on_level,
-                                 std::vector<Link>& links)> CommandHandler;
+                                 bool& children_processed, std::string& level_suffix, bool first_on_level)> CommandHandler;
 
     void addCallback(const doctotext::NewNodeCallback &callback);
 
@@ -110,14 +106,13 @@ class CommonXMLDocumentParser
 		///it is executed for each undefined tag (xml tag without associated handler). Can be overwritten
 		virtual void onUnregisteredCommand(XmlStream& xml_stream, XmlParseMode mode,
 										   const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-										   bool& children_processed, std::string& level_suffix, bool first_on_level,
-										   std::vector<Link>& links);
+										   bool& children_processed, std::string& level_suffix, bool first_on_level);
 
 		///parses xml data for given xml stream. It executes commands for each xml tag
-		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const FormattingStyle& options, const DocToTextUnzip* zipfile, std::vector<Link>& links) const; // todo https://github.com/docwire/doctotext/issues/91
+		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const FormattingStyle& options, const DocToTextUnzip* zipfile) const;
 
-		///extracts text and links from xml data. It uses parseXmlData internally. Throws doctotext::exception on fail
-		void extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text, std::vector<Link>& links) const; // todo https://github.com/docwire/doctotext/issues/91
+		///extracts text from xml data. It uses parseXmlData internally. Throws doctotext::exception on fail
+		void extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text) const;
 
 		///usefull since two parsers use this. Throws doctotext::exception on fail
 		void parseODFMetadata(const std::string &xml_content, Metadata &metadata) const;
@@ -127,9 +122,6 @@ class CommonXMLDocumentParser
 
 		///Returns information "on how many list objects" we are. Returns 0 if we are not parsing any list actually. Should only be used inside command handlers
 		size_t& getListDepth() const;
-
-		///gets vector of links for reading and writing
-		std::vector<Link>& getInnerLinks() const;
 
 		///gets list styles for reading and writing
 		std::map<std::string, ListStyleVector>& getListStyles() const;
@@ -166,7 +158,6 @@ class CommonXMLDocumentParser
 		CommonXMLDocumentParser();
 		virtual ~CommonXMLDocumentParser();
 		void setManageXmlParser(bool manage);
-		void getLinks(std::vector<Link>& links);
 		virtual std::string plainText(XmlParseMode mode, FormattingStyle& options) const = 0; // todo https://github.com/docwire/doctotext/issues/91
 		virtual Metadata metaData() const = 0;
 };

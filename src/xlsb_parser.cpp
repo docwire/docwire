@@ -777,11 +777,6 @@ bool XLSBParser::isXLSB()
 	return true;
 }
 
-void XLSBParser::getLinks(std::vector<Link>& links)
-{
-	// warning TODO: Implement this functionality.
-}
-
 Metadata XLSBParser::metaData()
 {
 	Metadata metadata;

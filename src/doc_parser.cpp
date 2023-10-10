@@ -686,11 +686,6 @@ bool DOCParser::isDOC()
 	return true;
 }
 
-void DOCParser::getLinks(std::vector<doctotext::Link>& links)
-{
-	// warning TODO: Implement this functionality.
-}
-
 std::string DOCParser::plainText(const doctotext::FormattingStyle& formatting) const
 {
 	CurrentState curr_state;

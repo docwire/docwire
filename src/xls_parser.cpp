@@ -958,11 +958,6 @@ bool XLSParser::isXLS()
 	}
 }
 
-void XLSParser::getLinks(std::vector<Link>& links)
-{
-	// warning TODO: Implement this functionality.
-}
-
 std::string XLSParser::plainText(const FormattingStyle& formatting)
 {
 	ThreadSafeOLEStorage* storage = NULL;

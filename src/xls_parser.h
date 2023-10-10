@@ -35,7 +35,6 @@
 #define DOCTOTEXT_XLS_PARSER_H
 
 #include "metadata.h"
-#include "doctotext_link.h"
 #include <string>
 #include <vector>
 
@@ -59,7 +58,6 @@ class XLSParser
 		~XLSParser();
     static std::vector<std::string> getExtensions() {return {"xls"};}
 		bool isXLS();
-		void getLinks(std::vector<Link>& links);
 		std::string plainText(const FormattingStyle& formatting);
 		std::string plainText(ThreadSafeOLEStorage& storage, const FormattingStyle& formatting);
 		Metadata metaData();

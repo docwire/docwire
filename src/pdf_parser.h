@@ -34,7 +34,6 @@
 #ifndef DOCTOTEXT_PDF_PARSER_H
 #define DOCTOTEXT_PDF_PARSER_H
 
-#include "doctotext_link.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include <string>
@@ -60,7 +59,6 @@ class PDFParser : public Parser
     static std::vector<std::string> getExtensions() {return {"pdf"};}
 
 		bool isPDF();
-		void getLinks(std::vector<Link>& links);
 		Metadata metaData();
 };
 

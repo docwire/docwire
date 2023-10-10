@@ -131,11 +131,6 @@ bool RTFParser::isRTF() const
 	return (strcmp(buf, "{\\rtf") == 0);
 }
 
-void RTFParser::getLinks(std::vector<Link>& links)
-{
-	// warning TODO: Implement this functionality.
-}
-
 #define RTFNAMEMAXLEN 32
 #define RTFARGSMAXLEN 64
 

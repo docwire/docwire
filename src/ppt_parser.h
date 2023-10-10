@@ -34,7 +34,6 @@
 #ifndef DOCTOTEXT_PPT_PARSER_H
 #define DOCTOTEXT_PPT_PARSER_H
 
-#include "doctotext_link.h"
 #include <string>
 #include <vector>
 
@@ -58,7 +57,6 @@ class PPTParser
 		~PPTParser();
     static std::vector<std::string> getExtensions() {return {"ppt", "pps"};}
 		bool isPPT();
-		void getLinks(std::vector<Link>& links);
 		std::string plainText(const FormattingStyle& formatting);
 		Metadata metaData();
 };

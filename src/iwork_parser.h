@@ -34,7 +34,6 @@
 #ifndef DOCTOTEXT_IWORK_PARSER_H
 #define DOCTOTEXT_IWORK_PARSER_H
 
-#include "doctotext_link.h"
 #include <string>
 #include <vector>
 
@@ -58,7 +57,6 @@ class IWorkParser
 		~IWorkParser();
     static std::vector<std::string> getExtensions() {return {"pages", "key", "numbers"};}
 		bool isIWork();
-		void getLinks(std::vector<Link>& links);
 		std::string plainText(const FormattingStyle& formatting);
 		Metadata metaData();
 };

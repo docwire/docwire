@@ -2160,11 +2160,6 @@ bool IWorkParser::isIWork()
 	return true;
 }
 
-void IWorkParser::getLinks(std::vector<Link>& links)
-{
-	// warning TODO: Implement this functionality.
-}
-
 Metadata IWorkParser::metaData()
 {
 	Metadata metadata;

@@ -34,7 +34,6 @@
 #ifndef DOCTOTEXT_RTF_PARSER_H
 #define DOCTOTEXT_RTF_PARSER_H
 
-#include "doctotext_link.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include <string>
@@ -63,7 +62,6 @@ class RTFParser : public doctotext::Parser
 		RTFParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
 		~RTFParser();
 		bool isRTF() const;
-		void getLinks(std::vector<Link>& links);
 		std::string plainText() const;
 		Metadata metaData() const;
 };

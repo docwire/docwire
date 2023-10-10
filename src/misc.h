@@ -41,10 +41,6 @@
 #include <wv2/ustring.h>
 #include <time.h>
 
-namespace doctotext
-{
-	class Link;
-}
 struct tm;
 
 using namespace doctotext;
@@ -98,30 +94,6 @@ inline bool utf16_unichar_has_4_bytes(unsigned int ch)
 {
 	return (ch & 0xFC00) == 0xD800;
 }
-
-/**
-	All parsers should support Link class. We need to determine where all links lie in final text.
-	But it may be sometimes difficult, simply because we are not parsing text in "correct" order all the time.
-	Sometimes we are parsing lists, attachments, tables etc. It is easier to mark special place in the text
-	where single link lies. We have two functions to help us. If we want to "save" a space for the link in text,
-	we can use insertSpecialLinkBlockIntoText function. Make sure that text is already encoded in UTF8.
-	This function will insert a block of "data" into given text to mark a place for link.
-**/
-DllExport void insertSpecialLinkBlockIntoText(std::string& text, const Link& link);
-
-/**
-	All parsers should support Link class. We need to determine where all links lie in final text.
-	But it may be sometimes difficult, simply because we are not parsing text in "correct" order all the time.
-	Sometimes we are parsing lists, attachments, tables etc. It is easier to mark special place in the text
-	where single link lies. We have two functions to help us. First one is insertSpecialLinkBlockIntoText.
-	When we are done parsing a file, we need to obtain positions of all parsed links. In that case, we need to call
-	decodeSpecialLinkBlocks. It takes extracted text and vector of links. Then for each link, function
-	calculates position and removes "special" characters which we have used in order to mark links.
-
-	There is one important requirement: links in "links" vector (2 argument) must contain records
-	in correct order.
-**/
-DllExport void decodeSpecialLinkBlocks(std::string& text, std::vector<Link>& links);
 
 DllExport std::string int_to_str(int i);
 

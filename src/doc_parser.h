@@ -34,7 +34,6 @@
 #ifndef DOCTOTEXT_DOC_PARSER_H
 #define DOCTOTEXT_DOC_PARSER_H
 
-#include "doctotext_link.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include <string>
@@ -63,7 +62,6 @@ class DOCParser : public doctotext::Parser
 		DOCParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
 		~DOCParser();
 		bool isDOC();
-		void getLinks(std::vector<doctotext::Link>& links);
 		std::string plainText(const doctotext::FormattingStyle& formatting) const;
     doctotext::Metadata metaData() const;
 };

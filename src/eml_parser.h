@@ -34,7 +34,6 @@
 #ifndef DOCTOTEXT_EML_PARSER_H
 #define DOCTOTEXT_EML_PARSER_H
 
-#include "doctotext_link.h"
 #include <string>
 #include <vector>
 

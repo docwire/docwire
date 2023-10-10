@@ -6,7 +6,6 @@ set(DOCTOTEXT_SOURCES
         attachment.cpp
         exception.cpp
         decompress_archives.cpp
-        doctotext_link.cpp
         list_style.cpp
         log.cpp
         metadata.cpp
@@ -291,7 +290,6 @@ set(PUBLIC_HEADERS
 	metadata.h
 	formatting_style.h
 	decompress_archives.h
-	doctotext_link.h
 	exception.h
 	attachment.h
 	variant.h

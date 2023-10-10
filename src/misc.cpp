@@ -34,7 +34,6 @@
 #include "misc.h"
 
 #include <boost/algorithm/string.hpp>
-#include "doctotext_link.h"
 #include "exception.h"
 #include <iostream>
 #include "log.h"
@@ -365,50 +364,6 @@ UString utf8_to_ustring(const std::string& src)
 		}
 	}
 	return res;
-}
-
-/*Lets look at this data:
-0x00 to 0x7F: 0xxxxxxx (1 byte)
-0x80 to 0x7FF: 110xxxxx 10xxxxxx (2 bytes)
-0x800 to 0xFFFF: 1110xxxx 10xxxxxx 10xxxxxx (3 bytes)
-0x10000 to 0x1FFFFF: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx (4 bytes)
-0x2000000 to 0x3FFFFFF: 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx (5 bytes) -> no possible conversion to UTF16
-0x40000000 to 0x7FFFFFFF: 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx (6 bytes) -> no possible conversion to UTF16
-Invalid characters in UTF8 are: 11111110 and 11111111.
-What can we do with that? We can use those values to "mark" special places. We can use them to substitute our links.
-But we have to be sure that "text" is already encoded in UTF8.
-*/
-void insertSpecialLinkBlockIntoText(std::string& text, const Link &link)
-{
-	std::string substitute_string(strlen(link.getLinkText()), 0xFF);
-	text += substitute_string;
-}
-
-void decodeSpecialLinkBlocks(std::string& text, std::vector<Link>& links)
-{
-	size_t search_position = 0;
-	for (std::vector<Link>::iterator it = links.begin(); it != links.end(); ++it)
-	{
-		size_t link_text_size = strlen((*it).getLinkText());
-		if (link_text_size > 0)
-		{
-			std::string substitute_string(link_text_size, 0xFF);
-			search_position = text.find(substitute_string, search_position);
-			if (search_position != std::string::npos)	//should never happen, because we have inserted such a string before
-			{
-				for (size_t i = 0; i < link_text_size && i < text.length() - search_position; ++i)
-					text[search_position + i] = (*it).getLinkText()[i];
-				(*it).setLinkTextPosition(search_position);
-			}
-			else
-			{
-				//If you can see this message, then check last changes.
-				doctotext_log(warning) << "Warning: output text is corrupted: cannot recover links";
-			}
-		}
-		else
-			(*it).setLinkTextPosition(0);	//link has no output in final text?
-	}
 }
 
 std::string int_to_str(int i)

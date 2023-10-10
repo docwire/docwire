@@ -34,7 +34,6 @@
 #ifndef DOCTOTEXT_XLSB_PARSER_H
 #define DOCTOTEXT_XLSB_PARSER_H
 
-#include "doctotext_link.h"
 #include <string>
 #include <vector>
 
@@ -58,7 +57,6 @@ class XLSBParser
 		~XLSBParser();
     static std::vector<std::string> getExtensions() {return {"xlsb"};}
 		bool isXLSB();
-		void getLinks(std::vector<Link>& links);
 		std::string plainText(const FormattingStyle& formatting);
 		Metadata metaData();
 };

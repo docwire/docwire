@@ -8371,11 +8371,6 @@ bool PDFParser::isPDF()
 	return true;
 }
 
-void PDFParser::getLinks(std::vector<Link>& links)
-{
-	// warning TODO: Implement this functionality
-}
-
 Metadata PDFParser::metaData()
 {
 	Metadata metadata;

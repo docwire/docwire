@@ -34,7 +34,6 @@
 #ifndef DOCTOTEXT_HTML_PARSER_H
 #define DOCTOTEXT_HTML_PARSER_H
 
-#include "doctotext_link.h"
 #include <string>
 #include <vector>
 #include "parser.h"

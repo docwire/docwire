@@ -372,11 +372,6 @@ bool PPTParser::isPPT()
 	}
 }
 
-void PPTParser::getLinks(std::vector<Link>& links)
-{
-	// warning TODO: Implement this functionality.
-}
-
 std::string PPTParser::plainText(const FormattingStyle& formatting)
 {	
 	doctotext_log(debug) << "Using PPT parser.";

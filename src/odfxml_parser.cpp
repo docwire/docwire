@@ -48,8 +48,7 @@ class ODFXMLParser::CommandHandlersSet
 	public:
 		static void onODFBody(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
 							  const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-							  bool& children_processed, std::string& level_suffix, bool first_on_level,
-							  std::vector<Link>& links)
+							  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			// warning TODO: Unfortunately, in CommonXMLDocumentParser we are not checking full names for xml tags.\
 			Thats a problem, since we can have table:body, office:body etc. What if more xml tags are not handled correctly?
@@ -62,21 +61,19 @@ class ODFXMLParser::CommandHandlersSet
 
 		static void onODFObject(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
 								const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-								bool& children_processed, std::string& level_suffix, bool first_on_level,
-								std::vector<Link>& links)
+								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			doctotext_log(debug) << "ODF_OBJECT Command";
 			xml_stream.levelDown();
 			parser.disableText(true);
-			text += parser.parseXmlData(xml_stream, mode, options, zipfile, links);
+			text += parser.parseXmlData(xml_stream, mode, options, zipfile);
 			parser.disableText(false);
 			xml_stream.levelUp();
 		}
 
 		static void onODFBinaryData(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
 									const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-									bool& children_processed, std::string& level_suffix, bool first_on_level,
-									std::vector<Link>& links)
+									bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			doctotext_log(debug) << "ODF_BINARY_DATA Command";
 			children_processed = true;
@@ -185,14 +182,13 @@ std::string ODFXMLParser::plainText(XmlParseMode mode, FormattingStyle& formatti
 	disableText(true);
 	try
 	{
-		extractText(xml_content, mode, formatting_style, NULL, text, getInnerLinks());
+		extractText(xml_content, mode, formatting_style, NULL, text);
 	}
 	catch (Exception& ex)
 	{
 		ex.appendError("Error parsing Flat XML file");
 		throw;
 	}
-	decodeSpecialLinkBlocks(text, getInnerLinks());
 	return text;
 }
 
