@@ -9,9 +9,6 @@ if(MSVC)
     target_link_libraries(api_tests PRIVATE PThreads4W::PThreads4W)
 endif()
 
-add_executable(c_api_tests c_api_tests.cpp)
-target_link_libraries(c_api_tests PRIVATE doctotext_core GTest::gtest_main)
-
 file(GLOB test_files *)
 list(FILTER test_files EXCLUDE REGEX ".*\\.cpp$")
 file(COPY ${test_files} DESTINATION .)
@@ -19,11 +16,6 @@ file(COPY ${test_files} DESTINATION .)
 include(GoogleTest)
 
 gtest_discover_tests(api_tests
-        DISCOVERY_MODE PRE_TEST
-        DISCOVERY_TIMEOUT 30
-)
-
-gtest_discover_tests(c_api_tests
         DISCOVERY_MODE PRE_TEST
         DISCOVERY_TIMEOUT 30
 )

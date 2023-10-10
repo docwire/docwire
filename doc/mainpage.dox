@@ -19,7 +19,4 @@
  *	Doctotext imports all parsers from plugins directory.
  *	If you would like to add custom plugin have a look to chapter \ref plugins.
  *
- *	\section c_api C api
- *	We develop also c api for our libraries, and we can use it in case when we have problem with ABI compatibility or in
- *	case to port api to another language (e.g. python). For more information about c api see \ref doctotext_c_api.h
  */

@@ -31,8 +31,7 @@ version=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/VERSION`
 ./vcpkg/vcpkg --overlay-ports=./ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
 
 echo "\$(dirname \"\$0\")/installed/$VCPKG_TRIPLET/tools/text_extractor.sh \"\$@\"" > docwire-$version/text_extractor.sh
-echo "\$(dirname \"\$0\")/installed/$VCPKG_TRIPLET/tools/c_text_extractor.sh \"\$@\"" > docwire-$version/c_text_extractor.sh
-chmod u+x docwire-$version/text_extractor.sh docwire-$version/c_text_extractor.sh
+chmod u+x docwire-$version/text_extractor.sh
 
 tar -cjvf docwire-$version-$VCPKG_TRIPLET.tar.bz2 docwire-$version
 sha1sum docwire-$version-$VCPKG_TRIPLET.tar.bz2 > docwire-$version-$VCPKG_TRIPLET.tar.bz2.sha1

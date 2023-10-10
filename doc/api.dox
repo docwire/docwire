@@ -196,35 +196,19 @@
  *
  * \section importer_and_exporter Importer and Exporter
  *
- * Basic example of usage in C++:
+ * Basic example of usage:
  *
  * \snippet example_0.cpp example_cpp
  *
- * Basic example of usage in C:
- *
- * \snippet example_0.c example_c
- *
  * We can also define a second exporter and export output as html to output.html file.
  *
- * Example for C++:
- *
  * \snippet example_1.cpp example_cpp
- *
- * Example for C:
- *
- * \snippet example_1.c example_c
  *
  * In case of parsing multiple files, we can use the same importer and exporter object for each file.
  * In first step we need to create parsing process by connecting the importer and exporter and then we can start
  * the parsing process by passing subsequent files to the importer.
  *
- * Example for C++:
- *
  * \snippet example_2.cpp example_cpp
- *
- * Example for C:
- *
- * \snippet example_2.c example_c
  *
  * \section transformer Transformer
  * Transformer is an object that we can connect to the importer and exporter. The transformer receives data from the importer or another transformer
@@ -234,72 +218,36 @@
  * is to skip the data from the current callback or stop the parsing process.
  * Below example shows how to use the transformer to filter mails with subject "Hello"
  *
- * Example for C++:
- *
  * \snippet example_3.cpp example_cpp
- *
- * Example for C:
- *
- * \snippet example_3.c example_c
  *
  * Transformers can be joined together to create complex transformations/filtration. For example, we can create a transformer that
  * filters mails with subject "Hello" and limit the number of mails to 10.
  *
- * Example for C++:
- *
  * \snippet example_4.cpp example_cpp
- *
- * Example for C:
- *
- * \snippet example_4.c example_c
  *
  * \section callbacks_api Callbacks Api
  * Another approach to parse documents is to use the callbacks api. We can create specific parser object and connect it to
  * the callback functions. In case of the callback api, we need to define writing parsed text by ourself.
  * Below is a basic example of the callback api:
  *
- * example for C++:
- *
  * \snippet example_5.cpp example_cpp
- *
- * example for C:
- *
- * \snippet example_5.c example_c
  *
  * In callback api we can add many callback functions to the parser and it works in similar way as the transformer in the
  * stream api. So we are able to add a callback function to filter by mail topic or by mail number in similar way like in stream api.
  *
- * example for C++:
- *
  * \snippet example_6.cpp example_cpp
- *
- * example for C:
- *
- * \snippet example_6.c example_c
  *
  * \section SimpleExtractor SimpleExtractor
  *
  * The easiest way to parse the document is to use the doctotext::SimpleExtractor. The simple extractor provides the basic
  * functionality to parse the document.
  *
- * example for C++:
- *
  * \snippet example_7.cpp example_cpp
- *
- * Example for C:
- *
- * \snippet example_7.c example_c
  *
  * SimpleExtractor also supports custom callback functions, so we can define our own transform or filter functions
  * and use them in the parsing process.
  *
- * example for C++:
- *
  * \snippet example_8.cpp example_cpp
- *
- * Example for C:
- *
- * \snippet example_8.c example_c
  *
  * \section logging Logs mechanism
  * Doctotext parsers generate many logs with current processing status, warnings and errors. By default all logs are sent
