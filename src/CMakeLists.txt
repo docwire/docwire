@@ -306,7 +306,7 @@ set(PUBLIC_HEADERS
 	defines.h
 	log.h
 )
-install(FILES ${PUBLIC_HEADERS} DESTINATION include/doctotext)
+install(FILES ${PUBLIC_HEADERS} DESTINATION include/docwire)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR APPLE)
 	if(APPLE)
