@@ -42,7 +42,7 @@
 
 namespace doctotext
 {
-	class DocToTextUnzip;
+	class ZipReader;
 	class Metadata;
 	class XmlStream;
 }
@@ -90,7 +90,7 @@ class CommonXMLDocumentParser
 		typedef std::vector<ODFOOXMLListStyle> ListStyleVector;
 
   typedef std::function<void(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                                 const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
+                                 const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
                                  bool& children_processed, std::string& level_suffix, bool first_on_level)> CommandHandler;
 
     void addCallback(const doctotext::NewNodeCallback &callback);
@@ -105,14 +105,14 @@ class CommonXMLDocumentParser
 
 		///it is executed for each undefined tag (xml tag without associated handler). Can be overwritten
 		virtual void onUnregisteredCommand(XmlStream& xml_stream, XmlParseMode mode,
-										   const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
+										   const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
 										   bool& children_processed, std::string& level_suffix, bool first_on_level);
 
 		///parses xml data for given xml stream. It executes commands for each xml tag
-		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const FormattingStyle& options, const DocToTextUnzip* zipfile) const;
+		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile) const;
 
 		///extracts text from xml data. It uses parseXmlData internally. Throws doctotext::exception on fail
-		void extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text) const;
+		void extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile, std::string& text) const;
 
 		///usefull since two parsers use this. Throws doctotext::exception on fail
 		void parseODFMetadata(const std::string &xml_content, Metadata &metadata) const;

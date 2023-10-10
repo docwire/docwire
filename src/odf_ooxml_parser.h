@@ -50,7 +50,7 @@ class ODFOOXMLParser : public doctotext::Parser,
     int lastOOXMLColNum();
     void setLastOOXMLColNum(int c);
   void onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                     const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
+                     const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
                      bool& children_processed, std::string& level_suffix, bool first_on_level) const;
 
 	public:

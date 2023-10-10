@@ -39,7 +39,7 @@
 #include "log.h"
 #include <stdio.h>
 #include <sstream>
-#include "doctotext_unzip.h"
+#include "zip_reader.h"
 #include "entities.h"
 #include <map>
 #include <list>
@@ -250,12 +250,12 @@ struct IWorkParser::Implementation
 	class DataSource
 	{
 		private:
-			DocToTextUnzip* m_zipfile;
+			ZipReader* m_zipfile;
 			bool m_done;
 			std::string m_xml_file;
 
 		public:
-			DataSource(DocToTextUnzip& zipfile, std::string& xml_file)
+			DataSource(ZipReader& zipfile, std::string& xml_file)
 			{
 				m_zipfile = &zipfile;
 				m_done = false;
@@ -1997,7 +1997,7 @@ struct IWorkParser::Implementation
 		}
 	};
 
-	void ReadMetadata(DocToTextUnzip& zipfile, Metadata& metadata)
+	void ReadMetadata(ZipReader& zipfile, Metadata& metadata)
 	{
 		DataSource xml_data_source(zipfile, m_xml_file);
 		XmlReader xml_reader(xml_data_source);
@@ -2044,7 +2044,7 @@ struct IWorkParser::Implementation
 		}
 	}
 
-	void parseIWork(DocToTextUnzip& zipfile, std::string& text)
+	void parseIWork(ZipReader& zipfile, std::string& text)
 	{
 		DataSource xml_data_source(zipfile, m_xml_file);
 		XmlReader xml_reader(xml_data_source);
@@ -2126,7 +2126,7 @@ IWorkParser::~IWorkParser()
 
 bool IWorkParser::isIWork()
 {
-	DocToTextUnzip unzip;
+	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
 	else
@@ -2163,7 +2163,7 @@ bool IWorkParser::isIWork()
 Metadata IWorkParser::metaData()
 {
 	Metadata metadata;
-	DocToTextUnzip unzip;
+	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
 	else
@@ -2195,7 +2195,7 @@ std::string IWorkParser::plainText(const FormattingStyle& formatting)
 {
 	doctotext_log(debug) << "Using iWork parser.";
 	std::string text;
-	DocToTextUnzip unzip;
+	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
 	else

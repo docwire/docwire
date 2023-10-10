@@ -98,7 +98,7 @@ endif()
 
 add_library(doctotext_parsers SHARED
         entities.cpp
-        doctotext_unzip.cpp
+        zip_reader.cpp
         oshared.cpp
         xml_fixer.cpp
         xml_stream.cpp

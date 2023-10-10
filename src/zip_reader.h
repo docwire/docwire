@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_UNZIP_H
-#define DOCTOTEXT_UNZIP_H
+#ifndef DOCTOTEXT_ZIP_READER_H
+#define DOCTOTEXT_ZIP_READER_H
 
 #include <string>
 #include "defines.h"
@@ -40,19 +40,19 @@
 namespace doctotext
 {
 
-class DocToTextUnzip
+class ZipReader
 {
 	private:
 		struct Implementation;
 		Implementation* Impl;
 
 	public:
-		DocToTextUnzip();
-		DocToTextUnzip(const std::string& archive_file_name);
-		DocToTextUnzip(const char* buffer, size_t size);
+		ZipReader();
+		ZipReader(const std::string& archive_file_name);
+		ZipReader(const char* buffer, size_t size);
 		void setArchiveFile(const std::string& archive_file_name);
 		void setBuffer(const char* buffer, size_t size);
-		~DocToTextUnzip();
+		~ZipReader();
 		DllExport static void setUnzipCommand(const std::string& command);
 		bool open();
 		void close();

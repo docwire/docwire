@@ -34,7 +34,7 @@
 #include "xlsb_parser.h"
 
 #include <algorithm>
-#include "doctotext_unzip.h"
+#include "zip_reader.h"
 #include "exception.h"
 #include <iostream>
 #include "log.h"
@@ -123,7 +123,7 @@ struct XLSBParser::Implementation
 			};
 
 		private:
-			DocToTextUnzip* m_zipfile;
+			ZipReader* m_zipfile;
 			std::vector<unsigned char> m_chunk;
 			int m_chunk_len;
 			int m_pointer;
@@ -132,7 +132,7 @@ struct XLSBParser::Implementation
 			std::string m_file_name;
 
 		public:
-			XLSBReader(DocToTextUnzip& zipfile, const std::string& file_name)
+			XLSBReader(ZipReader& zipfile, const std::string& file_name)
 			{
 				m_zipfile = &zipfile;
 				m_file_name = file_name;
@@ -531,7 +531,7 @@ struct XLSBParser::Implementation
 		};
 	}
 
-	void parseSharedStrings(DocToTextUnzip& unzip)
+	void parseSharedStrings(ZipReader& unzip)
 	{
 		XLSBReader::Record record;
 		std::string file_name = "xl/sharedStrings.bin";
@@ -566,7 +566,7 @@ struct XLSBParser::Implementation
 		unzip.closeReadingFileForChunks();
 	}
 
-	void parseWorksheets(DocToTextUnzip& unzip, std::string& text)
+	void parseWorksheets(ZipReader& unzip, std::string& text)
 	{
 		XLSBReader::Record record;
 		int sheet_index = 1;
@@ -604,7 +604,7 @@ struct XLSBParser::Implementation
 		}
 	}
 
-	void parseXLSB(DocToTextUnzip& unzip, std::string& text)
+	void parseXLSB(ZipReader& unzip, std::string& text)
 	{
 		text.reserve(1024 * 1024);
 		if (!unzip.loadDirectory())
@@ -629,7 +629,7 @@ struct XLSBParser::Implementation
 		}
 	}
 
-	void readMetadata(DocToTextUnzip& unzip, Metadata& metadata)
+	void readMetadata(ZipReader& unzip, Metadata& metadata)
 	{
 		doctotext_log(debug) << "Extracting metadata.";
 		std::string data;
@@ -754,7 +754,7 @@ XLSBParser::~XLSBParser()
 
 bool XLSBParser::isXLSB()
 {
-	DocToTextUnzip unzip;
+	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
 	else
@@ -780,7 +780,7 @@ bool XLSBParser::isXLSB()
 Metadata XLSBParser::metaData()
 {
 	Metadata metadata;
-	DocToTextUnzip unzip;
+	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
 	else
@@ -819,7 +819,7 @@ std::string XLSBParser::plainText(const FormattingStyle& formatting)
 {
 	doctotext_log(debug) << "Using XLSB parser.";
 	std::string text;
-	DocToTextUnzip unzip;
+	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
 	else

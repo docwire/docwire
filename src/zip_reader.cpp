@@ -31,7 +31,7 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#include "doctotext_unzip.h"
+#include "zip_reader.h"
 
 #include <iostream>
 #include "log.h"
@@ -126,7 +126,7 @@ static int buffer_error(voidpf opaque, voidpf stream)
 	return 0;	//no errors at all?
 }
 
-struct DocToTextUnzip::Implementation
+struct ZipReader::Implementation
 {
 	std::string ArchiveFileName;
 	unzFile ArchiveFile;
@@ -138,7 +138,7 @@ struct DocToTextUnzip::Implementation
 	ZippedBuffer* m_zipped_buffer;
 };
 
-DocToTextUnzip::DocToTextUnzip()
+ZipReader::ZipReader()
 {
 	Impl = NULL;
 	try
@@ -159,7 +159,7 @@ DocToTextUnzip::DocToTextUnzip()
 	}
 }
 
-DocToTextUnzip::DocToTextUnzip(const std::string& archive_file_name)
+ZipReader::ZipReader(const std::string& archive_file_name)
 {
 	Impl = NULL;
 	try
@@ -181,7 +181,7 @@ DocToTextUnzip::DocToTextUnzip(const std::string& archive_file_name)
 	}
 }
 
-DocToTextUnzip::DocToTextUnzip(const char *buffer, size_t size)
+ZipReader::ZipReader(const char *buffer, size_t size)
 {
 	Impl = NULL;
 	try
@@ -203,12 +203,12 @@ DocToTextUnzip::DocToTextUnzip(const char *buffer, size_t size)
 	}
 }
 
-void DocToTextUnzip::setArchiveFile(const std::string &archive_file_name)
+void ZipReader::setArchiveFile(const std::string &archive_file_name)
 {
 	Impl->ArchiveFileName = archive_file_name;
 }
 
-void DocToTextUnzip::setBuffer(const char *buffer, size_t size)
+void ZipReader::setBuffer(const char *buffer, size_t size)
 {
 	Impl->m_buffer = buffer;
 	Impl->m_from_memory_buffer = true;
@@ -216,7 +216,7 @@ void DocToTextUnzip::setBuffer(const char *buffer, size_t size)
 	Impl->ArchiveFileName = "Memory buffer";
 }
 
-DocToTextUnzip::~DocToTextUnzip()
+ZipReader::~ZipReader()
 {
 	if (Impl->ArchiveFile != NULL)
 		unzClose(Impl->ArchiveFile);
@@ -227,12 +227,12 @@ DocToTextUnzip::~DocToTextUnzip()
 
 static std::string unzip_command;
 
-void DocToTextUnzip::setUnzipCommand(const std::string& command)
+void ZipReader::setUnzipCommand(const std::string& command)
 {
 	unzip_command = command;
 }
 
-bool DocToTextUnzip::open()
+bool ZipReader::open()
 {
 	if (!Impl->m_from_memory_buffer)
 		Impl->ArchiveFile = unzOpen(Impl->ArchiveFileName.c_str());
@@ -259,7 +259,7 @@ bool DocToTextUnzip::open()
 	return true;
 }
 
-void DocToTextUnzip::close()
+void ZipReader::close()
 {
 	unzClose(Impl->ArchiveFile);
 	if (Impl->m_zipped_buffer)
@@ -268,12 +268,12 @@ void DocToTextUnzip::close()
 	Impl->ArchiveFile = NULL;
 }
 
-bool DocToTextUnzip::exists(const std::string& file_name) const
+bool ZipReader::exists(const std::string& file_name) const
 {
 	return (unzLocateFile(Impl->ArchiveFile, file_name.c_str(), CASESENSITIVITY) == UNZ_OK);
 }
 
-bool DocToTextUnzip::read(const std::string& file_name, std::string* contents, int num_of_chars) const
+bool ZipReader::read(const std::string& file_name, std::string* contents, int num_of_chars) const
 {
 	// warning TODO: Add support for unzip command if Impl->m_from_memory_buffer == true
 	if (unzip_command != "" && Impl->m_from_memory_buffer == false)
@@ -403,12 +403,12 @@ bool DocToTextUnzip::read(const std::string& file_name, std::string* contents, i
 	return true;
 }
 
-void DocToTextUnzip::closeReadingFileForChunks() const
+void ZipReader::closeReadingFileForChunks() const
 {
 	Impl->m_opened_for_chunks = false;
 }
 
-bool DocToTextUnzip::readChunk(const std::string& file_name, char* contents, int num_of_chars, int& readed) const
+bool ZipReader::readChunk(const std::string& file_name, char* contents, int num_of_chars, int& readed) const
 {
 	if (Impl->m_opened_for_chunks == false)
 	{
@@ -446,7 +446,7 @@ bool DocToTextUnzip::readChunk(const std::string& file_name, char* contents, int
 	return true;
 }
 
-bool DocToTextUnzip::readChunk(const std::string& file_name, std::string* contents, int num_of_chars) const
+bool ZipReader::readChunk(const std::string& file_name, std::string* contents, int num_of_chars) const
 {
 	std::vector<char> vcontents(num_of_chars + 1);
 	int readed;
@@ -459,7 +459,7 @@ bool DocToTextUnzip::readChunk(const std::string& file_name, std::string* conten
 	return true;
 }
 
-bool DocToTextUnzip::getFileSize(const std::string& file_name, unsigned long& file_size) const
+bool ZipReader::getFileSize(const std::string& file_name, unsigned long& file_size) const
 {
 	int res;
 	unz_file_info file_info;
@@ -480,7 +480,7 @@ bool DocToTextUnzip::getFileSize(const std::string& file_name, unsigned long& fi
 	return true;
 }
 
-bool DocToTextUnzip::loadDirectory()
+bool ZipReader::loadDirectory()
 {
 	Impl->m_directory.clear();
 	if (unzGoToFirstFile(Impl->ArchiveFile) != UNZ_OK)

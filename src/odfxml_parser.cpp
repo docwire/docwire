@@ -47,7 +47,7 @@ class ODFXMLParser::CommandHandlersSet
 {
 	public:
 		static void onODFBody(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-							  const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
+							  const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
 							  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			// warning TODO: Unfortunately, in CommonXMLDocumentParser we are not checking full names for xml tags.\
@@ -60,7 +60,7 @@ class ODFXMLParser::CommandHandlersSet
 		}
 
 		static void onODFObject(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
+								const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			doctotext_log(debug) << "ODF_OBJECT Command";
@@ -72,7 +72,7 @@ class ODFXMLParser::CommandHandlersSet
 		}
 
 		static void onODFBinaryData(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-									const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
+									const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
 									bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			doctotext_log(debug) << "ODF_BINARY_DATA Command";
