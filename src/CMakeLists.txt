@@ -222,31 +222,31 @@ else()
     target_link_libraries(doctotext_ocr PRIVATE ${Leptonica_LIBRARIES} ${tesseract} ${archive} ${libxml2_dep_iconv} docwire_core)
 endif()
 
-add_library(doctotext_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
+add_library(docwire_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
 if(MSVC)
     find_library(bfio NAMES bfio libbfio REQUIRED)
     find_library(pff NAMES pff libpff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_package(PThreads4W REQUIRED)
-    target_link_libraries(doctotext_mail PRIVATE
+    target_link_libraries(docwire_mail PRIVATE
             ${bfio}
             ${pff}
             docwire_core
             ${htmlcxx}
             PThreads4W::PThreads4W)
-    target_include_directories(doctotext_mail PUBLIC
+    target_include_directories(docwire_mail PUBLIC
             ../
             .
             )
-    target_compile_options(doctotext_mail PUBLIC /Zc:__cplusplus /Zc:preprocessor)
+    target_compile_options(docwire_mail PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 else()
     find_library(bfio bfio REQUIRED)
     find_library(pff pff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
-    target_link_libraries(doctotext_mail PRIVATE ${bfio} ${pff} ${htmlcxx} pthread docwire_core)
+    target_link_libraries(docwire_mail PRIVATE ${bfio} ${pff} ${htmlcxx} pthread docwire_core)
 endif()
 find_package(mailio CONFIG REQUIRED)
-target_link_libraries(doctotext_mail PRIVATE mailio)
+target_link_libraries(docwire_mail PRIVATE mailio)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
    set_target_properties(docwire_parsers PROPERTIES PREFIX "")
@@ -269,13 +269,13 @@ else()
 	set(plugins_dir lib/docwire_plugins)
 endif()
 install(TARGETS doctotext_ocr LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
-install(TARGETS doctotext_mail LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
+install(TARGETS docwire_mail LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
 install(TARGETS docwire_parsers LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
 install(TARGETS docwire_core)
 
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:doctotext_ocr> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
-	install(FILES $<TARGET_PDB_FILE:doctotext_mail> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:docwire_mail> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
 	install(FILES $<TARGET_PDB_FILE:docwire_parsers> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
 	install(FILES $<TARGET_PDB_FILE:docwire_core> DESTINATION bin CONFIGURATIONS Debug)
 endif()
