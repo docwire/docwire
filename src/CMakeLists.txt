@@ -180,20 +180,20 @@ else()
     target_include_directories(docwire_parsers PRIVATE ${unzip_incdir})
 endif()
 
-add_library(doctotext_ocr SHARED ocr_parser_provider.cpp ocr_parser.cpp)
+add_library(docwire_ocr SHARED ocr_parser_provider.cpp ocr_parser.cpp)
 if(MSVC)
-    set_property(TARGET doctotext_ocr PROPERTY
+    set_property(TARGET docwire_ocr PROPERTY
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     find_package(Leptonica)
     find_package(Tesseract)
-    target_link_libraries(doctotext_ocr ${Leptonica_LIBRARIES}
+    target_link_libraries(docwire_ocr ${Leptonica_LIBRARIES}
                                         Tesseract::libtesseract
                                         docwire_core)
-    target_include_directories(doctotext_ocr PUBLIC
+    target_include_directories(docwire_ocr PUBLIC
             ../
             .
             )
-    target_compile_options(doctotext_ocr PUBLIC /Zc:__cplusplus /Zc:preprocessor)
+    target_compile_options(docwire_ocr PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 else()
     find_package(Leptonica)
     if (Leptonica_FOUND)
@@ -219,7 +219,7 @@ else()
     else()
         set(libxml2_dep_iconv "")
     endif()
-    target_link_libraries(doctotext_ocr PRIVATE ${Leptonica_LIBRARIES} ${tesseract} ${archive} ${libxml2_dep_iconv} docwire_core)
+    target_link_libraries(docwire_ocr PRIVATE ${Leptonica_LIBRARIES} ${tesseract} ${archive} ${libxml2_dep_iconv} docwire_core)
 endif()
 
 add_library(docwire_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
@@ -268,13 +268,13 @@ if (MSVC)
 else()
 	set(plugins_dir lib/docwire_plugins)
 endif()
-install(TARGETS doctotext_ocr LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
+install(TARGETS docwire_ocr LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
 install(TARGETS docwire_mail LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
 install(TARGETS docwire_parsers LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
 install(TARGETS docwire_core)
 
 if(MSVC)
-	install(FILES $<TARGET_PDB_FILE:doctotext_ocr> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:docwire_ocr> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
 	install(FILES $<TARGET_PDB_FILE:docwire_mail> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
 	install(FILES $<TARGET_PDB_FILE:docwire_parsers> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
 	install(FILES $<TARGET_PDB_FILE:docwire_core> DESTINATION bin CONFIGURATIONS Debug)
