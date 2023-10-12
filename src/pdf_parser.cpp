@@ -6747,7 +6747,7 @@ struct PDFParser::Implementation
 				docwire_log_func_with_args(u32_str, font, curFontSize, idx);
 				if (idx > u32_str.size())
 				{
-					doctotext_log(error) << "Internal error: idx > u32_str.size()" << doctotext_log_streamable_vars(idx, u32_str.size());
+					doctotext_log(error) << "Internal error: idx > u32_str.size()" << docwire_log_streamable_vars(idx, u32_str.size());
 					throw Exception("Internal error: idx > u32_str.size()");
 				}
 				char32_t ch = u32_str[idx];
@@ -6790,7 +6790,7 @@ struct PDFParser::Implementation
 						doctotext_log_vars(distance, space_size);
 						if (distance >= space_size)
 						{
-							doctotext_log(debug) << "Adding space to output because distance >= space_size" << doctotext_log_streamable_vars(distance, space_size);
+							doctotext_log(debug) << "Adding space to output because distance >= space_size" << docwire_log_streamable_vars(distance, space_size);
 							output += ' ';
 						}
 						add_charspace = true;
@@ -6998,14 +6998,14 @@ struct PDFParser::Implementation
 						{
 							while (dy >= new_line_size)
 							{
-								doctotext_log(debug) << "New line because of y position difference" << doctotext_log_streamable_vars(dy, new_line_size);
+								doctotext_log(debug) << "New line because of y position difference" << docwire_log_streamable_vars(dy, new_line_size);
 								output += '\n';
 								dy -= new_line_size;
 							}
 						}
 						else if ((*it).m_x < x_begin)	//force new line
 						{
-							doctotext_log(debug) << "New line because of x position difference" << doctotext_log_streamable_vars(it->m_x, x_begin);
+							doctotext_log(debug) << "New line because of x position difference" << docwire_log_streamable_vars(it->m_x, x_begin);
 							output += '\n';
 						}
 						else if (dx >= (*it).m_space_size)
