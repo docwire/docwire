@@ -149,7 +149,7 @@ struct XLSParser::Implementation
 		static StandardDateFormats formats;
 		if (xf_index >= m_xf_records.size())
 		{
-			doctotext_log(warning) << "Incorrect format code " << xf_index << ".";
+			docwire_log(warning) << "Incorrect format code " << xf_index << ".";
 			return "";
 		}
 		int num_format_id = m_xf_records[xf_index].num_format_id;
@@ -232,7 +232,7 @@ struct XLSParser::Implementation
 		{
 			size_t diff = record_pos - record_sizes[record_index];
 			if (diff > 0)
-				doctotext_log(warning) << "Warning: XLUnicodeString starts " << diff << " bytes past record boundary.";
+				docwire_log(warning) << "Warning: XLUnicodeString starts " << diff << " bytes past record boundary.";
 			record_pos = diff;
 			record_index++;
 		}
@@ -247,7 +247,7 @@ struct XLSParser::Implementation
 		// warning TODO: Add support for record 0x0004 (in BIFF2).
 		if (src_end - *src < 2)
 		{
-			doctotext_log(warning) << "Unexpected end of buffer.";
+			docwire_log(warning) << "Unexpected end of buffer.";
 			*src = src_end;
 			return "";
 		}
@@ -256,7 +256,7 @@ struct XLSParser::Implementation
 		record_pos += 2;
 		if (src_end - *src < 1)
 		{
-			doctotext_log(warning) << "Unexpected end of buffer.";
+			docwire_log(warning) << "Unexpected end of buffer.";
 			*src = src_end;
 			return "";
 		}
@@ -271,10 +271,10 @@ struct XLSParser::Implementation
 		int after_text_block_len = 0;
 		if (flags & 0x08) // rich text
 		{
-			doctotext_log(debug) << "Rich text flag enabled.";
+			docwire_log(debug) << "Rich text flag enabled.";
 			if (src_end - *src < 2)
 			{
-				doctotext_log(warning) << "Unexpected end of buffer.";
+				docwire_log(warning) << "Unexpected end of buffer.";
 				*src = src_end;
 				return "";
 			}
@@ -284,10 +284,10 @@ struct XLSParser::Implementation
 		}
 		if (flags & 0x04) // asian
 		{
-			doctotext_log(debug) << "Asian flag enabled.";
+			docwire_log(debug) << "Asian flag enabled.";
 			if (src_end - *src < 4)
 			{
-				doctotext_log(warning) << "Unexpected end of buffer.";
+				docwire_log(warning) << "Unexpected end of buffer.";
 				*src = src_end;
 				return "";
 			}
@@ -296,7 +296,7 @@ struct XLSParser::Implementation
 			record_pos += 4;
 		}
 		if (after_text_block_len > 0)
-			doctotext_log(debug) << "Additional formatting blocks found, size " << after_text_block_len << " bytes.";
+			docwire_log(debug) << "Additional formatting blocks found, size " << after_text_block_len << " bytes.";
 		std::string dest;
 		std::vector<unsigned char>::const_iterator s = *src;
 		int char_count = 0;
@@ -304,15 +304,15 @@ struct XLSParser::Implementation
 		{
 			if (s >= src_end)
 			{
-				doctotext_log(warning) << "Unexpected end of buffer.";
+				docwire_log(warning) << "Unexpected end of buffer.";
 				*src = src_end;
 				return dest;
 			}
 			if (record_pos > record_sizes[record_index])
-				doctotext_log(warning) << "Warning: record boundary crossed.";
+				docwire_log(warning) << "Warning: record boundary crossed.";
 			if (record_pos == record_sizes[record_index])
 			{
-				doctotext_log(debug) << "Record boundary reached.";
+				docwire_log(debug) << "Record boundary reached.";
 				record_index++;
 				record_pos = 0;
 				// At the beginning of each CONTINUE record the option flags byte is repeated.
@@ -321,12 +321,12 @@ struct XLSParser::Implementation
 				// from 8‑bit characters to 16‑bit characters and vice versa.
 				if (s >= src_end)
 				{
-					doctotext_log(warning) << "Unexpected end of buffer.";
+					docwire_log(warning) << "Unexpected end of buffer.";
 					*src = src_end;
 					return dest;
 				}
 				if ((*s) != 0 && (*s) != 1)
-					doctotext_log(warning) << "Incorrect XLUnicodeString flag.";
+					docwire_log(warning) << "Incorrect XLUnicodeString flag.";
 				char_size = ((*s) & 0x01) ? 2 : 1;
 				if (char_size == 2)
 				{
@@ -340,7 +340,7 @@ struct XLSParser::Implementation
 			{
 				if (src_end - *src < 2)
 				{
-					doctotext_log(warning) << "Unexpected end of buffer.";
+					docwire_log(warning) << "Unexpected end of buffer.";
 					*src = src_end;
 					return dest;
 				}
@@ -354,7 +354,7 @@ struct XLSParser::Implementation
 					s += 2;
 					if (src_end - *src < 2)
 					{
-						doctotext_log(warning) << "Unexpected end of buffer.";
+						docwire_log(warning) << "Unexpected end of buffer.";
 						*src = src_end;
 						return dest;
 					}
@@ -367,7 +367,7 @@ struct XLSParser::Implementation
 			{
 				if (s >= src_end)
 				{
-					doctotext_log(warning) << "Unexpected end of buffer.";
+					docwire_log(warning) << "Unexpected end of buffer.";
 					*src = src_end;
 					return dest;
 				}
@@ -391,10 +391,10 @@ struct XLSParser::Implementation
 
 	void parseSharedStringTable(const std::vector<unsigned char>& sst_buf)
 	{
-		doctotext_log(debug) << "Parsing shared string table.";
+		docwire_log(debug) << "Parsing shared string table.";
 		if (sst_buf.size() < 8)
 		{
-			doctotext_log(warning) << "Warning: error while parsing shared string table Buffer must contain at least 8 bytes.";
+			docwire_log(warning) << "Warning: error while parsing shared string table Buffer must contain at least 8 bytes.";
 			return;
 		}
 		int sst_size = getS32LittleEndian(sst_buf.begin() + 4);
@@ -427,7 +427,7 @@ struct XLSParser::Implementation
 
 	void processRecord(int rec_type, const std::vector<unsigned char>& rec, std::string& text)
 	{
-		doctotext_log(debug) << hex() << "record" << rec_type;
+		docwire_log(debug) << hex() << "record" << rec_type;
 		if (rec_type != XLS_CONTINUE && m_prev_rec_type == XLS_SST)
 			parseSharedStringTable(m_shared_string_table_buf);
 		switch (rec_type)
@@ -436,7 +436,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 4)
 				{
-					doctotext_log(warning) << "Warning: record is too short. XLS_BLANK must be 4 bytes in length";
+					docwire_log(warning) << "Warning: record is too short. XLS_BLANK must be 4 bytes in length";
 					break;
 				}
 				int row = getU16LittleEndian(rec.begin());
@@ -473,7 +473,7 @@ struct XLSParser::Implementation
 				m_shared_string_table_buf.reserve(m_shared_string_table_buf.size() + rec.size());
 				m_shared_string_table_buf.insert(m_shared_string_table_buf.end(), rec.begin(), rec.begin() + rec.size());
 				m_shared_string_table_record_sizes.push_back(rec.size());
-				doctotext_log(debug) << "XLS_CONTINUE record for XLS_SST found. Index: " << m_shared_string_table_record_sizes.size() - 1 << ", size:" << rec.size() << ".";
+				docwire_log(debug) << "XLS_CONTINUE record for XLS_SST found. Index: " << m_shared_string_table_record_sizes.size() - 1 << ", size:" << rec.size() << ".";
 				return;
 			}
 			case XLS_DATE_1904:
@@ -487,7 +487,7 @@ struct XLSParser::Implementation
 			}
 			case XLS_FILEPASS:
 			{
-				doctotext_log(info) << "XLS file is encrypted.";
+				docwire_log(info) << "XLS file is encrypted.";
 				if (rec.size() >= 2)
 				{
 					U16 encryption_type = getU16LittleEndian(rec.begin());
@@ -509,7 +509,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 2)
 				{
-					doctotext_log(warning) << "Warning: record is too short. XLS_FORMAT must be 2 bytes in length";
+					docwire_log(warning) << "Warning: record is too short. XLS_FORMAT must be 2 bytes in length";
 					break;
 				}
 				int num_format_id = getU16LittleEndian(rec.begin());
@@ -520,7 +520,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 14)
 				{
-					doctotext_log(warning) << "Warning: record is too short. XLS_FORMULA must be 14 bytes in length";
+					docwire_log(warning) << "Warning: record is too short. XLS_FORMULA must be 14 bytes in length";
 					break;
 				}
 				m_last_string_formula_row = -1;
@@ -552,7 +552,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 9)
 				{
-					doctotext_log(warning) << "Warning: record is too short. XLS_INTEGER_CELL must be 9 bytes in length";
+					docwire_log(warning) << "Warning: record is too short. XLS_INTEGER_CELL must be 9 bytes in length";
 					break;
 				}
 				int row = getU16LittleEndian(rec.begin());
@@ -565,7 +565,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 6)
 				{
-					doctotext_log(warning) << "Warning: record is too short. XLS_LABEL and XLS_RSTRING must be at least 6 bytes in length";
+					docwire_log(warning) << "Warning: record is too short. XLS_LABEL and XLS_RSTRING must be at least 6 bytes in length";
 					break;
 				}
 				m_last_string_formula_row = -1;
@@ -583,7 +583,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 8)
 				{
-					doctotext_log(warning) << "Warning: record is too short. XLS_LABEL_SST must be at least 8 bytes in length";
+					docwire_log(warning) << "Warning: record is too short. XLS_LABEL_SST must be at least 8 bytes in length";
 					break;
 				}
 				m_last_string_formula_row = -1;
@@ -592,7 +592,7 @@ struct XLSParser::Implementation
 				int sst_index = getU16LittleEndian(rec.begin() + 6);
 				if (sst_index >= m_shared_string_table.size() || sst_index < 0)
 				{
-					doctotext_log(warning) << "Incorrect SST index.";
+					docwire_log(warning) << "Incorrect SST index.";
 					return;
 				}
 				else
@@ -603,7 +603,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 4)
 				{
-					doctotext_log(warning) << "Warning: record is too short. XLS_MULBLANK must be at least 4 bytes in length";
+					docwire_log(warning) << "Warning: record is too short. XLS_MULBLANK must be at least 4 bytes in length";
 					break;
 				}
 				int row = getU16LittleEndian(rec.begin());
@@ -617,7 +617,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 4)
 				{
-					doctotext_log(warning) << "Warning: record is too short. XLS_MULRK must be at least 4 bytes in length";
+					docwire_log(warning) << "Warning: record is too short. XLS_MULRK must be at least 4 bytes in length";
 					break;
 				}
 				m_last_string_formula_row = -1;
@@ -627,7 +627,7 @@ struct XLSParser::Implementation
 				int min_size = 4 + 6 * (end_col - start_col + 1);
 				if (rec.size() < min_size)
 				{
-					doctotext_log(warning) << "Warning: record is too short. The specified XLS_MULRK record must be at least " << min_size << " bytes in length";
+					docwire_log(warning) << "Warning: record is too short. The specified XLS_MULRK record must be at least " << min_size << " bytes in length";
 					break;
 				}
 				for (int offset = 4, col = start_col; col <= end_col; offset += 6, col++)
@@ -644,7 +644,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 14)
 				{
-					doctotext_log(warning) << "Warning: record is too short. XLS_NUMBER (or record of number 0x03, 0x103, 0x303) must be 14 bytes in length";
+					docwire_log(warning) << "Warning: record is too short. XLS_NUMBER (or record of number 0x03, 0x103, 0x303) must be 14 bytes in length";
 					break;
 				}
 				m_last_string_formula_row = -1;
@@ -657,7 +657,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 10)
 				{
-					doctotext_log(warning) << "Warning: record is too short. XLS_RK must be 10 bytes in length";
+					docwire_log(warning) << "Warning: record is too short. XLS_RK must be 10 bytes in length";
 					break;
 				}
 				m_last_string_formula_row = -1;
@@ -681,7 +681,7 @@ struct XLSParser::Implementation
 			{
 				std::vector<unsigned char>::const_iterator src = rec.begin();
 				if (m_last_string_formula_row < 0) {
-					doctotext_log(warning) << "String record without preceeding string formula.";
+					docwire_log(warning) << "String record without preceeding string formula.";
 					break;
 				}
 				std::vector<size_t> sizes;
@@ -696,7 +696,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 4)
 				{
-					doctotext_log(warning) << "Warning: record is too short. XLS_XF (or record of number 0x43) must be 4 bytes in length";
+					docwire_log(warning) << "Warning: record is too short. XLS_XF (or record of number 0x43) must be 4 bytes in length";
 					break;
 				}
 				XFRecord xf_record;
@@ -782,7 +782,7 @@ struct XLSParser::Implementation
 							*/
 							if(biff_ver == 0x600)
 							{
-								doctotext_log(debug) << "Detected BIFF8 version";
+								docwire_log(debug) << "Detected BIFF8 version";
 								rec.resize(8);
 								read_status = reader.read(&*rec.begin(), 8);
 								m_biff_version = BIFF8;
@@ -790,24 +790,24 @@ struct XLSParser::Implementation
 							}
 							else
 							{
-								doctotext_log(debug) << "Detected BIFF5 version";
+								docwire_log(debug) << "Detected BIFF5 version";
 								m_biff_version = BIFF5;
 								bof_struct_size = 8;
 							}
 							break;
 						}
 						case BOF_BIFF_3:
-							doctotext_log(debug) << "Detected BIFF3 version";
+							docwire_log(debug) << "Detected BIFF3 version";
 							m_biff_version = BIFF3;
 							bof_struct_size = 6;
 							break;
 						case BOF_BIFF_4:
-							doctotext_log(debug) << "Detected BIFF4 version";
+							docwire_log(debug) << "Detected BIFF4 version";
 							m_biff_version = BIFF4;
 							bof_struct_size = 6;
 							break;
 						default:
-							doctotext_log(debug) << "Detected BIFF2 version";
+							docwire_log(debug) << "Detected BIFF2 version";
 							m_biff_version = BIFF2;
 							bof_struct_size = 4;
 					}
@@ -835,7 +835,7 @@ struct XLSParser::Implementation
 			{
 				if (text.length() == 0)
 					throw Exception("Error while parsing XLS, type of record could not be read. OLE Reader has reported an error: " + reader.getLastError());
-				doctotext_log(error) << "Error while parsing XLS, type of record could not be read. OLE Reader has reported an error: " << reader.getLastError();
+				docwire_log(error) << "Error while parsing XLS, type of record could not be read. OLE Reader has reported an error: " << reader.getLastError();
 				break;
 			}
 			if (oleEof(reader))
@@ -848,7 +848,7 @@ struct XLSParser::Implementation
 			{
 				if (text.length() == 0)
 					throw Exception("Error while parsing XLS, length of record could not be read. OLE Reader has reported an error: " + reader.getLastError());
-				doctotext_log(error) << "Error while parsing XLS, length of record could not be read. OLE Reader has reported an error: " << reader.getLastError();
+				docwire_log(error) << "Error while parsing XLS, length of record could not be read. OLE Reader has reported an error: " << reader.getLastError();
 				break;
 			}
 			if (rec_len > 0)
@@ -856,7 +856,7 @@ struct XLSParser::Implementation
 				rec.resize(rec_len);
 				read_status = reader.read(&*rec.begin(), rec_len);
 				if (!read_status)
-					doctotext_log(error) << "Error while reading next record. OLE Reader has reported an error: " << reader.getLastError();
+					docwire_log(error) << "Error while reading next record. OLE Reader has reported an error: " << reader.getLastError();
 			}
 			else
 				rec.clear();
@@ -992,7 +992,7 @@ std::string XLSParser::plainText(const FormattingStyle& formatting)
 
 std::string XLSParser::plainText(ThreadSafeOLEStorage& storage, const FormattingStyle& formatting)
 {
-	doctotext_log(debug) << "Using XLS parser.";
+	docwire_log(debug) << "Using XLS parser.";
 
 	ThreadSafeOLEStreamReader* reader = NULL;
 	try

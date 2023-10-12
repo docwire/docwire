@@ -63,7 +63,7 @@ namespace docwire
 		\code
 		catch (Exception& ex)
 		{
-			doctotext_log(error) << ex.getBacktrace();
+			docwire_log(error) << ex.getBacktrace();
 		}
 		\endcode
 	**/

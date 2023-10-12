@@ -6747,7 +6747,7 @@ struct PDFParser::Implementation
 				docwire_log_func_with_args(u32_str, font, curFontSize, idx);
 				if (idx > u32_str.size())
 				{
-					doctotext_log(error) << "Internal error: idx > u32_str.size()" << docwire_log_streamable_vars(idx, u32_str.size());
+					docwire_log(error) << "Internal error: idx > u32_str.size()" << docwire_log_streamable_vars(idx, u32_str.size());
 					throw Exception("Internal error: idx > u32_str.size()");
 				}
 				char32_t ch = u32_str[idx];
@@ -6784,20 +6784,20 @@ struct PDFParser::Implementation
 					docwire_log_var(i);
 					if (tj_array[i].m_is_number)
 					{
-						doctotext_log(debug) << "Processing TJ char space" << docwire_log_streamable_var(tj_array[i].m_value);
+						docwire_log(debug) << "Processing TJ char space" << docwire_log_streamable_var(tj_array[i].m_value);
 						double distance = (-tj_array[i].m_value * x_scale);
 						m_current_state.m_line_matrix.m_offset_x += distance;
 						docwire_log_vars(distance, space_size);
 						if (distance >= space_size)
 						{
-							doctotext_log(debug) << "Adding space to output because distance >= space_size" << docwire_log_streamable_vars(distance, space_size);
+							docwire_log(debug) << "Adding space to output because distance >= space_size" << docwire_log_streamable_vars(distance, space_size);
 							output += ' ';
 						}
 						add_charspace = true;
 					}
 					else
 					{
-						doctotext_log(debug) << "Processing TJ text" << docwire_log_streamable_var(tj_array[i].m_utf_text);
+						docwire_log(debug) << "Processing TJ text" << docwire_log_streamable_var(tj_array[i].m_utf_text);
 						int idx = 0;
 						std::u32string u32_text = utf8_to_utf32(tj_array[i].m_utf_text);
 						for (const auto &c : u32_text)
@@ -6998,14 +6998,14 @@ struct PDFParser::Implementation
 						{
 							while (dy >= new_line_size)
 							{
-								doctotext_log(debug) << "New line because of y position difference" << docwire_log_streamable_vars(dy, new_line_size);
+								docwire_log(debug) << "New line because of y position difference" << docwire_log_streamable_vars(dy, new_line_size);
 								output += '\n';
 								dy -= new_line_size;
 							}
 						}
 						else if ((*it).m_x < x_begin)	//force new line
 						{
-							doctotext_log(debug) << "New line because of x position difference" << docwire_log_streamable_vars(it->m_x, x_begin);
+							docwire_log(debug) << "New line because of x position difference" << docwire_log_streamable_vars(it->m_x, x_begin);
 							output += '\n';
 						}
 						else if (dx >= (*it).m_space_size)
@@ -7425,7 +7425,7 @@ struct PDFParser::Implementation
 				FileStream file_stream(cmap_to_cid_file_name);
 				if (!file_stream.open())
 				{
-					doctotext_log(warning) << "Cannot open file: " << cmap_to_cid_file_name;
+					docwire_log(warning) << "Cannot open file: " << cmap_to_cid_file_name;
 					return;
 				}
 				std::vector<char> buffer(file_stream.size() + 2);
@@ -7576,7 +7576,7 @@ struct PDFParser::Implementation
 			#endif
 			if (!file_stream.open())
 			{
-				doctotext_log(warning) << "Cannot open file: " << cid_to_unicode_cmap;
+				docwire_log(warning) << "Cannot open file: " << cid_to_unicode_cmap;
 				return;
 			}
 			std::vector<char> buffer(file_stream.size() + 2);
@@ -7772,7 +7772,7 @@ struct PDFParser::Implementation
 		}
 		catch (std::exception& e)
 		{
-			doctotext_log(error) << "Exception in TryScanEncodedString()" << docwire_log_streamable_var(e);
+			docwire_log(error) << "Exception in TryScanEncodedString()" << docwire_log_streamable_var(e);
 			return "";
 		}
 		return decoded;
@@ -7821,7 +7821,7 @@ struct PDFParser::Implementation
 
 				while (reader.TryReadNext(content))
 				{
-					doctotext_log(debug) << "PdfContentStreamReader::TryReadNext() succeeded";
+					docwire_log(debug) << "PdfContentStreamReader::TryReadNext() succeeded";
 					docwire_log_var(content);
 					if (content.Type == PoDoFo::PdfContentType::Operator)
 					{
@@ -7829,13 +7829,13 @@ struct PDFParser::Implementation
 						{
 							case PoDoFo::PdfOperator::ET:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::ET";
+								docwire_log(debug) << "content.Operator == PdfOperator::ET";
 								in_text = false;
 								break;
 							}
 							case PoDoFo::PdfOperator::Tm:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::Tm";
+								docwire_log(debug) << "content.Operator == PdfOperator::Tm";
 								if (!in_text)
 									break;
 								page_text.executeTm(pdfvariant_stack_to_vector_of_double(content.Stack, 0, 6));
@@ -7843,7 +7843,7 @@ struct PDFParser::Implementation
 							}
 							case PoDoFo::PdfOperator::Td:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::Td";
+								docwire_log(debug) << "content.Operator == PdfOperator::Td";
 								if (!in_text)
 									break;
 								page_text.executeTd(pdfvariant_stack_to_vector_of_double(content.Stack, 0, 2));
@@ -7851,7 +7851,7 @@ struct PDFParser::Implementation
 							}
 							case PoDoFo::PdfOperator::T_Star:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::T_Star";
+								docwire_log(debug) << "content.Operator == PdfOperator::T_Star";
 								if (!in_text)
 									break;
 								page_text.executeTstar();
@@ -7859,7 +7859,7 @@ struct PDFParser::Implementation
 							}
 							case PoDoFo::PdfOperator::TD:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::TD";
+								docwire_log(debug) << "content.Operator == PdfOperator::TD";
 								if (!in_text)
 									break;
 								page_text.executeTD(pdfvariant_stack_to_vector_of_double(content.Stack, 0, 2));
@@ -7867,7 +7867,7 @@ struct PDFParser::Implementation
 							}
 							case PoDoFo::PdfOperator::TJ:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::TJ";
+								docwire_log(debug) << "content.Operator == PdfOperator::TJ";
 								if (!in_text)
 									break;
 								std::vector<PDFContent::TJArrayElement> tj_array;
@@ -7933,7 +7933,7 @@ struct PDFParser::Implementation
 							}
 							case PoDoFo::PdfOperator::Tj:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::Tj";
+								docwire_log(debug) << "content.Operator == PdfOperator::Tj";
 								if (!in_text)
 									break;
 
@@ -7979,7 +7979,7 @@ struct PDFParser::Implementation
 							}
 							case PoDoFo::PdfOperator::Tw:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::Tw";
+								docwire_log(debug) << "content.Operator == PdfOperator::Tw";
 								if (!in_text)
 									break;
 								auto values = pdfvariant_stack_to_vector_of_double(content.Stack, 0, 1);
@@ -7992,7 +7992,7 @@ struct PDFParser::Implementation
 							}
 							case PoDoFo::PdfOperator::Tc:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::Tc";
+								docwire_log(debug) << "content.Operator == PdfOperator::Tc";
 								if (!in_text)
 									break;
 								auto values = pdfvariant_stack_to_vector_of_double(content.Stack, 0, 1);
@@ -8005,7 +8005,7 @@ struct PDFParser::Implementation
 							}
 							case PoDoFo::PdfOperator::Ts:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::Ts";
+								docwire_log(debug) << "content.Operator == PdfOperator::Ts";
 								if (!in_text)
 									break;
 								page_text.executeTs(pdfvariant_stack_to_vector_of_double(content.Stack, 0, 1));
@@ -8013,7 +8013,7 @@ struct PDFParser::Implementation
 							}
 							case PoDoFo::PdfOperator::Quote:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::Quote";
+								docwire_log(debug) << "content.Operator == PdfOperator::Quote";
 								if (!in_text)
 									break;
 								if (pCurFont)
@@ -8028,7 +8028,7 @@ struct PDFParser::Implementation
 							}
 							case PoDoFo::PdfOperator::DoubleQuote:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::DoubleQuote";
+								docwire_log(debug) << "content.Operator == PdfOperator::DoubleQuote";
 								if (!in_text)
 									break;
 								if(pCurFont)
@@ -8044,7 +8044,7 @@ struct PDFParser::Implementation
 							}
 							case PoDoFo::PdfOperator::Tf:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::Tf";
+								docwire_log(debug) << "content.Operator == PdfOperator::Tf";
 								if (!in_text)
 									break;
 								long font_size = content.Stack[0].GetReal();
@@ -8071,27 +8071,27 @@ struct PDFParser::Implementation
 								}
 								else
 								{
-								 	doctotext_log(warning) << "Unknown font";
+								 	docwire_log(warning) << "Unknown font";
 								}
 
 								break;
 							}
 							case PoDoFo::PdfOperator::BT:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::BT";
+								docwire_log(debug) << "content.Operator == PdfOperator::BT";
 								in_text = true;
 								page_text.executeBT();
 								break;
 							}
 							case PoDoFo::PdfOperator::TL:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::TL";
+								docwire_log(debug) << "content.Operator == PdfOperator::TL";
 								page_text.executeTL(pdfvariant_stack_to_vector_of_double(content.Stack, 0, 1));
 								break;
 							}
 							case PoDoFo::PdfOperator::Tz:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::Tz";
+								docwire_log(debug) << "content.Operator == PdfOperator::Tz";
 								long scale = content.Stack[0].GetReal();
 								page_text.executeTZ(scale);
 								if (pCurFont) {
@@ -8101,19 +8101,19 @@ struct PDFParser::Implementation
 							}
 							case PoDoFo::PdfOperator::cm:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::cm";
+								docwire_log(debug) << "content.Operator == PdfOperator::cm";
 								page_text.executeCm(pdfvariant_stack_to_vector_of_double(content.Stack, 0, 6));
 								break;
 							}
 							case PoDoFo::PdfOperator::Q:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::Q";
+								docwire_log(debug) << "content.Operator == PdfOperator::Q";
 								page_text.popState();
 								break;
 							}
 							case PoDoFo::PdfOperator::q:
 							{
-								doctotext_log(debug) << "content.Operator == PdfOperator::q";
+								docwire_log(debug) << "content.Operator == PdfOperator::q";
 								page_text.pushState();
 								break;
 							}
@@ -8121,7 +8121,7 @@ struct PDFParser::Implementation
 					}
 					else
 					{
-						doctotext_log(debug) << "content.Type != PdfContentType::Operator";
+						docwire_log(debug) << "content.Type != PdfContentType::Operator";
 						// warning TODO throw
 					}
 				}
@@ -8144,7 +8144,7 @@ struct PDFParser::Implementation
 				ex.appendError("Error while parsing page number: " + uint_to_string(page_num));
 				throw;
 			}
-			doctotext_log(debug) << "Page processed" << docwire_log_streamable_var(page_num);
+			docwire_log(debug) << "Page processed" << docwire_log_streamable_var(page_num);
 		}
 	}
 
@@ -8278,7 +8278,7 @@ struct PDFParser::Implementation
 		catch (const PoDoFo::PdfError& e)
 		{
       pthread_mutex_unlock(&load_document_mutex);
-			doctotext_log(error) << e;
+			docwire_log(error) << e;
 			if (e.GetCode() == PoDoFo::PdfErrorCode::NotCompiled || e.GetCode() == PoDoFo::PdfErrorCode::InternalLogic)
 			{
 				throw EncryptedFileException("File is encrypted");
@@ -8360,12 +8360,12 @@ bool PDFParser::isPDF()
 	impl->resetDataStream();
 	if (!impl->m_data_stream->read(buffer, 5))
 	{
-		doctotext_log(error) << "Cannot read from data stream.";
+		docwire_log(error) << "Cannot read from data stream.";
 		return false;
 	}
 	if (memcmp(buffer, pdf, 5) != 0)
 	{
-		doctotext_log(warning) << "No PDF header found";
+		docwire_log(warning) << "No PDF header found";
 		return false;
 	}
 	return true;
@@ -8383,7 +8383,7 @@ Metadata PDFParser::metaData()
 void
 PDFParser::parse() const
 {
-	doctotext_log(debug) << "Using PDF parser.";
+	docwire_log(debug) << "Using PDF parser.";
 	impl->loadDocument();
 	impl->parseText();
 }

@@ -480,35 +480,35 @@ std::string get_env_var(const std::string& env_var_name)
 	char* value = std::getenv(env_var_name.c_str());
 	if (value)
 	{
-		doctotext_log(debug) << "Value of " << env_var_name << " environment variable is " << value;
+		docwire_log(debug) << "Value of " << env_var_name << " environment variable is " << value;
 		return std::string(value);
 	}
 	else
 	{
-		doctotext_log(debug) << "Environment variable " << env_var_name << " does not exist";
+		docwire_log(debug) << "Environment variable " << env_var_name << " does not exist";
 		return std::string();
 	}
 }
 
 std::filesystem::path try_sub_path(const std::filesystem::path& path, const std::filesystem::path& sub_path)
 {
-	doctotext_log(debug) << "Trying path " << path;
+	docwire_log(debug) << "Trying path " << path;
 	std::filesystem::path full_path(path / sub_path);
-	doctotext_log(debug) << "Checking if " << full_path << " exists";
+	docwire_log(debug) << "Checking if " << full_path << " exists";
 	if (std::filesystem::exists(full_path))
 	{
 		full_path = std::filesystem::weakly_canonical(full_path);
-		doctotext_log(debug) << "Subpath found with canonical path " << full_path;
+		docwire_log(debug) << "Subpath found with canonical path " << full_path;
 		return full_path;
 	}
 	else if (path.parent_path() != path && !path.parent_path().empty())
 	{
-		doctotext_log(debug) << "Trying parent directory";
+		docwire_log(debug) << "Trying parent directory";
 		return try_sub_path(path.parent_path(), sub_path);
 	}
 	else
 	{
-		doctotext_log(debug) << "Cannot locate subpath in directory " << path << " and parent paths";
+		docwire_log(debug) << "Cannot locate subpath in directory " << path << " and parent paths";
 		return std::filesystem::path();
 	}
 };
@@ -517,7 +517,7 @@ std::filesystem::path try_sub_path(const std::filesystem::path& path, const std:
 
 std::filesystem::path locate_subpath(const std::filesystem::path& sub_path)
 {
-	doctotext_log(debug) << "Locating subpath " << sub_path;
+	docwire_log(debug) << "Locating subpath " << sub_path;
 	std::vector<std::string> lib_paths;
 #if defined(_WIN32)
 	std::string path = get_env_var("PATH");
@@ -543,6 +543,6 @@ std::filesystem::path locate_subpath(const std::filesystem::path& sub_path)
 
 std::filesystem::path locate_resource(const std::filesystem::path& resource_sub_path)
 {
-	doctotext_log(debug) << "Locating resource " << resource_sub_path;
+	docwire_log(debug) << "Locating resource " << resource_sub_path;
 	return locate_subpath(std::filesystem::path("..") / "share" / resource_sub_path);
 }

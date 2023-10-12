@@ -57,7 +57,7 @@ class ODFXMLParser::CommandHandlersSet
 			Thats a problem, since we can have table:body, office:body etc. What if more xml tags are not handled correctly?
 			if (xml_stream.fullName() != "office:body")
 				return;
-			doctotext_log(debug) << "ODF_BODY Command";
+			docwire_log(debug) << "ODF_BODY Command";
 			//we are inside body, we can disable adding text nodes
 			parser.disableText(false);
 		}
@@ -66,7 +66,7 @@ class ODFXMLParser::CommandHandlersSet
 								const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODF_OBJECT Command";
+			docwire_log(debug) << "ODF_OBJECT Command";
 			xml_stream.levelDown();
 			parser.disableText(true);
 			text += parser.parseXmlData(xml_stream, mode, options, zipfile);
@@ -78,7 +78,7 @@ class ODFXMLParser::CommandHandlersSet
 									const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
 									bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODF_BINARY_DATA Command";
+			docwire_log(debug) << "ODF_BINARY_DATA Command";
 			children_processed = true;
 		}
 };
@@ -197,7 +197,7 @@ std::string ODFXMLParser::plainText(XmlParseMode mode, FormattingStyle& formatti
 
 Metadata ODFXMLParser::metaData() const
 {
-	doctotext_log(debug) << "Extracting metadata.";
+	docwire_log(debug) << "Extracting metadata.";
 	Metadata metadata;
 
 	std::string xml_content;
@@ -248,7 +248,7 @@ ODFXMLParser::withParameters(const ParserParameters &parameters)
 void
 ODFXMLParser::parse() const
 {
-	doctotext_log(debug) << "Using ODFXML parser.";
+	docwire_log(debug) << "Using ODFXML parser.";
 	auto formatting_style = getFormattingStyle();
   plainText(XmlParseMode::PARSE_XML, formatting_style);
 

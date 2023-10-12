@@ -128,7 +128,7 @@ bool RTFParser::isRTF() const
 	if (!impl->m_data_stream->read(buf, sizeof(char), 5))
 	{
 		impl->m_data_stream->close();
-		doctotext_log(error) << "Error reading signature from file " << impl->m_file_name << ".";
+		docwire_log(error) << "Error reading signature from file " << impl->m_file_name << ".";
 		return false;
 	}
 	impl->m_data_stream->close();
@@ -347,7 +347,7 @@ static bool parseCommand(DataStream& data_stream, RTFCommand& cmd, long int& arg
 			arg = ch;
 		}
 	}
-	doctotext_log(debug) << "[cmd: " << name << " (" << arg << ")]";
+	docwire_log(debug) << "[cmd: " << name << " (" << arg << ")]";
 	return true;
 }
 
@@ -515,27 +515,27 @@ static void execCommand(DataStream& data_stream, UString& text, int& skip, RTFPa
 			text += UString("\n");
 			break;
 		case RTF_CODEPAGE:
-			doctotext_log(debug) << "Initializing converter for codepage " << arg;
+			docwire_log(debug) << "Initializing converter for codepage " << arg;
 			converter = new TextConverter(codepage_to_encoding(arg));
 			if (converter->isOk())
 			{
-				doctotext_log(debug) << "Converter initialized.";
+				docwire_log(debug) << "Converter initialized.";
 			}
 			else
 			{
-				doctotext_log(error) << "Converter initialization ERROR!";
+				docwire_log(error) << "Converter initialization ERROR!";
 				delete converter;
 				converter = NULL;
 			}
 			break;
 		case RTF_FONT_CHARSET:
-			doctotext_log(debug) << "Setting win charset " << arg << " for font number " << state.last_font_ref_num;
+			docwire_log(debug) << "Setting win charset " << arg << " for font number " << state.last_font_ref_num;
 			state.font_table[state.last_font_ref_num] = win_charset_to_encoding(arg);
 			break;
 		case RTF_F:
 			if (state.font_table.find(arg) != state.font_table.end())
 			{
-				doctotext_log(debug) << "Font number " << arg << " referenced. Setting converter for encoding " << state.font_table[arg];
+				docwire_log(debug) << "Font number " << arg << " referenced. Setting converter for encoding " << state.font_table[arg];
 				if (converter != NULL)
 					converter->setFromCode(state.font_table[arg]);
 			}
@@ -700,7 +700,7 @@ Metadata RTFParser::metaData() const
 		throw Exception("File " + impl->m_file_name + " is not rtf");
 	
 	Metadata meta;
-	doctotext_log(debug) << "Extracting metadata.";
+	docwire_log(debug) << "Extracting metadata.";
 	if (!impl->m_data_stream->open())
 		throw Exception("Error opening file " + impl->m_file_name);
 	size_t stream_size = impl->m_data_stream->size();
@@ -781,7 +781,7 @@ RTFParser::withParameters(const ParserParameters &parameters)
 void
 RTFParser::parse() const
 {
-	doctotext_log(debug) << "Using RTF parser.";
+	docwire_log(debug) << "Using RTF parser.";
   Info info(StandardTag::TAG_TEXT, plainText());
   impl->m_on_new_node_signal(info);
 

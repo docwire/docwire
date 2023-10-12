@@ -58,7 +58,7 @@ public:
   {
     m_plugins_directory = plugins_directory.empty() ?
       locate_subpath("docwire_plugins").string() : plugins_directory;
-    doctotext_log(debug) << "Plugins directory: " << m_plugins_directory;
+    docwire_log(debug) << "Plugins directory: " << m_plugins_directory;
     pthread_mutex_lock(&load_providers_mutex);
     loadProviders();
     pthread_mutex_unlock(&load_providers_mutex);
@@ -66,7 +66,7 @@ public:
 
   void loadProvider(const std::filesystem::path path)
   {
-    doctotext_log(debug) << "Loading plugin " << path;
+    docwire_log(debug) << "Loading plugin " << path;
     try
     {
       boost::shared_ptr<ParserProvider>plugin_provider =
@@ -74,17 +74,17 @@ public:
                                                               "plugin_parser_provider",
                                                               boost::dll::load_mode::append_decorations);
       providers.push_back(plugin_provider);
-      doctotext_log(debug) << "Plugin " << path << " loaded successfuly";
+      docwire_log(debug) << "Plugin " << path << " loaded successfuly";
     }
     catch (const boost::system::system_error &e)
     {
-      doctotext_log(error) << "Error loading plugin: " << e.what();
+      docwire_log(error) << "Error loading plugin: " << e.what();
     }
   }
 
   void loadProviders()
   {
-    doctotext_log(debug) << "Loading plugins";
+    docwire_log(debug) << "Loading plugins";
     providers.clear();
     const std::filesystem::path root{m_plugins_directory};
     try
@@ -95,14 +95,14 @@ public:
           if (dir_entry.is_regular_file() && correct_extensions.find(dir_entry.path().extension().u8string()) != correct_extensions.end())
             loadProvider(dir_entry.path());
           else
-            doctotext_log(error) << "Skipping " << dir_entry.path() << " - not a regular file or incorrect extension";
+            docwire_log(error) << "Skipping " << dir_entry.path() << " - not a regular file or incorrect extension";
       }
       else
-        doctotext_log(error) << "Plugins directory path does not point to a directory";
+        docwire_log(error) << "Plugins directory path does not point to a directory";
     }
     catch (const std::filesystem::filesystem_error& e)
     {
-      doctotext_log(error) << "Error traversing plugins directory: " << e.what();
+      docwire_log(error) << "Error traversing plugins directory: " << e.what();
     }
   }
 

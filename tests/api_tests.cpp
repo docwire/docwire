@@ -487,10 +487,10 @@ TEST_P(MultithreadedTest, SimpleExtractorTests)
       void *status;
       int res = pthread_join(threads[i], &status);
       if (!res)
-        doctotext_log(info) << "Thread " << i << " finished successfully.";
+        docwire_log(info) << "Thread " << i << " finished successfully.";
       else
       {
-        doctotext_log(info) << "Thread " << i << " finished with error.";
+        docwire_log(info) << "Thread " << i << " finished with error.";
         all_ok = false;
       }
     }

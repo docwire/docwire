@@ -1829,7 +1829,7 @@ struct IWorkParser::Implementation
 
 		void ParseMetaData()
 		{
-			doctotext_log(debug) << "Extracting metadata.";
+			docwire_log(debug) << "Extracting metadata.";
 			while (true)
 			{
 				m_xml_reader->GetNextElement(m_current_element);
@@ -1852,7 +1852,7 @@ struct IWorkParser::Implementation
 						if (string_to_date(m_creation_date, creation_date))
 							m_metadata->setCreationDate(creation_date);
 						else
-							doctotext_log(error) << "Error occured during parsing date: " << m_creation_date << ".";
+							docwire_log(error) << "Error occured during parsing date: " << m_creation_date << ".";
 					}
 					if (m_last_modify_date.length() > 0)
 					{
@@ -1860,7 +1860,7 @@ struct IWorkParser::Implementation
 						if (string_to_date(m_last_modify_date, last_modification_date))
 							m_metadata->setLastModificationDate(last_modification_date);
 						else
-							doctotext_log(error) << "Error occured during parsing date: " << m_last_modify_date << ".";
+							docwire_log(error) << "Error occured during parsing date: " << m_last_modify_date << ".";
 					}
 					return;
 				}
@@ -2133,7 +2133,7 @@ bool IWorkParser::isIWork()
 		unzip.setArchiveFile(impl->m_file_name);
 	if (!unzip.open())
 	{
-		doctotext_log(error) << "Cannot unzip file.";
+		docwire_log(error) << "Cannot unzip file.";
 		return false;
 	}
 	if (unzip.exists("index.xml"))
@@ -2145,7 +2145,7 @@ bool IWorkParser::isIWork()
 	if (impl->m_xml_file.empty())
 	{
 		unzip.close();
-		doctotext_log(error) << "None of the following files (index.xml, index.apxl, presentation.apxl) could not be found.";
+		docwire_log(error) << "None of the following files (index.xml, index.apxl, presentation.apxl) could not be found.";
 		return false;
 	}
 	Implementation::DataSource xml_data_source(unzip, impl->m_xml_file);
@@ -2153,7 +2153,7 @@ bool IWorkParser::isIWork()
 	if (impl->getIWorkType(xml_reader) == Implementation::IWorkContent::encrypted)
 	{
 		unzip.close();
-		doctotext_log(debug) << "This is not iWork file format or file is encrypted.";
+		docwire_log(debug) << "This is not iWork file format or file is encrypted.";
 		return false;
 	}
 	unzip.close();
@@ -2193,7 +2193,7 @@ Metadata IWorkParser::metaData()
 
 std::string IWorkParser::plainText(const FormattingStyle& formatting)
 {
-	doctotext_log(debug) << "Using iWork parser.";
+	docwire_log(debug) << "Using iWork parser.";
 	std::string text;
 	ZipReader unzip;
 	if (impl->m_buffer)

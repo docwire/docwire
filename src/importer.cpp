@@ -154,7 +154,7 @@ public:
         }
         catch (Exception &ex)
         {
-          doctotext_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
+          docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
           std::vector<char> buffer;
           load_file_to_buffer(file_path, buffer);
           auto second_builder = m_parser_manager->findParserByData(buffer);

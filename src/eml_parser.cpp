@@ -80,7 +80,7 @@ struct EMLParser::Implementation
 		catch (htmlcxx::CharsetConverter::Exception& ex)
 		{
 			pthread_mutex_unlock(&charset_converter_mutex);
-			doctotext_log(warning) << "Warning: Cant convert text to UTF-8 from " + charset;
+			docwire_log(warning) << "Warning: Cant convert text to UTF-8 from " + charset;
 		}
 	}
 
@@ -104,23 +104,23 @@ struct EMLParser::Implementation
 
 	void extractPlainText(const mime& mime_entity, std::string& output, const FormattingStyle& formatting)
 	{
-		doctotext_log(debug) << "Extracting plain text from mime entity";
+		docwire_log(debug) << "Extracting plain text from mime entity";
 		if (mime_entity.content_disposition() != mime::content_disposition_t::ATTACHMENT && mime_entity.content_type().type == mime::media_type_t::TEXT)
 		{
-			doctotext_log(debug) << "Text content type detected with inline or none content disposition";
+			docwire_log(debug) << "Text content type detected with inline or none content disposition";
 			std::string plain = mime_entity.content();
 			plain.erase(std::remove(plain.begin(), plain.end(), '\r'), plain.end());
 
 			bool skip_charset_decoding = false;
 			if (!mime_entity.content_type().charset.empty())
 			{
-				doctotext_log(debug) << "Charset is specified";
+				docwire_log(debug) << "Charset is specified";
 				convertToUtf8(mime_entity.content_type().charset, plain);
 				skip_charset_decoding = true;
 			}
 			if (mime_entity.content_type().subtype == "html" || mime_entity.content_type().subtype == "xhtml")
 			{
-				doctotext_log(debug) << "HTML content subtype detected";
+				docwire_log(debug) << "HTML content subtype detected";
 				try
 				{
 					if (m_parser_manager)
@@ -130,14 +130,14 @@ struct EMLParser::Implementation
 				}
 				catch (Exception& ex)
 				{
-					doctotext_log(warning) << "Warning: Error while parsing html content";
+					docwire_log(warning) << "Warning: Error while parsing html content";
 				}
 			}
 			else
 			{
 				if (!skip_charset_decoding)
 				{
-					doctotext_log(debug) << "Charset is not specified";
+					docwire_log(debug) << "Charset is not specified";
 					try
 					{
 						if (m_parser_manager)
@@ -147,7 +147,7 @@ struct EMLParser::Implementation
 					}
 					catch (Exception& ex)
 					{
-						doctotext_log(warning) << "Warning: Error while parsing text content";
+						docwire_log(warning) << "Warning: Error while parsing text content";
 					}
 				}
 			}
@@ -160,13 +160,13 @@ struct EMLParser::Implementation
 		}
 		else if (mime_entity.content_type().type != mime::media_type_t::MULTIPART)
 		{
-			doctotext_log(debug) << "It is not a multipart message. It's attachment probably.";
+			docwire_log(debug) << "It is not a multipart message. It's attachment probably.";
 			std::string plain = mime_entity.content();
 
 			if (m_parser_manager)
 			{
 			std::string file_name = mime_entity.name();
-			doctotext_log(debug) << "File name: " << file_name;
+			docwire_log(debug) << "File name: " << file_name;
 			std::string extension = file_name.substr(file_name.find_last_of(".") + 1);
 			std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 			auto info = m_owner->sendTag(
@@ -187,7 +187,7 @@ struct EMLParser::Implementation
 		}
 		if (mime_entity.content_type().subtype == "alternative")
 		{
-			doctotext_log(debug) << "Alternative content subtype detected";
+			docwire_log(debug) << "Alternative content subtype detected";
 			bool html_found = false;
 			for (const mime& m: mime_entity.parts())
 				if (m.content_type().subtype == "html" || m.content_type().subtype == "xhtml")
@@ -200,8 +200,8 @@ struct EMLParser::Implementation
 		}
 		else
 		{
-			doctotext_log(debug) << "Multipart but not alternative";
-			doctotext_log(debug) << mime_entity.parts().size() << " mime parts found";
+			docwire_log(debug) << "Multipart but not alternative";
+			docwire_log(debug) << mime_entity.parts().size() << " mime parts found";
 			for (const mime& m: mime_entity.parts())
 				extractPlainText(m, output, formatting);
 		}
@@ -278,7 +278,7 @@ message parse_message(std::istream& stream)
 		mime_entity.parse_by_line("\r\n");
 	} catch (std::exception& e)
 	{
-		doctotext_log(error) << e.what();
+		docwire_log(error) << e.what();
 	}
 	return mime_entity;
 }
@@ -298,11 +298,11 @@ std::string EMLParser::plainText(const FormattingStyle& formatting) const
 	std::string text;
 	if (!isEML())
 		throw Exception("Specified file is not valid EML file");
-	doctotext_log(debug) << "stream_pos=" << impl->m_data_stream->tellg();
+	docwire_log(debug) << "stream_pos=" << impl->m_data_stream->tellg();
 	impl->m_data_stream->clear();
 	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
 	{
-		doctotext_log(error) << "Stream seek operation failed";
+		docwire_log(error) << "Stream seek operation failed";
 		throw Exception("Stream seek operation failed");
 	}
 	message mime_entity = parse_message(*impl->m_data_stream);
@@ -316,7 +316,7 @@ Metadata EMLParser::metaData()
 	impl->m_data_stream->clear();
 	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
 	{
-		doctotext_log(error) << "Stream seek operation failed";
+		docwire_log(error) << "Stream seek operation failed";
 		throw Exception("Stream seek operation failed");
 	}
 	if (!isEML())
@@ -324,7 +324,7 @@ Metadata EMLParser::metaData()
 	impl->m_data_stream->clear();
 	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
 	{
-		doctotext_log(error) << "Stream seek operation failed";
+		docwire_log(error) << "Stream seek operation failed";
 		throw Exception("Stream seek operation failed");
 	}
 	message mime_entity = parse_message(*impl->m_data_stream);
@@ -355,7 +355,7 @@ Metadata EMLParser::metaData()
 void
 EMLParser::parse() const
 {
-	doctotext_log(debug) << "Using EML parser.";
+	docwire_log(debug) << "Using EML parser.";
   plainText(getFormattingStyle());
 }
 

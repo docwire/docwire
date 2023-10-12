@@ -301,19 +301,19 @@ class Message
 			pffItem item;
 			if (libpff_message_get_attachment(_messageHandle, i, &item, &err) != 1)
 			{
-				doctotext_log(debug) << "Message Get attachments failed: ";
+				docwire_log(debug) << "Message Get attachments failed: ";
 				continue;
 			}
 			size64_t size;
 			if (libpff_attachment_get_data_size(item, &size, &err) == -1)
 			{
-				doctotext_log(debug) << "Get data size failed";
+				docwire_log(debug) << "Get data size failed";
 				continue;
 			}
 			std::unique_ptr<uint8_t[]> datablob(new uint8_t[size + 1]);
 			if (libpff_attachment_data_read_buffer(item, datablob.get(), size, &err) == -1)
 			{
-				doctotext_log(debug) << "Data Read failed";
+				docwire_log(debug) << "Data Read failed";
 				continue;
 			}
       std::string attachment_name = getAttachmentName(item).get();
@@ -498,7 +498,7 @@ void PSTParser::Implementation::parse() const
 	pffError error{nullptr};
 	if (libpff_file_initialize(&file, &error) != 1)
 	{
-		doctotext_log(severity_level::error) << "Unable to initialize file.";
+		docwire_log(severity_level::error) << "Unable to initialize file.";
 		return;
 	}
 
@@ -512,14 +512,14 @@ void PSTParser::Implementation::parse() const
   }
   catch (std::filesystem::filesystem_error &error)
   {
-    doctotext_log(severity_level::error) << error.what();
+    docwire_log(severity_level::error) << error.what();
   }
 
   if (!m_file_name.empty())
   {
     if (libpff_file_open(file, m_file_name.c_str(), LIBPFF_OPEN_READ, &error) != 1)
     {
-      doctotext_log(severity_level::error) << "Unable to open file.";
+      docwire_log(severity_level::error) << "Unable to open file.";
       libpff_file_free(&file, NULL);
       return;
     }
@@ -553,7 +553,7 @@ void PSTParser::Implementation::parse() const
 void
 PSTParser::parse() const
 {
-	doctotext_log(debug) << "Using PST parser.";
+	docwire_log(debug) << "Using PST parser.";
   impl->parse();
 }
 
@@ -605,7 +605,7 @@ PSTParser::isPST() const
   }
   catch (std::filesystem::filesystem_error &error)
   {
-    doctotext_log(severity_level::error) << error.what();
+    docwire_log(severity_level::error) << error.what();
   }
 
   auto filename_length = filename.size();

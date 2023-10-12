@@ -517,7 +517,7 @@ struct XLSBParser::Implementation
 					uint32_t str_index;
 					xlsb_reader.readUint32(str_index);
 					if (str_index >= m_xlsb_content.m_shared_strings.size())
-						doctotext_log(warning) << "Warning: Detected reference to string that does not exist";
+						docwire_log(warning) << "Warning: Detected reference to string that does not exist";
 					else
 						text += m_xlsb_content.m_shared_strings[str_index];
 				}
@@ -538,7 +538,7 @@ struct XLSBParser::Implementation
 		if (!unzip.exists(file_name))
 		{
 			//file may not exist, nothing wrong is with that.
-			doctotext_log(debug) << "File: " + file_name + " does not exist";
+			docwire_log(debug) << "File: " + file_name + " does not exist";
 			return;
 		}
 		XLSBReader xlsb_reader(unzip, file_name);
@@ -631,7 +631,7 @@ struct XLSBParser::Implementation
 
 	void readMetadata(ZipReader& unzip, Metadata& metadata)
 	{
-		doctotext_log(debug) << "Extracting metadata.";
+		docwire_log(debug) << "Extracting metadata.";
 		std::string data;
 		if (!unzip.read("docProps/app.xml", &data))
 			throw Exception("Error while parsing docProps/app.xml");
@@ -764,13 +764,13 @@ bool XLSBParser::isXLSB()
 	{
 		if (impl->fileIsEncrypted())
 			throw EncryptedFileException("File is encrypted according to the Microsoft Office Document Cryptography Specification. Exact file format cannot be determined");
-		doctotext_log(error) << "Cannot unzip file.";
+		docwire_log(error) << "Cannot unzip file.";
 		return false;
 	}
 	if (!unzip.exists("xl/workbook.bin"))
 	{
 		unzip.close();
-		doctotext_log(error) << "Cannot find xl/woorkbook.bin.";
+		docwire_log(error) << "Cannot find xl/woorkbook.bin.";
 		return false;
 	}
 	unzip.close();
@@ -817,7 +817,7 @@ Metadata XLSBParser::metaData()
 
 std::string XLSBParser::plainText(const FormattingStyle& formatting)
 {
-	doctotext_log(debug) << "Using XLSB parser.";
+	docwire_log(debug) << "Using XLSB parser.";
 	std::string text;
 	ZipReader unzip;
 	if (impl->m_buffer)

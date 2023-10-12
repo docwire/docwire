@@ -164,7 +164,7 @@ std::string TXTParser::plainText() const
 		if (charset_detector == (csd_t)-1)
 		{
 			charset_detector = NULL;
-			doctotext_log(warning) << "Warning: Could not create charset detector";
+			docwire_log(warning) << "Warning: Could not create charset detector";
 			encoding = "UTF-8";
 		}
 		else
@@ -175,13 +175,13 @@ std::string TXTParser::plainText() const
 			if (res != NULL)
 			{
 				encoding = std::string(res);
-				doctotext_log(debug) << "Estimated encoding: " + encoding;
+				docwire_log(debug) << "Estimated encoding: " + encoding;
 			}
 			else
 			{
 				encoding = "ASCII";
-				doctotext_log(debug) << "Could not detect encoding. Document is assumed to be encoded in ASCII";
-				doctotext_log(debug) << "But it can be also binary. Sequences of printable characters will be extracted.";
+				docwire_log(debug) << "Could not detect encoding. Document is assumed to be encoded in ASCII";
+				docwire_log(debug) << "But it can be also binary. Sequences of printable characters will be extracted.";
 				content = sequences_of_printable_characters(content);
 			}
 		}
@@ -193,7 +193,7 @@ std::string TXTParser::plainText() const
 			}
 			catch (htmlcxx::CharsetConverter::Exception& ex)
 			{
-				doctotext_log(warning) << "Warning: Cant convert text to UTF-8 from " + encoding;
+				docwire_log(warning) << "Warning: Cant convert text to UTF-8 from " + encoding;
 				if (converter)
 					delete converter;
 				converter = NULL;
@@ -233,7 +233,7 @@ TXTParser::withParameters(const ParserParameters &parameters)
 void
 TXTParser::parse() const
 {
-	doctotext_log(debug) << "Using TXT parser.";
+	docwire_log(debug) << "Using TXT parser.";
 
   Info info(StandardTag::TAG_TEXT, plainText());
   impl->m_on_new_node_signal(info);

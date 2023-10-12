@@ -283,21 +283,21 @@ bool ZipReader::read(const std::string& file_name, std::string* contents, int nu
 		size_t d_pos = cmd.find("%d");
 		if (d_pos == std::string::npos)
 		{
-			doctotext_log(error) << "Unzip command must contain %d symbol.";
+			docwire_log(error) << "Unzip command must contain %d symbol.";
 			return false;
 		}
 		cmd.replace(d_pos, 2, temp_dir);
 		size_t a_pos = cmd.find("%a");
 		if (a_pos == std::string::npos)
 		{
-			doctotext_log(error) << "Unzip command must contain %a symbol.";
+			docwire_log(error) << "Unzip command must contain %a symbol.";
 			return false;
 		}
 		cmd.replace(a_pos, 2, Impl->ArchiveFileName);
 		size_t f_pos = cmd.find("%f");
 		if (f_pos == std::string::npos)
 		{
-			doctotext_log(error) << "Unzip command must contain %f symbol.";
+			docwire_log(error) << "Unzip command must contain %f symbol.";
 			return false;
 		}
 		#ifdef WIN32
@@ -315,13 +315,13 @@ bool ZipReader::read(const std::string& file_name, std::string* contents, int nu
 		#else
 			const std::string remove_cmd = "rm -rf " + temp_dir;
 		#endif
-		doctotext_log(debug) << "Executing " << cmd;
+		docwire_log(debug) << "Executing " << cmd;
 		if (system(cmd.c_str()) < 0)
 			return false;
 		FILE* f = fopen((temp_dir + "/" + file_name).c_str(), "r");
 		if (f == NULL)
 		{
-			doctotext_log(debug) << "Executing " << remove_cmd;
+			docwire_log(debug) << "Executing " << remove_cmd;
 			system(remove_cmd.c_str());
 			return false;
 		}
@@ -345,13 +345,13 @@ bool ZipReader::read(const std::string& file_name, std::string* contents, int nu
 			{
 				fclose(f);
 				f = NULL;
-				doctotext_log(debug) << "Executing " << remove_cmd;
+				docwire_log(debug) << "Executing " << remove_cmd;
 				system(remove_cmd.c_str());
 				return false;
 			}
 			fclose(f);
 			f = NULL;
-			doctotext_log(debug) << "Executing " << remove_cmd;
+			docwire_log(debug) << "Executing " << remove_cmd;
 			if (system(remove_cmd.c_str()) != 0)
 				return false;
 		}

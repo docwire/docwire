@@ -69,7 +69,7 @@ static string locate_main_file(const ZipReader& zipfile)
 		return "xl/workbook.xml";
 	if (zipfile.exists("ppt/presentation.xml"))
 		return "ppt/presentation.xml";
-	doctotext_log(error) << "Error - no content.xml, no word/document.xml and no ppt/presentation.xml";
+	docwire_log(error) << "Error - no content.xml, no word/document.xml and no ppt/presentation.xml";
 	return "";
 }
 
@@ -80,7 +80,7 @@ class ODFOOXMLParser::CommandHandlersSet
 									 const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
 									 bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "OOXML_ATTR command.";
+			docwire_log(debug) << "OOXML_ATTR command.";
 			children_processed = true;
 		}
 
@@ -135,7 +135,7 @@ class ODFOOXMLParser::CommandHandlersSet
 								const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "OOXML_CELL command.";
+			docwire_log(debug) << "OOXML_CELL command.";
 			if (!first_on_level)
       {
 				text += "\t";
@@ -198,7 +198,7 @@ class ODFOOXMLParser::CommandHandlersSet
 										const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
 										bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "OOXML_HEADERFOOTER command.";
+			docwire_log(debug) << "OOXML_HEADERFOOTER command.";
 			// Ignore headers and footers. They can contain some commands like font settings that can mess up output.
 			// warning TODO: Better headers and footers support
 			children_processed = true;
@@ -208,7 +208,7 @@ class ODFOOXMLParser::CommandHandlersSet
 											const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
 											bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "OOXML_COMMENTREFERENCE command.";
+			docwire_log(debug) << "OOXML_COMMENTREFERENCE command.";
 			int comment_id = str_to_int(xml_stream.attribute("id"));
 			if (parser.getComments().count(comment_id))
 			{
@@ -219,14 +219,14 @@ class ODFOOXMLParser::CommandHandlersSet
 																													{"comment", c.m_text}});
 			}
 			else
-				doctotext_log(warning) << "Comment with id " << comment_id << " not found, skipping.";
+				docwire_log(warning) << "Comment with id " << comment_id << " not found, skipping.";
 		}
 
 		static void onOOXMLInstrtext(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
 									 const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
 									 bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "OOXML_INSTRTEXT command.";
+			docwire_log(debug) << "OOXML_INSTRTEXT command.";
 			children_processed = true;
 		}
 
@@ -234,7 +234,7 @@ class ODFOOXMLParser::CommandHandlersSet
 									 const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
 									 bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "OOXML_TABLESTYLEID command.";
+			docwire_log(debug) << "OOXML_TABLESTYLEID command.";
 			// Ignore style identifier that is embedded as text inside this tag not to treat it as a document text.
 			children_processed = true;
 		}
@@ -285,7 +285,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 		std::string content;
 		if (!zipfile.read("word/comments.xml", &content))
 		{
-			doctotext_log(error) << "Error reading word/comments.xml";
+			docwire_log(error) << "Error reading word/comments.xml";
 			return false;
 		}
 		std::string xml;
@@ -320,7 +320,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 		}
 		catch (Exception& ex)
 		{
-			doctotext_log(error) << "Error parsing word/comments.xml. Error message: " << ex.getBacktrace();
+			docwire_log(error) << "Error parsing word/comments.xml. Error message: " << ex.getBacktrace();
 			return false;
 		}
 		return true;
@@ -331,7 +331,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 		std::string content;
 		if (!zipfile.read("styles.xml", &content))
 		{
-			doctotext_log(error) << "Error reading styles.xml";
+			docwire_log(error) << "Error reading styles.xml";
 			return;
 		}
 		std::string xml;
@@ -349,7 +349,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 		}
 		catch (Exception& ex)
 		{
-			doctotext_log(error) << "Error parsing styles.xml. Error message: " << ex.getBacktrace();
+			docwire_log(error) << "Error parsing styles.xml. Error message: " << ex.getBacktrace();
 			return;
 		}
 	}
@@ -467,7 +467,7 @@ ODFOOXMLParser::onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_str
                              const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
                              bool& children_processed, std::string& level_suffix, bool first_on_level) const
 {
-	doctotext_log(debug) << "OOXML_BREAK command.";
+	docwire_log(debug) << "OOXML_BREAK command.";
 	text += "\n";
 
 	parser.trySendTag(StandardTag::TAG_BR);
@@ -536,7 +536,7 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 		setXmlOptions(XML_PARSE_NOBLANKS);
 	}
 	if (zipfile.exists("word/comments.xml") && !extended_impl->readOOXMLComments(zipfile, mode, options))
-		doctotext_log(error) << "Error parsing comments.";
+		docwire_log(error) << "Error parsing comments.";
 	if (zipfile.exists("styles.xml"))
 		extended_impl->readStyles(zipfile, mode, options);
 	string content;
@@ -569,7 +569,7 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 		if (!zipfile.read("xl/sharedStrings.xml", &content))
 		{
 			//file may not exist, but this is not reason to report an error.
-			doctotext_log(debug) << "xl/sharedStrings.xml does not exist";
+			docwire_log(debug) << "xl/sharedStrings.xml does not exist";
 		}
 		else
 		{
@@ -651,7 +651,7 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 
 Metadata ODFOOXMLParser::metaData() const
 {
-	doctotext_log(debug) << "Extracting metadata.";
+	docwire_log(debug) << "Extracting metadata.";
 	Metadata meta;
 	ZipReader zipfile;
 	if (extended_impl->m_buffer)
@@ -785,7 +785,7 @@ Metadata ODFOOXMLParser::metaData() const
 void
 ODFOOXMLParser::parse() const
 {
-	doctotext_log(debug) << "Using ODF/OOXML parser.";
+	docwire_log(debug) << "Using ODF/OOXML parser.";
 	auto formatting_style = getFormattingStyle();
 	plainText(XmlParseMode::PARSE_XML, formatting_style);
 

@@ -142,7 +142,7 @@ class DocToTextSaxParser : public ParserSax
 				}
 				catch (htmlcxx::CharsetConverter::Exception& ex)
 				{
-					doctotext_log(warning) << "Warning: Cant convert text to UTF-8 from " + m_charset;
+					docwire_log(warning) << "Warning: Cant convert text to UTF-8 from " + m_charset;
           delete m_converter;
 					m_converter = nullptr;
 				}
@@ -247,7 +247,7 @@ class DocToTextSaxParser : public ParserSax
 		void foundTag(Node node, bool isEnd) override
 		{
 			const std::string tag_name = node.tagName();
-			doctotext_log(debug) << "HTML tag found: " << (isEnd ? "/" : "") << tag_name;
+			docwire_log(debug) << "HTML tag found: " << (isEnd ? "/" : "") << tag_name;
 			if (!m_buffered_text.empty())
 			{
 				// https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements
@@ -451,7 +451,7 @@ class DocToTextSaxParser : public ParserSax
 					csd_t charset_detector = csd_open();
 					if (charset_detector == (csd_t)-1)
 					{
-						doctotext_log(warning) << "Warning: Could not create charset detector";
+						docwire_log(warning) << "Warning: Could not create charset detector";
 					}
 					else
 					{
@@ -472,14 +472,14 @@ class DocToTextSaxParser : public ParserSax
 						if (res != nullptr)
 						{
 							m_charset = std::string(res);
-							doctotext_log(debug) << "Could not found explicit information about encoding. Estimated encoding: " + m_charset;
+							docwire_log(debug) << "Could not found explicit information about encoding. Estimated encoding: " + m_charset;
 							createCharsetConverter();
 						}
 					}
 					//if we still don't know which encoding is used...
 					if (m_charset.empty())
 					{
-						doctotext_log(debug) << "Could not detect encoding. Document is assumed to be encoded in UTF-8";
+						docwire_log(debug) << "Could not detect encoding. Document is assumed to be encoded in UTF-8";
 						m_charset = "UTF-8";
 					}
 				}
@@ -520,7 +520,7 @@ class DocToTextSaxParser : public ParserSax
 					}
 					if (!m_charset.empty())
 					{
-						doctotext_log(debug) << "Following encoding was detected: " + m_charset;
+						docwire_log(debug) << "Following encoding was detected: " + m_charset;
 						createCharsetConverter();
 					}
 				}
@@ -530,7 +530,7 @@ class DocToTextSaxParser : public ParserSax
 		void foundText(Node node) override
 		{
 			std::string text = node.text();
-			doctotext_log(debug) << "HTML text found: [" << text << "]";
+			docwire_log(debug) << "HTML text found: [" << text << "]";
 			if (m_in_style)
 			{
 				m_style_text += node.text();
@@ -541,18 +541,18 @@ class DocToTextSaxParser : public ParserSax
 			// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace#what_is_whitespace
 			// Convert all whitespaces into spaces and reduce all adjacent spaces into a single space
 			text = std::regex_replace(text, std::regex(R"(\s+)"), " ");
-			doctotext_log(debug) << "After converting and reducing whitespaces: [" << text << "]";
+			docwire_log(debug) << "After converting and reducing whitespaces: [" << text << "]";
 			bool last_char_was_space = isspace((unsigned char)m_last_char_in_inline_formatting_context);
-			doctotext_log(debug) << "Last char in inline formatting context was whitespace: " << last_char_was_space;
+			docwire_log(debug) << "Last char in inline formatting context was whitespace: " << last_char_was_space;
 			// Reduce whitespaces between text nodes (end of previous and beginning of current.
 			// Remove whitespaces from beginning of inline formatting context.
 			if (last_char_was_space || m_last_char_in_inline_formatting_context == '\0')
 			{
 				boost::trim_left(text);
-				doctotext_log(debug) << "After reducing whitespaces between text nodes and removing whitespaces from begining of inline formatting context: [" << text << "]";
+				docwire_log(debug) << "After reducing whitespaces between text nodes and removing whitespaces from begining of inline formatting context: [" << text << "]";
 			}
 			convertToUtf8(text);
-			doctotext_log(debug) << "After converting to utf8: [" << text << "]";
+			docwire_log(debug) << "After converting to utf8: [" << text << "]";
 			if (!text.empty())
 			{
 				m_last_char_in_inline_formatting_context = text.back();
@@ -587,7 +587,7 @@ class DocToTextSaxParser : public ParserSax
 					}
 					if (!m_charset.empty())
 					{
-						doctotext_log(debug) << "Following encoding was detected: " + m_charset;
+						docwire_log(debug) << "Following encoding was detected: " + m_charset;
 						createCharsetConverter();
 					}
 				}
@@ -753,7 +753,7 @@ bool HTMLParser::isHTML()
 void
 HTMLParser::parse() const
 {
-	doctotext_log(debug) << "Using HTML parser.";
+	docwire_log(debug) << "Using HTML parser.";
 	if (!impl->m_data_stream->open())
 		throw Exception("Error opening file " + impl->m_file_name);
 	size_t size = impl->m_data_stream->size();
@@ -769,7 +769,7 @@ HTMLParser::parse() const
 
 Metadata HTMLParser::metaData() const
 {
-	doctotext_log(debug) << "Extracting metadata.";
+	docwire_log(debug) << "Extracting metadata.";
 	Metadata meta;
 	if (!impl->m_data_stream->open())
 		throw Exception("Error opening file " + impl->m_file_name);

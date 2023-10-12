@@ -73,7 +73,7 @@ Parser::Parser(const std::shared_ptr<ParserManager> &inParserManager)
 
 Info Parser::sendTag(const std::string& tag_name, const std::string& text, const std::map<std::string, std::any> &attributes) const
 {
-  doctotext_log(debug) << "Sending tag \"" << tag_name << "\" with text [" << text << "]";
+  docwire_log(debug) << "Sending tag \"" << tag_name << "\" with text [" << text << "]";
   return base_impl->sendTag(tag_name, text, attributes);
 }
 

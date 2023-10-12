@@ -69,9 +69,9 @@ public:
 
 		int_type underflow()
 		{
-			doctotext_log(debug) << "Archive reader buffer underflow";
+			docwire_log(debug) << "Archive reader buffer underflow";
 			la_ssize_t bytes_read = archive_read_data(m_archive, m_buffer, m_buf_size);
-			doctotext_log(debug) << bytes_read << " bytes read";
+			docwire_log(debug) << bytes_read << " bytes read";
 			if (bytes_read < 0)
 				throw Exception(archive_error_string(m_archive));
 			if (bytes_read == 0)
@@ -145,7 +145,7 @@ public:
 	{
 		int r = archive_read_free(m_archive);
 		if (r != ARCHIVE_OK)
-			doctotext_log(error) << "archive_read_free() error: " << archive_error_string(m_archive);
+			docwire_log(error) << "archive_read_free() error: " << archive_error_string(m_archive);
 	}
 
 	archive* get_archive()
@@ -159,12 +159,12 @@ public:
 		int r = archive_read_next_header(m_archive, &entry);
 		if (r == ARCHIVE_EOF)
 		{
-			doctotext_log(debug) << "End of archive";
+			docwire_log(debug) << "End of archive";
 			return Entry(m_archive, nullptr);
 		}
 		if (r != ARCHIVE_OK)
 		{
-			doctotext_log(error) << "archive_read_next_header() error: " << archive_error_string(m_archive);
+			docwire_log(error) << "archive_read_next_header() error: " << archive_error_string(m_archive);
 			throw Exception(archive_error_string(m_archive));
 		}
 		return Entry(m_archive, entry);
@@ -197,7 +197,7 @@ private:
 
 	static la_ssize_t archive_read_callback(archive* archive, void* client_data, const void** buf)
 	{
-		doctotext_log(debug) << "archive_read_callback()";
+		docwire_log(debug) << "archive_read_callback()";
 		CallbackClientData* data = (CallbackClientData*)client_data;
 		*buf = data->m_buffer;
 		if (data->m_stream.read(data->m_buffer, data->m_buf_size))
@@ -227,7 +227,7 @@ DecompressArchives::process(Info &info) const
 		emit(info);
 		return;
 	}
-	doctotext_log(debug) << "TAG_FILE received";
+	docwire_log(debug) << "TAG_FILE received";
 	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
 	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
 	std::optional<std::string> name = info.getAttributeValue<std::string>("name");
@@ -240,34 +240,34 @@ DecompressArchives::process(Info &info) const
 	};
 	if ((path && !is_supported(*path)) || (name && !is_supported(*name)))
 	{
-		doctotext_log(debug) << "Filename extension shows it is not an supported archive, skipping.";
+		docwire_log(debug) << "Filename extension shows it is not an supported archive, skipping.";
 		emit(info);
 		return;
 	}
 	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
 	try
 	{
-		doctotext_log(debug) << "Decompressing archive";
+		docwire_log(debug) << "Decompressing archive";
 		ArchiveReader reader(*in_stream);
 		for (ArchiveReader::Entry entry: reader)
 		{
 			std::string entry_name = entry.get_name();
-			doctotext_log(debug) << "Processing compressed file " << entry_name;
+			docwire_log(debug) << "Processing compressed file " << entry_name;
 			if (entry.is_dir())
 			{
-				doctotext_log(debug) << "Skipping directory entry";
+				docwire_log(debug) << "Skipping directory entry";
 				continue;
 			}
 			ArchiveReader::EntryIStream entry_stream = entry.create_stream();
 			Info info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&entry_stream}, {"name", entry_name}});
 			process(info);
-			doctotext_log(debug) << "End of processing compressed file " << entry_name;
+			docwire_log(debug) << "End of processing compressed file " << entry_name;
 		}
-		doctotext_log(debug) << "Archive decompressed successfully";
+		docwire_log(debug) << "Archive decompressed successfully";
 	}
 	catch (Exception& e)
 	{
-		doctotext_log(error) << e.what();
+		docwire_log(error) << e.what();
 		in_stream->clear();
 		in_stream->seekg(std::ios::beg);
 		emit(info);

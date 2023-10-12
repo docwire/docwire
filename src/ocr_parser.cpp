@@ -297,7 +297,7 @@ OCRParser::withParameters(const ParserParameters &parameters)
 void
 OCRParser::parse() const
 {
-  doctotext_log(debug) << "Using OCR parser.";
+  docwire_log(debug) << "Using OCR parser.";
   Info info(StandardTag::TAG_TEXT);
   auto language = m_parameters.getParameterValue<Language>("language");
   info.plain_text = plainText(getFormattingStyle(), language ? *language : Language::english);
