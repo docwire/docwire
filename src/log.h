@@ -153,16 +153,16 @@ DllExport std::unique_ptr<log_record_stream> create_log_record_stream(severity_l
 inline void current_function_helper()
 {
 #if defined(__GNUC__)
-#define doctotext_current_function __PRETTY_FUNCTION__
+#define docwire_current_function __PRETTY_FUNCTION__
 #elif defined(__FUNCSIG__)
-#define doctotext_current_function __FUNCSIG__
+#define docwire_current_function __FUNCSIG__
 #else
 #define doctotext_current_fuction __func__
 #endif
 }
 
 #define doctotext_current_source_location() \
-	docwire::source_location{__FILE__, __LINE__, doctotext_current_function}
+	docwire::source_location{__FILE__, __LINE__, docwire_current_function}
 
 #define doctotext_log(severity) \
 	if (!docwire::log_verbosity_includes(severity)) \
@@ -234,7 +234,7 @@ template<typename T> std::pair<std::string, const T&> streamable_var(const std::
 #define docwire_log_streamable_obj(obj, ...) \
 	begin_complex() << docwire_log_streamable_type_of(obj) << docwire_log_streamable_vars(__VA_ARGS__) << end_complex()
 
-#define docwire_log_func() doctotext_log(debug) << "Entering function" << std::make_pair("funtion_name", doctotext_current_function)
+#define docwire_log_func() doctotext_log(debug) << "Entering function" << std::make_pair("funtion_name", docwire_current_function)
 #define docwire_log_func_with_args(...) docwire_log_func() << docwire_log_streamable_vars(__VA_ARGS__)
 
 class DllExport cerr_log_redirection
