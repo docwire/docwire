@@ -38,13 +38,15 @@
 #include "parser_provider.h"
 #include "defines.h"
 
+namespace docwire
+{
 
-class DllExport BasicParserProvider : public doctotext::ParserProvider
+class DllExport BasicParserProvider : public ParserProvider
 {
 public:
   BasicParserProvider();
-  std::optional<doctotext::ParserBuilder*> findParserByExtension(const std::string &extension) const override;
-  std::optional<doctotext::ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override;
+  std::optional<ParserBuilder*> findParserByExtension(const std::string &extension) const override;
+  std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override;
   std::set<std::string> getAvailableExtensions() const override;
 
 private:
@@ -55,5 +57,7 @@ private:
 
 extern "C" DllExport BasicParserProvider plugin_parser_provider;
 BasicParserProvider plugin_parser_provider;
+
+} // namespace docwire
 
 #endif //BASIC_PARSER_PROVIDER_HPP

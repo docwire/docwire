@@ -58,6 +58,9 @@ extern "C"
 #include "misc.h"
 #include "pst_parser.h"
 
+namespace docwire
+{
+
 inline std::string toString(const uint8_t* text)
 {
 	if (text == nullptr)
@@ -65,7 +68,7 @@ inline std::string toString(const uint8_t* text)
 	return {(const char*)text};
 }
 
-static doctotext::FormattingStyle formatStyle(doctotext::TABLE_STYLE_TABLE_LOOK, doctotext::URL_STYLE_EXTENDED);
+static FormattingStyle formatStyle(TABLE_STYLE_TABLE_LOOK, URL_STYLE_EXTENDED);
 
 constexpr uint64_t WINDOWS_TICK = 10000000;
 constexpr uint64_t SHIFT = 11644473600;
@@ -393,25 +396,25 @@ struct PSTParser::Implementation
 
 	void parse() const;
 
-  void onNewNode(doctotext::NewNodeCallback callback)
+  void onNewNode(NewNodeCallback callback)
   {
     m_on_new_node_signal.connect(callback);
   }
 
-  void addParameter(const doctotext::ParserParameters &parameters)
+  void addParameter(const ParserParameters &parameters)
   {
     m_parameters = parameters;
   }
 
   PSTParser* m_owner;
-  doctotext::ParserParameters m_parameters;
+  ParserParameters m_parameters;
   bool m_error;
   std::string m_file_name;
   const char* m_buffer;
   size_t m_size;
   std::istream *m_data_stream;
-  boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
-  std::shared_ptr<doctotext::ParserManager> parserManager;
+  boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
+  std::shared_ptr<ParserManager> parserManager;
   const unsigned int MAILS_LIMIT = 50;
 
   private:
@@ -428,7 +431,7 @@ PSTParser::Implementation::parse_element(const char* buffer, size_t size, const 
     if (parser_builder)
     {
       (*parser_builder)->withParserManager(parserManager)
-        .withOnNewNodeCallbacks({[this](doctotext::Info &info){m_owner->sendTag(info.tag_name, info.plain_text, info.attributes);}})
+        .withOnNewNodeCallbacks({[this](Info &info){m_owner->sendTag(info.tag_name, info.plain_text, info.attributes);}})
         .withParameters(m_parameters)
         .build(buffer, size)
         ->parse();
@@ -495,7 +498,7 @@ void PSTParser::Implementation::parse() const
 	pffError error{nullptr};
 	if (libpff_file_initialize(&file, &error) != 1)
 	{
-		doctotext_log(doctotext::error) << "Unable to initialize file.";
+		doctotext_log(severity_level::error) << "Unable to initialize file.";
 		return;
 	}
 
@@ -509,14 +512,14 @@ void PSTParser::Implementation::parse() const
   }
   catch (std::filesystem::filesystem_error &error)
   {
-    doctotext_log(doctotext::error) << error.what();
+    doctotext_log(severity_level::error) << error.what();
   }
 
   if (!m_file_name.empty())
   {
     if (libpff_file_open(file, m_file_name.c_str(), LIBPFF_OPEN_READ, &error) != 1)
     {
-      doctotext_log(doctotext::error) << "Unable to open file.";
+      doctotext_log(severity_level::error) << "Unable to open file.";
       libpff_file_free(&file, NULL);
       return;
     }
@@ -555,21 +558,21 @@ PSTParser::parse() const
 }
 
 Parser &
-PSTParser::withParameters(const doctotext::ParserParameters &parameters)
+PSTParser::withParameters(const ParserParameters &parameters)
 {
   Parser::withParameters(parameters);
   impl->addParameter(parameters);
   return *this;
 }
 
-PSTParser::PSTParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+PSTParser::PSTParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
   impl = new Implementation(file_name, this);
   impl->parserManager = inParserManager;
 }
 
-PSTParser::PSTParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+PSTParser::PSTParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
   impl = new Implementation(buffer, size, this);
@@ -602,7 +605,7 @@ PSTParser::isPST() const
   }
   catch (std::filesystem::filesystem_error &error)
   {
-    doctotext_log(doctotext::error) << error.what();
+    doctotext_log(severity_level::error) << error.what();
   }
 
   auto filename_length = filename.size();
@@ -627,3 +630,5 @@ PSTParser::isPST() const
   }
   return true;
 }
+
+} // namespace docwire

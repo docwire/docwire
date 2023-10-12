@@ -41,7 +41,7 @@
 #include "parser_builder.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 
 /**
@@ -71,6 +71,6 @@ public:
   virtual std::set<std::string> getAvailableExtensions() const = 0;
 };
 
-} // namespace doctotext
+} // namespace docwire
 
 #endif //PARSER_PROVIDER_HPP

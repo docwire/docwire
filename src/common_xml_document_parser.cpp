@@ -45,6 +45,9 @@
 #include "xml_fixer.h"
 #include <boost/signals2.hpp>
 
+namespace docwire
+{
+
 struct CommonXMLDocumentParser::Implementation
 {
   template<typename T>
@@ -88,7 +91,7 @@ struct CommonXMLDocumentParser::Implementation
 	std::map<int, Comment> m_comments;
 	std::vector<SharedString> m_shared_strings;
 	std::map<std::string, CommandHandler> m_command_handlers;
-	boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
+	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 
 	bool m_disabled_text;
 	int m_xml_options;
@@ -98,7 +101,7 @@ struct CommonXMLDocumentParser::Implementation
 	{
 		if (!stop_emmit_signals)
 		{
-      doctotext::Info info(tag_name, text, attr);
+			Info info(tag_name, text, attr);
 			m_on_new_node_signal(info);
 		}
 	}
@@ -602,7 +605,7 @@ void CommonXMLDocumentParser::onUnregisteredCommand(XmlStream& xml_stream, XmlPa
 }
 
 void
-CommonXMLDocumentParser::addCallback(const doctotext::NewNodeCallback &callback)
+CommonXMLDocumentParser::addCallback(const NewNodeCallback &callback)
 {
   impl->m_on_new_node_signal.connect(callback);
 }
@@ -832,3 +835,5 @@ int CommonXMLDocumentParser::getXmlOptions() const
 {
 	return impl->m_xml_options;
 }
+
+} // namespace docwire

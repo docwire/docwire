@@ -33,7 +33,7 @@
 
 #include "metadata.h"
 
-using namespace doctotext;
+using namespace docwire;
 
 struct Metadata::Implementation
 {

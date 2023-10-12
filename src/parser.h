@@ -45,7 +45,7 @@
 #include "parser_parameters.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 
 /**
@@ -145,7 +145,7 @@ public:
    *
    * @param inParserManager parser manager contains all available parsers which could be used recursive
    */
-  explicit Parser(const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+  explicit Parser(const std::shared_ptr<ParserManager> &inParserManager = nullptr);
 
   virtual ~Parser() = default;
 
@@ -177,7 +177,7 @@ protected:
   }
   Info sendTag(const Info &info) const;
 
-  std::shared_ptr<doctotext::ParserManager> m_parser_manager;
+  std::shared_ptr<ParserManager> m_parser_manager;
   ParserParameters m_parameters;
 
 private:
@@ -186,5 +186,5 @@ private:
   std::unique_ptr<Implementation, ImplementationDeleter> base_impl;
 };
 
-} // namespace doctotext
+} // namespace docwire
 #endif //PARSER_HPP

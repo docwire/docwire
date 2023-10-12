@@ -38,7 +38,10 @@
 #include "parser.h"
 #include "parser_builder.h"
 
-class ODFXMLParser : public doctotext::Parser,
+namespace docwire
+{
+
+class ODFXMLParser : public Parser,
                      public CommonXMLDocumentParser
 {
 	private:
@@ -49,18 +52,18 @@ class ODFXMLParser : public doctotext::Parser,
 	public:
 
     void parse() const override;
-    Parser& addOnNewNodeCallback(doctotext::NewNodeCallback callback) override;
+    Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
     static std::vector <std::string> getExtensions() {return {"fodt", "fods", "fodp", "fodg"};}
 		Parser& withParameters(const ParserParameters &parameters) override;
 
-		ODFXMLParser(const std::string &file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
-		ODFXMLParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+		ODFXMLParser(const std::string &file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+		ODFXMLParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
 		~ODFXMLParser();
 		bool isODFXML();
 		std::string plainText(XmlParseMode mode, FormattingStyle& formatting_style) const;
 		Metadata metaData() const;
 };
 
+} // namespace docwire
+
 #endif
-
-

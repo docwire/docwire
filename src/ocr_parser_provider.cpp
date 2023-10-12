@@ -40,17 +40,20 @@
 
 #include "ocr_parser.h"
 
+namespace docwire
+{
+
 OcrParserProvider::OcrParserProvider()
 {
   addExtensions(OCRParser::getExtensions());
 }
 
-std::optional<doctotext::ParserBuilder*>
+std::optional<ParserBuilder*>
 OcrParserProvider::findParserByExtension(const std::string &inExtension) const
 {
   if (isExtensionInVector(inExtension, OCRParser::getExtensions()))
   {
-    return new doctotext::ParserBuilderWrapper<doctotext::parser_creator<OCRParser>>();
+    return new ParserBuilderWrapper<parser_creator<OCRParser>>();
   }
   return std::nullopt;
 }
@@ -71,12 +74,12 @@ is_valid(const char* buffer, size_t size)
   return (parser.*valid_method)();
 }
 
-std::optional<doctotext::ParserBuilder*>
+std::optional<ParserBuilder*>
 OcrParserProvider::findParserByData(const std::vector<char>& buffer) const
 {
   if (is_valid<OCRParser, &OCRParser::isOCR>(buffer.data(), buffer.size()))
   {
-    return new doctotext::ParserBuilderWrapper<doctotext::parser_creator<OCRParser>>();
+    return new ParserBuilderWrapper<parser_creator<OCRParser>>();
   }
   return std::nullopt;
 }
@@ -98,3 +101,5 @@ OcrParserProvider::isExtensionInVector(const std::string &extension, const std::
 {
   return std::find(extension_list.begin(), extension_list.end(), extension) != extension_list.end();
 }
+
+} // namespace docwire

@@ -41,7 +41,7 @@
 #include <string>
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 
 class ParserBuilder;
@@ -86,5 +86,5 @@ private:
   std::unique_ptr<Implementation> impl;
 };
 
-} // namespace doctotext
+} // namespace docwire
 #endif //PARSER_MANAGER_HPP

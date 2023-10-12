@@ -46,7 +46,7 @@
 #include "formatting_style.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 
 /**
@@ -133,7 +133,7 @@ private:
 };
 
 
-} // namespace doctotext
+} // namespace docwire
 
 
 #endif //SIMPLE_EXTRACTOR_HPP

@@ -40,7 +40,7 @@
 #include "variant.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 	class DllExport Metadata
 	{
@@ -98,6 +98,6 @@ namespace doctotext
 			const std::map<std::string, Variant>& getFields() const;
 			const std::map<std::string, std::any> getFieldsAsAny() const;
 	};
-} // namespace doctotext
+} // namespace docwire
 
 #endif

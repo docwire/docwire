@@ -37,13 +37,13 @@
 #include <string>
 #include <vector>
 
-namespace doctotext
+namespace docwire
 {
 	struct FormattingStyle;
 	struct Metadata;
 }
 
-using namespace doctotext;
+using namespace docwire;
 
 class PPTParser
 {

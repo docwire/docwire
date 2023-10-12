@@ -40,14 +40,11 @@
 #include "parser_builder.h"
 #include "parser_manager.h"
 
-namespace doctotext
+namespace docwire
 {
 	class Metadata;
-}
 
-using namespace doctotext;
-
-class HTMLParser : public doctotext::Parser
+class HTMLParser : public Parser
 {
 	private:
 		struct Implementation;
@@ -58,15 +55,17 @@ class HTMLParser : public doctotext::Parser
 
     void parse() const override;
     static std::vector <std::string> getExtensions() {return {"html", "htm"};}
-		Parser& withParameters(const doctotext::ParserParameters &parameters) override;
+		Parser& withParameters(const ParserParameters &parameters) override;
 
-		explicit HTMLParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
-		HTMLParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+		explicit HTMLParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+		HTMLParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
 		~HTMLParser();
 		bool isHTML();
 		Metadata metaData() const;
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).
 		void skipCharsetDecoding();
 };
+
+} // namespace docwire
 
 #endif

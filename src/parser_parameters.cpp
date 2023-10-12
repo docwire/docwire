@@ -33,7 +33,7 @@
 
 #include <iostream>
 #include "parser_parameters.h"
-namespace doctotext
+namespace docwire
 {
 ParserParameters::ParserParameters()
 {
@@ -52,4 +52,4 @@ ParserParameters::operator+=(const ParserParameters &parameters)
     this->m_parameters.insert(f);
   }
 }
-} // namespace doctotext
+} // namespace docwire

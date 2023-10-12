@@ -43,6 +43,9 @@
 #include "misc.h"
 #include "xml_stream.h"
 
+namespace docwire
+{
+
 class ODFXMLParser::CommandHandlersSet
 {
 	public:
@@ -86,10 +89,10 @@ struct ODFXMLParser::ExtendedImplementation
 	size_t m_buffer_size;
 	std::string m_file_name;
 	ODFXMLParser* m_interf;
-  boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
+	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-ODFXMLParser::ODFXMLParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+ODFXMLParser::ODFXMLParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
   : Parser(inParserManager)
 {
 	extended_impl = NULL;
@@ -113,7 +116,7 @@ ODFXMLParser::ODFXMLParser(const std::string& file_name, const std::shared_ptr<d
 	}
 }
 
-ODFXMLParser::ODFXMLParser(const char *buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+ODFXMLParser::ODFXMLParser(const char *buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
   : Parser(inParserManager)
 {
 	extended_impl = NULL;
@@ -236,9 +239,9 @@ Metadata ODFXMLParser::metaData() const
 }
 
 Parser&
-ODFXMLParser::withParameters(const doctotext::ParserParameters &parameters)
+ODFXMLParser::withParameters(const ParserParameters &parameters)
 {
-	doctotext::Parser::withParameters(parameters);
+	Parser::withParameters(parameters);
 	return *this;
 }
 
@@ -249,14 +252,16 @@ ODFXMLParser::parse() const
 	auto formatting_style = getFormattingStyle();
   plainText(XmlParseMode::PARSE_XML, formatting_style);
 
-  doctotext::Info info(StandardTag::TAG_METADATA, "", metaData().getFieldsAsAny());
+  Info info(StandardTag::TAG_METADATA, "", metaData().getFieldsAsAny());
   extended_impl->m_on_new_node_signal(info);
 }
 
 Parser&
-ODFXMLParser::addOnNewNodeCallback(doctotext::NewNodeCallback callback)
+ODFXMLParser::addOnNewNodeCallback(NewNodeCallback callback)
 {
   extended_impl->m_on_new_node_signal.connect(callback);
   CommonXMLDocumentParser::addCallback(callback);
   return *this;
 }
+
+} // namespace docwire

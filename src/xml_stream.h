@@ -36,7 +36,7 @@
 
 #include <string>
 
-namespace doctotext
+namespace docwire
 {
 
 class XmlStream
@@ -46,7 +46,7 @@ class XmlStream
 		Implementation* impl;
 
 	public:
-		///Throws doctotext::exception if initialization has failed.
+		///Throws Exception if initialization has failed.
 		XmlStream(const std::string& xml, bool manage_xml_parser, int xml_parse_options = 0);
 		~XmlStream();
 		operator bool();
@@ -60,6 +60,6 @@ class XmlStream
 		std::string attribute(const std::string& attr_name);
 };
 
-}; // namespace doctotext
+}; // namespace docwire
 
 #endif

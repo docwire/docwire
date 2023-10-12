@@ -35,6 +35,7 @@
 
 #include "data_stream.h"
 #include "exception.h"
+#include <fstream>
 #include <iostream>
 #include "log.h"
 #include <map>
@@ -50,16 +51,20 @@
 #include <wv2/textconverter.h>
 #include <wv2/ustring.h>
 #include <boost/signals2.hpp>
+
+namespace docwire
+{
+
 using namespace wvWare;
 
 struct RTFParser::Implementation
 {
 	std::string m_file_name;
 	DataStream* m_data_stream;
-  boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
+	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-RTFParser::RTFParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+RTFParser::RTFParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = NULL;
@@ -82,7 +87,7 @@ RTFParser::RTFParser(const std::string& file_name, const std::shared_ptr<doctote
 	}
 }
 
-RTFParser::RTFParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+RTFParser::RTFParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = NULL;
@@ -654,9 +659,6 @@ std::string RTFParser::plainText() const
 	}
 }
 
-#include <fstream>
-#include <sstream>
-
 static void parse_rtf_time(const std::string& s, tm& time)
 {
 	time = tm();
@@ -770,9 +772,9 @@ Metadata RTFParser::metaData() const
 }
 
 Parser&
-RTFParser::withParameters(const doctotext::ParserParameters &parameters)
+RTFParser::withParameters(const ParserParameters &parameters)
 {
-	doctotext::Parser::withParameters(parameters);
+	Parser::withParameters(parameters);
 	return *this;
 }
 
@@ -784,13 +786,14 @@ RTFParser::parse() const
   impl->m_on_new_node_signal(info);
 
   Metadata metadata = metaData();
-  doctotext::Info metadata_info(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
+  Info metadata_info(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
   impl->m_on_new_node_signal(metadata_info);
 }
 
-doctotext::Parser&
-RTFParser::addOnNewNodeCallback(doctotext::NewNodeCallback callback)
+Parser& RTFParser::addOnNewNodeCallback(NewNodeCallback callback)
 {
   impl->m_on_new_node_signal.connect(callback);
   return *this;
 }
+
+} // namespace docwire

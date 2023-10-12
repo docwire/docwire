@@ -41,7 +41,8 @@
 #include "parser_manager.h"
 #include "simple_extractor.h"
 
-using namespace doctotext;
+namespace docwire
+{
 
 class SimpleExtractor::Implementation
 {
@@ -107,7 +108,7 @@ public:
   }
 
   void
-  addParameters(const doctotext::ParserParameters &parameters)
+  addParameters(const ParserParameters &parameters)
   {
     m_parameters += parameters;
   }
@@ -121,7 +122,7 @@ public:
   void
   setFormattingStyle(const FormattingStyle &style)
   {
-    m_parameters += doctotext::ParserParameters("formatting_style", style);
+    m_parameters += ParserParameters("formatting_style", style);
   }
 
   void
@@ -167,7 +168,7 @@ public:
   std::vector<std::shared_ptr<ChainElement>> m_chain_elements;
   std::string m_file_name;
   std::istream* m_input_stream;
-  doctotext::ParserParameters m_parameters;
+  ParserParameters m_parameters;
 };
 
 SimpleExtractor::SimpleExtractor(const std::string &file_name, const std::string &plugins_path)
@@ -185,7 +186,7 @@ SimpleExtractor::~SimpleExtractor()
 }
 
 void
-SimpleExtractor::addParameters(const doctotext::ParserParameters &parameters)
+SimpleExtractor::addParameters(const ParserParameters &parameters)
 {
   impl->addParameters(parameters);
 }
@@ -243,3 +244,5 @@ SimpleExtractor::getMetaData() const
 {
   return impl->getMetaData();
 }
+
+} // namespace docwire

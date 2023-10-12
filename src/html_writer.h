@@ -41,7 +41,7 @@
 #include "writer.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 /**
  * @brief The HTMLWriter class
@@ -52,7 +52,7 @@ namespace doctotext
  * @code
  * ODFOOXMLParser parser("test.docx");
  * HTMLWriter writer;
- * parser.onNewNode([&writer](doctotext::Info &info) {
+ * parser.onNewNode([&writer](Info &info) {
  *      writer.write_to(info, std::cout); // convert callback to html ant writes to std::cout
  *      });
  * @endcode
@@ -75,7 +75,7 @@ public:
    * @param info data from callback
    * @param stream output stream
    */
-  void write_to(const doctotext::Info &info, std::ostream &stream) override;
+  void write_to(const Info &info, std::ostream &stream) override;
   /**
    * @brief creates a new instance of HtmlWriter
    */
@@ -86,6 +86,6 @@ private:
   struct DllExport ImplementationDeleter { void operator() (Implementation*); };
   std::unique_ptr<Implementation, ImplementationDeleter> impl;
 };
-} // namespace doctotext
+} // namespace docwire
 
 #endif //HTML_WRITER_HPP

@@ -43,7 +43,7 @@
 
 struct tm;
 
-using namespace doctotext;
+using namespace docwire;
 using namespace wvWare;
 
 typedef std::vector<std::string> svector;

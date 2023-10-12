@@ -37,10 +37,10 @@
 
 #include "meta_data_writer.h"
 
-namespace doctotext
+namespace docwire
 {
 std::shared_ptr<TextElement>
-write_meta_data(const doctotext::Info &info)
+write_meta_data(const Info &info)
 {
   auto attr = info.attributes;
   std::string text = "";
@@ -121,11 +121,11 @@ write_meta_data(const doctotext::Info &info)
   return std::make_shared<TextElement>(text);
 }
 
-std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext::Info &info)>> meta_data_writers = {
+std::map<std::string, std::function<std::shared_ptr<TextElement>(const Info &info)>> meta_data_writers = {
   {StandardTag::TAG_METADATA, &write_meta_data}};
 
 void
-MetaDataWriter::write_to(const doctotext::Info &info, std::ostream &file)
+MetaDataWriter::write_to(const Info &info, std::ostream &file)
 {
   auto writer_iterator = meta_data_writers.find(info.tag_name);
   if (writer_iterator != meta_data_writers.end())
@@ -140,4 +140,4 @@ MetaDataWriter::clone() const
   return new MetaDataWriter(*this);
 }
 
-} // namespace doctotext
+} // namespace docwire

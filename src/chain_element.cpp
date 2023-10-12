@@ -36,16 +36,17 @@
 #include "chain_element.h"
 #include "parsing_chain.h"
 
-using namespace doctotext;
+namespace docwire
+{
 
 struct ChainElement::Implementation
 {
   Implementation()
-  : m_on_new_node_signal(std::make_shared<boost::signals2::signal<void(doctotext::Info &info)>>())
+  : m_on_new_node_signal(std::make_shared<boost::signals2::signal<void(Info &info)>>())
   {}
 
   Implementation(const Implementation& implementation)
-  : m_on_new_node_signal(std::make_shared<boost::signals2::signal<void(doctotext::Info &info)>>())
+  : m_on_new_node_signal(std::make_shared<boost::signals2::signal<void(Info &info)>>())
   {}
 
   void connect(const ChainElement &chain_element)
@@ -58,7 +59,7 @@ struct ChainElement::Implementation
     (*m_on_new_node_signal)(info);
   }
 
-  std::shared_ptr<boost::signals2::signal<void(doctotext::Info &info)>> m_on_new_node_signal;
+  std::shared_ptr<boost::signals2::signal<void(Info &info)>> m_on_new_node_signal;
 };
 
 ChainElement::ChainElement()
@@ -120,3 +121,5 @@ ChainElement::ImplementationDeleter::operator()(ChainElement::Implementation *im
 {
   delete impl;
 }
+
+} // namespace docwire

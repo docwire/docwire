@@ -39,7 +39,7 @@
 #include "variant.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 	/**
 		Structure of the attachment in parsed file.
@@ -81,6 +81,6 @@ namespace doctotext
 			///Returns map with all keys and values
 			const std::map<std::string, Variant>& getFields() const;
 	};
-} // namespace doctotext
+} // namespace docwire
 
 #endif

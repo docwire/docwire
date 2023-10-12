@@ -41,7 +41,7 @@
 #include "eml_parser.h"
 #include "pst_parser.h"
 
-namespace doctotext
+namespace docwire
 {
 
 MailParserProvider::MailParserProvider()
@@ -50,16 +50,16 @@ MailParserProvider::MailParserProvider()
   addExtensions(PSTParser::getExtensions());
 }
 
-std::optional<doctotext::ParserBuilder*>
+std::optional<ParserBuilder*>
 MailParserProvider::findParserByExtension(const std::string &inExtension) const
 {
   if (isExtensionInVector(inExtension, EMLParser::getExtensions()))
   {
-    return new doctotext::ParserBuilderWrapper<doctotext::parser_creator<EMLParser>>();
+    return new ParserBuilderWrapper<parser_creator<EMLParser>>();
   }
   else if(isExtensionInVector(inExtension, PSTParser::getExtensions()))
   {
-    return new doctotext::ParserBuilderWrapper<doctotext::parser_creator<PSTParser>>();
+    return new ParserBuilderWrapper<parser_creator<PSTParser>>();
   }
   return std::nullopt;
 }
@@ -80,16 +80,16 @@ is_valid(const char* buffer, size_t size)
   return (parser.*valid_method)();
 }
 
-std::optional<doctotext::ParserBuilder*>
+std::optional<ParserBuilder*>
 MailParserProvider::findParserByData(const std::vector<char>& buffer) const
 {
   if (is_valid<EMLParser, &EMLParser::isEML>(buffer.data(), buffer.size()))
   {
-    return new doctotext::ParserBuilderWrapper<doctotext::wrapper_parser_creator<EMLParser>>();
+    return new ParserBuilderWrapper<wrapper_parser_creator<EMLParser>>();
   }
   else if (is_valid<PSTParser, &PSTParser::isPST>(buffer.data(), buffer.size()))
   {
-    return new doctotext::ParserBuilderWrapper<doctotext::parser_creator<PSTParser>>();
+    return new ParserBuilderWrapper<parser_creator<PSTParser>>();
   }
   return std::nullopt;
 }
@@ -112,4 +112,4 @@ MailParserProvider::isExtensionInVector(const std::string &extension, const std:
   return std::find(extension_list.begin(), extension_list.end(), extension) != extension_list.end();
 }
 
-} // namespace doctotext
+} // namespace docwire

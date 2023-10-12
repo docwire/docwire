@@ -44,7 +44,7 @@
 #include "parser_parameters.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 
 /**
@@ -105,6 +105,6 @@ private:
 };
 
 
-} // namespace doctotext
+} // namespace docwire
 
 #endif //IMPORTER_H

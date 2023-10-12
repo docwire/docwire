@@ -41,7 +41,7 @@
 #include <string>
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 /**
  * @brief Stores list of parsers parameters. Every parser can query ParserParameter for a specific parameter.
@@ -50,7 +50,7 @@ namespace doctotext
  *
  * Example:
  * @code
- * ParserParameters parameters("language", doctotext::Language::english); // Important: explicit type
+ * ParserParameters parameters("language", Language::english); // Important: explicit type
  * parameters += ParserParameters("TESSDATA_PREFIX", "tessdata"); // Adds second parameter
  *
  * Importer importer("img.jpg");
@@ -115,6 +115,6 @@ public:
 private:
   std::map<std::string, std::any> m_parameters;
 };
-} // namespace doctotext
+} // namespace docwire
 
 #endif //PARSER_PARAMETERS_HPP

@@ -33,7 +33,7 @@
 
 #include "attachment.h"
 
-using namespace doctotext;
+using namespace docwire;
 
 struct Attachment::Implementation
 {

@@ -43,7 +43,7 @@
 #include "unzip.h"
 #include "zlib.h"
 
-namespace doctotext
+namespace docwire
 {
 
 const int CASESENSITIVITY = 1;
@@ -503,4 +503,4 @@ bool ZipReader::loadDirectory()
 	return true;
 }
 
-}; // namespace doctotext
+}; // namespace docwire

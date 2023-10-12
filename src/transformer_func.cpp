@@ -34,12 +34,13 @@
 #include "importer.h"
 #include "transformer_func.h"
 
-using namespace doctotext;
+namespace docwire
+{
 
 class TransformerFunc::Implementation
 {
 public:
-  Implementation(doctotext::NewNodeCallback transformer_function, TransformerFunc& owner)
+  Implementation(NewNodeCallback transformer_function, TransformerFunc& owner)
     : m_transformer_function(transformer_function),
       m_owner(owner)
   {}
@@ -54,8 +55,7 @@ public:
       m_owner(owner)
   {}
 
-  void
-  transform(doctotext::Info &info) const
+  void transform(Info &info) const
   {
     m_transformer_function(info);
     if (!info.cancel && !info.skip)
@@ -64,11 +64,11 @@ public:
     }
   }
 
-  doctotext::NewNodeCallback m_transformer_function;
+  NewNodeCallback m_transformer_function;
   TransformerFunc& m_owner;
 };
 
-TransformerFunc::TransformerFunc(doctotext::NewNodeCallback transformer_function)
+TransformerFunc::TransformerFunc(NewNodeCallback transformer_function)
 {
   impl = std::unique_ptr<Implementation>{new Implementation{transformer_function, *this}};
 }
@@ -83,8 +83,7 @@ TransformerFunc::~TransformerFunc()
 {
 }
 
-void
-TransformerFunc::process(doctotext::Info &info) const
+void TransformerFunc::process(Info &info) const
 {
   impl->transform(info);
 }
@@ -94,3 +93,5 @@ TransformerFunc::clone() const
 {
   return new TransformerFunc(*this);
 }
+
+} // namespace docwire

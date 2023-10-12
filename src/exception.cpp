@@ -36,7 +36,7 @@
 #include <list>
 #include "misc.h"
 
-using namespace doctotext;
+using namespace docwire;
 
 struct Exception::Implementation
 {

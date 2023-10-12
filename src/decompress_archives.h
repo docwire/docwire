@@ -36,7 +36,7 @@
 
 #include "chain_element.h"
 
-namespace doctotext
+namespace docwire
 {
 
 class DllExport DecompressArchives : public ChainElement
@@ -48,10 +48,10 @@ public:
 
 	/**
 	* @brief Executes transform operation for given node data.
-	* @see doctotext::Info
+	* @see docwire::Info
 	* @param info
 	*/
-	void process(doctotext::Info &info) const;
+	void process(Info &info) const;
 
 	bool is_leaf() const override
 	{
@@ -65,6 +65,6 @@ public:
 	DecompressArchives* clone() const override;
 };
 
-} // namespace doctotext
+} // namespace docwire
 
 #endif //DECOMPRESS_ARCHIVES_H

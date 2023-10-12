@@ -37,12 +37,15 @@
 #include "parser_provider.h"
 #include "defines.h"
 
-class DllExport OcrParserProvider : public doctotext::ParserProvider
+namespace docwire
+{
+
+class DllExport OcrParserProvider : public ParserProvider
 {
 public:
   OcrParserProvider();
-  std::optional<doctotext::ParserBuilder*> findParserByExtension(const std::string &inExtension) const override;
-  std::optional<doctotext::ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override;
+  std::optional<ParserBuilder*> findParserByExtension(const std::string &inExtension) const override;
+  std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override;
   std::set<std::string> getAvailableExtensions() const override;
 
 private:
@@ -53,5 +56,7 @@ private:
 
 extern "C" DllExport OcrParserProvider plugin_parser_provider;
 OcrParserProvider plugin_parser_provider;
+
+} // namespace docwire
 
 #endif //OCR_PARSER_PROVIDER_H

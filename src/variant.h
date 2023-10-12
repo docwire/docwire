@@ -38,7 +38,7 @@
 #include <time.h>
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 	/**
 		Variant is an object which can represent unsigned number, date or string.
@@ -109,6 +109,6 @@ namespace doctotext
 			**/
 			size_t getNumber() const;
 	};
-} // namespace doctotext
+} // namespace docwire
 
 #endif

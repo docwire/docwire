@@ -43,7 +43,10 @@
 #include "parser.h"
 #include "parser_builder.h"
 
-class OCRParser : public doctotext::Parser
+namespace docwire
+{
+
+class OCRParser : public Parser
 {
 private:
     struct Implementation;
@@ -55,18 +58,20 @@ public:
     static std::string get_default_tessdata_prefix();
 
     OCRParser(const OCRParser& ocr_parser);
-    OCRParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
-    OCRParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+    OCRParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+    OCRParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
     ~OCRParser();
 
     void parse() const override;
-    Parser& addOnNewNodeCallback(doctotext::NewNodeCallback callback) override;
+    Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
     static std::vector <std::string> getExtensions() {return {"tiff", "jpeg", "bmp", "png", "pnm", "jfif", "jpg", "webp"};}
-    Parser& withParameters(const doctotext::ParserParameters &parameters) override;
+    Parser& withParameters(const ParserParameters &parameters) override;
 
     void setTessdataPrefix(const std::string& tessdata_prefix);
     bool isOCR() const;
-    std::string plainText(const doctotext::FormattingStyle& formatting, const doctotext::Language lang) const;
+    std::string plainText(const FormattingStyle& formatting, const Language lang) const;
 };
+
+} // namespace docwire
 
 #endif // OCR_PARSER_HPP

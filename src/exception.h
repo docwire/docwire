@@ -39,7 +39,7 @@
 #include <string>
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 	/**
 		This class is implementation of std::exception, which is used by DocToText.
@@ -128,6 +128,6 @@ namespace doctotext
             : Exception(msg)
         {}
     };
-} // namespace doctotext
+} // namespace docwire
 
 #endif

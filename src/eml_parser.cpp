@@ -46,7 +46,7 @@
 #include <pthread.h>
 #include <mailio/message.hpp>
 
-namespace doctotext
+namespace docwire
 {
 
 using mailio::mime;
@@ -61,9 +61,9 @@ struct EMLParser::Implementation
 	bool m_error;
 	std::string m_file_name;
 	std::istream* m_data_stream;
-  const std::shared_ptr<doctotext::ParserManager> m_parser_manager;
+	const std::shared_ptr<ParserManager> m_parser_manager;
 
-  Implementation(const std::shared_ptr<doctotext::ParserManager> &inParserManager, EMLParser* owner)
+	Implementation(const std::shared_ptr<ParserManager> &inParserManager, EMLParser* owner)
     : m_parser_manager(inParserManager),
       m_owner(owner)
   {}
@@ -89,7 +89,7 @@ struct EMLParser::Implementation
 		std::string parsed_text;
 		PlainTextWriter writer;
 		std::stringstream stream;
-		auto callback = [&writer, &stream](const doctotext::Info &info){writer.write_to(info, stream);};
+		auto callback = [&writer, &stream](const Info &info){writer.write_to(info, stream);};
 		auto parser_builder = m_parser_manager->findParserByExtension(type);
 		if (parser_builder)
 		{
@@ -177,7 +177,7 @@ struct EMLParser::Implementation
 				if (parser_builder)
 				{
 					auto parser = (*parser_builder)->withParserManager(m_parser_manager)
-						.withOnNewNodeCallbacks({[this](doctotext::Info &info){m_owner->sendTag(info.tag_name, info.plain_text, info.attributes);}})
+						.withOnNewNodeCallbacks({[this](Info &info){m_owner->sendTag(info.tag_name, info.plain_text, info.attributes);}})
 						.build(plain.c_str(), plain.length());
 						parser->parse();
 				}
@@ -208,7 +208,7 @@ struct EMLParser::Implementation
 	}
 };
 
-EMLParser::EMLParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+EMLParser::EMLParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
   : Parser(inParserManager)
 {
 	impl = NULL;
@@ -230,7 +230,7 @@ EMLParser::EMLParser(const std::string& file_name, const std::shared_ptr<doctote
 	}
 }
 
-EMLParser::EMLParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+EMLParser::EMLParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
   : Parser(inParserManager)
 {
 	impl = NULL;
@@ -359,4 +359,4 @@ EMLParser::parse() const
   plainText(getFormattingStyle());
 }
 
-} // namespace doctotext
+} // namespace docwire

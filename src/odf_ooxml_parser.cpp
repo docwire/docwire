@@ -52,6 +52,9 @@
 #include "thread_safe_ole_storage.h"
 #include "thread_safe_ole_stream_reader.h"
 
+namespace docwire
+{
+
 using namespace std;
 
 const int CASESENSITIVITY = 1;
@@ -245,7 +248,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 	int last_ooxml_col_num = 0;
 	int last_ooxml_row_num = 0;
 	ODFOOXMLParser* m_interf;
-  boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
+	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 
   void
   onOOXMLStyle(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
@@ -352,7 +355,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 	}
 };
 
-ODFOOXMLParser::ODFOOXMLParser(const string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+ODFOOXMLParser::ODFOOXMLParser(const string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	extended_impl = NULL;
@@ -389,7 +392,7 @@ ODFOOXMLParser::ODFOOXMLParser(const string& file_name, const std::shared_ptr<do
 	}
 }
 
-ODFOOXMLParser::ODFOOXMLParser(const char *buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+ODFOOXMLParser::ODFOOXMLParser(const char *buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	extended_impl = NULL;
@@ -433,9 +436,9 @@ ODFOOXMLParser::~ODFOOXMLParser()
 }
 
 Parser&
-ODFOOXMLParser::withParameters(const doctotext::ParserParameters &parameters)
+ODFOOXMLParser::withParameters(const ParserParameters &parameters)
 {
-	doctotext::Parser::withParameters(parameters);
+	Parser::withParameters(parameters);
 	return *this;
 }
 
@@ -790,9 +793,10 @@ ODFOOXMLParser::parse() const
 	trySendTag(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
 }
 
-doctotext::Parser&
-ODFOOXMLParser::addOnNewNodeCallback(doctotext::NewNodeCallback callback)
+Parser& ODFOOXMLParser::addOnNewNodeCallback(NewNodeCallback callback)
 {
 	CommonXMLDocumentParser::addCallback(callback);
 	return *this;
 }
+
+} // namespace docwire

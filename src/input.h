@@ -39,7 +39,7 @@
 #include "parsing_chain.h"
 #include <filesystem>
 
-namespace doctotext
+namespace docwire
 {
 
 class DllExport InputBase

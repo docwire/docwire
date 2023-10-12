@@ -36,7 +36,7 @@
 
 #include "parser.h"
 
-namespace doctotext
+namespace docwire
 {
 
 class ParsingChain;

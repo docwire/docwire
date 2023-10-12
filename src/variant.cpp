@@ -36,7 +36,7 @@
 #include "misc.h"
 #include <string.h>
 
-using namespace doctotext;
+using namespace docwire;
 
 struct Variant::Implementation
 {

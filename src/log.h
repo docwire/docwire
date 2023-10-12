@@ -42,7 +42,7 @@
 #include <thread>
 #include <typeindex>
 
-namespace doctotext
+namespace docwire
 {
 
 enum severity_level
@@ -162,14 +162,14 @@ inline void current_function_helper()
 }
 
 #define doctotext_current_source_location() \
-	doctotext::source_location{__FILE__, __LINE__, doctotext_current_function}
+	docwire::source_location{__FILE__, __LINE__, doctotext_current_function}
 
 #define doctotext_log(severity) \
-	if (!doctotext::log_verbosity_includes(severity)) \
+	if (!docwire::log_verbosity_includes(severity)) \
 	{ \
 	} \
 	else \
-		(*doctotext::create_log_record_stream(severity, doctotext_current_source_location()))
+		(*docwire::create_log_record_stream(severity, doctotext_current_source_location()))
 
 inline std::string prepare_var_name(const std::string& var_name)
 {
@@ -253,6 +253,6 @@ private:
 	source_location m_location;
 };
 
-} // namespace doctotext
+} // namespace docwire
 
 #endif

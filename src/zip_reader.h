@@ -37,7 +37,7 @@
 #include <string>
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 
 class ZipReader
@@ -68,6 +68,6 @@ class ZipReader
 		bool loadDirectory();
 };
 
-}; // namespace doctotext
+}; // namespace docwire
 
 #endif

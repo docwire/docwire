@@ -40,11 +40,11 @@
 
 class ThreadSafeOLEStorage;
 
-namespace doctotext
+namespace docwire
 {
 	struct FormattingStyle;
 
-using namespace doctotext;
+using namespace docwire;
 
 class XLSParser
 {
@@ -63,6 +63,6 @@ class XLSParser
 		Metadata metaData();
 };
 
-} // namespace doctotext
+} // namespace docwire
 
 #endif

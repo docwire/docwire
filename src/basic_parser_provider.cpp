@@ -49,6 +49,9 @@
 #include "odf_ooxml_parser.h"
 #include "txt_parser.h"
 
+namespace docwire
+{
+
 void
 BasicParserProvider::addExtensions(const std::vector<std::string> &extensions)
 {
@@ -76,7 +79,7 @@ BasicParserProvider::isExtensionInVector(const std::string &extension, const std
   return std::find(extension_list.begin(), extension_list.end(), extension) != extension_list.end();
 }
 
-std::optional<doctotext::ParserBuilder*>
+std::optional<ParserBuilder*>
 BasicParserProvider::findParserByExtension(const std::string &inExtension) const
 {
   if (isExtensionInVector(inExtension, HTMLParser::getExtensions()))
@@ -193,3 +196,5 @@ BasicParserProvider::getAvailableExtensions() const
 {
   return available_extensions;
 }
+
+} // namespace docwire

@@ -40,15 +40,11 @@
 #include <vector>
 #include <map>
 
-namespace doctotext
+namespace docwire
 {
 	class ZipReader;
 	class Metadata;
 	class XmlStream;
-}
-
-using namespace doctotext;
-
 
 /**
 	This class is inherited by ODFOOXMLParser and ODFXMLParser. It contains some common
@@ -93,7 +89,7 @@ class CommonXMLDocumentParser
                                  const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
                                  bool& children_processed, std::string& level_suffix, bool first_on_level)> CommandHandler;
 
-    void addCallback(const doctotext::NewNodeCallback &callback);
+    void addCallback(const NewNodeCallback &callback);
 
 		/**
 			Each xml tag can have associated handler, which is a single function of CommandHandler type.
@@ -111,10 +107,10 @@ class CommonXMLDocumentParser
 		///parses xml data for given xml stream. It executes commands for each xml tag
 		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile) const;
 
-		///extracts text from xml data. It uses parseXmlData internally. Throws doctotext::exception on fail
+		///extracts text from xml data. It uses parseXmlData internally. Throws Exception on fail
 		void extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile, std::string& text) const;
 
-		///usefull since two parsers use this. Throws doctotext::exception on fail
+		///usefull since two parsers use this. Throws Exception on fail
 		void parseODFMetadata(const std::string &xml_content, Metadata &metadata) const;
 
 		///this is helpful function to format comment
@@ -161,5 +157,7 @@ class CommonXMLDocumentParser
 		virtual std::string plainText(XmlParseMode mode, FormattingStyle& options) const = 0; // todo https://github.com/docwire/doctotext/issues/91
 		virtual Metadata metaData() const = 0;
 };
+
+} // namespace docwire
 
 #endif

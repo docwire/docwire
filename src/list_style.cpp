@@ -33,7 +33,7 @@
 
 #include "formatting_style.h"
 
-using namespace doctotext;
+using namespace docwire;
 
 struct ListStyle::Implementation
 {

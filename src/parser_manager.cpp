@@ -44,7 +44,8 @@
 #include "parser_builder.h"
 #include "pthread.h"
 
-using namespace doctotext;
+namespace docwire
+{
 
 static pthread_mutex_t load_providers_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -68,8 +69,8 @@ public:
     doctotext_log(debug) << "Loading plugin " << path;
     try
     {
-      boost::shared_ptr<doctotext::ParserProvider>plugin_provider =
-      boost::dll::import_symbol<doctotext::ParserProvider>(path.c_str(),
+      boost::shared_ptr<ParserProvider>plugin_provider =
+      boost::dll::import_symbol<ParserProvider>(path.c_str(),
                                                               "plugin_parser_provider",
                                                               boost::dll::load_mode::append_decorations);
       providers.push_back(plugin_provider);
@@ -164,3 +165,5 @@ ParserManager::getAvailableExtensions() const
   }
   return all_extensions;
 }
+
+} // namespace docwire

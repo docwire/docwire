@@ -39,7 +39,8 @@
 #include "importer.h"
 #include "log.h"
 
-using namespace doctotext;
+namespace docwire
+{
 
 class Importer::Implementation
 {
@@ -122,12 +123,12 @@ public:
         }
         else
         {
-          throw doctotext::Exception("file " + file_path + " is not readable");
+          throw Exception("file " + file_path + " is not readable");
         }
       }
       else
       {
-        throw doctotext::Exception("file " + file_path + "  doesn't exist");
+        throw Exception("file " + file_path + "  doesn't exist");
       }
     }
     else if(input_stream)
@@ -137,7 +138,7 @@ public:
     }
     if (builder)
     {
-      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](doctotext::Info &info){ m_owner.emit(info);}})
+      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
         .withParserManager(m_parser_manager)
         .withParameters(m_parameters);
 
@@ -147,13 +148,13 @@ public:
         {
           builder_ref.build(file_path)->parse();
         }
-        catch (doctotext::EncryptedFileException &ex)
+        catch (EncryptedFileException &ex)
         {
           throw ex;
         }
-        catch (doctotext::Exception &ex)
+        catch (Exception &ex)
         {
-          doctotext_log(doctotext::info) << "It is possible that wrong parser was selected. Trying different parsers.";
+          doctotext_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
           std::vector<char> buffer;
           load_file_to_buffer(file_path, buffer);
           auto second_builder = m_parser_manager->findParserByData(buffer);
@@ -163,7 +164,7 @@ public:
             throw ex;
           }
           std::shared_ptr<ParserBuilder>(*second_builder)
-                  ->withOnNewNodeCallbacks({[this](doctotext::Info &info){ m_owner.emit(info);}})
+                  ->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
                   .withParserManager(m_parser_manager)
                   .withParameters(m_parameters)
                   .build(buffer.data(), buffer.size())->parse();
@@ -176,7 +177,7 @@ public:
     }
     else
     {
-      throw doctotext::Exception("File format was not recognized.");
+      throw Exception("File format was not recognized.");
     }
     Info end_doc(StandardTag::TAG_CLOSE_DOCUMENT);
     m_owner.emit(end_doc);
@@ -245,3 +246,5 @@ Importer::add_parameters(const ParserParameters &parameters)
 {
   impl->add_parameters(parameters);
 }
+
+} // namespace docwire

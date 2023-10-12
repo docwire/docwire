@@ -39,7 +39,7 @@
 #include "log.h"
 #include "pthread.h"
 
-namespace doctotext
+namespace docwire
 {
 
 static size_t xml_parser_usage_counter = 0;
@@ -104,7 +104,7 @@ XmlStream::XmlStream(const std::string &xml, bool manage_xml_parser, int xml_par
 				cleanupXmlParser();
 			delete impl;
 			impl = NULL;
-			throw doctotext::Exception("Cannot initialize XmlStream: xmlReaderForMemory has failed");
+			throw Exception("Cannot initialize XmlStream: xmlReaderForMemory has failed");
 		}
 		if (xmlTextReaderRead(impl->m_reader) != 1)
 		{
@@ -113,7 +113,7 @@ XmlStream::XmlStream(const std::string &xml, bool manage_xml_parser, int xml_par
 			xmlFreeTextReader(impl->m_reader);
 			delete impl;
 			impl = NULL;
-			throw doctotext::Exception("Cannot initialize XmlStream: xmlTextReaderRead has failed");
+			throw Exception("Cannot initialize XmlStream: xmlTextReaderRead has failed");
 		}
 		doctotext_log(debug) << "# read. type=" << xmlTextReaderNodeType(impl->m_reader) << ", depth=" << xmlTextReaderDepth(impl->m_reader) << ", name=" << (char*)xmlTextReaderConstLocalName(impl->m_reader);
 		impl->m_curr_depth = xmlTextReaderDepth(impl->m_reader);
@@ -124,7 +124,7 @@ XmlStream::XmlStream(const std::string &xml, bool manage_xml_parser, int xml_par
 			xmlFreeTextReader(impl->m_reader);
 			delete impl;
 			impl = NULL;
-			throw doctotext::Exception("Cannot initialize XmlStream: xmlTextReaderDepth has failed");
+			throw Exception("Cannot initialize XmlStream: xmlTextReaderDepth has failed");
 		}
 		doctotext_log(debug) << "Starting curr_depth: " << impl->m_curr_depth;
 	}
@@ -304,4 +304,4 @@ std::string XmlStream::attribute(const std::string& attr_name)
 	return s;
 }
 
-}; // namespace doctotext
+}; // namespace docwire

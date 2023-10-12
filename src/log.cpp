@@ -43,7 +43,7 @@
 #include <sstream>
 #include <stack>
 
-namespace doctotext
+namespace docwire
 {
 
 static severity_level log_verbosity = info;
@@ -377,4 +377,4 @@ void cerr_log_redirection::restore()
 	m_redirected = false;
 }
 
-} // namespace doctotext
+} // namespace docwire

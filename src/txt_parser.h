@@ -39,7 +39,10 @@
 #include "parser.h"
 #include "parser_builder.h"
 
-class TXTParser : public doctotext::Parser
+namespace docwire
+{
+
+class TXTParser : public Parser
 {
 	private:
 		struct Implementation;
@@ -48,14 +51,16 @@ class TXTParser : public doctotext::Parser
 	public:
 
     void parse() const override;
-    Parser& addOnNewNodeCallback(doctotext::NewNodeCallback callback) override;
-		Parser& withParameters(const doctotext::ParserParameters &parameters) override;
+    Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
+		Parser& withParameters(const ParserParameters &parameters) override;
 		static std::vector <std::string> getExtensions();
 
-		TXTParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
-		TXTParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+		TXTParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+		TXTParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
 		~TXTParser();
 		std::string plainText() const;
 };
+
+} // namespace docwire
 
 #endif

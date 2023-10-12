@@ -88,6 +88,9 @@ Attributes operator+(const Attributes& lhs, const Attributes& rhs)
 
 } // unnamed namespace
 
+namespace docwire
+{
+
 class DocToTextSaxParser : public ParserSax
 {
 	private:
@@ -673,7 +676,7 @@ struct HTMLParser::Implementation
 	DataStream* m_data_stream{};
 };
 
-HTMLParser::HTMLParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+HTMLParser::HTMLParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = nullptr;
@@ -697,7 +700,7 @@ HTMLParser::HTMLParser(const std::string& file_name, const std::shared_ptr<docto
 	}
 }
 
-HTMLParser::HTMLParser(const char *buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+HTMLParser::HTMLParser(const char *buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = nullptr;
@@ -729,9 +732,9 @@ HTMLParser::~HTMLParser()
 }
 
 Parser&
-HTMLParser::withParameters(const doctotext::ParserParameters &parameters)
+HTMLParser::withParameters(const ParserParameters &parameters)
 {
-	doctotext::Parser::withParameters(parameters);
+	Parser::withParameters(parameters);
 	return *this;
 }
 
@@ -784,3 +787,5 @@ void HTMLParser::skipCharsetDecoding()
 {
 	impl->m_skip_decoding = true;
 }
+
+} // namespace docwire

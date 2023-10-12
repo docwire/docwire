@@ -36,13 +36,13 @@
 
 #include <string>
 
-namespace doctotext
+namespace docwire
 {
 	class Metadata;
 }
 class ThreadSafeOLEStorage;
 
-using namespace doctotext;
+using namespace docwire;
 
 void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, Metadata& meta);
 void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& slide_count);

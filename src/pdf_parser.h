@@ -39,7 +39,7 @@
 #include <string>
 #include <vector>
 
-namespace doctotext
+namespace docwire
 {
 
 struct FormattingStyle;
@@ -52,8 +52,8 @@ class PDFParser : public Parser
 		Implementation* impl;
 
 	public:
-		PDFParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
-		PDFParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+		PDFParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+		PDFParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
 		~PDFParser();
     void parse() const override;
     static std::vector<std::string> getExtensions() {return {"pdf"};}
@@ -62,6 +62,6 @@ class PDFParser : public Parser
 		Metadata metaData();
 };
 
-} // namespace doctotext
+} // namespace docwire
 
 #endif

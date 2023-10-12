@@ -51,6 +51,9 @@
 #include "log.h"
 #include "misc.h"
 
+namespace docwire
+{
+
 struct OCRParser::Implementation
 {
     explicit Implementation(const std::string& file_name)
@@ -69,7 +72,7 @@ struct OCRParser::Implementation
     const char* m_buffer;
     size_t m_buffer_size;
     std::string m_tessdata_prefix;
-    boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
+    boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };  
 
 void OCRParser::ImplementationDeleter::operator() (Implementation* impl)
@@ -96,13 +99,13 @@ OCRParser::OCRParser(const OCRParser& ocr_parser)
   }
 }
 
-OCRParser::OCRParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+OCRParser::OCRParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
   impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{file_name}, ImplementationDeleter{}};
 }
 
-OCRParser::OCRParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+OCRParser::OCRParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
   impl = std::unique_ptr<Implementation, ImplementationDeleter> {new Implementation{buffer, size}, ImplementationDeleter{}};
@@ -110,7 +113,7 @@ OCRParser::OCRParser(const char* buffer, size_t size, const std::shared_ptr<doct
 
 OCRParser::~OCRParser() = default;
 
-using namespace doctotext;
+using namespace docwire;
 
 Pix* pixToGrayscale(Pix* pix)
 {
@@ -189,13 +192,13 @@ namespace
 
 bool cancel (void* data, int words)
 {
-  auto* signal = reinterpret_cast<boost::signals2::signal<void(doctotext::Info &info)>*>(data);
+  auto* signal = reinterpret_cast<boost::signals2::signal<void(Info &info)>*>(data);
   Info info;
   (*signal)(info);
   return info.cancel;
 }
 
-std::string OCRParser::plainText(const doctotext::FormattingStyle& formatting, const Language lang) const
+std::string OCRParser::plainText(const FormattingStyle& formatting, const Language lang) const
 {
     tessAPIWrapper api{ nullptr, tessAPIDeleter };
     try
@@ -217,8 +220,8 @@ std::string OCRParser::plainText(const doctotext::FormattingStyle& formatting, c
       impl->m_tessdata_prefix = locate_resource("tessdata-fast").string();
     }
 
-    if (api->Init(impl->m_tessdata_prefix.c_str(), doctotext::languageToName(lang).c_str())) {
-        throw doctotext::Exception{ "Could not initialize tesseract.\n" };
+    if (api->Init(impl->m_tessdata_prefix.c_str(), languageToName(lang).c_str())) {
+        throw Exception{ "Could not initialize tesseract.\n" };
     }
 
     // Read the image and convert to a gray-scale image
@@ -285,9 +288,9 @@ bool OCRParser::isOCR() const
 }
 
 Parser&
-OCRParser::withParameters(const doctotext::ParserParameters &parameters)
+OCRParser::withParameters(const ParserParameters &parameters)
 {
-	doctotext::Parser::withParameters(parameters);
+	Parser::withParameters(parameters);
     return *this;
 }
 
@@ -301,9 +304,10 @@ OCRParser::parse() const
   impl->m_on_new_node_signal(info);
 }
 
-doctotext::Parser&
-OCRParser::addOnNewNodeCallback(doctotext::NewNodeCallback callback)
+Parser& OCRParser::addOnNewNodeCallback(NewNodeCallback callback)
 {
   impl->m_on_new_node_signal.connect(callback);
   return *this;
 }
+
+} // namespace docwire

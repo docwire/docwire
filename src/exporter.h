@@ -45,7 +45,7 @@
 #include "writer.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 
 class Importer;
@@ -81,7 +81,7 @@ public:
     return true;
   }
 
-  void process(doctotext::Info &info) const override;
+  void process(Info &info) const override;
 
   /**
    * @brief Sets output stream.
@@ -99,7 +99,7 @@ public:
    * @brief Exxports data from Info structure to output stream.
    * @param info data from callback function.
    */
-  void export_to(doctotext::Info &info) const;
+  void export_to(Info &info) const;
 
 protected:
   std::ostream& get_output() const;
@@ -202,6 +202,6 @@ public:
 
 };
 
-} // namespace doctotext
+} // namespace docwire
 
 #endif //EXPORTER_H

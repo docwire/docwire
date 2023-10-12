@@ -34,7 +34,7 @@
 #include "input.h"
 #include "parsing_chain.h"
 
-namespace doctotext
+namespace docwire
 {
   ParsingChain::ParsingChain(ChainElement& element1, ChainElement& element2)
   : first_element(std::shared_ptr<ChainElement>(element1.clone())),
@@ -103,4 +103,4 @@ namespace doctotext
     }
   }
 
-} // namespace doctotext
+} // namespace docwire

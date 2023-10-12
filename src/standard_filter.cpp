@@ -32,14 +32,14 @@
 /***************************************************************************************************************************************************/
 
 #include "standard_filter.h"
-namespace doctotext
+namespace docwire
 {
-doctotext::NewNodeCallback
-StandardFilter::filterByFolderName(const std::vector<std::string> &names)
+
+NewNodeCallback StandardFilter::filterByFolderName(const std::vector<std::string> &names)
 {
-  return [names](doctotext::Info &info)
+  return [names](Info &info)
   {
-    if (info.tag_name != doctotext::StandardTag::TAG_FOLDER)
+    if (info.tag_name != StandardTag::TAG_FOLDER)
       return;
     auto folder_name = info.getAttributeValue<std::string>("name");
     if (folder_name)
@@ -52,12 +52,11 @@ StandardFilter::filterByFolderName(const std::vector<std::string> &names)
   };
 }
 
-doctotext::NewNodeCallback
-StandardFilter::filterByAttachmentType(const std::vector<std::string> &types)
+NewNodeCallback StandardFilter::filterByAttachmentType(const std::vector<std::string> &types)
 {
-  return [types](doctotext::Info &info)
+  return [types](Info &info)
   {
-    if (info.tag_name != doctotext::StandardTag::TAG_ATTACHMENT)
+    if (info.tag_name != StandardTag::TAG_ATTACHMENT)
       return;
     if (info.attributes.find("extension") == info.attributes.end())
       return;
@@ -72,12 +71,11 @@ StandardFilter::filterByAttachmentType(const std::vector<std::string> &types)
   };
 }
 
-doctotext::NewNodeCallback
-StandardFilter::filterByMailMinCreationTime(unsigned int min_time)
+NewNodeCallback StandardFilter::filterByMailMinCreationTime(unsigned int min_time)
 {
-  return [min_time](doctotext::Info &info)
+  return [min_time](Info &info)
   {
-    if (info.tag_name != doctotext::StandardTag::TAG_MAIL)
+    if (info.tag_name != StandardTag::TAG_MAIL)
       return;
     auto mail_creation_time = info.getAttributeValue<unsigned int>("date");
     if (mail_creation_time)
@@ -90,12 +88,11 @@ StandardFilter::filterByMailMinCreationTime(unsigned int min_time)
   };
 }
 
-doctotext::NewNodeCallback
-StandardFilter::filterByMailMaxCreationTime(unsigned int max_time)
+NewNodeCallback StandardFilter::filterByMailMaxCreationTime(unsigned int max_time)
 {
-  return [max_time](doctotext::Info &info)
+  return [max_time](Info &info)
   {
-    if (info.tag_name != doctotext::StandardTag::TAG_MAIL)
+    if (info.tag_name != StandardTag::TAG_MAIL)
       return;
     auto mail_creation_time = info.getAttributeValue<unsigned int>("date");
     if (mail_creation_time)
@@ -108,10 +105,9 @@ StandardFilter::filterByMailMaxCreationTime(unsigned int max_time)
   };
 }
 
-doctotext::NewNodeCallback
-StandardFilter::filterByMaxNodeNumber(unsigned int max_nodes)
+NewNodeCallback StandardFilter::filterByMaxNodeNumber(unsigned int max_nodes)
 {
-  return [max_nodes, node_no = 0](doctotext::Info &info) mutable
+  return [max_nodes, node_no = 0](Info &info) mutable
   {
     if (node_no++ == max_nodes)
     {
@@ -119,4 +115,4 @@ StandardFilter::filterByMaxNodeNumber(unsigned int max_nodes)
     }
   };
 }
-} // namespace doctotext
+} // namespace docwire

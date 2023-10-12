@@ -43,7 +43,7 @@
 #include "parser_parameters.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 /**
  * Abstract class to build parsers. Parser could be built from path to file or from data buffer.
@@ -87,5 +87,5 @@ public:
 
   virtual ~ParserBuilder() = default;
 };
-} // namespace doctotext
+} // namespace docwire
 #endif //PARSER_BUILDER_H

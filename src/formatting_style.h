@@ -37,7 +37,7 @@
 #include <string>
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 	enum TableStyle { TABLE_STYLE_TABLE_LOOK, TABLE_STYLE_ONE_ROW, TABLE_STYLE_ONE_COL, };
 	enum UrlStyle { URL_STYLE_TEXT_ONLY, URL_STYLE_EXTENDED, URL_STYLE_UNDERSCORED, };
@@ -83,6 +83,6 @@ namespace doctotext
     DllExport Language nameToLanguage(const std::string& name);
 
 	enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
-} // namespace doctotext
+} // namespace docwire
 
 #endif

@@ -34,14 +34,14 @@
 #include "csv_writer.h"
 #include "parser.h"
 
-namespace doctotext
+namespace docwire
 {
 
 namespace experimental
 {
 
 void
-CsvWriter::write_to(const doctotext::Info &info, std::ostream &stream)
+CsvWriter::write_to(const Info &info, std::ostream &stream)
 {
   if (!m_in_table && info.tag_name != StandardTag::TAG_TABLE)
     return;
@@ -79,4 +79,4 @@ CsvWriter::clone() const
 
 } // namespace experimental
 
-} // namespace doctotext
+} // namespace docwire

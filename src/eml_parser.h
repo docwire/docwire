@@ -40,7 +40,7 @@
 #include "parser.h"
 #include "parser_builder.h"
 
-namespace doctotext
+namespace docwire
 {
 
 struct FormattingStyle;
@@ -54,8 +54,8 @@ class EMLParser : public Parser
 		Implementation* impl;
 
 	public:
-		EMLParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
-		EMLParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+		EMLParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+		EMLParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
 		~EMLParser();
 		void parse() const override;
 		static std::vector<std::string> getExtensions() {return {"eml"};}
@@ -65,6 +65,6 @@ class EMLParser : public Parser
 		Metadata metaData();
 };
 
-} // namespace doctotext
+} // namespace docwire
 
 #endif

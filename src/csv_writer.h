@@ -39,7 +39,7 @@
 #include "writer.h"
 #include <vector>
 
-namespace doctotext
+namespace docwire
 {
   struct Info;
 
@@ -55,7 +55,7 @@ namespace experimental
  * @code
  * ODFOOXMLParser parser("test.docx");
  * CsvWriter writer;
- * parser.onNewNode([&writer](doctotext::Info &info) {
+ * parser.onNewNode([&writer](Info &info) {
  *      writer.write_to(info, std::cout); // convert callback to csv and writes to std::cout
  *      });
  * @endcode
@@ -68,7 +68,7 @@ public:
    * @param info data from callback
    * @param stream output stream
    */
-  void write_to(const doctotext::Info &info, std::ostream &stream) override;
+  void write_to(const Info &info, std::ostream &stream) override;
   /**
    * @brief creates a new instance of HtmlWriter
    */
@@ -82,6 +82,6 @@ private:
 
 } // namespace experimental
 
-} // namespace doctotext
+} // namespace docwire
 
 #endif //CSV_WRITER_H

@@ -41,13 +41,13 @@
 #include "writer.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 /**
  * @brief The MetaDataWriter class writes the meta data of the document as plain text to an output stream.
  * @code
  * MetaDataWriter metaDataWriter;
- * parser.onNewNode([&metaDataWriter](doctotext::Info &info){
+ * parser.onNewNode([&metaDataWriter](Info &info){
  *      metaDataWriter.write_to(info, std::cout);
  *      }).parse();
  * @endcode
@@ -60,12 +60,12 @@ public:
    * @param info data from callback
    * @param stream output stream
    */
-  void write_to(const doctotext::Info &info, std::ostream &stream) override;
+  void write_to(const Info &info, std::ostream &stream) override;
   /**
    * @brief creates a new instance of MetaDataWriter
    */
   virtual Writer* clone() const override;
 };
-} // namespace doctotext
+} // namespace docwire
 
 #endif //METADATAWRITER_H

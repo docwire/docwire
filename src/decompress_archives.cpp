@@ -41,7 +41,7 @@
 #include "log.h"
 #include "parser.h"
 
-namespace doctotext
+namespace docwire
 {
 
 DecompressArchives::DecompressArchives()
@@ -220,7 +220,7 @@ private:
 };
 
 void
-DecompressArchives::process(doctotext::Info &info) const
+DecompressArchives::process(Info &info) const
 {
 	if (info.tag_name != StandardTag::TAG_FILE)
 	{
@@ -281,4 +281,4 @@ DecompressArchives* DecompressArchives::clone() const
 	return new DecompressArchives(*this);
 }
 
-} // namespace doctotext
+} // namespace docwire

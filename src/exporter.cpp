@@ -38,7 +38,7 @@
 #include "meta_data_writer.h"
 #include "exporter.h"
 
-namespace doctotext
+namespace docwire
 {
 
 class Exporter::Implementation
@@ -78,8 +78,7 @@ public:
     _output = &out_stream;
   }
 
-  void
-  export_to(doctotext::Info &info) const
+  void export_to(Info &info) const
   {
     _writer->write_to(info, *_output);
   }
@@ -120,7 +119,7 @@ Exporter::is_valid() const
 }
 
 void
-Exporter::process(doctotext::Info &info) const
+Exporter::process(Info &info) const
 {
   impl->export_to(info);
 }
@@ -132,7 +131,7 @@ Exporter::set_out_stream(std::ostream &out_stream)
 }
 
 void
-Exporter::export_to(doctotext::Info &info) const
+Exporter::export_to(Info &info) const
 {
   impl->export_to(info);
 }
@@ -184,4 +183,4 @@ MetaDataExporter::MetaDataExporter(std::ostream &out_stream)
 : Exporter(std::make_unique<MetaDataWriter>(), out_stream)
 {}
 
-} // namespace doctotext
+} // namespace docwire

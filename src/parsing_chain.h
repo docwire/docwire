@@ -38,7 +38,7 @@
 #include <iostream>
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 
 class InputBase;
@@ -62,6 +62,6 @@ class ChainElement;
     std::vector<std::shared_ptr<ChainElement>> element_list;
   };
 
-} // namespace doctotext
+} // namespace docwire
 
 #endif //PARSING_CHAIN_H

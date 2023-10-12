@@ -59,7 +59,7 @@
 #include "podofo/podofo.h"
 #include <stack>
 
-namespace doctotext
+namespace docwire
 {
 
 static pthread_mutex_t load_document_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -8299,7 +8299,7 @@ PDFParser::Implementation::PredefinedSimpleEncodings PDFParser::Implementation::
 PDFParser::Implementation::PDFReader::CompressionCodes PDFParser::Implementation::PDFReader::m_compression_codes;
 PDFParser::Implementation::PDFReader::OperatorCodes PDFParser::Implementation::PDFReader::m_operator_codes;
 
-PDFParser::PDFParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+PDFParser::PDFParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
   : Parser(inParserManager)
 {
 	impl = NULL;
@@ -8321,7 +8321,7 @@ PDFParser::PDFParser(const std::string& file_name, const std::shared_ptr<doctote
 	}
 }
 
-PDFParser::PDFParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+PDFParser::PDFParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
   : Parser(inParserManager)
 {
 	impl = NULL;
@@ -8388,4 +8388,4 @@ PDFParser::parse() const
 	impl->parseText();
 }
 
-} // namespace doctotext
+} // namespace docwire

@@ -39,13 +39,12 @@
 #include <string>
 #include <vector>
 
-namespace doctotext
+namespace docwire
 {
 	class FormattingStyle;
 	class Metadata;
-}
 
-class DOCParser : public doctotext::Parser
+class DOCParser : public Parser
 {
 	private:
 		struct Implementation;
@@ -54,16 +53,18 @@ class DOCParser : public doctotext::Parser
 	public:
 
     void parse() const override;
-    Parser& addOnNewNodeCallback(doctotext::NewNodeCallback callback) override;
-		Parser& withParameters(const doctotext::ParserParameters &parameters) override;
+    Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
+		Parser& withParameters(const ParserParameters &parameters) override;
     static std::vector <std::string> getExtensions() {return {"doc", "dot"};}
 
-		DOCParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
-		DOCParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+		DOCParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+		DOCParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
 		~DOCParser();
 		bool isDOC();
-		std::string plainText(const doctotext::FormattingStyle& formatting) const;
-    doctotext::Metadata metaData() const;
+		std::string plainText(const FormattingStyle& formatting) const;
+		Metadata metaData() const;
 };
+
+} // namespace docwire
 
 #endif

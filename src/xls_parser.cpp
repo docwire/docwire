@@ -55,7 +55,7 @@
 
 using namespace wvWare;
 
-namespace doctotext
+namespace docwire
 {
 
 static pthread_mutex_t xls_converter_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -1066,4 +1066,4 @@ Metadata XLSParser::metaData()
 	}
 }
 
-} // namespace doctotext
+} // namespace docwire

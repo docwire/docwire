@@ -67,6 +67,9 @@
 #include "thread_safe_ole_stream_reader.h"
 #include "thread_safe_ole_storage.h"
 
+namespace docwire
+{
+
 using namespace wvWare;
 
 static pthread_mutex_t parser_factory_mutex_1 = PTHREAD_MUTEX_INITIALIZER;
@@ -612,10 +615,10 @@ struct DOCParser::Implementation
 	const char* m_buffer;
 	size_t m_buffer_size;
 	std::string m_file_name;
-  boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
+	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-DOCParser::DOCParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+DOCParser::DOCParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = NULL;
@@ -634,7 +637,7 @@ DOCParser::DOCParser(const std::string& file_name, const std::shared_ptr<doctote
 	}
 }
 
-DOCParser::DOCParser(const char *buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+DOCParser::DOCParser(const char *buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = NULL;
@@ -686,7 +689,7 @@ bool DOCParser::isDOC()
 	return true;
 }
 
-std::string DOCParser::plainText(const doctotext::FormattingStyle& formatting) const
+std::string DOCParser::plainText(const FormattingStyle& formatting) const
 {
 	CurrentState curr_state;
 	doctotext_log(debug) << "Opening " << impl->m_file_name << " as OLE file to parse all embedded objects in supported formats.";
@@ -785,14 +788,14 @@ std::string DOCParser::plainText(const doctotext::FormattingStyle& formatting) c
 	std::string s = ustring_to_string(text);
 	// 0x0b character (vertical tab) is used as no-breaking carraige return.
 	std::replace(s.begin(), s.end(), '\x0b', '\n');
-  doctotext::Info new_info(StandardTag::TAG_TEXT, s);
+	Info new_info(StandardTag::TAG_TEXT, s);
   impl->m_on_new_node_signal(new_info);
 	return s;
 }
 
-doctotext::Metadata DOCParser::metaData() const
+Metadata DOCParser::metaData() const
 {
-  doctotext::Metadata meta;
+	Metadata meta;
 	ThreadSafeOLEStorage* storage = NULL;
 	try
 	{
@@ -819,10 +822,9 @@ doctotext::Metadata DOCParser::metaData() const
 	}
 }
 
-doctotext::Parser&
-DOCParser::withParameters(const doctotext::ParserParameters &parameters)
+Parser& DOCParser::withParameters(const ParserParameters &parameters)
 {
-	doctotext::Parser::withParameters(parameters);
+	Parser::withParameters(parameters);
 	return *this;
 }
 
@@ -830,17 +832,18 @@ void
 DOCParser::parse() const
 {
 	doctotext_log(debug) << "Using DOC parser.";
-  doctotext::FormattingStyle formating;
+	FormattingStyle formating;
   plainText(formating);
 
   Metadata metadata = metaData();
-  doctotext::Info metadata_info(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
+	Info metadata_info(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
   impl->m_on_new_node_signal(metadata_info);
 }
 
-doctotext::Parser&
-DOCParser::addOnNewNodeCallback(doctotext::NewNodeCallback callback)
+Parser& DOCParser::addOnNewNodeCallback(NewNodeCallback callback)
 {
   impl->m_on_new_node_signal.connect(callback);
   return *this;
 }
+
+} // namespace docwire

@@ -38,15 +38,15 @@
 #include "parser_provider.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 
-class DllExport MailParserProvider : public doctotext::ParserProvider
+class DllExport MailParserProvider : public ParserProvider
 {
 public:
   MailParserProvider();
-  std::optional<doctotext::ParserBuilder*> findParserByExtension(const std::string &inExtension) const override;
-  std::optional<doctotext::ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override;
+  std::optional<ParserBuilder*> findParserByExtension(const std::string &inExtension) const override;
+  std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override;
   std::set<std::string> getAvailableExtensions() const override;
 
 private:
@@ -58,6 +58,6 @@ private:
 extern "C" DllExport MailParserProvider plugin_parser_provider;
 MailParserProvider plugin_parser_provider;
 
-} // namespace doctotext
+} // namespace docwire
 
 #endif //DOCTOTEXT_MAIL_PARSER_PROVIDER_H

@@ -41,7 +41,7 @@
 #include "writer.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 class DllExport PlainTextWriter : public Writer
 {
@@ -54,7 +54,7 @@ public:
    * @param info data from callback
    * @param stream output stream
    */
-  void write_to(const doctotext::Info &info, std::ostream &stream) override;
+  void write_to(const Info &info, std::ostream &stream) override;
   /**
    * @brief Creates a new instance of PlainTextWriter.
    */
@@ -67,6 +67,6 @@ private:
   struct DllExport ImplementationDeleter { void operator() (Implementation*); };
   std::unique_ptr<Implementation, ImplementationDeleter> impl;
 };
-} // namespace doctotext
+} // namespace docwire
 
 #endif //PLAIN_TEXT_WRITER_H

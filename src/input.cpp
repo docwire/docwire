@@ -34,7 +34,7 @@
 #include "input.h"
 #include "parser.h"
 
-using namespace doctotext;
+using namespace docwire;
 
 ParsingChain
 InputBase::operator|(ChainElement &chainElement) const

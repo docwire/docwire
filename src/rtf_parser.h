@@ -39,13 +39,11 @@
 #include <string>
 #include <vector>
 
-namespace doctotext
+namespace docwire
 {
 	class Metadata;
-}
-using namespace doctotext;
 
-class RTFParser : public doctotext::Parser
+class RTFParser : public Parser
 {
 	private:
 		struct Implementation;
@@ -54,16 +52,18 @@ class RTFParser : public doctotext::Parser
 	public:
 
     void parse() const override;
-    Parser& addOnNewNodeCallback(doctotext::NewNodeCallback callback) override;
-		Parser& withParameters(const doctotext::ParserParameters &parameters) override;
+		Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
+		Parser& withParameters(const ParserParameters &parameters) override;
     static std::vector <std::string> getExtensions() {return {"rtf"};}
 
-		RTFParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
-		RTFParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+		RTFParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+		RTFParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
 		~RTFParser();
 		bool isRTF() const;
 		std::string plainText() const;
 		Metadata metaData() const;
 };
+
+} // namespace docwire
 
 #endif

@@ -42,16 +42,17 @@
 #include "log.h"
 #include <string.h>
 
-using namespace doctotext;
+namespace docwire
+{
 
 struct TXTParser::Implementation
 {
 	std::string m_file_name;
 	DataStream* m_data_stream;
-  boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
+	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-TXTParser::TXTParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+TXTParser::TXTParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = NULL;
@@ -73,7 +74,7 @@ TXTParser::TXTParser(const std::string& file_name, const std::shared_ptr<doctote
 	}
 }
 
-TXTParser::TXTParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+TXTParser::TXTParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = NULL;
@@ -223,9 +224,9 @@ std::string TXTParser::plainText() const
 }
 
 Parser&
-TXTParser::withParameters(const doctotext::ParserParameters &parameters)
+TXTParser::withParameters(const ParserParameters &parameters)
 {
-	doctotext::Parser::withParameters(parameters);
+	Parser::withParameters(parameters);
 	return *this;
 }
 
@@ -239,7 +240,7 @@ TXTParser::parse() const
 }
 
 TXTParser::Parser&
-TXTParser::addOnNewNodeCallback(doctotext::NewNodeCallback callback)
+TXTParser::addOnNewNodeCallback(NewNodeCallback callback)
 {
   impl->m_on_new_node_signal.connect(callback);
   return *this;
@@ -295,3 +296,5 @@ std::vector <std::string> TXTParser::getExtensions()
 		"ws" // Microsoft Windows script
 	};
 }
+
+} // namespace docwire

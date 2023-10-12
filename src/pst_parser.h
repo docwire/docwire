@@ -45,7 +45,10 @@
 #include "parser_manager.h"
 #include "formatting_style.h"
 
-class PSTParser : public doctotext::Parser
+namespace docwire
+{
+
+class PSTParser : public Parser
 {
 private:
   struct Implementation;
@@ -54,14 +57,15 @@ private:
 public:
 
   void parse() const override;
-  Parser &withParameters(const doctotext::ParserParameters &parameters) override;
+  Parser &withParameters(const ParserParameters &parameters) override;
   static std::vector<std::string> getExtensions() {return {"pst", "ost"};}
 
-  PSTParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
-  PSTParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+  PSTParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+  PSTParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
   ~PSTParser();
   bool isPST() const;
 };
 
+} // namespace docwire
 
 #endif //PST_PARSER_HPP

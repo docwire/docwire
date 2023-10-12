@@ -36,7 +36,7 @@
 #include <unordered_map>
 #include <algorithm>
 
-namespace doctotext
+namespace docwire
 {
 
 static std::unordered_map<Language, std::string> lang_strings 
@@ -64,4 +64,4 @@ Language nameToLanguage(const std::string& name)
     return (found_it != lang_strings.cend()) ? found_it->first : default_lang;
 }
 
-} // namespace doctotext
+} // namespace docwire
