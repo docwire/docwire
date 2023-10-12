@@ -74,7 +74,7 @@ struct DllExport end_pair {};
 struct DllExport begin_array {};
 struct DllExport end_array {};
 
-#define doctotext_log_streamable_type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
+#define docwire_log_streamable_type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
 
 class DllExport log_record_stream
 {
@@ -133,7 +133,7 @@ public:
 	template<typename T> log_record_stream& operator<<(const T* pointer)
 	{
 		if (pointer)
-			*this << begin_complex() << doctotext_log_streamable_type_of(pointer) << std::make_pair("dereferenced", std::cref(*pointer)) << end_complex();
+			*this << begin_complex() << docwire_log_streamable_type_of(pointer) << std::make_pair("dereferenced", std::cref(*pointer)) << end_complex();
 		else
 			*this << nullptr;
 		return *this;
@@ -232,7 +232,7 @@ template<typename T> std::pair<std::string, const T&> streamable_var(const std::
 #define docwire_log_var(v) docwire_log_vars(v)
 
 #define docwire_log_streamable_obj(obj, ...) \
-	begin_complex() << doctotext_log_streamable_type_of(obj) << docwire_log_streamable_vars(__VA_ARGS__) << end_complex()
+	begin_complex() << docwire_log_streamable_type_of(obj) << docwire_log_streamable_vars(__VA_ARGS__) << end_complex()
 
 #define docwire_log_func() doctotext_log(debug) << "Entering function" << std::make_pair("funtion_name", doctotext_current_function)
 #define docwire_log_func_with_args(...) docwire_log_func() << docwire_log_streamable_vars(__VA_ARGS__)

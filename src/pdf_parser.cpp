@@ -637,7 +637,7 @@ std::ostream& operator<<(std::ostream& s, const PoDoFo::PdfObject& o);
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfVariant& v)
 {
-	s << begin_complex() << doctotext_log_streamable_type_of(v) << doctotext_log_streamable_var(v.GetDataTypeString());
+	s << begin_complex() << docwire_log_streamable_type_of(v) << doctotext_log_streamable_var(v.GetDataTypeString());
 	if (v.IsString())
 		s << doctotext_log_streamable_var(v.GetString());
 	else if (v.IsNumber())
@@ -652,7 +652,7 @@ log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfVariant& v)
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfObject& o)
 {
-	s << begin_complex() << doctotext_log_streamable_type_of(o) << doctotext_log_streamable_var(o.GetDataTypeString());
+	s << begin_complex() << docwire_log_streamable_type_of(o) << doctotext_log_streamable_var(o.GetDataTypeString());
 	if (o.IsString())
 		s << doctotext_log_streamable_var(o.GetString());
 	else if (o.IsNumber())
