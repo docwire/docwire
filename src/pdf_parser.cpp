@@ -6752,7 +6752,7 @@ struct PDFParser::Implementation
 				}
 				char32_t ch = u32_str[idx];
 				std::string ch_s = utf32_to_utf8(ch);
-				doctotext_log_vars(ch, ch_s);
+				docwire_log_vars(ch, ch_s);
 				PoDoFo::PdfTextState text_state;
 				text_state.FontSize = curFontSize;
 				return font.GetStringLength(ch_s, text_state);
@@ -6770,7 +6770,7 @@ struct PDFParser::Implementation
 				double x_scale = (m_current_state.m_font_size * scale) / 1000.0;
 				double char_space = m_current_state.m_char_space * scale;
 				double word_space = m_font->m_multibyte ? 0 : m_current_state.m_word_space * scale;
-				doctotext_log_vars(scale, x_scale, char_space, word_space);
+				docwire_log_vars(scale, x_scale, char_space, word_space);
 
 				bool add_charspace = false;
 				double str_width = 0.0, str_height = 0.0;
@@ -6787,7 +6787,7 @@ struct PDFParser::Implementation
 						doctotext_log(debug) << "Processing TJ char space" << doctotext_log_streamable_var(tj_array[i].m_value);
 						double distance = (-tj_array[i].m_value * x_scale);
 						m_current_state.m_line_matrix.m_offset_x += distance;
-						doctotext_log_vars(distance, space_size);
+						docwire_log_vars(distance, space_size);
 						if (distance >= space_size)
 						{
 							doctotext_log(debug) << "Adding space to output because distance >= space_size" << docwire_log_streamable_vars(distance, space_size);
@@ -6802,7 +6802,7 @@ struct PDFParser::Implementation
 						std::u32string u32_text = utf8_to_utf32(tj_array[i].m_utf_text);
 						for (const auto &c : u32_text)
 						{
-							doctotext_log_vars(c, first);
+							docwire_log_vars(c, first);
 							output += utf32_to_utf8(c);
 							if (add_charspace)
 								m_current_state.m_line_matrix.m_offset_x += char_space;
@@ -6819,24 +6819,24 @@ struct PDFParser::Implementation
 							//calculate bounding box
 							double tmp_y = m_current_state.m_rise + pCurFont->GetMetrics().GetDescent() * curFontSize;
 							double text_height = pCurFont->GetMetrics().GetLineSpacing() * curFontSize;
-							doctotext_log_vars(tmp_y, text_height);
+							docwire_log_vars(tmp_y, text_height);
 							double x0 = cid_matrix.transformX(0, tmp_y);
 							double y0 = cid_matrix.transformY(0, tmp_y);
 							double x1 = cid_matrix.transformX(advance, tmp_y + text_height);
 							double y1 = cid_matrix.transformY(advance, tmp_y + text_height);
-							doctotext_log_vars(x0, y0, x1, y1);
+							docwire_log_vars(x0, y0, x1, y1);
 							if (first)
 							{
 								x_pos = x0 < x1 ? x0 : x1;
 								y_pos = y0 < y1 ? y0 : y1;
-								doctotext_log_vars(x_pos, y_pos);
+								docwire_log_vars(x_pos, y_pos);
 								first = false;
 							}
 //							if (last)
 								str_width = x0 > x1 ? x0 - x_pos : x1 - x_pos;
 							if (abs(y1 - y0) > str_height)
 								str_height = abs(y1 - y0);
-							doctotext_log_vars(str_width, str_height);
+							docwire_log_vars(str_width, str_height);
 							if (y_pos > y1)
 								y_pos = y1;
 							if (y_pos > y0)
@@ -6987,12 +6987,12 @@ struct PDFParser::Implementation
 					double new_line_size = (*it).m_height * 0.75 < 4.0 ? 4.0 : (*it).m_height * 0.75;
 
           double horizontal_lines_separator_size = (*it).m_height;
-					doctotext_log_vars(new_line_size, horizontal_lines_separator_size, first);
+					docwire_log_vars(new_line_size, horizontal_lines_separator_size, first);
 					if (!first)
 					{
 						double dx = (*it).m_x - x_end;
 						double dy = y - ((*it).m_y + (*it).m_height / 2);
-						doctotext_log_vars(dx, dy);
+						docwire_log_vars(dx, dy);
 
 						if (dy >= new_line_size)
 						{
@@ -7784,7 +7784,7 @@ struct PDFParser::Implementation
 		std::vector<double> result;
 		for (int i = start; i < how_many; i++)
 		{
-			doctotext_log_vars(i, stack[i]);
+			docwire_log_vars(i, stack[i]);
 			result.insert(result.begin(), stack[i].GetReal());
 		}
 		return result;

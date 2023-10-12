@@ -228,8 +228,8 @@ template<typename T> std::pair<std::string, const T&> streamable_var(const std::
 #define docwire_log_streamable_vars_32(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_31(__VA_ARGS__)
 
 #define docwire_log_streamable_vars(...) doctotext_log_concatenate(docwire_log_streamable_vars_, doctotext_log_args_count(__VA_ARGS__))(__VA_ARGS__)
-#define doctotext_log_vars(...) doctotext_log(debug) << docwire_log_streamable_vars(__VA_ARGS__)
-#define doctotext_log_var(v) doctotext_log_vars(v)
+#define docwire_log_vars(...) doctotext_log(debug) << docwire_log_streamable_vars(__VA_ARGS__)
+#define doctotext_log_var(v) docwire_log_vars(v)
 
 #define docwire_log_streamable_obj(obj, ...) \
 	begin_complex() << doctotext_log_streamable_type_of(obj) << docwire_log_streamable_vars(__VA_ARGS__) << end_complex()
