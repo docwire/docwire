@@ -6763,7 +6763,7 @@ struct PDFParser::Implementation
 				docwire_log_func_with_args(tj_array, pCurFont, curFontSize);
 				if (!m_font)
 					return;
-				doctotext_log_var(m_current_state);
+				docwire_log_var(m_current_state);
 				TransformationMatrix tmp_matrix, cid_matrix;
 				cid_matrix = tmp_matrix = m_current_state.m_ctm.combinedWith(m_current_state.m_matrix);
 				double scale = m_current_state.m_scaling / 100.0;
@@ -6781,7 +6781,7 @@ struct PDFParser::Implementation
 
 				for (size_t i = 0; i < tj_array.size(); ++i)
 				{
-					doctotext_log_var(i);
+					docwire_log_var(i);
 					if (tj_array[i].m_is_number)
 					{
 						doctotext_log(debug) << "Processing TJ char space" << doctotext_log_streamable_var(tj_array[i].m_value);
@@ -6812,7 +6812,7 @@ struct PDFParser::Implementation
 
 							//get character size
 							double cid_width = charWidth(u32_text, *pCurFont, curFontSize, idx);
-							doctotext_log_var(cid_width);
+							docwire_log_var(cid_width);
 							++idx;
 							double advance = cid_width;
 
@@ -6844,7 +6844,7 @@ struct PDFParser::Implementation
 
 							const double SPACE_SIZE_COEFF = 0.1; //from pdfminer
 							space_size = SPACE_SIZE_COEFF * std::max(advance, text_height);
-							doctotext_log_var(space_size);
+							docwire_log_var(space_size);
 
 							m_current_state.m_line_matrix.m_offset_x += advance;
 							if (output.length() > 0 && output[output.length() - 1] == ' ')
@@ -6982,7 +6982,7 @@ struct PDFParser::Implementation
 				double x_end, y, x_begin;
 				while (it != m_text_elements.end())
 				{
-					doctotext_log_var(*it);
+					docwire_log_var(*it);
 					//some minimum values for new line and space. Calculated experimentally
 					double new_line_size = (*it).m_height * 0.75 < 4.0 ? 4.0 : (*it).m_height * 0.75;
 
@@ -7794,10 +7794,10 @@ struct PDFParser::Implementation
 	{
 		docwire_log_func();
 		int page_count = m_pdf_document.GetPages().GetCount();
-		doctotext_log_var(page_count);
+		docwire_log_var(page_count);
 		for (size_t page_num = 0; page_num < page_count; page_num++)
 		{
-			doctotext_log_var(page_num);
+			docwire_log_var(page_num);
 			auto response = m_owner->sendTag(StandardTag::TAG_PAGE);
 			if (response.skip)
 			{
@@ -7822,7 +7822,7 @@ struct PDFParser::Implementation
 				while (reader.TryReadNext(content))
 				{
 					doctotext_log(debug) << "PdfContentStreamReader::TryReadNext() succeeded";
-					doctotext_log_var(content);
+					docwire_log_var(content);
 					if (content.Type == PoDoFo::PdfContentType::Operator)
 					{
 						switch (content.Operator)
@@ -7919,7 +7919,7 @@ struct PDFParser::Implementation
 										}
 									}
 									PDFContent::TJArrayElement& new_element = tj_array[tj_array.size() - 1];
-									doctotext_log_var(new_element);
+									docwire_log_var(new_element);
 								}
 								if (pCurFont)
 								{
