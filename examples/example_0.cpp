@@ -9,10 +9,10 @@ int main(int argc, char* argv[])
 {
   if (argc > 1)
   {
-    doctotext::Input(argv[1]) |
-      doctotext::Importer() |
-      doctotext::PlainTextExporter() |
-      std::cout; // parse file and print to standard output
+    using namespace docwire;
+    Input(argv[1]) |
+      Importer() |
+      PlainTextExporter(std::cout); // parse file and print to standard output
   }
   return 0;
 }

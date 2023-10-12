@@ -1,5 +1,5 @@
 set(CMAKE_CXX_STANDARD 17)
-foreach(n RANGE 1 9)
+foreach(n RANGE 0 9)
     add_executable(example_${n} example_${n}.cpp)
     target_include_directories(example_${n} PUBLIC ../src)
     target_link_libraries(example_${n} PRIVATE docwire_core)
