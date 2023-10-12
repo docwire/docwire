@@ -637,30 +637,30 @@ std::ostream& operator<<(std::ostream& s, const PoDoFo::PdfObject& o);
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfVariant& v)
 {
-	s << begin_complex() << docwire_log_streamable_type_of(v) << doctotext_log_streamable_var(v.GetDataTypeString());
+	s << begin_complex() << docwire_log_streamable_type_of(v) << docwire_log_streamable_var(v.GetDataTypeString());
 	if (v.IsString())
-		s << doctotext_log_streamable_var(v.GetString());
+		s << docwire_log_streamable_var(v.GetString());
 	else if (v.IsNumber())
-		s << doctotext_log_streamable_var(v.GetNumber());
+		s << docwire_log_streamable_var(v.GetNumber());
 	else if (v.IsArray())
-		s << doctotext_log_streamable_var(v.GetArray());
+		s << docwire_log_streamable_var(v.GetArray());
 	else
-		s << doctotext_log_streamable_var(v.ToString());
+		s << docwire_log_streamable_var(v.ToString());
 	s << end_complex();
 	return s;
 }
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfObject& o)
 {
-	s << begin_complex() << docwire_log_streamable_type_of(o) << doctotext_log_streamable_var(o.GetDataTypeString());
+	s << begin_complex() << docwire_log_streamable_type_of(o) << docwire_log_streamable_var(o.GetDataTypeString());
 	if (o.IsString())
-		s << doctotext_log_streamable_var(o.GetString());
+		s << docwire_log_streamable_var(o.GetString());
 	else if (o.IsNumber())
-		s << doctotext_log_streamable_var(o.GetNumber());
+		s << docwire_log_streamable_var(o.GetNumber());
 	else if (o.IsArray())
-		s << doctotext_log_streamable_var(o.GetArray());
+		s << docwire_log_streamable_var(o.GetArray());
 	else
-		s << doctotext_log_streamable_var(o.ToString());
+		s << docwire_log_streamable_var(o.ToString());
 	s << end_complex();
 	return s;
 }
@@ -6784,7 +6784,7 @@ struct PDFParser::Implementation
 					docwire_log_var(i);
 					if (tj_array[i].m_is_number)
 					{
-						doctotext_log(debug) << "Processing TJ char space" << doctotext_log_streamable_var(tj_array[i].m_value);
+						doctotext_log(debug) << "Processing TJ char space" << docwire_log_streamable_var(tj_array[i].m_value);
 						double distance = (-tj_array[i].m_value * x_scale);
 						m_current_state.m_line_matrix.m_offset_x += distance;
 						docwire_log_vars(distance, space_size);
@@ -6797,7 +6797,7 @@ struct PDFParser::Implementation
 					}
 					else
 					{
-						doctotext_log(debug) << "Processing TJ text" << doctotext_log_streamable_var(tj_array[i].m_utf_text);
+						doctotext_log(debug) << "Processing TJ text" << docwire_log_streamable_var(tj_array[i].m_utf_text);
 						int idx = 0;
 						std::u32string u32_text = utf8_to_utf32(tj_array[i].m_utf_text);
 						for (const auto &c : u32_text)
@@ -7772,7 +7772,7 @@ struct PDFParser::Implementation
 		}
 		catch (std::exception& e)
 		{
-			doctotext_log(error) << "Exception in TryScanEncodedString()" << doctotext_log_streamable_var(e);
+			doctotext_log(error) << "Exception in TryScanEncodedString()" << docwire_log_streamable_var(e);
 			return "";
 		}
 		return decoded;
@@ -8144,7 +8144,7 @@ struct PDFParser::Implementation
 				ex.appendError("Error while parsing page number: " + uint_to_string(page_num));
 				throw;
 			}
-			doctotext_log(debug) << "Page processed" << doctotext_log_streamable_var(page_num);
+			doctotext_log(debug) << "Page processed" << docwire_log_streamable_var(page_num);
 		}
 	}
 
