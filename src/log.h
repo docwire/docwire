@@ -161,7 +161,7 @@ inline void current_function_helper()
 #endif
 }
 
-#define doctotext_current_source_location() \
+#define docwire_current_source_location() \
 	docwire::source_location{__FILE__, __LINE__, docwire_current_function}
 
 #define doctotext_log(severity) \
@@ -169,7 +169,7 @@ inline void current_function_helper()
 	{ \
 	} \
 	else \
-		(*docwire::create_log_record_stream(severity, doctotext_current_source_location()))
+		(*docwire::create_log_record_stream(severity, docwire_current_source_location()))
 
 inline std::string prepare_var_name(const std::string& var_name)
 {

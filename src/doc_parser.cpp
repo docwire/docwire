@@ -670,7 +670,7 @@ bool DOCParser::isDOC()
 		throw Exception("Error opening file " + impl->m_file_name);
 	if (f)
 		fclose(f);
-	cerr_log_redirection cerr_redirection(doctotext_current_source_location());
+	cerr_log_redirection cerr_redirection(docwire_current_source_location());
 	ThreadSafeOLEStorage* storage = NULL;
 	//storage will be deleted inside parser from wv2 library
 	if (impl->m_buffer)
@@ -757,7 +757,7 @@ std::string DOCParser::plainText(const FormattingStyle& formatting) const
 			delete storage;
 		throw;
 	}
-	cerr_log_redirection cerr_redirection(doctotext_current_source_location());
+	cerr_log_redirection cerr_redirection(docwire_current_source_location());
 	pthread_mutex_lock(&parser_factory_mutex_2);
 	SharedPtr<wvWare::Parser> parser = ParserFactory::createParser(storage);
 	pthread_mutex_unlock(&parser_factory_mutex_2);
