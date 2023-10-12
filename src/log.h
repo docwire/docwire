@@ -184,12 +184,12 @@ template<typename T> std::pair<std::string, const T&> streamable_var(const std::
 
 #define docwire_log_streamable_var(v) streamable_var(#v, v)
 
-#define doctotext_log_args_count_helper( \
+#define docwire_log_args_count_helper( \
 	a01, a02, a03, a04, a05, a06, a07, a08, a09, a10, a11, a12, a13, a14, a15, a16, \
 	a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, a32, \
 	count, ...) count
-#define doctotext_log_args_count(...) \
-	doctotext_log_args_count_helper(__VA_ARGS__, \
+#define docwire_log_args_count(...) \
+	docwire_log_args_count_helper(__VA_ARGS__, \
 		32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, \
 		16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 #define doctotext_log_concatenate(a, b) doctotext_log_concatenate_2(a, b)
@@ -227,7 +227,7 @@ template<typename T> std::pair<std::string, const T&> streamable_var(const std::
 #define docwire_log_streamable_vars_31(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_30(__VA_ARGS__)
 #define docwire_log_streamable_vars_32(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_31(__VA_ARGS__)
 
-#define docwire_log_streamable_vars(...) doctotext_log_concatenate(docwire_log_streamable_vars_, doctotext_log_args_count(__VA_ARGS__))(__VA_ARGS__)
+#define docwire_log_streamable_vars(...) doctotext_log_concatenate(docwire_log_streamable_vars_, docwire_log_args_count(__VA_ARGS__))(__VA_ARGS__)
 #define docwire_log_vars(...) doctotext_log(debug) << docwire_log_streamable_vars(__VA_ARGS__)
 #define docwire_log_var(v) docwire_log_vars(v)
 
