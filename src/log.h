@@ -157,7 +157,7 @@ inline void current_function_helper()
 #elif defined(__FUNCSIG__)
 #define docwire_current_function __FUNCSIG__
 #else
-#define doctotext_current_fuction __func__
+#define docwire_current_function __func__
 #endif
 }
 
