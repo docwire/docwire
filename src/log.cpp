@@ -282,7 +282,7 @@ log_record_stream& log_record_stream::operator<<(const end_pair&)
 
 log_record_stream& log_record_stream::operator<<(const std::exception& e)
 {
-	*this << doctotext_log_streamable_obj(e, e.what());
+	*this << docwire_log_streamable_obj(e, e.what());
 	return *this;
 }
 

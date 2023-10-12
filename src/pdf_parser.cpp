@@ -541,39 +541,39 @@ const static unsigned int ZapfDingbatsEncodingUtf8[256] =
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfString& str)
 {
 	if (str.GetState() == PoDoFo::PdfStringState::RawBuffer)
-		s << doctotext_log_streamable_obj(str, str.IsHex(), str.GetState(), str.GetRawData());
+		s << docwire_log_streamable_obj(str, str.IsHex(), str.GetState(), str.GetRawData());
 	else
-		s << doctotext_log_streamable_obj(str, str.IsHex(), str.GetState(), str.GetString());
+		s << docwire_log_streamable_obj(str, str.IsHex(), str.GetState(), str.GetString());
 	return s;
 }
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfName& n)
 {
-	s << doctotext_log_streamable_obj(n, n.GetString());
+	s << docwire_log_streamable_obj(n, n.GetString());
 	return s;
 }
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfError& e)
 {
-	s << doctotext_log_streamable_obj(e, e.what());
+	s << docwire_log_streamable_obj(e, e.what());
 	return s;
 }
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfEncoding& e)
 {
-	s << doctotext_log_streamable_obj(e, e.IsNull(), e.HasCIDMapping(), e.IsSimpleEncoding(), e.HasParsedLimits(), e.IsDynamicEncoding(), e.GetId(), /*GetLimits(),*/ e.HasValidToUnicodeMap());
+	s << docwire_log_streamable_obj(e, e.IsNull(), e.HasCIDMapping(), e.IsSimpleEncoding(), e.HasParsedLimits(), e.IsDynamicEncoding(), e.GetId(), /*GetLimits(),*/ e.HasValidToUnicodeMap());
 	return s;
 }
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfFont& f)
 {
-	s << doctotext_log_streamable_obj(f, f.GetType(), f.SupportsSubsetting(), f.IsStandard14Font(), f.IsCIDKeyed(), f.IsObjectLoaded(), f.IsSubsettingEnabled(), f.IsEmbeddingEnabled(), f.GetSubsetPrefix(), /*f.GetIdentifier(),*/ f.GetEncoding(), f.GetMetrics(), f.GetName()/*, f.GetUsedGIDs()*//*, f.GetDescendantFontObject()*/);
+	s << docwire_log_streamable_obj(f, f.GetType(), f.SupportsSubsetting(), f.IsStandard14Font(), f.IsCIDKeyed(), f.IsObjectLoaded(), f.IsSubsettingEnabled(), f.IsEmbeddingEnabled(), f.GetSubsetPrefix(), /*f.GetIdentifier(),*/ f.GetEncoding(), f.GetMetrics(), f.GetName()/*, f.GetUsedGIDs()*//*, f.GetDescendantFontObject()*/);
 	return s;
 }
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfFontMetrics& m)
 {
-	s << doctotext_log_streamable_obj(m, /*GetGlyphCount(),*/ m.HasUnicodeMapping(), m.GetLineSpacing(), m.GetUnderlineThickness(), m.GetUnderlinePosition(), m.GetStrikeThroughPosition(), m.GetStrikeThroughThickness(), m.GetFontFileType(), m.HasFontFileData(), m.GetFontNameSafe(), m.GetBaseFontNameSafe(), /*GetBaseFontName(), GetFontName(),*/ /*GetFontNameRaw(),*/ m.GetFontFamilyName(), m.GetFontStretch(), m.GetWeight(), /*GetWeightRaw(),*/ /*m.GetFlags(),*/ m.GetItalicAngle(), m.GetAscent(), m.GetDescent(), m.GetLeading(), /*GetLeadingRaw(),*/ m.GetCapHeight(), m.GetXHeight(), /*GetXHeightRaw(),*/ m.GetStemV(), m.GetStemH(), /*GetStemHRaw(),*/ m.GetAvgWidth(), /*GetAvgWidthRaw(),*/ m.GetMaxWidth(), /*GetMaxWidthRaw(),*/ m.GetDefaultWidth(), /*GetDefaultWidthRaw(),*/ /*m.GetStyle(),*/ m.IsStandard14FontMetrics(), /*GetMatrix(),*/ m.IsType1Kind(), m.IsTrueTypeKind(), m.IsPdfSymbolic(), /*IsPdfNonSymbolic(),*/ m.GetFilePath()/*, GetFaceIndex()*/);
+	s << docwire_log_streamable_obj(m, /*GetGlyphCount(),*/ m.HasUnicodeMapping(), m.GetLineSpacing(), m.GetUnderlineThickness(), m.GetUnderlinePosition(), m.GetStrikeThroughPosition(), m.GetStrikeThroughThickness(), m.GetFontFileType(), m.HasFontFileData(), m.GetFontNameSafe(), m.GetBaseFontNameSafe(), /*GetBaseFontName(), GetFontName(),*/ /*GetFontNameRaw(),*/ m.GetFontFamilyName(), m.GetFontStretch(), m.GetWeight(), /*GetWeightRaw(),*/ /*m.GetFlags(),*/ m.GetItalicAngle(), m.GetAscent(), m.GetDescent(), m.GetLeading(), /*GetLeadingRaw(),*/ m.GetCapHeight(), m.GetXHeight(), /*GetXHeightRaw(),*/ m.GetStemV(), m.GetStemH(), /*GetStemHRaw(),*/ m.GetAvgWidth(), /*GetAvgWidthRaw(),*/ m.GetMaxWidth(), /*GetMaxWidthRaw(),*/ m.GetDefaultWidth(), /*GetDefaultWidthRaw(),*/ /*m.GetStyle(),*/ m.IsStandard14FontMetrics(), /*GetMatrix(),*/ m.IsType1Kind(), m.IsTrueTypeKind(), m.IsPdfSymbolic(), /*IsPdfNonSymbolic(),*/ m.GetFilePath()/*, GetFaceIndex()*/);
 	return s;
 }
 
@@ -590,7 +590,7 @@ log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfFontType& t
 		case PoDoFo::PdfFontType::CIDTrueType: stringified_value = "CIDTrueType"; break;
 		default: stringified_value = "!incorrect!"; break;
 	}
-	s << doctotext_log_streamable_obj(t, stringified_value);
+	s << docwire_log_streamable_obj(t, stringified_value);
 	return s;
 }
 
@@ -608,7 +608,7 @@ log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfFontFileTyp
 		case PoDoFo::PdfFontFileType::OpenType: stringified_value = "OpenType"; break;
 		default: stringified_value = "!incorrect!"; break;
 	}
-	s << doctotext_log_streamable_obj(t, stringified_value);
+	s << docwire_log_streamable_obj(t, stringified_value);
 	return s;
 }
 
@@ -629,7 +629,7 @@ log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfFontStretch
 		case PoDoFo::PdfFontStretch::UltraExpanded: stringified_value = "UltraExpanded"; break;
 		default: stringified_value = "!incorrect!"; break;
 	}
-	s << doctotext_log_streamable_obj(st, stringified_value);
+	s << docwire_log_streamable_obj(st, stringified_value);
 	return s;
 }
 
@@ -676,7 +676,7 @@ log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfStringState
 		case PoDoFo::PdfStringState::Unicode: stringified_value = "Unicode"; break;
 		default: stringified_value = "!incorrect!"; break;
 	}
-	s << doctotext_log_streamable_obj(st, stringified_value);
+	s << docwire_log_streamable_obj(st, stringified_value);
 	return s;
 }
 
@@ -694,13 +694,13 @@ log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfContentType
 		case PoDoFo::PdfContentType::UnexpectedKeyword: stringified_value = "UnexpectedKeyword"; break;
 		default: stringified_value = "!incorrect!"; break;
 	}
-	s << doctotext_log_streamable_obj(t, stringified_value);
+	s << docwire_log_streamable_obj(t, stringified_value);
 	return s;
 }
 
 log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfContent& c)
 {
-	s << doctotext_log_streamable_obj(c, c.Type, c.Keyword, c.Stack);
+	s << docwire_log_streamable_obj(c, c.Type, c.Keyword, c.Stack);
 	return s;
 }
 
@@ -5856,7 +5856,7 @@ struct PDFParser::Implementation
 
 			void log_to_record_stream(log_record_stream& s) const
 			{
-				s << doctotext_log_streamable_obj(*this, m_font_name, m_font_family,
+				s << docwire_log_streamable_obj(*this, m_font_name, m_font_family,
 					//m_first_char)
 					//m_last_char
 					m_descent,
@@ -6427,7 +6427,7 @@ struct PDFParser::Implementation
 
 			void log_to_record_stream(log_record_stream& s) const
 			{
-				s << doctotext_log_streamable_obj(*this,
+				s << docwire_log_streamable_obj(*this,
 					//m_font_dictionary
 					m_font_encoding, m_predefined_simple_encoding, m_predefined_cmap,
 					//m_cmap, m_to_cid_cmap, m_simple_encoding_table
@@ -6446,11 +6446,11 @@ struct PDFParser::Implementation
 
 			void log_to_record_stream(log_record_stream& s) const
 			{
-				s << doctotext_log_streamable_obj(*this, m_is_number);
+				s << docwire_log_streamable_obj(*this, m_is_number);
 				if (m_is_number)
-					s << doctotext_log_streamable_obj(*this, m_is_number, m_value);
+					s << docwire_log_streamable_obj(*this, m_is_number, m_value);
 				else
-					s << doctotext_log_streamable_obj(*this, m_is_number, m_text, m_utf_text, m_pdf_string);
+					s << docwire_log_streamable_obj(*this, m_is_number, m_text, m_utf_text, m_pdf_string);
 			}
 		};
 
@@ -6540,7 +6540,7 @@ struct PDFParser::Implementation
 
 				void log_to_record_stream(log_record_stream& s) const
 				{
-					s << doctotext_log_streamable_obj(*this, /*m_ctm, m_matrix, m_line_matrix,*/ m_font_size, m_scaling, m_leading, m_rise, m_word_space, m_char_space);
+					s << docwire_log_streamable_obj(*this, /*m_ctm, m_matrix, m_line_matrix,*/ m_font_size, m_scaling, m_leading, m_rise, m_word_space, m_char_space);
 				}
 			};
 
@@ -6598,7 +6598,7 @@ struct PDFParser::Implementation
 
 				void log_to_record_stream(log_record_stream& s) const
 				{
-					s << doctotext_log_streamable_obj(*this, m_text, m_x, m_y, m_width, m_height, m_space_size);
+					s << docwire_log_streamable_obj(*this, m_text, m_x, m_y, m_width, m_height, m_space_size);
 				}
 			};
 
