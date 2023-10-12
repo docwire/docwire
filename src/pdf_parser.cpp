@@ -6552,7 +6552,7 @@ struct PDFParser::Implementation
 
 				TextElement(double x, double y, double w, double h, double space_size, const std::string& text)
 				{
-					doctotext_log_func_with_args(x, y, w, h, space_size, text);
+					docwire_log_func_with_args(x, y, w, h, space_size, text);
 					// warning TODO: We have position and size for each string. We can use those values to improve parser
 					m_x = correctSize(x);
 					m_y = correctSize(y);
@@ -6610,7 +6610,7 @@ struct PDFParser::Implementation
 
 			void reset()
 			{
-				doctotext_log_func();
+				docwire_log_func();
 				m_font = NULL;
 				m_text_states.clear();
 				m_current_state.reset();
@@ -6618,13 +6618,13 @@ struct PDFParser::Implementation
 
 			void pushState()
 			{
-				doctotext_log_func();
+				docwire_log_func();
 				m_text_states.push_back(m_current_state);
 			}
 
 			void popState()
 			{
-				doctotext_log_func();
+				docwire_log_func();
 				if (m_text_states.size() > 0)
 				{
 					m_current_state = m_text_states.back();
@@ -6634,32 +6634,32 @@ struct PDFParser::Implementation
 
 			void executeTm(const std::vector<double>& args)
 			{
-				doctotext_log_func_with_args(args);
+				docwire_log_func_with_args(args);
 				m_current_state.m_matrix = TransformationMatrix(args);
 				m_current_state.m_line_matrix = TransformationMatrix();
 			}
 
 			void executeTs(const std::vector<double>& args)
 			{
-				doctotext_log_func_with_args(args);
+				docwire_log_func_with_args(args);
 				m_current_state.m_rise = args[0];
 			}
 
 			void executeTc(const std::vector<double>& args)
 			{
-				doctotext_log_func_with_args(args);
+				docwire_log_func_with_args(args);
 				m_current_state.m_char_space = args[0];
 			}
 
 			void executeTw(const std::vector<double>& args)
 			{
-				doctotext_log_func_with_args(args);
+				docwire_log_func_with_args(args);
 				m_current_state.m_word_space = args[0];
 			}
 
 			void executeTd(const std::vector<double>& args)
 			{
-				doctotext_log_func_with_args(args);
+				docwire_log_func_with_args(args);
 				m_current_state.m_matrix.m_offset_x += args[0] * m_current_state.m_matrix.m_scale_x + args[1] * m_current_state.m_matrix.m_shear_y;
 				m_current_state.m_matrix.m_offset_y += args[0] * m_current_state.m_matrix.m_shear_x + args[1] * m_current_state.m_matrix.m_scale_y;
 				m_current_state.m_line_matrix = TransformationMatrix();
@@ -6667,46 +6667,46 @@ struct PDFParser::Implementation
 
 			void executeTD(const std::vector<double>& args)
 			{
-				doctotext_log_func_with_args(args);
+				docwire_log_func_with_args(args);
 				executeTd(args);
 				m_current_state.m_leading = args[1];
 			}
 
 			void executeTstar()
 			{
-				doctotext_log_func();
+				docwire_log_func();
 				executeTd(std::vector<double>{ 0, m_current_state.m_leading });
 			}
 
 			void executeTf(double font_size, Font& font)
 			{
-				doctotext_log_func_with_args(font_size, font);
+				docwire_log_func_with_args(font_size, font);
 				m_current_state.m_font_size = font_size;
 				m_font = &font;
 			}
 
 			void executeTL(const std::vector<double>& args)
 			{
-				doctotext_log_func_with_args(args);
+				docwire_log_func_with_args(args);
 				m_current_state.m_leading = -args[0];
 			}
 
 			void executeTZ(double scale)
 			{
-				doctotext_log_func_with_args(scale);
+				docwire_log_func_with_args(scale);
 				m_current_state.m_scaling = scale;
 			}
 
 			void executeQuote(const std::string& str, const PoDoFo::PdfFont* pCurFont, double curFontSize)
 			{
-				doctotext_log_func_with_args(str, pCurFont);
+				docwire_log_func_with_args(str, pCurFont);
 				executeTstar();
 				executeTj(str, pCurFont, curFontSize);
 			}
 
 			void executeDoubleQuote(const std::string& str, std::vector<double> args, const PoDoFo::PdfFont* pCurFont, double curFontSize)
 			{
-				doctotext_log_func_with_args(str, args, pCurFont);
+				docwire_log_func_with_args(str, args, pCurFont);
 				executeTw(args);
 				args[0] = args[1];
 				args.pop_back();
@@ -6716,27 +6716,27 @@ struct PDFParser::Implementation
 
 			void executeCm(const std::vector<double>& args)
 			{
-				doctotext_log_func_with_args(args);
+				docwire_log_func_with_args(args);
 				m_current_state.m_ctm = m_current_state.m_ctm.combinedWith(TransformationMatrix(args));
 			}
 
 			void executeBT()
 			{
-				doctotext_log_func();
+				docwire_log_func();
 				m_current_state.m_matrix = TransformationMatrix();
 				m_current_state.m_line_matrix = TransformationMatrix();
 			}
 
 			std::u32string utf8_to_utf32(const std::string& str)
 			{
-				doctotext_log_func_with_args(str);
+				docwire_log_func_with_args(str);
 				std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
 				return converter.from_bytes(str);
 			}
 
 			std::string utf32_to_utf8(char32_t ch)
 			{
-				doctotext_log_func();
+				docwire_log_func();
 				std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
 				return converter.to_bytes(ch);
 			}
@@ -6744,7 +6744,7 @@ struct PDFParser::Implementation
 			double
 			charWidth(const std::u32string& u32_str, const PoDoFo::PdfFont &font, double curFontSize, unsigned int idx)
 			{
-				doctotext_log_func_with_args(u32_str, font, curFontSize, idx);
+				docwire_log_func_with_args(u32_str, font, curFontSize, idx);
 				if (idx > u32_str.size())
 				{
 					doctotext_log(error) << "Internal error: idx > u32_str.size()" << doctotext_log_streamable_vars(idx, u32_str.size());
@@ -6760,7 +6760,7 @@ struct PDFParser::Implementation
 
 			void executeTJ(std::vector<TJArrayElement>& tj_array, const PoDoFo::PdfFont* pCurFont, double curFontSize)
 			{
-				doctotext_log_func_with_args(tj_array, pCurFont, curFontSize);
+				docwire_log_func_with_args(tj_array, pCurFont, curFontSize);
 				if (!m_font)
 					return;
 				doctotext_log_var(m_current_state);
@@ -6865,7 +6865,7 @@ struct PDFParser::Implementation
 
       void executeTJ(std::vector<TJArrayElement>& tj_array)
 			{
-				doctotext_log_func_with_args(tj_array);
+				docwire_log_func_with_args(tj_array);
 				if (!m_font)
 					return;
 				TransformationMatrix tmp_matrix, cid_matrix;
@@ -6958,7 +6958,7 @@ struct PDFParser::Implementation
 
 			void executeTj(const std::string& str, const PoDoFo::PdfFont* pCurFont, double curFontSize)
 			{
-				doctotext_log_func_with_args(str, pCurFont);
+				docwire_log_func_with_args(str, pCurFont);
 				std::vector<TJArrayElement> tj_array;
 				tj_array.push_back(TJArrayElement());
 				tj_array[0].m_is_number = false;
@@ -7760,7 +7760,7 @@ struct PDFParser::Implementation
 
 	static std::string encode_to_utf8(const PoDoFo::PdfString& pdf_string, const PoDoFo::PdfFont& font)
 	{
-		doctotext_log_func_with_args(pdf_string, font);
+		docwire_log_func_with_args(pdf_string, font);
 		std::string decoded;
 		std::vector<double> lengths;
 		std::vector<unsigned int> positions;
@@ -7780,7 +7780,7 @@ struct PDFParser::Implementation
 
 	std::vector<double> pdfvariant_stack_to_vector_of_double(PoDoFo::PdfVariantStack& stack, int start, int how_many)
 	{
-		doctotext_log_func_with_args(stack, start, how_many);
+		docwire_log_func_with_args(stack, start, how_many);
 		std::vector<double> result;
 		for (int i = start; i < how_many; i++)
 		{
@@ -7792,7 +7792,7 @@ struct PDFParser::Implementation
 
 	void parseText()
 	{
-		doctotext_log_func();
+		docwire_log_func();
 		int page_count = m_pdf_document.GetPages().GetCount();
 		doctotext_log_var(page_count);
 		for (size_t page_num = 0; page_num < page_count; page_num++)
@@ -8268,7 +8268,7 @@ struct PDFParser::Implementation
 
 	void loadDocument()
 	{
-		doctotext_log_func();
+		docwire_log_func();
     pthread_mutex_lock(&load_document_mutex);
 		resetDataStream();
 		try

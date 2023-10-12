@@ -234,8 +234,8 @@ template<typename T> std::pair<std::string, const T&> streamable_var(const std::
 #define doctotext_log_streamable_obj(obj, ...) \
 	begin_complex() << doctotext_log_streamable_type_of(obj) << doctotext_log_streamable_vars(__VA_ARGS__) << end_complex()
 
-#define doctotext_log_func() doctotext_log(debug) << "Entering function" << std::make_pair("funtion_name", doctotext_current_function)
-#define doctotext_log_func_with_args(...) doctotext_log_func() << doctotext_log_streamable_vars(__VA_ARGS__)
+#define docwire_log_func() doctotext_log(debug) << "Entering function" << std::make_pair("funtion_name", doctotext_current_function)
+#define docwire_log_func_with_args(...) docwire_log_func() << doctotext_log_streamable_vars(__VA_ARGS__)
 
 class DllExport cerr_log_redirection
 {
