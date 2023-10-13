@@ -25,7 +25,7 @@ message(STATUS "Build doctotext: ${DOCWIRE_VERSION}")
 
 set(CMAKE_CXX_STANDARD 17)
 
-option(DOCTOTEXT_DOC "Compile Documentation" ON)
+option(DOCWIRE_DOC "Compile Documentation" ON)
 option(DOCWIRE_TRACE "Enable Tracing" OFF)
 
 enable_testing ()
@@ -43,6 +43,6 @@ endforeach()
 add_subdirectory(examples)
 add_subdirectory(tests)
 
-if (DOCTOTEXT_DOC)
+if (DOCWIRE_DOC)
    add_subdirectory(doc)
 endif()
