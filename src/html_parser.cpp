@@ -91,7 +91,7 @@ Attributes operator+(const Attributes& lhs, const Attributes& rhs)
 namespace docwire
 {
 
-class DocToTextSaxParser : public ParserSax
+class SaxParser : public ParserSax
 {
 	private:
 		std::string& m_html_content;
@@ -595,7 +595,7 @@ class DocToTextSaxParser : public ParserSax
 		}
 
 	public:
-		DocToTextSaxParser(std::string& html_content, bool skip_decoding, const HTMLParser* parser)
+		SaxParser(std::string& html_content, bool skip_decoding, const HTMLParser* parser)
 			: m_in_title(false), m_in_style(false), m_converter(nullptr), m_decoded_buffer(nullptr),
 			m_in_script(false), m_decoded_buffer_size(0),
 			  m_turn_off_ul_enumeration(false), m_turn_off_ol_enumeration(false),
@@ -603,7 +603,7 @@ class DocToTextSaxParser : public ParserSax
 		{
 		}
 
-		~DocToTextSaxParser() override
+		~SaxParser() override
 		{
 			if (m_decoded_buffer)
 				delete[] m_decoded_buffer;
@@ -612,7 +612,7 @@ class DocToTextSaxParser : public ParserSax
 		}
 };
 
-class DocToTextMetaSaxParser : public ParserSax
+class MetaSaxParser : public ParserSax
 {
 	private:
 		Metadata& m_meta;
@@ -663,7 +663,7 @@ class DocToTextMetaSaxParser : public ParserSax
 		}
 
 	public:
-		DocToTextMetaSaxParser(Metadata& meta)
+		MetaSaxParser(Metadata& meta)
 			: m_meta(meta)
 		{
 		};
@@ -761,7 +761,7 @@ HTMLParser::parse() const
 	if (!impl->m_data_stream->read(&content[0], sizeof(unsigned char), size))
 		throw Exception("Error reading file " + impl->m_file_name);
 	impl->m_data_stream->close();
-	DocToTextSaxParser parser(content, impl->m_skip_decoding, this);
+	SaxParser parser(content, impl->m_skip_decoding, this);
 	parser.parse(content);
   Metadata metadata = metaData();
   sendTag(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
@@ -778,7 +778,7 @@ Metadata HTMLParser::metaData() const
 	if (!impl->m_data_stream->read(&content[0], sizeof(unsigned char), size))
 		throw Exception("Error reading file " + impl->m_file_name);
 	impl->m_data_stream->close();
-	DocToTextMetaSaxParser parser(meta);
+	MetaSaxParser parser(meta);
 	parser.parse(content);
 	return meta;
 }

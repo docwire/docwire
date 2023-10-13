@@ -49,7 +49,7 @@ class HTMLParser : public Parser
 	private:
 		struct Implementation;
 		Implementation* impl;
-		friend class DocToTextSaxParser;
+		friend class SaxParser;
 
 	public:
 
