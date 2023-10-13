@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef IMPORTER_H
-#define IMPORTER_H
+#ifndef DOCWIRE_IMPORTER_H
+#define DOCWIRE_IMPORTER_H
 
 #include <algorithm>
 #include <memory>
@@ -107,4 +107,4 @@ private:
 
 } // namespace docwire
 
-#endif //IMPORTER_H
+#endif //DOCWIRE_IMPORTER_H

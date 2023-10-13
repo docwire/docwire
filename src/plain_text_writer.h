@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef PLAIN_TEXT_WRITER_H
-#define PLAIN_TEXT_WRITER_H
+#ifndef DOCWIRE_PLAIN_TEXT_WRITER_H
+#define DOCWIRE_PLAIN_TEXT_WRITER_H
 
 #include <iostream>
 #include <fstream>
@@ -69,4 +69,4 @@ private:
 };
 } // namespace docwire
 
-#endif //PLAIN_TEXT_WRITER_H
+#endif //DOCWIRE_PLAIN_TEXT_WRITER_H

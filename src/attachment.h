@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_ATTACHMENT_H
-#define DOCTOTEXT_ATTACHMENT_H
+#ifndef DOCWIRE_ATTACHMENT_H
+#define DOCWIRE_ATTACHMENT_H
 
 #include <map>
 #include <string>

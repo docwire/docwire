@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef HTML_WRITER_HPP
-#define HTML_WRITER_HPP
+#ifndef DOCWIRE_HTML_WRITER_H
+#define DOCWIRE_HTML_WRITER_H
 
 #include <iostream>
 #include <fstream>
@@ -88,4 +88,4 @@ private:
 };
 } // namespace docwire
 
-#endif //HTML_WRITER_HPP
+#endif //DOCWIRE_HTML_WRITER_H

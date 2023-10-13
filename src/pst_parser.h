@@ -32,8 +32,8 @@
 /***************************************************************************************************************************************************/
 
 
-#ifndef PST_PARSER_HPP
-#define PST_PARSER_HPP
+#ifndef DOCWIRE_PST_PARSER_H
+#define DOCWIRE_PST_PARSER_H
 
 #include <iostream>
 #include <string>
@@ -68,4 +68,4 @@ public:
 
 } // namespace docwire
 
-#endif //PST_PARSER_HPP
+#endif //DOCWIRE_PST_PARSER_H

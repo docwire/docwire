@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_EXCEPTION_H
-#define DOCTOTEXT_EXCEPTION_H
+#ifndef DOCWIRE_EXCEPTION_H
+#define DOCWIRE_EXCEPTION_H
 
 #include <exception>
 #include <list>

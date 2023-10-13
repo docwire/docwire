@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef EXPORTER_H
-#define EXPORTER_H
+#ifndef DOCWIRE_EXPORTER_H
+#define DOCWIRE_EXPORTER_H
 
 #include <algorithm>
 #include <memory>
@@ -204,4 +204,4 @@ public:
 
 } // namespace docwire
 
-#endif //EXPORTER_H
+#endif //DOCWIRE_EXPORTER_H

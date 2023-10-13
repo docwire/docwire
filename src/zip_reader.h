@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_ZIP_READER_H
-#define DOCTOTEXT_ZIP_READER_H
+#ifndef DOCWIRE_ZIP_READER_H
+#define DOCWIRE_ZIP_READER_H
 
 #include <string>
 #include "defines.h"

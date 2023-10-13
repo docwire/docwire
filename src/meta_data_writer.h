@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef METADATAWRITER_H
-#define METADATAWRITER_H
+#ifndef DOCWIRE_METADATA_WRITER_H
+#define DOCWIRE_METADATA_WRITER_H
 
 #include <iostream>
 #include <fstream>
@@ -68,4 +68,4 @@ public:
 };
 } // namespace docwire
 
-#endif //METADATAWRITER_H
+#endif //DOCWIRE_METADATA_WRITER_H

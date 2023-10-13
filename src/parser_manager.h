@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef PARSER_MANAGER_HPP
-#define PARSER_MANAGER_HPP
+#ifndef DOCWIRE_PARSER_MANAGER_H
+#define DOCWIRE_PARSER_MANAGER_H
 
 #include <optional>
 #include <set>
@@ -87,4 +87,4 @@ private:
 };
 
 } // namespace docwire
-#endif //PARSER_MANAGER_HPP
+#endif //DOCWIRE_PARSER_MANAGER_H

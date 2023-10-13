@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_COMMON_XML_PARSER_H
-#define DOCTOTEXT_COMMON_XML_PARSER_H
+#ifndef DOCWIRE_COMMON_XML_PARSER_H
+#define DOCWIRE_COMMON_XML_PARSER_H
 
 #include "formatting_style.h"
 #include "parser.h"

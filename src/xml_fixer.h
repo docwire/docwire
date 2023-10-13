@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_XML_FIXER_H
-#define DOCTOTEXT_XML_FIXER_H
+#ifndef DOCWIRE_XML_FIXER_H
+#define DOCWIRE_XML_FIXER_H
 
 #include <string>
 

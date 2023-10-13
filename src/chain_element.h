@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_CHAIN_ELEMENT_H
-#define DOCTOTEXT_CHAIN_ELEMENT_H
+#ifndef DOCWIRE_CHAIN_ELEMENT_H
+#define DOCWIRE_CHAIN_ELEMENT_H
 
 #include "parser.h"
 
@@ -104,4 +104,4 @@ private:
 };
 
 }
-#endif //DOCTOTEXT_CHAIN_ELEMENT_H
+#endif //DOCWIRE_CHAIN_ELEMENT_H

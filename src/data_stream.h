@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_DATA_STREAM_H
-#define DOCTOTEXT_DATA_STREAM_H
+#ifndef DOCWIRE_DATA_STREAM_H
+#define DOCWIRE_DATA_STREAM_H
 
 #include <stdio.h>
 #include <string>
@@ -95,4 +95,4 @@ class DllExport BufferStream : public DataStream
 		DataStream* clone();
 };
 
-#endif	//DOCTOTEXT_DATA_STREAM_H
+#endif	//DOCWIRE_DATA_STREAM_H

@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_METADATA_H
-#define DOCTOTEXT_METADATA_H
+#ifndef DOCWIRE_METADATA_H
+#define DOCWIRE_METADATA_H
 
 #include <string>
 #include <map>

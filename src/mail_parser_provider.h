@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_MAIL_PARSER_PROVIDER_H
-#define DOCTOTEXT_MAIL_PARSER_PROVIDER_H
+#ifndef DOCWIRE_MAIL_PARSER_PROVIDER_H
+#define DOCWIRE_MAIL_PARSER_PROVIDER_H
 
 
 #include "parser_provider.h"
@@ -60,4 +60,4 @@ MailParserProvider plugin_parser_provider;
 
 } // namespace docwire
 
-#endif //DOCTOTEXT_MAIL_PARSER_PROVIDER_H
+#endif //DOCWIRE_MAIL_PARSER_PROVIDER_H

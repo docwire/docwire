@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_RTF_PARSER_H
-#define DOCTOTEXT_RTF_PARSER_H
+#ifndef DOCWIRE_RTF_PARSER_H
+#define DOCWIRE_RTF_PARSER_H
 
 #include "parser.h"
 #include "parser_builder.h"

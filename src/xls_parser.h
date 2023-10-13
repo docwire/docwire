@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_XLS_PARSER_H
-#define DOCTOTEXT_XLS_PARSER_H
+#ifndef DOCWIRE_XLS_PARSER_H
+#define DOCWIRE_XLS_PARSER_H
 
 #include "metadata.h"
 #include <string>

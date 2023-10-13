@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_XLSB_PARSER_H
-#define DOCTOTEXT_XLSB_PARSER_H
+#ifndef DOCWIRE_XLSB_PARSER_H
+#define DOCWIRE_XLSB_PARSER_H
 
 #include <string>
 #include <vector>

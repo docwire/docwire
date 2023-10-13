@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef TRANSFORMER_H
-#define TRANSFORMER_H
+#ifndef DOCWIRE_TRANSFORMER_FUNC_H
+#define DOCWIRE_TRANSFORMER_FUNC_H
 
 #include <algorithm>
 #include <memory>
@@ -95,4 +95,4 @@ private:
 
 } // namespace docwire
 
-#endif //TRANSFORMER_H
+#endif //DOCWIRE_TRANSFORMER_FUNC_H

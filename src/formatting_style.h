@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_FORMATTING_STYLE_H
-#define DOCTOTEXT_FORMATTING_STYLE_H
+#ifndef DOCWIRE_FORMATTING_STYLE_H
+#define DOCWIRE_FORMATTING_STYLE_H
 
 #include <string>
 #include "defines.h"

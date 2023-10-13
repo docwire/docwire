@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef OCR_PARSER_PROVIDER_H
-#define OCR_PARSER_PROVIDER_H
+#ifndef DOCWIRE_OCR_PARSER_PROVIDER_H
+#define DOCWIRE_OCR_PARSER_PROVIDER_H
 
 #include "parser_provider.h"
 #include "defines.h"
@@ -59,4 +59,4 @@ OcrParserProvider plugin_parser_provider;
 
 } // namespace docwire
 
-#endif //OCR_PARSER_PROVIDER_H
+#endif //DOCWIRE_OCR_PARSER_PROVIDER_H

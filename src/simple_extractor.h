@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef SIMPLE_EXTRACTOR_HPP
-#define SIMPLE_EXTRACTOR_HPP
+#ifndef DOCWIRE_SIMPLE_EXTRACTOR_H
+#define DOCWIRE_SIMPLE_EXTRACTOR_H
 
 #include <algorithm>
 #include <memory>
@@ -136,4 +136,4 @@ private:
 } // namespace docwire
 
 
-#endif //SIMPLE_EXTRACTOR_HPP
+#endif //DOCWIRE_SIMPLE_EXTRACTOR_H

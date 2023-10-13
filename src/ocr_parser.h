@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef OCR_PARSER_HPP
-#define OCR_PARSER_HPP
+#ifndef DOCWIRE_OCR_PARSER_H
+#define DOCWIRE_OCR_PARSER_H
 
 #include <string>
 #include <memory>
@@ -74,4 +74,4 @@ public:
 
 } // namespace docwire
 
-#endif // OCR_PARSER_HPP
+#endif // DOCWIRE_OCR_PARSER_H

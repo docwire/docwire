@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef WRITER_H
-#define WRITER_H
+#ifndef DOCWIRE_WRITER_H
+#define DOCWIRE_WRITER_H
 
 #include "defines.h"
 
@@ -74,4 +74,4 @@ public:
   virtual Writer* clone() const = 0;
 };
 } // namespace docwire
-#endif //WRITER_H
+#endif //DOCWIRE_WRITER_H

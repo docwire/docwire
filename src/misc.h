@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_MISC_H
-#define DOCTOTEXT_MISC_H
+#ifndef DOCWIRE_MISC_H
+#define DOCWIRE_MISC_H
 
 #include "formatting_style.h"
 #include <filesystem>

@@ -32,8 +32,8 @@
 /***************************************************************************************************************************************************/
 
 
-#ifndef PARSER_BUILDER_H
-#define PARSER_BUILDER_H
+#ifndef DOCWIRE_PARSER_BUILDER_H
+#define DOCWIRE_PARSER_BUILDER_H
 
 #include <vector>
 #include <memory>
@@ -88,4 +88,4 @@ public:
   virtual ~ParserBuilder() = default;
 };
 } // namespace docwire
-#endif //PARSER_BUILDER_H
+#endif //DOCWIRE_PARSER_BUILDER_H

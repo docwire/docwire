@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_TRACING_H
-#define DOCTOTEXT_TRACING_H
+#ifndef DOCWIRE_TRACING_H
+#define DOCWIRE_TRACING_H
 
 void doctotext_init_tracing(const char* filename);
 

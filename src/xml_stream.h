@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_XML_STREAM_H
-#define DOCTOTEXT_XML_STREAM_H
+#ifndef DOCWIRE_XML_STREAM_H
+#define DOCWIRE_XML_STREAM_H
 
 #include <string>
 

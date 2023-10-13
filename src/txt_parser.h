@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_TXT_PARSER_H
-#define DOCTOTEXT_TXT_PARSER_H
+#ifndef DOCWIRE_TXT_PARSER_H
+#define DOCWIRE_TXT_PARSER_H
 
 #include <string>
 

@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_DEFINES_H
-#define DOCTOTEXT_DEFINES_H
+#ifndef DOCWIRE_DEFINES_H
+#define DOCWIRE_DEFINES_H
 
 #ifdef MSVC_BUILD
 	#define DllExport  __declspec( dllexport )
@@ -40,4 +40,4 @@
 	#define DllExport
 #endif
 
-#endif //DOCTOTEXT_DEFINES_H
+#endif //DOCWIRE_DEFINES_H

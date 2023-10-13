@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef PARSERWRAPPER_H
-#define PARSERWRAPPER_H
+#ifndef DOCWIRE_PARSER_WRAPPER_H
+#define DOCWIRE_PARSER_WRAPPER_H
 
 #include <iostream>
 
@@ -177,4 +177,4 @@ private:
   ParserParameters m_parameters;
 };
 } // namespace docwire
-#endif //PARSERWRAPPER_H
+#endif //DOCWIRE_PARSER_WRAPPER_H

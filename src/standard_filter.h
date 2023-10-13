@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef STANDARD_FILTER_H
-#define STANDARD_FILTER_H
+#ifndef DOCWIRE_STANDARD_FILTER_H
+#define DOCWIRE_STANDARD_FILTER_H
 
 #include <algorithm>
 #include "parser.h"
@@ -85,4 +85,4 @@ public:
 };
 } // namespace docwire
 
-#endif //STANDARD_FILTER_H
+#endif //DOCWIRE_STANDARD_FILTER_H

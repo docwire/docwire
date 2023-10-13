@@ -32,8 +32,8 @@
 /***************************************************************************************************************************************************/
 
 
-#ifndef BASIC_PARSER_PROVIDER_HPP
-#define BASIC_PARSER_PROVIDER_HPP
+#ifndef DOCWIRE_BASIC_PARSER_PROVIDER_H
+#define DOCWIRE_BASIC_PARSER_PROVIDER_H
 
 #include "parser_provider.h"
 #include "defines.h"
@@ -60,4 +60,4 @@ BasicParserProvider plugin_parser_provider;
 
 } // namespace docwire
 
-#endif //BASIC_PARSER_PROVIDER_HPP
+#endif //DOCWIRE_BASIC_PARSER_PROVIDER_H

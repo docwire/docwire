@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef PARSER_PARAMETERS_HPP
-#define PARSER_PARAMETERS_HPP
+#ifndef DOCWIRE_PARSER_PARAMETERS_H
+#define DOCWIRE_PARSER_PARAMETERS_H
 
 #include <iostream>
 #include <optional>
@@ -117,4 +117,4 @@ private:
 };
 } // namespace docwire
 
-#endif //PARSER_PARAMETERS_HPP
+#endif //DOCWIRE_PARSER_PARAMETERS_H

@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_IWORK_PARSER_H
-#define DOCTOTEXT_IWORK_PARSER_H
+#ifndef DOCWIRE_IWORK_PARSER_H
+#define DOCWIRE_IWORK_PARSER_H
 
 #include <string>
 #include <vector>

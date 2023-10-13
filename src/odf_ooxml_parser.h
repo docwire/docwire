@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_ODFOOXML_PARSER_H
-#define DOCTOTEXT_ODFOOXML_PARSER_H
+#ifndef DOCWIRE_ODFOOXML_PARSER_H
+#define DOCWIRE_ODFOOXML_PARSER_H
 
 #include "common_xml_document_parser.h"
 #include "parser.h"

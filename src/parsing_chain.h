@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef PARSING_CHAIN_H
-#define PARSING_CHAIN_H
+#ifndef DOCWIRE_PARSING_CHAIN_H
+#define DOCWIRE_PARSING_CHAIN_H
 
 #include <memory>
 #include <iostream>
@@ -64,4 +64,4 @@ class ChainElement;
 
 } // namespace docwire
 
-#endif //PARSING_CHAIN_H
+#endif //DOCWIRE_PARSING_CHAIN_H

@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DECOMPRESS_ARCHIVES_H
-#define DECOMPRESS_ARCHIVES_H
+#ifndef DOCWIRE_DECOMPRESS_ARCHIVES_H
+#define DOCWIRE_DECOMPRESS_ARCHIVES_H
 
 #include "chain_element.h"
 
@@ -67,4 +67,4 @@ public:
 
 } // namespace docwire
 
-#endif //DECOMPRESS_ARCHIVES_H
+#endif //DOCWIRE_DECOMPRESS_ARCHIVES_H

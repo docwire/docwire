@@ -32,8 +32,8 @@
 /***************************************************************************************************************************************************/
 
 
-#ifndef PARSER_PROVIDER_HPP
-#define PARSER_PROVIDER_HPP
+#ifndef DOCWIRE_PARSER_PROVIDER_H
+#define DOCWIRE_PARSER_PROVIDER_H
 
 #include <optional>
 
@@ -73,4 +73,4 @@ public:
 
 } // namespace docwire
 
-#endif //PARSER_PROVIDER_HPP
+#endif //DOCWIRE_PARSER_PROVIDER_H

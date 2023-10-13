@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_THREAD_SAFE_OLE_STREAM_READER_H
-#define DOCTOTEXT_THREAD_SAFE_OLE_STREAM_READER_H
+#ifndef DOCWIRE_THREAD_SAFE_OLE_STREAM_READER_H
+#define DOCWIRE_THREAD_SAFE_OLE_STREAM_READER_H
 
 #include <cstdint>
 #include <cstdio>
@@ -81,4 +81,4 @@ class DllExport ThreadSafeOLEStreamReader : public wvWare::AbstractOLEStreamRead
 		bool read(U8 *buffer, size_t length) override;
 };
 
-#endif // DOCTOTEXT_THREAD_SAFE_OLE_STREAM_READER_H
+#endif // DOCWIRE_THREAD_SAFE_OLE_STREAM_READER_H

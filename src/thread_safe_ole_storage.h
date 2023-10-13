@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_THREAD_SAFE_OLE_STORAGE_H
-#define DOCTOTEXT_THREAD_SAFE_OLE_STORAGE_H
+#ifndef DOCWIRE_THREAD_SAFE_OLE_STORAGE_H
+#define DOCWIRE_THREAD_SAFE_OLE_STORAGE_H
 
 #include <string>
 #include <vector>
@@ -65,4 +65,4 @@ class DllExport ThreadSafeOLEStorage : public AbstractOLEStorage
 		void streamDestroyed(OLEStream* stream) override;
 };
 
-#endif // DOCTOTEXT_THREAD_SAFE_OLE_STORAGE_H
+#endif // DOCWIRE_THREAD_SAFE_OLE_STORAGE_H

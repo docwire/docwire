@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_INPUT_H
-#define DOCTOTEXT_INPUT_H
+#ifndef DOCWIRE_INPUT_H
+#define DOCWIRE_INPUT_H
 
 #include <iostream>
 #include "chain_element.h"
@@ -103,4 +103,4 @@ struct Input : InputV<T>
 template<class T> Input(T) -> Input<T>;
 
 }
-#endif //DOCTOTEXT_INPUT_H
+#endif //DOCWIRE_INPUT_H

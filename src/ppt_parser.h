@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_PPT_PARSER_H
-#define DOCTOTEXT_PPT_PARSER_H
+#ifndef DOCWIRE_PPT_PARSER_H
+#define DOCWIRE_PPT_PARSER_H
 
 #include <string>
 #include <vector>

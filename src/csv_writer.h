@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef CSV_WRITER_H
-#define CSV_WRITER_H
+#ifndef DOCWIRE_CSV_WRITER_H
+#define DOCWIRE_CSV_WRITER_H
 
 #include "defines.h"
 #include <iostream>
@@ -84,4 +84,4 @@ private:
 
 } // namespace docwire
 
-#endif //CSV_WRITER_H
+#endif //DOCWIRE_CSV_WRITER_H

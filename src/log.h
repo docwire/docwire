@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_LOG_H
-#define DOCTOTEXT_LOG_H
+#ifndef DOCWIRE_LOG_H
+#define DOCWIRE_LOG_H
 
 #include "defines.h"
 #include <filesystem>

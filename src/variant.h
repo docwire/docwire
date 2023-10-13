@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_VARIANT_H
-#define DOCTOTEXT_VARIANT_H
+#ifndef DOCWIRE_VARIANT_H
+#define DOCWIRE_VARIANT_H
 
 #include <string>
 #include <time.h>
