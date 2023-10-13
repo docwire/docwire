@@ -1,7 +1,7 @@
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INSTALL_RPATH .)
 
-set(DOCTOTEXT_SOURCES
+add_library(docwire_core SHARED
         attachment.cpp
         exception.cpp
         decompress_archives.cpp
@@ -33,11 +33,6 @@ set(DOCTOTEXT_SOURCES
 
 if(MSVC)
     add_definitions(-DMSVC_BUILD)
-endif()
-
-add_library(docwire_core SHARED ${DOCTOTEXT_SOURCES})
-
-if(MSVC)
     find_path(wv2_inc_dir wv2/parser.h REQUIRED)
     set(wv2_prefix "${wv2_inc_dir}/..")
     find_library(wvWare wv2 HINTS "${wv2_prefix}/lib/static" REQUIRED)
