@@ -20,8 +20,8 @@ endfunction()
 
 extract_version()
 
-project(doctotext VERSION ${SIMPLE_DOCWIRE_VERSION} LANGUAGES CXX C)
-message(STATUS "Build doctotext: ${DOCWIRE_VERSION}")
+project(docwire VERSION ${SIMPLE_DOCWIRE_VERSION} LANGUAGES CXX C)
+message(STATUS "Build docwire: ${DOCWIRE_VERSION}")
 
 set(CMAKE_CXX_STANDARD 17)
 
