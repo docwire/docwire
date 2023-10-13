@@ -247,7 +247,7 @@ endif()
 add_executable(text_extractor text_extractor.cpp)
 target_link_libraries(text_extractor PRIVATE docwire_core)
 
-if (DOCTOTEXT_TRACE)
+if (DOCWIRE_TRACE)
    target_sources(docwire_core PRIVATE tracing)
    add_compile_definitions(TRACE)
    add_compile_options($<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-finstrument-functions>)

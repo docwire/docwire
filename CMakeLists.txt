@@ -26,7 +26,7 @@ message(STATUS "Build doctotext: ${DOCTOTEXT_VERSION}")
 set(CMAKE_CXX_STANDARD 17)
 
 option(DOCTOTEXT_DOC "Compile Documentation" ON)
-option(DOCTOTEXT_TRACE "Enable Tracing" OFF)
+option(DOCWIRE_TRACE "Enable Tracing" OFF)
 
 enable_testing ()
 
