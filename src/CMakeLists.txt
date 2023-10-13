@@ -35,11 +35,7 @@ if(MSVC)
     add_definitions(-DMSVC_BUILD)
 endif()
 
-if (DOCTOTEXT_SHARED)
-   add_library(docwire_core SHARED ${DOCTOTEXT_SOURCES})
-else()
-   add_library(docwire_core STATIC ${DOCTOTEXT_SOURCES})
-endif()
+add_library(docwire_core SHARED ${DOCTOTEXT_SOURCES})
 
 if(MSVC)
     find_path(wv2_inc_dir wv2/parser.h REQUIRED)

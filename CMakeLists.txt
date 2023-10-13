@@ -25,7 +25,6 @@ message(STATUS "Build doctotext: ${DOCTOTEXT_VERSION}")
 
 set(CMAKE_CXX_STANDARD 17)
 
-option(DOCTOTEXT_SHARED "Build doctotext as shared library" ON)
 option(DOCTOTEXT_DOC "Compile Documentation" ON)
 option(DOCTOTEXT_TRACE "Enable Tracing" OFF)
 
