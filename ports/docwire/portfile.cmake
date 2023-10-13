@@ -3,7 +3,7 @@ if(DEFINED ENV{SOURCE_PATH})
 else()
 	vcpkg_from_github(
 		OUT_SOURCE_PATH SOURCE_PATH
-		REPO docwire/doctotext
+		REPO docwire/docwire
 		REF dd5f2177deebe9a66fc13692383ab979dffe6988
 		SHA512 58c23a6ac69ab253bc6f485558ea5135acf0a13853df264fae5d80dccfbe4175e63948c3d2440726da61f1b093de388aa34f976a11076e49ac54935c02d88d89
 		HEAD_REF master
