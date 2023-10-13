@@ -302,10 +302,10 @@ install(FILES ${PUBLIC_HEADERS} DESTINATION include/docwire)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR APPLE)
 	if(APPLE)
 		file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.sh "BASEDIR=$(dirname \"$0\")
-			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/doctotext_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
+			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
 	else()
     file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.sh "BASEDIR=$(dirname \"$0\")
-    LD_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/doctotext_system_libraries:$LD_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
+    LD_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$LD_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
 	endif()
     execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/text_extractor.sh)
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.sh DESTINATION bin)
@@ -313,7 +313,7 @@ elseif(MSVC)
 	file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.bat
 		"@echo off
 		set BASEDIR=%~dp0
-		set PATH=%BASEDIR%\\..\\bin;%BASEDIR%\\..\\bin\\doctotext_system_libraries;%PATH%
+		set PATH=%BASEDIR%\\..\\bin;%BASEDIR%\\..\\bin\\docwire_system_libraries;%PATH%
 		\"%BASEDIR%\\text_extractor.exe\" %*")
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.bat DESTINATION bin)
 endif()
@@ -327,7 +327,7 @@ endif()
 include(InstallRequiredSystemLibraries)
 
 if (WIN32)
-	install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin/doctotext_system_libraries)
+	install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin/docwire_system_libraries)
 else()
-	install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION lib/doctotext_system_libraries)
+	install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION lib/docwire_system_libraries)
 endif()
