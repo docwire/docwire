@@ -36,16 +36,21 @@
 
 #include <string>
 
-class DocToTextXmlFixer
+namespace docwire
+{
+
+class XmlFixer
 {
 	private:
 		struct Implementation;
 		Implementation* Impl;
 
 	public:
-		DocToTextXmlFixer();
-		~DocToTextXmlFixer();
+		XmlFixer();
+		~XmlFixer();
 		std::string fix(const std::string& xml) const;
 };
+
+} // namespace docwire
 
 #endif

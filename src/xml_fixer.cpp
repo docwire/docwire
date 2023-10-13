@@ -39,6 +39,9 @@
 #include <sstream>
 #include <stack>
 
+namespace docwire
+{
+
 struct XmlName
 {
 	std::string nspace;
@@ -131,7 +134,7 @@ struct Tag
 	}
 };
 
-struct DocToTextXmlFixer::Implementation
+struct XmlFixer::Implementation
 {
 	std::istringstream xml;
 
@@ -367,17 +370,17 @@ struct DocToTextXmlFixer::Implementation
 	}
 };
 
-DocToTextXmlFixer::DocToTextXmlFixer()
+XmlFixer::XmlFixer()
 {
 	Impl = new Implementation();
 }
 
-DocToTextXmlFixer::~DocToTextXmlFixer()
+XmlFixer::~XmlFixer()
 {
 	delete Impl;
 }
 
-std::string DocToTextXmlFixer::fix(const std::string& xml) const
+std::string XmlFixer::fix(const std::string& xml) const
 {
 	Impl->xml.str(xml);
 	std::stack<XmlName> open_tags;
@@ -448,3 +451,5 @@ std::string DocToTextXmlFixer::fix(const std::string& xml) const
 	}
 	return fixed_xml;
 }
+
+} // namespace docwire

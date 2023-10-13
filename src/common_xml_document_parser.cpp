@@ -657,7 +657,7 @@ void CommonXMLDocumentParser::extractText(const std::string& xml_contents, XmlPa
 	std::string xml;
 	if (mode == FIX_XML)
 	{
-		DocToTextXmlFixer xml_fixer;
+		XmlFixer xml_fixer;
 		xml = xml_fixer.fix(xml_contents);
 	}
 	else

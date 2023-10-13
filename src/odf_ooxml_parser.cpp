@@ -291,7 +291,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 		std::string xml;
 		if (mode == FIX_XML)
 		{
-			DocToTextXmlFixer xml_fixer;
+			XmlFixer xml_fixer;
 			xml = xml_fixer.fix(content);
 		}
 		else
@@ -337,7 +337,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 		std::string xml;
 		if (mode == FIX_XML)
 		{
-			DocToTextXmlFixer xml_fixer;
+			XmlFixer xml_fixer;
 			xml = xml_fixer.fix(content);
 		}
 		else
@@ -576,7 +576,7 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 			std::string xml;
 			if (mode == FIX_XML)
 			{
-				DocToTextXmlFixer xml_fixer;
+				XmlFixer xml_fixer;
 				xml = xml_fixer.fix(content);
 			}
 			else if (mode == PARSE_XML)
