@@ -345,7 +345,7 @@ static std::string format_comment(const std::string& author, const std::string& 
 	return comment;
 }
 
-class DocToTextTextHandler : public TextHandler
+class TextHandler : public wvWare::TextHandler
 {
 	private:
 		const wvWare::Parser* m_parser;
@@ -357,7 +357,7 @@ class DocToTextTextHandler : public TextHandler
 		U32 m_prev_par_fc;
 
 	public:
-		DocToTextTextHandler(const wvWare::Parser* parser, UString* text, CurrentState* curr_state,
+		TextHandler(const wvWare::Parser* parser, UString* text, CurrentState* curr_state,
 				const FormattingStyle& formatting)
 			: m_parser(parser), m_curr_state(curr_state), m_comments_parsed(false), m_prev_par_fc(0)
 		{
@@ -540,14 +540,14 @@ class DocToTextTextHandler : public TextHandler
 		}
 };
 
-class DocToTextTableHandler : public TableHandler
+class TableHandler : public wvWare::TableHandler
 {
 	private:
 		UString* Text;
 		CurrentTable* m_curr_table;
 
 	public:
-		DocToTextTableHandler(UString* text, CurrentTable* curr_table)
+		TableHandler(UString* text, CurrentTable* curr_table)
 		{
 			Text = text;
 			m_curr_table = curr_table;
@@ -575,13 +575,13 @@ class DocToTextTableHandler : public TableHandler
 		}
 };
 
-class DocToTextSubDocumentHandler : public SubDocumentHandler
+class SubDocumentHandler : public wvWare::SubDocumentHandler
 {
 	private:
 		CurrentHeaderFooter* m_curr_header_footer;
 	
 	public:
-		DocToTextSubDocumentHandler(CurrentHeaderFooter* curr_header_footer)
+		SubDocumentHandler(CurrentHeaderFooter* curr_header_footer)
 			: m_curr_header_footer(curr_header_footer)
 		{
 		}
@@ -769,11 +769,11 @@ std::string DOCParser::plainText(const FormattingStyle& formatting) const
 		throw Exception("Creating parser failed");
 	}
 	UString text;
-	DocToTextTextHandler text_handler(parser, &text, &curr_state, formatting);
+	TextHandler text_handler(parser, &text, &curr_state, formatting);
 	parser->setTextHandler(&text_handler);
-	DocToTextTableHandler table_handler(&text, &curr_state.table);
+	TableHandler table_handler(&text, &curr_state.table);
 	parser->setTableHandler(&table_handler);
-	DocToTextSubDocumentHandler sub_document_handler(&curr_state.header_footer);
+	SubDocumentHandler sub_document_handler(&curr_state.header_footer);
 	parser->setSubDocumentHandler(&sub_document_handler);
 	cerr_redirection.redirect();
 	bool res = parser->parse();
