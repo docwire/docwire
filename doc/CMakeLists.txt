@@ -15,7 +15,7 @@ set(DOXYGEN_GENERATE_MAN NO)
 set(DOXYGEN_GENERATE_HTML YES)
 
 set(DOXYGEN_PROJECT_NAME "DocWire SDK")
-set(DOXYGEN_PROJECT_NUMBER ${DOCTOTEXT_VERSION})
+set(DOXYGEN_PROJECT_NUMBER ${DOCWIRE_VERSION})
 set(DOXYGEN_PROJECT_BRIEF "A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html. Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing. To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications. It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition. This document parser is able to extract metadata along with annotations and supports a list of formats that include: DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT), PDF, EML, HTML, Outlook (PST, OST), Image (JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP) and DICOM (DCM)")
 set(DOXYGEN_STRIP_FROM_PATH ../src/)
 set(DOXYGEN_GENERATE_LATEX NO) # Added for consistency. It is set to NO by default by the CMake module.
