@@ -86,9 +86,9 @@ static void readme()
   // warning TODO: Generate readme string literal automatically.
   std::cout <<
        "***************************************************************************************************************************************************\n"
-       "*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              *\n"
+       "*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            *\n"
        "*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  *\n"
-       "*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        *\n"
+       "*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          *\n"
        "*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   *\n"
        "*                                                                                                                                                 *\n"
        "*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           *\n"
@@ -99,7 +99,7 @@ static void readme()
        "*  http://silvercoders.com                                                                                                                        *\n"
        "*                                                                                                                                                 *\n"
        "*  Project homepage:                                                                                                                              *\n"
-       "*  http://silvercoders.com/en/products/doctotext                                                                                                  *\n"
+       "*  https://github.com/docwire/docwire                                                                                                             *\n"
        "*  https://www.docwire.io/                                                                                                                        *\n"
        "*                                                                                                                                                 *\n"
        "*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                *\n"
