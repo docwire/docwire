@@ -250,7 +250,7 @@
  * \snippet example_8.cpp example_cpp
  *
  * \section logging Logs mechanism
- * Doctotext parsers generate many logs with current processing status, warnings and errors. By default all logs are sent
+ * DocWire parsers generate many logs with current processing status, warnings and errors. By default all logs are sent
  * to standard error stream, but there is an option to change it or also turn off logs mechanism. To redirect logs stream
  * or turn on/off logs we can use docwire::ParserParameters (\ref parser_parameters) as below:
  * \code

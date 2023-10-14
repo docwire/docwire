@@ -1,10 +1,10 @@
-/*! \mainpage DocWire DocToText
+/*! \mainpage DocWire SDK
  *
  *	\section intro Introduction
  *
- *	DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.
+ *	DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.
  *	Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.
- *	To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.
+ *	To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.
  *	It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.
  *
  *	This document parser is able to extract metadata along with annotations and supports a list of formats that include:
@@ -16,7 +16,7 @@
  *	\snippet example_0.cpp example_cpp
  *
  *	\section Plugins
- *	Doctotext imports all parsers from plugins directory.
+ *	DocWire SDK imports all parsers from plugins directory.
  *	If you would like to add custom plugin have a look to chapter \ref plugins.
  *
  */
