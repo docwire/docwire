@@ -42,7 +42,7 @@
 namespace docwire
 {
 	/**
-		This class is implementation of std::exception, which is used by DocToText.
+		This class is implementation of std::exception, which is used by DocWire.
 		In this implementation, errors can be formed in "stack".
 
 		In order to create exception just call:
@@ -89,7 +89,7 @@ namespace docwire
 
 			Exception& operator = (const Exception& ex) noexcept;
 
-			const char* what(){ return "doctotext_exception"; }
+			const char* what(){ return "docwire_exception"; }
 
 			/**
 				Returns a string with all error messages. Each error message is numbered and separated by "\n".
