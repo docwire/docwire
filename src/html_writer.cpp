@@ -56,7 +56,7 @@ struct HtmlWriter::Implementation
            "<html>\n"
            "<head>\n"
            "<meta charset=\"utf-8\">\n"
-           "<title>DocToText</title>\n"};
+           "<title>DocWire</title>\n"};
     m_header_is_open = true;
     return std::make_shared<TextElement>(header);
   }
