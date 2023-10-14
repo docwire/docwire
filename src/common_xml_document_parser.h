@@ -137,10 +137,10 @@ class CommonXMLDocumentParser
 		bool manageXmlParser() const;
 
 		///disables modifying text data inside method onUnregisteredCommand
-		void disableText(bool disable) const; // todo https://github.com/docwire/doctotext/issues/91
+		void disableText(bool disable) const;
 
 		///sets options for XmlStream objects. (xmlParserOption from libxml2)
-		void setXmlOptions(int options) const; // todo https://github.com/docwire/doctotext/issues/91
+		void setXmlOptions(int options) const;
 
 		///Cleans up associated data. Call this method in constructor of derived class in case of bad_alloc.
 		void cleanUp();
@@ -154,7 +154,7 @@ class CommonXMLDocumentParser
 		CommonXMLDocumentParser();
 		virtual ~CommonXMLDocumentParser();
 		void setManageXmlParser(bool manage);
-		virtual std::string plainText(XmlParseMode mode, FormattingStyle& options) const = 0; // todo https://github.com/docwire/doctotext/issues/91
+		virtual std::string plainText(XmlParseMode mode, FormattingStyle& options) const = 0;
 		virtual Metadata metaData() const = 0;
 };
 
