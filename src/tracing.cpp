@@ -39,11 +39,11 @@
 static int level = 0;
 static FILE* file = NULL;
 
-void doctotext_init_tracing(const char* filename) __attribute__((no_instrument_function));
+void docwire_init_tracing(const char* filename) __attribute__((no_instrument_function));
 static void close_tracing(void)  __attribute__((no_instrument_function, destructor));
 static void trace_func(bool call, void* func, void* caller) __attribute__((no_instrument_function));
 
-void doctotext_init_tracing(const char* filename)
+void docwire_init_tracing(const char* filename)
 {
 	file = fopen(filename, "w");
 	if (file == NULL)

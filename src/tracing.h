@@ -34,6 +34,6 @@
 #ifndef DOCWIRE_TRACING_H
 #define DOCWIRE_TRACING_H
 
-void doctotext_init_tracing(const char* filename);
+void docwire_init_tracing(const char* filename);
 
 #endif
