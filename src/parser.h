@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -32,8 +32,8 @@
 /***************************************************************************************************************************************************/
 
 
-#ifndef PARSER_HPP
-#define PARSER_HPP
+#ifndef DOCWIRE_PARSER_H
+#define DOCWIRE_PARSER_H
 
 #include <any>
 #include <string>
@@ -45,7 +45,7 @@
 #include "parser_parameters.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 
 /**
@@ -145,7 +145,7 @@ public:
    *
    * @param inParserManager parser manager contains all available parsers which could be used recursive
    */
-  explicit Parser(const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+  explicit Parser(const std::shared_ptr<ParserManager> &inParserManager = nullptr);
 
   virtual ~Parser() = default;
 
@@ -177,7 +177,7 @@ protected:
   }
   Info sendTag(const Info &info) const;
 
-  std::shared_ptr<doctotext::ParserManager> m_parser_manager;
+  std::shared_ptr<ParserManager> m_parser_manager;
   ParserParameters m_parameters;
 
 private:
@@ -186,5 +186,5 @@ private:
   std::unique_ptr<Implementation, ImplementationDeleter> base_impl;
 };
 
-} // namespace doctotext
-#endif //PARSER_HPP
+} // namespace docwire
+#endif //DOCWIRE_PARSER_H

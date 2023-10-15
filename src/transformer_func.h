@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef TRANSFORMER_H
-#define TRANSFORMER_H
+#ifndef DOCWIRE_TRANSFORMER_FUNC_H
+#define DOCWIRE_TRANSFORMER_FUNC_H
 
 #include <algorithm>
 #include <memory>
@@ -44,14 +44,14 @@
 #include "parser_parameters.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 class Importer;
 
 /**
- * @brief Wraps single function (doctotext::NewNodeCallback) into ChainElement object
+ * @brief Wraps single function (NewNodeCallback) into ChainElement object
  * @code
- * auto reverse_text = [](doctotext::Info &info) {
+ * auto reverse_text = [](Info &info) {
  *   std::reverse(info.plain_text.begin(), info.plain_text.end())}; // create function to reverse text in callback
  * TransformerFunc transformer(reverse_text); // wraps into ChainElement
  * Importer(parser_manager, "test.pdf") | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
@@ -62,9 +62,9 @@ class DllExport TransformerFunc : public ChainElement
 public:
   /**
    * @param transformer_function callback function, which will be called in transform(). It should modify info structure.
-   * @see doctotext::Info
+   * @see Info
    */
-  TransformerFunc(doctotext::NewNodeCallback transformer_function);
+  TransformerFunc(NewNodeCallback transformer_function);
 
   TransformerFunc(const TransformerFunc &other);
 
@@ -72,10 +72,10 @@ public:
 
   /**
    * @brief Executes transform operation for given node data.
-   * @see doctotext::Info
+   * @see Info
    * @param info
    */
-  void process(doctotext::Info &info) const;
+  void process(Info &info) const;
 
   bool is_leaf() const override
   {
@@ -93,6 +93,6 @@ private:
   std::unique_ptr<Implementation> impl;
 };
 
-} // namespace doctotext
+} // namespace docwire
 
-#endif //TRANSFORMER_H
+#endif //DOCWIRE_TRANSFORMER_FUNC_H

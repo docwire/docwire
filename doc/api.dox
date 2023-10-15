@@ -17,11 +17,11 @@
  * by importer and transformer (see \ref parsing_process). In similar way there is a possibility to write custom importer or exporter.
  *
  * \section parsing_process Parsing process - control
- * During parsing process parser sends to us signals with structure doctotext::Info. Signals are emitted when the parser
+ * During parsing process parser sends to us signals with structure docwire::Info. Signals are emitted when the parser
  * encounters a new node. New node is an abstract element in file which is represented by tag and tag's attributes
- * (doctotext::StandardTag). New node could be for example page, paragraph or link. A node can contain other nodes e.g.
+ * (docwire::StandardTag). New node could be for example page, paragraph or link. A node can contain other nodes e.g.
  * email node includes attachments. All node data are kept in Info structure. Additionally, Info allows for control of the parsing
- * process by set flags. Structure doctotext::Info contains two flags:
+ * process by set flags. Structure docwire::Info contains two flags:
  *   - skip - skips next node
  *   - cancel - cancels all parsing process
  *
@@ -30,15 +30,15 @@
  * Example of usage "cancel" and "skip": \ref example_4.cpp
  *
  * Tag name gives us information about the part of the document that was parsed. It could be a part of text (tag text or tag paragraph), table, list,
- * text style and so on. You can find the full list of available tags with description in doctotext::StandardTag.
- * Some of tags contains attributes which are stored in doctotext::Info::attributes. To get attribute from this map you need
- * name of attribute and type. Both are described in doctotext::StandardTag.
+ * text style and so on. You can find the full list of available tags with description in docwire::StandardTag.
+ * Some of tags contains attributes which are stored in docwire::Info::attributes. To get attribute from this map you need
+ * name of attribute and type. Both are described in docwire::StandardTag.
  *
  * Important! Support for control processing proces (skip and cancel) is only for "pst", "ost",
  * "tiff", "jpeg", "bmp", "png", "pnm", "jfif", "jpg", "webp". This list also will be gradually completed.
  *
  * \section parser_parameters Parser parameters
- * doctotext::ParserParameters provides mechanism to pass additional information to parser. For example you can choose
+ * docwire::ParserParameters provides mechanism to pass additional information to parser. For example you can choose
  * processing language for ocr parser. List of common parameters for all parsers are presented below.
  * <table>
  * <caption id="parser_parameters">Parameters for parsers</caption>
@@ -54,7 +54,7 @@
  *
  * \section parser_tags Parser tags
  * Each parser sends tags during the parsing process. It's required, because this is the only way to get parsed data from parser.
- * Parsers which don't fully support our api send one tag doctotext::StandardTag::TAG_TEXT with all parsed text from document.
+ * Parsers which don't fully support our api send one tag docwire::StandardTag::TAG_TEXT with all parsed text from document.
  * For rest of parser we present list of emitted tags:
  * <table>
  * <caption id="parser_tags">Tags for parsers</caption>
@@ -64,36 +64,36 @@
  *    <td>"odt", "ods", "odp", "odg", "docx", "xlsx", "pptx", "ppsx"
  *    <td rowspan="2">
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TR
- *        <li>doctotext::StandardTag::TAG_CLOSE_TR
- *        <li>doctotext::StandardTag::TAG_TABLE
- *        <li>doctotext::StandardTag::TAG_CLOSE_TABLE
- *        <li>doctotext::StandardTag::TAG_TD
- *        <li>doctotext::StandardTag::TAG_CLOSE_TD
- *        <li>doctotext::StandardTag::TAG_TEXT
- *        <li>doctotext::StandardTag::TAG_COMMENT
- *        <li>doctotext::StandardTag::TAG_STYLE
- *        <li>doctotext::StandardTag::TAG_CLOSE_STYLE
- *        <li>doctotext::StandardTag::TAG_BR
- *        <li>doctotext::StandardTag::TAG_METADATA
- *        <li>doctotext::StandardTag::TAG_U
- *        <li>doctotext::StandardTag::TAG_CLOSE_U
- *        <li>doctotext::StandardTag::TAG_I
- *        <li>doctotext::StandardTag::TAG_CLOSE_I
- *        <li>doctotext::StandardTag::TAG_B
- *        <li>doctotext::StandardTag::TAG_CLOSE_B
- *        <li>doctotext::StandardTag::TAG_P
- *        <li>doctotext::StandardTag::TAG_CLOSE_P
- *        <li>doctotext::StandardTag::TAG_TAB
- *        <li>doctotext::StandardTag::TAG_SPACE
- *        <li>doctotext::StandardTag::TAG_LINK
- *        <li>doctotext::StandardTag::TAG_CLOSE_LINK
- *        <li>doctotext::StandardTag::TAG_LIST
- *        <li>doctotext::StandardTag::TAG_LIST_CLOSE
- *        <li>doctotext::StandardTag::TAG_LIST_ITEM_BULLET
- *        <li>doctotext::StandardTag::TAG_LIST_ITEM_CLOSE_BULLET
- *        <li>doctotext::StandardTag::TAG_LIST_ITEM_NUMBER
- *        <li>doctotext::StandardTag::TAG_LIST_ITEM_CLOSE_NUMBER
+ *        <li>docwire::StandardTag::TAG_TR
+ *        <li>docwire::StandardTag::TAG_CLOSE_TR
+ *        <li>docwire::StandardTag::TAG_TABLE
+ *        <li>docwire::StandardTag::TAG_CLOSE_TABLE
+ *        <li>docwire::StandardTag::TAG_TD
+ *        <li>docwire::StandardTag::TAG_CLOSE_TD
+ *        <li>docwire::StandardTag::TAG_TEXT
+ *        <li>docwire::StandardTag::TAG_COMMENT
+ *        <li>docwire::StandardTag::TAG_STYLE
+ *        <li>docwire::StandardTag::TAG_CLOSE_STYLE
+ *        <li>docwire::StandardTag::TAG_BR
+ *        <li>docwire::StandardTag::TAG_METADATA
+ *        <li>docwire::StandardTag::TAG_U
+ *        <li>docwire::StandardTag::TAG_CLOSE_U
+ *        <li>docwire::StandardTag::TAG_I
+ *        <li>docwire::StandardTag::TAG_CLOSE_I
+ *        <li>docwire::StandardTag::TAG_B
+ *        <li>docwire::StandardTag::TAG_CLOSE_B
+ *        <li>docwire::StandardTag::TAG_P
+ *        <li>docwire::StandardTag::TAG_CLOSE_P
+ *        <li>docwire::StandardTag::TAG_TAB
+ *        <li>docwire::StandardTag::TAG_SPACE
+ *        <li>docwire::StandardTag::TAG_LINK
+ *        <li>docwire::StandardTag::TAG_CLOSE_LINK
+ *        <li>docwire::StandardTag::TAG_LIST
+ *        <li>docwire::StandardTag::TAG_LIST_CLOSE
+ *        <li>docwire::StandardTag::TAG_LIST_ITEM_BULLET
+ *        <li>docwire::StandardTag::TAG_LIST_ITEM_CLOSE_BULLET
+ *        <li>docwire::StandardTag::TAG_LIST_ITEM_NUMBER
+ *        <li>docwire::StandardTag::TAG_LIST_ITEM_CLOSE_NUMBER
  *      </ul>
  *  <tr>
  *    <td>ODFXMLParser
@@ -103,128 +103,112 @@
  *    <td>"pst", "ost"
  *    <td>
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TAB
- *        <li>doctotext::StandardTag::TAG_FOLDER_HEADER
- *        <li>doctotext::StandardTag::TAG_MAIL_HEADER
- *        <li>doctotext::StandardTag::TAG_ATTACHMENT_HEADER
- *        <li>doctotext::StandardTag::TAG_ATTACHMENT_BODY
- *        <li>doctotext::StandardTag::TAG_ATTACHMENT_CLOSE_BODY
- *        <li>doctotext::StandardTag::TAG_MAIL_BODY
- *        <li>doctotext::StandardTag::TAG_MAIL_CLOSE_BODY
+ *        <li>docwire::StandardTag::TAG_TAB
+ *        <li>docwire::StandardTag::TAG_FOLDER_HEADER
+ *        <li>docwire::StandardTag::TAG_MAIL_HEADER
+ *        <li>docwire::StandardTag::TAG_ATTACHMENT_HEADER
+ *        <li>docwire::StandardTag::TAG_ATTACHMENT_BODY
+ *        <li>docwire::StandardTag::TAG_ATTACHMENT_CLOSE_BODY
+ *        <li>docwire::StandardTag::TAG_MAIL_BODY
+ *        <li>docwire::StandardTag::TAG_MAIL_CLOSE_BODY
  *      </ul>
  *  <tr>
  *    <td>PdfParser
  *    <td>"pdf"
  *    <td>
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TEXT
- *        <li>doctotext::StandardTag::TAG_PAGE
- *        <li>doctotext::StandardTag::TAG_PAGE_CLOSE
+ *        <li>docwire::StandardTag::TAG_TEXT
+ *        <li>docwire::StandardTag::TAG_PAGE
+ *        <li>docwire::StandardTag::TAG_PAGE_CLOSE
  *      </ul>
  *  <tr>
  *    <td>HtmlParser
  *    <td>"html", "htm"
  *    <td>
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TEXT
+ *        <li>docwire::StandardTag::TAG_TEXT
  *      </ul>
  *  <tr>
  *    <td>OcrParser
  *    <td>"tiff", "jpeg", "bmp", "png", "pnm", "jfif", "jpg", "webp"
  *    <td>
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TEXT
+ *        <li>docwire::StandardTag::TAG_TEXT
  *      </ul>
  *  <tr>
  *    <td>EMLParser
  *    <td>"pst", "ost"
  *    <td>
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TEXT
+ *        <li>docwire::StandardTag::TAG_TEXT
  *      </ul>
  *  <tr>
  *    <td>DOCParse
  *    <td>"doc"
  *    <td>
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TEXT
+ *        <li>docwire::StandardTag::TAG_TEXT
  *      </ul>
  *  <tr>
  *    <td>XLSParser
  *    <td>"xls"
  *    <td>
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TEXT
+ *        <li>docwire::StandardTag::TAG_TEXT
  *      </ul>
  *  <tr>
  *    <td>XLSBParser
  *    <td>"xlsb"
  *    <td>
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TEXT
+ *        <li>docwire::StandardTag::TAG_TEXT
  *      </ul>
  *  <tr>
  *    <td>PPTParser
  *    <td>"ppt", "pps"
  *    <td>
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TEXT
+ *        <li>docwire::StandardTag::TAG_TEXT
  *      </ul>
  *  <tr>
  *    <td>IWorkParser
  *    <td>"pages", "key", "numbers"
  *    <td>
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TEXT
+ *        <li>docwire::StandardTag::TAG_TEXT
  *      </ul>
  *  <tr>
  *    <td>RTFParser
  *    <td>"rtf"
  *    <td>
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TEXT
+ *        <li>docwire::StandardTag::TAG_TEXT
  *      </ul>
  *  <tr>
  *    <td>TXTParser
  *    <td>"txt", "text"
  *    <td>
  *      <ul>
- *        <li>doctotext::StandardTag::TAG_TEXT
+ *        <li>docwire::StandardTag::TAG_TEXT
  *      </ul>
  * </table>
  *
  *
  * \section importer_and_exporter Importer and Exporter
  *
- * Basic example of usage in C++:
+ * Basic example of usage:
  *
  * \snippet example_0.cpp example_cpp
  *
- * Basic example of usage in C:
- *
- * \snippet example_0.c example_c
- *
  * We can also define a second exporter and export output as html to output.html file.
  *
- * Example for C++:
- *
  * \snippet example_1.cpp example_cpp
- *
- * Example for C:
- *
- * \snippet example_1.c example_c
  *
  * In case of parsing multiple files, we can use the same importer and exporter object for each file.
  * In first step we need to create parsing process by connecting the importer and exporter and then we can start
  * the parsing process by passing subsequent files to the importer.
  *
- * Example for C++:
- *
  * \snippet example_2.cpp example_cpp
- *
- * Example for C:
- *
- * \snippet example_2.c example_c
  *
  * \section transformer Transformer
  * Transformer is an object that we can connect to the importer and exporter. The transformer receives data from the importer or another transformer
@@ -234,80 +218,44 @@
  * is to skip the data from the current callback or stop the parsing process.
  * Below example shows how to use the transformer to filter mails with subject "Hello"
  *
- * Example for C++:
- *
  * \snippet example_3.cpp example_cpp
- *
- * Example for C:
- *
- * \snippet example_3.c example_c
  *
  * Transformers can be joined together to create complex transformations/filtration. For example, we can create a transformer that
  * filters mails with subject "Hello" and limit the number of mails to 10.
  *
- * Example for C++:
- *
  * \snippet example_4.cpp example_cpp
- *
- * Example for C:
- *
- * \snippet example_4.c example_c
  *
  * \section callbacks_api Callbacks Api
  * Another approach to parse documents is to use the callbacks api. We can create specific parser object and connect it to
  * the callback functions. In case of the callback api, we need to define writing parsed text by ourself.
  * Below is a basic example of the callback api:
  *
- * example for C++:
- *
  * \snippet example_5.cpp example_cpp
- *
- * example for C:
- *
- * \snippet example_5.c example_c
  *
  * In callback api we can add many callback functions to the parser and it works in similar way as the transformer in the
  * stream api. So we are able to add a callback function to filter by mail topic or by mail number in similar way like in stream api.
  *
- * example for C++:
- *
  * \snippet example_6.cpp example_cpp
- *
- * example for C:
- *
- * \snippet example_6.c example_c
  *
  * \section SimpleExtractor SimpleExtractor
  *
- * The easiest way to parse the document is to use the doctotext::SimpleExtractor. The simple extractor provides the basic
+ * The easiest way to parse the document is to use the docwire::SimpleExtractor. The simple extractor provides the basic
  * functionality to parse the document.
  *
- * example for C++:
- *
  * \snippet example_7.cpp example_cpp
- *
- * Example for C:
- *
- * \snippet example_7.c example_c
  *
  * SimpleExtractor also supports custom callback functions, so we can define our own transform or filter functions
  * and use them in the parsing process.
  *
- * example for C++:
- *
  * \snippet example_8.cpp example_cpp
  *
- * Example for C:
- *
- * \snippet example_8.c example_c
- *
  * \section logging Logs mechanism
- * Doctotext parsers generate many logs with current processing status, warnings and errors. By default all logs are sent
+ * DocWire parsers generate many logs with current processing status, warnings and errors. By default all logs are sent
  * to standard error stream, but there is an option to change it or also turn off logs mechanism. To redirect logs stream
- * or turn on/off logs we can use doctotext::ParserParameters (\ref parser_parameters) as below:
+ * or turn on/off logs we can use docwire::ParserParameters (\ref parser_parameters) as below:
  * \code
  * std::ofstream* my_log_stream = new std::ofstream("output_logs.txt");
- * doctotext::ParserParameters parameters("log_stream", my_log_stream); // set log stream parameter
- * parameters += doctotext::ParserParameters("verbose_logging", true); // turn on logs mechanism
+ * docwire::ParserParameters parameters("log_stream", my_log_stream); // set log stream parameter
+ * parameters += docwire::ParserParameters("verbose_logging", true); // turn on logs mechanism
  * \endcode
  */

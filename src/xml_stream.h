@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -31,12 +31,12 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_XML_STREAM_H
-#define DOCTOTEXT_XML_STREAM_H
+#ifndef DOCWIRE_XML_STREAM_H
+#define DOCWIRE_XML_STREAM_H
 
 #include <string>
 
-namespace doctotext
+namespace docwire
 {
 
 class XmlStream
@@ -46,7 +46,7 @@ class XmlStream
 		Implementation* impl;
 
 	public:
-		///Throws doctotext::exception if initialization has failed.
+		///Throws Exception if initialization has failed.
 		XmlStream(const std::string& xml, bool manage_xml_parser, int xml_parse_options = 0);
 		~XmlStream();
 		operator bool();
@@ -60,6 +60,6 @@ class XmlStream
 		std::string attribute(const std::string& attr_name);
 };
 
-}; // namespace doctotext
+}; // namespace docwire
 
 #endif

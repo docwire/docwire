@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_LOG_H
-#define DOCTOTEXT_LOG_H
+#ifndef DOCWIRE_LOG_H
+#define DOCWIRE_LOG_H
 
 #include "defines.h"
 #include <filesystem>
@@ -42,7 +42,7 @@
 #include <thread>
 #include <typeindex>
 
-namespace doctotext
+namespace docwire
 {
 
 enum severity_level
@@ -74,7 +74,7 @@ struct DllExport end_pair {};
 struct DllExport begin_array {};
 struct DllExport end_array {};
 
-#define doctotext_log_streamable_type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
+#define docwire_log_streamable_type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
 
 class DllExport log_record_stream
 {
@@ -133,7 +133,7 @@ public:
 	template<typename T> log_record_stream& operator<<(const T* pointer)
 	{
 		if (pointer)
-			*this << begin_complex() << doctotext_log_streamable_type_of(pointer) << std::make_pair("dereferenced", std::cref(*pointer)) << end_complex();
+			*this << begin_complex() << docwire_log_streamable_type_of(pointer) << std::make_pair("dereferenced", std::cref(*pointer)) << end_complex();
 		else
 			*this << nullptr;
 		return *this;
@@ -153,23 +153,23 @@ DllExport std::unique_ptr<log_record_stream> create_log_record_stream(severity_l
 inline void current_function_helper()
 {
 #if defined(__GNUC__)
-#define doctotext_current_function __PRETTY_FUNCTION__
+#define docwire_current_function __PRETTY_FUNCTION__
 #elif defined(__FUNCSIG__)
-#define doctotext_current_function __FUNCSIG__
+#define docwire_current_function __FUNCSIG__
 #else
-#define doctotext_current_fuction __func__
+#define docwire_current_function __func__
 #endif
 }
 
-#define doctotext_current_source_location() \
-	doctotext::source_location{__FILE__, __LINE__, doctotext_current_function}
+#define docwire_current_source_location() \
+	docwire::source_location{__FILE__, __LINE__, docwire_current_function}
 
-#define doctotext_log(severity) \
-	if (!doctotext::log_verbosity_includes(severity)) \
+#define docwire_log(severity) \
+	if (!docwire::log_verbosity_includes(severity)) \
 	{ \
 	} \
 	else \
-		(*doctotext::create_log_record_stream(severity, doctotext_current_source_location()))
+		(*docwire::create_log_record_stream(severity, docwire_current_source_location()))
 
 inline std::string prepare_var_name(const std::string& var_name)
 {
@@ -182,60 +182,60 @@ template<typename T> std::pair<std::string, const T&> streamable_var(const std::
 	return std::pair<std::string, const T&>{prepare_var_name(var_name), var};
 }
 
-#define doctotext_log_streamable_var(v) streamable_var(#v, v)
+#define docwire_log_streamable_var(v) streamable_var(#v, v)
 
-#define doctotext_log_args_count_helper( \
+#define docwire_log_args_count_helper( \
 	a01, a02, a03, a04, a05, a06, a07, a08, a09, a10, a11, a12, a13, a14, a15, a16, \
 	a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, a32, \
 	count, ...) count
-#define doctotext_log_args_count(...) \
-	doctotext_log_args_count_helper(__VA_ARGS__, \
+#define docwire_log_args_count(...) \
+	docwire_log_args_count_helper(__VA_ARGS__, \
 		32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, \
 		16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-#define doctotext_log_concatenate(a, b) doctotext_log_concatenate_2(a, b)
-#define doctotext_log_concatenate_2(a, b) a##b
-#define doctotext_log_streamable_vars_1(v) doctotext_log_streamable_var(v)
-#define doctotext_log_streamable_vars_2(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_1(__VA_ARGS__)
-#define doctotext_log_streamable_vars_3(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_2(__VA_ARGS__)
-#define doctotext_log_streamable_vars_4(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_3(__VA_ARGS__)
-#define doctotext_log_streamable_vars_5(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_4(__VA_ARGS__)
-#define doctotext_log_streamable_vars_6(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_5(__VA_ARGS__)
-#define doctotext_log_streamable_vars_7(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_6(__VA_ARGS__)
-#define doctotext_log_streamable_vars_8(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_7(__VA_ARGS__)
-#define doctotext_log_streamable_vars_9(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_8(__VA_ARGS__)
-#define doctotext_log_streamable_vars_10(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_9(__VA_ARGS__)
-#define doctotext_log_streamable_vars_11(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_10(__VA_ARGS__)
-#define doctotext_log_streamable_vars_12(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_11(__VA_ARGS__)
-#define doctotext_log_streamable_vars_13(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_12(__VA_ARGS__)
-#define doctotext_log_streamable_vars_14(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_13(__VA_ARGS__)
-#define doctotext_log_streamable_vars_15(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_14(__VA_ARGS__)
-#define doctotext_log_streamable_vars_16(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_15(__VA_ARGS__)
-#define doctotext_log_streamable_vars_17(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_16(__VA_ARGS__)
-#define doctotext_log_streamable_vars_18(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_17(__VA_ARGS__)
-#define doctotext_log_streamable_vars_19(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_18(__VA_ARGS__)
-#define doctotext_log_streamable_vars_20(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_19(__VA_ARGS__)
-#define doctotext_log_streamable_vars_21(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_20(__VA_ARGS__)
-#define doctotext_log_streamable_vars_22(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_21(__VA_ARGS__)
-#define doctotext_log_streamable_vars_23(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_22(__VA_ARGS__)
-#define doctotext_log_streamable_vars_24(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_23(__VA_ARGS__)
-#define doctotext_log_streamable_vars_25(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_24(__VA_ARGS__)
-#define doctotext_log_streamable_vars_26(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_25(__VA_ARGS__)
-#define doctotext_log_streamable_vars_27(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_26(__VA_ARGS__)
-#define doctotext_log_streamable_vars_28(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_27(__VA_ARGS__)
-#define doctotext_log_streamable_vars_29(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_28(__VA_ARGS__)
-#define doctotext_log_streamable_vars_30(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_29(__VA_ARGS__)
-#define doctotext_log_streamable_vars_31(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_30(__VA_ARGS__)
-#define doctotext_log_streamable_vars_32(v, ...) doctotext_log_streamable_vars_1(v) << doctotext_log_streamable_vars_31(__VA_ARGS__)
+#define docwire_log_concatenate(a, b) docwire_log_concatenate_2(a, b)
+#define docwire_log_concatenate_2(a, b) a##b
+#define docwire_log_streamable_vars_1(v) docwire_log_streamable_var(v)
+#define docwire_log_streamable_vars_2(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_1(__VA_ARGS__)
+#define docwire_log_streamable_vars_3(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_2(__VA_ARGS__)
+#define docwire_log_streamable_vars_4(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_3(__VA_ARGS__)
+#define docwire_log_streamable_vars_5(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_4(__VA_ARGS__)
+#define docwire_log_streamable_vars_6(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_5(__VA_ARGS__)
+#define docwire_log_streamable_vars_7(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_6(__VA_ARGS__)
+#define docwire_log_streamable_vars_8(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_7(__VA_ARGS__)
+#define docwire_log_streamable_vars_9(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_8(__VA_ARGS__)
+#define docwire_log_streamable_vars_10(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_9(__VA_ARGS__)
+#define docwire_log_streamable_vars_11(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_10(__VA_ARGS__)
+#define docwire_log_streamable_vars_12(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_11(__VA_ARGS__)
+#define docwire_log_streamable_vars_13(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_12(__VA_ARGS__)
+#define docwire_log_streamable_vars_14(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_13(__VA_ARGS__)
+#define docwire_log_streamable_vars_15(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_14(__VA_ARGS__)
+#define docwire_log_streamable_vars_16(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_15(__VA_ARGS__)
+#define docwire_log_streamable_vars_17(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_16(__VA_ARGS__)
+#define docwire_log_streamable_vars_18(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_17(__VA_ARGS__)
+#define docwire_log_streamable_vars_19(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_18(__VA_ARGS__)
+#define docwire_log_streamable_vars_20(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_19(__VA_ARGS__)
+#define docwire_log_streamable_vars_21(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_20(__VA_ARGS__)
+#define docwire_log_streamable_vars_22(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_21(__VA_ARGS__)
+#define docwire_log_streamable_vars_23(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_22(__VA_ARGS__)
+#define docwire_log_streamable_vars_24(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_23(__VA_ARGS__)
+#define docwire_log_streamable_vars_25(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_24(__VA_ARGS__)
+#define docwire_log_streamable_vars_26(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_25(__VA_ARGS__)
+#define docwire_log_streamable_vars_27(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_26(__VA_ARGS__)
+#define docwire_log_streamable_vars_28(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_27(__VA_ARGS__)
+#define docwire_log_streamable_vars_29(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_28(__VA_ARGS__)
+#define docwire_log_streamable_vars_30(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_29(__VA_ARGS__)
+#define docwire_log_streamable_vars_31(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_30(__VA_ARGS__)
+#define docwire_log_streamable_vars_32(v, ...) docwire_log_streamable_vars_1(v) << docwire_log_streamable_vars_31(__VA_ARGS__)
 
-#define doctotext_log_streamable_vars(...) doctotext_log_concatenate(doctotext_log_streamable_vars_, doctotext_log_args_count(__VA_ARGS__))(__VA_ARGS__)
-#define doctotext_log_vars(...) doctotext_log(debug) << doctotext_log_streamable_vars(__VA_ARGS__)
-#define doctotext_log_var(v) doctotext_log_vars(v)
+#define docwire_log_streamable_vars(...) docwire_log_concatenate(docwire_log_streamable_vars_, docwire_log_args_count(__VA_ARGS__))(__VA_ARGS__)
+#define docwire_log_vars(...) docwire_log(debug) << docwire_log_streamable_vars(__VA_ARGS__)
+#define docwire_log_var(v) docwire_log_vars(v)
 
-#define doctotext_log_streamable_obj(obj, ...) \
-	begin_complex() << doctotext_log_streamable_type_of(obj) << doctotext_log_streamable_vars(__VA_ARGS__) << end_complex()
+#define docwire_log_streamable_obj(obj, ...) \
+	begin_complex() << docwire_log_streamable_type_of(obj) << docwire_log_streamable_vars(__VA_ARGS__) << end_complex()
 
-#define doctotext_log_func() doctotext_log(debug) << "Entering function" << std::make_pair("funtion_name", doctotext_current_function)
-#define doctotext_log_func_with_args(...) doctotext_log_func() << doctotext_log_streamable_vars(__VA_ARGS__)
+#define docwire_log_func() docwire_log(debug) << "Entering function" << std::make_pair("funtion_name", docwire_current_function)
+#define docwire_log_func_with_args(...) docwire_log_func() << docwire_log_streamable_vars(__VA_ARGS__)
 
 class DllExport cerr_log_redirection
 {
@@ -253,6 +253,6 @@ private:
 	source_location m_location;
 };
 
-} // namespace doctotext
+} // namespace docwire
 
 #endif

@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -31,14 +31,14 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef STANDARD_FILTER_H
-#define STANDARD_FILTER_H
+#ifndef DOCWIRE_STANDARD_FILTER_H
+#define DOCWIRE_STANDARD_FILTER_H
 
 #include <algorithm>
 #include "parser.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 /**
  * @brief Sets of standard filters to use in parsers.
@@ -57,32 +57,32 @@ public:
    * @brief Filters folders by name. Keeps only folders with names that exist in the given list.
    * @param names list of names to keep
    */
-  static doctotext::NewNodeCallback filterByFolderName(const std::vector<std::string> &names);
+  static NewNodeCallback filterByFolderName(const std::vector<std::string> &names);
 
   /**
    * @brief Filters attachments by type. Keeps only attachments with type that exist in the given list.
    * @param types list of types to keep
    */
-  static doctotext::NewNodeCallback filterByAttachmentType(const std::vector<std::string> &types);
+  static NewNodeCallback filterByAttachmentType(const std::vector<std::string> &types);
 
   /**
    * @brief Filters mail by creation date. Keeps only mails that are created after the given date.
    * @param min_time minimum time to keep
    */
-  static doctotext::NewNodeCallback filterByMailMinCreationTime(unsigned int min_time);
+  static NewNodeCallback filterByMailMinCreationTime(unsigned int min_time);
 
   /**
    * @brief Filters mail by creation date. Keeps only mails that are created before the given date.
    * @param max_time maximum time to keep
    */
-  static doctotext::NewNodeCallback filterByMailMaxCreationTime(unsigned int max_time);
+  static NewNodeCallback filterByMailMaxCreationTime(unsigned int max_time);
 
   /**
    * @brief
    * @param max_nodes
    */
-  static doctotext::NewNodeCallback filterByMaxNodeNumber(unsigned int max_nodes);
+  static NewNodeCallback filterByMaxNodeNumber(unsigned int max_nodes);
 };
-} // namespace doctotext
+} // namespace docwire
 
-#endif //STANDARD_FILTER_H
+#endif //DOCWIRE_STANDARD_FILTER_H

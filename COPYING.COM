@@ -1,1 +1,1 @@
-Please contact SILVERCODERS (http://silvercoders.com) for a commercial license for DocToText.
+Please contact SILVERCODERS (http://silvercoders.com) for a commercial license for DocWire SDK.

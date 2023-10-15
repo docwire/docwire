@@ -10,16 +10,15 @@ cd ..
 
 $VCPKG_TRIPLET="x64-windows"
 
-Get-Date | Out-File -FilePath ports\doctotext\disable_binary_cache.tmp
+Get-Date | Out-File -FilePath ports\docwire\disable_binary_cache.tmp
 $Env:SOURCE_PATH = "$PWD"
 $Env:VCPKG_KEEP_ENV_VARS = "SOURCE_PATH"
-vcpkg\vcpkg --overlay-ports=ports install doctotext:$VCPKG_TRIPLET
+vcpkg\vcpkg --overlay-ports=ports install docwire:$VCPKG_TRIPLET
 
-$version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\doctotext\VERSION
-vcpkg\vcpkg --overlay-ports=ports export doctotext:$VCPKG_TRIPLET --raw --output=doctotext-$version --output-dir=.
+$version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\VERSION
+vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
 
-New-Item doctotext-$version\text_extractor.bat -ItemType File -Value "@`"%~dp0\\installed\\x64-windows\\tools\\text_extractor.bat`" %*"
-New-Item doctotext-$version\c_text_extractor.bat -ItemType File -Value "@`"%~dp0\\installed\\x64-windows\\tools\\c_text_extractor.bat`" %*"
+New-Item docwire-$version\text_extractor.bat -ItemType File -Value "@`"%~dp0\\installed\\x64-windows\\tools\\text_extractor.bat`" %*"
 
-Compress-Archive -LiteralPath doctotext-$version -DestinationPath doctotext-$version-$VCPKG_TRIPLET.zip
-Get-FileHash -Algorithm SHA1 doctotext-$version-$VCPKG_TRIPLET.zip > doctotext-$version-$VCPKG_TRIPLET.zip.sha1
+Compress-Archive -LiteralPath docwire-$version -DestinationPath docwire-$version-$VCPKG_TRIPLET.zip
+Get-FileHash -Algorithm SHA1 docwire-$version-$VCPKG_TRIPLET.zip > docwire-$version-$VCPKG_TRIPLET.zip.sha1

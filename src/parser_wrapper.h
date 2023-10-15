@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef PARSERWRAPPER_H
-#define PARSERWRAPPER_H
+#ifndef DOCWIRE_PARSER_WRAPPER_H
+#define DOCWIRE_PARSER_WRAPPER_H
 
 #include <iostream>
 
@@ -42,36 +42,36 @@
 #include "parser_builder.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 
 template<typename ParserType>
-class DllExport ParserWrapper : public doctotext::Parser
+class DllExport ParserWrapper : public Parser
 {
 public:
-  explicit ParserWrapper(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr)
+  explicit ParserWrapper(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr)
   : Parser(inParserManager),
     m_parser(ParserType(file_name))
   {}
 
-  ParserWrapper(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr)
+  ParserWrapper(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr)
   : Parser(inParserManager) ,
     m_parser(ParserType(buffer, size))
   {}
 
   void parse() const override
   {
-    sendTag(doctotext::StandardTag::TAG_TEXT,  m_parser.plainText(getFormattingStyle()));
-    sendTag(doctotext::StandardTag::TAG_METADATA, "", m_parser.metaData().getFieldsAsAny());
+    sendTag(StandardTag::TAG_TEXT,  m_parser.plainText(getFormattingStyle()));
+    sendTag(StandardTag::TAG_METADATA, "", m_parser.metaData().getFieldsAsAny());
   }
 
   Parser &withParameters(const ParserParameters &parameters) override
   {
-    doctotext::Parser::withParameters(parameters);
+    Parser::withParameters(parameters);
     return *this;
   }
 
-  void setParserManager(const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+  void setParserManager(const std::shared_ptr<ParserManager> &inParserManager)
   {
     m_parser_manager = inParserManager;
   }
@@ -84,14 +84,14 @@ template<typename ParserType>
 class DllExport wrapper_parser_creator
 {
 public:
-  static std::unique_ptr<doctotext::Parser>
-  create(const std::string &inFileName, const std::shared_ptr<doctotext::ParserManager> &parserManager)
+  static std::unique_ptr<Parser>
+  create(const std::string &inFileName, const std::shared_ptr<ParserManager> &parserManager)
   {
     return std::make_unique<ParserWrapper<ParserType>>(inFileName, parserManager);
   }
 
-  static std::unique_ptr<doctotext::Parser>
-  create(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &parserManager)
+  static std::unique_ptr<Parser>
+  create(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &parserManager)
   {
     return std::make_unique<ParserWrapper<ParserType>>(buffer, size, parserManager);
   }
@@ -101,14 +101,14 @@ template<typename ParserType>
 class DllExport parser_creator
 {
 public:
-  static std::unique_ptr<doctotext::Parser>
-  create(const std::string &inFileName, const std::shared_ptr<doctotext::ParserManager> &parserManager)
+  static std::unique_ptr<Parser>
+  create(const std::string &inFileName, const std::shared_ptr<ParserManager> &parserManager)
   {
     return std::make_unique<ParserType>(inFileName, parserManager);
   }
 
-  static std::unique_ptr<doctotext::Parser>
-  create(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &parserManager)
+  static std::unique_ptr<Parser>
+  create(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &parserManager)
   {
     return std::make_unique<ParserType>(buffer, size, parserManager);
   }
@@ -119,7 +119,7 @@ public:
  * @tparam ParserCreator type of parser to build
  */
 template<typename ParserCreator>
-class DllExport ParserBuilderWrapper : public doctotext::ParserBuilder
+class DllExport ParserBuilderWrapper : public ParserBuilder
 {
 public:
   ParserBuilderWrapper()
@@ -128,7 +128,7 @@ public:
 
   }
 
-  std::unique_ptr<doctotext::Parser>
+  std::unique_ptr<Parser>
   build(const std::string &inFileName) const override
   {
     auto parser = m_parser_creator.create(inFileName, m_parser_manager);
@@ -140,7 +140,7 @@ public:
     return parser;
   }
 
-  std::unique_ptr<doctotext::Parser>
+  std::unique_ptr<Parser>
   build(const char* buffer, size_t size) const override
   {
     auto parser =  m_parser_creator.create(buffer, size, m_parser_manager);
@@ -152,22 +152,19 @@ public:
     return parser;
   }
 
-  doctotext::ParserBuilder&
-  withOnNewNodeCallbacks(const std::vector<doctotext::NewNodeCallback> &callbacks) override
+  ParserBuilder& withOnNewNodeCallbacks(const std::vector<NewNodeCallback> &callbacks) override
   {
     m_callbacks = callbacks;
     return *this;
   }
 
-  doctotext::ParserBuilder&
-  withParserManager(const std::shared_ptr<doctotext::ParserManager> &inParserManager) override
+  ParserBuilder& withParserManager(const std::shared_ptr<ParserManager> &inParserManager) override
   {
     m_parser_manager = inParserManager;
     return *this;
   }
 
-  doctotext::ParserBuilder&
-  withParameters(const ParserParameters &inParameter) override
+  ParserBuilder& withParameters(const ParserParameters &inParameter) override
   {
     m_parameters += inParameter;
     return *this;
@@ -175,9 +172,9 @@ public:
 
 private:
   ParserCreator m_parser_creator;
-  std::vector<doctotext::NewNodeCallback> m_callbacks;
-  std::shared_ptr<doctotext::ParserManager> m_parser_manager;
+  std::vector<NewNodeCallback> m_callbacks;
+  std::shared_ptr<ParserManager> m_parser_manager;
   ParserParameters m_parameters;
 };
-} // namespace doctotext
-#endif //PARSERWRAPPER_H
+} // namespace docwire
+#endif //DOCWIRE_PARSER_WRAPPER_H

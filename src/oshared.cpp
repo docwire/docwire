@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -50,7 +50,7 @@ static bool read_vt_string(ThreadSafeOLEStreamReader* reader, std::string& s)
 	U16 string_type;
 	if (!reader->readU16(string_type) || string_type != 0x1E)
 	{
-		doctotext_log(error) << "Incorrect string type.";
+		docwire_log(error) << "Incorrect string type.";
 		return false;
 	}
 	reader->seek(2, SEEK_CUR); //padding
@@ -67,7 +67,7 @@ static bool read_vt_string(ThreadSafeOLEStreamReader* reader, std::string& s)
 	}
 	if (!reader->isValid())
 	{
-		doctotext_log(error) << "OLE Reader error message: " << reader->getLastError();
+		docwire_log(error) << "OLE Reader error message: " << reader->getLastError();
 		return false;
 	}
 	return true;
@@ -78,14 +78,14 @@ static bool read_vt_i4(ThreadSafeOLEStreamReader* reader, S32& i)
 	U16 string_type;
 	if (!reader->readU16(string_type) || string_type != 0x0003)
 	{
-		doctotext_log(error) << "Incorrect value type.";
+		docwire_log(error) << "Incorrect value type.";
 		return false;
 	}
 	reader->seek(2, SEEK_CUR); //padding
 	reader->readS32(i);
 	if (!reader->isValid())
 	{
-		doctotext_log(error) << reader->getLastError();
+		docwire_log(error) << reader->getLastError();
 		return false;
 	}
 	return true;
@@ -96,14 +96,14 @@ static bool read_vt_i2(ThreadSafeOLEStreamReader* reader, S16& i)
 	U16 string_type;
 	if (!reader->readU16(string_type) || string_type != 0x0002)
 	{
-		doctotext_log(error) << "Incorrect value type.";
+		docwire_log(error) << "Incorrect value type.";
 		return false;
 	}
 	reader->seek(2, SEEK_CUR); //padding
 	reader->readS16(i);
 	if (!reader->isValid())
 	{
-		doctotext_log(error) << "OLE Reader error message: " << reader->getLastError();
+		docwire_log(error) << "OLE Reader error message: " << reader->getLastError();
 		return false;
 	}
 	return true;
@@ -114,7 +114,7 @@ static bool read_vt_filetime(ThreadSafeOLEStreamReader* reader, tm& time)
 	U16 type;
 	if (!reader->readU16(type) || type != 0x0040)
 	{
-		doctotext_log(error) << "Incorrect variable type.";
+		docwire_log(error) << "Incorrect variable type.";
 		return false;
 	}
 	reader->seek(2, SEEK_CUR); //padding
@@ -123,7 +123,7 @@ static bool read_vt_filetime(ThreadSafeOLEStreamReader* reader, tm& time)
 	reader->readU32(file_time_high);
 	if (!reader->isValid())
 	{
-		doctotext_log(error) << "OLE Reader error message: " << reader->getLastError();
+		docwire_log(error) << "OLE Reader error message: " << reader->getLastError();
 		return false;
 	}
 	if (file_time_low == 0 && file_time_high == 0)
@@ -139,7 +139,7 @@ static bool read_vt_filetime(ThreadSafeOLEStreamReader* reader, tm& time)
   tm* res = thread_safe_gmtime(&t, time_buffer);
 	if (res == NULL)
 	{
-		doctotext_log(error) << "Incorrect time value.";
+		docwire_log(error) << "Incorrect time value.";
 		return false;
 	}
 	time = *res;
@@ -148,7 +148,7 @@ static bool read_vt_filetime(ThreadSafeOLEStreamReader* reader, tm& time)
 
 void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, Metadata& meta)
 {
-	doctotext_log(debug) << "Extracting metadata.";
+	docwire_log(debug) << "Extracting metadata.";
 	if (!storage.isValid())
 		throw Exception("Error opening " + storage.name() + " as OLE file");
 	ThreadSafeOLEStreamReader* reader = NULL;
@@ -332,7 +332,7 @@ bool get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storage, std:
 {
 	size_t field_set_stream_start;
 	if (!storage.isValid())
-		doctotext_log(error) << "Error opening " << storage.name() << " as OLE file.";
+		docwire_log(error) << "Error opening " << storage.name() << " as OLE file.";
 	ThreadSafeOLEStreamReader* reader = NULL;
 	try
 	{
@@ -357,7 +357,7 @@ bool get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storage, std:
 					S16 icodepage;
 					if (!read_vt_i2(reader, icodepage))
 					{
-						doctotext_log(error) << "Error while reading codepage: invalid value.";
+						docwire_log(error) << "Error while reading codepage: invalid value.";
 						delete reader;
 						return false;
 					}
@@ -368,14 +368,14 @@ bool get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storage, std:
 			reader->seek(p, SEEK_SET);
 			if (!reader->isValid())
 			{
-				doctotext_log(error) << "OLE Reader error message: " << reader->getLastError();
+				docwire_log(error) << "OLE Reader error message: " << reader->getLastError();
 				delete reader;
 				return false;
 			}
 		}
 		if (!reader->isValid())
 		{
-			doctotext_log(error) << "OLE Reader error message: " << reader->getLastError();
+			docwire_log(error) << "OLE Reader error message: " << reader->getLastError();
 			delete reader;
 			return false;
 		}
@@ -385,7 +385,7 @@ bool get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storage, std:
 		if (reader)
 			delete reader;
 		reader = NULL;
-		doctotext_log(error) << "Error while getting codepage info. Reason: bad_alloc.";
+		docwire_log(error) << "Error while getting codepage info. Reason: bad_alloc.";
 		throw;
 	}
 	catch (Exception& ex)
@@ -393,17 +393,17 @@ bool get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storage, std:
 		if (reader)
 			delete reader;
 		reader = NULL;
-		doctotext_log(error) << "Error while getting codepage info. Error message:" << ex.getBacktrace();
+		docwire_log(error) << "Error while getting codepage info. Error message:" << ex.getBacktrace();
 		return false;
 	}
 	delete reader;
-	doctotext_log(warning) << "Information about codepage is missing.";
+	docwire_log(warning) << "Information about codepage is missing.";
 	return false;
 }
 
 void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& slide_count)
 {
-	doctotext_log(debug) << "Extracting additional metadata.";
+	docwire_log(debug) << "Extracting additional metadata.";
 	size_t field_set_stream_start;
 	if (!storage.isValid())
 		throw Exception("Error opening " + storage.name() + " as OLE file");

@@ -9,10 +9,11 @@
  */
 int main(int argc, char* argv[])
 {
-   doctotext::SimpleExtractor simple_extractor(argv[1]); // create a simple extractor
-   simple_extractor.addCallbackFunction([](doctotext::Info &info)
+   using namespace docwire;
+   SimpleExtractor simple_extractor(argv[1]); // create a simple extractor
+   simple_extractor.addCallbackFunction([](Info &info)
                                        {
-                                         if (info.tag_name == doctotext::StandardTag::TAG_MAIL) // if current node is mail
+                                         if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
                                          {
                                            auto date = info.getAttributeValue<int>("date"); // get the date attribute
                                            if (date) // if date attribute exists

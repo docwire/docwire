@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -34,7 +34,7 @@
 #include "xlsb_parser.h"
 
 #include <algorithm>
-#include "doctotext_unzip.h"
+#include "zip_reader.h"
 #include "exception.h"
 #include <iostream>
 #include "log.h"
@@ -123,7 +123,7 @@ struct XLSBParser::Implementation
 			};
 
 		private:
-			DocToTextUnzip* m_zipfile;
+			ZipReader* m_zipfile;
 			std::vector<unsigned char> m_chunk;
 			int m_chunk_len;
 			int m_pointer;
@@ -132,7 +132,7 @@ struct XLSBParser::Implementation
 			std::string m_file_name;
 
 		public:
-			XLSBReader(DocToTextUnzip& zipfile, const std::string& file_name)
+			XLSBReader(ZipReader& zipfile, const std::string& file_name)
 			{
 				m_zipfile = &zipfile;
 				m_file_name = file_name;
@@ -517,7 +517,7 @@ struct XLSBParser::Implementation
 					uint32_t str_index;
 					xlsb_reader.readUint32(str_index);
 					if (str_index >= m_xlsb_content.m_shared_strings.size())
-						doctotext_log(warning) << "Warning: Detected reference to string that does not exist";
+						docwire_log(warning) << "Warning: Detected reference to string that does not exist";
 					else
 						text += m_xlsb_content.m_shared_strings[str_index];
 				}
@@ -531,14 +531,14 @@ struct XLSBParser::Implementation
 		};
 	}
 
-	void parseSharedStrings(DocToTextUnzip& unzip)
+	void parseSharedStrings(ZipReader& unzip)
 	{
 		XLSBReader::Record record;
 		std::string file_name = "xl/sharedStrings.bin";
 		if (!unzip.exists(file_name))
 		{
 			//file may not exist, nothing wrong is with that.
-			doctotext_log(debug) << "File: " + file_name + " does not exist";
+			docwire_log(debug) << "File: " + file_name + " does not exist";
 			return;
 		}
 		XLSBReader xlsb_reader(unzip, file_name);
@@ -566,7 +566,7 @@ struct XLSBParser::Implementation
 		unzip.closeReadingFileForChunks();
 	}
 
-	void parseWorksheets(DocToTextUnzip& unzip, std::string& text)
+	void parseWorksheets(ZipReader& unzip, std::string& text)
 	{
 		XLSBReader::Record record;
 		int sheet_index = 1;
@@ -604,7 +604,7 @@ struct XLSBParser::Implementation
 		}
 	}
 
-	void parseXLSB(DocToTextUnzip& unzip, std::string& text)
+	void parseXLSB(ZipReader& unzip, std::string& text)
 	{
 		text.reserve(1024 * 1024);
 		if (!unzip.loadDirectory())
@@ -629,9 +629,9 @@ struct XLSBParser::Implementation
 		}
 	}
 
-	void readMetadata(DocToTextUnzip& unzip, Metadata& metadata)
+	void readMetadata(ZipReader& unzip, Metadata& metadata)
 	{
-		doctotext_log(debug) << "Extracting metadata.";
+		docwire_log(debug) << "Extracting metadata.";
 		std::string data;
 		if (!unzip.read("docProps/app.xml", &data))
 			throw Exception("Error while parsing docProps/app.xml");
@@ -754,7 +754,7 @@ XLSBParser::~XLSBParser()
 
 bool XLSBParser::isXLSB()
 {
-	DocToTextUnzip unzip;
+	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
 	else
@@ -764,28 +764,23 @@ bool XLSBParser::isXLSB()
 	{
 		if (impl->fileIsEncrypted())
 			throw EncryptedFileException("File is encrypted according to the Microsoft Office Document Cryptography Specification. Exact file format cannot be determined");
-		doctotext_log(error) << "Cannot unzip file.";
+		docwire_log(error) << "Cannot unzip file.";
 		return false;
 	}
 	if (!unzip.exists("xl/workbook.bin"))
 	{
 		unzip.close();
-		doctotext_log(error) << "Cannot find xl/woorkbook.bin.";
+		docwire_log(error) << "Cannot find xl/woorkbook.bin.";
 		return false;
 	}
 	unzip.close();
 	return true;
 }
 
-void XLSBParser::getLinks(std::vector<Link>& links)
-{
-	// warning TODO: Implement this functionality.
-}
-
 Metadata XLSBParser::metaData()
 {
 	Metadata metadata;
-	DocToTextUnzip unzip;
+	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
 	else
@@ -822,9 +817,9 @@ Metadata XLSBParser::metaData()
 
 std::string XLSBParser::plainText(const FormattingStyle& formatting)
 {
-	doctotext_log(debug) << "Using XLSB parser.";
+	docwire_log(debug) << "Using XLSB parser.";
 	std::string text;
-	DocToTextUnzip unzip;
+	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
 	else

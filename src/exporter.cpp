@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -38,7 +38,7 @@
 #include "meta_data_writer.h"
 #include "exporter.h"
 
-namespace doctotext
+namespace docwire
 {
 
 class Exporter::Implementation
@@ -78,8 +78,7 @@ public:
     _output = &out_stream;
   }
 
-  void
-  export_to(doctotext::Info &info) const
+  void export_to(Info &info) const
   {
     _writer->write_to(info, *_output);
   }
@@ -120,7 +119,7 @@ Exporter::is_valid() const
 }
 
 void
-Exporter::process(doctotext::Info &info) const
+Exporter::process(Info &info) const
 {
   impl->export_to(info);
 }
@@ -132,7 +131,7 @@ Exporter::set_out_stream(std::ostream &out_stream)
 }
 
 void
-Exporter::export_to(doctotext::Info &info) const
+Exporter::export_to(Info &info) const
 {
   impl->export_to(info);
 }
@@ -184,4 +183,4 @@ MetaDataExporter::MetaDataExporter(std::ostream &out_stream)
 : Exporter(std::make_unique<MetaDataWriter>(), out_stream)
 {}
 
-} // namespace doctotext
+} // namespace docwire

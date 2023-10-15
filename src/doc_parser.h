@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -31,22 +31,20 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_DOC_PARSER_H
-#define DOCTOTEXT_DOC_PARSER_H
+#ifndef DOCWIRE_DOC_PARSER_H
+#define DOCWIRE_DOC_PARSER_H
 
-#include "doctotext_link.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include <string>
 #include <vector>
 
-namespace doctotext
+namespace docwire
 {
 	class FormattingStyle;
 	class Metadata;
-}
 
-class DOCParser : public doctotext::Parser
+class DOCParser : public Parser
 {
 	private:
 		struct Implementation;
@@ -55,17 +53,18 @@ class DOCParser : public doctotext::Parser
 	public:
 
     void parse() const override;
-    Parser& addOnNewNodeCallback(doctotext::NewNodeCallback callback) override;
-		Parser& withParameters(const doctotext::ParserParameters &parameters) override;
+    Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
+		Parser& withParameters(const ParserParameters &parameters) override;
     static std::vector <std::string> getExtensions() {return {"doc", "dot"};}
 
-		DOCParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
-		DOCParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+		DOCParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+		DOCParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
 		~DOCParser();
 		bool isDOC();
-		void getLinks(std::vector<doctotext::Link>& links);
-		std::string plainText(const doctotext::FormattingStyle& formatting) const;
-    doctotext::Metadata metaData() const;
+		std::string plainText(const FormattingStyle& formatting) const;
+		Metadata metaData() const;
 };
+
+} // namespace docwire
 
 #endif

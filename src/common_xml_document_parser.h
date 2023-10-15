@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -31,25 +31,20 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_COMMON_XML_PARSER_H
-#define DOCTOTEXT_COMMON_XML_PARSER_H
+#ifndef DOCWIRE_COMMON_XML_PARSER_H
+#define DOCWIRE_COMMON_XML_PARSER_H
 
 #include "formatting_style.h"
-#include "doctotext_link.h"
 #include "parser.h"
 #include <string>
 #include <vector>
 #include <map>
 
-namespace doctotext
+namespace docwire
 {
-	class DocToTextUnzip;
+	class ZipReader;
 	class Metadata;
 	class XmlStream;
-}
-
-using namespace doctotext;
-
 
 /**
 	This class is inherited by ODFOOXMLParser and ODFXMLParser. It contains some common
@@ -78,26 +73,23 @@ class CommonXMLDocumentParser
 			std::string m_author;
 			std::string m_time;
 			std::string m_text;
-			std::vector<Link> m_links;
 			Comment() {}
-			Comment(const std::string& author, const std::string& time, const std::string& text, const std::vector<Link>& links)
-				: m_author(author), m_time(time), m_text(text), m_links(links) {}
+			Comment(const std::string& author, const std::string& time, const std::string& text)
+				: m_author(author), m_time(time), m_text(text) {}
 		};
 
 		struct SharedString
 		{
 			std::string m_text;
-			std::vector<Link> m_links;
 		};
 
 		typedef std::vector<ODFOOXMLListStyle> ListStyleVector;
 
   typedef std::function<void(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                                 const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-                                 bool& children_processed, std::string& level_suffix, bool first_on_level,
-                                 std::vector<Link>& links)> CommandHandler;
+                                 const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                                 bool& children_processed, std::string& level_suffix, bool first_on_level)> CommandHandler;
 
-    void addCallback(const doctotext::NewNodeCallback &callback);
+    void addCallback(const NewNodeCallback &callback);
 
 		/**
 			Each xml tag can have associated handler, which is a single function of CommandHandler type.
@@ -109,17 +101,16 @@ class CommonXMLDocumentParser
 
 		///it is executed for each undefined tag (xml tag without associated handler). Can be overwritten
 		virtual void onUnregisteredCommand(XmlStream& xml_stream, XmlParseMode mode,
-										   const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-										   bool& children_processed, std::string& level_suffix, bool first_on_level,
-										   std::vector<Link>& links);
+										   const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+										   bool& children_processed, std::string& level_suffix, bool first_on_level);
 
 		///parses xml data for given xml stream. It executes commands for each xml tag
-		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const FormattingStyle& options, const DocToTextUnzip* zipfile, std::vector<Link>& links) const; // todo https://github.com/docwire/doctotext/issues/91
+		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile) const;
 
-		///extracts text and links from xml data. It uses parseXmlData internally. Throws doctotext::exception on fail
-		void extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text, std::vector<Link>& links) const; // todo https://github.com/docwire/doctotext/issues/91
+		///extracts text from xml data. It uses parseXmlData internally. Throws Exception on fail
+		void extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile, std::string& text) const;
 
-		///usefull since two parsers use this. Throws doctotext::exception on fail
+		///usefull since two parsers use this. Throws Exception on fail
 		void parseODFMetadata(const std::string &xml_content, Metadata &metadata) const;
 
 		///this is helpful function to format comment
@@ -127,9 +118,6 @@ class CommonXMLDocumentParser
 
 		///Returns information "on how many list objects" we are. Returns 0 if we are not parsing any list actually. Should only be used inside command handlers
 		size_t& getListDepth() const;
-
-		///gets vector of links for reading and writing
-		std::vector<Link>& getInnerLinks() const;
 
 		///gets list styles for reading and writing
 		std::map<std::string, ListStyleVector>& getListStyles() const;
@@ -149,10 +137,10 @@ class CommonXMLDocumentParser
 		bool manageXmlParser() const;
 
 		///disables modifying text data inside method onUnregisteredCommand
-		void disableText(bool disable) const; // todo https://github.com/docwire/doctotext/issues/91
+		void disableText(bool disable) const;
 
 		///sets options for XmlStream objects. (xmlParserOption from libxml2)
-		void setXmlOptions(int options) const; // todo https://github.com/docwire/doctotext/issues/91
+		void setXmlOptions(int options) const;
 
 		///Cleans up associated data. Call this method in constructor of derived class in case of bad_alloc.
 		void cleanUp();
@@ -166,9 +154,10 @@ class CommonXMLDocumentParser
 		CommonXMLDocumentParser();
 		virtual ~CommonXMLDocumentParser();
 		void setManageXmlParser(bool manage);
-		void getLinks(std::vector<Link>& links);
-		virtual std::string plainText(XmlParseMode mode, FormattingStyle& options) const = 0; // todo https://github.com/docwire/doctotext/issues/91
+		virtual std::string plainText(XmlParseMode mode, FormattingStyle& options) const = 0;
 		virtual Metadata metaData() const = 0;
 };
+
+} // namespace docwire
 
 #endif

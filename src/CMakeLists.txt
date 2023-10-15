@@ -1,12 +1,10 @@
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INSTALL_RPATH .)
 
-set(DOCTOTEXT_SOURCES
-        doctotext_c_api.cpp
+add_library(docwire_core SHARED
         attachment.cpp
         exception.cpp
         decompress_archives.cpp
-        doctotext_link.cpp
         list_style.cpp
         log.cpp
         metadata.cpp
@@ -35,15 +33,6 @@ set(DOCTOTEXT_SOURCES
 
 if(MSVC)
     add_definitions(-DMSVC_BUILD)
-endif()
-
-if (DOCTOTEXT_SHARED)
-   add_library(doctotext_core SHARED ${DOCTOTEXT_SOURCES})
-else()
-   add_library(doctotext_core STATIC ${DOCTOTEXT_SOURCES})
-endif()
-
-if(MSVC)
     find_path(wv2_inc_dir wv2/parser.h REQUIRED)
     set(wv2_prefix "${wv2_inc_dir}/..")
     find_library(wvWare wv2 HINTS "${wv2_prefix}/lib/static" REQUIRED)
@@ -51,14 +40,14 @@ if(MSVC)
     find_package(PThreads4W REQUIRED)
     find_package(Boost REQUIRED COMPONENTS filesystem system json)
     find_package(LibArchive REQUIRED)
-    target_link_libraries(doctotext_core PRIVATE ${wvWare}
+    target_link_libraries(docwire_core PRIVATE ${wvWare}
                                                  PThreads4W::PThreads4W
                                                  Boost::filesystem
                                                  Boost::system
                                                  Boost::json
                                                  LibArchive::LibArchive)
-    target_include_directories(doctotext_core PUBLIC ${wv2_inc_dir})
-    target_compile_options(doctotext_core PUBLIC /Zc:__cplusplus /Zc:preprocessor)
+    target_include_directories(docwire_core PUBLIC ${wv2_inc_dir})
+    target_compile_options(docwire_core PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 
 else()
     find_library(wvWare wv2 REQUIRED)
@@ -86,20 +75,20 @@ else()
     else()
         find_library(archive archive REQUIRED)
     endif()
-    target_link_libraries(doctotext_core PRIVATE ${wvWare} pthread ${boost_filesystem} ${boost_system} ${boost_json} ${archive})
+    target_link_libraries(docwire_core PRIVATE ${wvWare} pthread ${boost_filesystem} ${boost_system} ${boost_json} ${archive})
     find_path(boost_signals2_inc boost/signals2.hpp REQUIRED)
-    target_include_directories(doctotext_core PUBLIC ${wvWare_incdir} ${boost_signals2_inc})
+    target_include_directories(docwire_core PUBLIC ${wvWare_incdir} ${boost_signals2_inc})
 endif()
 
-target_compile_options(doctotext_core PUBLIC ${EXTRA_FLAGS})
+target_compile_options(docwire_core PUBLIC ${EXTRA_FLAGS})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    target_link_libraries(doctotext_core PRIVATE dl)
+    target_link_libraries(docwire_core PRIVATE dl)
 endif()
 
-add_library(doctotext_parsers SHARED
+add_library(docwire_parsers SHARED
         entities.cpp
-        doctotext_unzip.cpp
+        zip_reader.cpp
         oshared.cpp
         xml_fixer.cpp
         xml_stream.cpp
@@ -120,13 +109,13 @@ add_library(doctotext_parsers SHARED
 find_package(LibXml2 REQUIRED)
 find_package(ZLIB REQUIRED)
 
-target_include_directories(doctotext_parsers PUBLIC
+target_include_directories(docwire_parsers PUBLIC
         ../
         .
         ${LIBXML2_INCLUDE_DIR}
         )
 
-target_include_directories(doctotext_core PUBLIC
+target_include_directories(docwire_core PUBLIC
         ../
         .
         )
@@ -138,20 +127,20 @@ if(MSVC)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
     find_package(Iconv REQUIRED)
-    target_link_libraries(doctotext_parsers PRIVATE
+    target_link_libraries(docwire_parsers PRIVATE
             ${podofo}
             ${unzip}
             ${wvWare}
             ${htmlcxx}
             ${LIBXML2_LIBRARIES}
             ${charsetdetect}
-            doctotext_core
+            docwire_core
             Freetype::Freetype
             PThreads4W::PThreads4W
             ZLIB::ZLIB
             Iconv::Iconv
             )
-    target_compile_options(doctotext_parsers PUBLIC /Zc:__cplusplus /Zc:preprocessor)
+    target_compile_options(docwire_parsers PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 else()
     find_library(podofo podofo REQUIRED)
     find_package(Freetype REQUIRED)
@@ -166,7 +155,7 @@ else()
     find_library(wv2 wv2 REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
-    target_link_libraries(doctotext_parsers PRIVATE
+    target_link_libraries(docwire_parsers PRIVATE
         ${podofo}
         Freetype::Freetype
         ${unzip}
@@ -176,26 +165,26 @@ else()
         pthread
         ZLIB::ZLIB
         ${charsetdetect}
-        doctotext_core
+        docwire_core
         )
     find_path(unzip_incdir unzip.h)
-    target_include_directories(doctotext_parsers PRIVATE ${unzip_incdir})
+    target_include_directories(docwire_parsers PRIVATE ${unzip_incdir})
 endif()
 
-add_library(doctotext_ocr SHARED ocr_parser_provider.cpp ocr_parser.cpp)
+add_library(docwire_ocr SHARED ocr_parser_provider.cpp ocr_parser.cpp)
 if(MSVC)
-    set_property(TARGET doctotext_ocr PROPERTY
+    set_property(TARGET docwire_ocr PROPERTY
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     find_package(Leptonica)
     find_package(Tesseract)
-    target_link_libraries(doctotext_ocr ${Leptonica_LIBRARIES}
+    target_link_libraries(docwire_ocr ${Leptonica_LIBRARIES}
                                         Tesseract::libtesseract
-                                        doctotext_core)
-    target_include_directories(doctotext_ocr PUBLIC
+                                        docwire_core)
+    target_include_directories(docwire_ocr PUBLIC
             ../
             .
             )
-    target_compile_options(doctotext_ocr PUBLIC /Zc:__cplusplus /Zc:preprocessor)
+    target_compile_options(docwire_ocr PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 else()
     find_package(Leptonica)
     if (Leptonica_FOUND)
@@ -221,77 +210,71 @@ else()
     else()
         set(libxml2_dep_iconv "")
     endif()
-    target_link_libraries(doctotext_ocr PRIVATE ${Leptonica_LIBRARIES} ${tesseract} ${archive} ${libxml2_dep_iconv} doctotext_core)
+    target_link_libraries(docwire_ocr PRIVATE ${Leptonica_LIBRARIES} ${tesseract} ${archive} ${libxml2_dep_iconv} docwire_core)
 endif()
 
-add_library(doctotext_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
+add_library(docwire_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
 if(MSVC)
     find_library(bfio NAMES bfio libbfio REQUIRED)
     find_library(pff NAMES pff libpff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_package(PThreads4W REQUIRED)
-    target_link_libraries(doctotext_mail PRIVATE
+    target_link_libraries(docwire_mail PRIVATE
             ${bfio}
             ${pff}
-            doctotext_core
+            docwire_core
             ${htmlcxx}
             PThreads4W::PThreads4W)
-    target_include_directories(doctotext_mail PUBLIC
+    target_include_directories(docwire_mail PUBLIC
             ../
             .
             )
-    target_compile_options(doctotext_mail PUBLIC /Zc:__cplusplus /Zc:preprocessor)
+    target_compile_options(docwire_mail PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 else()
     find_library(bfio bfio REQUIRED)
     find_library(pff pff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
-    target_link_libraries(doctotext_mail PRIVATE ${bfio} ${pff} ${htmlcxx} pthread doctotext_core)
+    target_link_libraries(docwire_mail PRIVATE ${bfio} ${pff} ${htmlcxx} pthread docwire_core)
 endif()
 find_package(mailio CONFIG REQUIRED)
-target_link_libraries(doctotext_mail PRIVATE mailio)
+target_link_libraries(docwire_mail PRIVATE mailio)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-   set_target_properties(doctotext_parsers PROPERTIES PREFIX "")
-   set_target_properties(doctotext_core PROPERTIES PREFIX "")
+   set_target_properties(docwire_parsers PROPERTIES PREFIX "")
+   set_target_properties(docwire_core PROPERTIES PREFIX "")
 endif()
 
-add_executable(c_text_extractor c_text_extractor.c)
-target_link_libraries(c_text_extractor PRIVATE doctotext_core)
-
 add_executable(text_extractor text_extractor.cpp)
-target_link_libraries(text_extractor PRIVATE doctotext_core)
+target_link_libraries(text_extractor PRIVATE docwire_core)
 
-if (DOCTOTEXT_TRACE)
-   target_sources(doctotext_core PRIVATE tracing)
+if (DOCWIRE_TRACE)
+   target_sources(docwire_core PRIVATE tracing)
    add_compile_definitions(TRACE)
    add_compile_options($<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-finstrument-functions>)
 endif()
 
-install(TARGETS c_text_extractor DESTINATION bin)
 install(TARGETS text_extractor DESTINATION bin)
 if (MSVC)
-	set(plugins_dir bin/doctotext_plugins)
+	set(plugins_dir bin/docwire_plugins)
 else()
-	set(plugins_dir lib/doctotext_plugins)
+	set(plugins_dir lib/docwire_plugins)
 endif()
-install(TARGETS doctotext_ocr LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
-install(TARGETS doctotext_mail LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
-install(TARGETS doctotext_parsers LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
-install(TARGETS doctotext_core)
+install(TARGETS docwire_ocr LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
+install(TARGETS docwire_mail LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
+install(TARGETS docwire_parsers LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
+install(TARGETS docwire_core)
 
 if(MSVC)
-	install(FILES $<TARGET_PDB_FILE:doctotext_ocr> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
-	install(FILES $<TARGET_PDB_FILE:doctotext_mail> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
-	install(FILES $<TARGET_PDB_FILE:doctotext_parsers> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
-	install(FILES $<TARGET_PDB_FILE:doctotext_core> DESTINATION bin CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:docwire_ocr> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:docwire_mail> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:docwire_parsers> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:docwire_core> DESTINATION bin CONFIGURATIONS Debug)
 endif()
 
 set(PUBLIC_HEADERS
-	doctotext_c_api.h
 	metadata.h
 	formatting_style.h
 	decompress_archives.h
-	doctotext_link.h
 	exception.h
 	attachment.h
 	variant.h
@@ -314,41 +297,25 @@ set(PUBLIC_HEADERS
 	defines.h
 	log.h
 )
-install(FILES ${PUBLIC_HEADERS} DESTINATION include/doctotext)
+install(FILES ${PUBLIC_HEADERS} DESTINATION include/docwire)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR APPLE)
 	if(APPLE)
 		file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.sh "BASEDIR=$(dirname \"$0\")
-			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/doctotext_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
+			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
 	else()
     file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.sh "BASEDIR=$(dirname \"$0\")
-    LD_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/doctotext_system_libraries:$LD_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
+    LD_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$LD_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
 	endif()
     execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/text_extractor.sh)
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.sh DESTINATION bin)
-
-	if(APPLE)
-		file(WRITE ${CMAKE_BINARY_DIR}/c_text_extractor.sh "BASEDIR=$(dirname \"$0\")
-			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/doctotext_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/c_text_extractor \"$@\"")
-	else()
-   file(WRITE ${CMAKE_BINARY_DIR}/c_text_extractor.sh "BASEDIR=$(dirname \"$0\")
-   LD_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/doctotext_system_libraries:$LD_LIBRARY_PATH ./$BASEDIR/c_text_extractor \"$@\"")
-	endif()
-   execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/c_text_extractor.sh)
-	install(PROGRAMS ${CMAKE_BINARY_DIR}/c_text_extractor.sh DESTINATION bin)
 elseif(MSVC)
 	file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.bat
 		"@echo off
 		set BASEDIR=%~dp0
-		set PATH=%BASEDIR%\\..\\bin;%BASEDIR%\\..\\bin\\doctotext_system_libraries;%PATH%
+		set PATH=%BASEDIR%\\..\\bin;%BASEDIR%\\..\\bin\\docwire_system_libraries;%PATH%
 		\"%BASEDIR%\\text_extractor.exe\" %*")
 	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.bat DESTINATION bin)
-	file(WRITE ${CMAKE_BINARY_DIR}/c_text_extractor.bat
-		"@echo off
-		set BASEDIR=%~dp0
-		set PATH=%BASEDIR%\\..\\bin;%BASEDIR%\\..\\bin\\doctotext_system_libraries;%PATH%
-		\"%BASEDIR%\\c_text_extractor.exe\" %*")
-	install(PROGRAMS ${CMAKE_BINARY_DIR}/c_text_extractor.bat DESTINATION bin)
 endif()
 
 set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
@@ -360,7 +327,7 @@ endif()
 include(InstallRequiredSystemLibraries)
 
 if (WIN32)
-	install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin/doctotext_system_libraries)
+	install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin/docwire_system_libraries)
 else()
-	install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION lib/doctotext_system_libraries)
+	install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION lib/docwire_system_libraries)
 endif()

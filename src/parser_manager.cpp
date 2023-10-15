@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -44,7 +44,8 @@
 #include "parser_builder.h"
 #include "pthread.h"
 
-using namespace doctotext;
+namespace docwire
+{
 
 static pthread_mutex_t load_providers_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -56,8 +57,8 @@ public:
   explicit Implementation(const std::string &plugins_directory)
   {
     m_plugins_directory = plugins_directory.empty() ?
-      locate_subpath("doctotext_plugins").string() : plugins_directory;
-    doctotext_log(debug) << "Plugins directory: " << m_plugins_directory;
+      locate_subpath("docwire_plugins").string() : plugins_directory;
+    docwire_log(debug) << "Plugins directory: " << m_plugins_directory;
     pthread_mutex_lock(&load_providers_mutex);
     loadProviders();
     pthread_mutex_unlock(&load_providers_mutex);
@@ -65,25 +66,25 @@ public:
 
   void loadProvider(const std::filesystem::path path)
   {
-    doctotext_log(debug) << "Loading plugin " << path;
+    docwire_log(debug) << "Loading plugin " << path;
     try
     {
-      boost::shared_ptr<doctotext::ParserProvider>plugin_provider =
-      boost::dll::import_symbol<doctotext::ParserProvider>(path.c_str(),
+      boost::shared_ptr<ParserProvider>plugin_provider =
+      boost::dll::import_symbol<ParserProvider>(path.c_str(),
                                                               "plugin_parser_provider",
                                                               boost::dll::load_mode::append_decorations);
       providers.push_back(plugin_provider);
-      doctotext_log(debug) << "Plugin " << path << " loaded successfuly";
+      docwire_log(debug) << "Plugin " << path << " loaded successfuly";
     }
     catch (const boost::system::system_error &e)
     {
-      doctotext_log(error) << "Error loading plugin: " << e.what();
+      docwire_log(error) << "Error loading plugin: " << e.what();
     }
   }
 
   void loadProviders()
   {
-    doctotext_log(debug) << "Loading plugins";
+    docwire_log(debug) << "Loading plugins";
     providers.clear();
     const std::filesystem::path root{m_plugins_directory};
     try
@@ -94,14 +95,14 @@ public:
           if (dir_entry.is_regular_file() && correct_extensions.find(dir_entry.path().extension().u8string()) != correct_extensions.end())
             loadProvider(dir_entry.path());
           else
-            doctotext_log(error) << "Skipping " << dir_entry.path() << " - not a regular file or incorrect extension";
+            docwire_log(error) << "Skipping " << dir_entry.path() << " - not a regular file or incorrect extension";
       }
       else
-        doctotext_log(error) << "Plugins directory path does not point to a directory";
+        docwire_log(error) << "Plugins directory path does not point to a directory";
     }
     catch (const std::filesystem::filesystem_error& e)
     {
-      doctotext_log(error) << "Error traversing plugins directory: " << e.what();
+      docwire_log(error) << "Error traversing plugins directory: " << e.what();
     }
   }
 
@@ -164,3 +165,5 @@ ParserManager::getAvailableExtensions() const
   }
   return all_extensions;
 }
+
+} // namespace docwire

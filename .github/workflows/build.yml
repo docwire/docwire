@@ -29,14 +29,14 @@ jobs:
         with:
           name: x64-linux-dynamic-binaries
           path: |
-            ./doctotext*.bz2
-            ./doctotext*.sha1
+            ./docwire*.bz2
+            ./docwire*.sha1
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: x64-linux-dynamic-logs
-          path: vcpkg/buildtrees/doctotext/*.log
+          path: vcpkg/buildtrees/docwire/*.log
           if-no-files-found: error
   x64-windows:
     runs-on: windows-2019
@@ -65,14 +65,14 @@ jobs:
         with:
           name: x64-windows-binaries
           path: |
-            ./doctotext*.zip
-            ./doctotext*.sha1
+            ./docwire*.zip
+            ./docwire*.sha1
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: x64-windows-logs
-          path: vcpkg/buildtrees/doctotext/*.log
+          path: vcpkg/buildtrees/docwire/*.log
           if-no-files-found: error
   x64-osx-dynamic:
     runs-on: macos-12
@@ -98,12 +98,12 @@ jobs:
         with:
           name: x64-osx-dynamic-binaries
           path: |
-            ./doctotext*.bz2
-            ./doctotext*.sha1
+            ./docwire*.bz2
+            ./docwire*.sha1
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: x64-osx-dynamic-logs
-          path: vcpkg/buildtrees/doctotext/*.log
+          path: vcpkg/buildtrees/docwire/*.log
           if-no-files-found: error

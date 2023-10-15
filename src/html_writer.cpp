@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -36,10 +36,8 @@
 #include "html_writer.h"
 #include <numeric>
 #include "parser.h"
-namespace doctotext
+namespace docwire
 {
-
-using doctotext::StandardTag;
 
 struct HtmlWriter::Implementation
 {
@@ -58,7 +56,7 @@ struct HtmlWriter::Implementation
            "<html>\n"
            "<head>\n"
            "<meta charset=\"utf-8\">\n"
-           "<title>DocToText</title>\n"};
+           "<title>DocWire</title>\n"};
     m_header_is_open = true;
     return std::make_shared<TextElement>(header);
   }
@@ -164,39 +162,39 @@ struct HtmlWriter::Implementation
         "<style type=\"text/css\">" + info.getAttributeValue<std::string>("css_text").value() + "</style>\n" : "");
   }
 
-std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext::Info &info)>> writers = {
-  {StandardTag::TAG_P, [this](const doctotext::Info &info) { return tag_with_attributes("p", restored_original_attributes(info)); }},
-  {StandardTag::TAG_CLOSE_P, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</p>"); }},
-  {StandardTag::TAG_SECTION, [this](const doctotext::Info &info) { return tag_with_attributes("div", restored_original_attributes(info)); }},
-  {StandardTag::TAG_CLOSE_SECTION, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</div>"); }},
-  {StandardTag::TAG_SPAN, [this](const doctotext::Info &info) { return tag_with_attributes("span", restored_original_attributes(info)); }},
-  {StandardTag::TAG_CLOSE_SPAN, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</span>"); }},
-  {StandardTag::TAG_B, [this](const doctotext::Info &info) { return tag_with_attributes("b", restored_original_attributes(info)); }},
-  {StandardTag::TAG_CLOSE_B, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</b>"); }},
-  {StandardTag::TAG_I, [this](const doctotext::Info &info) { return tag_with_attributes("i", restored_original_attributes(info)); }},
-  {StandardTag::TAG_CLOSE_I, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</i>"); }},
-  {StandardTag::TAG_U, [this](const doctotext::Info &info) { return tag_with_attributes("u", restored_original_attributes(info)); }},
-  {StandardTag::TAG_CLOSE_U, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</u>"); }},
-  {StandardTag::TAG_TABLE, [this](const doctotext::Info &info) { return tag_with_attributes("table", restored_original_attributes(info)); }},
-  {StandardTag::TAG_CLOSE_TABLE, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</table>"); }},
-  {StandardTag::TAG_TR, [this](const doctotext::Info &info) { return tag_with_attributes("tr", restored_original_attributes(info)); }},
-  {StandardTag::TAG_CLOSE_TR, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</tr>"); }},
-  {StandardTag::TAG_TD, [this](const doctotext::Info &info) { return tag_with_attributes("td", restored_original_attributes(info)); }},
-  {StandardTag::TAG_CLOSE_TD, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</td>"); }},
-  {StandardTag::TAG_BR, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<br />"); }},
-  {StandardTag::TAG_TEXT, [](const doctotext::Info &info) { return std::make_shared<TextElement>(info.plain_text); }},
-  {StandardTag::TAG_LINK, [this](const doctotext::Info &info) { return write_link(info); }},
-  {StandardTag::TAG_CLOSE_LINK, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</a>"); }},
-  {StandardTag::TAG_IMAGE, [this](const doctotext::Info &info) { return write_image(info); }},
-  {StandardTag::TAG_LIST, [this](const doctotext::Info &info) { return write_list(info); }},
-  {StandardTag::TAG_CLOSE_LIST, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</ul>"); }},
-  {StandardTag::TAG_LIST_ITEM, [](const doctotext::Info &info) { return std::make_shared<TextElement>("<li>"); }},
-  {StandardTag::TAG_CLOSE_LIST_ITEM, [](const doctotext::Info &info) { return std::make_shared<TextElement>("</li>"); }},
-  {StandardTag::TAG_DOCUMENT, [this](const doctotext::Info &info) { return write_open_header(); }},
-  {StandardTag::TAG_CLOSE_DOCUMENT, [this](const doctotext::Info &info) { return write_footer(); }},
-  {StandardTag::TAG_STYLE, [this](const doctotext::Info &info) { return write_style(info); }}};
+  std::map<std::string, std::function<std::shared_ptr<TextElement>(const Info &info)>> writers = {
+    {StandardTag::TAG_P, [this](const Info &info) { return tag_with_attributes("p", restored_original_attributes(info)); }},
+    {StandardTag::TAG_CLOSE_P, [](const Info &info) { return std::make_shared<TextElement>("</p>"); }},
+    {StandardTag::TAG_SECTION, [this](const Info &info) { return tag_with_attributes("div", restored_original_attributes(info)); }},
+    {StandardTag::TAG_CLOSE_SECTION, [](const Info &info) { return std::make_shared<TextElement>("</div>"); }},
+    {StandardTag::TAG_SPAN, [this](const Info &info) { return tag_with_attributes("span", restored_original_attributes(info)); }},
+    {StandardTag::TAG_CLOSE_SPAN, [](const Info &info) { return std::make_shared<TextElement>("</span>"); }},
+    {StandardTag::TAG_B, [this](const Info &info) { return tag_with_attributes("b", restored_original_attributes(info)); }},
+    {StandardTag::TAG_CLOSE_B, [](const Info &info) { return std::make_shared<TextElement>("</b>"); }},
+    {StandardTag::TAG_I, [this](const Info &info) { return tag_with_attributes("i", restored_original_attributes(info)); }},
+    {StandardTag::TAG_CLOSE_I, [](const Info &info) { return std::make_shared<TextElement>("</i>"); }},
+    {StandardTag::TAG_U, [this](const Info &info) { return tag_with_attributes("u", restored_original_attributes(info)); }},
+    {StandardTag::TAG_CLOSE_U, [](const Info &info) { return std::make_shared<TextElement>("</u>"); }},
+    {StandardTag::TAG_TABLE, [this](const Info &info) { return tag_with_attributes("table", restored_original_attributes(info)); }},
+    {StandardTag::TAG_CLOSE_TABLE, [](const Info &info) { return std::make_shared<TextElement>("</table>"); }},
+    {StandardTag::TAG_TR, [this](const Info &info) { return tag_with_attributes("tr", restored_original_attributes(info)); }},
+    {StandardTag::TAG_CLOSE_TR, [](const Info &info) { return std::make_shared<TextElement>("</tr>"); }},
+    {StandardTag::TAG_TD, [this](const Info &info) { return tag_with_attributes("td", restored_original_attributes(info)); }},
+    {StandardTag::TAG_CLOSE_TD, [](const Info &info) { return std::make_shared<TextElement>("</td>"); }},
+    {StandardTag::TAG_BR, [](const Info &info) { return std::make_shared<TextElement>("<br />"); }},
+    {StandardTag::TAG_TEXT, [](const Info &info) { return std::make_shared<TextElement>(info.plain_text); }},
+    {StandardTag::TAG_LINK, [this](const Info &info) { return write_link(info); }},
+    {StandardTag::TAG_CLOSE_LINK, [](const Info &info) { return std::make_shared<TextElement>("</a>"); }},
+    {StandardTag::TAG_IMAGE, [this](const Info &info) { return write_image(info); }},
+    {StandardTag::TAG_LIST, [this](const Info &info) { return write_list(info); }},
+    {StandardTag::TAG_CLOSE_LIST, [](const Info &info) { return std::make_shared<TextElement>("</ul>"); }},
+    {StandardTag::TAG_LIST_ITEM, [](const Info &info) { return std::make_shared<TextElement>("<li>"); }},
+    {StandardTag::TAG_CLOSE_LIST_ITEM, [](const Info &info) { return std::make_shared<TextElement>("</li>"); }},
+    {StandardTag::TAG_DOCUMENT, [this](const Info &info) { return write_open_header(); }},
+    {StandardTag::TAG_CLOSE_DOCUMENT, [this](const Info &info) { return write_footer(); }},
+    {StandardTag::TAG_STYLE, [this](const Info &info) { return write_style(info); }}};
 
-  void write_to(const doctotext::Info &info, std::ostream &stream)
+  void write_to(const Info &info, std::ostream &stream)
   {
     if (info.tag_name != StandardTag::TAG_STYLE && m_header_is_open)
       write_close_header_open_body()->write_to(stream);
@@ -223,8 +221,7 @@ HtmlWriter::HtmlWriter(const HtmlWriter& html_writer)
 {
 }
 
-void
-HtmlWriter::write_to(const doctotext::Info &info, std::ostream &stream)
+void HtmlWriter::write_to(const Info &info, std::ostream &stream)
 {
 	impl->write_to(info, stream);
 }
@@ -235,4 +232,4 @@ HtmlWriter::clone() const
 return new HtmlWriter(*this);
 }
 
-} // namespace doctotext
+} // namespace docwire

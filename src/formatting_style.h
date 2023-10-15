@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -31,13 +31,13 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_FORMATTING_STYLE_H
-#define DOCTOTEXT_FORMATTING_STYLE_H
+#ifndef DOCWIRE_FORMATTING_STYLE_H
+#define DOCWIRE_FORMATTING_STYLE_H
 
 #include <string>
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 	enum TableStyle { TABLE_STYLE_TABLE_LOOK, TABLE_STYLE_ONE_ROW, TABLE_STYLE_ONE_COL, };
 	enum UrlStyle { URL_STYLE_TEXT_ONLY, URL_STYLE_EXTENDED, URL_STYLE_UNDERSCORED, };
@@ -83,6 +83,6 @@ namespace doctotext
     DllExport Language nameToLanguage(const std::string& name);
 
 	enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
-} // namespace doctotext
+} // namespace docwire
 
 #endif

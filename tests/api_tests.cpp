@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -56,17 +56,17 @@ void dots_to_underscores(std::string& str)
     );
 }
 
+using namespace docwire;
 
-
-class DocumentTests :public ::testing::TestWithParam<std::tuple<int, int, const char*, std::optional<doctotext::FormattingStyle>>> {
+class DocumentTests :public ::testing::TestWithParam<std::tuple<int, int, const char*, std::optional<FormattingStyle>>> {
 protected:
-    doctotext::ParserParameters parameters{};
+    ParserParameters parameters{};
 
     void SetUp() override
     {
-        doctotext::FormattingStyle style{};
+        FormattingStyle style{};
         style.list_style.setPrefix(" * ");
-        parameters += doctotext::ParserParameters{ "formatting_style", style };
+        parameters += ParserParameters{ "formatting_style", style };
   }
 
 };
@@ -89,7 +89,7 @@ TEST_P(DocumentTests, SimpleExtractorTest)
         SCOPED_TRACE("file_name = " + file_name);
 
         // WHEN
-        doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
+        SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
 
         simple_extractor.addParameters(parameters);
 
@@ -120,12 +120,12 @@ TEST_P(DocumentTests, ReadFromBufferTest)
         std::ifstream ifs_input{ file_name, std::ios_base::binary };
 
         // WHEN
-        auto parser_manager = std::make_shared<doctotext::ParserManager>(); // create parser manager
+        auto parser_manager = std::make_shared<ParserManager>(); // create parser manager
         std::stringstream output_stream{};
 
-        doctotext::Input(&ifs_input) |
-          doctotext::Importer(parameters, parser_manager) |
-          doctotext::PlainTextExporter(output_stream);
+        Input(&ifs_input) |
+          Importer(parameters, parser_manager) |
+          PlainTextExporter(output_stream);
 
         std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
             std::istreambuf_iterator<char>{}};
@@ -195,7 +195,7 @@ TEST_P(MetadataTest, SimpleExtractorTest)
         SCOPED_TRACE("file_name = " + file_name);
 
         // WHEN
-        doctotext::SimpleExtractor extractor{ file_name };
+        SimpleExtractor extractor{ file_name };
         std::string parsed_text{ extractor.getMetaData() };
 
         // THEN
@@ -213,16 +213,16 @@ INSTANTIATE_TEST_SUITE_P(
       return name;
     });
 
-class CallbackTest : public ::testing::TestWithParam<std::tuple<const char*, const char*, doctotext::NewNodeCallback>>
+class CallbackTest : public ::testing::TestWithParam<std::tuple<const char*, const char*, NewNodeCallback>>
 {
 protected:
-    doctotext::ParserParameters parameters{};
+    ParserParameters parameters{};
 
     void SetUp() override
     {
-        doctotext::FormattingStyle style{};
+        FormattingStyle style{};
         style.list_style.setPrefix(" * ");
-        parameters += doctotext::ParserParameters{ "formatting_style", style };
+        parameters += ParserParameters{ "formatting_style", style };
   }
 };
 
@@ -244,7 +244,7 @@ TEST_P(CallbackTest, SimpleExtractorTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
+    SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
 
     simple_extractor.addCallbackFunction(callback);
     simple_extractor.addParameters(parameters);
@@ -258,7 +258,7 @@ TEST_P(CallbackTest, SimpleExtractorTest)
 INSTANTIATE_TEST_SUITE_P(
     StandardFilterTests, CallbackTest,
     ::testing::Values(
-        std::make_tuple("1.pst", "1.pst.2.out", doctotext::StandardFilter::filterByMailMinCreationTime(1644216799))
+        std::make_tuple("1.pst", "1.pst.2.out", StandardFilter::filterByMailMinCreationTime(1644216799))
                       ));
 
 class HTMLWriterTest : public ::testing::TestWithParam<const char*>
@@ -280,7 +280,7 @@ TEST_P(HTMLWriterTest, SimpleExtractorTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
+    SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
     std::string parsed_text{ simple_extractor.getHtmlText() };
         
     // THEN
@@ -321,7 +321,7 @@ TEST_P(MiscDocumentTest, SimpleExtractorTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
+    SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
     std::string parsed_text{ simple_extractor.getPlainText() };
         
     // THEN
@@ -406,14 +406,14 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
+    SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
         
     try 
     {
         std::string parsed_text{ simple_extractor.getPlainText() };
         FAIL() << "We are not supporting password protected files yet. Why didn\'t we catch exception?\n";
     }
-    catch (doctotext::Exception& ex)
+    catch (Exception& ex)
     {
         std::string test_text {
             "Error processing file " + file_name + ".\n" + ex.getBacktrace()
@@ -443,11 +443,11 @@ void* thread_func(void* data)
 {
 	std::string* file_name = (std::string*)data;
 
-	doctotext::SimpleExtractor extractor{ *file_name };
+	SimpleExtractor extractor{ *file_name };
     try {
       extractor.getPlainText();
       extractor.getMetaData();
-    } catch (doctotext::Exception& ex) {
+    } catch (Exception& ex) {
         return new bool(false);
     }
 
@@ -487,10 +487,10 @@ TEST_P(MultithreadedTest, SimpleExtractorTests)
       void *status;
       int res = pthread_join(threads[i], &status);
       if (!res)
-        doctotext_log(doctotext::info) << "Thread " << i << " finished successfully.";
+        docwire_log(info) << "Thread " << i << " finished successfully.";
       else
       {
-        doctotext_log(doctotext::info) << "Thread " << i << " finished with error.";
+        docwire_log(info) << "Thread " << i << " finished with error.";
         all_ok = false;
       }
     }
@@ -555,11 +555,11 @@ TEST_P(MultiPageFilterTest, SimpleExtractorTests)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    doctotext::SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
-    simple_extractor.addChainElement(new doctotext::TransformerFunc([MAX_PAGES, counter = 0](doctotext::Info &info) mutable
+    SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
+    simple_extractor.addChainElement(new TransformerFunc([MAX_PAGES, counter = 0](Info &info) mutable
                                    {
-                                     if (info.tag_name == doctotext::StandardTag::TAG_PAGE) {++counter;}
-                                     if (info.tag_name == doctotext::StandardTag::TAG_PAGE && counter > MAX_PAGES) {info.cancel = true;}
+                                     if (info.tag_name == StandardTag::TAG_PAGE) {++counter;}
+                                     if (info.tag_name == StandardTag::TAG_PAGE && counter > MAX_PAGES) {info.cancel = true;}
                                    }));
     std::string parsed_text{ simple_extractor.getPlainText() };
 
@@ -592,12 +592,11 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST(HtmlWriter, RestoreAttributes)
 {
-  using namespace doctotext;
-	std::shared_ptr<doctotext::ParserManager> parser_manager(new doctotext::ParserManager());
+	std::shared_ptr<ParserManager> parser_manager(new ParserManager());
 	std::stringstream output;
 	std::ifstream in("1.html");
 	Input(&in)
-		| Importer(doctotext::ParserParameters(), parser_manager)
+		| Importer(ParserParameters(), parser_manager)
 		| HtmlExporter(output, HtmlExporter::RestoreOriginalAttributes{true});
 
 	EXPECT_EQ(read_test_file("1.html.restore_attributes.out.html"), output.str());

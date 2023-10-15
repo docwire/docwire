@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -35,6 +35,7 @@
 
 #include "data_stream.h"
 #include "exception.h"
+#include <fstream>
 #include <iostream>
 #include "log.h"
 #include <map>
@@ -50,16 +51,20 @@
 #include <wv2/textconverter.h>
 #include <wv2/ustring.h>
 #include <boost/signals2.hpp>
+
+namespace docwire
+{
+
 using namespace wvWare;
 
 struct RTFParser::Implementation
 {
 	std::string m_file_name;
 	DataStream* m_data_stream;
-  boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
+	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-RTFParser::RTFParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+RTFParser::RTFParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = NULL;
@@ -82,7 +87,7 @@ RTFParser::RTFParser(const std::string& file_name, const std::shared_ptr<doctote
 	}
 }
 
-RTFParser::RTFParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+RTFParser::RTFParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = NULL;
@@ -123,17 +128,12 @@ bool RTFParser::isRTF() const
 	if (!impl->m_data_stream->read(buf, sizeof(char), 5))
 	{
 		impl->m_data_stream->close();
-		doctotext_log(error) << "Error reading signature from file " << impl->m_file_name << ".";
+		docwire_log(error) << "Error reading signature from file " << impl->m_file_name << ".";
 		return false;
 	}
 	impl->m_data_stream->close();
 	buf[5] = '\0';
 	return (strcmp(buf, "{\\rtf") == 0);
-}
-
-void RTFParser::getLinks(std::vector<Link>& links)
-{
-	// warning TODO: Implement this functionality.
 }
 
 #define RTFNAMEMAXLEN 32
@@ -347,7 +347,7 @@ static bool parseCommand(DataStream& data_stream, RTFCommand& cmd, long int& arg
 			arg = ch;
 		}
 	}
-	doctotext_log(debug) << "[cmd: " << name << " (" << arg << ")]";
+	docwire_log(debug) << "[cmd: " << name << " (" << arg << ")]";
 	return true;
 }
 
@@ -515,27 +515,27 @@ static void execCommand(DataStream& data_stream, UString& text, int& skip, RTFPa
 			text += UString("\n");
 			break;
 		case RTF_CODEPAGE:
-			doctotext_log(debug) << "Initializing converter for codepage " << arg;
+			docwire_log(debug) << "Initializing converter for codepage " << arg;
 			converter = new TextConverter(codepage_to_encoding(arg));
 			if (converter->isOk())
 			{
-				doctotext_log(debug) << "Converter initialized.";
+				docwire_log(debug) << "Converter initialized.";
 			}
 			else
 			{
-				doctotext_log(error) << "Converter initialization ERROR!";
+				docwire_log(error) << "Converter initialization ERROR!";
 				delete converter;
 				converter = NULL;
 			}
 			break;
 		case RTF_FONT_CHARSET:
-			doctotext_log(debug) << "Setting win charset " << arg << " for font number " << state.last_font_ref_num;
+			docwire_log(debug) << "Setting win charset " << arg << " for font number " << state.last_font_ref_num;
 			state.font_table[state.last_font_ref_num] = win_charset_to_encoding(arg);
 			break;
 		case RTF_F:
 			if (state.font_table.find(arg) != state.font_table.end())
 			{
-				doctotext_log(debug) << "Font number " << arg << " referenced. Setting converter for encoding " << state.font_table[arg];
+				docwire_log(debug) << "Font number " << arg << " referenced. Setting converter for encoding " << state.font_table[arg];
 				if (converter != NULL)
 					converter->setFromCode(state.font_table[arg]);
 			}
@@ -659,9 +659,6 @@ std::string RTFParser::plainText() const
 	}
 }
 
-#include <fstream>
-#include <sstream>
-
 static void parse_rtf_time(const std::string& s, tm& time)
 {
 	time = tm();
@@ -703,7 +700,7 @@ Metadata RTFParser::metaData() const
 		throw Exception("File " + impl->m_file_name + " is not rtf");
 	
 	Metadata meta;
-	doctotext_log(debug) << "Extracting metadata.";
+	docwire_log(debug) << "Extracting metadata.";
 	if (!impl->m_data_stream->open())
 		throw Exception("Error opening file " + impl->m_file_name);
 	size_t stream_size = impl->m_data_stream->size();
@@ -775,27 +772,28 @@ Metadata RTFParser::metaData() const
 }
 
 Parser&
-RTFParser::withParameters(const doctotext::ParserParameters &parameters)
+RTFParser::withParameters(const ParserParameters &parameters)
 {
-	doctotext::Parser::withParameters(parameters);
+	Parser::withParameters(parameters);
 	return *this;
 }
 
 void
 RTFParser::parse() const
 {
-	doctotext_log(debug) << "Using RTF parser.";
+	docwire_log(debug) << "Using RTF parser.";
   Info info(StandardTag::TAG_TEXT, plainText());
   impl->m_on_new_node_signal(info);
 
   Metadata metadata = metaData();
-  doctotext::Info metadata_info(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
+  Info metadata_info(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
   impl->m_on_new_node_signal(metadata_info);
 }
 
-doctotext::Parser&
-RTFParser::addOnNewNodeCallback(doctotext::NewNodeCallback callback)
+Parser& RTFParser::addOnNewNodeCallback(NewNodeCallback callback)
 {
   impl->m_on_new_node_signal.connect(callback);
   return *this;
 }
+
+} // namespace docwire

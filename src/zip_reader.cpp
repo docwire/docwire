@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -31,7 +31,7 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#include "doctotext_unzip.h"
+#include "zip_reader.h"
 
 #include <iostream>
 #include "log.h"
@@ -43,7 +43,7 @@
 #include "unzip.h"
 #include "zlib.h"
 
-namespace doctotext
+namespace docwire
 {
 
 const int CASESENSITIVITY = 1;
@@ -126,7 +126,7 @@ static int buffer_error(voidpf opaque, voidpf stream)
 	return 0;	//no errors at all?
 }
 
-struct DocToTextUnzip::Implementation
+struct ZipReader::Implementation
 {
 	std::string ArchiveFileName;
 	unzFile ArchiveFile;
@@ -138,7 +138,7 @@ struct DocToTextUnzip::Implementation
 	ZippedBuffer* m_zipped_buffer;
 };
 
-DocToTextUnzip::DocToTextUnzip()
+ZipReader::ZipReader()
 {
 	Impl = NULL;
 	try
@@ -159,7 +159,7 @@ DocToTextUnzip::DocToTextUnzip()
 	}
 }
 
-DocToTextUnzip::DocToTextUnzip(const std::string& archive_file_name)
+ZipReader::ZipReader(const std::string& archive_file_name)
 {
 	Impl = NULL;
 	try
@@ -181,7 +181,7 @@ DocToTextUnzip::DocToTextUnzip(const std::string& archive_file_name)
 	}
 }
 
-DocToTextUnzip::DocToTextUnzip(const char *buffer, size_t size)
+ZipReader::ZipReader(const char *buffer, size_t size)
 {
 	Impl = NULL;
 	try
@@ -203,12 +203,12 @@ DocToTextUnzip::DocToTextUnzip(const char *buffer, size_t size)
 	}
 }
 
-void DocToTextUnzip::setArchiveFile(const std::string &archive_file_name)
+void ZipReader::setArchiveFile(const std::string &archive_file_name)
 {
 	Impl->ArchiveFileName = archive_file_name;
 }
 
-void DocToTextUnzip::setBuffer(const char *buffer, size_t size)
+void ZipReader::setBuffer(const char *buffer, size_t size)
 {
 	Impl->m_buffer = buffer;
 	Impl->m_from_memory_buffer = true;
@@ -216,7 +216,7 @@ void DocToTextUnzip::setBuffer(const char *buffer, size_t size)
 	Impl->ArchiveFileName = "Memory buffer";
 }
 
-DocToTextUnzip::~DocToTextUnzip()
+ZipReader::~ZipReader()
 {
 	if (Impl->ArchiveFile != NULL)
 		unzClose(Impl->ArchiveFile);
@@ -227,12 +227,12 @@ DocToTextUnzip::~DocToTextUnzip()
 
 static std::string unzip_command;
 
-void DocToTextUnzip::setUnzipCommand(const std::string& command)
+void ZipReader::setUnzipCommand(const std::string& command)
 {
 	unzip_command = command;
 }
 
-bool DocToTextUnzip::open()
+bool ZipReader::open()
 {
 	if (!Impl->m_from_memory_buffer)
 		Impl->ArchiveFile = unzOpen(Impl->ArchiveFileName.c_str());
@@ -259,7 +259,7 @@ bool DocToTextUnzip::open()
 	return true;
 }
 
-void DocToTextUnzip::close()
+void ZipReader::close()
 {
 	unzClose(Impl->ArchiveFile);
 	if (Impl->m_zipped_buffer)
@@ -268,12 +268,12 @@ void DocToTextUnzip::close()
 	Impl->ArchiveFile = NULL;
 }
 
-bool DocToTextUnzip::exists(const std::string& file_name) const
+bool ZipReader::exists(const std::string& file_name) const
 {
 	return (unzLocateFile(Impl->ArchiveFile, file_name.c_str(), CASESENSITIVITY) == UNZ_OK);
 }
 
-bool DocToTextUnzip::read(const std::string& file_name, std::string* contents, int num_of_chars) const
+bool ZipReader::read(const std::string& file_name, std::string* contents, int num_of_chars) const
 {
 	// warning TODO: Add support for unzip command if Impl->m_from_memory_buffer == true
 	if (unzip_command != "" && Impl->m_from_memory_buffer == false)
@@ -283,21 +283,21 @@ bool DocToTextUnzip::read(const std::string& file_name, std::string* contents, i
 		size_t d_pos = cmd.find("%d");
 		if (d_pos == std::string::npos)
 		{
-			doctotext_log(error) << "Unzip command must contain %d symbol.";
+			docwire_log(error) << "Unzip command must contain %d symbol.";
 			return false;
 		}
 		cmd.replace(d_pos, 2, temp_dir);
 		size_t a_pos = cmd.find("%a");
 		if (a_pos == std::string::npos)
 		{
-			doctotext_log(error) << "Unzip command must contain %a symbol.";
+			docwire_log(error) << "Unzip command must contain %a symbol.";
 			return false;
 		}
 		cmd.replace(a_pos, 2, Impl->ArchiveFileName);
 		size_t f_pos = cmd.find("%f");
 		if (f_pos == std::string::npos)
 		{
-			doctotext_log(error) << "Unzip command must contain %f symbol.";
+			docwire_log(error) << "Unzip command must contain %f symbol.";
 			return false;
 		}
 		#ifdef WIN32
@@ -315,13 +315,13 @@ bool DocToTextUnzip::read(const std::string& file_name, std::string* contents, i
 		#else
 			const std::string remove_cmd = "rm -rf " + temp_dir;
 		#endif
-		doctotext_log(debug) << "Executing " << cmd;
+		docwire_log(debug) << "Executing " << cmd;
 		if (system(cmd.c_str()) < 0)
 			return false;
 		FILE* f = fopen((temp_dir + "/" + file_name).c_str(), "r");
 		if (f == NULL)
 		{
-			doctotext_log(debug) << "Executing " << remove_cmd;
+			docwire_log(debug) << "Executing " << remove_cmd;
 			system(remove_cmd.c_str());
 			return false;
 		}
@@ -345,13 +345,13 @@ bool DocToTextUnzip::read(const std::string& file_name, std::string* contents, i
 			{
 				fclose(f);
 				f = NULL;
-				doctotext_log(debug) << "Executing " << remove_cmd;
+				docwire_log(debug) << "Executing " << remove_cmd;
 				system(remove_cmd.c_str());
 				return false;
 			}
 			fclose(f);
 			f = NULL;
-			doctotext_log(debug) << "Executing " << remove_cmd;
+			docwire_log(debug) << "Executing " << remove_cmd;
 			if (system(remove_cmd.c_str()) != 0)
 				return false;
 		}
@@ -403,12 +403,12 @@ bool DocToTextUnzip::read(const std::string& file_name, std::string* contents, i
 	return true;
 }
 
-void DocToTextUnzip::closeReadingFileForChunks() const
+void ZipReader::closeReadingFileForChunks() const
 {
 	Impl->m_opened_for_chunks = false;
 }
 
-bool DocToTextUnzip::readChunk(const std::string& file_name, char* contents, int num_of_chars, int& readed) const
+bool ZipReader::readChunk(const std::string& file_name, char* contents, int num_of_chars, int& readed) const
 {
 	if (Impl->m_opened_for_chunks == false)
 	{
@@ -446,7 +446,7 @@ bool DocToTextUnzip::readChunk(const std::string& file_name, char* contents, int
 	return true;
 }
 
-bool DocToTextUnzip::readChunk(const std::string& file_name, std::string* contents, int num_of_chars) const
+bool ZipReader::readChunk(const std::string& file_name, std::string* contents, int num_of_chars) const
 {
 	std::vector<char> vcontents(num_of_chars + 1);
 	int readed;
@@ -459,7 +459,7 @@ bool DocToTextUnzip::readChunk(const std::string& file_name, std::string* conten
 	return true;
 }
 
-bool DocToTextUnzip::getFileSize(const std::string& file_name, unsigned long& file_size) const
+bool ZipReader::getFileSize(const std::string& file_name, unsigned long& file_size) const
 {
 	int res;
 	unz_file_info file_info;
@@ -480,7 +480,7 @@ bool DocToTextUnzip::getFileSize(const std::string& file_name, unsigned long& fi
 	return true;
 }
 
-bool DocToTextUnzip::loadDirectory()
+bool ZipReader::loadDirectory()
 {
 	Impl->m_directory.clear();
 	if (unzGoToFirstFile(Impl->ArchiveFile) != UNZ_OK)
@@ -503,4 +503,4 @@ bool DocToTextUnzip::loadDirectory()
 	return true;
 }
 
-}; // namespace doctotext
+}; // namespace docwire

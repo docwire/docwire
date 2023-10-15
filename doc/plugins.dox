@@ -2,26 +2,26 @@
  * \page Plugins
  * \subsection plugins Plugins
  *
- * There is an option to adding our own parsers to doctotext. In first step we need to create a parser class inheriting from
- * doctotext::Parser and a parser builder inheriting from doctotext::ParserBuilder. In parser there are two abstract functions to overriding:
- * parse() and onNewNode(). According to the documentation of doctototext::Parser, the onNewNode function adds functions to call
+ * There is an option to adding our own parsers to DocWire SDK. In first step we need to create a parser class inheriting from
+ * docwire::Parser and a parser builder inheriting from docwire::ParserBuilder. In parser there are two abstract functions to overriding:
+ * parse() and onNewNode(). According to the documentation of docwire::Parser, the onNewNode function adds functions to call
  * when new node will is created. Nodes are created during parsing process. The single node could be, for example, part of parsed text,
- * email or folder. Every new node is passed to a callback as a doctotext::Info structure. In Info structure, there is a field "tag" which
- * describes the type of node (in doctotext::StandardTag there is a description of all available tags). In the simplest case
+ * email or folder. Every new node is passed to a callback as a docwire::Info structure. In Info structure, there is a field "tag" which
+ * describes the type of node (in docwire::StandardTag there is a description of all available tags). In the simplest case
  * node could contain all parsed text. The parsing process starts when parse() function will be called. Instead of creating our
  * own parser builder, there is an option to use ParserBuilderWrapper. This is a class template which provides
  * the basic parser building support. It is a sufficient mechanism for most usage.
  *
  * \snippet example_9.cpp plugin_example_1
  *
- * After that we have to create own parser provider inheriting from doctotext::ParserProvider. Important: for handle plugins mechanism
+ * After that we have to create own parser provider inheriting from docwire::ParserProvider. Important: for handle plugins mechanism
  * we use boost library, so using boost header boost/config.hpp is additional requirement.
  *
  * \snippet example_9.cpp plugin_example_2
  *
  * In the next step we need to generate library for each OS where parser will be used (e.g. shared library (so) for linux
  * or dynamic link library (dll) for windows) and add it to the special directory (e.g. plugins). Finally, if we would like
- * to use our new custom parser in doctotext we should pass path to directory where we keep our plugins.
+ * to use our new custom parser in DocWire SDK we should pass path to directory where we keep our plugins.
  *
  * \snippet example_9.cpp plugin_example_3
  *

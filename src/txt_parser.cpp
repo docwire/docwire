@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -42,16 +42,17 @@
 #include "log.h"
 #include <string.h>
 
-using namespace doctotext;
+namespace docwire
+{
 
 struct TXTParser::Implementation
 {
 	std::string m_file_name;
 	DataStream* m_data_stream;
-  boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
+	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-TXTParser::TXTParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+TXTParser::TXTParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = NULL;
@@ -73,7 +74,7 @@ TXTParser::TXTParser(const std::string& file_name, const std::shared_ptr<doctote
 	}
 }
 
-TXTParser::TXTParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+TXTParser::TXTParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = NULL;
@@ -163,7 +164,7 @@ std::string TXTParser::plainText() const
 		if (charset_detector == (csd_t)-1)
 		{
 			charset_detector = NULL;
-			doctotext_log(warning) << "Warning: Could not create charset detector";
+			docwire_log(warning) << "Warning: Could not create charset detector";
 			encoding = "UTF-8";
 		}
 		else
@@ -174,13 +175,13 @@ std::string TXTParser::plainText() const
 			if (res != NULL)
 			{
 				encoding = std::string(res);
-				doctotext_log(debug) << "Estimated encoding: " + encoding;
+				docwire_log(debug) << "Estimated encoding: " + encoding;
 			}
 			else
 			{
 				encoding = "ASCII";
-				doctotext_log(debug) << "Could not detect encoding. Document is assumed to be encoded in ASCII";
-				doctotext_log(debug) << "But it can be also binary. Sequences of printable characters will be extracted.";
+				docwire_log(debug) << "Could not detect encoding. Document is assumed to be encoded in ASCII";
+				docwire_log(debug) << "But it can be also binary. Sequences of printable characters will be extracted.";
 				content = sequences_of_printable_characters(content);
 			}
 		}
@@ -192,7 +193,7 @@ std::string TXTParser::plainText() const
 			}
 			catch (htmlcxx::CharsetConverter::Exception& ex)
 			{
-				doctotext_log(warning) << "Warning: Cant convert text to UTF-8 from " + encoding;
+				docwire_log(warning) << "Warning: Cant convert text to UTF-8 from " + encoding;
 				if (converter)
 					delete converter;
 				converter = NULL;
@@ -223,23 +224,23 @@ std::string TXTParser::plainText() const
 }
 
 Parser&
-TXTParser::withParameters(const doctotext::ParserParameters &parameters)
+TXTParser::withParameters(const ParserParameters &parameters)
 {
-	doctotext::Parser::withParameters(parameters);
+	Parser::withParameters(parameters);
 	return *this;
 }
 
 void
 TXTParser::parse() const
 {
-	doctotext_log(debug) << "Using TXT parser.";
+	docwire_log(debug) << "Using TXT parser.";
 
   Info info(StandardTag::TAG_TEXT, plainText());
   impl->m_on_new_node_signal(info);
 }
 
 TXTParser::Parser&
-TXTParser::addOnNewNodeCallback(doctotext::NewNodeCallback callback)
+TXTParser::addOnNewNodeCallback(NewNodeCallback callback)
 {
   impl->m_on_new_node_signal.connect(callback);
   return *this;
@@ -295,3 +296,5 @@ std::vector <std::string> TXTParser::getExtensions()
 		"ws" // Microsoft Windows script
 	};
 }
+
+} // namespace docwire

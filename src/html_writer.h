@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef HTML_WRITER_HPP
-#define HTML_WRITER_HPP
+#ifndef DOCWIRE_HTML_WRITER_H
+#define DOCWIRE_HTML_WRITER_H
 
 #include <iostream>
 #include <fstream>
@@ -41,7 +41,7 @@
 #include "writer.h"
 #include "defines.h"
 
-namespace doctotext
+namespace docwire
 {
 /**
  * @brief The HTMLWriter class
@@ -52,7 +52,7 @@ namespace doctotext
  * @code
  * ODFOOXMLParser parser("test.docx");
  * HTMLWriter writer;
- * parser.onNewNode([&writer](doctotext::Info &info) {
+ * parser.onNewNode([&writer](Info &info) {
  *      writer.write_to(info, std::cout); // convert callback to html ant writes to std::cout
  *      });
  * @endcode
@@ -75,7 +75,7 @@ public:
    * @param info data from callback
    * @param stream output stream
    */
-  void write_to(const doctotext::Info &info, std::ostream &stream) override;
+  void write_to(const Info &info, std::ostream &stream) override;
   /**
    * @brief creates a new instance of HtmlWriter
    */
@@ -86,6 +86,6 @@ private:
   struct DllExport ImplementationDeleter { void operator() (Implementation*); };
   std::unique_ptr<Implementation, ImplementationDeleter> impl;
 };
-} // namespace doctotext
+} // namespace docwire
 
-#endif //HTML_WRITER_HPP
+#endif //DOCWIRE_HTML_WRITER_H

@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -39,7 +39,7 @@
 #include "log.h"
 #include <stdio.h>
 #include <sstream>
-#include "doctotext_unzip.h"
+#include "zip_reader.h"
 #include "entities.h"
 #include <map>
 #include <list>
@@ -250,12 +250,12 @@ struct IWorkParser::Implementation
 	class DataSource
 	{
 		private:
-			DocToTextUnzip* m_zipfile;
+			ZipReader* m_zipfile;
 			bool m_done;
 			std::string m_xml_file;
 
 		public:
-			DataSource(DocToTextUnzip& zipfile, std::string& xml_file)
+			DataSource(ZipReader& zipfile, std::string& xml_file)
 			{
 				m_zipfile = &zipfile;
 				m_done = false;
@@ -1829,7 +1829,7 @@ struct IWorkParser::Implementation
 
 		void ParseMetaData()
 		{
-			doctotext_log(debug) << "Extracting metadata.";
+			docwire_log(debug) << "Extracting metadata.";
 			while (true)
 			{
 				m_xml_reader->GetNextElement(m_current_element);
@@ -1852,7 +1852,7 @@ struct IWorkParser::Implementation
 						if (string_to_date(m_creation_date, creation_date))
 							m_metadata->setCreationDate(creation_date);
 						else
-							doctotext_log(error) << "Error occured during parsing date: " << m_creation_date << ".";
+							docwire_log(error) << "Error occured during parsing date: " << m_creation_date << ".";
 					}
 					if (m_last_modify_date.length() > 0)
 					{
@@ -1860,7 +1860,7 @@ struct IWorkParser::Implementation
 						if (string_to_date(m_last_modify_date, last_modification_date))
 							m_metadata->setLastModificationDate(last_modification_date);
 						else
-							doctotext_log(error) << "Error occured during parsing date: " << m_last_modify_date << ".";
+							docwire_log(error) << "Error occured during parsing date: " << m_last_modify_date << ".";
 					}
 					return;
 				}
@@ -1997,7 +1997,7 @@ struct IWorkParser::Implementation
 		}
 	};
 
-	void ReadMetadata(DocToTextUnzip& zipfile, Metadata& metadata)
+	void ReadMetadata(ZipReader& zipfile, Metadata& metadata)
 	{
 		DataSource xml_data_source(zipfile, m_xml_file);
 		XmlReader xml_reader(xml_data_source);
@@ -2044,7 +2044,7 @@ struct IWorkParser::Implementation
 		}
 	}
 
-	void parseIWork(DocToTextUnzip& zipfile, std::string& text)
+	void parseIWork(ZipReader& zipfile, std::string& text)
 	{
 		DataSource xml_data_source(zipfile, m_xml_file);
 		XmlReader xml_reader(xml_data_source);
@@ -2126,14 +2126,14 @@ IWorkParser::~IWorkParser()
 
 bool IWorkParser::isIWork()
 {
-	DocToTextUnzip unzip;
+	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
 	else
 		unzip.setArchiveFile(impl->m_file_name);
 	if (!unzip.open())
 	{
-		doctotext_log(error) << "Cannot unzip file.";
+		docwire_log(error) << "Cannot unzip file.";
 		return false;
 	}
 	if (unzip.exists("index.xml"))
@@ -2145,7 +2145,7 @@ bool IWorkParser::isIWork()
 	if (impl->m_xml_file.empty())
 	{
 		unzip.close();
-		doctotext_log(error) << "None of the following files (index.xml, index.apxl, presentation.apxl) could not be found.";
+		docwire_log(error) << "None of the following files (index.xml, index.apxl, presentation.apxl) could not be found.";
 		return false;
 	}
 	Implementation::DataSource xml_data_source(unzip, impl->m_xml_file);
@@ -2153,22 +2153,17 @@ bool IWorkParser::isIWork()
 	if (impl->getIWorkType(xml_reader) == Implementation::IWorkContent::encrypted)
 	{
 		unzip.close();
-		doctotext_log(debug) << "This is not iWork file format or file is encrypted.";
+		docwire_log(debug) << "This is not iWork file format or file is encrypted.";
 		return false;
 	}
 	unzip.close();
 	return true;
 }
 
-void IWorkParser::getLinks(std::vector<Link>& links)
-{
-	// warning TODO: Implement this functionality.
-}
-
 Metadata IWorkParser::metaData()
 {
 	Metadata metadata;
-	DocToTextUnzip unzip;
+	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
 	else
@@ -2198,9 +2193,9 @@ Metadata IWorkParser::metaData()
 
 std::string IWorkParser::plainText(const FormattingStyle& formatting)
 {
-	doctotext_log(debug) << "Using iWork parser.";
+	docwire_log(debug) << "Using iWork parser.";
 	std::string text;
-	DocToTextUnzip unzip;
+	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
 	else

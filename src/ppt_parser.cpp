@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -98,13 +98,13 @@ struct PPTParser::Implementation
 			case RT_CSTRING:
 			case RT_TEXT_CHARS_ATOM: 
 			{
-				doctotext_log(debug) << "RT_TextCharsAtom or RT_CString";
+				docwire_log(debug) << "RT_TextCharsAtom or RT_CString";
 				std::vector<unsigned char> buf(2);
 				unsigned long text_len = rec_len / 2;
 				if (text_len * 2 > reader.size() - reader.tell())
 				{
 					text_len = (reader.size() - reader.tell()) / 2;
-					doctotext_log(warning) << "Warning: Read past EOF";
+					docwire_log(warning) << "Warning: Read past EOF";
 				}
 				for (int i = 0; i < text_len; i++)
 				{
@@ -126,57 +126,57 @@ struct PPTParser::Implementation
 				break;
 			}
 			case RT_DOCUMENT:
-				doctotext_log(debug) << "RT_Document";
+				docwire_log(debug) << "RT_Document";
 				break;
 			case RT_DRAWING:
-				doctotext_log(debug) << "RT_Drawing";
+				docwire_log(debug) << "RT_Drawing";
 				break;
 			case RT_END_DOCUMENT_ATOM:
 			{
-				doctotext_log(debug) << "RT_DocumentEnd";
+				docwire_log(debug) << "RT_DocumentEnd";
 				unsigned long len = rec_len;
 				if (reader.tell() + len > reader.size())
 				{
-					doctotext_log(warning) << "Warning: Read past EOF";
+					docwire_log(warning) << "Warning: Read past EOF";
 					len = reader.size() - reader.tell();
 				}
 				reader.seek(len, SEEK_CUR);
 				break;
 			}
 			case RT_LIST:
-				doctotext_log(debug) << "RT_List";
+				docwire_log(debug) << "RT_List";
 				break;
 			case RT_MAIN_MASTER:
 			{
-				doctotext_log(debug) << "RT_MainMaster";
+				docwire_log(debug) << "RT_MainMaster";
 				// warning TODO: Make extracting text from main master slide configurable
 				unsigned long len = rec_len;
 				if (reader.tell() + len > reader.size())
 				{
-					doctotext_log(warning) << "Warning: Read past EOF";
+					docwire_log(warning) << "Warning: Read past EOF";
 					len = reader.size() - reader.tell();
 				}
 				reader.seek(len, SEEK_CUR);
 				break;
 			}
 			case RT_SLIDE:
-				doctotext_log(debug) << "RT_Slide";
+				docwire_log(debug) << "RT_Slide";
 				break;
 			case RT_SLIDE_BASE:
 				break;
 			case RT_SLIDE_LIST_WITH_TEXT:
-				doctotext_log(debug) << "RT_SlideListWithText";
+				docwire_log(debug) << "RT_SlideListWithText";
 				break;
 			case RT_TEXT_BYTES_ATOM:
 			{
-				doctotext_log(debug) << "RT_TextBytesAtom";
+				docwire_log(debug) << "RT_TextBytesAtom";
 				std::vector<unsigned char> buf(2);
 				unsigned long text_len = rec_len;
 				buf[0] = buf[1] = 0;
 				if (text_len > reader.size() - reader.tell())
 				{
 					text_len = reader.size() - reader.tell();
-					doctotext_log(warning) << "Warning: Read past EOF";
+					docwire_log(warning) << "Warning: Read past EOF";
 				}
 				for (int i = 0; i < text_len; i++)
 				{
@@ -191,22 +191,22 @@ struct PPTParser::Implementation
 				break;
 			}
 			case OFFICE_ART_CLIENT_TEXTBOX:
-				doctotext_log(debug) << "OfficeArtClientTextbox";
+				docwire_log(debug) << "OfficeArtClientTextbox";
 				break;
 			case OFFICE_ART_DG_CONTAINER:
-				doctotext_log(debug) << "OfficeArtDgContainer";
+				docwire_log(debug) << "OfficeArtDgContainer";
 				break;
 			case OFFICE_ART_SPGR_CONTAINER:
-				doctotext_log(debug) << "OfficeArtSpgrContainer";
+				docwire_log(debug) << "OfficeArtSpgrContainer";
 				break;
 			case OFFICE_ART_SP_CONTAINER:
-				doctotext_log(debug) << "OfficeArtSpContainer";
+				docwire_log(debug) << "OfficeArtSpContainer";
 				break;
 			default:
 				unsigned long len = rec_len;
 				if (reader.tell() + len > reader.size())
 				{
-					doctotext_log(warning) << "Warning: Read past EOF";
+					docwire_log(warning) << "Warning: Read past EOF";
 					len = reader.size() - reader.tell();
 				}
 				reader.seek(len, SEEK_CUR);
@@ -263,7 +263,7 @@ struct PPTParser::Implementation
 				std::string indend;
 				for (int i = 0; i < container_ends.size(); i++)
 					indend += "\t";
-				doctotext_log(debug) << indend << "record" << hex() << rec_type << "begin" << pos << "end" << pos + rec_len - 1;
+				docwire_log(debug) << indend << "record" << hex() << rec_type << "begin" << pos << "end" << pos + rec_len - 1;
 				container_ends.push(pos + rec_len - 1);
 			}
 			try
@@ -372,14 +372,9 @@ bool PPTParser::isPPT()
 	}
 }
 
-void PPTParser::getLinks(std::vector<Link>& links)
-{
-	// warning TODO: Implement this functionality.
-}
-
 std::string PPTParser::plainText(const FormattingStyle& formatting)
 {	
-	doctotext_log(debug) << "Using PPT parser.";
+	docwire_log(debug) << "Using PPT parser.";
 
 	ThreadSafeOLEStorage* storage = NULL;
 	ThreadSafeOLEStreamReader* reader = NULL;
@@ -479,7 +474,7 @@ Metadata PPTParser::metaData()
 			catch (Exception& ex)
 			{
 				meta.setPageCountType(Metadata::NONE);
-				doctotext_log(error) << ex.getBacktrace();
+				docwire_log(error) << ex.getBacktrace();
 			}
 		}
 		else{

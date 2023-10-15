@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -34,12 +34,13 @@
 #include "importer.h"
 #include "transformer_func.h"
 
-using namespace doctotext;
+namespace docwire
+{
 
 class TransformerFunc::Implementation
 {
 public:
-  Implementation(doctotext::NewNodeCallback transformer_function, TransformerFunc& owner)
+  Implementation(NewNodeCallback transformer_function, TransformerFunc& owner)
     : m_transformer_function(transformer_function),
       m_owner(owner)
   {}
@@ -54,8 +55,7 @@ public:
       m_owner(owner)
   {}
 
-  void
-  transform(doctotext::Info &info) const
+  void transform(Info &info) const
   {
     m_transformer_function(info);
     if (!info.cancel && !info.skip)
@@ -64,11 +64,11 @@ public:
     }
   }
 
-  doctotext::NewNodeCallback m_transformer_function;
+  NewNodeCallback m_transformer_function;
   TransformerFunc& m_owner;
 };
 
-TransformerFunc::TransformerFunc(doctotext::NewNodeCallback transformer_function)
+TransformerFunc::TransformerFunc(NewNodeCallback transformer_function)
 {
   impl = std::unique_ptr<Implementation>{new Implementation{transformer_function, *this}};
 }
@@ -83,8 +83,7 @@ TransformerFunc::~TransformerFunc()
 {
 }
 
-void
-TransformerFunc::process(doctotext::Info &info) const
+void TransformerFunc::process(Info &info) const
 {
   impl->transform(info);
 }
@@ -94,3 +93,5 @@ TransformerFunc::clone() const
 {
   return new TransformerFunc(*this);
 }
+
+} // namespace docwire

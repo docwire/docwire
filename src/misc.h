@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCTOTEXT_MISC_H
-#define DOCTOTEXT_MISC_H
+#ifndef DOCWIRE_MISC_H
+#define DOCWIRE_MISC_H
 
 #include "formatting_style.h"
 #include <filesystem>
@@ -41,13 +41,9 @@
 #include <wv2/ustring.h>
 #include <time.h>
 
-namespace doctotext
-{
-	class Link;
-}
 struct tm;
 
-using namespace doctotext;
+using namespace docwire;
 using namespace wvWare;
 
 typedef std::vector<std::string> svector;
@@ -98,30 +94,6 @@ inline bool utf16_unichar_has_4_bytes(unsigned int ch)
 {
 	return (ch & 0xFC00) == 0xD800;
 }
-
-/**
-	All parsers should support Link class. We need to determine where all links lie in final text.
-	But it may be sometimes difficult, simply because we are not parsing text in "correct" order all the time.
-	Sometimes we are parsing lists, attachments, tables etc. It is easier to mark special place in the text
-	where single link lies. We have two functions to help us. If we want to "save" a space for the link in text,
-	we can use insertSpecialLinkBlockIntoText function. Make sure that text is already encoded in UTF8.
-	This function will insert a block of "data" into given text to mark a place for link.
-**/
-DllExport void insertSpecialLinkBlockIntoText(std::string& text, const Link& link);
-
-/**
-	All parsers should support Link class. We need to determine where all links lie in final text.
-	But it may be sometimes difficult, simply because we are not parsing text in "correct" order all the time.
-	Sometimes we are parsing lists, attachments, tables etc. It is easier to mark special place in the text
-	where single link lies. We have two functions to help us. First one is insertSpecialLinkBlockIntoText.
-	When we are done parsing a file, we need to obtain positions of all parsed links. In that case, we need to call
-	decodeSpecialLinkBlocks. It takes extracted text and vector of links. Then for each link, function
-	calculates position and removes "special" characters which we have used in order to mark links.
-
-	There is one important requirement: links in "links" vector (2 argument) must contain records
-	in correct order.
-**/
-DllExport void decodeSpecialLinkBlocks(std::string& text, std::vector<Link>& links);
 
 DllExport std::string int_to_str(int i);
 

@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -45,32 +45,34 @@
 #include "parsing_chain.h"
 #include "input.h"
 
-doctotext::FormattingStyle updateFormattingStyle(const std::string &arg, const doctotext::FormattingStyle formatting_style)
+using namespace docwire;
+
+FormattingStyle updateFormattingStyle(const std::string &arg, const FormattingStyle formatting_style)
 {
-  doctotext::FormattingStyle updated_formatting_style{formatting_style};
+  FormattingStyle updated_formatting_style{formatting_style};
   if(arg.find("table-style=one-row", 0) != std::string::npos)
   {
-    updated_formatting_style.table_style = doctotext::TABLE_STYLE_ONE_ROW;
+    updated_formatting_style.table_style = TABLE_STYLE_ONE_ROW;
   }
   else if(arg.find("table-style=one-col", 0) != std::string::npos)
   {
-    updated_formatting_style.table_style = doctotext::TABLE_STYLE_ONE_COL;
+    updated_formatting_style.table_style = TABLE_STYLE_ONE_COL;
   }
   else if(arg.find("table-style=table-look", 0) != std::string::npos)
   {
-    updated_formatting_style.table_style = doctotext::TABLE_STYLE_TABLE_LOOK;
+    updated_formatting_style.table_style = TABLE_STYLE_TABLE_LOOK;
   }
   if(arg.find("url-style=text-only", 0) != std::string::npos)
   {
-    updated_formatting_style.url_style = doctotext::URL_STYLE_TEXT_ONLY;
+    updated_formatting_style.url_style = URL_STYLE_TEXT_ONLY;
   }
   if(arg.find("url-style=extended", 0) != std::string::npos)
   {
-    updated_formatting_style.url_style = doctotext::URL_STYLE_EXTENDED;
+    updated_formatting_style.url_style = URL_STYLE_EXTENDED;
   }
   if(arg.find("url-style=underscored", 0) != std::string::npos)
   {
-    updated_formatting_style.url_style = doctotext::URL_STYLE_UNDERSCORED;
+    updated_formatting_style.url_style = URL_STYLE_UNDERSCORED;
   }
   if(arg.find("list-style-prefix=", 0) != std::string::npos)
   {
@@ -84,9 +86,9 @@ static void readme()
   // warning TODO: Generate readme string literal automatically.
   std::cout <<
        "***************************************************************************************************************************************************\n"
-       "*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              *\n"
+       "*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            *\n"
        "*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  *\n"
-       "*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        *\n"
+       "*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          *\n"
        "*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   *\n"
        "*                                                                                                                                                 *\n"
        "*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           *\n"
@@ -97,7 +99,7 @@ static void readme()
        "*  http://silvercoders.com                                                                                                                        *\n"
        "*                                                                                                                                                 *\n"
        "*  Project homepage:                                                                                                                              *\n"
-       "*  http://silvercoders.com/en/products/doctotext                                                                                                  *\n"
+       "*  https://github.com/docwire/docwire                                                                                                             *\n"
        "*  https://www.docwire.io/                                                                                                                        *\n"
        "*                                                                                                                                                 *\n"
        "*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                *\n"
@@ -133,10 +135,10 @@ int main(int argc, char* argv[])
 
   std::string file_name = argv[1];
 
-  doctotext::FormattingStyle formatting_style;
+  FormattingStyle formatting_style;
   enum class OutputType { PLAIN_TEXT, HTML, CSV, METADATA };
   OutputType output_type {OutputType::PLAIN_TEXT};
-  doctotext::Language language{ doctotext::Language::english };
+  Language language{ Language::english };
   std::string plugins_path = "";
 
   std::optional<unsigned int> min_creation_time;
@@ -146,7 +148,7 @@ int main(int argc, char* argv[])
   std::optional<std::string> log_file_name;
   std::optional<std::string> attachment_extension;
 
-  doctotext::ParserParameters parameters;
+  ParserParameters parameters;
   for (unsigned int i = 1; i < argc; ++i)
   {
     std::string arg = argv[i];
@@ -223,11 +225,11 @@ int main(int argc, char* argv[])
       {
         throw std::runtime_error("incorrect input parameters");
       }
-      language = doctotext::nameToLanguage(argv[i + 1]);
+      language = nameToLanguage(argv[i + 1]);
     }
     if (arg.find("--verbose", 0) != -1)
     {
-      doctotext::set_log_verbosity(doctotext::debug);
+      set_log_verbosity(debug);
     }
     if (arg.find("--log-file", 0) != -1)
     {
@@ -239,40 +241,40 @@ int main(int argc, char* argv[])
     }
     formatting_style.list_style.setPrefix(" * ");
   }
-  doctotext::SimpleExtractor extractor(file_name, plugins_path);
+  SimpleExtractor extractor(file_name, plugins_path);
   extractor.setFormattingStyle(formatting_style);
 
-  parameters += doctotext::ParserParameters("language", language);
+  parameters += ParserParameters("language", language);
 
   std::unique_ptr<std::ostream> log_stream;
 
   if (log_file_name)
   {
     log_stream = std::make_unique<std::ofstream>(*log_file_name);
-    doctotext::set_log_stream(log_stream.get());
+    set_log_stream(log_stream.get());
   }
 
   extractor.addParameters(parameters);
 
   if (max_nodes_number)
   {
-    extractor.addCallbackFunction(doctotext::StandardFilter::filterByMaxNodeNumber(*max_nodes_number));
+    extractor.addCallbackFunction(StandardFilter::filterByMaxNodeNumber(*max_nodes_number));
   }
   if (min_creation_time)
   {
-    extractor.addCallbackFunction(doctotext::StandardFilter::filterByMailMinCreationTime(*min_creation_time));
+    extractor.addCallbackFunction(StandardFilter::filterByMailMinCreationTime(*min_creation_time));
   }
   if (max_creation_time)
   {
-    extractor.addCallbackFunction(doctotext::StandardFilter::filterByMailMaxCreationTime(*max_creation_time));
+    extractor.addCallbackFunction(StandardFilter::filterByMailMaxCreationTime(*max_creation_time));
   }
   if (folder_name)
   {
-    extractor.addCallbackFunction(doctotext::StandardFilter::filterByFolderName({*folder_name}));
+    extractor.addCallbackFunction(StandardFilter::filterByFolderName({*folder_name}));
   }
   if (attachment_extension)
   {
-    extractor.addCallbackFunction(doctotext::StandardFilter::filterByAttachmentType({*attachment_extension}));
+    extractor.addCallbackFunction(StandardFilter::filterByAttachmentType({*attachment_extension}));
   }
   try
   {
@@ -292,7 +294,7 @@ int main(int argc, char* argv[])
           break;
       }
   }
-  catch (doctotext::Exception& ex)
+  catch (Exception& ex)
   {
       std::cout << "Error processing file " + file_name + ".\n" + ex.getBacktrace();
   }

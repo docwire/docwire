@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -33,7 +33,7 @@
 
 #include "common_xml_document_parser.h"
 
-#include "doctotext_unzip.h"
+#include "zip_reader.h"
 #include "exception.h"
 #include <iostream>
 #include <libxml/xmlreader.h>
@@ -45,6 +45,9 @@
 #include "xml_fixer.h"
 #include <boost/signals2.hpp>
 
+namespace docwire
+{
+
 struct CommonXMLDocumentParser::Implementation
 {
   template<typename T>
@@ -53,7 +56,7 @@ struct CommonXMLDocumentParser::Implementation
   {
     return std::bind(member_function, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
                      std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8,
-                     std::placeholders::_9, std::placeholders::_10);
+                     std::placeholders::_9);
   }
 
   Implementation()
@@ -85,11 +88,10 @@ struct CommonXMLDocumentParser::Implementation
 	bool stop_emmit_signals;
 	size_t m_list_depth;
 	std::map<std::string, ListStyleVector> m_list_styles;
-	std::vector<Link> m_links;
 	std::map<int, Comment> m_comments;
 	std::vector<SharedString> m_shared_strings;
 	std::map<std::string, CommandHandler> m_command_handlers;
-	boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
+	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 
 	bool m_disabled_text;
 	int m_xml_options;
@@ -99,7 +101,7 @@ struct CommonXMLDocumentParser::Implementation
 	{
 		if (!stop_emmit_signals)
 		{
-      doctotext::Info info(tag_name, text, attr);
+			Info info(tag_name, text, attr);
 			m_on_new_node_signal(info);
 		}
 	}
@@ -112,12 +114,11 @@ struct CommonXMLDocumentParser::Implementation
 	}
 
   void onpPr(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-           const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-           bool& children_processed, std::string& level_suffix, bool first_on_level,
-           std::vector<Link>& links)
+           const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+           bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     xml_stream.levelDown();
-    text += parser.parseXmlData(xml_stream, mode, options, zipfile, links);
+    text += parser.parseXmlData(xml_stream, mode, options, zipfile);
     xml_stream.levelUp();
     children_processed = true;
 
@@ -137,12 +138,11 @@ struct CommonXMLDocumentParser::Implementation
   }
 
 	void onR(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-	           const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-	           bool& children_processed, std::string& level_suffix, bool first_on_level,
-	           std::vector<Link>& links)
+	           const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+	           bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		xml_stream.levelDown();
-		text += parser.parseXmlData(xml_stream, mode, options, zipfile, links);
+		text += parser.parseXmlData(xml_stream, mode, options, zipfile);
 		xml_stream.levelUp();
 		children_processed = true;
 
@@ -162,13 +162,12 @@ struct CommonXMLDocumentParser::Implementation
 	}
 
   void onrPr(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                      const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-                      bool& children_processed, std::string& level_suffix, bool first_on_level,
-                      std::vector<Link>& links)
+                      const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                      bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
     xml_stream.levelDown();
-    parser.parseXmlData(xml_stream, mode, options, zipfile, links);
+    parser.parseXmlData(xml_stream, mode, options, zipfile);
     if (is_bold)
     {
       send_tag(StandardTag::TAG_B);
@@ -186,24 +185,22 @@ struct CommonXMLDocumentParser::Implementation
   }
 
   void onODFOOXMLPara(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                      const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-                      bool& children_processed, std::string& level_suffix, bool first_on_level,
-                      std::vector<Link>& links)
+                      const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                      bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
     send_tag(StandardTag::TAG_P);
-    doctotext_log(debug) << "ODFOOXML_PARA command.";
+    docwire_log(debug) << "ODFOOXML_PARA command.";
     xml_stream.levelDown();
-    text += parser.parseXmlData(xml_stream, mode, options, zipfile, links) + '\n';
+    text += parser.parseXmlData(xml_stream, mode, options, zipfile) + '\n';
     xml_stream.levelUp();
     children_processed = true;
     send_tag(StandardTag::TAG_CLOSE_P);
   }
 
   void onODFOOXMLText(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                        const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-                        bool& children_processed, std::string& level_suffix, bool first_on_level,
-                       std::vector<Link>& links)
+                        const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                        bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     if (m_disabled_text == false && xml_stream.name() == "#text")
     {
@@ -218,101 +215,93 @@ struct CommonXMLDocumentParser::Implementation
   }
 
   void onODFOOXMLTable(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                      const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-                      bool& children_processed, std::string& level_suffix, bool first_on_level,
-                      std::vector<Link>& links)
+                      const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                      bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
     send_tag(StandardTag::TAG_TABLE);
-    doctotext_log(debug) << "onODFOOXMLTable command.";
+    docwire_log(debug) << "onODFOOXMLTable command.";
     xml_stream.levelDown();
-    text += parser.parseXmlData(xml_stream, mode, options, zipfile, links);
+    text += parser.parseXmlData(xml_stream, mode, options, zipfile);
     xml_stream.levelUp();
     children_processed = true;
     send_tag(StandardTag::TAG_CLOSE_TABLE);
   }
 
   void onODFOOXMLTableRow(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                       const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-                       bool& children_processed, std::string& level_suffix, bool first_on_level,
-                       std::vector<Link>& links)
+                       const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
     send_tag(StandardTag::TAG_TR);
-    doctotext_log(debug) << "onODFOOXMLTableRow command.";
+    docwire_log(debug) << "onODFOOXMLTableRow command.";
     xml_stream.levelDown();
-    text += parser.parseXmlData(xml_stream, mode, options, zipfile, links);
+    text += parser.parseXmlData(xml_stream, mode, options, zipfile);
     xml_stream.levelUp();
     children_processed = true;
     send_tag(StandardTag::TAG_CLOSE_TR);
   }
 
   void onODFOOXMLTableColumn(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                       const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-                       bool& children_processed, std::string& level_suffix, bool first_on_level,
-                       std::vector<Link>& links)
+                       const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
     send_tag(StandardTag::TAG_TD);
-    doctotext_log(debug) << "onODFOOXMLTableColumn command.";
+    docwire_log(debug) << "onODFOOXMLTableColumn command.";
     xml_stream.levelDown();
-    text += parser.parseXmlData(xml_stream, mode, options, zipfile, links);
+    text += parser.parseXmlData(xml_stream, mode, options, zipfile);
     xml_stream.levelUp();
     children_processed = true;
     send_tag(StandardTag::TAG_CLOSE_TD);
   }
 
   void onODFOOXMLTextTag(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                      const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-                      bool& children_processed, std::string& level_suffix, bool first_on_level,
-                      std::vector<Link>& links)
+                      const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                      bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-    doctotext_log(debug) << "onODFOOXMLTextTag command.";
+    docwire_log(debug) << "onODFOOXMLTextTag command.";
     bool space_preserve_prev = space_preserve;
     if (xml_stream.attribute("space") == "preserve")
       space_preserve = true;
     xml_stream.levelDown();
-    text += parser.parseXmlData(xml_stream, mode, options, zipfile, links);
+    text += parser.parseXmlData(xml_stream, mode, options, zipfile);
     xml_stream.levelUp();
     children_processed = true;
     space_preserve = space_preserve_prev;
   }
 
   void onODFOOXMLBold(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                      const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-                      bool& children_processed, std::string& level_suffix, bool first_on_level,
-                      std::vector<Link>& links)
+                      const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                      bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     is_bold = xml_stream.attribute("val") != "false";
   }
 
   void onODFOOXMLItalic(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                      const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-                      bool& children_processed, std::string& level_suffix, bool first_on_level,
-                      std::vector<Link>& links)
+                      const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                      bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     is_italic = xml_stream.attribute("val") != "false";
   }
 
   void onODFOOXMLUnderline(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                      const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-                      bool& children_processed, std::string& level_suffix, bool first_on_level,
-                      std::vector<Link>& links)
+                      const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                      bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     is_underline = xml_stream.attribute("val") != "none";
   }
 
 	void executeCommand(const std::string& command, XmlStream& xml_stream, XmlParseMode mode,
-						const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-						bool& children_processed, std::string& level_suffix, bool first_on_level,
-						std::vector<Link>& links)
+						const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+						bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		children_processed = false;
 		std::map<std::string, CommonXMLDocumentParser::CommandHandler>::iterator it = m_command_handlers.find(command);
 		if (it != m_command_handlers.end())
-			it->second(*m_parser, xml_stream, mode, options, zipfile, text, children_processed, level_suffix, first_on_level, links);
+			it->second(*m_parser, xml_stream, mode, options, zipfile, text, children_processed, level_suffix, first_on_level);
 		else
-			m_parser->onUnregisteredCommand(xml_stream, mode, options, zipfile, text, children_processed, level_suffix, first_on_level, links);
+			m_parser->onUnregisteredCommand(xml_stream, mode, options, zipfile, text, children_processed, level_suffix, first_on_level);
 	}
 };
 
@@ -332,32 +321,29 @@ class CommonXMLDocumentParser::CommandHandlersSet
 {
 	public:
 		static void onODFOOXMLText(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								   const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-								   bool& children_processed, std::string& level_suffix, bool first_on_level,
-								   std::vector<Link>& links)
+								   const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+								   bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODFOOXML_TEXT command.";
+			docwire_log(debug) << "ODFOOXML_TEXT command.";
 			char* content = xml_stream.content();
 			if (content != NULL)
 				text += content;
 		}
 
 		static void onODFOOXMLTab(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								  const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-								  bool& children_processed, std::string& level_suffix, bool first_on_level,
-								  std::vector<Link>& links)
+								  const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODFOOXML_TAB command.";
+			docwire_log(debug) << "ODFOOXML_TAB command.";
 			text += "\t";
 			parser.impl->send_tag(StandardTag::TAG_TEXT, "\t", {});
 		}
 
 		static void onODFOOXMLSpace(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								  const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-								  bool& children_processed, std::string& level_suffix, bool first_on_level,
-								  std::vector<Link>& links)
+								  const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODFOOXML_SPACE command.";
+			docwire_log(debug) << "ODFOOXML_SPACE command.";
 			std::string count_attr = xml_stream.attribute("c");
 			int count = 1;
 			if (!count_attr.empty())
@@ -370,30 +356,25 @@ class CommonXMLDocumentParser::CommandHandlersSet
 		}
 
 		static void onODFOOXMLUrl(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								  const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-								  bool& children_processed, std::string& level_suffix, bool first_on_level,
-								  std::vector<Link>& links)
+								  const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODFOOXML_URL command.";
+			docwire_log(debug) << "ODFOOXML_URL command.";
 			std::string mlink = xml_stream.attribute("href");
       parser.impl->send_tag(StandardTag::TAG_LINK, "", {{"url", mlink}});
 			xml_stream.levelDown();
-			std::string text_link = parser.parseXmlData(xml_stream, mode, options, zipfile, links);
+			std::string text_link = parser.parseXmlData(xml_stream, mode, options, zipfile);
 			text_link = formatUrl(mlink, text_link, options);
 			xml_stream.levelUp();
-			Link link(mlink, text_link, 0);
-			insertSpecialLinkBlockIntoText(text, link);
-			links.push_back(link);
 			children_processed = true;
       parser.impl->send_tag(StandardTag::TAG_CLOSE_LINK);
 		}
 
 		static void onODFOOXMLListStyle(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-										const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-										bool& children_processed, std::string& level_suffix, bool first_on_level,
-										std::vector<Link>& links)
+										const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+										bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODFOOXML_LIST_STYLE command.";
+			docwire_log(debug) << "ODFOOXML_LIST_STYLE command.";
 			std::string style_code = xml_stream.attribute("name");
 			if (!style_code.empty())
 			{
@@ -419,12 +400,11 @@ class CommonXMLDocumentParser::CommandHandlersSet
 		}
 
 		static void onODFOOXMLList(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								   const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-								   bool& children_processed, std::string& level_suffix, bool first_on_level,
-								   std::vector<Link>& links)
+								   const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+								   bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			std::vector<std::string> list_vector;
-			doctotext_log(debug) << "ODFOOXML_LIST command.";
+			docwire_log(debug) << "ODFOOXML_LIST command.";
 			++parser.getListDepth();
 			std::string header;
 			CommonXMLDocumentParser::ODFOOXMLListStyle list_style = CommonXMLDocumentParser::bullet;
@@ -440,12 +420,12 @@ class CommonXMLDocumentParser::CommandHandlersSet
 				xml_stream.levelDown();
 				if (list_element_type == "list-header" && xml_stream)
 				{
-					header = parser.parseXmlData(xml_stream, mode, options, zipfile, links);
+					header = parser.parseXmlData(xml_stream, mode, options, zipfile);
 				}
 				else if (xml_stream)
 				{
 					parser.impl->send_tag(StandardTag::TAG_LIST_ITEM);
-					list_vector.push_back(parser.parseXmlData(xml_stream, mode, options, zipfile, links));
+					list_vector.push_back(parser.parseXmlData(xml_stream, mode, options, zipfile));
 				}
 
 				parser.impl->send_tag(StandardTag::TAG_CLOSE_LIST_ITEM);
@@ -472,13 +452,12 @@ class CommonXMLDocumentParser::CommandHandlersSet
 		}
 
 		static void onODFOOXMLTable(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-									const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-									bool& children_processed, std::string& level_suffix, bool first_on_level,
-									std::vector<Link>& links)
+									const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+									bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			svector cell_vector;
 			std::vector<svector> row_vector;
-			doctotext_log(debug) << "ODFOOXML_TABLE command.";
+			docwire_log(debug) << "ODFOOXML_TABLE command.";
 			parser.impl->send_tag(StandardTag::TAG_TABLE);
 			xml_stream.levelDown();
 			while (xml_stream)
@@ -494,7 +473,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 						{
 							parser.impl->send_tag(StandardTag::TAG_TD);
 							xml_stream.levelDown();
-							cell_vector.push_back(parser.parseXmlData(xml_stream, mode, options, zipfile, links));
+							cell_vector.push_back(parser.parseXmlData(xml_stream, mode, options, zipfile));
 							xml_stream.levelUp();
 							parser.impl->send_tag(StandardTag::TAG_CLOSE_TD);
 						}
@@ -513,27 +492,24 @@ class CommonXMLDocumentParser::CommandHandlersSet
 		}
 
 		static void onODFOOXMLTableRow(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-									   const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-									   bool& children_processed, std::string& level_suffix, bool first_on_level,
-									   std::vector<Link>& links)
+									   const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+									   bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODFOOXML_ROW command.";
+			docwire_log(debug) << "ODFOOXML_ROW command.";
 		}
 
 		static void onODFTableCell(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								   const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-								   bool& children_processed, std::string& level_suffix, bool first_on_level,
-								   std::vector<Link>& links)
+								   const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+								   bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODF_CELL command.";
+			docwire_log(debug) << "ODF_CELL command.";
 		}
 
 		static void onODFAnnotation(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-									const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-									bool& children_processed, std::string& level_suffix, bool first_on_level,
-									std::vector<Link>& links)
+									const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+									bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODF_ANNOTATION command.";
+			docwire_log(debug) << "ODF_ANNOTATION command.";
 			std::string creator;
 			std::string date;
 			std::string content;
@@ -550,7 +526,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 						content += "\n";
 					xml_stream.levelDown();
 					parser.activeEmittingSignals(false);
-					content += parser.parseXmlData(xml_stream, mode, options, zipfile, links);
+					content += parser.parseXmlData(xml_stream, mode, options, zipfile);
 					parser.activeEmittingSignals(true);
 					xml_stream.levelUp();
 				}
@@ -565,49 +541,46 @@ class CommonXMLDocumentParser::CommandHandlersSet
 		}
 
 		static void onODFLineBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								   const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-								   bool& children_processed, std::string& level_suffix, bool first_on_level,
-								   std::vector<Link>& links)
+								   const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+								   bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODF_LINE_BREAK command.";
+			docwire_log(debug) << "ODF_LINE_BREAK command.";
 			text += "\n";
 			parser.impl->send_tag(StandardTag::TAG_BR);
 		}
 
 		static void onODFHeading(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								 const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-								 bool& children_processed, std::string& level_suffix, bool first_on_level,
-								 std::vector<Link>& links)
+								 const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+								 bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODF_HEADING command.";
+			docwire_log(debug) << "ODF_HEADING command.";
 			xml_stream.levelDown();
-			text += parser.parseXmlData(xml_stream, mode, options, zipfile, links) + '\n';
+			text += parser.parseXmlData(xml_stream, mode, options, zipfile) + '\n';
 			xml_stream.levelUp();
 			children_processed = true;
 		}
 
 		static void onODFObject(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-								bool& children_processed, std::string& level_suffix, bool first_on_level,
-								std::vector<Link>& links)
+								const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODF_OBJECT command.";
+			docwire_log(debug) << "ODF_OBJECT command.";
 			std::string href = xml_stream.attribute("href");
 			std::string content_fn = (href.substr(0, 2) == "./" ? href.substr(2) : href) + "/content.xml";
 			std::string content;
 			if (!zipfile->read(content_fn, &content))
 			{
-				doctotext_log(error) << "Error reading " << content_fn;
+				docwire_log(error) << "Error reading " << content_fn;
 				return;
 			}
 			std::string object_text;
 			try
 			{
-				parser.extractText(content, mode, options, zipfile, object_text, links);
+				parser.extractText(content, mode, options, zipfile, object_text);
 			}
 			catch (Exception& ex)
 			{
-				doctotext_log(error) << "Error parsing " << content_fn;
+				docwire_log(error) << "Error parsing " << content_fn;
 			}
 			text += object_text;
 		}
@@ -619,9 +592,8 @@ void CommonXMLDocumentParser::registerODFOOXMLCommandHandler(const std::string& 
 }
 
 void CommonXMLDocumentParser::onUnregisteredCommand(XmlStream& xml_stream, XmlParseMode mode,
-													const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-													bool& children_processed, std::string& level_suffix, bool first_on_level,
-													std::vector<Link>& links)
+													const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+													bool& children_processed, std::string& level_suffix, bool first_on_level)
 {
 	if (impl->m_disabled_text == false && xml_stream.name() == "#text")
 	{
@@ -633,13 +605,13 @@ void CommonXMLDocumentParser::onUnregisteredCommand(XmlStream& xml_stream, XmlPa
 }
 
 void
-CommonXMLDocumentParser::addCallback(const doctotext::NewNodeCallback &callback)
+CommonXMLDocumentParser::addCallback(const NewNodeCallback &callback)
 {
   impl->m_on_new_node_signal.connect(callback);
 }
 
 std::string CommonXMLDocumentParser::parseXmlData(
-  XmlStream& xml_stream, XmlParseMode mode, const FormattingStyle& options, const DocToTextUnzip* zipfile, std::vector<Link>& links) const
+  XmlStream& xml_stream, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile) const
 {
 	std::string text;
 	std::string level_suffix;
@@ -648,12 +620,12 @@ std::string CommonXMLDocumentParser::parseXmlData(
 	while (xml_stream)
 	{
 		bool children_processed;
-		impl->executeCommand(xml_stream.name(), xml_stream, mode, options, zipfile, text, children_processed, level_suffix, first_on_level, links);
+		impl->executeCommand(xml_stream.name(), xml_stream, mode, options, zipfile, text, children_processed, level_suffix, first_on_level);
 		if (xml_stream && (!children_processed))
 		{
 			xml_stream.levelDown();
 			if (xml_stream)
-				text += parseXmlData(xml_stream, mode, options, zipfile, links);
+				text += parseXmlData(xml_stream, mode, options, zipfile);
 			xml_stream.levelUp();
 		}
 		xml_stream.next();
@@ -664,7 +636,7 @@ std::string CommonXMLDocumentParser::parseXmlData(
 	return text;
 }
 
-void CommonXMLDocumentParser::extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text, std::vector<Link>& links) const
+void CommonXMLDocumentParser::extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile, std::string& text) const
 {
 	if (mode == STRIP_XML)
 	{
@@ -685,7 +657,7 @@ void CommonXMLDocumentParser::extractText(const std::string& xml_contents, XmlPa
 	std::string xml;
 	if (mode == FIX_XML)
 	{
-		DocToTextXmlFixer xml_fixer;
+		XmlFixer xml_fixer;
 		xml = xml_fixer.fix(xml_contents);
 	}
 	else
@@ -693,7 +665,7 @@ void CommonXMLDocumentParser::extractText(const std::string& xml_contents, XmlPa
 	try
 	{
 		XmlStream xml_stream(xml, impl->m_manage_xml_parser, getXmlOptions());
-		text = parseXmlData(xml_stream, mode, options, zipfile, links);
+		text = parseXmlData(xml_stream, mode, options, zipfile);
 	}
 	catch (Exception& ex)
 	{
@@ -770,11 +742,6 @@ const std::string CommonXMLDocumentParser::formatComment(const std::string& auth
 size_t& CommonXMLDocumentParser::getListDepth() const
 {
 	return impl->m_list_depth;
-}
-
-std::vector<Link>& CommonXMLDocumentParser::getInnerLinks() const
-{
-	return impl->m_links;
 }
 
 std::map<std::string, CommonXMLDocumentParser::ListStyleVector>& CommonXMLDocumentParser::getListStyles() const
@@ -869,7 +836,4 @@ int CommonXMLDocumentParser::getXmlOptions() const
 	return impl->m_xml_options;
 }
 
-void CommonXMLDocumentParser::getLinks(std::vector<Link>& links)
-{
-	links = impl->m_links;
-}
+} // namespace docwire

@@ -7,7 +7,7 @@
 #include "parser_provider.h"
 #include "simple_extractor.h"
 
-using namespace doctotext;
+using namespace docwire;
 
 /// [plugin_example_1]
 
@@ -15,30 +15,30 @@ using namespace doctotext;
  * @example example_9.cpp
  */
 
-class CustomParser : public doctotext::Parser
+class CustomParser : public Parser
 {
   void parse() const override
   {
-    // parsing process (see doctotext::Parser)
+    // parsing process (see Parser)
   }
 
   virtual Parser &addOnNewNodeCallback(NewNodeCallback callback) override
   {
-    // manage callbacks (see doctotext::Parser)
+    // manage callbacks (see Parser)
     return *this;
   }
 };
 
-class CustomParserBuilder : public doctotext::ParserBuilder
+class CustomParserBuilder : public ParserBuilder
 {
   std::unique_ptr<Parser> build(const std::string &inFileName) const override
   {
-    // build new parser from file (see doctotext::ParserBuilder)
+    // build new parser from file (see ParserBuilder)
   }
 
   std::unique_ptr<Parser> build(const char *buffer, size_t size) const override
   {
-    // build new parser from data buffer (see doctotext::ParserBuilder)
+    // build new parser from data buffer (see ParserBuilder)
   }
 
 };
@@ -47,7 +47,7 @@ class CustomParserBuilder : public doctotext::ParserBuilder
 
 /// [plugin_example_2]
 
-class CustomParserProvider : public doctotext::ParserProvider
+class CustomParserProvider : public ParserProvider
 {
   std::optional<ParserBuilder*> findParserByExtension(const std::string &extension) const override
   {
@@ -75,7 +75,7 @@ CustomParserProvider custom_parser_provider;
 
 int main(int argc, char* argv[])
 {
-  doctotext::SimpleExtractor extractor("file.custom", "path_tp_directory_with_plugins");
+  SimpleExtractor extractor("file.custom", "path_tp_directory_with_plugins");
   std::cout << extractor.getPlainText();
   return 0;
 }

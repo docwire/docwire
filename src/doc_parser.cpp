@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -66,6 +66,9 @@
 #include "xls_parser.h"
 #include "thread_safe_ole_stream_reader.h"
 #include "thread_safe_ole_storage.h"
+
+namespace docwire
+{
 
 using namespace wvWare;
 
@@ -131,14 +134,14 @@ static bool cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& strea
 	const Parser9x* parser9 = dynamic_cast<const Parser9x*>(parser);
 	if (parser9 == NULL)
 	{
-		doctotext_log(warning) << "This is not a 9x parser.";
+		docwire_log(warning) << "This is not a 9x parser.";
 		return false;
 	}
 	U32 piece = 0;
 	U32 offset = cp;
 	if (parser9->m_plcfpcd == NULL)
 	{
-		doctotext_log(warning) << "No pieces table found.";
+		docwire_log(warning) << "No pieces table found.";
 		return false;
 	}
 	// Copied from wv2 code.
@@ -148,21 +151,21 @@ static bool cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& strea
 		break;
 		offset -= it.currentRun();
 	}
-	doctotext_log(debug) << "Piece: " << piece << ", offset: " << offset;
+	docwire_log(debug) << "Piece: " << piece << ", offset: " << offset;
 	PLCFIterator<Word97::PCD> it2(parser9->m_plcfpcd->at( piece ) );
 	if (!it2.current())
 	{
-		doctotext_log(warning) << "Specified piece not found.";
+		docwire_log(warning) << "Specified piece not found.";
 		return false;
 	}
 	U32 fc = it2.current()->fc;   // Start FC of this piece
-	doctotext_log(debug) << "Piece start at FC " << fc << ".";
+	docwire_log(debug) << "Piece start at FC " << fc << ".";
         bool unicode;
         parser9->realFC(fc, unicode);
-	doctotext_log(debug) << "After unicode transition piece start at FC " << fc << ".";
+	docwire_log(debug) << "After unicode transition piece start at FC " << fc << ".";
 	if (offset != 0 )
             fc += unicode ? offset * 2 : offset;
-	doctotext_log(debug) << "Stream offset is " << fc << ".";
+	docwire_log(debug) << "Stream offset is " << fc << ".";
 	stream_offset = fc;
 	if (unicode_detected != NULL)
 		*unicode_detected = unicode;
@@ -177,41 +180,41 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 	{
 		if (parser->fib().lcbPlcfandTxt == 0)
 		{
-			doctotext_log(debug) << "No annotations.";
+			docwire_log(debug) << "No annotations.";
 			return true;
 		}
 
 		U32 atn_part_cp = parser->fib().ccpText + parser->fib().ccpFtn + parser->fib().ccpHdd + parser->fib().ccpMcr;
-		doctotext_log(debug) << "Annotations part at CP " << atn_part_cp << ".";
+		docwire_log(debug) << "Annotations part at CP " << atn_part_cp << ".";
 		reader = parser->m_storage->createStreamReader("WordDocument");
 		if (!reader)
 		{
-			doctotext_log(error) << "Error opening WordDocument stream.";
+			docwire_log(error) << "Error opening WordDocument stream.";
 			return false;
 		}
 		const Parser9x* parser9 = dynamic_cast<const Parser9x*>(parser);
 		table_reader = parser->m_storage->createStreamReader(parser9->tableStream());
 		if (!table_reader)
 		{
-			doctotext_log(error) << "Error opening table stream.";
+			docwire_log(error) << "Error opening table stream.";
 			delete reader;
 			return false;
 		}
 
 		U32 annotation_txts_offset = parser->fib().fcPlcfandTxt;
-		doctotext_log(debug) << "Annotation texts table at offset " << annotation_txts_offset << ".";
+		docwire_log(debug) << "Annotation texts table at offset " << annotation_txts_offset << ".";
 		table_reader->seek(annotation_txts_offset);
 		U32 annotation_begin_cp = table_reader->readU32();
 		std::vector<std::string> annotations;
 		for (;;)
 		{
 			U32 annotation_end_cp = table_reader->readU32();
-			doctotext_log(debug) << "Annotation text position (CP) from " << annotation_begin_cp << " to " << annotation_end_cp << ".";
+			docwire_log(debug) << "Annotation text position (CP) from " << annotation_begin_cp << " to " << annotation_end_cp << ".";
 			U32 stream_begin_offset;
 			bool unicode;
 			if (!cp_to_stream_offset(parser, atn_part_cp + annotation_begin_cp, stream_begin_offset, &unicode))
 			{
-				doctotext_log(error) << "Converting annotation start position to stream offset failed.";
+				docwire_log(error) << "Converting annotation start position to stream offset failed.";
 				delete reader;
 				delete table_reader;
 				return false;
@@ -219,17 +222,17 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 			U32 stream_end_offset;
 			if (!cp_to_stream_offset(parser, atn_part_cp + annotation_end_cp, stream_end_offset))
 			{
-				doctotext_log(error) << "Converting annotation end position to stream offset failed.";
+				docwire_log(error) << "Converting annotation end position to stream offset failed.";
 				delete reader;
 				delete table_reader;
 				return false;
 			}
-			doctotext_log(debug) << "Annotation text stream position from " << stream_begin_offset << " to " << stream_end_offset << ".";
+			docwire_log(debug) << "Annotation text stream position from " << stream_begin_offset << " to " << stream_end_offset << ".";
 			reader->seek(stream_begin_offset);
 			U8 annotation_mark = reader->readU8();
 			if (!annotation_mark == 0x05)
 			{
-				doctotext_log(error) << "Incorrect annotation mark.";
+				docwire_log(error) << "Incorrect annotation mark.";
 				delete reader;
 				delete table_reader;
 				return false;
@@ -237,7 +240,7 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 			std::string annotation;
 			while (reader->tell() < stream_end_offset - 1)
 			{
-				doctotext_log(debug) << "Stream pos " << reader->tell();
+				docwire_log(debug) << "Stream pos " << reader->tell();
 				// warning TODO: Unicode support in comments
 				if (unicode)
 					reader->seek(1, SEEK_CUR); // skip unicode byte
@@ -250,7 +253,7 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 						annotation += ch;
 				}
 			}
-			doctotext_log(debug) << "Annotation text: \"" << annotation << "\"";
+			docwire_log(debug) << "Annotation text: \"" << annotation << "\"";
 			annotations.push_back(annotation);
 			if (annotation_end_cp >= parser->fib().ccpAtn - 1)
 				break;
@@ -259,7 +262,7 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 
 		U32 annotation_owners_offset = parser->fib().fcGrpXstAtnOwners;
 		U32 annotation_owners_len = parser->fib().lcbGrpXstAtnOwners;
-		doctotext_log(debug) << "Annotation owners table at offset " << annotation_owners_offset << " has length " << annotation_owners_len << ".";
+		docwire_log(debug) << "Annotation owners table at offset " << annotation_owners_offset << " has length " << annotation_owners_len << ".";
 		table_reader->seek(annotation_owners_offset);
 		std::vector<std::string> owners;
 		for (int total_len = 0; total_len < annotation_owners_len;)
@@ -269,7 +272,7 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 			std::string owner;
 			if (len * 2 + total_len > annotation_owners_len)
 			{
-				doctotext_log(warning) << "Something is wrong with XST table. Authors of comments could not be parsed.";
+				docwire_log(warning) << "Something is wrong with XST table. Authors of comments could not be parsed.";
 				owners.clear();
 				break;
 			}
@@ -279,30 +282,30 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 				owner += (char)ch;
 				total_len += 2;
 			}
-			doctotext_log(debug) << "Owner \"" << owner << "\" found.";
+			docwire_log(debug) << "Owner \"" << owner << "\" found.";
 			owners.push_back(owner);
 		}
 
 		U32 annotation_refs_offset = parser->fib().fcPlcfandRef;
-		doctotext_log(debug) << "Annotation refs table at offset " << annotation_refs_offset << ".";
+		docwire_log(debug) << "Annotation refs table at offset " << annotation_refs_offset << ".";
 		table_reader->seek(annotation_refs_offset);
 		for (int i = 0;; i++)
 		{
 			U32 annotation_ref_cp = table_reader->readU32();
 			if (annotation_ref_cp >= parser->fib().ccpText)
 				break;
-			doctotext_log(debug) << "Annotation " << i << " references text at CP " << annotation_ref_cp << ".";
+			docwire_log(debug) << "Annotation " << i << " references text at CP " << annotation_ref_cp << ".";
 			U32 stream_offset;
 			if (!cp_to_stream_offset(parser, annotation_ref_cp, stream_offset))
 			{
-				doctotext_log(error) << "Converting annotation reference position to stream offset failed.";
+				docwire_log(error) << "Converting annotation reference position to stream offset failed.";
 				delete reader;
 				delete table_reader;
 				return false;
 			}
 			if (i < annotations.size())
 			{
-				doctotext_log(debug) << "Annotation " << i << " references text at stream offset " << stream_offset << ".";
+				docwire_log(debug) << "Annotation " << i << " references text at stream offset " << stream_offset << ".";
 				Comment c;
 				c.fc = stream_offset;
 				c.text = annotations[i];
@@ -315,7 +318,7 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 			Word97::ATRD atrd(table_reader);
 			if (atrd.ibst < owners.size())
 			{
-				doctotext_log(debug) << "Annotation owner is \"" << owners[atrd.ibst] << "\", index " << atrd.ibst << ".";
+				docwire_log(debug) << "Annotation owner is \"" << owners[atrd.ibst] << "\", index " << atrd.ibst << ".";
 				comments[i].author = owners[atrd.ibst];
 			}
 		}
@@ -342,7 +345,7 @@ static std::string format_comment(const std::string& author, const std::string& 
 	return comment;
 }
 
-class DocToTextTextHandler : public TextHandler
+class TextHandler : public wvWare::TextHandler
 {
 	private:
 		const wvWare::Parser* m_parser;
@@ -354,7 +357,7 @@ class DocToTextTextHandler : public TextHandler
 		U32 m_prev_par_fc;
 
 	public:
-		DocToTextTextHandler(const wvWare::Parser* parser, UString* text, CurrentState* curr_state,
+		TextHandler(const wvWare::Parser* parser, UString* text, CurrentState* curr_state,
 				const FormattingStyle& formatting)
 			: m_parser(parser), m_curr_state(curr_state), m_comments_parsed(false), m_prev_par_fc(0)
 		{
@@ -390,7 +393,7 @@ class DocToTextTextHandler : public TextHandler
 				{
 					if (!parse_comments(m_parser, m_comments))
 					{
-						doctotext_log(error) << "Parsing comments failed.";
+						docwire_log(error) << "Parsing comments failed.";
 						m_comments.clear();
 					}
 					m_comments_parsed = true;
@@ -459,9 +462,9 @@ class DocToTextTextHandler : public TextHandler
 			switch (fld->flt)
 			{
 				case FLT_EMBED:
-					doctotext_log(debug) << "Embedded OLE object reference found.";
+					docwire_log(debug) << "Embedded OLE object reference found.";
 					if (m_curr_state->obj_texts_iter == m_curr_state->obj_texts.end())
-						doctotext_log(warning) << "Unexpected OLE object reference.";
+						docwire_log(warning) << "Unexpected OLE object reference.";
 					else
 					{
 						(*Text) += utf8_to_ustring(*m_curr_state->obj_texts_iter);
@@ -537,14 +540,14 @@ class DocToTextTextHandler : public TextHandler
 		}
 };
 
-class DocToTextTableHandler : public TableHandler
+class TableHandler : public wvWare::TableHandler
 {
 	private:
 		UString* Text;
 		CurrentTable* m_curr_table;
 
 	public:
-		DocToTextTableHandler(UString* text, CurrentTable* curr_table)
+		TableHandler(UString* text, CurrentTable* curr_table)
 		{
 			Text = text;
 			m_curr_table = curr_table;
@@ -572,13 +575,13 @@ class DocToTextTableHandler : public TableHandler
 		}
 };
 
-class DocToTextSubDocumentHandler : public SubDocumentHandler
+class SubDocumentHandler : public wvWare::SubDocumentHandler
 {
 	private:
 		CurrentHeaderFooter* m_curr_header_footer;
 	
 	public:
-		DocToTextSubDocumentHandler(CurrentHeaderFooter* curr_header_footer)
+		SubDocumentHandler(CurrentHeaderFooter* curr_header_footer)
 			: m_curr_header_footer(curr_header_footer)
 		{
 		}
@@ -612,10 +615,10 @@ struct DOCParser::Implementation
 	const char* m_buffer;
 	size_t m_buffer_size;
 	std::string m_file_name;
-  boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
+	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-DOCParser::DOCParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+DOCParser::DOCParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = NULL;
@@ -634,7 +637,7 @@ DOCParser::DOCParser(const std::string& file_name, const std::shared_ptr<doctote
 	}
 }
 
-DOCParser::DOCParser(const char *buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+DOCParser::DOCParser(const char *buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = NULL;
@@ -667,7 +670,7 @@ bool DOCParser::isDOC()
 		throw Exception("Error opening file " + impl->m_file_name);
 	if (f)
 		fclose(f);
-	cerr_log_redirection cerr_redirection(doctotext_current_source_location());
+	cerr_log_redirection cerr_redirection(docwire_current_source_location());
 	ThreadSafeOLEStorage* storage = NULL;
 	//storage will be deleted inside parser from wv2 library
 	if (impl->m_buffer)
@@ -680,21 +683,16 @@ bool DOCParser::isDOC()
 	cerr_redirection.restore();
 	if (!parser || !parser->isOk())
 	{
-		doctotext_log(error) << "Creating parser failed.";
+		docwire_log(error) << "Creating parser failed.";
 		return false;
 	}
 	return true;
 }
 
-void DOCParser::getLinks(std::vector<doctotext::Link>& links)
-{
-	// warning TODO: Implement this functionality.
-}
-
-std::string DOCParser::plainText(const doctotext::FormattingStyle& formatting) const
+std::string DOCParser::plainText(const FormattingStyle& formatting) const
 {
 	CurrentState curr_state;
-	doctotext_log(debug) << "Opening " << impl->m_file_name << " as OLE file to parse all embedded objects in supported formats.";
+	docwire_log(debug) << "Opening " << impl->m_file_name << " as OLE file to parse all embedded objects in supported formats.";
 	//Pointer to storage will be passed to parser from wv2 library. This pointer will be deleted, so allocate storage on heap
 	ThreadSafeOLEStorage* storage = NULL;
 	try
@@ -707,13 +705,13 @@ std::string DOCParser::plainText(const doctotext::FormattingStyle& formatting) c
 			throw Exception("Error opening " + impl->m_file_name + " as OLE file");
 		if (storage->enterDirectory("ObjectPool"))
 		{
-			doctotext_log(debug) << "ObjectPool found, embedded OLE objects probably exist.";
+			docwire_log(debug) << "ObjectPool found, embedded OLE objects probably exist.";
 			std::vector<std::string> obj_list;
 			if (!storage->getStreamsAndStoragesList(obj_list))
 				throw Exception("Error while loading list of streams and storages in ObjectPool directory. OLE Storage has reported an error: " + storage->getLastError());
 			for (size_t i = 0; i < obj_list.size(); ++i)
 			{
-				doctotext_log(debug) << "OLE object entry found: " << obj_list[i];
+				docwire_log(debug) << "OLE object entry found: " << obj_list[i];
 				std::string obj_text;
 				std::string currect_dir = obj_list[i];
 				if (storage->enterDirectory(obj_list[i]))
@@ -723,8 +721,8 @@ std::string DOCParser::plainText(const doctotext::FormattingStyle& formatting) c
 						throw Exception("Error while loading list of streams and storages in " + currect_dir + " directory. OLE Storage has reported an error: " + storage->getLastError());
 					if (find(obj_list.begin(), obj_list.end(), "Workbook") != obj_list.end())
 					{
-						doctotext_log(debug) << "Embedded MS Excel workbook detected.";
-						doctotext_log(debug) << "Using XLS parser.";
+						docwire_log(debug) << "Embedded MS Excel workbook detected.";
+						docwire_log(debug) << "Using XLS parser.";
 						try
 						{
 							XLSParser xls("");
@@ -732,7 +730,7 @@ std::string DOCParser::plainText(const doctotext::FormattingStyle& formatting) c
 						}
 						catch (Exception& ex)
 						{
-							doctotext_log(error) << "Error while parsing embedded MS Excel workbook:\n" << ex.getBacktrace();
+							docwire_log(error) << "Error while parsing embedded MS Excel workbook:\n" << ex.getBacktrace();
 						}
 					}
 					storage->leaveDirectory();
@@ -742,7 +740,7 @@ std::string DOCParser::plainText(const doctotext::FormattingStyle& formatting) c
 		}
 		else
 		{
-			doctotext_log(debug) << "No ObjectPool found, embedded OLE objects probably do not exist.";
+			docwire_log(debug) << "No ObjectPool found, embedded OLE objects probably do not exist.";
 		}
 		storage->leaveDirectory();
 		curr_state.obj_texts_iter = curr_state.obj_texts.begin();
@@ -759,7 +757,7 @@ std::string DOCParser::plainText(const doctotext::FormattingStyle& formatting) c
 			delete storage;
 		throw;
 	}
-	cerr_log_redirection cerr_redirection(doctotext_current_source_location());
+	cerr_log_redirection cerr_redirection(docwire_current_source_location());
 	pthread_mutex_lock(&parser_factory_mutex_2);
 	SharedPtr<wvWare::Parser> parser = ParserFactory::createParser(storage);
 	pthread_mutex_unlock(&parser_factory_mutex_2);
@@ -771,11 +769,11 @@ std::string DOCParser::plainText(const doctotext::FormattingStyle& formatting) c
 		throw Exception("Creating parser failed");
 	}
 	UString text;
-	DocToTextTextHandler text_handler(parser, &text, &curr_state, formatting);
+	TextHandler text_handler(parser, &text, &curr_state, formatting);
 	parser->setTextHandler(&text_handler);
-	DocToTextTableHandler table_handler(&text, &curr_state.table);
+	TableHandler table_handler(&text, &curr_state.table);
 	parser->setTableHandler(&table_handler);
-	DocToTextSubDocumentHandler sub_document_handler(&curr_state.header_footer);
+	SubDocumentHandler sub_document_handler(&curr_state.header_footer);
 	parser->setSubDocumentHandler(&sub_document_handler);
 	cerr_redirection.redirect();
 	bool res = parser->parse();
@@ -790,14 +788,14 @@ std::string DOCParser::plainText(const doctotext::FormattingStyle& formatting) c
 	std::string s = ustring_to_string(text);
 	// 0x0b character (vertical tab) is used as no-breaking carraige return.
 	std::replace(s.begin(), s.end(), '\x0b', '\n');
-  doctotext::Info new_info(StandardTag::TAG_TEXT, s);
+	Info new_info(StandardTag::TAG_TEXT, s);
   impl->m_on_new_node_signal(new_info);
 	return s;
 }
 
-doctotext::Metadata DOCParser::metaData() const
+Metadata DOCParser::metaData() const
 {
-  doctotext::Metadata meta;
+	Metadata meta;
 	ThreadSafeOLEStorage* storage = NULL;
 	try
 	{
@@ -824,28 +822,28 @@ doctotext::Metadata DOCParser::metaData() const
 	}
 }
 
-doctotext::Parser&
-DOCParser::withParameters(const doctotext::ParserParameters &parameters)
+Parser& DOCParser::withParameters(const ParserParameters &parameters)
 {
-	doctotext::Parser::withParameters(parameters);
+	Parser::withParameters(parameters);
 	return *this;
 }
 
 void
 DOCParser::parse() const
 {
-	doctotext_log(debug) << "Using DOC parser.";
-  doctotext::FormattingStyle formating;
+	docwire_log(debug) << "Using DOC parser.";
+	FormattingStyle formating;
   plainText(formating);
 
   Metadata metadata = metaData();
-  doctotext::Info metadata_info(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
+	Info metadata_info(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
   impl->m_on_new_node_signal(metadata_info);
 }
 
-doctotext::Parser&
-DOCParser::addOnNewNodeCallback(doctotext::NewNodeCallback callback)
+Parser& DOCParser::addOnNewNodeCallback(NewNodeCallback callback)
 {
   impl->m_on_new_node_signal.connect(callback);
   return *this;
 }
+
+} // namespace docwire

@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -43,42 +43,42 @@
 #include "misc.h"
 #include "xml_stream.h"
 
+namespace docwire
+{
+
 class ODFXMLParser::CommandHandlersSet
 {
 	public:
 		static void onODFBody(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-							  const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-							  bool& children_processed, std::string& level_suffix, bool first_on_level,
-							  std::vector<Link>& links)
+							  const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+							  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			// warning TODO: Unfortunately, in CommonXMLDocumentParser we are not checking full names for xml tags.\
 			Thats a problem, since we can have table:body, office:body etc. What if more xml tags are not handled correctly?
 			if (xml_stream.fullName() != "office:body")
 				return;
-			doctotext_log(debug) << "ODF_BODY Command";
+			docwire_log(debug) << "ODF_BODY Command";
 			//we are inside body, we can disable adding text nodes
 			parser.disableText(false);
 		}
 
 		static void onODFObject(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-								bool& children_processed, std::string& level_suffix, bool first_on_level,
-								std::vector<Link>& links)
+								const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODF_OBJECT Command";
+			docwire_log(debug) << "ODF_OBJECT Command";
 			xml_stream.levelDown();
 			parser.disableText(true);
-			text += parser.parseXmlData(xml_stream, mode, options, zipfile, links);
+			text += parser.parseXmlData(xml_stream, mode, options, zipfile);
 			parser.disableText(false);
 			xml_stream.levelUp();
 		}
 
 		static void onODFBinaryData(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-									const FormattingStyle& options, const DocToTextUnzip* zipfile, std::string& text,
-									bool& children_processed, std::string& level_suffix, bool first_on_level,
-									std::vector<Link>& links)
+									const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+									bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			doctotext_log(debug) << "ODF_BINARY_DATA Command";
+			docwire_log(debug) << "ODF_BINARY_DATA Command";
 			children_processed = true;
 		}
 };
@@ -89,10 +89,10 @@ struct ODFXMLParser::ExtendedImplementation
 	size_t m_buffer_size;
 	std::string m_file_name;
 	ODFXMLParser* m_interf;
-  boost::signals2::signal<void(doctotext::Info &info)> m_on_new_node_signal;
+	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-ODFXMLParser::ODFXMLParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+ODFXMLParser::ODFXMLParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
   : Parser(inParserManager)
 {
 	extended_impl = NULL;
@@ -116,7 +116,7 @@ ODFXMLParser::ODFXMLParser(const std::string& file_name, const std::shared_ptr<d
 	}
 }
 
-ODFXMLParser::ODFXMLParser(const char *buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+ODFXMLParser::ODFXMLParser(const char *buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
   : Parser(inParserManager)
 {
 	extended_impl = NULL;
@@ -185,20 +185,19 @@ std::string ODFXMLParser::plainText(XmlParseMode mode, FormattingStyle& formatti
 	disableText(true);
 	try
 	{
-		extractText(xml_content, mode, formatting_style, NULL, text, getInnerLinks());
+		extractText(xml_content, mode, formatting_style, NULL, text);
 	}
 	catch (Exception& ex)
 	{
 		ex.appendError("Error parsing Flat XML file");
 		throw;
 	}
-	decodeSpecialLinkBlocks(text, getInnerLinks());
 	return text;
 }
 
 Metadata ODFXMLParser::metaData() const
 {
-	doctotext_log(debug) << "Extracting metadata.";
+	docwire_log(debug) << "Extracting metadata.";
 	Metadata metadata;
 
 	std::string xml_content;
@@ -240,27 +239,29 @@ Metadata ODFXMLParser::metaData() const
 }
 
 Parser&
-ODFXMLParser::withParameters(const doctotext::ParserParameters &parameters)
+ODFXMLParser::withParameters(const ParserParameters &parameters)
 {
-	doctotext::Parser::withParameters(parameters);
+	Parser::withParameters(parameters);
 	return *this;
 }
 
 void
 ODFXMLParser::parse() const
 {
-	doctotext_log(debug) << "Using ODFXML parser.";
+	docwire_log(debug) << "Using ODFXML parser.";
 	auto formatting_style = getFormattingStyle();
   plainText(XmlParseMode::PARSE_XML, formatting_style);
 
-  doctotext::Info info(StandardTag::TAG_METADATA, "", metaData().getFieldsAsAny());
+  Info info(StandardTag::TAG_METADATA, "", metaData().getFieldsAsAny());
   extended_impl->m_on_new_node_signal(info);
 }
 
 Parser&
-ODFXMLParser::addOnNewNodeCallback(doctotext::NewNodeCallback callback)
+ODFXMLParser::addOnNewNodeCallback(NewNodeCallback callback)
 {
   extended_impl->m_on_new_node_signal.connect(callback);
   CommonXMLDocumentParser::addCallback(callback);
   return *this;
 }
+
+} // namespace docwire

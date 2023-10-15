@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef OCR_PARSER_HPP
-#define OCR_PARSER_HPP
+#ifndef DOCWIRE_OCR_PARSER_H
+#define DOCWIRE_OCR_PARSER_H
 
 #include <string>
 #include <memory>
@@ -43,7 +43,10 @@
 #include "parser.h"
 #include "parser_builder.h"
 
-class OCRParser : public doctotext::Parser
+namespace docwire
+{
+
+class OCRParser : public Parser
 {
 private:
     struct Implementation;
@@ -55,18 +58,20 @@ public:
     static std::string get_default_tessdata_prefix();
 
     OCRParser(const OCRParser& ocr_parser);
-    OCRParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
-    OCRParser(const char* buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager = nullptr);
+    OCRParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+    OCRParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
     ~OCRParser();
 
     void parse() const override;
-    Parser& addOnNewNodeCallback(doctotext::NewNodeCallback callback) override;
+    Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
     static std::vector <std::string> getExtensions() {return {"tiff", "jpeg", "bmp", "png", "pnm", "jfif", "jpg", "webp"};}
-    Parser& withParameters(const doctotext::ParserParameters &parameters) override;
+    Parser& withParameters(const ParserParameters &parameters) override;
 
     void setTessdataPrefix(const std::string& tessdata_prefix);
     bool isOCR() const;
-    std::string plainText(const doctotext::FormattingStyle& formatting, const doctotext::Language lang) const;
+    std::string plainText(const FormattingStyle& formatting, const Language lang) const;
 };
 
-#endif // OCR_PARSER_HPP
+} // namespace docwire
+
+#endif // DOCWIRE_OCR_PARSER_H

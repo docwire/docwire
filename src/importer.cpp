@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -39,7 +39,8 @@
 #include "importer.h"
 #include "log.h"
 
-using namespace doctotext;
+namespace docwire
+{
 
 class Importer::Implementation
 {
@@ -122,12 +123,12 @@ public:
         }
         else
         {
-          throw doctotext::Exception("file " + file_path + " is not readable");
+          throw Exception("file " + file_path + " is not readable");
         }
       }
       else
       {
-        throw doctotext::Exception("file " + file_path + "  doesn't exist");
+        throw Exception("file " + file_path + "  doesn't exist");
       }
     }
     else if(input_stream)
@@ -137,7 +138,7 @@ public:
     }
     if (builder)
     {
-      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](doctotext::Info &info){ m_owner.emit(info);}})
+      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
         .withParserManager(m_parser_manager)
         .withParameters(m_parameters);
 
@@ -147,13 +148,13 @@ public:
         {
           builder_ref.build(file_path)->parse();
         }
-        catch (doctotext::EncryptedFileException &ex)
+        catch (EncryptedFileException &ex)
         {
           throw ex;
         }
-        catch (doctotext::Exception &ex)
+        catch (Exception &ex)
         {
-          doctotext_log(doctotext::info) << "It is possible that wrong parser was selected. Trying different parsers.";
+          docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
           std::vector<char> buffer;
           load_file_to_buffer(file_path, buffer);
           auto second_builder = m_parser_manager->findParserByData(buffer);
@@ -163,7 +164,7 @@ public:
             throw ex;
           }
           std::shared_ptr<ParserBuilder>(*second_builder)
-                  ->withOnNewNodeCallbacks({[this](doctotext::Info &info){ m_owner.emit(info);}})
+                  ->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
                   .withParserManager(m_parser_manager)
                   .withParameters(m_parameters)
                   .build(buffer.data(), buffer.size())->parse();
@@ -176,7 +177,7 @@ public:
     }
     else
     {
-      throw doctotext::Exception("File format was not recognized.");
+      throw Exception("File format was not recognized.");
     }
     Info end_doc(StandardTag::TAG_CLOSE_DOCUMENT);
     m_owner.emit(end_doc);
@@ -245,3 +246,5 @@ Importer::add_parameters(const ParserParameters &parameters)
 {
   impl->add_parameters(parameters);
 }
+
+} // namespace docwire

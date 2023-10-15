@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -88,7 +88,10 @@ Attributes operator+(const Attributes& lhs, const Attributes& rhs)
 
 } // unnamed namespace
 
-class DocToTextSaxParser : public ParserSax
+namespace docwire
+{
+
+class SaxParser : public ParserSax
 {
 	private:
 		std::string& m_html_content;
@@ -139,7 +142,7 @@ class DocToTextSaxParser : public ParserSax
 				}
 				catch (htmlcxx::CharsetConverter::Exception& ex)
 				{
-					doctotext_log(warning) << "Warning: Cant convert text to UTF-8 from " + m_charset;
+					docwire_log(warning) << "Warning: Cant convert text to UTF-8 from " + m_charset;
           delete m_converter;
 					m_converter = nullptr;
 				}
@@ -244,7 +247,7 @@ class DocToTextSaxParser : public ParserSax
 		void foundTag(Node node, bool isEnd) override
 		{
 			const std::string tag_name = node.tagName();
-			doctotext_log(debug) << "HTML tag found: " << (isEnd ? "/" : "") << tag_name;
+			docwire_log(debug) << "HTML tag found: " << (isEnd ? "/" : "") << tag_name;
 			if (!m_buffered_text.empty())
 			{
 				// https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements
@@ -448,7 +451,7 @@ class DocToTextSaxParser : public ParserSax
 					csd_t charset_detector = csd_open();
 					if (charset_detector == (csd_t)-1)
 					{
-						doctotext_log(warning) << "Warning: Could not create charset detector";
+						docwire_log(warning) << "Warning: Could not create charset detector";
 					}
 					else
 					{
@@ -469,14 +472,14 @@ class DocToTextSaxParser : public ParserSax
 						if (res != nullptr)
 						{
 							m_charset = std::string(res);
-							doctotext_log(debug) << "Could not found explicit information about encoding. Estimated encoding: " + m_charset;
+							docwire_log(debug) << "Could not found explicit information about encoding. Estimated encoding: " + m_charset;
 							createCharsetConverter();
 						}
 					}
 					//if we still don't know which encoding is used...
 					if (m_charset.empty())
 					{
-						doctotext_log(debug) << "Could not detect encoding. Document is assumed to be encoded in UTF-8";
+						docwire_log(debug) << "Could not detect encoding. Document is assumed to be encoded in UTF-8";
 						m_charset = "UTF-8";
 					}
 				}
@@ -517,7 +520,7 @@ class DocToTextSaxParser : public ParserSax
 					}
 					if (!m_charset.empty())
 					{
-						doctotext_log(debug) << "Following encoding was detected: " + m_charset;
+						docwire_log(debug) << "Following encoding was detected: " + m_charset;
 						createCharsetConverter();
 					}
 				}
@@ -527,7 +530,7 @@ class DocToTextSaxParser : public ParserSax
 		void foundText(Node node) override
 		{
 			std::string text = node.text();
-			doctotext_log(debug) << "HTML text found: [" << text << "]";
+			docwire_log(debug) << "HTML text found: [" << text << "]";
 			if (m_in_style)
 			{
 				m_style_text += node.text();
@@ -538,18 +541,18 @@ class DocToTextSaxParser : public ParserSax
 			// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace#what_is_whitespace
 			// Convert all whitespaces into spaces and reduce all adjacent spaces into a single space
 			text = std::regex_replace(text, std::regex(R"(\s+)"), " ");
-			doctotext_log(debug) << "After converting and reducing whitespaces: [" << text << "]";
+			docwire_log(debug) << "After converting and reducing whitespaces: [" << text << "]";
 			bool last_char_was_space = isspace((unsigned char)m_last_char_in_inline_formatting_context);
-			doctotext_log(debug) << "Last char in inline formatting context was whitespace: " << last_char_was_space;
+			docwire_log(debug) << "Last char in inline formatting context was whitespace: " << last_char_was_space;
 			// Reduce whitespaces between text nodes (end of previous and beginning of current.
 			// Remove whitespaces from beginning of inline formatting context.
 			if (last_char_was_space || m_last_char_in_inline_formatting_context == '\0')
 			{
 				boost::trim_left(text);
-				doctotext_log(debug) << "After reducing whitespaces between text nodes and removing whitespaces from begining of inline formatting context: [" << text << "]";
+				docwire_log(debug) << "After reducing whitespaces between text nodes and removing whitespaces from begining of inline formatting context: [" << text << "]";
 			}
 			convertToUtf8(text);
-			doctotext_log(debug) << "After converting to utf8: [" << text << "]";
+			docwire_log(debug) << "After converting to utf8: [" << text << "]";
 			if (!text.empty())
 			{
 				m_last_char_in_inline_formatting_context = text.back();
@@ -584,7 +587,7 @@ class DocToTextSaxParser : public ParserSax
 					}
 					if (!m_charset.empty())
 					{
-						doctotext_log(debug) << "Following encoding was detected: " + m_charset;
+						docwire_log(debug) << "Following encoding was detected: " + m_charset;
 						createCharsetConverter();
 					}
 				}
@@ -592,7 +595,7 @@ class DocToTextSaxParser : public ParserSax
 		}
 
 	public:
-		DocToTextSaxParser(std::string& html_content, bool skip_decoding, const HTMLParser* parser)
+		SaxParser(std::string& html_content, bool skip_decoding, const HTMLParser* parser)
 			: m_in_title(false), m_in_style(false), m_converter(nullptr), m_decoded_buffer(nullptr),
 			m_in_script(false), m_decoded_buffer_size(0),
 			  m_turn_off_ul_enumeration(false), m_turn_off_ol_enumeration(false),
@@ -600,7 +603,7 @@ class DocToTextSaxParser : public ParserSax
 		{
 		}
 
-		~DocToTextSaxParser() override
+		~SaxParser() override
 		{
 			if (m_decoded_buffer)
 				delete[] m_decoded_buffer;
@@ -609,7 +612,7 @@ class DocToTextSaxParser : public ParserSax
 		}
 };
 
-class DocToTextMetaSaxParser : public ParserSax
+class MetaSaxParser : public ParserSax
 {
 	private:
 		Metadata& m_meta;
@@ -660,7 +663,7 @@ class DocToTextMetaSaxParser : public ParserSax
 		}
 
 	public:
-		DocToTextMetaSaxParser(Metadata& meta)
+		MetaSaxParser(Metadata& meta)
 			: m_meta(meta)
 		{
 		};
@@ -673,7 +676,7 @@ struct HTMLParser::Implementation
 	DataStream* m_data_stream{};
 };
 
-HTMLParser::HTMLParser(const std::string& file_name, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+HTMLParser::HTMLParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = nullptr;
@@ -697,7 +700,7 @@ HTMLParser::HTMLParser(const std::string& file_name, const std::shared_ptr<docto
 	}
 }
 
-HTMLParser::HTMLParser(const char *buffer, size_t size, const std::shared_ptr<doctotext::ParserManager> &inParserManager)
+HTMLParser::HTMLParser(const char *buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
 : Parser(inParserManager)
 {
 	impl = nullptr;
@@ -729,9 +732,9 @@ HTMLParser::~HTMLParser()
 }
 
 Parser&
-HTMLParser::withParameters(const doctotext::ParserParameters &parameters)
+HTMLParser::withParameters(const ParserParameters &parameters)
 {
-	doctotext::Parser::withParameters(parameters);
+	Parser::withParameters(parameters);
 	return *this;
 }
 
@@ -750,7 +753,7 @@ bool HTMLParser::isHTML()
 void
 HTMLParser::parse() const
 {
-	doctotext_log(debug) << "Using HTML parser.";
+	docwire_log(debug) << "Using HTML parser.";
 	if (!impl->m_data_stream->open())
 		throw Exception("Error opening file " + impl->m_file_name);
 	size_t size = impl->m_data_stream->size();
@@ -758,7 +761,7 @@ HTMLParser::parse() const
 	if (!impl->m_data_stream->read(&content[0], sizeof(unsigned char), size))
 		throw Exception("Error reading file " + impl->m_file_name);
 	impl->m_data_stream->close();
-	DocToTextSaxParser parser(content, impl->m_skip_decoding, this);
+	SaxParser parser(content, impl->m_skip_decoding, this);
 	parser.parse(content);
   Metadata metadata = metaData();
   sendTag(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
@@ -766,7 +769,7 @@ HTMLParser::parse() const
 
 Metadata HTMLParser::metaData() const
 {
-	doctotext_log(debug) << "Extracting metadata.";
+	docwire_log(debug) << "Extracting metadata.";
 	Metadata meta;
 	if (!impl->m_data_stream->open())
 		throw Exception("Error opening file " + impl->m_file_name);
@@ -775,7 +778,7 @@ Metadata HTMLParser::metaData() const
 	if (!impl->m_data_stream->read(&content[0], sizeof(unsigned char), size))
 		throw Exception("Error reading file " + impl->m_file_name);
 	impl->m_data_stream->close();
-	DocToTextMetaSaxParser parser(meta);
+	MetaSaxParser parser(meta);
 	parser.parse(content);
 	return meta;
 }
@@ -784,3 +787,5 @@ void HTMLParser::skipCharsetDecoding()
 {
 	impl->m_skip_decoding = true;
 }
+
+} // namespace docwire

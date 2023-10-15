@@ -3,7 +3,7 @@ if(DEFINED ENV{SOURCE_PATH})
 else()
 	vcpkg_from_github(
 		OUT_SOURCE_PATH SOURCE_PATH
-		REPO docwire/doctotext
+		REPO docwire/docwire
 		REF dd5f2177deebe9a66fc13692383ab979dffe6988
 		SHA512 58c23a6ac69ab253bc6f485558ea5135acf0a13853df264fae5d80dccfbe4175e63948c3d2440726da61f1b093de388aa34f976a11076e49ac54935c02d88d89
 		HEAD_REF master
@@ -29,23 +29,13 @@ file(RENAME
 	"${CURRENT_PACKAGES_DIR}/bin/text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
 	"${CURRENT_PACKAGES_DIR}/tools/text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
 )
-file(RENAME
-	"${CURRENT_PACKAGES_DIR}/bin/c_text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
-	"${CURRENT_PACKAGES_DIR}/tools/c_text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
-)
 file(RENAME "${CURRENT_PACKAGES_DIR}/bin/text_extractor${script_suffix}" "${CURRENT_PACKAGES_DIR}/tools/text_extractor${script_suffix}")
-file(RENAME "${CURRENT_PACKAGES_DIR}/bin/c_text_extractor${script_suffix}" "${CURRENT_PACKAGES_DIR}/tools/c_text_extractor${script_suffix}")
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/tools)
 file(RENAME
 	"${CURRENT_PACKAGES_DIR}/debug/bin/text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
 	"${CURRENT_PACKAGES_DIR}/debug/tools/text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
 )
-file(RENAME
-	"${CURRENT_PACKAGES_DIR}/debug/bin/c_text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
-	"${CURRENT_PACKAGES_DIR}/debug/tools/c_text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
-)
 file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/text_extractor${script_suffix}" "${CURRENT_PACKAGES_DIR}/debug/tools/text_extractor${script_suffix}")
-file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/c_text_extractor${script_suffix}" "${CURRENT_PACKAGES_DIR}/debug/tools/c_text_extractor${script_suffix}")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static" OR NOT VCPKG_TARGET_IS_WINDOWS)
 	file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin" "${CURRENT_PACKAGES_DIR}/debug/bin")
 endif()

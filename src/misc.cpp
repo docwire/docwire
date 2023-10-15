@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -34,7 +34,6 @@
 #include "misc.h"
 
 #include <boost/algorithm/string.hpp>
-#include "doctotext_link.h"
 #include "exception.h"
 #include <iostream>
 #include "log.h"
@@ -367,50 +366,6 @@ UString utf8_to_ustring(const std::string& src)
 	return res;
 }
 
-/*Lets look at this data:
-0x00 to 0x7F: 0xxxxxxx (1 byte)
-0x80 to 0x7FF: 110xxxxx 10xxxxxx (2 bytes)
-0x800 to 0xFFFF: 1110xxxx 10xxxxxx 10xxxxxx (3 bytes)
-0x10000 to 0x1FFFFF: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx (4 bytes)
-0x2000000 to 0x3FFFFFF: 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx (5 bytes) -> no possible conversion to UTF16
-0x40000000 to 0x7FFFFFFF: 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx (6 bytes) -> no possible conversion to UTF16
-Invalid characters in UTF8 are: 11111110 and 11111111.
-What can we do with that? We can use those values to "mark" special places. We can use them to substitute our links.
-But we have to be sure that "text" is already encoded in UTF8.
-*/
-void insertSpecialLinkBlockIntoText(std::string& text, const Link &link)
-{
-	std::string substitute_string(strlen(link.getLinkText()), 0xFF);
-	text += substitute_string;
-}
-
-void decodeSpecialLinkBlocks(std::string& text, std::vector<Link>& links)
-{
-	size_t search_position = 0;
-	for (std::vector<Link>::iterator it = links.begin(); it != links.end(); ++it)
-	{
-		size_t link_text_size = strlen((*it).getLinkText());
-		if (link_text_size > 0)
-		{
-			std::string substitute_string(link_text_size, 0xFF);
-			search_position = text.find(substitute_string, search_position);
-			if (search_position != std::string::npos)	//should never happen, because we have inserted such a string before
-			{
-				for (size_t i = 0; i < link_text_size && i < text.length() - search_position; ++i)
-					text[search_position + i] = (*it).getLinkText()[i];
-				(*it).setLinkTextPosition(search_position);
-			}
-			else
-			{
-				//If you can see this message, then check last changes.
-				doctotext_log(warning) << "Warning: output text is corrupted: cannot recover links";
-			}
-		}
-		else
-			(*it).setLinkTextPosition(0);	//link has no output in final text?
-	}
-}
-
 std::string int_to_str(int i)
 {
 	std::ostringstream s;
@@ -525,35 +480,35 @@ std::string get_env_var(const std::string& env_var_name)
 	char* value = std::getenv(env_var_name.c_str());
 	if (value)
 	{
-		doctotext_log(debug) << "Value of " << env_var_name << " environment variable is " << value;
+		docwire_log(debug) << "Value of " << env_var_name << " environment variable is " << value;
 		return std::string(value);
 	}
 	else
 	{
-		doctotext_log(debug) << "Environment variable " << env_var_name << " does not exist";
+		docwire_log(debug) << "Environment variable " << env_var_name << " does not exist";
 		return std::string();
 	}
 }
 
 std::filesystem::path try_sub_path(const std::filesystem::path& path, const std::filesystem::path& sub_path)
 {
-	doctotext_log(debug) << "Trying path " << path;
+	docwire_log(debug) << "Trying path " << path;
 	std::filesystem::path full_path(path / sub_path);
-	doctotext_log(debug) << "Checking if " << full_path << " exists";
+	docwire_log(debug) << "Checking if " << full_path << " exists";
 	if (std::filesystem::exists(full_path))
 	{
 		full_path = std::filesystem::weakly_canonical(full_path);
-		doctotext_log(debug) << "Subpath found with canonical path " << full_path;
+		docwire_log(debug) << "Subpath found with canonical path " << full_path;
 		return full_path;
 	}
 	else if (path.parent_path() != path && !path.parent_path().empty())
 	{
-		doctotext_log(debug) << "Trying parent directory";
+		docwire_log(debug) << "Trying parent directory";
 		return try_sub_path(path.parent_path(), sub_path);
 	}
 	else
 	{
-		doctotext_log(debug) << "Cannot locate subpath in directory " << path << " and parent paths";
+		docwire_log(debug) << "Cannot locate subpath in directory " << path << " and parent paths";
 		return std::filesystem::path();
 	}
 };
@@ -562,7 +517,7 @@ std::filesystem::path try_sub_path(const std::filesystem::path& path, const std:
 
 std::filesystem::path locate_subpath(const std::filesystem::path& sub_path)
 {
-	doctotext_log(debug) << "Locating subpath " << sub_path;
+	docwire_log(debug) << "Locating subpath " << sub_path;
 	std::vector<std::string> lib_paths;
 #if defined(_WIN32)
 	std::string path = get_env_var("PATH");
@@ -588,6 +543,6 @@ std::filesystem::path locate_subpath(const std::filesystem::path& sub_path)
 
 std::filesystem::path locate_resource(const std::filesystem::path& resource_sub_path)
 {
-	doctotext_log(debug) << "Locating resource " << resource_sub_path;
+	docwire_log(debug) << "Locating resource " << resource_sub_path;
 	return locate_subpath(std::filesystem::path("..") / "share" / resource_sub_path);
 }

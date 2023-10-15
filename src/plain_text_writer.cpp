@@ -1,7 +1,7 @@
 /***************************************************************************************************************************************************/
-/*  DocToText - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.              */
+/*  DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.            */
 /*  Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.  */
-/*  To enhance its utility, DocToText, as a data extraction tool, can be integrated with other data mining and data analytics applications.        */
+/*  To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.          */
 /*  It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.                   */
 /*                                                                                                                                                 */
 /*  This document parser is able to extract metadata along with annotations and supports a list of formats that include:                           */
@@ -13,7 +13,7 @@
 /*  http://silvercoders.com                                                                                                                        */
 /*                                                                                                                                                 */
 /*  Project homepage:                                                                                                                              */
-/*  http://silvercoders.com/en/products/doctotext                                                                                                  */
+/*  https://github.com/docwire/docwire                                                                                                             */
 /*  https://www.docwire.io/                                                                                                                        */
 /*                                                                                                                                                 */
 /*  The GNU General Public License version 2 as published by the Free Software Foundation and found in the file COPYING.GPL permits                */
@@ -42,7 +42,7 @@
 #include "plain_text_writer.h"
 #include "misc.h"
 
-namespace doctotext
+namespace docwire
 {
 class Cell
 {
@@ -63,7 +63,7 @@ public:
     }
   }
 
-  void write(const doctotext::Info &info)
+  void write(const Info &info)
   {
     std::stringstream stream;
     writer.write_to(info, stream);
@@ -123,7 +123,7 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_mail(const doctotext::Info &info)
+  write_mail(const Info &info)
   {
     std::string text = "";
     auto level = info.getAttributeValue<int>("level");
@@ -146,7 +146,7 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_attachment(const doctotext::Info &info)
+  write_attachment(const Info &info)
   {
     std::string text = "attachment: \n\n";
     auto name = info.getAttributeValue<std::string>("name");
@@ -158,7 +158,7 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_folder(const doctotext::Info &info)
+  write_folder(const Info &info)
   {
     auto level = info.getAttributeValue<int>("level");
     std::string text = "";
@@ -176,31 +176,31 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_text(const doctotext::Info &info)
+  write_text(const Info &info)
   {
     return std::make_shared<TextElement>(info.plain_text);
   }
 
   std::shared_ptr<TextElement>
-  write_close_mail_body(const doctotext::Info &info)
+  write_close_mail_body(const Info &info)
   {
     return std::make_shared<TextElement>("\n");
   }
 
   std::shared_ptr<TextElement>
-  write_close_attachment(const doctotext::Info &info)
+  write_close_attachment(const Info &info)
   {
     return std::make_shared<TextElement>("\n");
   }
 
   std::shared_ptr<TextElement>
-  write_new_line(const doctotext::Info &info)
+  write_new_line(const Info &info)
   {
     return std::make_shared<TextElement>("\n");
   }
 
   std::shared_ptr<TextElement>
-  write_new_paragraph(const doctotext::Info &info)
+  write_new_paragraph(const Info &info)
   {
     if (list_mode)
     {
@@ -210,7 +210,7 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_link(const doctotext::Info &info)
+  write_link(const Info &info)
   {
     auto url = info.getAttributeValue<std::string>("url");
 
@@ -223,7 +223,7 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_image(const doctotext::Info &info)
+  write_image(const Info &info)
   {
     auto alt = info.getAttributeValue<std::string>("alt");
     if (alt)
@@ -234,19 +234,19 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  turn_on_table_mode(const doctotext::Info &info)
+  turn_on_table_mode(const Info &info)
   {
     return std::make_shared<TextElement>("");
   }
 
   std::shared_ptr<TextElement>
-  turn_off_table_mode(const doctotext::Info &info)
+  turn_off_table_mode(const Info &info)
   {
     return std::make_shared<TextElement>("");
   }
 
   std::shared_ptr<TextElement>
-  write_list(const doctotext::Info &info)
+  write_list(const Info &info)
   {
     list_mode = true;
     list_counter = 1;
@@ -262,7 +262,7 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_close_list(const doctotext::Info &info)
+  write_close_list(const Info &info)
   {
     list_mode = false;
     list_counter = 1;
@@ -270,7 +270,7 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_list_item(const doctotext::Info &info)
+  write_list_item(const Info &info)
   {
     if (list_type == "none")
       return std::make_shared<TextElement>("");
@@ -283,14 +283,14 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_close_list_item(const doctotext::Info &info)
+  write_close_list_item(const Info &info)
   {
     ++list_counter;
     return std::make_shared<TextElement>("\n");
   }
 
 	std::shared_ptr<TextElement>
-	write_comment(const doctotext::Info &info)
+	write_comment(const Info &info)
 	{
 		auto author = info.getAttributeValue<std::string>("author");
 		auto time = info.getAttributeValue<std::string>("time");
@@ -319,37 +319,37 @@ struct PlainTextWriter::Implementation
 	}
 
   std::shared_ptr<TextElement>
-  write_footer(const doctotext::Info &info) const
+  write_footer(const Info &info) const
   {
     return std::make_shared<TextElement>("\n");
   }
 
-  std::map<std::string, std::function<std::shared_ptr<TextElement>(const doctotext::Info &info)>> plain_text_writers;
+  std::map<std::string, std::function<std::shared_ptr<TextElement>(const Info &info)>> plain_text_writers;
 
   Implementation()
   {
     plain_text_writers =
       {
-        {StandardTag::TAG_MAIL, [this](const doctotext::Info &info){return write_mail(info);}},
-        {StandardTag::TAG_ATTACHMENT, [this](const doctotext::Info &info){return write_attachment(info);}},
-        {StandardTag::TAG_FOLDER, [this](const doctotext::Info &info){return write_folder(info);}},
-        {"", [this](const doctotext::Info &info){return write_text(info);}},
-        {StandardTag::TAG_TEXT, [this](const doctotext::Info &info){return write_text(info);}},
-        {StandardTag::TAG_CLOSE_MAIL_BODY, [this](const doctotext::Info &info){return write_close_mail_body(info);}},
-        {StandardTag::TAG_CLOSE_ATTACHMENT, [this](const doctotext::Info &info){return write_close_attachment(info);}},
-        {StandardTag::TAG_BR, [this](const doctotext::Info &info){return write_new_line(info);}},
-        {StandardTag::TAG_CLOSE_P, [this](const doctotext::Info &info){return write_new_paragraph(info);}},
-        {StandardTag::TAG_CLOSE_SECTION, [this](const doctotext::Info &info){return write_new_paragraph(info);}},
-        {StandardTag::TAG_TABLE, [this](const doctotext::Info &info){return turn_on_table_mode(info);}},
-        {StandardTag::TAG_CLOSE_TABLE, [this](const doctotext::Info &info){return turn_off_table_mode(info);}},
-        {StandardTag::TAG_LINK, [this](const doctotext::Info &info){return write_link(info);}},
-        {StandardTag::TAG_IMAGE, [this](const doctotext::Info &info){return write_image(info);}},
-        {StandardTag::TAG_LIST, [this](const doctotext::Info &info){return write_list(info);}},
-        {StandardTag::TAG_CLOSE_LIST, [this](const doctotext::Info &info){return write_close_list(info);}},
-        {StandardTag::TAG_LIST_ITEM, [this](const doctotext::Info &info){return write_list_item(info);}},
-        {StandardTag::TAG_CLOSE_LIST_ITEM, [this](const doctotext::Info &info){return write_close_list_item(info);}},
-        {StandardTag::TAG_COMMENT, [this](const doctotext::Info &info){return write_comment(info);}},
-        {StandardTag::TAG_CLOSE_DOCUMENT, [this](const doctotext::Info &info){return write_footer(info);}}
+        {StandardTag::TAG_MAIL, [this](const Info &info){return write_mail(info);}},
+        {StandardTag::TAG_ATTACHMENT, [this](const Info &info){return write_attachment(info);}},
+        {StandardTag::TAG_FOLDER, [this](const Info &info){return write_folder(info);}},
+        {"", [this](const Info &info){return write_text(info);}},
+        {StandardTag::TAG_TEXT, [this](const Info &info){return write_text(info);}},
+        {StandardTag::TAG_CLOSE_MAIL_BODY, [this](const Info &info){return write_close_mail_body(info);}},
+        {StandardTag::TAG_CLOSE_ATTACHMENT, [this](const Info &info){return write_close_attachment(info);}},
+        {StandardTag::TAG_BR, [this](const Info &info){return write_new_line(info);}},
+        {StandardTag::TAG_CLOSE_P, [this](const Info &info){return write_new_paragraph(info);}},
+        {StandardTag::TAG_CLOSE_SECTION, [this](const Info &info){return write_new_paragraph(info);}},
+        {StandardTag::TAG_TABLE, [this](const Info &info){return turn_on_table_mode(info);}},
+        {StandardTag::TAG_CLOSE_TABLE, [this](const Info &info){return turn_off_table_mode(info);}},
+        {StandardTag::TAG_LINK, [this](const Info &info){return write_link(info);}},
+        {StandardTag::TAG_IMAGE, [this](const Info &info){return write_image(info);}},
+        {StandardTag::TAG_LIST, [this](const Info &info){return write_list(info);}},
+        {StandardTag::TAG_CLOSE_LIST, [this](const Info &info){return write_close_list(info);}},
+        {StandardTag::TAG_LIST_ITEM, [this](const Info &info){return write_list_item(info);}},
+        {StandardTag::TAG_CLOSE_LIST_ITEM, [this](const Info &info){return write_close_list_item(info);}},
+        {StandardTag::TAG_COMMENT, [this](const Info &info){return write_comment(info);}},
+        {StandardTag::TAG_CLOSE_DOCUMENT, [this](const Info &info){return write_footer(info);}}
       };
   };
 
@@ -443,7 +443,7 @@ struct PlainTextWriter::Implementation
     return render_table();
   }
 
-  void write_to(const doctotext::Info &info, std::ostream &stream)
+  void write_to(const Info &info, std::ostream &stream)
   {
     if (info.tag_name == StandardTag::TAG_CLOSE_TABLE)
     {
@@ -480,7 +480,7 @@ struct PlainTextWriter::Implementation
   }
 
   int level { 0 };
-  std::vector<doctotext::Info> tags;
+  std::vector<Info> tags;
   std::string list_type;
   int list_counter;
   bool first_cell_in_row;
@@ -524,7 +524,7 @@ PlainTextWriter::ImplementationDeleter::operator()(Implementation *impl)
 }
 
 void
-PlainTextWriter::write_to(const doctotext::Info &info, std::ostream &stream)
+PlainTextWriter::write_to(const Info &info, std::ostream &stream)
 {
   impl->write_to(info, stream);
 }
@@ -535,4 +535,4 @@ PlainTextWriter::clone() const
   return new PlainTextWriter();
 }
 
-} // namespace doctotext
+} // namespace docwire
