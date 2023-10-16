@@ -244,8 +244,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
    set_target_properties(docwire_core PROPERTIES PREFIX "")
 endif()
 
-add_executable(text_extractor text_extractor.cpp)
-target_link_libraries(text_extractor PRIVATE docwire_core)
+add_executable(docwire docwire.cpp)
+target_link_libraries(docwire PRIVATE docwire_core)
 
 if (DOCWIRE_TRACE)
    target_sources(docwire_core PRIVATE tracing)
@@ -253,7 +253,7 @@ if (DOCWIRE_TRACE)
    add_compile_options($<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-finstrument-functions>)
 endif()
 
-install(TARGETS text_extractor DESTINATION bin)
+install(TARGETS docwire DESTINATION bin)
 if (MSVC)
 	set(plugins_dir bin/docwire_plugins)
 else()
@@ -301,21 +301,21 @@ install(FILES ${PUBLIC_HEADERS} DESTINATION include/docwire)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR APPLE)
 	if(APPLE)
-		file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.sh "BASEDIR=$(dirname \"$0\")
-			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
+		file(WRITE ${CMAKE_BINARY_DIR}/docwire.sh "BASEDIR=$(dirname \"$0\")
+			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/docwire \"$@\"")
 	else()
-    file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.sh "BASEDIR=$(dirname \"$0\")
-    LD_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$LD_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
+		file(WRITE ${CMAKE_BINARY_DIR}/docwire.sh "BASEDIR=$(dirname \"$0\")
+			LD_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$LD_LIBRARY_PATH ./$BASEDIR/docwire \"$@\"")
 	endif()
-    execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/text_extractor.sh)
-	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.sh DESTINATION bin)
+    execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/docwire.sh)
+	install(PROGRAMS ${CMAKE_BINARY_DIR}/docwire.sh DESTINATION bin)
 elseif(MSVC)
-	file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.bat
+	file(WRITE ${CMAKE_BINARY_DIR}/docwire.bat
 		"@echo off
 		set BASEDIR=%~dp0
 		set PATH=%BASEDIR%\\..\\bin;%BASEDIR%\\..\\bin\\docwire_system_libraries;%PATH%
-		\"%BASEDIR%\\text_extractor.exe\" %*")
-	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.bat DESTINATION bin)
+		\"%BASEDIR%\\docwire.exe\" %*")
+	install(PROGRAMS ${CMAKE_BINARY_DIR}/docwire.bat DESTINATION bin)
 endif()
 
 set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)

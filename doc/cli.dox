@@ -1,11 +1,11 @@
 /*!
- * \page Text extractor - console application
- * \subsection text_extractor Text extractor - console application
- * Text extractor is a console application to extract text from documents. To run program you should type:
+ * \page Command line user interface - DocWire console application
+ * \subsection docwire console application
+ * DocWire CLI is a console application to extract text from documents. To run program you should type:
  * \code
- * ./text_extractor <file_name>
+ * ./docwire <file_name>
  * \endcode
- * Additional parameters for text_extractor:
+ * Additional parameters for docwire cli application:
  *   - plugins_path - path to directory with plugins (by default ./)
  *   - html_output - output as html
  *   - meta - parse meta data

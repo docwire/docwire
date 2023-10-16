@@ -26,16 +26,16 @@ endif()
 
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/tools)
 file(RENAME
-	"${CURRENT_PACKAGES_DIR}/bin/text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
-	"${CURRENT_PACKAGES_DIR}/tools/text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
+	"${CURRENT_PACKAGES_DIR}/bin/docwire${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
+	"${CURRENT_PACKAGES_DIR}/tools/docwire${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
 )
-file(RENAME "${CURRENT_PACKAGES_DIR}/bin/text_extractor${script_suffix}" "${CURRENT_PACKAGES_DIR}/tools/text_extractor${script_suffix}")
+file(RENAME "${CURRENT_PACKAGES_DIR}/bin/docwire${script_suffix}" "${CURRENT_PACKAGES_DIR}/tools/docwire${script_suffix}")
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/tools)
 file(RENAME
-	"${CURRENT_PACKAGES_DIR}/debug/bin/text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
-	"${CURRENT_PACKAGES_DIR}/debug/tools/text_extractor${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
+	"${CURRENT_PACKAGES_DIR}/debug/bin/docwire${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
+	"${CURRENT_PACKAGES_DIR}/debug/tools/docwire${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
 )
-file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/text_extractor${script_suffix}" "${CURRENT_PACKAGES_DIR}/debug/tools/text_extractor${script_suffix}")
+file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/docwire${script_suffix}" "${CURRENT_PACKAGES_DIR}/debug/tools/docwire${script_suffix}")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static" OR NOT VCPKG_TARGET_IS_WINDOWS)
 	file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin" "${CURRENT_PACKAGES_DIR}/debug/bin")
 endif()

@@ -30,8 +30,8 @@ SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS=SOURCE_PATH ./vcpkg/vcpkg --overlay-ports
 version=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/VERSION`
 ./vcpkg/vcpkg --overlay-ports=./ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
 
-echo "\$(dirname \"\$0\")/installed/$VCPKG_TRIPLET/tools/text_extractor.sh \"\$@\"" > docwire-$version/text_extractor.sh
-chmod u+x docwire-$version/text_extractor.sh
+echo "\$(dirname \"\$0\")/installed/$VCPKG_TRIPLET/tools/docwire.sh \"\$@\"" > docwire-$version/docwire.sh
+chmod u+x docwire-$version/docwire.sh
 
 tar -cjvf docwire-$version-$VCPKG_TRIPLET.tar.bz2 docwire-$version
 sha1sum docwire-$version-$VCPKG_TRIPLET.tar.bz2 > docwire-$version-$VCPKG_TRIPLET.tar.bz2.sha1
