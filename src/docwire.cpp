@@ -35,11 +35,14 @@
 #include <any>
 #include <iostream>
 #include <fstream>
+#include "decompress_archives.h"
 #include "exception.h"
+#include "exporter.h"
 #include "formatting_style.h"
+#include "importer.h"
 #include "log.h"
 #include "standard_filter.h"
-#include "simple_extractor.h"
+#include "transformer_func.h"
 #include "version.h"
 #include "chain_element.h"
 #include "parsing_chain.h"
@@ -241,8 +244,8 @@ int main(int argc, char* argv[])
     }
     formatting_style.list_style.setPrefix(" * ");
   }
-  SimpleExtractor extractor(file_name, plugins_path);
-  extractor.setFormattingStyle(formatting_style);
+  std::shared_ptr<ParserManager> parser_manager { new ParserManager(plugins_path) };
+  parameters += ParserParameters("formatting_style", formatting_style);
 
   parameters += ParserParameters("language", language);
 
@@ -254,43 +257,42 @@ int main(int argc, char* argv[])
     set_log_stream(log_stream.get());
   }
 
-  extractor.addParameters(parameters);
-
+  ParsingChain chain = Input(file_name) | DecompressArchives() | Importer(parameters, parser_manager);
   if (max_nodes_number)
   {
-    extractor.addCallbackFunction(StandardFilter::filterByMaxNodeNumber(*max_nodes_number));
+    chain = chain | TransformerFunc(StandardFilter::filterByMaxNodeNumber(*max_nodes_number));
   }
   if (min_creation_time)
   {
-    extractor.addCallbackFunction(StandardFilter::filterByMailMinCreationTime(*min_creation_time));
+    chain = chain | TransformerFunc(StandardFilter::filterByMailMinCreationTime(*min_creation_time));
   }
   if (max_creation_time)
   {
-    extractor.addCallbackFunction(StandardFilter::filterByMailMaxCreationTime(*max_creation_time));
+    chain = chain | TransformerFunc(StandardFilter::filterByMailMaxCreationTime(*max_creation_time));
   }
   if (folder_name)
   {
-    extractor.addCallbackFunction(StandardFilter::filterByFolderName({*folder_name}));
+    chain = chain | TransformerFunc(StandardFilter::filterByFolderName({*folder_name}));
   }
   if (attachment_extension)
   {
-    extractor.addCallbackFunction(StandardFilter::filterByAttachmentType({*attachment_extension}));
+    chain = chain | TransformerFunc(StandardFilter::filterByAttachmentType({*attachment_extension}));
   }
   try
   {
       switch (output_type)
       {
         case OutputType::PLAIN_TEXT:
-          extractor.parseAsPlainText(std::cout);
+          chain | PlainTextExporter(std::cout);
           break;
         case OutputType::HTML:
-          extractor.parseAsHtml(std::cout);
+          chain | HtmlExporter(std::cout);
           break;
         case OutputType::CSV:
-          extractor.parseAsCsv(std::cout);
+          chain | docwire::experimental::CsvExporter(std::cout);
           break;
         case OutputType::METADATA:
-          std::cout << extractor.getMetaData();
+          chain | MetaDataExporter(std::cout);
           break;
       }
   }
