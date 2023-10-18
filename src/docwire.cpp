@@ -31,6 +31,7 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
+#include <boost/program_options.hpp>
 #include <memory>
 #include <any>
 #include <iostream>
@@ -41,6 +42,7 @@
 #include "formatting_style.h"
 #include "importer.h"
 #include "log.h"
+#include <magic_enum_iostream.hpp>
 #include "standard_filter.h"
 #include "transformer_func.h"
 #include "version.h"
@@ -49,40 +51,6 @@
 #include "input.h"
 
 using namespace docwire;
-
-FormattingStyle updateFormattingStyle(const std::string &arg, const FormattingStyle formatting_style)
-{
-  FormattingStyle updated_formatting_style{formatting_style};
-  if(arg.find("table-style=one-row", 0) != std::string::npos)
-  {
-    updated_formatting_style.table_style = TABLE_STYLE_ONE_ROW;
-  }
-  else if(arg.find("table-style=one-col", 0) != std::string::npos)
-  {
-    updated_formatting_style.table_style = TABLE_STYLE_ONE_COL;
-  }
-  else if(arg.find("table-style=table-look", 0) != std::string::npos)
-  {
-    updated_formatting_style.table_style = TABLE_STYLE_TABLE_LOOK;
-  }
-  if(arg.find("url-style=text-only", 0) != std::string::npos)
-  {
-    updated_formatting_style.url_style = URL_STYLE_TEXT_ONLY;
-  }
-  if(arg.find("url-style=extended", 0) != std::string::npos)
-  {
-    updated_formatting_style.url_style = URL_STYLE_EXTENDED;
-  }
-  if(arg.find("url-style=underscored", 0) != std::string::npos)
-  {
-    updated_formatting_style.url_style = URL_STYLE_UNDERSCORED;
-  }
-  if(arg.find("list-style-prefix=", 0) != std::string::npos)
-  {
-    updated_formatting_style.list_style.setPrefix(arg.substr(arg.find("list-style-prefix=", 0) + 18));
-  }
-  return updated_formatting_style;
-}
 
 static void readme()
 {
@@ -128,173 +96,138 @@ static void version()
   std::cout << std::endl << "Version: " << VERSION << std::endl;
 }
 
+namespace docwire
+{
+	using magic_enum::istream_operators::operator>>;
+	using magic_enum::ostream_operators::operator<<;
+}
+
+using magic_enum::ostream_operators::operator<<;
+
+enum class OutputType { plain_text, html, csv, metadata };
+
+template<typename T>
+std::string enum_names_str()
+{
+	auto names = magic_enum::enum_names<T>();
+	std::string names_str;
+	for (auto name: names)
+	{
+		if (!names_str.empty())
+			names_str += '|';
+		names_str += name;
+	}
+	return names_str;
+}
+
 int main(int argc, char* argv[])
 {
-  if (argc < 2)
-  {
-    version();
-    return 0;
-  }
+	FormattingStyle formatting_style;
 
-  std::string file_name = argv[1];
+	namespace po = boost::program_options;
+	po::options_description desc("Allowed options");
+	desc.add_options()
+		("help", "display help message")
+		("version", "display DocWire version")
+		("verbose", "enable verbose logging")
+		("input-file", po::value<std::string>()->required(), "path of file to process")
+		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
+		("language", po::value<Language>()->default_value(Language::eng), "")
+		("min_creation_time", po::value<unsigned int>(), "")
+		("max_creation_time", po::value<unsigned int>(), "")
+		("max_nodes_number", po::value<unsigned int>(), "")
+		("folder_name", po::value<std::string>(), "")
+		("attachment_extension", po::value<std::string>(), "")
+		("table-style", po::value<TableStyle>(&formatting_style.table_style)->default_value(TableStyle::table_look), enum_names_str<TableStyle>().c_str())
+		("url-style", po::value<UrlStyle>(&formatting_style.url_style)->default_value(UrlStyle::extended), enum_names_str<UrlStyle>().c_str())
+		("list-style-prefix", po::value<std::string>()->default_value(" * "), "")
+		("log_file", po::value<std::string>(), "set path to log file")
+		("plugins_path", po::value<std::string>()->default_value(""), "set non-standard path to docwire plugins")
+	;
 
-  FormattingStyle formatting_style;
-  enum class OutputType { PLAIN_TEXT, HTML, CSV, METADATA };
-  OutputType output_type {OutputType::PLAIN_TEXT};
-  Language language{ Language::english };
-  std::string plugins_path = "";
+	po::positional_options_description pos_desc;
+	pos_desc.add("input-file", -1);
 
-  std::optional<unsigned int> min_creation_time;
-  std::optional<unsigned int> max_creation_time;
-  std::optional<unsigned int> max_nodes_number;
-  std::optional<std::string> folder_name;
-  std::optional<std::string> log_file_name;
-  std::optional<std::string> attachment_extension;
+	po::variables_map vm;
+	po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_desc).run(), vm);
 
-  ParserParameters parameters;
-  for (unsigned int i = 1; i < argc; ++i)
-  {
-    std::string arg = argv[i];
-    formatting_style = updateFormattingStyle(arg, formatting_style);
-    if (arg.find("--max_nodes_number", 0) != -1)
-    {
-      if (i >= argc - 1)
-      {
-        throw std::runtime_error("incorrect input parameters");
-      }
-      max_nodes_number = std::stoi(argv[i + 1]);
-      ++i;
-      continue;
-    }
-    if (arg.find("--plugins_path", 0) != -1)
-    {
-      if (i >= argc - 1)
-      {
-        throw std::runtime_error("incorrect input parameters");
-      }
-      plugins_path = argv[++i];
-      continue;
-    }
-    if (arg.find("--html_output", 0) != -1)
-    {
-      output_type = OutputType::HTML;
-      continue;
-    }
-    if (arg.find("--csv_output", 0) != -1)
-    {
-      output_type = OutputType::CSV;
-      continue;
-    }
-    if (arg.find("--meta", 0) != -1)
-    {
-      output_type = OutputType::METADATA;
-      continue;
-    }
-    if (arg.find("--min_creation_time", 0) != -1)
-    {
-      if (i >= argc - 1)
-      {
-        throw std::runtime_error("incorrect input parameters");
-      }
-      min_creation_time = std::stoi(argv[i + 1]);
-    }
-    if (arg.find("--max_creation_time", 0) != -1)
-    {
-      if (i >= argc - 1)
-      {
-        throw std::runtime_error("incorrect input parameters");
-      }
-      max_creation_time = std::stoi(argv[i + 1]);
-    }
-    if (arg.find("--folder_name", 0) != -1)
-    {
-      if (i >= argc - 1)
-      {
-        throw std::runtime_error("incorrect input parameters");
-      }
-      folder_name = argv[i + 1];
-    }
-    if (arg.find("--attachment_extension", 0) != -1)
-    {
-      if (i >= argc - 1)
-      {
-        throw std::runtime_error("incorrect input parameters");
-      }
-      attachment_extension = argv[i + 1];
-    }
-    if (arg.find("--language", 0) != -1)
-    {
-      if (i >= argc - 1)
-      {
-        throw std::runtime_error("incorrect input parameters");
-      }
-      language = nameToLanguage(argv[i + 1]);
-    }
-    if (arg.find("--verbose", 0) != -1)
-    {
-      set_log_verbosity(debug);
-    }
-    if (arg.find("--log-file", 0) != -1)
-    {
-      if (i >= argc - 1)
-      {
-        throw std::runtime_error("incorrect input parameters");
-      }
-      log_file_name = argv[i + 1];
-    }
-    formatting_style.list_style.setPrefix(" * ");
-  }
-  std::shared_ptr<ParserManager> parser_manager { new ParserManager(plugins_path) };
-  parameters += ParserParameters("formatting_style", formatting_style);
+	if (vm.count("help"))
+	{
+		readme();
+		std::cout << std::endl << desc << std::endl;
+		return 0;
+	}
 
-  parameters += ParserParameters("language", language);
+	if (vm.count("version"))
+	{
+		version();
+		return 0;
+	}
 
-  std::unique_ptr<std::ostream> log_stream;
+	po::notify(vm);
 
-  if (log_file_name)
-  {
-    log_stream = std::make_unique<std::ofstream>(*log_file_name);
-    set_log_stream(log_stream.get());
-  }
+	if (vm.count("verbose"))
+	{
+		set_log_verbosity(debug);
+	}
 
-  ParsingChain chain = Input(file_name) | DecompressArchives() | Importer(parameters, parser_manager);
-  if (max_nodes_number)
-  {
-    chain = chain | TransformerFunc(StandardFilter::filterByMaxNodeNumber(*max_nodes_number));
-  }
-  if (min_creation_time)
-  {
-    chain = chain | TransformerFunc(StandardFilter::filterByMailMinCreationTime(*min_creation_time));
-  }
-  if (max_creation_time)
-  {
-    chain = chain | TransformerFunc(StandardFilter::filterByMailMaxCreationTime(*max_creation_time));
-  }
-  if (folder_name)
-  {
-    chain = chain | TransformerFunc(StandardFilter::filterByFolderName({*folder_name}));
-  }
-  if (attachment_extension)
-  {
-    chain = chain | TransformerFunc(StandardFilter::filterByAttachmentType({*attachment_extension}));
-  }
+	std::unique_ptr<std::ostream> log_stream;
+	if (vm.count("log_file"))
+	{
+		log_stream = std::make_unique<std::ofstream>(vm["log_file"].as<std::string>());
+		set_log_stream(log_stream.get());
+	}
+
+	std::string file_name = vm["input-file"].as<std::string>();
+
+	std::shared_ptr<ParserManager> parser_manager { new ParserManager(vm["plugins_path"].as<std::string>()) };
+
+	formatting_style.list_style.setPrefix(vm["list-style-prefix"].as<std::string>());
+	docwire_log_var(formatting_style);
+
+	ParserParameters parameters;
+	parameters += ParserParameters("formatting_style", formatting_style);
+	parameters += ParserParameters("language", vm["language"].as<Language>());
+
+	ParsingChain chain = Input(file_name) | DecompressArchives() | Importer(parameters, parser_manager);
+	if (vm.count("max_nodes_number"))
+	{
+		chain = chain | TransformerFunc(StandardFilter::filterByMaxNodeNumber(vm["max_nodes_number"].as<unsigned int>()));
+	}
+	if (vm.count("min_creation_time"))
+	{
+		chain = chain | TransformerFunc(StandardFilter::filterByMailMinCreationTime(vm["min_creation_time"].as<unsigned int>()));
+	}
+	if (vm.count("max_creation_time"))
+	{
+		chain = chain | TransformerFunc(StandardFilter::filterByMailMaxCreationTime(vm["max_creation_time"].as<unsigned int>()));
+	}
+	if (vm.count("folder_name"))
+	{
+		chain = chain | TransformerFunc(StandardFilter::filterByFolderName({vm["folder_name"].as<std::string>()}));
+	}
+	if (vm.count("attachment_extension"))
+	{
+		chain = chain | TransformerFunc(StandardFilter::filterByAttachmentType({vm["attachment_extension"].as<std::string>()}));
+	}
+
   try
   {
-      switch (output_type)
-      {
-        case OutputType::PLAIN_TEXT:
-          chain | PlainTextExporter(std::cout);
-          break;
-        case OutputType::HTML:
-          chain | HtmlExporter(std::cout);
-          break;
-        case OutputType::CSV:
-          chain | docwire::experimental::CsvExporter(std::cout);
-          break;
-        case OutputType::METADATA:
-          chain | MetaDataExporter(std::cout);
-          break;
-      }
+	switch (vm["output_type"].as<OutputType>())
+	{
+		case OutputType::plain_text:
+			chain | PlainTextExporter(std::cout);
+			break;
+		case OutputType::html:
+			chain | HtmlExporter(std::cout);
+			break;
+		case OutputType::csv:
+			chain | docwire::experimental::CsvExporter(std::cout);
+			break;
+		case OutputType::metadata:
+			chain | MetaDataExporter(std::cout);
+			break;
+	}
   }
   catch (Exception& ex)
   {

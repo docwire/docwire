@@ -147,7 +147,7 @@ std::string formatTable(std::vector<svector>& mcols, const FormattingStyle& opti
 			table_out += mcols.at(i).at(j);
 			switch(options.table_style)
 			{
-				case TABLE_STYLE_TABLE_LOOK:
+				case TableStyle::table_look:
 					if(j + 1 == mcols.at(i).size())
 					{
 						table_out += "\n";
@@ -155,10 +155,10 @@ std::string formatTable(std::vector<svector>& mcols, const FormattingStyle& opti
 					}
 					table_out += "\t";
 					break;
-				case TABLE_STYLE_ONE_ROW:
+				case TableStyle::one_row:
 					table_out += " ";
 					break;
-				case TABLE_STYLE_ONE_COL:
+				case TableStyle::one_col:
 					table_out += "\n";
 					break;
 				default:
@@ -173,13 +173,12 @@ std::string formatTable(std::vector<svector>& mcols, const FormattingStyle& opti
 std::string formatUrl(const std::string& mlink_url, const std::string &mlink_text, const FormattingStyle& options)
 {
 	std::string u_url;
-	int a = options.url_style;
-	switch(a)
+	switch(options.url_style)
 	{
-		case URL_STYLE_TEXT_ONLY:
+		case UrlStyle::text_only:
 			u_url = mlink_text;
 			break;
-		case URL_STYLE_EXTENDED:
+		case UrlStyle::extended:
 			if (mlink_url.length() > 0)
 			{
 				u_url += "<";
@@ -188,7 +187,7 @@ std::string formatUrl(const std::string& mlink_url, const std::string &mlink_tex
 			}
 			u_url += mlink_text;
 			break;
-		case URL_STYLE_UNDERSCORED:
+		case UrlStyle::underscored:
 			if (mlink_text.length() > 0)
 			{
 				u_url += "_";

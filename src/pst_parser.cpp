@@ -68,8 +68,6 @@ inline std::string toString(const uint8_t* text)
 	return {(const char*)text};
 }
 
-static FormattingStyle formatStyle(TABLE_STYLE_TABLE_LOOK, URL_STYLE_EXTENDED);
-
 constexpr uint64_t WINDOWS_TICK = 10000000;
 constexpr uint64_t SHIFT = 11644473600;
 
