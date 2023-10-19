@@ -102,6 +102,7 @@ namespace docwire
 	using magic_enum::ostream_operators::operator<<;
 }
 
+using magic_enum::istream_operators::operator>>;
 using magic_enum::ostream_operators::operator<<;
 
 enum class OutputType { plain_text, html, csv, metadata };
