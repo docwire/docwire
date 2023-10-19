@@ -1,16 +1,38 @@
 /*!
  * \page Command line user interface - DocWire console application
- * \subsection docwire console application
- * DocWire CLI is a console application to extract text from documents. To run program you should type:
+ * \subsection docwire_console_app DocWire Console Application
+ * 
+ * The DocWire Console Application (DocWire CLI) is a versatile command-line tool for extracting content from documents, including text, document structure, and metadata.
+ * 
+ * To run the program and process a document, use the following command:
  * \code
- * ./docwire <file_name>
+ * docwire [options] file_name
  * \endcode
- * Additional parameters for docwire cli application:
- *   - plugins_path - path to directory with plugins (by default ./)
- *   - html_output - output as html
- *   - meta - parse meta data
- *   - min_creation_time - filter out documents older than <unix timestamp> (at this moment works only for emails in pst/ost files)
- *   - max_creation_time - filter out documents newer than <unix timestamp> (at this moment works only for emails in pst/ost files)
- *   - language - set language for ocr parser (available values: eng - english, spa - spanish, rus - russian, pol - polish)
- *
+ * 
+ * The DocWire CLI accepts a variety of command-line options, enabling you to control the extraction process. Some of the key options include:
+ * 
+ * - \b --help: Display the help message
+ * - \b --version: Display the DocWire version
+ * - \b --verbose: Enable verbose logging
+ * - \b --input-file <file_path>: Specify the path to the file to process
+ * - \b --output_type <type> (default: plain_text): Set the output type. Available types include plain_text, html (preserving document structure), csv (structured data), and metadata (document information).
+ * - \b --language <lang> (default: eng): Set the document language for OCR. Available language values include eng (English), spa (Spanish), rus (Russian), and pol (Polish).
+ * - \b --use-stream <value> (default: 0): Pass the file stream to the SDK instead of the filename
+ * - \b --min_creation_time <timestamp>: Filter emails by minimum creation time (currently applicable only to emails in PST/OST files)
+ * - \b --max_creation_time <timestamp>: Filter emails by maximum creation time (currently applicable only to emails in PST/OST files)
+ * - \b --max_nodes_number <value>: Filter by the maximum number of nodes
+ * - \b --folder_name <name>: Filter emails by folder name
+ * - \b --attachment_extension <type>: Filter by attachment type
+ * - \b --table-style <style> (default: table_look, deprecated): Set the table style. Available styles include table_look, one_row, and one_col.
+ * - \b --url-style <style> (default: extended, deprecated): Set the URL style. Available styles include text_only, extended, and underscored.
+ * - \b --list-style-prefix <prefix> (default: " * ", deprecated): Set the output list prefix.
+ * - \b --log_file <file_path>: Set the path to the log file
+ * - \b --plugins_path <path>: Set a non-standard path to DocWire plugins
+ * 
+ * Example usage of the DocWire CLI to extract structured content in HTML format:
+ * \code
+ * docwire --output_type html my_document.docx
+ * \endcode
+ * 
+ * \note The "min_creation_time" and "max_creation_time" options currently work only for emails within PST/OST files.
  */
