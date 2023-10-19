@@ -183,7 +183,6 @@ int main(int argc, char* argv[])
 	std::shared_ptr<ParserManager> parser_manager { new ParserManager(vm["plugins_path"].as<std::string>()) };
 
 	formatting_style.list_style.setPrefix(vm["list-style-prefix"].as<std::string>());
-	docwire_log_var(formatting_style);
 
 	ParserParameters parameters;
 	parameters += ParserParameters("formatting_style", formatting_style);
