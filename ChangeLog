@@ -40,6 +40,8 @@ Unreleased:
     * Remove C API and focus on modern C++ API
     * Rename DocToText to DocWire SDK
     * Rename text_extractor CLI application to docwire
+    * Refactor CLI to use Boost.Program_options to allow easy extending
+    * Add --use-stream option to CLI
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed
