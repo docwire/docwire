@@ -123,6 +123,7 @@ std::string enum_names_str()
 
 int main(int argc, char* argv[])
 {
+	bool use_stream;
 	FormattingStyle formatting_style;
 
 	namespace po = boost::program_options;
@@ -131,9 +132,10 @@ int main(int argc, char* argv[])
 		("help", "display help message")
 		("version", "display DocWire version")
 		("verbose", "enable verbose logging")
-		("input-file", po::value<std::string>()->required(), "path of file to process")
+		("input-file", po::value<std::string>()->required(), "path to file to process")
 		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
 		("language", po::value<Language>()->default_value(Language::eng), "")
+		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
 		("min_creation_time", po::value<unsigned int>(), "")
 		("max_creation_time", po::value<unsigned int>(), "")
 		("max_nodes_number", po::value<unsigned int>(), "")
@@ -155,7 +157,7 @@ int main(int argc, char* argv[])
 	if (vm.count("help"))
 	{
 		readme();
-		std::cout << std::endl << desc << std::endl;
+		std::cout << std::endl << "Usage: docwire [options] file_name" << std::endl << std::endl << desc << std::endl;
 		return 0;
 	}
 
@@ -189,7 +191,15 @@ int main(int argc, char* argv[])
 	parameters += ParserParameters("formatting_style", formatting_style);
 	parameters += ParserParameters("language", vm["language"].as<Language>());
 
-	ParsingChain chain = Input(file_name) | DecompressArchives() | Importer(parameters, parser_manager);
+	std::ifstream in_stream;
+	if (use_stream)
+		in_stream.open(file_name, std::ios_base::binary);
+
+	ParsingChain chain = 
+		use_stream ?
+			(Input(&in_stream) | DecompressArchives() | Importer(parameters, parser_manager)) :
+			(Input(file_name) | DecompressArchives() | Importer(parameters, parser_manager));
+
 	if (vm.count("max_nodes_number"))
 	{
 		chain = chain | TransformerFunc(StandardFilter::filterByMaxNodeNumber(vm["max_nodes_number"].as<unsigned int>()));
