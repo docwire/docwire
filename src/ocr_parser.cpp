@@ -41,12 +41,14 @@
 #include <tesseract/ocrclass.h>
 
 #include <boost/dll/runtime_symbol_info.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/signals2.hpp>
 
 #include <filesystem>
 #include <iostream>
 #include <cstdlib>
 #include <algorithm>
+#include <magic_enum_iostream.hpp>
 #include "exception.h"
 #include "log.h"
 #include "misc.h"
@@ -112,8 +114,6 @@ OCRParser::OCRParser(const char* buffer, size_t size, const std::shared_ptr<Pars
 }
 
 OCRParser::~OCRParser() = default;
-
-using namespace docwire;
 
 Pix* pixToGrayscale(Pix* pix)
 {
@@ -198,6 +198,8 @@ bool cancel (void* data, int words)
   return info.cancel;
 }
 
+using magic_enum::ostream_operators::operator<<;
+
 std::string OCRParser::plainText(const FormattingStyle& formatting, const Language lang) const
 {
     tessAPIWrapper api{ nullptr, tessAPIDeleter };
@@ -220,7 +222,7 @@ std::string OCRParser::plainText(const FormattingStyle& formatting, const Langua
       impl->m_tessdata_prefix = locate_resource("tessdata-fast").string();
     }
 
-    if (api->Init(impl->m_tessdata_prefix.c_str(), languageToName(lang).c_str())) {
+    if (api->Init(impl->m_tessdata_prefix.c_str(), boost::lexical_cast<std::string>(lang).c_str())) {
         throw Exception{ "Could not initialize tesseract.\n" };
     }
 
@@ -300,7 +302,7 @@ OCRParser::parse() const
   docwire_log(debug) << "Using OCR parser.";
   Info info(StandardTag::TAG_TEXT);
   auto language = m_parameters.getParameterValue<Language>("language");
-  info.plain_text = plainText(getFormattingStyle(), language ? *language : Language::english);
+  info.plain_text = plainText(getFormattingStyle(), language ? *language : Language::eng);
   impl->m_on_new_node_signal(info);
 }
 

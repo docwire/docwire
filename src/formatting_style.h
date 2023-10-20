@@ -39,8 +39,8 @@
 
 namespace docwire
 {
-	enum TableStyle { TABLE_STYLE_TABLE_LOOK, TABLE_STYLE_ONE_ROW, TABLE_STYLE_ONE_COL, };
-	enum UrlStyle { URL_STYLE_TEXT_ONLY, URL_STYLE_EXTENDED, URL_STYLE_UNDERSCORED, };
+	enum class TableStyle { table_look, one_row, one_col };
+	enum class UrlStyle { text_only, extended, underscored };
 
 	class DllExport ListStyle
 	{
@@ -62,7 +62,7 @@ namespace docwire
 	struct FormattingStyle
 	{
 		FormattingStyle()
-		: table_style(TABLE_STYLE_TABLE_LOOK), url_style(URL_STYLE_EXTENDED)
+		: table_style(TableStyle::table_look), url_style(UrlStyle::extended)
 		{}
 		FormattingStyle(const TableStyle &tableStyle, const UrlStyle &urlStyle)
 			: table_style(tableStyle), url_style(urlStyle)
@@ -74,13 +74,11 @@ namespace docwire
 
 	enum class Language 
 	{
-		english,
-		spanish,
-		russian,
-		polish,
+		eng,
+		spa,
+		rus,
+		pol,
 	};
-    DllExport std::string languageToName(const Language lang);
-    DllExport Language nameToLanguage(const std::string& name);
 
 	enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
 } // namespace docwire

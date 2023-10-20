@@ -26,6 +26,12 @@
 			"name": "boost-json"
 		},
 		{
+			"name": "boost-program-options"
+		},
+		{
+			"name": "magic-enum"
+		},
+		{
 			"name": "podofo"
 		},
 		{

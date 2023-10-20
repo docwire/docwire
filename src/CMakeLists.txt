@@ -10,7 +10,6 @@ add_library(docwire_core SHARED
         metadata.cpp
         misc.cpp
         variant.cpp
-        language.cpp
         parser_parameters.cpp
         thread_safe_ole_storage.cpp
         thread_safe_ole_stream_reader.cpp
@@ -31,6 +30,14 @@ add_library(docwire_core SHARED
         parsing_chain.cpp
         input.cpp)
 
+find_package(Boost REQUIRED COMPONENTS filesystem system json program_options)
+target_link_libraries(docwire_core PRIVATE Boost::filesystem Boost::system Boost::json)
+target_include_directories(docwire_core PRIVATE ${Boost_INCLUDE_DIRS})
+find_path(boost_signals2_inc boost/signals2.hpp HINT ${Boost_INCLUDE_DIRS} REQUIRED)
+
+find_package(magic_enum CONFIG REQUIRED)
+target_link_libraries(docwire_core PRIVATE magic_enum::magic_enum)
+
 if(MSVC)
     add_definitions(-DMSVC_BUILD)
     find_path(wv2_inc_dir wv2/parser.h REQUIRED)
@@ -38,13 +45,9 @@ if(MSVC)
     find_library(wvWare wv2 HINTS "${wv2_prefix}/lib/static" REQUIRED)
     configure_file(${wv2_prefix}/bin/wv2.dll ${CMAKE_BINARY_DIR}/wv2.dll COPYONLY)
     find_package(PThreads4W REQUIRED)
-    find_package(Boost REQUIRED COMPONENTS filesystem system json)
     find_package(LibArchive REQUIRED)
     target_link_libraries(docwire_core PRIVATE ${wvWare}
                                                  PThreads4W::PThreads4W
-                                                 Boost::filesystem
-                                                 Boost::system
-                                                 Boost::json
                                                  LibArchive::LibArchive)
     target_include_directories(docwire_core PUBLIC ${wv2_inc_dir})
     target_compile_options(docwire_core PUBLIC /Zc:__cplusplus /Zc:preprocessor)
@@ -66,18 +69,14 @@ else()
         configure_file(${wvWare_libdir}/${wvWare_libname} ${CMAKE_BINARY_DIR}/src/${wvWare_libname} COPYONLY)
         configure_file(${wvWare_libdir}/${wvWare_libname} ${CMAKE_BINARY_DIR}/tests/${wvWare_libname} COPYONLY)
     endif()
-    find_library(boost_filesystem boost_filesystem REQUIRED)
-    find_library(boost_system boost_system REQUIRED)
-    find_library(boost_json boost_json REQUIRED)
     find_package(LibArchive)
     if (LibArchive_FOUND)
         set(archive "LibArchive::LibArchive")
     else()
         find_library(archive archive REQUIRED)
     endif()
-    target_link_libraries(docwire_core PRIVATE ${wvWare} pthread ${boost_filesystem} ${boost_system} ${boost_json} ${archive})
-    find_path(boost_signals2_inc boost/signals2.hpp REQUIRED)
-    target_include_directories(docwire_core PUBLIC ${wvWare_incdir} ${boost_signals2_inc})
+    target_link_libraries(docwire_core PRIVATE ${wvWare} pthread ${archive})
+    target_include_directories(docwire_core PUBLIC ${wvWare_incdir})
 endif()
 
 target_compile_options(docwire_core PUBLIC ${EXTRA_FLAGS})
@@ -244,8 +243,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
    set_target_properties(docwire_core PROPERTIES PREFIX "")
 endif()
 
-add_executable(text_extractor text_extractor.cpp)
-target_link_libraries(text_extractor PRIVATE docwire_core)
+add_executable(docwire docwire.cpp)
+target_link_libraries(docwire PRIVATE docwire_core Boost::program_options)
 
 if (DOCWIRE_TRACE)
    target_sources(docwire_core PRIVATE tracing)
@@ -253,7 +252,7 @@ if (DOCWIRE_TRACE)
    add_compile_options($<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-finstrument-functions>)
 endif()
 
-install(TARGETS text_extractor DESTINATION bin)
+install(TARGETS docwire DESTINATION bin)
 if (MSVC)
 	set(plugins_dir bin/docwire_plugins)
 else()
@@ -301,21 +300,21 @@ install(FILES ${PUBLIC_HEADERS} DESTINATION include/docwire)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR APPLE)
 	if(APPLE)
-		file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.sh "BASEDIR=$(dirname \"$0\")
-			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
+		file(WRITE ${CMAKE_BINARY_DIR}/docwire.sh "BASEDIR=$(dirname \"$0\")
+			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH ./$BASEDIR/docwire \"$@\"")
 	else()
-    file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.sh "BASEDIR=$(dirname \"$0\")
-    LD_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$LD_LIBRARY_PATH ./$BASEDIR/text_extractor \"$@\"")
+		file(WRITE ${CMAKE_BINARY_DIR}/docwire.sh "BASEDIR=$(dirname \"$0\")
+			LD_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$LD_LIBRARY_PATH ./$BASEDIR/docwire \"$@\"")
 	endif()
-    execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/text_extractor.sh)
-	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.sh DESTINATION bin)
+    execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/docwire.sh)
+	install(PROGRAMS ${CMAKE_BINARY_DIR}/docwire.sh DESTINATION bin)
 elseif(MSVC)
-	file(WRITE ${CMAKE_BINARY_DIR}/text_extractor.bat
+	file(WRITE ${CMAKE_BINARY_DIR}/docwire.bat
 		"@echo off
 		set BASEDIR=%~dp0
 		set PATH=%BASEDIR%\\..\\bin;%BASEDIR%\\..\\bin\\docwire_system_libraries;%PATH%
-		\"%BASEDIR%\\text_extractor.exe\" %*")
-	install(PROGRAMS ${CMAKE_BINARY_DIR}/text_extractor.bat DESTINATION bin)
+		\"%BASEDIR%\\docwire.exe\" %*")
+	install(PROGRAMS ${CMAKE_BINARY_DIR}/docwire.bat DESTINATION bin)
 endif()
 
 set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)

@@ -18,7 +18,7 @@ vcpkg\vcpkg --overlay-ports=ports install docwire:$VCPKG_TRIPLET
 $version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\VERSION
 vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
 
-New-Item docwire-$version\text_extractor.bat -ItemType File -Value "@`"%~dp0\\installed\\x64-windows\\tools\\text_extractor.bat`" %*"
+New-Item docwire-$version\docwire.bat -ItemType File -Value "@`"%~dp0\\installed\\x64-windows\\tools\\docwire.bat`" %*"
 
 Compress-Archive -LiteralPath docwire-$version -DestinationPath docwire-$version-$VCPKG_TRIPLET.zip
 Get-FileHash -Algorithm SHA1 docwire-$version-$VCPKG_TRIPLET.zip > docwire-$version-$VCPKG_TRIPLET.zip.sha1

@@ -1,2 +1,4 @@
 build/
 vcpkg/
+version.h
+ports/docwire/.disable_binary_cache
