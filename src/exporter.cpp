@@ -142,45 +142,4 @@ Exporter::get_output() const
   return impl->get_output();
 }
 
-HtmlExporter::HtmlExporter(RestoreOriginalAttributes restore_original_attributes)
-  : Exporter(std::make_unique<HtmlWriter>(static_cast<HtmlWriter::RestoreOriginalAttributes>(restore_original_attributes)))
-{}
-
-HtmlExporter::HtmlExporter(std::ostream &out_stream, RestoreOriginalAttributes restore_original_attributes)
-: Exporter(std::make_unique<HtmlWriter>(static_cast<HtmlWriter::RestoreOriginalAttributes>(restore_original_attributes)), out_stream)
-{}
-
-PlainTextExporter::PlainTextExporter()
-  : Exporter(std::make_unique<PlainTextWriter>())
-{}
-
-PlainTextExporter::PlainTextExporter(std::ostream &out_stream)
-: Exporter(std::make_unique<PlainTextWriter>(), out_stream)
-{}
-
-PlainTextExporter::PlainTextExporter(std::ostream &&out_stream)
-: Exporter(std::make_unique<PlainTextWriter>(), out_stream)
-{}
-
-namespace experimental
-{
-
-CsvExporter::CsvExporter()
-  : Exporter(std::make_unique<CsvWriter>())
-{}
-
-CsvExporter::CsvExporter(std::ostream &out_stream)
-: Exporter(std::make_unique<CsvWriter>(), out_stream)
-{}
-
-} // namespace experimental
-
-MetaDataExporter::MetaDataExporter()
-  : Exporter(std::make_unique<MetaDataWriter>())
-{}
-
-MetaDataExporter::MetaDataExporter(std::ostream &out_stream)
-: Exporter(std::make_unique<MetaDataWriter>(), out_stream)
-{}
-
 } // namespace docwire

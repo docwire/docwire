@@ -31,101 +31,45 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SIMPLE_EXTRACTOR_H
-#define DOCWIRE_SIMPLE_EXTRACTOR_H
+#ifndef DOCWIRE_HTML_EXPORTER_H
+#define DOCWIRE_HTML_EXPORTER_H
 
-#include "parser.h"
+#include "exporter.h"
 
 namespace docwire
 {
 
-class ChainElement;
-
 /**
- * @brief The SimpleExtractor class provides basic functionality for extracting text from a document.
- * @code
- * SimpleExtractor extractor("test.docx");
- * std::string plain_text = extractor.getPlainText(); // get the plain text from the document
- * std::string html = extractor.getHtmlText(); // get the text as a html from the document
- * std::string metadata = extractor.getMetadata(); // get the metadata as a plain text from the document
- * @endcode
+ * @brief Exporter class for HTML output.
  */
-class DllExport SimpleExtractor
+class DllExport HtmlExporter: public Exporter
 {
 public:
-  /**
-   * @param file_name name of the file to parse
-   */
-  explicit SimpleExtractor(const std::string &file_name, const std::string &plugins_path = "");
+  enum class RestoreOriginalAttributes : bool {};
 
   /**
-   * @param input_stream input stream to parse
+   * @param restore_original_attributes should original html attributes extracted by html parser be restored
    */
-  SimpleExtractor(std::istream &input_stream, const std::string &plugins_path = "");
-
-  ~SimpleExtractor();
+  HtmlExporter(RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
 
   /**
-   * @brief Extracts the text from the file.
-   * @return parsed file as plain text
+   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
+   * @param restore_original_attributes should original html attributes extracted by html parser be restored
    */
-  std::string getPlainText() const;
+  HtmlExporter(std::ostream &out_stream, RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
 
   /**
-   * @brief Extracts the data from the file and converts it to the html format.
-   * @return parsed file ashtml text
+   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
+   * @param restore_original_attributes should original html attributes extracted by html parser be restored
    */
-  std::string getHtmlText() const;
+  HtmlExporter(std::ostream &&out_stream, RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
 
-  void parseAsPlainText(std::ostream &out_stream) const;
-
-  void parseAsHtml(std::ostream &out_stream) const;
-
-  void parseAsCsv(std::ostream &out_stream) const;
-
-  /**
-   * @brief Extracts the meta data from the file.
-   * @return parsed meta data as plain text
-   */
-  std::string getMetaData() const;
-
-  /**
-   * @brief Sets the formatting style.
-   * @param style
-   */
-  void setFormattingStyle(const FormattingStyle &style);
-
-  /**
-   * @brief Adds callback function to the extractor.
-   * @code
-   * extractor.addCallbackFunction(StandardFilter::filterByMailMaxCreationTime(creation_time));
-   * @brief
-   * @param filter
-   */
-  void addCallbackFunction(const NewNodeCallback& new_code_callback);
-
-  /**
-   * @brief Adds parser parameters.
-   * @param parameters
-   */
-  void addParameters(const ParserParameters &parameters);
-
-  /**
-   * @brief Adds transformer.
-   * @code
-   * extractor.addChainElement(new UpperTextTransformer());
-   * @endcode
-   * @param transformer as a raw pointer. The ownership is transferred to the extractor.
-   */
-  void addChainElement(ChainElement *chainElement);
-
-private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
+  HtmlExporter* clone() const override
+  {
+    return new HtmlExporter(*this);
+  }
 };
-
 
 } // namespace docwire
 
-
-#endif //DOCWIRE_SIMPLE_EXTRACTOR_H
+#endif //DOCWIRE_HTML_EXPORTER_H

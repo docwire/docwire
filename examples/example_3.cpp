@@ -5,7 +5,7 @@
 #include "input.h"
 #include "parser.h"
 #include "importer.h"
-#include "exporter.h"
+#include "plain_text_exporter.h"
 #include "transformer_func.h"
 #include "parsing_chain.h"
 

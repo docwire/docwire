@@ -37,13 +37,17 @@
 #include <string_view>
 #include <tuple>
 #include <fstream>
+#include "html_exporter.h"
+#include "importer.h"
 #include <iterator>
 #include <array>
 #include "../src/simple_extractor.h"
 #include "../src/standard_filter.h"
 #include <optional>
 #include <algorithm>
+#include "plain_text_exporter.h"
 #include "pthread.h"
+#include "transformer_func.h"
 #include "input.h"
 #include "log.h"
 

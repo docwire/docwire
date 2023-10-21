@@ -5,7 +5,7 @@
 
 #include "input.h"
 #include "importer.h"
-#include "exporter.h"
+#include "plain_text_exporter.h"
 
 /**
  * @example example_2.cpp

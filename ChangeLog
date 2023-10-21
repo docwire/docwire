@@ -42,6 +42,7 @@ Unreleased:
     * Rename text_extractor CLI application to docwire
     * Refactor CLI to use Boost.Program_options to allow easy extending
     * Add --use-stream option to CLI
+    * Move PlainTextExporter, HtmlExporter, CsvExporter and MetaDataExporter to separate files
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed

@@ -31,15 +31,18 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#include <numeric>
-#include <fstream>
+#include "simple_extractor.h"
 
 #include "chain_element.h"
+#include "csv_exporter.h"
 #include "decompress_archives.h"
+#include "html_exporter.h"
+#include "importer.h"
 #include "input.h"
+#include "meta_data_exporter.h"
 #include "parsing_chain.h"
-#include "parser_manager.h"
-#include "simple_extractor.h"
+#include "plain_text_exporter.h"
+#include "transformer_func.h"
 
 namespace docwire
 {
@@ -204,7 +207,7 @@ SimpleExtractor::setFormattingStyle(const FormattingStyle &style)
 }
 
 void
-SimpleExtractor::addCallbackFunction(NewNodeCallback new_code_callback)
+SimpleExtractor::addCallbackFunction(const NewNodeCallback& new_code_callback)
 {
   impl->addCallbackFunction(new_code_callback);
 }

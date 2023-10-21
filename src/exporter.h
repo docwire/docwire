@@ -34,21 +34,12 @@
 #ifndef DOCWIRE_EXPORTER_H
 #define DOCWIRE_EXPORTER_H
 
-#include <algorithm>
-#include <memory>
-
 #include "chain_element.h"
-#include "parser.h"
-#include "parser_builder.h"
-#include "parser_manager.h"
-#include "parser_parameters.h"
-#include "writer.h"
-#include "defines.h"
 
 namespace docwire
 {
 
-class Importer;
+class Writer;
 
 /**
  *  @brief Exporter class is responsible for exporting the parsed data from importer or transformer to an output stream.
@@ -107,99 +98,6 @@ protected:
 private:
   class Implementation;
   std::unique_ptr<Implementation> impl;
-};
-
-/**
- * @brief Exporter class for HTML output.
- */
-class DllExport HtmlExporter: public Exporter
-{
-public:
-  enum class RestoreOriginalAttributes : bool {};
-
-  /**
-   * @param restore_original_attributes should original html attributes extracted by html parser be restored
-   */
-  HtmlExporter(RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
-
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   * @param restore_original_attributes should original html attributes extracted by html parser be restored
-   */
-  HtmlExporter(std::ostream &out_stream, RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
-
-  HtmlExporter* clone() const override
-  {
-    return new HtmlExporter(*this);
-  }
-};
-
-/**
- * @brief Exporter class for plain text output.
- */
-class DllExport PlainTextExporter: public Exporter
-{
-public:
-  PlainTextExporter();
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  PlainTextExporter(std::ostream &out_stream);
-
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  PlainTextExporter(std::ostream &&out_stream);
-
-  PlainTextExporter* clone() const override
-  {
-    return new PlainTextExporter(*this);
-  }
-
-};
-
-namespace experimental
-{
-
-/**
- * @brief Exporter class for CSV output.
- */
-class DllExport CsvExporter: public Exporter
-{
-public:
-  CsvExporter();
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  CsvExporter(std::ostream &out_stream);
-
-  CsvExporter* clone() const override
-  {
-    return new CsvExporter(*this);
-  }
-};
-
-} // namespace experimental
-
-/**
- * @brief Exporter class for meta data.
- * Important: Exports only meta data as a plain text.
- */
-class DllExport MetaDataExporter: public Exporter
-{
-public:
-  MetaDataExporter();
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  MetaDataExporter(std::ostream &out_stream);
-
-  MetaDataExporter* clone() const override
-  {
-    return new MetaDataExporter(*this);
-  }
-
-
 };
 
 } // namespace docwire

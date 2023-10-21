@@ -3,9 +3,10 @@
 #include <fstream>
 #include <memory>
 
+#include "html_exporter.h"
 #include "input.h"
 #include "importer.h"
-#include "exporter.h"
+#include "plain_text_exporter.h"
 #include "transformer_func.h"
 #include "parsing_chain.h"
 
@@ -24,8 +25,7 @@ int main(int argc, char* argv[])
   // parse file and print to output.html file
   Input(std::ifstream(argv[1], std::ios_base::in|std::ios_base::binary))
     | Importer()
-    | HtmlExporter()
-    | PlainTextExporter(std::ofstream("output.html"));
+    | HtmlExporter(std::ofstream("output.html"));
 
   return 0;
 }

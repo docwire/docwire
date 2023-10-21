@@ -24,6 +24,10 @@ add_library(docwire_core SHARED
         simple_extractor.cpp
         importer.cpp
         exporter.cpp
+        plain_text_exporter.cpp
+        html_exporter.cpp
+        csv_exporter.cpp
+        meta_data_exporter.cpp
         transformer_func.cpp
         meta_data_writer.cpp
         chain_element.cpp
@@ -290,6 +294,10 @@ set(PUBLIC_HEADERS
 	csv_writer.h
 	importer.h
 	exporter.h
+	plain_text_exporter.h
+	html_exporter.h
+	csv_exporter.h
+	meta_data_exporter.h
 	transformer_func.h
 	parsing_chain.h
 	simple_extractor.h
