@@ -43,6 +43,7 @@
 #include "output.h"
 #include "parsing_chain.h"
 #include "plain_text_exporter.h"
+#include <sstream>
 #include "transformer_func.h"
 
 namespace docwire
