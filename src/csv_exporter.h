@@ -34,7 +34,7 @@
 #ifndef DOCWIRE_CSV_EXPORTER_H
 #define DOCWIRE_CSV_EXPORTER_H
 
-#include "exporter.h"
+#include "chain_element.h"
 
 namespace docwire
 {
@@ -43,21 +43,30 @@ namespace experimental
 {
 
 /**
- * @brief Exporter class for CSV output.
+ * @brief Exports data to CSV format.
  */
-class DllExport CsvExporter: public Exporter
+class DllExport CsvExporter: public ChainElement
 {
 public:
-  CsvExporter();
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  CsvExporter(std::ostream &out_stream);
+	CsvExporter();
+	CsvExporter(const CsvExporter& other);
 
   CsvExporter* clone() const override
   {
     return new CsvExporter(*this);
   }
+
+  void process(Info& info) const override;
+
+	bool is_leaf() const override
+	{
+		return false;
+	}
+
+private:
+	struct Implementation;
+	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
+	std::unique_ptr<Implementation, ImplementationDeleter> impl;
 };
 
 } // namespace experimental

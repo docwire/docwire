@@ -34,32 +34,36 @@
 #ifndef DOCWIRE_PLAIN_TEXT_EXPORTER_H
 #define DOCWIRE_PLAIN_TEXT_EXPORTER_H
 
-#include "exporter.h"
+#include "chain_element.h"
 
 namespace docwire
 {
 
 /**
- * @brief Exporter class for plain text output.
+ * @brief Exports data to plain text format.
  */
-class DllExport PlainTextExporter: public Exporter
+class DllExport PlainTextExporter: public ChainElement
 {
 public:
   PlainTextExporter();
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  PlainTextExporter(std::ostream &out_stream);
-
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  PlainTextExporter(std::ostream &&out_stream);
+	PlainTextExporter(const PlainTextExporter& other);
 
   PlainTextExporter* clone() const override
   {
     return new PlainTextExporter(*this);
   }
+
+  void process(Info& info) const override;
+
+	bool is_leaf() const override
+	{
+		return false;
+	}
+
+private:
+	struct Implementation;
+	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
+	std::unique_ptr<Implementation, ImplementationDeleter> impl;
 };
 
 } // namespace docwire

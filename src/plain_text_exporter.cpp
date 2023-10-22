@@ -32,21 +32,44 @@
 /***************************************************************************************************************************************************/
 
 #include "plain_text_exporter.h"
+
+//#include "parser.h"
 #include "plain_text_writer.h"
+#include <sstream>
 
 namespace docwire
 {
 
+struct PlainTextExporter::Implementation
+{
+	std::stringstream m_stream;
+	PlainTextWriter m_writer;
+};
+
 PlainTextExporter::PlainTextExporter()
-  : Exporter(std::make_unique<PlainTextWriter>())
+	: impl(new Implementation)
 {}
 
-PlainTextExporter::PlainTextExporter(std::ostream &out_stream)
-: Exporter(std::make_unique<PlainTextWriter>(), out_stream)
-{}
+PlainTextExporter::PlainTextExporter(const PlainTextExporter& other)
+	: impl(new Implementation(), ImplementationDeleter())
+{
+}
 
-PlainTextExporter::PlainTextExporter(std::ostream &&out_stream)
-: Exporter(std::make_unique<PlainTextWriter>(), out_stream)
-{}
+void PlainTextExporter::process(Info &info) const
+{
+	if (info.tag_name == StandardTag::TAG_DOCUMENT)
+		impl->m_stream.clear();
+	impl->m_writer.write_to(info, impl->m_stream);
+	if (info.tag_name == StandardTag::TAG_CLOSE_DOCUMENT)
+	{
+		Info info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&impl->m_stream}, {"name", ""}});
+		emit(info);
+	}
+}
+
+void PlainTextExporter::ImplementationDeleter::operator()(PlainTextExporter::Implementation* impl)
+{
+	delete impl;
+}
 
 } // namespace docwire

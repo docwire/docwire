@@ -5,6 +5,7 @@
 #include "input.h"
 #include "parser.h"
 #include "importer.h"
+#include "output.h"
 #include "plain_text_exporter.h"
 #include "transformer_func.h"
 #include "parsing_chain.h"
@@ -43,7 +44,8 @@ int main(int argc, char* argv[])
         }
       }
     }) |
-    PlainTextExporter(std::cout); // sets exporter to plain text
+    PlainTextExporter() | // sets exporter to plain text
+    Output(std::cout);
  return 0;
 }
 /// [example_cpp]

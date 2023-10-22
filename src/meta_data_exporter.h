@@ -34,32 +34,36 @@
 #ifndef DOCWIRE_META_DATA_EXPORTER_H
 #define DOCWIRE_META_DATA_EXPORTER_H
 
-#include "exporter.h"
+#include "chain_element.h"
 
 namespace docwire
 {
 
-class Importer;
-
 /**
- * @brief Exporter class for meta data.
- * Important: Exports only meta data as a plain text.
+ * @brief Exports meta data only to plain text format.
  */
-class DllExport MetaDataExporter: public Exporter
+class DllExport MetaDataExporter: public ChainElement
 {
 public:
   MetaDataExporter();
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  MetaDataExporter(std::ostream &out_stream);
+	MetaDataExporter(const MetaDataExporter& other);
 
   MetaDataExporter* clone() const override
   {
     return new MetaDataExporter(*this);
   }
 
+  void process(Info& info) const override;
 
+	bool is_leaf() const override
+	{
+		return false;
+	}
+
+private:
+	struct Implementation;
+	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
+	std::unique_ptr<Implementation, ImplementationDeleter> impl;
 };
 
 } // namespace docwire

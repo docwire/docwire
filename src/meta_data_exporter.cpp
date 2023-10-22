@@ -32,17 +32,44 @@
 /***************************************************************************************************************************************************/
 
 #include "meta_data_exporter.h"
+
 #include "meta_data_writer.h"
+#include "parser.h"
+#include <sstream>
 
 namespace docwire
 {
 
+struct MetaDataExporter::Implementation
+{
+	std::stringstream m_stream;
+	MetaDataWriter m_writer;
+};
+
 MetaDataExporter::MetaDataExporter()
-  : Exporter(std::make_unique<MetaDataWriter>())
+	: impl(new Implementation)
 {}
 
-MetaDataExporter::MetaDataExporter(std::ostream &out_stream)
-: Exporter(std::make_unique<MetaDataWriter>(), out_stream)
-{}
+MetaDataExporter::MetaDataExporter(const MetaDataExporter& other)
+	: impl(new Implementation(), ImplementationDeleter())
+{
+}
+
+void MetaDataExporter::process(Info &info) const
+{
+	if (info.tag_name == StandardTag::TAG_DOCUMENT)
+		impl->m_stream.clear();
+	impl->m_writer.write_to(info, impl->m_stream);
+	if (info.tag_name == StandardTag::TAG_CLOSE_DOCUMENT)
+	{
+		Info info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&impl->m_stream}, {"name", ""}});
+		emit(info);
+	}
+}
+
+void MetaDataExporter::ImplementationDeleter::operator()(MetaDataExporter::Implementation* impl)
+{
+	delete impl;
+}
 
 } // namespace docwire

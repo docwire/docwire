@@ -34,15 +34,15 @@
 #ifndef DOCWIRE_HTML_EXPORTER_H
 #define DOCWIRE_HTML_EXPORTER_H
 
-#include "exporter.h"
+#include "chain_element.h"
 
 namespace docwire
 {
 
 /**
- * @brief Exporter class for HTML output.
+ * @brief Exports data to HTML format.
  */
-class DllExport HtmlExporter: public Exporter
+class DllExport HtmlExporter: public ChainElement
 {
 public:
   enum class RestoreOriginalAttributes : bool {};
@@ -52,22 +52,25 @@ public:
    */
   HtmlExporter(RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
 
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   * @param restore_original_attributes should original html attributes extracted by html parser be restored
-   */
-  HtmlExporter(std::ostream &out_stream, RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
-
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   * @param restore_original_attributes should original html attributes extracted by html parser be restored
-   */
-  HtmlExporter(std::ostream &&out_stream, RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
+	HtmlExporter(const HtmlExporter& other);
+	virtual ~HtmlExporter() = default;
 
   HtmlExporter* clone() const override
   {
     return new HtmlExporter(*this);
   }
+
+  void process(Info& info) const override;
+
+	bool is_leaf() const override
+	{
+		return false;
+	}
+
+private:
+	struct Implementation;
+	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
+	std::unique_ptr<Implementation, ImplementationDeleter> impl;
 };
 
 } // namespace docwire

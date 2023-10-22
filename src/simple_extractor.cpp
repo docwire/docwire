@@ -40,6 +40,7 @@
 #include "importer.h"
 #include "input.h"
 #include "meta_data_exporter.h"
+#include "output.h"
 #include "parsing_chain.h"
 #include "plain_text_exporter.h"
 #include "transformer_func.h"
@@ -74,7 +75,7 @@ public:
                       chain = chain | (*chainElement);
                     });
     }
-    chain | ExtractorType(ss);
+    chain | ExtractorType() | Output(ss);
     if (!m_file_name.empty())
     {
       Input(m_file_name) | chain;
@@ -99,7 +100,7 @@ public:
                       chain = chain | (*chainElement);
                     });
     }
-    chain | ExtractorType(out_stream);
+    chain | ExtractorType() | Output(out_stream);
     if (!m_file_name.empty())
     {
       Input(m_file_name) | chain;

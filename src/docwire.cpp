@@ -43,6 +43,7 @@
 #include "log.h"
 #include <magic_enum_iostream.hpp>
 #include "meta_data_exporter.h"
+#include "output.h"
 #include "plain_text_exporter.h"
 #include "standard_filter.h"
 #include "transformer_func.h"
@@ -226,16 +227,16 @@ int main(int argc, char* argv[])
 	switch (vm["output_type"].as<OutputType>())
 	{
 		case OutputType::plain_text:
-			chain | PlainTextExporter(std::cout);
+			chain | PlainTextExporter() | Output(std::cout);
 			break;
 		case OutputType::html:
-			chain | HtmlExporter(std::cout);
+			chain | HtmlExporter() | Output(std::cout);
 			break;
 		case OutputType::csv:
-			chain | docwire::experimental::CsvExporter(std::cout);
+			chain | experimental::CsvExporter() | Output(std::cout);
 			break;
 		case OutputType::metadata:
-			chain | MetaDataExporter(std::cout);
+			chain | MetaDataExporter() | Output(std::cout);
 			break;
 	}
   }

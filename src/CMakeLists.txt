@@ -23,7 +23,7 @@ add_library(docwire_core SHARED
         standard_filter.cpp
         simple_extractor.cpp
         importer.cpp
-        exporter.cpp
+        output.cpp
         plain_text_exporter.cpp
         html_exporter.cpp
         csv_exporter.cpp
@@ -293,7 +293,7 @@ set(PUBLIC_HEADERS
 	html_writer.h
 	csv_writer.h
 	importer.h
-	exporter.h
+	output.h
 	plain_text_exporter.h
 	html_exporter.h
 	csv_exporter.h

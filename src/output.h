@@ -31,8 +31,8 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCWIRE_EXPORTER_H
-#define DOCWIRE_EXPORTER_H
+#ifndef DOCWIRE_OUTPUT_H
+#define DOCWIRE_OUTPUT_H
 
 #include "chain_element.h"
 
@@ -42,30 +42,34 @@ namespace docwire
 class Writer;
 
 /**
- *  @brief Exporter class is responsible for exporting the parsed data from importer or transformer to an output stream.
+ *  @brief Output class is responsible for saving data from parsing chain to an output stream.
  *  @code
- *  Importer(parser_manager, "file.pdf") | PlainTextExporter() | std::cout; // Imports file.pdf and exports it to std::cout as plain text
+ *  std::ifstream("file.pdf", std::ios_base::in|std::ios_base::binary) | Importer() | PlainTextExporter() | std::cout; // Imports file.pdf and saves it to std::cout as plain text
  *  @endcode
  */
-class DllExport Exporter : public ChainElement
+class DllExport Output : public ChainElement
 {
 public:
   /**
-   * @param writer writer to use.
+   * @param out_stream Output stream. Parsing chain will be writing to this stream.
    */
-  Exporter(std::unique_ptr<Writer> writer);
+  Output(std::ostream &out_stream);
 
   /**
-   * @param writer writer to use.
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
+   * @param out_stream Output stream. Parsing chain will be writing to this stream.
    */
-  Exporter(std::unique_ptr<Writer> writer, std::ostream &out_stream);
+  Output(std::ostream&& out_stream);
 
-  Exporter(const Exporter &other);
+  Output(const Output &other);
 
-  Exporter(const Exporter &&other);
+  Output(const Output &&other);
 
-  virtual ~Exporter();
+  virtual ~Output();
+
+  Output* clone() const override
+  {
+    return new Output(*this);
+  }
 
   bool is_leaf() const override
   {
@@ -74,27 +78,6 @@ public:
 
   void process(Info &info) const override;
 
-  /**
-   * @brief Sets output stream.
-   * @param out_stream reference to output stream.
-   */
-  void set_out_stream(std::ostream &out_stream);
-
-  /**
-   * @brief Check if exporter contains valid output.
-   * @brief True if output is valid.
-   */
-  bool is_valid() const;
-
-  /**
-   * @brief Exxports data from Info structure to output stream.
-   * @param info data from callback function.
-   */
-  void export_to(Info &info) const;
-
-protected:
-  std::ostream& get_output() const;
-
 private:
   class Implementation;
   std::unique_ptr<Implementation> impl;
@@ -102,4 +85,4 @@ private:
 
 } // namespace docwire
 
-#endif //DOCWIRE_EXPORTER_H
+#endif //DOCWIRE_OUTPUT_H

@@ -31,115 +31,68 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#include "importer.h"
-#include "html_writer.h"
-#include "csv_writer.h"
-#include "plain_text_writer.h"
-#include "meta_data_writer.h"
-#include "exporter.h"
+#include "output.h"
+
+#include "exception.h"
+#include <fstream>
 
 namespace docwire
 {
 
-class Exporter::Implementation
+class Output::Implementation
 {
 public:
-  Implementation(std::unique_ptr<Writer> writer)
-    : _output(nullptr),
-      _writer(std::move(writer))
-  {}
 
-  Implementation(std::unique_ptr<Writer> writer, std::ostream &out_stream)
-    : _output(&out_stream),
-      _writer(std::move(writer))
+  Implementation(std::ostream &out_stream)
+    : m_out_stream(&out_stream)
   {}
 
   Implementation(const Implementation &other)
-    : _output(other._output),
-      _writer(other._writer->clone())
+    : m_out_stream(other.m_out_stream)
   {}
 
   Implementation(const Implementation &&other)
-    : _output(other._output),
-      _writer(other._writer->clone())
+    : m_out_stream(other.m_out_stream)
   {}
 
-  std::unique_ptr<Writer> _writer;
-  std::ostream *_output;
-
-  bool is_valid() const
-  {
-    return _output != nullptr;
-  }
-
-  void
-  set_out_stream(std::ostream &out_stream)
-  {
-    _output = &out_stream;
-  }
-
-  void export_to(Info &info) const
-  {
-    _writer->write_to(info, *_output);
-  }
-
-  std::ostream &
-  get_output() const
-  {
-    return *_output;
-  }
+  std::ostream* m_out_stream;
 };
 
-Exporter::Exporter(std::unique_ptr<Writer> writer)
+Output::Output(std::ostream &out_stream)
 {
-  impl = std::unique_ptr<Implementation>{new Implementation{std::move(writer)}};
+  impl = std::unique_ptr<Implementation>{new Implementation{out_stream}};
 }
 
-Exporter::Exporter(std::unique_ptr<Writer> writer, std::ostream &out_stream)
+Output::Output(std::ostream&& out_stream)
 {
-  impl = std::unique_ptr<Implementation>{new Implementation{std::move(writer), out_stream}};
+  impl = std::unique_ptr<Implementation>{new Implementation{out_stream}};
 }
 
-Exporter::Exporter(const Exporter &other)
+Output::Output(const Output &other)
   : impl(new Implementation(*other.impl))
 {}
 
-Exporter::Exporter(const Exporter &&other)
+Output::Output(const Output &&other)
   : impl(new Implementation(*other.impl))
 {}
 
-Exporter::~Exporter()
+Output::~Output()
 {
-}
-
-bool
-Exporter::is_valid() const
-{
-  return impl->is_valid();
 }
 
 void
-Exporter::process(Info &info) const
+Output::process(Info &info) const
 {
-  impl->export_to(info);
-}
-
-void
-Exporter::set_out_stream(std::ostream &out_stream)
-{
-  impl->set_out_stream(out_stream);
-}
-
-void
-Exporter::export_to(Info &info) const
-{
-  impl->export_to(info);
-}
-
-std::ostream &
-Exporter::get_output() const
-{
-  return impl->get_output();
+	if (info.tag_name != StandardTag::TAG_FILE)
+		throw Exception("Only TAG_FILE tags are supported by Output chain element");
+	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
+	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
+	if(!path && !stream)
+		throw Exception("No path or stream in TAG_FILE");
+	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
+	*impl->m_out_stream << in_stream->rdbuf();
+	if (path)
+		delete in_stream;
 }
 
 } // namespace docwire

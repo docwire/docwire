@@ -32,21 +32,49 @@
 /***************************************************************************************************************************************************/
 
 #include "html_exporter.h"
+
 #include "html_writer.h"
+#include "parser.h"
+#include <sstream>
 
 namespace docwire
 {
 
+struct HtmlExporter::Implementation
+{
+	RestoreOriginalAttributes m_restore_original_attributes;
+	std::stringstream m_stream;
+	HtmlWriter m_writer;
+	Implementation(RestoreOriginalAttributes restore_original_attributes)
+		: m_restore_original_attributes(restore_original_attributes),
+		m_writer(static_cast<HtmlWriter::RestoreOriginalAttributes>(m_restore_original_attributes))
+	{}
+};
+
 HtmlExporter::HtmlExporter(RestoreOriginalAttributes restore_original_attributes)
-  : Exporter(std::make_unique<HtmlWriter>(static_cast<HtmlWriter::RestoreOriginalAttributes>(restore_original_attributes)))
+  : impl(new Implementation(restore_original_attributes), ImplementationDeleter())
 {}
 
-HtmlExporter::HtmlExporter(std::ostream &out_stream, RestoreOriginalAttributes restore_original_attributes)
-: Exporter(std::make_unique<HtmlWriter>(static_cast<HtmlWriter::RestoreOriginalAttributes>(restore_original_attributes)), out_stream)
-{}
+HtmlExporter::HtmlExporter(const HtmlExporter& other)
+	: impl(new Implementation(other.impl->m_restore_original_attributes), ImplementationDeleter())
+{
+}
 
-HtmlExporter::HtmlExporter(std::ostream &&out_stream, RestoreOriginalAttributes restore_original_attributes)
-: Exporter(std::make_unique<HtmlWriter>(static_cast<HtmlWriter::RestoreOriginalAttributes>(restore_original_attributes)), out_stream)
-{}
+void HtmlExporter::process(Info &info) const
+{
+	if (info.tag_name == StandardTag::TAG_DOCUMENT)
+		impl->m_stream.clear();
+	impl->m_writer.write_to(info, impl->m_stream);
+	if (info.tag_name == StandardTag::TAG_CLOSE_DOCUMENT)
+	{
+		Info info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&impl->m_stream}, {"name", ""}});
+		emit(info);
+	}
+}
+
+void HtmlExporter::ImplementationDeleter::operator()(HtmlExporter::Implementation* impl)
+{
+	delete impl;
+}
 
 } // namespace docwire

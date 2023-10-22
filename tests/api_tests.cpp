@@ -45,6 +45,7 @@
 #include "../src/standard_filter.h"
 #include <optional>
 #include <algorithm>
+#include "output.h"
 #include "plain_text_exporter.h"
 #include "pthread.h"
 #include "transformer_func.h"
@@ -129,7 +130,8 @@ TEST_P(DocumentTests, ReadFromBufferTest)
 
         Input(&ifs_input) |
           Importer(parameters, parser_manager) |
-          PlainTextExporter(output_stream);
+          PlainTextExporter() |
+          Output(output_stream);
 
         std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
             std::istreambuf_iterator<char>{}};
@@ -601,7 +603,8 @@ TEST(HtmlWriter, RestoreAttributes)
 	std::ifstream in("1.html");
 	Input(&in)
 		| Importer(ParserParameters(), parser_manager)
-		| HtmlExporter(output, HtmlExporter::RestoreOriginalAttributes{true});
+		| HtmlExporter(HtmlExporter::RestoreOriginalAttributes{true})
+		| Output(output);
 
 	EXPECT_EQ(read_test_file("1.html.restore_attributes.out.html"), output.str());
 }
