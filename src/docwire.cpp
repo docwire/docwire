@@ -45,6 +45,7 @@
 #include "meta_data_exporter.h"
 #include "output.h"
 #include "plain_text_exporter.h"
+#include "post.h"
 #include "standard_filter.h"
 #include "transformer_func.h"
 #include "version.h"
@@ -135,6 +136,7 @@ int main(int argc, char* argv[])
 		("verbose", "enable verbose logging")
 		("input-file", po::value<std::string>()->required(), "path to file to process")
 		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
+		("http-post", po::value<std::string>(), "url to process exported data via http post")
 		("language", po::value<Language>()->default_value(Language::eng), "set document language for OCR")
 		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
 		("min_creation_time", po::value<unsigned int>(), "filter emails by min creation time")
@@ -222,25 +224,32 @@ int main(int argc, char* argv[])
 		chain = chain | TransformerFunc(StandardFilter::filterByAttachmentType({vm["attachment_extension"].as<std::string>()}));
 	}
 
-  try
-  {
 	switch (vm["output_type"].as<OutputType>())
 	{
 		case OutputType::plain_text:
-			chain | PlainTextExporter() | Output(std::cout);
+			chain | PlainTextExporter();
 			break;
 		case OutputType::html:
-			chain | HtmlExporter() | Output(std::cout);
+			chain | HtmlExporter();
 			break;
 		case OutputType::csv:
-			chain | experimental::CsvExporter() | Output(std::cout);
+			chain | experimental::CsvExporter();
 			break;
 		case OutputType::metadata:
-			chain | MetaDataExporter() | Output(std::cout);
+			chain | MetaDataExporter();
 			break;
 	}
-  }
-  catch (Exception& ex)
+
+	if (vm.count("http-post"))
+	{
+		chain = chain | http::Post(vm["http-post"].as<std::string>());
+	}
+
+	try
+	{
+		chain | Output(std::cout);
+	}
+catch (Exception& ex)
   {
       std::cout << "Error processing file " + file_name + ".\n" + ex.getBacktrace();
   }

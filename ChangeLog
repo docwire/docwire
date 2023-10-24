@@ -44,6 +44,7 @@ Unreleased:
     * Add --use-stream option to CLI
     * Move PlainTextExporter, HtmlExporter, CsvExporter and MetaDataExporter to separate files
     * Exporters derive from ChainElement class, generate TAG_FILE and can be placed in any position of parsing chain. Output class added.
+    * http::Post transformer added
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed

@@ -17,6 +17,7 @@ add_library(docwire_core SHARED
         parser.cpp
         parser_manager.cpp
         parser_parameters.cpp
+        post.cpp
         html_writer.cpp
         csv_writer.cpp
         plain_text_writer.cpp
@@ -41,6 +42,9 @@ find_path(boost_signals2_inc boost/signals2.hpp HINT ${Boost_INCLUDE_DIRS} REQUI
 
 find_package(magic_enum CONFIG REQUIRED)
 target_link_libraries(docwire_core PRIVATE magic_enum::magic_enum)
+
+find_package(unofficial-curlpp CONFIG REQUIRED)
+target_link_libraries(docwire_core PRIVATE unofficial::curlpp::curlpp)
 
 if(MSVC)
     add_definitions(-DMSVC_BUILD)
@@ -285,6 +289,7 @@ set(PUBLIC_HEADERS
 	parser_manager.h
 	parser_builder.h
 	parser_parameters.h
+	post.h
 	basic_parser_provider.h
 	parser_provider.h
 	standard_filter.h

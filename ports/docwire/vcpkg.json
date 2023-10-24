@@ -68,6 +68,9 @@
 			"name": "tessdata-fast"
 		},
 		{
+			"name": "curlpp"
+		},
+		{
 			"name": "cmap-resources"
 		},
 		{
