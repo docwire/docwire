@@ -35,6 +35,7 @@
 #define DOCWIRE_OUTPUT_H
 
 #include "chain_element.h"
+#include "exception.h"
 
 namespace docwire
 {
@@ -77,6 +78,13 @@ public:
   }
 
   void process(Info &info) const override;
+
+	class RuntimeError : public docwire::RuntimeError
+	{
+	public:
+		RuntimeError(const std::string& message) : docwire::RuntimeError(message) {}
+		RuntimeError(const std::string& message, const std::exception& nested) : docwire::RuntimeError(message, nested) {}
+	};
 
 private:
   class Implementation;
