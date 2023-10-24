@@ -615,7 +615,7 @@ TEST(Http, Post)
 {
 	std::shared_ptr<ParserManager> parser_manager(new ParserManager());
 	std::stringstream output;
-	std::ifstream in("1.docx");
+	std::ifstream in("1.docx", std::ios_base::binary);
 	ASSERT_NO_THROW(
 	{
 		Input(&in)
