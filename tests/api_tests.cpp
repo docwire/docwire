@@ -616,11 +616,14 @@ TEST(Http, Post)
 	std::shared_ptr<ParserManager> parser_manager(new ParserManager());
 	std::stringstream output;
 	std::ifstream in("1.docx");
-	Input(&in)
-		| Importer(ParserParameters(), parser_manager)
-		| PlainTextExporter()
-		| http::Post("https://postman-echo.com/post")
-		| Output(output);
+	ASSERT_NO_THROW(
+	{
+		Input(&in)
+			| Importer(ParserParameters(), parser_manager)
+			| PlainTextExporter()
+			| http::Post("https://postman-echo.com/post")
+			| Output(output);
+	});
 
 	using namespace boost::json;
 	value output_val = parse(output.str());
