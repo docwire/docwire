@@ -33,6 +33,7 @@
 
 #include "exception.h"
 
+#include <boost/algorithm/string.hpp>
 #include <boost/core/demangle.hpp>
 #include <list>
 #include "misc.h"
@@ -107,7 +108,11 @@ namespace
 
 std::string complex_message(const std::string& message, const std::exception& nested)
 {
-	return message + " with nested " +  boost::core::demangle(typeid(nested).name()) + " " + nested.what();
+	return message + " with nested " +
+		boost::algorithm::erase_all_copy(
+			boost::core::demangle(typeid(nested).name()),
+			"class ") + // class prefix is added on MSVC
+		" " + nested.what();
 }
 
 } // anonymous namespace
