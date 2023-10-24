@@ -38,6 +38,7 @@
 #include <memory>
 
 #include "chain_element.h"
+#include "exception.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include "parser_manager.h"
@@ -92,6 +93,13 @@ public:
    * @param parameters parser parameters
    */
   void add_parameters(const ParserParameters &parameters);
+
+	class RuntimeError : public docwire::RuntimeError
+	{
+	public:
+		RuntimeError(const std::string& message) : docwire::RuntimeError(message) {}
+		RuntimeError(const std::string& message, const std::exception& nested) : docwire::RuntimeError(message, nested) {}
+	};
 
 protected:
   /**

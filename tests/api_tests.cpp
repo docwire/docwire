@@ -421,10 +421,10 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
         std::string parsed_text{ simple_extractor.getPlainText() };
         FAIL() << "We are not supporting password protected files yet. Why didn\'t we catch exception?\n";
     }
-    catch (Exception& ex)
+    catch (const std::exception& ex)
     {
         std::string test_text {
-            "Error processing file " + file_name + ".\n" + ex.getBacktrace()
+            "Error processing file " + file_name + ".\n" + ex.what()
         };
         std::replace(test_text.begin(), test_text.end(), '\\', '/');
         

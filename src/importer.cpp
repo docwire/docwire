@@ -123,12 +123,12 @@ public:
         }
         else
         {
-          throw Exception("file " + file_path + " is not readable");
+          throw RuntimeError("file " + file_path + " is not readable");
         }
       }
       else
       {
-        throw Exception("file " + file_path + "  doesn't exist");
+        throw RuntimeError("file " + file_path + "  doesn't exist");
       }
     }
     else if(input_stream)
@@ -150,7 +150,7 @@ public:
         }
         catch (EncryptedFileException &ex)
         {
-          throw ex;
+          throw RuntimeError("Parsing failed, file is encrypted", ex);
         }
         catch (Exception &ex)
         {
@@ -160,8 +160,7 @@ public:
           auto second_builder = m_parser_manager->findParserByData(buffer);
           if (!second_builder)
           {
-            ex.appendError("Error parsing file: " + file_path  + ". Tried different parsers, but file could not be recognized as another format. File may be corrupted or encrypted");
-            throw ex;
+            throw RuntimeError("Error parsing file: " + file_path  + ". Tried different parsers, but file could not be recognized as another format. File may be corrupted or encrypted", ex);
           }
           std::shared_ptr<ParserBuilder>(*second_builder)
                   ->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
@@ -177,7 +176,7 @@ public:
     }
     else
     {
-      throw Exception("File format was not recognized.");
+      throw RuntimeError("File format was not recognized.");
     }
     Info end_doc(StandardTag::TAG_CLOSE_DOCUMENT);
     m_owner.emit(end_doc);

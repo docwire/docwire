@@ -122,14 +122,6 @@ namespace docwire
 			size_t getErrorCount() const;
 	};
 
-    class EncryptedFileException : public Exception
-    {
-    public:
-        explicit EncryptedFileException(const std::string &msg)
-            : Exception(msg)
-        {}
-    };
-
 class DllExport LogicError : public std::logic_error
 {
 public:
@@ -142,6 +134,13 @@ class DllExport RuntimeError : public std::runtime_error
 public:
 	RuntimeError(const std::string& message);
 	RuntimeError(const std::string& message, const std::exception& nested);
+};
+
+class EncryptedFileException : public docwire::RuntimeError
+{
+public:
+	EncryptedFileException(const std::string& message) : docwire::RuntimeError(message) {}
+	EncryptedFileException(const std::string& message, const std::exception& nested) : docwire::RuntimeError(message, nested) {}
 };
 
 } // namespace docwire
