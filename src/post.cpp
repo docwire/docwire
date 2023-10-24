@@ -40,6 +40,7 @@
 #include <fstream>
 #include "log.h"
 #include "parser.h"
+#include <sstream>
 #include "version.h"
 
 namespace docwire
