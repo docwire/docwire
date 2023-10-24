@@ -45,6 +45,7 @@ Unreleased:
     * Move PlainTextExporter, HtmlExporter, CsvExporter and MetaDataExporter to separate files
     * Exporters derive from ChainElement class, generate TAG_FILE and can be placed in any position of parsing chain. Output class added.
     * http::Post transformer added
+    * LogicError and RuntimeError exception classes added that allows easy nesting and will replace Exception class
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed

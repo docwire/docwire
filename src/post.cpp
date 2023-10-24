@@ -107,11 +107,11 @@ Post::process(Info &info) const
 	}
 	catch (curlpp::LogicError &e)
 	{
-		throw Exception(e.what());
+		throw LogicError("Incorrect HTTP request", e);
     }
 	catch (curlpp::RuntimeError &e)
 	{
-		throw Exception(e.what());
+		throw RuntimeError("HTTP request failed", e);
 	}
 	Info new_info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&response_stream}, {"name", ""}});
 	emit(new_info);

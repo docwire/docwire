@@ -38,6 +38,7 @@
 #include <list>
 #include <string>
 #include "defines.h"
+#include <stdexcept>
 
 namespace docwire
 {
@@ -128,6 +129,21 @@ namespace docwire
             : Exception(msg)
         {}
     };
+
+class DllExport LogicError : public std::logic_error
+{
+public:
+	LogicError(const std::string& message);
+	LogicError(const std::string& message, const std::exception& nested);
+};
+
+class DllExport RuntimeError : public std::runtime_error
+{
+public:
+	RuntimeError(const std::string& message);
+	RuntimeError(const std::string& message, const std::exception& nested);
+};
+
 } // namespace docwire
 
 #endif
