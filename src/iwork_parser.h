@@ -34,6 +34,7 @@
 #ifndef DOCWIRE_IWORK_PARSER_H
 #define DOCWIRE_IWORK_PARSER_H
 
+#include "exception.h"
 #include <string>
 #include <vector>
 
@@ -59,6 +60,13 @@ class IWorkParser
 		bool isIWork();
 		std::string plainText(const FormattingStyle& formatting);
 		Metadata metaData();
+		
+	class RuntimeError : public docwire::RuntimeError
+	{
+	public:
+		RuntimeError(const std::string& message) : docwire::RuntimeError(message) {}
+		RuntimeError(const std::string& message, const std::exception& nested) : docwire::RuntimeError(message, nested) {}
+	};
 };
 
 #endif

@@ -271,11 +271,11 @@ struct IWorkParser::Implementation
 					return;
 				}
 				if (!m_zipfile->readChunk(m_xml_file, chunk, len, readed))
-					throw Exception("Error while reading file: " + m_xml_file);
+					throw RuntimeError("Error while reading file: " + m_xml_file);
 				if (readed != len)	//we have reached the end
 					m_done = true;
 				if (error_if_no_data && readed == 0)
-					throw Exception("Read past EOF during reading  " + m_xml_file);
+					throw RuntimeError("Read past EOF during reading  " + m_xml_file);
 			}
 	};
 
@@ -2004,15 +2004,14 @@ struct IWorkParser::Implementation
 		IWorkMetadataContent metadata_content(xml_reader, metadata);
 
 		if (!zipfile.loadDirectory())
-			throw Exception("zip file: Error while loading directory");
+			throw RuntimeError("zip file: Error while loading directory");
 		try
 		{
 			metadata_content.ParseMetaData();
 		}
-		catch (Exception& ex)
+		catch (const std::exception& ex)
 		{
-			ex.appendError("Error while parsing XML data");
-			throw;
+			throw RuntimeError("Error while parsing XML data", ex);
 		}
 	}
 
@@ -2026,7 +2025,7 @@ struct IWorkParser::Implementation
 			{
 				xml_reader.GetNextElement(current_element);	//root element
 			}
-			catch (Exception& ex)
+			catch (const std::exception& ex)
 			{
 				return IWorkContent::encrypted;	//encrypted or corrupted?
 			}
@@ -2051,20 +2050,19 @@ struct IWorkParser::Implementation
 		IWorkContent iwork_content(xml_reader);
 
 		if (!zipfile.loadDirectory())
-			throw Exception("zip file: Error while loading directory");
+			throw RuntimeError("zip file: Error while loading directory");
 		IWorkContent::IWorkType iwork_type = getIWorkType(xml_reader);
 		if (iwork_type == IWorkContent::encrypted)
-			throw Exception("File is corrupted or encrypted");
+			throw RuntimeError("File is corrupted or encrypted");
 		iwork_content.setType(iwork_type);
 		text.clear();
 		try
 		{
 			iwork_content.ParseXmlData();
 		}
-		catch (Exception& ex)
+		catch (const std::exception& ex)
 		{
-			ex.appendError("Error while parsing XML");
-			throw;
+			throw RuntimeError("Error while parsing XML", ex);
 		}
 		if (iwork_content.m_header.length() > 0)
 		{
@@ -2169,7 +2167,7 @@ Metadata IWorkParser::metaData()
 	else
 		unzip.setArchiveFile(impl->m_file_name);
 	if (!unzip.open())
-		throw Exception("Cannot open " + impl->m_file_name + " as zip file");
+		throw RuntimeError("Cannot open " + impl->m_file_name + " as zip file");
 	try
 	{
 		if (unzip.exists("index.xml"))
@@ -2179,15 +2177,15 @@ Metadata IWorkParser::metaData()
 		if (unzip.exists("presentation.apxl"))
 			impl->m_xml_file = "presentation.apxl";
 		if (impl->m_xml_file.empty())
-			throw Exception("File cannot be processed, because none of the following files (index.xml, index.apxl, presentacion.apxl) could not be found");
+			throw RuntimeError("File cannot be processed, because none of the following files (index.xml, index.apxl, presentacion.apxl) could not be found");
 		impl->ReadMetadata(unzip, metadata);
 		unzip.close();
 		return metadata;
 	}
-	catch (Exception& ex)
+	catch (const std::exception& ex)
 	{
 		unzip.close();
-		throw;
+		throw RuntimeError("Reading metadata failed", ex);
 	}
 }
 
@@ -2201,7 +2199,7 @@ std::string IWorkParser::plainText(const FormattingStyle& formatting)
 	else
 		unzip.setArchiveFile(impl->m_file_name);
 	if (!unzip.open())
-		throw Exception("Cannot open " + impl->m_file_name + " as zip file");
+		throw RuntimeError("Cannot open " + impl->m_file_name + " as zip file");
 	try
 	{
 		if (unzip.exists("index.xml"))
@@ -2211,14 +2209,14 @@ std::string IWorkParser::plainText(const FormattingStyle& formatting)
 		if (unzip.exists("presentation.apxl"))
 			impl->m_xml_file = "presentation.apxl";
 		if (impl->m_xml_file.empty())
-			throw Exception("File cannot be processed, because none of the following files (index.xml, index.apxl, presentacion.apxl) could not be found");
+			throw RuntimeError("File cannot be processed, because none of the following files (index.xml, index.apxl, presentacion.apxl) could not be found");
 		impl->parseIWork(unzip, text);
 		unzip.close();
 		return text;
 	}
-	catch (Exception& ex)
+	catch (const std::exception& ex)
 	{
 		unzip.close();
-		throw;
+		throw RuntimeError("Extracting plaintext failed", ex);
 	}
 }

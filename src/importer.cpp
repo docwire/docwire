@@ -152,7 +152,7 @@ public:
         {
           throw RuntimeError("Parsing failed, file is encrypted", ex);
         }
-        catch (Exception &ex)
+        catch (const std::exception& ex)
         {
           docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
           std::vector<char> buffer;
