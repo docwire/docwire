@@ -633,10 +633,14 @@ TEST(Http, Post)
 	EXPECT_EQ(read_test_file("http_post.out.json"), serialize(output_val));
 }
 
+namespace test_ns
+{
+DOCWIRE_EXCEPTION_DEFINE(TestError1, RuntimeError);
+DOCWIRE_EXCEPTION_DEFINE(TestError2, LogicError);
+}
+
 TEST(Exceptions, DefiningCreatingAndNested)
 {
-	DOCWIRE_EXCEPTION_DEFINE(TestError1, RuntimeError);
-	DOCWIRE_EXCEPTION_DEFINE(TestError2, LogicError);
-	std::string what_msg = TestError1("msg1", TestError2("msg2")).what();
-	EXPECT_EQ(what_msg, "msg1 with nested Exceptions_DefiningCreatingAndNested_Test::TestBody()::TestError2 msg2");
+	std::string what_msg = test_ns::TestError1("msg1", test_ns::TestError2("msg2")).what();
+	EXPECT_EQ(what_msg, "msg1 with nested test_ns::TestError2 msg2");
 }
