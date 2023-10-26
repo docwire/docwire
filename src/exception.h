@@ -143,6 +143,14 @@ public:
 	EncryptedFileException(const std::string& message, const std::exception& nested) : docwire::RuntimeError(message, nested) {}
 };
 
+#define DOCWIRE_EXCEPTION_DEFINE(Name, Base) \
+	class DllExport Name : public Base \
+	{ \
+	public: \
+		Name(const std::string& message) : Base(message) {} \
+		Name(const std::string& message, const std::exception& nested) : Base(message, nested) {} \
+	} \
+
 } // namespace docwire
 
 #endif

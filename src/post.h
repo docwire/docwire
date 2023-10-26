@@ -45,7 +45,7 @@ namespace http
 class DllExport Post : public ChainElement
 {
 public:
-	Post(const std::string& url);
+	Post(const std::string& url, const std::string& oauth2_bearer_token = "");
 	Post(const Post& other);
 	virtual ~Post();
 

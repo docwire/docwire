@@ -34,6 +34,7 @@
 #include <boost/program_options.hpp>
 #include <memory>
 #include <fstream>
+#include "chat.h"
 #include "csv_exporter.h"
 #include "decompress_archives.h"
 #include "exception.h"
@@ -137,6 +138,8 @@ int main(int argc, char* argv[])
 		("input-file", po::value<std::string>()->required(), "path to file to process")
 		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
 		("http-post", po::value<std::string>(), "url to process exported data via http post")
+		("openai-chat", po::value<std::string>(), "prompt to process exported data via OpenAI")
+		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
 		("language", po::value<Language>()->default_value(Language::eng), "set document language for OCR")
 		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
 		("min_creation_time", po::value<unsigned int>(), "filter emails by min creation time")
@@ -245,6 +248,11 @@ int main(int argc, char* argv[])
 		chain = chain | http::Post(vm["http-post"].as<std::string>());
 	}
 
+	if (vm.count("openai-chat"))
+	{
+		chain = chain | openai::Chat(vm["openai-chat"].as<std::string>(), vm["openai-key"].as<std::string>());
+	}
+
 	try
 	{
 		chain | Output(std::cout);
@@ -253,6 +261,10 @@ catch (Exception& ex)
   {
       std::cout << "Error processing file " + file_name + ".\n" + ex.getBacktrace();
   }
+	catch (const std::exception& e)
+	{
+		std::cout << "Error processing file " + file_name + ".\n" + e.what() << std::endl;
+	}
   catch (...)
   {
     std::cout << "Error processing file " + file_name + ". Unknown error.\n";

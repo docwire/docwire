@@ -51,13 +51,14 @@ namespace http
 struct Post::Implementation
 {
 	std::string m_url;
-	Implementation(const std::string& url)
-		: m_url(url)
+	std::string m_oauth2_bearer_token;
+	Implementation(const std::string& url, const std::string& oauth2_bearer_token)
+		: m_url(url), m_oauth2_bearer_token(oauth2_bearer_token)
 	{}
 };
 
-Post::Post(const std::string& url)
-	: impl(new Implementation{url})
+Post::Post(const std::string& url, const std::string& oauth2_bearer_token)
+	: impl(new Implementation{url, oauth2_bearer_token})
 {
 }
 
@@ -98,6 +99,13 @@ Post::process(Info &info) const
 	}));
 	request.setOpt<curlpp::options::Encoding>("gzip");
 	request.setOpt(curlpp::options::Upload(true));
+	request.setOpt<curlpp::options::HttpHeader>({"Content-Type: application/json"});
+	if (!impl->m_oauth2_bearer_token.empty())
+	{
+		request.setOpt<curlpp::options::HttpAuth>(CURLAUTH_BEARER);
+		typedef curlpp::OptionTrait<std::string, CURLOPT_XOAUTH2_BEARER> XOAuth2Bearer;
+		request.setOpt(XOAuth2Bearer(impl->m_oauth2_bearer_token));
+	}
 	std::stringstream response_stream;
 	curlpp::options::WriteStream ws(&response_stream);
 	request.setOpt(ws);
