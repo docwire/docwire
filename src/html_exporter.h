@@ -31,88 +31,18 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCWIRE_EXPORTER_H
-#define DOCWIRE_EXPORTER_H
-
-#include <algorithm>
-#include <memory>
+#ifndef DOCWIRE_HTML_EXPORTER_H
+#define DOCWIRE_HTML_EXPORTER_H
 
 #include "chain_element.h"
-#include "parser.h"
-#include "parser_builder.h"
-#include "parser_manager.h"
-#include "parser_parameters.h"
-#include "writer.h"
-#include "defines.h"
 
 namespace docwire
 {
 
-class Importer;
-
 /**
- *  @brief Exporter class is responsible for exporting the parsed data from importer or transformer to an output stream.
- *  @code
- *  Importer(parser_manager, "file.pdf") | PlainTextExporter() | std::cout; // Imports file.pdf and exports it to std::cout as plain text
- *  @endcode
+ * @brief Exports data to HTML format.
  */
-class DllExport Exporter : public ChainElement
-{
-public:
-  /**
-   * @param writer writer to use.
-   */
-  Exporter(std::unique_ptr<Writer> writer);
-
-  /**
-   * @param writer writer to use.
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  Exporter(std::unique_ptr<Writer> writer, std::ostream &out_stream);
-
-  Exporter(const Exporter &other);
-
-  Exporter(const Exporter &&other);
-
-  virtual ~Exporter();
-
-  bool is_leaf() const override
-  {
-    return true;
-  }
-
-  void process(Info &info) const override;
-
-  /**
-   * @brief Sets output stream.
-   * @param out_stream reference to output stream.
-   */
-  void set_out_stream(std::ostream &out_stream);
-
-  /**
-   * @brief Check if exporter contains valid output.
-   * @brief True if output is valid.
-   */
-  bool is_valid() const;
-
-  /**
-   * @brief Exxports data from Info structure to output stream.
-   * @param info data from callback function.
-   */
-  void export_to(Info &info) const;
-
-protected:
-  std::ostream& get_output() const;
-
-private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
-};
-
-/**
- * @brief Exporter class for HTML output.
- */
-class DllExport HtmlExporter: public Exporter
+class DllExport HtmlExporter: public ChainElement
 {
 public:
   enum class RestoreOriginalAttributes : bool {};
@@ -122,86 +52,27 @@ public:
    */
   HtmlExporter(RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
 
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   * @param restore_original_attributes should original html attributes extracted by html parser be restored
-   */
-  HtmlExporter(std::ostream &out_stream, RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
+	HtmlExporter(const HtmlExporter& other);
+	virtual ~HtmlExporter() = default;
 
   HtmlExporter* clone() const override
   {
     return new HtmlExporter(*this);
   }
-};
 
-/**
- * @brief Exporter class for plain text output.
- */
-class DllExport PlainTextExporter: public Exporter
-{
-public:
-  PlainTextExporter();
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  PlainTextExporter(std::ostream &out_stream);
+  void process(Info& info) const override;
 
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  PlainTextExporter(std::ostream &&out_stream);
+	bool is_leaf() const override
+	{
+		return false;
+	}
 
-  PlainTextExporter* clone() const override
-  {
-    return new PlainTextExporter(*this);
-  }
-
-};
-
-namespace experimental
-{
-
-/**
- * @brief Exporter class for CSV output.
- */
-class DllExport CsvExporter: public Exporter
-{
-public:
-  CsvExporter();
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  CsvExporter(std::ostream &out_stream);
-
-  CsvExporter* clone() const override
-  {
-    return new CsvExporter(*this);
-  }
-};
-
-} // namespace experimental
-
-/**
- * @brief Exporter class for meta data.
- * Important: Exports only meta data as a plain text.
- */
-class DllExport MetaDataExporter: public Exporter
-{
-public:
-  MetaDataExporter();
-  /**
-   * @param out_stream Exporter output stream. Exporter will be writing to this stream.
-   */
-  MetaDataExporter(std::ostream &out_stream);
-
-  MetaDataExporter* clone() const override
-  {
-    return new MetaDataExporter(*this);
-  }
-
-
+private:
+	struct Implementation;
+	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
+	std::unique_ptr<Implementation, ImplementationDeleter> impl;
 };
 
 } // namespace docwire
 
-#endif //DOCWIRE_EXPORTER_H
+#endif //DOCWIRE_HTML_EXPORTER_H

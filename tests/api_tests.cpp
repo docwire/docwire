@@ -31,19 +31,26 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
+#include <boost/json.hpp>
 #include "gtest/gtest.h"
 #include "../src/exception.h"
 #include <pthread.h>
 #include <string_view>
 #include <tuple>
 #include <fstream>
+#include "html_exporter.h"
+#include "importer.h"
 #include <iterator>
 #include <array>
 #include "../src/simple_extractor.h"
 #include "../src/standard_filter.h"
 #include <optional>
 #include <algorithm>
+#include "output.h"
+#include "plain_text_exporter.h"
+#include "post.h"
 #include "pthread.h"
+#include "transformer_func.h"
 #include "input.h"
 #include "log.h"
 
@@ -125,7 +132,8 @@ TEST_P(DocumentTests, ReadFromBufferTest)
 
         Input(&ifs_input) |
           Importer(parameters, parser_manager) |
-          PlainTextExporter(output_stream);
+          PlainTextExporter() |
+          Output(output_stream);
 
         std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
             std::istreambuf_iterator<char>{}};
@@ -413,10 +421,10 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
         std::string parsed_text{ simple_extractor.getPlainText() };
         FAIL() << "We are not supporting password protected files yet. Why didn\'t we catch exception?\n";
     }
-    catch (Exception& ex)
+    catch (const std::exception& ex)
     {
         std::string test_text {
-            "Error processing file " + file_name + ".\n" + ex.getBacktrace()
+            "Error processing file " + file_name + ".\n" + ex.what()
         };
         std::replace(test_text.begin(), test_text.end(), '\\', '/');
         
@@ -597,7 +605,42 @@ TEST(HtmlWriter, RestoreAttributes)
 	std::ifstream in("1.html");
 	Input(&in)
 		| Importer(ParserParameters(), parser_manager)
-		| HtmlExporter(output, HtmlExporter::RestoreOriginalAttributes{true});
+		| HtmlExporter(HtmlExporter::RestoreOriginalAttributes{true})
+		| Output(output);
 
 	EXPECT_EQ(read_test_file("1.html.restore_attributes.out.html"), output.str());
+}
+
+TEST(Http, Post)
+{
+	std::shared_ptr<ParserManager> parser_manager(new ParserManager());
+	std::stringstream output;
+	std::ifstream in("1.docx", std::ios_base::binary);
+	ASSERT_NO_THROW(
+	{
+		Input(&in)
+			| Importer(ParserParameters(), parser_manager)
+			| PlainTextExporter()
+			| http::Post("https://postman-echo.com/post")
+			| Output(output);
+	});
+
+	using namespace boost::json;
+	value output_val = parse(output.str());
+	output_val.as_object()["headers"].as_object().erase("x-amzn-trace-id");
+	output_val.as_object()["headers"].as_object().erase("user-agent");
+
+	EXPECT_EQ(read_test_file("http_post.out.json"), serialize(output_val));
+}
+
+namespace test_ns
+{
+DOCWIRE_EXCEPTION_DEFINE(TestError1, RuntimeError);
+DOCWIRE_EXCEPTION_DEFINE(TestError2, LogicError);
+}
+
+TEST(Exceptions, DefiningCreatingAndNested)
+{
+	std::string what_msg = test_ns::TestError1("msg1", test_ns::TestError2("msg2")).what();
+	EXPECT_EQ(what_msg, "msg1 with nested test_ns::TestError2 msg2");
 }

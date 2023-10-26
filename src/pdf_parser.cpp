@@ -8281,11 +8281,11 @@ struct PDFParser::Implementation
 			docwire_log(error) << e;
 			if (e.GetCode() == PoDoFo::PdfErrorCode::NotCompiled || e.GetCode() == PoDoFo::PdfErrorCode::InternalLogic)
 			{
-				throw EncryptedFileException("File is encrypted");
+				throw EncryptedFileException("File is encrypted", e);
 			}
 			else
 			{
-				throw Exception(e.what());
+				throw RuntimeError("Pdf parsing failed", e);
 			}
 		}
     pthread_mutex_unlock(&load_document_mutex);

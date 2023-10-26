@@ -34,6 +34,7 @@
 #ifndef DOCWIRE_IWORK_PARSER_H
 #define DOCWIRE_IWORK_PARSER_H
 
+#include "exception.h"
 #include <string>
 #include <vector>
 
@@ -59,6 +60,9 @@ class IWorkParser
 		bool isIWork();
 		std::string plainText(const FormattingStyle& formatting);
 		Metadata metaData();
+
+	DOCWIRE_EXCEPTION_DEFINE(UnzipError, RuntimeError);
+	DOCWIRE_EXCEPTION_DEFINE(ParsingError, RuntimeError);
 };
 
 #endif

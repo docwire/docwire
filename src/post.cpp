@@ -31,101 +31,106 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SIMPLE_EXTRACTOR_H
-#define DOCWIRE_SIMPLE_EXTRACTOR_H
+#include "post.h"
 
+#include <curlpp/cURLpp.hpp>
+#include <curlpp/Easy.hpp>
+#include <curlpp/Options.hpp>
+#include "exception.h"
+#include <fstream>
+#include "log.h"
 #include "parser.h"
+#include <sstream>
+#include "version.h"
 
 namespace docwire
 {
-
-class ChainElement;
-
-/**
- * @brief The SimpleExtractor class provides basic functionality for extracting text from a document.
- * @code
- * SimpleExtractor extractor("test.docx");
- * std::string plain_text = extractor.getPlainText(); // get the plain text from the document
- * std::string html = extractor.getHtmlText(); // get the text as a html from the document
- * std::string metadata = extractor.getMetadata(); // get the metadata as a plain text from the document
- * @endcode
- */
-class DllExport SimpleExtractor
+namespace http
 {
-public:
-  /**
-   * @param file_name name of the file to parse
-   */
-  explicit SimpleExtractor(const std::string &file_name, const std::string &plugins_path = "");
 
-  /**
-   * @param input_stream input stream to parse
-   */
-  SimpleExtractor(std::istream &input_stream, const std::string &plugins_path = "");
-
-  ~SimpleExtractor();
-
-  /**
-   * @brief Extracts the text from the file.
-   * @return parsed file as plain text
-   */
-  std::string getPlainText() const;
-
-  /**
-   * @brief Extracts the data from the file and converts it to the html format.
-   * @return parsed file ashtml text
-   */
-  std::string getHtmlText() const;
-
-  void parseAsPlainText(std::ostream &out_stream) const;
-
-  void parseAsHtml(std::ostream &out_stream) const;
-
-  void parseAsCsv(std::ostream &out_stream) const;
-
-  /**
-   * @brief Extracts the meta data from the file.
-   * @return parsed meta data as plain text
-   */
-  std::string getMetaData() const;
-
-  /**
-   * @brief Sets the formatting style.
-   * @param style
-   */
-  void setFormattingStyle(const FormattingStyle &style);
-
-  /**
-   * @brief Adds callback function to the extractor.
-   * @code
-   * extractor.addCallbackFunction(StandardFilter::filterByMailMaxCreationTime(creation_time));
-   * @brief
-   * @param filter
-   */
-  void addCallbackFunction(const NewNodeCallback& new_code_callback);
-
-  /**
-   * @brief Adds parser parameters.
-   * @param parameters
-   */
-  void addParameters(const ParserParameters &parameters);
-
-  /**
-   * @brief Adds transformer.
-   * @code
-   * extractor.addChainElement(new UpperTextTransformer());
-   * @endcode
-   * @param transformer as a raw pointer. The ownership is transferred to the extractor.
-   */
-  void addChainElement(ChainElement *chainElement);
-
-private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
+struct Post::Implementation
+{
+	std::string m_url;
+	std::string m_oauth2_bearer_token;
+	Implementation(const std::string& url, const std::string& oauth2_bearer_token)
+		: m_url(url), m_oauth2_bearer_token(oauth2_bearer_token)
+	{}
 };
 
+Post::Post(const std::string& url, const std::string& oauth2_bearer_token)
+	: impl(new Implementation{url, oauth2_bearer_token})
+{
+}
 
+Post::Post(const Post &other)
+	: impl(new Implementation(*other.impl))
+{
+	docwire_log_func();
+}
+
+Post::~Post()
+{
+}
+
+void
+Post::process(Info &info) const
+{
+	if (info.tag_name != StandardTag::TAG_FILE)
+	{
+		emit(info);
+		return;
+	}
+	docwire_log(debug) << "TAG_FILE received";
+	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
+	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
+	if(!path && !stream)
+		throw FileTagIncorrect("No path or stream in TAG_FILE");
+	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
+
+	curlpp::Easy request;
+	request.setOpt<curlpp::options::Url>(impl->m_url);
+	request.setOpt(curlpp::options::UserAgent(std::string("DocWire SDK/") + VERSION));
+	request.setOpt(new curlpp::options::CustomRequest("POST"));
+	request.setOpt(curlpp::options::ReadFunction([in_stream](char* buf, size_t size, size_t nitems) -> size_t
+	{
+		docwire_log_func_with_args(size, nitems);
+		in_stream->read(buf, static_cast<std::streamsize>(size * nitems));
+		return in_stream->gcount();
+	}));
+	request.setOpt<curlpp::options::Encoding>("gzip");
+	request.setOpt(curlpp::options::Upload(true));
+	request.setOpt<curlpp::options::HttpHeader>({"Content-Type: application/json"});
+	if (!impl->m_oauth2_bearer_token.empty())
+	{
+		request.setOpt<curlpp::options::HttpAuth>(CURLAUTH_BEARER);
+		typedef curlpp::OptionTrait<std::string, CURLOPT_XOAUTH2_BEARER> XOAuth2Bearer;
+		request.setOpt(XOAuth2Bearer(impl->m_oauth2_bearer_token));
+	}
+	std::stringstream response_stream;
+	curlpp::options::WriteStream ws(&response_stream);
+	request.setOpt(ws);
+	try
+	{
+		request.perform();
+	}
+	catch (curlpp::LogicError &e)
+	{
+		throw RequestIncorrect("Incorrect HTTP request", e);
+    }
+	catch (curlpp::RuntimeError &e)
+	{
+		throw RequestFailed("HTTP request failed", e);
+	}
+	Info new_info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&response_stream}, {"name", ""}});
+	emit(new_info);
+	if (path)
+		delete in_stream;
+}
+
+Post* Post::clone() const
+{
+	return new Post(*this);
+}
+
+} // namespace http
 } // namespace docwire
-
-
-#endif //DOCWIRE_SIMPLE_EXTRACTOR_H

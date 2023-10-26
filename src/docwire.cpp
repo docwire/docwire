@@ -33,20 +33,23 @@
 
 #include <boost/program_options.hpp>
 #include <memory>
-#include <any>
-#include <iostream>
 #include <fstream>
+#include "chat.h"
+#include "csv_exporter.h"
 #include "decompress_archives.h"
 #include "exception.h"
-#include "exporter.h"
 #include "formatting_style.h"
+#include "html_exporter.h"
 #include "importer.h"
 #include "log.h"
 #include <magic_enum_iostream.hpp>
+#include "meta_data_exporter.h"
+#include "output.h"
+#include "plain_text_exporter.h"
+#include "post.h"
 #include "standard_filter.h"
 #include "transformer_func.h"
 #include "version.h"
-#include "chain_element.h"
 #include "parsing_chain.h"
 #include "input.h"
 
@@ -134,6 +137,9 @@ int main(int argc, char* argv[])
 		("verbose", "enable verbose logging")
 		("input-file", po::value<std::string>()->required(), "path to file to process")
 		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
+		("http-post", po::value<std::string>(), "url to process exported data via http post")
+		("openai-chat", po::value<std::string>(), "prompt to process exported data via OpenAI")
+		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
 		("language", po::value<Language>()->default_value(Language::eng), "set document language for OCR")
 		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
 		("min_creation_time", po::value<unsigned int>(), "filter emails by min creation time")
@@ -221,28 +227,44 @@ int main(int argc, char* argv[])
 		chain = chain | TransformerFunc(StandardFilter::filterByAttachmentType({vm["attachment_extension"].as<std::string>()}));
 	}
 
-  try
-  {
 	switch (vm["output_type"].as<OutputType>())
 	{
 		case OutputType::plain_text:
-			chain | PlainTextExporter(std::cout);
+			chain | PlainTextExporter();
 			break;
 		case OutputType::html:
-			chain | HtmlExporter(std::cout);
+			chain | HtmlExporter();
 			break;
 		case OutputType::csv:
-			chain | docwire::experimental::CsvExporter(std::cout);
+			chain | experimental::CsvExporter();
 			break;
 		case OutputType::metadata:
-			chain | MetaDataExporter(std::cout);
+			chain | MetaDataExporter();
 			break;
 	}
-  }
-  catch (Exception& ex)
+
+	if (vm.count("http-post"))
+	{
+		chain = chain | http::Post(vm["http-post"].as<std::string>());
+	}
+
+	if (vm.count("openai-chat"))
+	{
+		chain = chain | openai::Chat(vm["openai-chat"].as<std::string>(), vm["openai-key"].as<std::string>());
+	}
+
+	try
+	{
+		chain | Output(std::cout);
+	}
+catch (Exception& ex)
   {
       std::cout << "Error processing file " + file_name + ".\n" + ex.getBacktrace();
   }
+	catch (const std::exception& e)
+	{
+		std::cout << "Error processing file " + file_name + ".\n" + e.what() << std::endl;
+	}
   catch (...)
   {
     std::cout << "Error processing file " + file_name + ". Unknown error.\n";

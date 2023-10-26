@@ -3,6 +3,7 @@ set(CMAKE_INSTALL_RPATH .)
 
 add_library(docwire_core SHARED
         attachment.cpp
+        chat.cpp
         exception.cpp
         decompress_archives.cpp
         list_style.cpp
@@ -17,13 +18,18 @@ add_library(docwire_core SHARED
         parser.cpp
         parser_manager.cpp
         parser_parameters.cpp
+        post.cpp
         html_writer.cpp
         csv_writer.cpp
         plain_text_writer.cpp
         standard_filter.cpp
         simple_extractor.cpp
         importer.cpp
-        exporter.cpp
+        output.cpp
+        plain_text_exporter.cpp
+        html_exporter.cpp
+        csv_exporter.cpp
+        meta_data_exporter.cpp
         transformer_func.cpp
         meta_data_writer.cpp
         chain_element.cpp
@@ -37,6 +43,9 @@ find_path(boost_signals2_inc boost/signals2.hpp HINT ${Boost_INCLUDE_DIRS} REQUI
 
 find_package(magic_enum CONFIG REQUIRED)
 target_link_libraries(docwire_core PRIVATE magic_enum::magic_enum)
+
+find_package(unofficial-curlpp CONFIG REQUIRED)
+target_link_libraries(docwire_core PRIVATE unofficial::curlpp::curlpp)
 
 if(MSVC)
     add_definitions(-DMSVC_BUILD)
@@ -271,6 +280,7 @@ if(MSVC)
 endif()
 
 set(PUBLIC_HEADERS
+	chat.h
 	metadata.h
 	formatting_style.h
 	decompress_archives.h
@@ -281,6 +291,7 @@ set(PUBLIC_HEADERS
 	parser_manager.h
 	parser_builder.h
 	parser_parameters.h
+	post.h
 	basic_parser_provider.h
 	parser_provider.h
 	standard_filter.h
@@ -289,7 +300,11 @@ set(PUBLIC_HEADERS
 	html_writer.h
 	csv_writer.h
 	importer.h
-	exporter.h
+	output.h
+	plain_text_exporter.h
+	html_exporter.h
+	csv_exporter.h
+	meta_data_exporter.h
 	transformer_func.h
 	parsing_chain.h
 	simple_extractor.h

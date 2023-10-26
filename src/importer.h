@@ -38,6 +38,7 @@
 #include <memory>
 
 #include "chain_element.h"
+#include "exception.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include "parser_manager.h"
@@ -92,6 +93,11 @@ public:
    * @param parameters parser parameters
    */
   void add_parameters(const ParserParameters &parameters);
+
+  DOCWIRE_EXCEPTION_DEFINE(FileNotReadable, RuntimeError);
+  DOCWIRE_EXCEPTION_DEFINE(FileNotFound, RuntimeError);
+  DOCWIRE_EXCEPTION_DEFINE(ParsingFailed, RuntimeError);
+  DOCWIRE_EXCEPTION_DEFINE(UnknownFormat, RuntimeError);
 
 protected:
   /**

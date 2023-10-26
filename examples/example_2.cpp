@@ -5,7 +5,8 @@
 
 #include "input.h"
 #include "importer.h"
-#include "exporter.h"
+#include "output.h"
+#include "plain_text_exporter.h"
 
 /**
  * @example example_2.cpp
@@ -15,7 +16,8 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
   auto chain = Importer()
-             | PlainTextExporter(std::cout);  // create a chain of steps to parse a file
+             | PlainTextExporter()
+             | Output(std::cout);  // create a chain of steps to parse a file
   for (int i = 1; i < argc; ++i)
   {
     std::cout << "Parsing file " << argv[i] << std::endl;

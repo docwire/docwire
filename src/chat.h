@@ -31,101 +31,51 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SIMPLE_EXTRACTOR_H
-#define DOCWIRE_SIMPLE_EXTRACTOR_H
+#ifndef DOCWIRE_OPENAI_CHAT_H
+#define DOCWIRE_OPENAI_CHAT_H
 
-#include "parser.h"
+#include "chain_element.h"
+#include "exception.h"
 
 namespace docwire
 {
+namespace openai
+{
 
-class ChainElement;
-
-/**
- * @brief The SimpleExtractor class provides basic functionality for extracting text from a document.
- * @code
- * SimpleExtractor extractor("test.docx");
- * std::string plain_text = extractor.getPlainText(); // get the plain text from the document
- * std::string html = extractor.getHtmlText(); // get the text as a html from the document
- * std::string metadata = extractor.getMetadata(); // get the metadata as a plain text from the document
- * @endcode
- */
-class DllExport SimpleExtractor
+class DllExport Chat : public ChainElement
 {
 public:
-  /**
-   * @param file_name name of the file to parse
-   */
-  explicit SimpleExtractor(const std::string &file_name, const std::string &plugins_path = "");
+	Chat(const std::string& prompt, const std::string& api_key);
+	Chat(const Chat& other);
+	virtual ~Chat();
 
-  /**
-   * @param input_stream input stream to parse
-   */
-  SimpleExtractor(std::istream &input_stream, const std::string &plugins_path = "");
+	/**
+	* @brief Executes transform operation for given node data.
+	* @see docwire::Info
+	* @param info
+	*/
+	void process(Info &info) const;
 
-  ~SimpleExtractor();
+	bool is_leaf() const override
+	{
+		return false;
+	}
 
-  /**
-   * @brief Extracts the text from the file.
-   * @return parsed file as plain text
-   */
-  std::string getPlainText() const;
+	/**
+	* @brief Creates clone of the Chat
+	* @return new Chat
+	*/
+	Chat* clone() const override;
 
-  /**
-   * @brief Extracts the data from the file and converts it to the html format.
-   * @return parsed file ashtml text
-   */
-  std::string getHtmlText() const;
-
-  void parseAsPlainText(std::ostream &out_stream) const;
-
-  void parseAsHtml(std::ostream &out_stream) const;
-
-  void parseAsCsv(std::ostream &out_stream) const;
-
-  /**
-   * @brief Extracts the meta data from the file.
-   * @return parsed meta data as plain text
-   */
-  std::string getMetaData() const;
-
-  /**
-   * @brief Sets the formatting style.
-   * @param style
-   */
-  void setFormattingStyle(const FormattingStyle &style);
-
-  /**
-   * @brief Adds callback function to the extractor.
-   * @code
-   * extractor.addCallbackFunction(StandardFilter::filterByMailMaxCreationTime(creation_time));
-   * @brief
-   * @param filter
-   */
-  void addCallbackFunction(const NewNodeCallback& new_code_callback);
-
-  /**
-   * @brief Adds parser parameters.
-   * @param parameters
-   */
-  void addParameters(const ParserParameters &parameters);
-
-  /**
-   * @brief Adds transformer.
-   * @code
-   * extractor.addChainElement(new UpperTextTransformer());
-   * @endcode
-   * @param transformer as a raw pointer. The ownership is transferred to the extractor.
-   */
-  void addChainElement(ChainElement *chainElement);
+	DOCWIRE_EXCEPTION_DEFINE(HttpError, RuntimeError);
+	DOCWIRE_EXCEPTION_DEFINE(ParseResponseError, RuntimeError);
 
 private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
+	struct Implementation;
+	std::unique_ptr<Implementation> impl;
 };
 
-
+} // namespace openai
 } // namespace docwire
 
-
-#endif //DOCWIRE_SIMPLE_EXTRACTOR_H
+#endif //DOCWIRE_OPENAI_CHAT_H

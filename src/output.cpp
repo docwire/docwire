@@ -31,101 +31,68 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SIMPLE_EXTRACTOR_H
-#define DOCWIRE_SIMPLE_EXTRACTOR_H
+#include "output.h"
 
-#include "parser.h"
+#include "exception.h"
+#include <fstream>
 
 namespace docwire
 {
 
-class ChainElement;
-
-/**
- * @brief The SimpleExtractor class provides basic functionality for extracting text from a document.
- * @code
- * SimpleExtractor extractor("test.docx");
- * std::string plain_text = extractor.getPlainText(); // get the plain text from the document
- * std::string html = extractor.getHtmlText(); // get the text as a html from the document
- * std::string metadata = extractor.getMetadata(); // get the metadata as a plain text from the document
- * @endcode
- */
-class DllExport SimpleExtractor
+class Output::Implementation
 {
 public:
-  /**
-   * @param file_name name of the file to parse
-   */
-  explicit SimpleExtractor(const std::string &file_name, const std::string &plugins_path = "");
 
-  /**
-   * @param input_stream input stream to parse
-   */
-  SimpleExtractor(std::istream &input_stream, const std::string &plugins_path = "");
+  Implementation(std::ostream &out_stream)
+    : m_out_stream(&out_stream)
+  {}
 
-  ~SimpleExtractor();
+  Implementation(const Implementation &other)
+    : m_out_stream(other.m_out_stream)
+  {}
 
-  /**
-   * @brief Extracts the text from the file.
-   * @return parsed file as plain text
-   */
-  std::string getPlainText() const;
+  Implementation(const Implementation &&other)
+    : m_out_stream(other.m_out_stream)
+  {}
 
-  /**
-   * @brief Extracts the data from the file and converts it to the html format.
-   * @return parsed file ashtml text
-   */
-  std::string getHtmlText() const;
-
-  void parseAsPlainText(std::ostream &out_stream) const;
-
-  void parseAsHtml(std::ostream &out_stream) const;
-
-  void parseAsCsv(std::ostream &out_stream) const;
-
-  /**
-   * @brief Extracts the meta data from the file.
-   * @return parsed meta data as plain text
-   */
-  std::string getMetaData() const;
-
-  /**
-   * @brief Sets the formatting style.
-   * @param style
-   */
-  void setFormattingStyle(const FormattingStyle &style);
-
-  /**
-   * @brief Adds callback function to the extractor.
-   * @code
-   * extractor.addCallbackFunction(StandardFilter::filterByMailMaxCreationTime(creation_time));
-   * @brief
-   * @param filter
-   */
-  void addCallbackFunction(const NewNodeCallback& new_code_callback);
-
-  /**
-   * @brief Adds parser parameters.
-   * @param parameters
-   */
-  void addParameters(const ParserParameters &parameters);
-
-  /**
-   * @brief Adds transformer.
-   * @code
-   * extractor.addChainElement(new UpperTextTransformer());
-   * @endcode
-   * @param transformer as a raw pointer. The ownership is transferred to the extractor.
-   */
-  void addChainElement(ChainElement *chainElement);
-
-private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
+  std::ostream* m_out_stream;
 };
 
+Output::Output(std::ostream &out_stream)
+{
+  impl = std::unique_ptr<Implementation>{new Implementation{out_stream}};
+}
+
+Output::Output(std::ostream&& out_stream)
+{
+  impl = std::unique_ptr<Implementation>{new Implementation{out_stream}};
+}
+
+Output::Output(const Output &other)
+  : impl(new Implementation(*other.impl))
+{}
+
+Output::Output(const Output &&other)
+  : impl(new Implementation(*other.impl))
+{}
+
+Output::~Output()
+{
+}
+
+void
+Output::process(Info &info) const
+{
+	if (info.tag_name != StandardTag::TAG_FILE)
+		throw Exception("Only TAG_FILE tags are supported by Output chain element");
+	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
+	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
+	if(!path && !stream)
+		throw Exception("No path or stream in TAG_FILE");
+	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
+	*impl->m_out_stream << in_stream->rdbuf();
+	if (path)
+		delete in_stream;
+}
 
 } // namespace docwire
-
-
-#endif //DOCWIRE_SIMPLE_EXTRACTOR_H

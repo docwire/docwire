@@ -31,101 +31,124 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SIMPLE_EXTRACTOR_H
-#define DOCWIRE_SIMPLE_EXTRACTOR_H
+#include "chat.h"
 
-#include "parser.h"
+#include <boost/json.hpp>
+#include <fstream>
+#include "input.h"
+#include "log.h"
+#include "output.h"
+#include "post.h"
+#include <sstream>
 
 namespace docwire
 {
-
-class ChainElement;
-
-/**
- * @brief The SimpleExtractor class provides basic functionality for extracting text from a document.
- * @code
- * SimpleExtractor extractor("test.docx");
- * std::string plain_text = extractor.getPlainText(); // get the plain text from the document
- * std::string html = extractor.getHtmlText(); // get the text as a html from the document
- * std::string metadata = extractor.getMetadata(); // get the metadata as a plain text from the document
- * @endcode
- */
-class DllExport SimpleExtractor
+namespace openai
 {
-public:
-  /**
-   * @param file_name name of the file to parse
-   */
-  explicit SimpleExtractor(const std::string &file_name, const std::string &plugins_path = "");
 
-  /**
-   * @param input_stream input stream to parse
-   */
-  SimpleExtractor(std::istream &input_stream, const std::string &plugins_path = "");
-
-  ~SimpleExtractor();
-
-  /**
-   * @brief Extracts the text from the file.
-   * @return parsed file as plain text
-   */
-  std::string getPlainText() const;
-
-  /**
-   * @brief Extracts the data from the file and converts it to the html format.
-   * @return parsed file ashtml text
-   */
-  std::string getHtmlText() const;
-
-  void parseAsPlainText(std::ostream &out_stream) const;
-
-  void parseAsHtml(std::ostream &out_stream) const;
-
-  void parseAsCsv(std::ostream &out_stream) const;
-
-  /**
-   * @brief Extracts the meta data from the file.
-   * @return parsed meta data as plain text
-   */
-  std::string getMetaData() const;
-
-  /**
-   * @brief Sets the formatting style.
-   * @param style
-   */
-  void setFormattingStyle(const FormattingStyle &style);
-
-  /**
-   * @brief Adds callback function to the extractor.
-   * @code
-   * extractor.addCallbackFunction(StandardFilter::filterByMailMaxCreationTime(creation_time));
-   * @brief
-   * @param filter
-   */
-  void addCallbackFunction(const NewNodeCallback& new_code_callback);
-
-  /**
-   * @brief Adds parser parameters.
-   * @param parameters
-   */
-  void addParameters(const ParserParameters &parameters);
-
-  /**
-   * @brief Adds transformer.
-   * @code
-   * extractor.addChainElement(new UpperTextTransformer());
-   * @endcode
-   * @param transformer as a raw pointer. The ownership is transferred to the extractor.
-   */
-  void addChainElement(ChainElement *chainElement);
-
-private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
+struct Chat::Implementation
+{
+	std::string m_prompt;
+	std::string m_api_key;
+	Implementation(const std::string& prompt, const std::string& api_key)
+		: m_prompt(prompt), m_api_key(api_key)
+	{}
 };
 
+Chat::Chat(const std::string& prompt, const std::string& api_key)
+	: impl(new Implementation{prompt, api_key})
+{
+	docwire_log_func_with_args(prompt);
+}
 
+Chat::Chat(const Chat& other)
+	: impl(new Implementation(*other.impl))
+{
+	docwire_log_func();
+}
+
+Chat::~Chat()
+{
+}
+
+namespace
+{
+
+std::string prepare_query(const std::string& prompt, const std::string& data)
+{
+	docwire_log_func_with_args(prompt, data);
+	boost::json::object query
+	{
+		{ "model", "gpt-3.5-turbo" },
+		{ "messages", boost::json::array
+			{
+				boost::json::object {{ "role", "user" }, {"content", prompt + '\n' + data}}
+			}
+		},
+		{ "temperature", 0.7 }
+	};
+	return boost::json::serialize(query);
+}
+
+std::string post_request(const std::string& query, const std::string& api_key)
+{
+	docwire_log_func_with_args(query);
+	std::stringstream query_stream { query };
+	std::stringstream response_stream;
+	try
+	{
+		Input(&query_stream) | http::Post("https://api.openai.com/v1/chat/completions", api_key) | Output(response_stream);
+	}
+	catch (const http::Post::RequestFailed& e)
+	{
+		throw Chat::HttpError("Http POST failed: " + query, e);
+	}
+	return response_stream.str();
+}
+
+std::string parse_response(const std::string& response)
+{
+	docwire_log_func_with_args(response);
+	try
+	{
+		boost::json::value response_val = boost::json::parse(response);
+		return response_val.as_object()["choices"].as_array()[0].as_object()["message"].as_object()["content"].as_string().c_str();
+	}
+	catch (const std::exception& e)
+	{
+		throw Chat::ParseResponseError("Error parsing response: " + response, e);
+	}
+}
+
+} // anonymous namespace
+
+void Chat::process(Info &info) const
+{
+	docwire_log_func();
+	if (info.tag_name != StandardTag::TAG_FILE)
+	{
+		emit(info);
+		return;
+	}
+	docwire_log(debug) << "TAG_FILE received";
+	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
+	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
+	if(!path && !stream)
+		throw LogicError("No path or stream in TAG_FILE");
+	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
+	std::stringstream data_stream;
+	data_stream << in_stream->rdbuf();
+	if (path)
+		delete in_stream;
+	std::stringstream content_stream { parse_response(post_request(prepare_query(impl->m_prompt, data_stream.str()), impl->m_api_key)) + '\n' };
+	Info new_info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&content_stream}, {"name", ""}});
+	emit(new_info);
+}
+
+Chat* Chat::clone() const
+{
+	return new Chat(*this);
+}
+
+} // namespace http
 } // namespace docwire
-
-
-#endif //DOCWIRE_SIMPLE_EXTRACTOR_H

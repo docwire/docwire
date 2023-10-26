@@ -123,12 +123,12 @@ public:
         }
         else
         {
-          throw Exception("file " + file_path + " is not readable");
+          throw FileNotReadable("file " + file_path + " is not readable");
         }
       }
       else
       {
-        throw Exception("file " + file_path + "  doesn't exist");
+        throw FileNotFound("file " + file_path + "  doesn't exist");
       }
     }
     else if(input_stream)
@@ -150,9 +150,9 @@ public:
         }
         catch (EncryptedFileException &ex)
         {
-          throw ex;
+          throw ParsingFailed("Parsing failed, file is encrypted", ex);
         }
-        catch (Exception &ex)
+        catch (const std::exception& ex)
         {
           docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
           std::vector<char> buffer;
@@ -160,8 +160,7 @@ public:
           auto second_builder = m_parser_manager->findParserByData(buffer);
           if (!second_builder)
           {
-            ex.appendError("Error parsing file: " + file_path  + ". Tried different parsers, but file could not be recognized as another format. File may be corrupted or encrypted");
-            throw ex;
+            throw ParsingFailed("Error parsing file: " + file_path  + ". Tried different parsers, but file could not be recognized as another format. File may be corrupted or encrypted", ex);
           }
           std::shared_ptr<ParserBuilder>(*second_builder)
                   ->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
@@ -177,7 +176,7 @@ public:
     }
     else
     {
-      throw Exception("File format was not recognized.");
+      throw UnknownFormat("File format was not recognized.");
     }
     Info end_doc(StandardTag::TAG_CLOSE_DOCUMENT);
     m_owner.emit(end_doc);

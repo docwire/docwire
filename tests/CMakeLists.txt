@@ -9,6 +9,10 @@ if(MSVC)
     target_link_libraries(api_tests PRIVATE PThreads4W::PThreads4W)
 endif()
 
+find_package(Boost REQUIRED COMPONENTS json)
+target_link_libraries(api_tests PRIVATE Boost::json)
+target_include_directories(api_tests PRIVATE ${Boost_INCLUDE_DIRS})
+
 file(GLOB test_files *)
 list(FILTER test_files EXCLUDE REGEX ".*\\.cpp$")
 file(COPY ${test_files} DESTINATION .)

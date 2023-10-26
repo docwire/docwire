@@ -3,7 +3,8 @@
 
 #include "input.h"
 #include "importer.h"
-#include "exporter.h"
+#include "output.h"
+#include "plain_text_exporter.h"
 
 int main(int argc, char* argv[])
 {
@@ -12,7 +13,8 @@ int main(int argc, char* argv[])
     using namespace docwire;
     Input(argv[1]) |
       Importer() |
-      PlainTextExporter(std::cout); // parse file and print to standard output
+      PlainTextExporter() |
+      Output(std::cout); // parse file and print to standard output
   }
   return 0;
 }

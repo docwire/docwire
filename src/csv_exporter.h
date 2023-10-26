@@ -31,156 +31,46 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#include "importer.h"
-#include "html_writer.h"
-#include "csv_writer.h"
-#include "plain_text_writer.h"
-#include "meta_data_writer.h"
-#include "exporter.h"
+#ifndef DOCWIRE_CSV_EXPORTER_H
+#define DOCWIRE_CSV_EXPORTER_H
+
+#include "chain_element.h"
 
 namespace docwire
 {
 
-class Exporter::Implementation
-{
-public:
-  Implementation(std::unique_ptr<Writer> writer)
-    : _output(nullptr),
-      _writer(std::move(writer))
-  {}
-
-  Implementation(std::unique_ptr<Writer> writer, std::ostream &out_stream)
-    : _output(&out_stream),
-      _writer(std::move(writer))
-  {}
-
-  Implementation(const Implementation &other)
-    : _output(other._output),
-      _writer(other._writer->clone())
-  {}
-
-  Implementation(const Implementation &&other)
-    : _output(other._output),
-      _writer(other._writer->clone())
-  {}
-
-  std::unique_ptr<Writer> _writer;
-  std::ostream *_output;
-
-  bool is_valid() const
-  {
-    return _output != nullptr;
-  }
-
-  void
-  set_out_stream(std::ostream &out_stream)
-  {
-    _output = &out_stream;
-  }
-
-  void export_to(Info &info) const
-  {
-    _writer->write_to(info, *_output);
-  }
-
-  std::ostream &
-  get_output() const
-  {
-    return *_output;
-  }
-};
-
-Exporter::Exporter(std::unique_ptr<Writer> writer)
-{
-  impl = std::unique_ptr<Implementation>{new Implementation{std::move(writer)}};
-}
-
-Exporter::Exporter(std::unique_ptr<Writer> writer, std::ostream &out_stream)
-{
-  impl = std::unique_ptr<Implementation>{new Implementation{std::move(writer), out_stream}};
-}
-
-Exporter::Exporter(const Exporter &other)
-  : impl(new Implementation(*other.impl))
-{}
-
-Exporter::Exporter(const Exporter &&other)
-  : impl(new Implementation(*other.impl))
-{}
-
-Exporter::~Exporter()
-{
-}
-
-bool
-Exporter::is_valid() const
-{
-  return impl->is_valid();
-}
-
-void
-Exporter::process(Info &info) const
-{
-  impl->export_to(info);
-}
-
-void
-Exporter::set_out_stream(std::ostream &out_stream)
-{
-  impl->set_out_stream(out_stream);
-}
-
-void
-Exporter::export_to(Info &info) const
-{
-  impl->export_to(info);
-}
-
-std::ostream &
-Exporter::get_output() const
-{
-  return impl->get_output();
-}
-
-HtmlExporter::HtmlExporter(RestoreOriginalAttributes restore_original_attributes)
-  : Exporter(std::make_unique<HtmlWriter>(static_cast<HtmlWriter::RestoreOriginalAttributes>(restore_original_attributes)))
-{}
-
-HtmlExporter::HtmlExporter(std::ostream &out_stream, RestoreOriginalAttributes restore_original_attributes)
-: Exporter(std::make_unique<HtmlWriter>(static_cast<HtmlWriter::RestoreOriginalAttributes>(restore_original_attributes)), out_stream)
-{}
-
-PlainTextExporter::PlainTextExporter()
-  : Exporter(std::make_unique<PlainTextWriter>())
-{}
-
-PlainTextExporter::PlainTextExporter(std::ostream &out_stream)
-: Exporter(std::make_unique<PlainTextWriter>(), out_stream)
-{}
-
-PlainTextExporter::PlainTextExporter(std::ostream &&out_stream)
-: Exporter(std::make_unique<PlainTextWriter>(), out_stream)
-{}
-
 namespace experimental
 {
 
-CsvExporter::CsvExporter()
-  : Exporter(std::make_unique<CsvWriter>())
-{}
+/**
+ * @brief Exports data to CSV format.
+ */
+class DllExport CsvExporter: public ChainElement
+{
+public:
+	CsvExporter();
+	CsvExporter(const CsvExporter& other);
 
-CsvExporter::CsvExporter(std::ostream &out_stream)
-: Exporter(std::make_unique<CsvWriter>(), out_stream)
-{}
+  CsvExporter* clone() const override
+  {
+    return new CsvExporter(*this);
+  }
+
+  void process(Info& info) const override;
+
+	bool is_leaf() const override
+	{
+		return false;
+	}
+
+private:
+	struct Implementation;
+	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
+	std::unique_ptr<Implementation, ImplementationDeleter> impl;
+};
 
 } // namespace experimental
 
-MetaDataExporter::MetaDataExporter()
-  : Exporter(std::make_unique<MetaDataWriter>())
-{}
-
-MetaDataExporter::MetaDataExporter(std::ostream &out_stream)
-: Exporter(std::make_unique<MetaDataWriter>(), out_stream)
-{}
-
 } // namespace docwire
+
+#endif //DOCWIRE_CSV_EXPORTER_H
