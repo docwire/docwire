@@ -84,7 +84,7 @@ Post::process(Info &info) const
 	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
 	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
 	if(!path && !stream)
-		throw LogicError("No path or stream in TAG_FILE");
+		throw FileTagIncorrect("No path or stream in TAG_FILE");
 	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
 
 	curlpp::Easy request;
@@ -115,11 +115,11 @@ Post::process(Info &info) const
 	}
 	catch (curlpp::LogicError &e)
 	{
-		throw LogicError("Incorrect HTTP request", e);
+		throw RequestIncorrect("Incorrect HTTP request", e);
     }
 	catch (curlpp::RuntimeError &e)
 	{
-		throw RuntimeError("HTTP request failed", e);
+		throw RequestFailed("HTTP request failed", e);
 	}
 	Info new_info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&response_stream}, {"name", ""}});
 	emit(new_info);

@@ -94,12 +94,10 @@ public:
    */
   void add_parameters(const ParserParameters &parameters);
 
-	class RuntimeError : public docwire::RuntimeError
-	{
-	public:
-		RuntimeError(const std::string& message) : docwire::RuntimeError(message) {}
-		RuntimeError(const std::string& message, const std::exception& nested) : docwire::RuntimeError(message, nested) {}
-	};
+  DOCWIRE_EXCEPTION_DEFINE(FileNotReadable, RuntimeError);
+  DOCWIRE_EXCEPTION_DEFINE(FileNotFound, RuntimeError);
+  DOCWIRE_EXCEPTION_DEFINE(ParsingFailed, RuntimeError);
+  DOCWIRE_EXCEPTION_DEFINE(UnknownFormat, RuntimeError);
 
 protected:
   /**

@@ -75,20 +75,6 @@ private:
 	std::unique_ptr<Implementation> impl;
 };
 
-/*class LogicError : public docwire::LogicError
-{
-public:
-	LogicError(const std::string& message) : docwire::LogicError(message) {}
-	LogicError(const std::string& message, const std::exception& nested) : docwire::LogicError(message, nested) {}
-};
-
-class RuntimeError : public docwire::RuntimeError
-{
-public:
-	RuntimeError(const std::string& message) : docwire::RuntimeError(message) {}
-	RuntimeError(const std::string& message, const std::exception& nested) : docwire::RuntimeError(message, nested) {}
-};*/
-
 } // namespace openai
 } // namespace docwire
 

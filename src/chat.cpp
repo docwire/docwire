@@ -99,7 +99,7 @@ std::string post_request(const std::string& query, const std::string& api_key)
 	{
 		Input(&query_stream) | http::Post("https://api.openai.com/v1/chat/completions", api_key) | Output(response_stream);
 	}
-	catch (const http::RuntimeError& e)
+	catch (const http::Post::RequestFailed& e)
 	{
 		throw Chat::HttpError("Http POST failed: " + query, e);
 	}

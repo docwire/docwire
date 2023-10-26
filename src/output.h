@@ -79,13 +79,6 @@ public:
 
   void process(Info &info) const override;
 
-	class RuntimeError : public docwire::RuntimeError
-	{
-	public:
-		RuntimeError(const std::string& message) : docwire::RuntimeError(message) {}
-		RuntimeError(const std::string& message, const std::exception& nested) : docwire::RuntimeError(message, nested) {}
-	};
-
 private:
   class Implementation;
   std::unique_ptr<Implementation> impl;

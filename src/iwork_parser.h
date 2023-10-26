@@ -60,13 +60,9 @@ class IWorkParser
 		bool isIWork();
 		std::string plainText(const FormattingStyle& formatting);
 		Metadata metaData();
-		
-	class RuntimeError : public docwire::RuntimeError
-	{
-	public:
-		RuntimeError(const std::string& message) : docwire::RuntimeError(message) {}
-		RuntimeError(const std::string& message, const std::exception& nested) : docwire::RuntimeError(message, nested) {}
-	};
+
+	DOCWIRE_EXCEPTION_DEFINE(UnzipError, RuntimeError);
+	DOCWIRE_EXCEPTION_DEFINE(ParsingError, RuntimeError);
 };
 
 #endif
