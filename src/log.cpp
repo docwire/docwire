@@ -46,7 +46,7 @@
 namespace docwire
 {
 
-static severity_level log_verbosity = info;
+static std::atomic<severity_level> log_verbosity = info;
 
 void set_log_verbosity(severity_level severity)
 {
@@ -58,9 +58,9 @@ bool log_verbosity_includes(severity_level severity)
 	return severity >= log_verbosity;
 }
 
-static std::ostream* log_stream = &std::clog;
+static std::atomic<std::ostream*> log_stream = &std::clog;
 
-static bool first_log_in_stream = true;
+static std::atomic<bool> first_log_in_stream = true;
 
 void set_log_stream(std::ostream* stream)
 {
