@@ -34,7 +34,6 @@
 #include <boost/program_options.hpp>
 #include <memory>
 #include <fstream>
-#include "chat.h"
 #include "csv_exporter.h"
 #include "decompress_archives.h"
 #include "exception.h"
@@ -49,6 +48,7 @@
 #include "post.h"
 #include "standard_filter.h"
 #include "transformer_func.h"
+#include "translate_to.h"
 #include "version.h"
 #include "parsing_chain.h"
 #include "input.h"
@@ -139,6 +139,7 @@ int main(int argc, char* argv[])
 		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
 		("http-post", po::value<std::string>(), "url to process exported data via http post")
 		("openai-chat", po::value<std::string>(), "prompt to process exported data via OpenAI")
+		("openai-translate-to", po::value<std::string>(), "language to translate exported data to via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
 		("language", po::value<Language>()->default_value(Language::eng), "set document language for OCR")
 		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
@@ -251,6 +252,11 @@ int main(int argc, char* argv[])
 	if (vm.count("openai-chat"))
 	{
 		chain = chain | openai::Chat(vm["openai-chat"].as<std::string>(), vm["openai-key"].as<std::string>());
+	}
+
+	if (vm.count("openai-translate-to"))
+	{
+		chain = chain | openai::TranslateTo(vm["openai-translate-to"].as<std::string>(), vm["openai-key"].as<std::string>());
 	}
 
 	try
