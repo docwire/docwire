@@ -7180,7 +7180,12 @@ struct PDFParser::Implementation
 
 	double to_long(const PoDoFo::PdfObject* object, long def_val)
 	{
-		return object == nullptr ? def_val : object->GetNumber();
+		if (object == nullptr)
+			return def_val;
+		else if (object->IsNumber())
+			return object->GetNumber();
+		else
+			return def_val;
 	}
 
 	const PoDoFo::PdfDictionary* to_dictionary(const PoDoFo::PdfObject* object)
