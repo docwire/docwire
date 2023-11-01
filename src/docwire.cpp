@@ -47,6 +47,7 @@
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "standard_filter.h"
+#include "summarize.h"
 #include "transformer_func.h"
 #include "translate_to.h"
 #include "version.h"
@@ -139,6 +140,7 @@ int main(int argc, char* argv[])
 		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
 		("http-post", po::value<std::string>(), "url to process exported data via http post")
 		("openai-chat", po::value<std::string>(), "prompt to process exported data via OpenAI")
+		("openai-summarize", "summarize exported data via OpenAI")
 		("openai-translate-to", po::value<std::string>(), "language to translate exported data to via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
 		("language", po::value<Language>()->default_value(Language::eng), "set document language for OCR")
@@ -252,6 +254,11 @@ int main(int argc, char* argv[])
 	if (vm.count("openai-chat"))
 	{
 		chain = chain | openai::Chat(vm["openai-chat"].as<std::string>(), vm["openai-key"].as<std::string>());
+	}
+
+	if (vm.count("openai-summarize"))
+	{
+		chain = chain | openai::Summarize(vm["openai-key"].as<std::string>());
 	}
 
 	if (vm.count("openai-translate-to"))

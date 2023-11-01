@@ -4,6 +4,7 @@ set(CMAKE_INSTALL_RPATH .)
 add_library(docwire_core SHARED
         attachment.cpp
         chat.cpp
+        summarize.cpp
         translate_to.cpp
         exception.cpp
         decompress_archives.cpp
@@ -282,6 +283,7 @@ endif()
 
 set(PUBLIC_HEADERS
 	chat.h
+	summarize.h
 	translate_to.h
 	metadata.h
 	formatting_style.h
