@@ -204,10 +204,9 @@ int main(int argc, char* argv[])
 	if (use_stream)
 		in_stream.open(file_name, std::ios_base::binary);
 
-	ParsingChain chain = 
-		use_stream ?
-			(Input(&in_stream) | DecompressArchives() | Importer(parameters, parser_manager)) :
-			(Input(file_name) | DecompressArchives() | Importer(parameters, parser_manager));
+	InputBase input = use_stream ? InputBase(&in_stream) : InputBase(file_name);
+
+	ParsingChain chain = input | DecompressArchives() | Importer(parameters, parser_manager);
 
 	if (vm.count("max_nodes_number"))
 	{
