@@ -122,9 +122,17 @@ log_record_stream::~log_record_stream()
 	*log_stream << boost::json::serialize(m_impl->root);
 }
 
+log_record_stream& log_record_stream::operator<<(std::nullptr_t)
+{
+	m_impl->insert_simple_value(nullptr);
+}
+
 log_record_stream& log_record_stream::operator<<(const char* msg)
 {
-	m_impl->insert_simple_value(msg);
+	if (msg)
+		m_impl->insert_simple_value(msg);
+	else
+		*this << nullptr;
 	return *this;
 }
 

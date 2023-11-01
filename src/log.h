@@ -81,6 +81,7 @@ class DllExport log_record_stream
 public:
 	log_record_stream(severity_level severity, source_location location);
 	~log_record_stream();
+	log_record_stream& operator<<(std::nullptr_t);
 	log_record_stream& operator<<(const char* msg);
 	log_record_stream& operator<<(std::int64_t val);
 	log_record_stream& operator<<(std::uint64_t val);
