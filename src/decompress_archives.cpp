@@ -231,6 +231,7 @@ DecompressArchives::process(Info &info) const
 	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
 	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
 	std::optional<std::string> name = info.getAttributeValue<std::string>("name");
+	docwire_log_vars(path, name);
 	if(!path && !stream)
 		throw Exception("No path or stream in TAG_FILE");
 	auto is_supported = [](const std::string& fn)

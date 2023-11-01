@@ -200,6 +200,7 @@ int main(int argc, char* argv[])
 	parameters += ParserParameters("formatting_style", formatting_style);
 	parameters += ParserParameters("language", vm["language"].as<Language>());
 
+	docwire_log_vars(use_stream, file_name);
 	std::ifstream in_stream;
 	if (use_stream)
 		in_stream.open(file_name, std::ios_base::binary);

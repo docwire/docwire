@@ -7052,6 +7052,7 @@ struct PDFParser::Implementation
 
   PDFContent::FontsByNames parseFonts(const PoDoFo::PdfPage& page)
   {
+    docwire_log_func();
     PDFContent::FontsByNames fonts_for_page;
     const PoDoFo::PdfDictionary* res_dictionary = to_dictionary(&page.GetResources()->GetObject());
     if (!res_dictionary)
@@ -7063,9 +7064,11 @@ struct PDFParser::Implementation
       for (auto k = fonts_dictionary->begin(); k != fonts_dictionary->end(); k++)
       {
         PoDoFo::PdfName font_code = k->first.GetString();
+        docwire_log_var(font_code);
         const PoDoFo::PdfDictionary* font_dictionary = to_dictionary(&k->second);
         if (font_dictionary)
         {
+          docwire_log(debug) << "Font dictionary available";
           PDFContent::Font* font = NULL;
           bool is_new_font = false;
           //make sure we wont create the same instance of Font twice.
@@ -7074,6 +7077,7 @@ struct PDFParser::Implementation
             const PoDoFo::PdfReference& font_dictionary_ref = fonts_dictionary->GetKey(font_code)->GetReference();
             if (fonts_dictionary->HasKey(font_code))
             {
+              docwire_log(debug) << "Font dictionary contains font code";
               auto index = fonts_dictionary->GetKey(font_code)->GetReference().ObjectNumber();
               if (m_pdf_content.m_fonts_by_indexes.find(index) == m_pdf_content.m_fonts_by_indexes.end())
               {
@@ -7089,6 +7093,7 @@ struct PDFParser::Implementation
             }
             else
             {
+              docwire_log(debug) << "Font dictionary does not contain font code";
               is_new_font = true;
               font = new PDFContent::Font;
               font->m_font_dictionary = font_dictionary;
@@ -7180,6 +7185,7 @@ struct PDFParser::Implementation
 
 	double to_long(const PoDoFo::PdfObject* object, long def_val)
 	{
+		docwire_log_func_with_args(object, def_val);
 		if (object == nullptr)
 			return def_val;
 		else if (object->IsNumber())
@@ -7190,6 +7196,7 @@ struct PDFParser::Implementation
 
 	const PoDoFo::PdfDictionary* to_dictionary(const PoDoFo::PdfObject* object)
 	{
+		docwire_log_func_with_args(object);
 		if (object == nullptr)
 			return nullptr;
 		else if (object->IsReference())
@@ -7227,6 +7234,7 @@ struct PDFParser::Implementation
 
 	void getFontInfo(PDFContent::Font& font)
 	{
+		docwire_log_func();
 		font.m_font_type = to_string(font.m_font_dictionary->GetKey("Subtype"), "Type1");
 
 		if (font.m_font_type != "TrueType" && font.m_font_type != "Type0" && font.m_font_type != "Type3" && font.m_font_type != "Type1" && font.m_font_type != "MMType1")
@@ -7332,6 +7340,7 @@ struct PDFParser::Implementation
 
 	void getFontEncoding(PDFContent::Font& font)
 	{
+		docwire_log_func();
 		if (font.m_font_dictionary->HasKey("ToUnicode"))
 		{
 			std::vector<char> buf = to_buffer(font.m_font_dictionary->GetKey("ToUnicode"));
