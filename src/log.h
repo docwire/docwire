@@ -140,6 +140,15 @@ public:
 		return *this;
 	}
 
+	template<typename T> log_record_stream& operator<<(const std::optional<T>& optional)
+	{
+		if (optional)
+			*this << begin_complex() << docwire_log_streamable_type_of(optional) << std::make_pair("value", std::cref(*optional)) << end_complex();
+		else
+			*this << nullptr;
+		return *this;
+	}
+
 private:
 	struct implementation;
 	std::unique_ptr<implementation> m_impl;
