@@ -124,7 +124,8 @@ log_record_stream::~log_record_stream()
 
 log_record_stream& log_record_stream::operator<<(std::nullptr_t)
 {
-	m_impl->insert_simple_value(nullptr);
+	boost::json::value new_v;
+	m_impl->insert_simple_value(new_v);
 }
 
 log_record_stream& log_record_stream::operator<<(const char* msg)
