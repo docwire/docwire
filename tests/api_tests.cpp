@@ -687,6 +687,7 @@ TEST(Logging, Dereferenceable)
 	log_text += "\n]\n";
 	boost::algorithm::erase_all(log_text, "__cdecl ");
 	boost::algorithm::erase_all(log_text, "__1::");
+	boost::algorithm::erase_all(log_text, "virtual ");
 
 	ASSERT_EQ(read_test_file("logging_dereferenceable.out.json"), log_text);
 }
