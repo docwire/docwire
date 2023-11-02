@@ -656,7 +656,6 @@ TEST(Logging, Dereferenceable)
 	static_assert(!is_dereferenceable<std::list<int>>::value);
 	static_assert(is_dereferenceable<std::optional<int>>::value);
 	static_assert(is_dereferenceable<std::unique_ptr<int>>::value);
-	static_assert(is_dereferenceable<std::optional<std::__cxx11::basic_string<char> >>::value);
 
 	std::stringstream log_stream;
 	set_log_stream(&log_stream);
