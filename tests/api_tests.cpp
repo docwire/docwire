@@ -684,6 +684,7 @@ TEST(Logging, Dereferenceable)
 		log_text += serialize(log_val.as_array()[i]);
 	}
 	log_text += "\n]\n";
+	boost::algorithm::erase_all(log_text, "__cdecl ");
 
 	ASSERT_EQ(read_test_file("logging_dereferenceable.out.json"), log_text);
 }
