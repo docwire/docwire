@@ -1,0 +1,8 @@
+[
+{"timestamp":"<timestamp>","severity":"debug","file":"api_tests.cpp","line":"<line>","function":"virtual void Logging_Dereferenceable_Test::TestBody()","thread_id":"<thread_id>","log":{"typeid":"std::optional<int>","dereferenced":1}},
+{"timestamp":"<timestamp>","severity":"debug","file":"api_tests.cpp","line":"<line>","function":"virtual void Logging_Dereferenceable_Test::TestBody()","thread_id":"<thread_id>","log":null},
+{"timestamp":"<timestamp>","severity":"debug","file":"api_tests.cpp","line":"<line>","function":"virtual void Logging_Dereferenceable_Test::TestBody()","thread_id":"<thread_id>","log":{"typeid":"std::unique_ptr<int, std::default_delete<int> >","dereferenced":1}},
+{"timestamp":"<timestamp>","severity":"debug","file":"api_tests.cpp","line":"<line>","function":"virtual void Logging_Dereferenceable_Test::TestBody()","thread_id":"<thread_id>","log":null},
+{"timestamp":"<timestamp>","severity":"debug","file":"api_tests.cpp","line":"<line>","function":"virtual void Logging_Dereferenceable_Test::TestBody()","thread_id":"<thread_id>","log":{"typeid":"std::shared_ptr<int>","dereferenced":1}},
+{"timestamp":"<timestamp>","severity":"debug","file":"api_tests.cpp","line":"<line>","function":"virtual void Logging_Dereferenceable_Test::TestBody()","thread_id":"<thread_id>","log":null}
+]
