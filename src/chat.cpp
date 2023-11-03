@@ -50,13 +50,11 @@ struct Chat::Implementation
 {
 	std::string m_prompt;
 	std::string m_api_key;
-	Implementation(const std::string& prompt, const std::string& api_key)
-		: m_prompt(prompt), m_api_key(api_key)
-	{}
+	float m_temperature;
 };
 
-Chat::Chat(const std::string& prompt, const std::string& api_key)
-	: impl(new Implementation{prompt, api_key})
+Chat::Chat(const std::string& prompt, const std::string& api_key, float temperature)
+	: impl(new Implementation{prompt, api_key, temperature})
 {
 	docwire_log_func_with_args(prompt);
 }
@@ -74,7 +72,7 @@ Chat::~Chat()
 namespace
 {
 
-std::string prepare_query(const std::string& prompt, const std::string& data)
+std::string prepare_query(const std::string& prompt, const std::string& data, float temperature)
 {
 	docwire_log_func_with_args(prompt, data);
 	boost::json::object query
@@ -85,7 +83,7 @@ std::string prepare_query(const std::string& prompt, const std::string& data)
 				boost::json::object {{ "role", "user" }, {"content", prompt + '\n' + data}}
 			}
 		},
-		{ "temperature", 0.7 }
+		{ "temperature", temperature }
 	};
 	return boost::json::serialize(query);
 }
@@ -140,7 +138,7 @@ void Chat::process(Info &info) const
 	data_stream << in_stream->rdbuf();
 	if (path)
 		delete in_stream;
-	std::stringstream content_stream { parse_response(post_request(prepare_query(impl->m_prompt, data_stream.str()), impl->m_api_key)) + '\n' };
+	std::stringstream content_stream { parse_response(post_request(prepare_query(impl->m_prompt, data_stream.str(), impl->m_temperature), impl->m_api_key)) + '\n' };
 	Info new_info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&content_stream}, {"name", ""}});
 	emit(new_info);
 }

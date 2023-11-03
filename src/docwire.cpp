@@ -143,6 +143,7 @@ int main(int argc, char* argv[])
 		("openai-summarize", "summarize exported data via OpenAI")
 		("openai-translate-to", po::value<std::string>(), "language to translate exported data to via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
+		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
 		("language", po::value<Language>()->default_value(Language::eng), "set document language for OCR")
 		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
 		("min_creation_time", po::value<unsigned int>(), "filter emails by min creation time")
@@ -253,17 +254,31 @@ int main(int argc, char* argv[])
 
 	if (vm.count("openai-chat"))
 	{
-		chain = chain | openai::Chat(vm["openai-chat"].as<std::string>(), vm["openai-key"].as<std::string>());
+		std::string prompt = vm["openai-chat"].as<std::string>();
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Chat chat = vm.count("openai-temperature") ?
+			openai::Chat(prompt, api_key, vm["openai-temperature"].as<float>()) :
+			openai::Chat(prompt, api_key);
+		chain = chain | chat;
 	}
 
 	if (vm.count("openai-summarize"))
 	{
-		chain = chain | openai::Summarize(vm["openai-key"].as<std::string>());
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Summarize summarize = vm.count("openai-temperature") ?
+			openai::Summarize(api_key, vm["openai-temperature"].as<float>()) :
+			openai::Summarize(api_key);
+		chain = chain | summarize;
 	}
 
 	if (vm.count("openai-translate-to"))
 	{
-		chain = chain | openai::TranslateTo(vm["openai-translate-to"].as<std::string>(), vm["openai-key"].as<std::string>());
+		std::string language = vm["openai-translate-to"].as<std::string>();
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::TranslateTo translate_to = vm.count("openai-temperature") ?
+			openai::TranslateTo(language, api_key, vm["openai-temperature"].as<float>()) :
+			openai::TranslateTo(language, api_key);
+		chain = chain | translate_to;
 	}
 
 	try

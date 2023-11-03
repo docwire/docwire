@@ -40,8 +40,8 @@ namespace docwire
 namespace openai
 {
 
-Summarize::Summarize(const std::string& api_key)
-	: Chat("Please summarize the following text.", api_key)
+Summarize::Summarize(const std::string& api_key, float temperature)
+	: Chat("Please summarize the following text.", api_key, temperature)
 {
 	docwire_log_func();
 }

@@ -45,7 +45,7 @@ namespace openai
 class DllExport TranslateTo : public Chat
 {
 public:
-	TranslateTo(const std::string& language, const std::string& api_key);
+	TranslateTo(const std::string& language, const std::string& api_key, float temperature = 0);
 	TranslateTo(const TranslateTo& other);
 	virtual ~TranslateTo();
 

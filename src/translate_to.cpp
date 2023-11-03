@@ -40,8 +40,8 @@ namespace docwire
 namespace openai
 {
 
-TranslateTo::TranslateTo(const std::string& language, const std::string& api_key)
-	: Chat("Please translate the following text to " + language + " language.", api_key)
+TranslateTo::TranslateTo(const std::string& language, const std::string& api_key, float temperature)
+	: Chat("Please translate the following text to " + language + " language.", api_key, temperature)
 {
 	docwire_log_func_with_args(language);
 }

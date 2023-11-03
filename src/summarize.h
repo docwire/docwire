@@ -45,7 +45,7 @@ namespace openai
 class DllExport Summarize : public Chat
 {
 public:
-	Summarize(const std::string& api_key);
+	Summarize(const std::string& api_key, float temperature = 0);
 	Summarize(const Summarize& other);
 	virtual ~Summarize();
 
