@@ -37,6 +37,7 @@
 #include "csv_exporter.h"
 #include "decompress_archives.h"
 #include "exception.h"
+#include "extract_entities.h"
 #include "formatting_style.h"
 #include "html_exporter.h"
 #include "importer.h"
@@ -140,6 +141,7 @@ int main(int argc, char* argv[])
 		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
 		("http-post", po::value<std::string>(), "url to process exported data via http post")
 		("openai-chat", po::value<std::string>(), "prompt to process exported data via OpenAI")
+		("openai-extract-entities", "extract entities from exported data via OpenAI")
 		("openai-summarize", "summarize exported data via OpenAI")
 		("openai-translate-to", po::value<std::string>(), "language to translate exported data to via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
@@ -260,6 +262,15 @@ int main(int argc, char* argv[])
 			openai::Chat(prompt, api_key, vm["openai-temperature"].as<float>()) :
 			openai::Chat(prompt, api_key);
 		chain = chain | chat;
+	}
+
+	if (vm.count("openai-extract-entities"))
+	{
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::ExtractEntities extract_entities = vm.count("openai-temperature") ?
+			openai::ExtractEntities(api_key, vm["openai-temperature"].as<float>()) :
+			openai::ExtractEntities(api_key);
+		chain = chain | extract_entities;
 	}
 
 	if (vm.count("openai-summarize"))
