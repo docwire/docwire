@@ -41,7 +41,7 @@ namespace openai
 {
 
 Summarize::Summarize(const std::string& api_key, float temperature)
-	: Chat("Please summarize the following text.", api_key, temperature)
+	: Chat("Your task is to summarize every message", api_key, temperature)
 {
 	docwire_log_func();
 }

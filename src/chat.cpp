@@ -48,15 +48,15 @@ namespace openai
 
 struct Chat::Implementation
 {
-	std::string m_prompt;
+	std::string m_system_message;
 	std::string m_api_key;
 	float m_temperature;
 };
 
-Chat::Chat(const std::string& prompt, const std::string& api_key, float temperature)
-	: impl(new Implementation{prompt, api_key, temperature})
+Chat::Chat(const std::string& system_message, const std::string& api_key, float temperature)
+	: impl(new Implementation{system_message, api_key, temperature})
 {
-	docwire_log_func_with_args(prompt);
+	docwire_log_func_with_args(system_message, temperature);
 }
 
 Chat::Chat(const Chat& other)
@@ -72,15 +72,16 @@ Chat::~Chat()
 namespace
 {
 
-std::string prepare_query(const std::string& prompt, const std::string& data, float temperature)
+std::string prepare_query(const std::string& system_msg, const std::string& user_msg, float temperature)
 {
-	docwire_log_func_with_args(prompt, data);
+	docwire_log_func_with_args(system_msg, user_msg);
 	boost::json::object query
 	{
 		{ "model", "gpt-3.5-turbo" },
 		{ "messages", boost::json::array
 			{
-				boost::json::object {{ "role", "user" }, {"content", prompt + '\n' + data}}
+				boost::json::object {{ "role", "system" }, {"content", system_msg}},
+				boost::json::object {{ "role", "user" }, {"content", user_msg}}
 			}
 		},
 		{ "temperature", temperature }
@@ -138,7 +139,7 @@ void Chat::process(Info &info) const
 	data_stream << in_stream->rdbuf();
 	if (path)
 		delete in_stream;
-	std::stringstream content_stream { parse_response(post_request(prepare_query(impl->m_prompt, data_stream.str(), impl->m_temperature), impl->m_api_key)) + '\n' };
+	std::stringstream content_stream { parse_response(post_request(prepare_query(impl->m_system_message, data_stream.str(), impl->m_temperature), impl->m_api_key)) + '\n' };
 	Info new_info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&content_stream}, {"name", ""}});
 	emit(new_info);
 }

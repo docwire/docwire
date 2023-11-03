@@ -41,7 +41,7 @@ namespace openai
 {
 
 TranslateTo::TranslateTo(const std::string& language, const std::string& api_key, float temperature)
-	: Chat("Please translate the following text to " + language + " language.", api_key, temperature)
+	: Chat("Your task is to translate every message to " + language + " language.", api_key, temperature)
 {
 	docwire_log_func_with_args(language);
 }
