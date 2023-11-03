@@ -33,6 +33,7 @@
 
 #include "log.h"
 
+#include <boost/algorithm/string.hpp>
 #include <boost/core/demangle.hpp>
 #include <boost/json.hpp>
 #include <chrono>
@@ -93,6 +94,22 @@ struct log_record_stream::implementation
 	}
 };
 
+namespace
+{
+	std::string normalize_type_name(const std::string& type_name)
+	{
+		std::string normalized = type_name;
+		boost::algorithm::erase_all(normalized, "__cdecl ");
+		boost::algorithm::erase_all(normalized, "__1::");
+		boost::algorithm::erase_all(normalized, "virtual ");
+		boost::algorithm::erase_all(normalized, "class ");
+		boost::algorithm::erase_all(normalized, "struct ");
+		boost::algorithm::replace_all(normalized, "(void)", "()");
+		boost::algorithm::replace_all(normalized, ", ", ",");
+		return normalized;
+	}
+} // anonymous namespace
+
 log_record_stream::log_record_stream(severity_level severity, source_location location)
 	: m_impl(new implementation())
 {
@@ -111,7 +128,7 @@ log_record_stream::log_record_stream(severity_level severity, source_location lo
 		<< std::make_pair("severity", severity)
 		<< std::make_pair("file", std::filesystem::path(location.file_name).filename())
 		<< std::make_pair("line", location.line)
-		<< std::make_pair("function", location.function_name)
+		<< std::make_pair("function", normalize_type_name(location.function_name))
 		<< std::make_pair("thread_id", std::this_thread::get_id())
 		<< begin_pair{"log"};
 }
@@ -223,7 +240,7 @@ log_record_stream& log_record_stream::operator<<(const hex& h)
 
 log_record_stream& log_record_stream::operator<<(const std::type_index& t)
 {
-	*this << boost::core::demangle(t.name());
+	*this << normalize_type_name(boost::core::demangle(t.name()));
 	return *this;
 }
 

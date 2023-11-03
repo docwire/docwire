@@ -31,7 +31,6 @@
 /*  It is supplied in the hope that it will be useful.                                                                                             */
 /***************************************************************************************************************************************************/
 
-#include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include "gtest/gtest.h"
 #include "../src/exception.h"
@@ -685,12 +684,6 @@ TEST(Logging, Dereferenceable)
 		log_text += serialize(log_val.as_array()[i]);
 	}
 	log_text += "\n]\n";
-	boost::algorithm::erase_all(log_text, "__cdecl ");
-	boost::algorithm::erase_all(log_text, "__1::");
-	boost::algorithm::erase_all(log_text, "virtual ");
-	boost::algorithm::erase_all(log_text, "class ");
-	boost::algorithm::erase_all(log_text, "struct ");
-	boost::algorithm::replace_all(log_text, "::TestBody(void)", "::TestBody()");
 
 	ASSERT_EQ(read_test_file("logging_dereferenceable.out.json"), log_text);
 }
