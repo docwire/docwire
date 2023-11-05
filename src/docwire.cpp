@@ -34,6 +34,7 @@
 #include <boost/program_options.hpp>
 #include <memory>
 #include <fstream>
+#include "classify.h"
 #include "csv_exporter.h"
 #include "decompress_archives.h"
 #include "exception.h"
@@ -143,6 +144,7 @@ int main(int argc, char* argv[])
 		("openai-chat", po::value<std::string>(), "prompt to process exported data via OpenAI")
 		("openai-extract-entities", "extract entities from exported data via OpenAI")
 		("openai-summarize", "summarize exported data via OpenAI")
+		("openai-classify", po::value<std::vector<std::string>>()->multitoken(), "classify exported data via OpenAI to one of specified categories")
 		("openai-translate-to", po::value<std::string>(), "language to translate exported data to via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
@@ -280,6 +282,17 @@ int main(int argc, char* argv[])
 			openai::Summarize(api_key, vm["openai-temperature"].as<float>()) :
 			openai::Summarize(api_key);
 		chain = chain | summarize;
+	}
+
+	if (vm.count("openai-classify"))
+	{
+		const std::vector<std::string>& categories = vm["openai-classify"].as<std::vector<std::string>>();
+		std::set<std::string> categories_set(categories.begin(), categories.end());
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Classify classify = vm.count("openai-temperature") ?
+			openai::Classify(categories_set, api_key, vm["openai-temperature"].as<float>()) :
+			openai::Classify(categories_set, api_key);
+		chain = chain | classify;
 	}
 
 	if (vm.count("openai-translate-to"))
