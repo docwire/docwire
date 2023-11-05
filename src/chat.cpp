@@ -149,5 +149,5 @@ Chat* Chat::clone() const
 	return new Chat(*this);
 }
 
-} // namespace http
+} // namespace openai
 } // namespace docwire

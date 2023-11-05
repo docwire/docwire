@@ -61,5 +61,5 @@ Summarize* Summarize::clone() const
 	return new Summarize(*this);
 }
 
-} // namespace http
+} // namespace openai
 } // namespace docwire

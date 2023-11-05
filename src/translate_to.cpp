@@ -61,5 +61,5 @@ TranslateTo* TranslateTo::clone() const
 	return new TranslateTo(*this);
 }
 
-} // namespace http
+} // namespace openai
 } // namespace docwire

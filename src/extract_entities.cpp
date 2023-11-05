@@ -61,5 +61,5 @@ ExtractEntities* ExtractEntities::clone() const
 	return new ExtractEntities(*this);
 }
 
-} // namespace http
+} // namespace openai
 } // namespace docwire
