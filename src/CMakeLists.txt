@@ -8,6 +8,7 @@ add_library(docwire_core SHARED
         summarize.cpp
         translate_to.cpp
         classify.cpp
+        extract_keywords.cpp
         exception.cpp
         decompress_archives.cpp
         list_style.cpp
@@ -289,6 +290,7 @@ set(PUBLIC_HEADERS
 	summarize.h
 	translate_to.h
 	classify.h
+	extract_keywords.h
 	metadata.h
 	formatting_style.h
 	decompress_archives.h

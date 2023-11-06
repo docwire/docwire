@@ -39,6 +39,7 @@
 #include "decompress_archives.h"
 #include "exception.h"
 #include "extract_entities.h"
+#include "extract_keywords.h"
 #include "formatting_style.h"
 #include "html_exporter.h"
 #include "importer.h"
@@ -143,6 +144,7 @@ int main(int argc, char* argv[])
 		("http-post", po::value<std::string>(), "url to process exported data via http post")
 		("openai-chat", po::value<std::string>(), "prompt to process exported data via OpenAI")
 		("openai-extract-entities", "extract entities from exported data via OpenAI")
+		("openai-extract-keywords", po::value<unsigned int>(), "extract N keywords/key phrases from exported data via OpenAI")
 		("openai-summarize", "summarize exported data via OpenAI")
 		("openai-classify", po::value<std::vector<std::string>>()->multitoken(), "classify exported data via OpenAI to one of specified categories")
 		("openai-translate-to", po::value<std::string>(), "language to translate exported data to via OpenAI")
@@ -273,6 +275,16 @@ int main(int argc, char* argv[])
 			openai::ExtractEntities(api_key, vm["openai-temperature"].as<float>()) :
 			openai::ExtractEntities(api_key);
 		chain = chain | extract_entities;
+	}
+
+	if (vm.count("openai-extract-keywords"))
+	{
+		unsigned int max_keywords = vm["openai-extract-keywords"].as<unsigned int>();
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::ExtractKeywords extract_keywords = vm.count("openai-temperature") ?
+			openai::ExtractKeywords(max_keywords, api_key, vm["openai-temperature"].as<float>()) :
+			openai::ExtractKeywords(max_keywords, api_key);
+		chain = chain | extract_keywords;
 	}
 
 	if (vm.count("openai-summarize"))
