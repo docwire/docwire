@@ -41,17 +41,6 @@ namespace docwire
 namespace openai
 {
 
-namespace
-{
-	/*std::string join(const std::initializer_list<std::string_view>& string_list, std::string_view separator)
-	{
-		std::string result;
-		for (const std::string_view& s: string_list)
-			result += std::string(result.empty() ? "" : separator) + s.data();
-		return result;
-	}*/
-} // anonymous namespace
-
 Classify::Classify(const std::set<std::string>& categories, const std::string& api_key, float temperature)
 	: Chat("Your task is to classify every message to one of the following categories: " + boost::algorithm::join(categories, ", "),
 			api_key, temperature)
