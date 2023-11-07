@@ -32,6 +32,8 @@
 /***************************************************************************************************************************************************/
 
 #include "input.h"
+
+#include "log.h"
 #include "parser.h"
 
 using namespace docwire;
@@ -65,6 +67,8 @@ InputBase::operator|(ParsingChain &&parsingChain)
 void
 InputBase::process(ChainElement& chain_element) const
 {
+  docwire_log_func();
+  docwire_log_var(m_path);
   if (m_stream)
   {
     Info info(StandardTag::TAG_FILE, "", {{"stream", m_stream}});

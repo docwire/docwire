@@ -4,6 +4,13 @@ set(CMAKE_INSTALL_RPATH .)
 add_library(docwire_core SHARED
         attachment.cpp
         chat.cpp
+        extract_entities.cpp
+        summarize.cpp
+        translate_to.cpp
+        classify.cpp
+        extract_keywords.cpp
+        detect_sentiment.cpp
+        analyze_data.cpp
         exception.cpp
         decompress_archives.cpp
         list_style.cpp
@@ -281,6 +288,13 @@ endif()
 
 set(PUBLIC_HEADERS
 	chat.h
+	extract_entities.h
+	summarize.h
+	translate_to.h
+	classify.h
+	extract_keywords.h
+	detect_sentiment.h
+	analyze_data.h
 	metadata.h
 	formatting_style.h
 	decompress_archives.h

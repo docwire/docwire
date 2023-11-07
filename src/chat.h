@@ -45,7 +45,7 @@ namespace openai
 class DllExport Chat : public ChainElement
 {
 public:
-	Chat(const std::string& prompt, const std::string& api_key);
+	Chat(const std::string& system_message, const std::string& api_key, float temperature = 0.7);
 	Chat(const Chat& other);
 	virtual ~Chat();
 

@@ -644,3 +644,46 @@ TEST(Exceptions, DefiningCreatingAndNested)
 	std::string what_msg = test_ns::TestError1("msg1", test_ns::TestError2("msg2")).what();
 	EXPECT_EQ(what_msg, "msg1 with nested test_ns::TestError2 msg2");
 }
+
+TEST(Logging, Dereferenceable)
+{
+	static_assert(is_iterable<std::vector<int>>::value);
+	static_assert(is_iterable<std::list<int>>::value);
+	static_assert(!is_iterable<std::optional<int>>::value);
+	static_assert(!is_iterable<std::unique_ptr<int>>::value);
+
+	static_assert(!is_dereferenceable<std::vector<int>>::value);
+	static_assert(!is_dereferenceable<std::list<int>>::value);
+	static_assert(is_dereferenceable<std::optional<int>>::value);
+	static_assert(is_dereferenceable<std::unique_ptr<int>>::value);
+
+	std::stringstream log_stream;
+	set_log_stream(&log_stream);
+	set_log_verbosity(debug);
+
+	docwire_log(debug) << std::optional<int>(1);
+	docwire_log(debug) << std::optional<int>();
+	docwire_log(debug) << std::make_unique<int>(1);
+	docwire_log(debug) << std::unique_ptr<int>();
+	docwire_log(debug) << std::make_shared<int>(1);
+	docwire_log(debug) << std::shared_ptr<int>();
+
+	set_log_verbosity(info);
+	set_log_stream(&std::clog);
+
+	std::string log_text = "[\n";
+	using namespace boost::json;
+	value log_val = parse(log_stream.str() + "]");
+	for (int i = 0; i < log_val.as_array().size(); i++)
+	{
+		if (i > 0)
+			log_text += ",\n";
+		log_val.as_array()[i].as_object()["timestamp"] = "<timestamp>";
+		log_val.as_array()[i].as_object()["thread_id"] = "<thread_id>";
+		log_val.as_array()[i].as_object()["line"] = "<line>";
+		log_text += serialize(log_val.as_array()[i]);
+	}
+	log_text += "\n]\n";
+
+	ASSERT_EQ(read_test_file("logging_dereferenceable.out.json"), log_text);
+}

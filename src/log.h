@@ -76,11 +76,25 @@ struct DllExport end_array {};
 
 #define docwire_log_streamable_type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
 
+template <typename T, typename = void>
+struct is_iterable : std::false_type {};
+
+template <typename T>
+struct is_iterable<T, std::void_t<decltype(std::begin(std::declval<T>()), std::end(std::declval<T>()))>> : std::true_type {};
+
+template <typename T, typename = void>
+struct is_dereferenceable : std::false_type {};
+
+template <typename T>
+struct is_dereferenceable<T, std::void_t<decltype(*std::declval<T>()),
+                                         decltype(bool(!std::declval<T>()))>> : std::true_type {};
+
 class DllExport log_record_stream
 {
 public:
 	log_record_stream(severity_level severity, source_location location);
 	~log_record_stream();
+	log_record_stream& operator<<(std::nullptr_t);
 	log_record_stream& operator<<(const char* msg);
 	log_record_stream& operator<<(std::int64_t val);
 	log_record_stream& operator<<(std::uint64_t val);
@@ -114,7 +128,9 @@ public:
 	log_record_stream& operator<<(const std::exception& e);
 	log_record_stream& operator<<(const begin_array&);
 	log_record_stream& operator<<(const end_array&);
-	template<class T, typename = std::void_t<decltype(std::begin(std::declval<T>())), decltype(std::end(std::declval<T>()))> > log_record_stream& operator<<(const T& v)
+
+	template<class T, typename std::enable_if_t<is_iterable<T>::value, bool> = true>
+	log_record_stream& operator<<(const T& v)
 	{
 		*this << begin_array();
 		for (auto i: v)
@@ -130,10 +146,11 @@ public:
 		return *this;
 	}
 
-	template<typename T> log_record_stream& operator<<(const T* pointer)
+	template<typename T, typename std::enable_if_t<is_dereferenceable<T>::value, bool> = true>
+	log_record_stream& operator<<(const T& dereferenceable)
 	{
-		if (pointer)
-			*this << begin_complex() << docwire_log_streamable_type_of(pointer) << std::make_pair("dereferenced", std::cref(*pointer)) << end_complex();
+		if (dereferenceable)
+			*this << begin_complex() << docwire_log_streamable_type_of(dereferenceable) << std::make_pair("dereferenced", std::cref(*dereferenceable)) << end_complex();
 		else
 			*this << nullptr;
 		return *this;

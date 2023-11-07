@@ -34,10 +34,14 @@
 #include <boost/program_options.hpp>
 #include <memory>
 #include <fstream>
-#include "chat.h"
+#include "analyze_data.h"
+#include "classify.h"
 #include "csv_exporter.h"
 #include "decompress_archives.h"
+#include "detect_sentiment.h"
 #include "exception.h"
+#include "extract_entities.h"
+#include "extract_keywords.h"
 #include "formatting_style.h"
 #include "html_exporter.h"
 #include "importer.h"
@@ -48,7 +52,9 @@
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "standard_filter.h"
+#include "summarize.h"
 #include "transformer_func.h"
+#include "translate_to.h"
 #include "version.h"
 #include "parsing_chain.h"
 #include "input.h"
@@ -139,7 +145,15 @@ int main(int argc, char* argv[])
 		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
 		("http-post", po::value<std::string>(), "url to process exported data via http post")
 		("openai-chat", po::value<std::string>(), "prompt to process exported data via OpenAI")
+		("openai-extract-entities", "extract entities from exported data via OpenAI")
+		("openai-extract-keywords", po::value<unsigned int>(), "extract N keywords/key phrases from exported data via OpenAI")
+		("openai-summarize", "summarize exported data via OpenAI")
+		("openai-detect-sentiment", "detect sentiment of exported data via OpenAI")
+		("openai-analyze-data", "analyze exported data for inportant insights and generate conclusions via OpenAI")
+		("openai-classify", po::value<std::vector<std::string>>()->multitoken(), "classify exported data via OpenAI to one of specified categories")
+		("openai-translate-to", po::value<std::string>(), "language to translate exported data to via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
+		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
 		("language", po::value<Language>()->default_value(Language::eng), "set document language for OCR")
 		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
 		("min_creation_time", po::value<unsigned int>(), "filter emails by min creation time")
@@ -197,14 +211,14 @@ int main(int argc, char* argv[])
 	parameters += ParserParameters("formatting_style", formatting_style);
 	parameters += ParserParameters("language", vm["language"].as<Language>());
 
+	docwire_log_vars(use_stream, file_name);
 	std::ifstream in_stream;
 	if (use_stream)
 		in_stream.open(file_name, std::ios_base::binary);
 
-	ParsingChain chain = 
-		use_stream ?
-			(Input(&in_stream) | DecompressArchives() | Importer(parameters, parser_manager)) :
-			(Input(file_name) | DecompressArchives() | Importer(parameters, parser_manager));
+	InputBase input = use_stream ? InputBase(&in_stream) : InputBase(file_name);
+
+	ParsingChain chain = input | DecompressArchives() | Importer(parameters, parser_manager);
 
 	if (vm.count("max_nodes_number"))
 	{
@@ -250,7 +264,79 @@ int main(int argc, char* argv[])
 
 	if (vm.count("openai-chat"))
 	{
-		chain = chain | openai::Chat(vm["openai-chat"].as<std::string>(), vm["openai-key"].as<std::string>());
+		std::string prompt = vm["openai-chat"].as<std::string>();
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Chat chat = vm.count("openai-temperature") ?
+			openai::Chat(prompt, api_key, vm["openai-temperature"].as<float>()) :
+			openai::Chat(prompt, api_key);
+		chain = chain | chat;
+	}
+
+	if (vm.count("openai-extract-entities"))
+	{
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::ExtractEntities extract_entities = vm.count("openai-temperature") ?
+			openai::ExtractEntities(api_key, vm["openai-temperature"].as<float>()) :
+			openai::ExtractEntities(api_key);
+		chain = chain | extract_entities;
+	}
+
+	if (vm.count("openai-extract-keywords"))
+	{
+		unsigned int max_keywords = vm["openai-extract-keywords"].as<unsigned int>();
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::ExtractKeywords extract_keywords = vm.count("openai-temperature") ?
+			openai::ExtractKeywords(max_keywords, api_key, vm["openai-temperature"].as<float>()) :
+			openai::ExtractKeywords(max_keywords, api_key);
+		chain = chain | extract_keywords;
+	}
+
+	if (vm.count("openai-summarize"))
+	{
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Summarize summarize = vm.count("openai-temperature") ?
+			openai::Summarize(api_key, vm["openai-temperature"].as<float>()) :
+			openai::Summarize(api_key);
+		chain = chain | summarize;
+	}
+
+	if (vm.count("openai-detect-sentiment"))
+	{
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::DetectSentiment detect_sentiment = vm.count("openai-temperature") ?
+			openai::DetectSentiment(api_key, vm["openai-temperature"].as<float>()) :
+			openai::DetectSentiment(api_key);
+		chain = chain | detect_sentiment;
+	}
+
+	if (vm.count("openai-analyze-data"))
+	{
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::AnalyzeData analyze_data = vm.count("openai-temperature") ?
+			openai::AnalyzeData(api_key, vm["openai-temperature"].as<float>()) :
+			openai::AnalyzeData(api_key);
+		chain = chain | analyze_data;
+	}
+
+	if (vm.count("openai-classify"))
+	{
+		const std::vector<std::string>& categories = vm["openai-classify"].as<std::vector<std::string>>();
+		std::set<std::string> categories_set(categories.begin(), categories.end());
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Classify classify = vm.count("openai-temperature") ?
+			openai::Classify(categories_set, api_key, vm["openai-temperature"].as<float>()) :
+			openai::Classify(categories_set, api_key);
+		chain = chain | classify;
+	}
+
+	if (vm.count("openai-translate-to"))
+	{
+		std::string language = vm["openai-translate-to"].as<std::string>();
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::TranslateTo translate_to = vm.count("openai-temperature") ?
+			openai::TranslateTo(language, api_key, vm["openai-temperature"].as<float>()) :
+			openai::TranslateTo(language, api_key);
+		chain = chain | translate_to;
 	}
 
 	try
