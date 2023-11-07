@@ -47,7 +47,7 @@ Unreleased:
     * http::Post transformer added
     * LogicError and RuntimeError exception classes added that allows easy nesting and will replace Exception class
     * Initial integration with OpenAI API - openai::Chat transformer added
-    * openai::TranslateTo, openai::Summarize, openai::ExtractEntities, openai::Classify, openai::ExtractKeywords and openai::DetectSentiment transformers added
+    * openai::TranslateTo, openai::Summarize, openai::ExtractEntities, openai::Classify, openai::ExtractKeywords, openai::DetectSentiment and openai::AnalyzeData transformers added
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed

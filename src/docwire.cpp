@@ -34,6 +34,7 @@
 #include <boost/program_options.hpp>
 #include <memory>
 #include <fstream>
+#include "analyze_data.h"
 #include "classify.h"
 #include "csv_exporter.h"
 #include "decompress_archives.h"
@@ -148,6 +149,7 @@ int main(int argc, char* argv[])
 		("openai-extract-keywords", po::value<unsigned int>(), "extract N keywords/key phrases from exported data via OpenAI")
 		("openai-summarize", "summarize exported data via OpenAI")
 		("openai-detect-sentiment", "detect sentiment of exported data via OpenAI")
+		("openai-analyze-data", "analyze exported data for inportant insights and generate conclusions via OpenAI")
 		("openai-classify", po::value<std::vector<std::string>>()->multitoken(), "classify exported data via OpenAI to one of specified categories")
 		("openai-translate-to", po::value<std::string>(), "language to translate exported data to via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
@@ -305,6 +307,15 @@ int main(int argc, char* argv[])
 			openai::DetectSentiment(api_key, vm["openai-temperature"].as<float>()) :
 			openai::DetectSentiment(api_key);
 		chain = chain | detect_sentiment;
+	}
+
+	if (vm.count("openai-analyze-data"))
+	{
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::AnalyzeData analyze_data = vm.count("openai-temperature") ?
+			openai::AnalyzeData(api_key, vm["openai-temperature"].as<float>()) :
+			openai::AnalyzeData(api_key);
+		chain = chain | analyze_data;
 	}
 
 	if (vm.count("openai-classify"))
