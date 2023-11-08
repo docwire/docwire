@@ -28,14 +28,14 @@ finances, visual aid, e-commerce and many more
 Entering the artificial intelligence/neural networks area is planned to offer its advantages as part of the engine.
 
 ## Features
-- Able to extract/import and export text, images, formatting and metadata along with annotations
-- Data can be transformed between import and export (filtering, aggregating etc)
+- Able to extract/import and export text, images, formatting, and metadata along with annotations
+- Data can be transformed between import and export (filtering, aggregating, etc)
 - Equipped with multiple importers:
     - Microsoft Office new Office Open XML (OOXML): DOCX, XLSX, PPTX files
     - Microsoft Office old binary formats: DOC, XLS, XLSB, PPT files
     - OpenOffice/LibreOffice Open Document Format (ODF): ODT, ODS, ODP files
     - Portable Document Format: PDF files
-    - Webpages: HTML, HTM and CSS files
+    - Webpages: HTML, HTM, and CSS files
     - Rich Text Format: RTF files
     - Email formats with attachments: EML files, MS Outlook PST, OST files
     - Image formats: JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP with OCR capabilities
@@ -49,17 +49,27 @@ Entering the artificial intelligence/neural networks area is planned to offer it
     - Other unstructured text formats: MD, LOG files
     - DICOM (DCM) as an additional commercial plugin
 - Equipped with multiple exporters:
-    - Plain text
-    - HTML
-    - CSV
-    - XLSX and more are coming
-- Equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition
+    - Plain text: Easily extract and export text content.
+    - HTML: Export content in HTML format for web use.
+    - CSV: Export data to Comma-Separated Values format.
+    - XLSX and more are coming: Additional export formats for diverse use cases.
+- HTTP::Post transformer: Facilitate seamless communication with external HTTP APIs or services, enabling data exchange and integration with external systems.
+- Initial integration with OpenAI API, including transformers like:
+    - TranslateTo: Translate text to different languages.
+    - Summarize: Generate summarized content from longer texts.
+    - ExtractEntities: Extract entities and key information from text.
+    - Classify: Perform text classification and categorization.
+    - ExtractKeywords: Identify and extract keywords from text.
+    - DetectSentiment: Analyze and detect sentiment in text.
+    - AnalyzeData: Perform data analysis on text content.
+    - Chat: Conduct chat-based interactions and conversations.
+- Equipped with a high-grade, scriptable, and trainable OCR that has LSTM neural networks-based character recognition
 - Incremental parsing returning data as soon as they are available
-- Cross platform: Linux, Windows, MacOSX (and more is coming)
-- Can be embeded in your application (SDK)
+- Cross-platform: Linux, Windows, MacOSX, and more to come
+- Can be embedded in your application (SDK)
 - Can be integrated with other data mining and data analytics applications
-- Parsing process can be easily designed by connecting objects with pipe | operator into a chain
-- Parsing chain elements communication based on Boost Signals
+- Parsing process can be easily designed by connecting objects with the pipe `|` operator into a chain
+- Parsing chain elements communicate based on Boost Signals
 - Custom parsing chain elements can be added (importers, transformers, exporters)
 - Small binaries, fast native C++ code
 
