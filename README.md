@@ -54,7 +54,7 @@ Entering the artificial intelligence/neural networks area is planned to offer it
     - CSV: Export data to Comma-Separated Values format.
     - XLSX and more are coming: Additional export formats for diverse use cases.
 - HTTP::Post transformer: Facilitate seamless communication with external HTTP APIs or services, enabling data exchange and integration with external systems.
-- Initial integration with OpenAI API, including transformers like:
+- Integration with OpenAI API, including transformers like:
     - TranslateTo: Translate text to different languages.
     - Summarize: Generate summarized content from longer texts.
     - ExtractEntities: Extract entities and key information from text.
