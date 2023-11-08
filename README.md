@@ -1,6 +1,8 @@
 # DocWire SDK
 
-DocWire SDK (formerly known as DocToText) is a C++ data processing library with SourceForge Community Choice award and Microsoft for Startups support. Parses DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT), PST, OST and more. Contains embedded OCR engine and CLI utiity.
+DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Community Choice & Microsoft support. AI-driven processing. Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining, document analysis. Successor to DocToText library.
+
+Offline processing possible for security and confidentiality.
 
 ## Table Of Contents
 - [The Goal](#the-goal)
