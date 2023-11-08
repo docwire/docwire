@@ -13,18 +13,18 @@ DocWire SDK (formerly known as DocToText) is a C++ data processing library with 
 - [External links](#external-links)
 
 ## The Goal
-The goal of DocWire SDK is to create a modern C++ data processing framework/engine to drastically speed up data processing development.
-This set of programming libraries offers pre-made configurable components that can be joined together to create a processing
-pipechain performing text extraction, data conversion, data scraping, data mining etc including modern AI features.
 
-Project is focused on modern C++ dialects (currently C++17 is required, soon C++20) with their new features like ranges, concurrency, etc.
-but SDK provides also command line interface (CLI) that can be used in scripts.
-SDK is an open-source solution that programmers and IT companies feel safe and secure about.
+Welcome to the future of data processing with DocWire SDK, the natural successor to the renowned DocToText library! Our ongoing mission is to continuously empower developers and businesses by enhancing our modern C++ data processing framework, supercharging productivity, and simplifying development.
 
-Designing data processing in applications is hard. But if it includes processing documents in multiple formats (like PDF, DOC, XLS etc),
-extracting information from email boxes, databases or websites, it becomes a nightmare. In that nightmare the project specializes the most ;-)
-Pre-made components give the ability to significantly reduce development time, costs and risk for companies that specialize in cybersecurity,
-finances, visual aid, e-commerce and many more
+**For Developers:** If you're familiar with DocToText, you're in for a significant upgrade. We're committed to staying at the forefront of modern C++ dialects. With C++17 and soon C++20, we will continue to provide advanced features, including ranges and concurrency. Our toolkit will evolve to handle an even wider range of data processing tasks, including robust HTTP capabilities, comprehensive network APIs, and efficient web data extraction. We understand that today's developers require comprehensive solutions for text extraction, data conversion, data scraping, and data mining, all seamlessly integrated into their C++ applications.
+
+**For Businesses:** DocWire SDK is not just a successor; it's a leap forward. It remains your trusted solution for tackling complex data processing tasks. Our support for diverse document formats, like PDF, DOC, XLS, and more, will become even more comprehensive. We will further enhance our ability to extract valuable insights from email boxes, databases, websites, and leverage the latest AI features.
+
+Our goal for the future is to provide a truly versatile and comprehensive set of features that enable you to extract and transform text, images, formatting, and metadata more efficiently. We will continue to support various import formats and expand our export options. As we venture into full-fledged HTTP methods and network capabilities, we aim to empower you to integrate seamlessly with web services, extract online data, and perform robust data processing.
+
+We're not stopping at our current platforms; DocWire SDK will expand its cross-platform support to include other popular operating systems and can be seamlessly embedded into your application. 
+
+As we move forward, our focus remains on simplifying data processing, reducing development time and costs, and minimizing risks. Join us on this exciting journey, where innovation, practicality, and the power of AI continue to redefine data processing. Explore the limitless possibilities of DocWire SDK today and into the future, and experience the significant enhancements that set it apart from its predecessor, DocToText.
 
 ## Features
 - Able to extract/import and export text, images, formatting, and metadata along with annotations
