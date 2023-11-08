@@ -13,19 +13,18 @@ DocWire SDK (formerly known as DocToText) is a C++ data processing library with 
 - [External links](#external-links)
 
 ## The Goal
-The goal of this project is to create a data processing SDK/API/engine to drastically speed up data processing development.
-This programming library/framework offers pre-made configurable components that can be joined together to create a processing
-pipechain that extracts data from one place, transforms it according to configurable rules and loads it somewhere else.
-It can be used by programmers in any popular language like C++, C or Python or in scripts as command line interface (CLI).
-Pipechains can be also designed as text file templates (low-code/no-code solution).
-All of this is delivered as an open-source solution that programmers and IT companies feel safe and secure about.
+The goal of DocWire SDK is to create a modern C++ data processing framework/engine to drastically speed up data processing development.
+This set of programming libraries offers pre-made configurable components that can be joined together to create a processing
+pipechain performing text extraction, data conversion, data scraping, data mining etc including modern AI features.
+
+Project is focused on modern C++ dialects (currently C++17 is required, soon C++20) with their new features like ranges, concurrency, etc.
+but SDK provides also command line interface (CLI) that can be used in scripts.
+SDK is an open-source solution that programmers and IT companies feel safe and secure about.
 
 Designing data processing in applications is hard. But if it includes processing documents in multiple formats (like PDF, DOC, XLS etc),
 extracting information from email boxes, databases or websites, it becomes a nightmare. In that nightmare the project specializes the most ;-)
 Pre-made components give the ability to significantly reduce development time, costs and risk for companies that specialize in cybersecurity,
 finances, visual aid, e-commerce and many more
-
-Entering the artificial intelligence/neural networks area is planned to offer its advantages as part of the engine.
 
 ## Features
 - Able to extract/import and export text, images, formatting, and metadata along with annotations
