@@ -1,6 +1,8 @@
 # DocWire SDK
 
-DocWire SDK (formerly known as DocToText) is a C++ data processing library with SourceForge Community Choice award and Microsoft for Startups support. Parses DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT), PST, OST and more. Contains embedded OCR engine and CLI utiity.
+DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Community Choice & Microsoft support. AI-driven processing. Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining, document analysis. Successor to DocToText library.
+
+Offline processing possible for security and confidentiality.
 
 ## Table Of Contents
 - [The Goal](#the-goal)
@@ -13,29 +15,28 @@ DocWire SDK (formerly known as DocToText) is a C++ data processing library with 
 - [External links](#external-links)
 
 ## The Goal
-The goal of this project is to create a data processing SDK/API/engine to drastically speed up data processing development.
-This programming library/framework offers pre-made configurable components that can be joined together to create a processing
-pipechain that extracts data from one place, transforms it according to configurable rules and loads it somewhere else.
-It can be used by programmers in any popular language like C++, C or Python or in scripts as command line interface (CLI).
-Pipechains can be also designed as text file templates (low-code/no-code solution).
-All of this is delivered as an open-source solution that programmers and IT companies feel safe and secure about.
 
-Designing data processing in applications is hard. But if it includes processing documents in multiple formats (like PDF, DOC, XLS etc),
-extracting information from email boxes, databases or websites, it becomes a nightmare. In that nightmare the project specializes the most ;-)
-Pre-made components give the ability to significantly reduce development time, costs and risk for companies that specialize in cybersecurity,
-finances, visual aid, e-commerce and many more
+Welcome to the future of data processing with DocWire SDK, the natural successor to the renowned DocToText library! Our ongoing mission is to continuously empower developers and businesses by enhancing our modern C++ data processing framework, supercharging productivity, and simplifying development.
 
-Entering the artificial intelligence/neural networks area is planned to offer its advantages as part of the engine.
+**For Developers:** If you're familiar with DocToText, you're in for a significant upgrade. We're committed to staying at the forefront of modern C++ dialects. With C++17 and soon C++20, we will continue to provide advanced features, including ranges and concurrency. Our toolkit will evolve to handle an even wider range of data processing tasks, including robust HTTP capabilities, comprehensive network APIs, and efficient web data extraction. We understand that today's developers require comprehensive solutions for text extraction, data conversion, data scraping, and data mining, all seamlessly integrated into their C++ applications.
+
+**For Businesses:** DocWire SDK is not just a successor; it's a leap forward. It remains your trusted solution for tackling complex data processing tasks. Our support for diverse document formats, like PDF, DOC, XLS, and more, will become even more comprehensive. We will further enhance our ability to extract valuable insights from email boxes, databases, websites, and leverage the latest AI features.
+
+Our goal for the future is to provide a truly versatile and comprehensive set of features that enable you to extract and transform text, images, formatting, and metadata more efficiently. We will continue to support various import formats and expand our export options. As we venture into full-fledged HTTP methods and network capabilities, we aim to empower you to integrate seamlessly with web services, extract online data, and perform robust data processing.
+
+We're not stopping at our current platforms; DocWire SDK will expand its cross-platform support to include other popular operating systems and can be seamlessly embedded into your application. 
+
+As we move forward, our focus remains on simplifying data processing, reducing development time and costs, and minimizing risks. Join us on this exciting journey, where innovation, practicality, and the power of AI continue to redefine data processing. Explore the limitless possibilities of DocWire SDK today and into the future, and experience the significant enhancements that set it apart from its predecessor, DocToText.
 
 ## Features
-- Able to extract/import and export text, images, formatting and metadata along with annotations
-- Data can be transformed between import and export (filtering, aggregating etc)
+- Able to extract/import and export text, images, formatting, and metadata along with annotations
+- Data can be transformed between import and export (filtering, aggregating, etc)
 - Equipped with multiple importers:
     - Microsoft Office new Office Open XML (OOXML): DOCX, XLSX, PPTX files
     - Microsoft Office old binary formats: DOC, XLS, XLSB, PPT files
     - OpenOffice/LibreOffice Open Document Format (ODF): ODT, ODS, ODP files
     - Portable Document Format: PDF files
-    - Webpages: HTML, HTM and CSS files
+    - Webpages: HTML, HTM, and CSS files
     - Rich Text Format: RTF files
     - Email formats with attachments: EML files, MS Outlook PST, OST files
     - Image formats: JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP with OCR capabilities
@@ -49,17 +50,27 @@ Entering the artificial intelligence/neural networks area is planned to offer it
     - Other unstructured text formats: MD, LOG files
     - DICOM (DCM) as an additional commercial plugin
 - Equipped with multiple exporters:
-    - Plain text
-    - HTML
-    - CSV
-    - XLSX and more are coming
-- Equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition
+    - Plain text: Easily extract and export text content.
+    - HTML: Export content in HTML format for web use.
+    - CSV: Export data to Comma-Separated Values format.
+    - XLSX and more are coming: Additional export formats for diverse use cases.
+- HTTP::Post transformer: Facilitate seamless communication with external HTTP APIs or services, enabling data exchange and integration with external systems.
+- Integration with OpenAI API, including transformers like:
+    - TranslateTo: Translate text to different languages.
+    - Summarize: Generate summarized content from longer texts.
+    - ExtractEntities: Extract entities and key information from text.
+    - Classify: Perform text classification and categorization.
+    - ExtractKeywords: Identify and extract keywords from text.
+    - DetectSentiment: Analyze and detect sentiment in text.
+    - AnalyzeData: Perform data analysis on text content.
+    - Chat: Conduct chat-based interactions and conversations.
+- Equipped with a high-grade, scriptable, and trainable OCR that has LSTM neural networks-based character recognition
 - Incremental parsing returning data as soon as they are available
-- Cross platform: Linux, Windows, MacOSX (and more is coming)
-- Can be embeded in your application (SDK)
+- Cross-platform: Linux, Windows, MacOSX, and more to come
+- Can be embedded in your application (SDK)
 - Can be integrated with other data mining and data analytics applications
-- Parsing process can be easily designed by connecting objects with pipe | operator into a chain
-- Parsing chain elements communication based on Boost Signals
+- Parsing process can be easily designed by connecting objects with the pipe `|` operator into a chain
+- Parsing chain elements communicate based on Boost Signals
 - Custom parsing chain elements can be added (importers, transformers, exporters)
 - Small binaries, fast native C++ code
 
