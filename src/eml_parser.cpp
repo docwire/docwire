@@ -265,6 +265,13 @@ EMLParser::~EMLParser()
 namespace
 {
 
+void normalize_line(std::string& line)
+{
+	docwire_log_func_with_args(line);
+	if (!line.empty() && line.back() == '\r')
+		line.pop_back();
+}
+
 message parse_message(std::istream& stream)
 {
 	message mime_entity;
@@ -273,6 +280,8 @@ message parse_message(std::istream& stream)
 		std::string line;
 		while (getline(stream, line))
 		{
+			normalize_line(line);
+			docwire_log_var(line);
 			mime_entity.parse_by_line(line);
 		}
 		mime_entity.parse_by_line("\r\n");
@@ -287,17 +296,29 @@ message parse_message(std::istream& stream)
 
 bool EMLParser::isEML() const
 {
+	docwire_log_func();
 	if (!impl->m_data_stream->good())
+	{
+		docwire_log(error) << "Error opening file " << impl->m_file_name;
 		throw Exception("Error opening file " + impl->m_file_name);
+	}
 	message mime_entity = parse_message(*impl->m_data_stream);
-	return (!mime_entity.from_to_string().empty()) && (!mime_entity.date_time().is_not_a_date_time());
+	std::string from = mime_entity.from_to_string();
+	bool has_from = !from.empty();
+	bool has_date_time = !mime_entity.date_time().is_not_a_date_time();
+	docwire_log_vars(from, has_from, has_date_time);
+	return has_from && has_date_time;
 }
 
 std::string EMLParser::plainText(const FormattingStyle& formatting) const
 {
+	docwire_log_func();
 	std::string text;
 	if (!isEML())
+	{
+		docwire_log(error) << "Specified file is not valid EML file";
 		throw Exception("Specified file is not valid EML file");
+	}
 	docwire_log(debug) << "stream_pos=" << impl->m_data_stream->tellg();
 	impl->m_data_stream->clear();
 	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))

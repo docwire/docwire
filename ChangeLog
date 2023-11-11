@@ -48,6 +48,7 @@ Unreleased:
     * LogicError and RuntimeError exception classes added that allows easy nesting and will replace Exception class
     * Initial integration with OpenAI API - openai::Chat transformer added
     * openai::TranslateTo, openai::Summarize, openai::ExtractEntities, openai::Classify, openai::ExtractKeywords, openai::DetectSentiment and openai::AnalyzeData transformers added
+    * EML parser improved for windows end-of-line characters
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed
