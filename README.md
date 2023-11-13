@@ -167,8 +167,11 @@ Explore the documentation, experiment with the library, and feel free to reach o
 
 ## License
 Product is double licensed:
-- Can be used in open source projects using the GNU General Public License version 2
-- Can be used in commercial projects using commercial license
+
+- It can be used in open source projects under the terms of the GNU General Public License, version 2
+- It can be used in commercial projects under the terms of commercial license agreement
+
+Please contact SILVERCODERS (http://silvercoders.com) for a commercial license for DocWire SDK.
 
 ## Authors
 - [Silvercoders Ltd](https://silvercoders.com)
