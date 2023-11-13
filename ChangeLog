@@ -50,6 +50,7 @@ Unreleased:
     * openai::TranslateTo, openai::Summarize, openai::ExtractEntities, openai::Classify, openai::ExtractKeywords, openai::DetectSentiment and openai::AnalyzeData transformers added
     * EML parser improved for windows end-of-line characters
     * Copyright-headers related scripts and configuration files moved to "tools" directory
+    * Copyright-headers updated, SPDX license identifiers introduced
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed
