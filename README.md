@@ -173,6 +173,11 @@ Product is double licensed:
 
 Please contact SILVERCODERS (http://silvercoders.com) for a commercial license for DocWire SDK.
 
+Please keep in mind that any attempt to circumvent the terms of the GNU General Public License by employing wrappers, pipelines,
+client/server protocols, etc. is illegal. You must purchase a commercial license if your program, which is distributed under a license
+other than the GNU General Public License version 2, directly or indirectly calls any portion of this code.
+Simply stop using the product if you disagree with this viewpoint.
+
 ## Authors
 - [Silvercoders Ltd](https://silvercoders.com)
 - [DocWire LLC](https://docwire.io)
