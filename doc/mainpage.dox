@@ -1,15 +1,14 @@
 /*! \mainpage DocWire SDK
  *
  *	\section intro Introduction
+ * DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Community Choice & Microsoft support. AI-driven processing.
+ * Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,
+ * document analysis. Offline processing possible for security and confidentiality
  *
- *	DocWire SDK - A multifaceted, data extraction software development toolkit that converts all sorts of files to plain text and html.
- *	Written in C++, this data extraction tool has a parser able to convert PST & OST files along with a brand new API for better file processing.
- *	To enhance its utility, DocWire, as a data extraction tool, can be integrated with other data mining and data analytics applications.
- *	It comes equipped with a high grade, scriptable and trainable OCR that has LSTM neural networks based character recognition.
+ * Copyright (c) SILVERCODERS Ltd, http://silvercoders.com
+ * Project homepage: https://github.com/docwire/docwire
  *
- *	This document parser is able to extract metadata along with annotations and supports a list of formats that include:
- *	DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT),
- *	PDF, EML, HTML, Outlook (PST, OST), Image (JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP) and DICOM (DCM)
+ * SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial
  *
  *	\section usage Usage
  *
