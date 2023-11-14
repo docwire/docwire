@@ -51,6 +51,7 @@ Unreleased:
     * EML parser improved for windows end-of-line characters
     * Copyright-headers related scripts and configuration files moved to "tools" directory
     * Copyright-headers updated, SPDX license identifiers introduced
+    * README.md used as main page in Doxygen API documentation
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed
