@@ -4,9 +4,12 @@ DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Commu
 
 Offline processing possible for security and confidentiality.
 
+Explore the latest updates, contribute to the community, and find the most up-to-date information on our [GitHub project page](https://github.com/docwire/docwire).
+
 ## Table Of Contents
 - [The Goal](#the-goal)
 - [Features](#features)
+- [Examples](#examples)
 - [Awards](#awards)
 - [Installation](#installation)
 - [API documentation](#api-documentation)
@@ -14,7 +17,7 @@ Offline processing possible for security and confidentiality.
 - [Authors](#authors)
 - [External links](#external-links)
 
-## The Goal
+## The Goal {#the-goal}
 
 Welcome to the future of data processing with DocWire SDK, the natural successor to the renowned DocToText library! Our ongoing mission is to continuously empower developers and businesses by enhancing our modern C++ data processing framework, supercharging productivity, and simplifying development.
 
@@ -28,7 +31,7 @@ We're not stopping at our current platforms; DocWire SDK will expand its cross-p
 
 As we move forward, our focus remains on simplifying data processing, reducing development time and costs, and minimizing risks. Join us on this exciting journey, where innovation, practicality, and the power of AI continue to redefine data processing. Explore the limitless possibilities of DocWire SDK today and into the future, and experience the significant enhancements that set it apart from its predecessor, DocToText.
 
-## Features
+## Features {#features}
 - Able to extract/import and export text, images, formatting, and metadata along with annotations
 - Data can be transformed between import and export (filtering, aggregating, etc)
 - Equipped with multiple importers:
@@ -74,11 +77,36 @@ As we move forward, our focus remains on simplifying data processing, reducing d
 - Custom parsing chain elements can be added (importers, transformers, exporters)
 - Small binaries, fast native C++ code
 
-## Awards
+## Examples {#examples}
+
+Basic example (parse file in any format, export to plain text and print to standard output):
+```cpp
+#include <iostream>
+
+#include "input.h"
+#include "importer.h"
+#include "output.h"
+#include "plain_text_exporter.h"
+
+int main(int argc, char* argv[])
+{
+  if (argc > 1)
+  {
+    using namespace docwire;
+    Input(argv[1]) |
+      Importer() |
+      PlainTextExporter() |
+      Output(std::cout);
+  }
+  return 0;
+}
+```
+
+## Awards {#awards}
 - SourceForge Community Choice (2023) - project has qualified for this award out of over 500,000 open source projects on SourceForge
 - Microsoft for Startups grant (2022) - project was selected by Microsoft to accelerate its grow by providing Expert Guidance, development tools, Azure and GitHub cloud infrastructure and OpenAI machine learning utilities
 
-## Installation
+## Installation {#installation}
 
 ### Why Choose vcpkg for DocWire SDK Installation?
 DocWire has embraced vcpkg as the preferred installation method for several compelling reasons:
@@ -133,7 +161,7 @@ You're all set! You've successfully installed the DocWire library using vcpkg. Y
 ### Compatibility Note
 Please note that DocWire is currently compatible with vcpkg tagged as version 2023.08.09. While this version is recommended for use, be aware that updates may become available in the near future. Supported triplets are: x64-linux-dynamic, x64-windows and x64-osx-dynamic.
 
-## API Documentation
+## API Documentation {#api-documentation}
 The API documentation for the DocWire SDK/library is readily available in various formats to assist you in seamlessly integrating it into your projects. Whether you prefer reading detailed doxygen-style documentation, accessing it through binary packages, or installing it via package managers like Vcpkg, we've got you covered.
 
 ### ReadTheDocs - Doxygen Format
@@ -165,7 +193,7 @@ We believe in making the integration of DocWire as smooth as possible, and provi
 
 Explore the documentation, experiment with the library, and feel free to reach out if you have any questions or feedback. We're here to support you on your journey with DocWire.
 
-## License
+## License {#license}
 Product is double licensed:
 
 - It can be used in open source projects under the terms of the GNU General Public License, version 2
@@ -178,11 +206,11 @@ client/server protocols, etc. is illegal. You must purchase a commercial license
 other than the GNU General Public License version 2, directly or indirectly calls any portion of this code.
 Simply stop using the product if you disagree with this viewpoint.
 
-## Authors
+## Authors {#authors}
 - [Silvercoders Ltd](https://silvercoders.com)
 - [DocWire LLC](https://docwire.io)
 
-### External links
+## External links {#external-links}
 - [Project homepage - DocWire](https://docwire.io)
 - [Cloud API on RapidAPI](https://rapidapi.com/docwire-docwire-default/api/docwire-doctotext)
 - [SourceForge project page](https://sourceforge.net/projects/doctotext)
