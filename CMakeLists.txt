@@ -40,7 +40,7 @@ file( GLOB extras extras/* )
 foreach(extra ${extras})
    add_subdirectory(${extra})
 endforeach()
-add_subdirectory(examples)
+
 add_subdirectory(tests)
 
 if (DOCWIRE_DOC)
