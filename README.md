@@ -83,7 +83,10 @@ As we move forward, our focus remains on simplifying data processing, reducing d
 <a name="examples"></a>
 ## Examples
 
+### Importer and Exporter
+
 Basic example (parse file in any format, export to plain text and print to standard output):
+
 ```cpp
 #include <iostream>
 
@@ -103,6 +106,307 @@ int main(int argc, char* argv[])
       Output(std::cout);
   }
   return 0;
+}
+```
+
+We can also define a second exporter and export output as html to output.html file.
+This example shows how to use the API to parse a file and export it to plain text and html.
+
+```cpp
+#include <iostream>
+#include <fstream>
+#include <memory>
+
+#include "html_exporter.h"
+#include "input.h"
+#include "importer.h"
+#include "output.h"
+#include "plain_text_exporter.h"
+#include "transformer_func.h"
+#include "parsing_chain.h"
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  // parse file and print to output.txt file
+  Input(std::ifstream(argv[1], std::ios_base::in|std::ios_base::binary))
+    | Importer()
+    | PlainTextExporter()
+    | Output(std::ofstream("output.txt"));
+
+  // parse file and print to output.html file
+  Input(std::ifstream(argv[1], std::ios_base::in|std::ios_base::binary))
+    | Importer()
+    | HtmlExporter()
+    | Output(std::ofstream("output.html"));
+
+  return 0;
+}
+```
+
+In case of parsing multiple files, we can use the same importer and exporter object for each file.
+In first step we need to create parsing process by connecting the importer and exporter and then we can start the parsing process by passing subsequent files to the importer.
+This example shows how to use the API to parse multiple files.
+
+```cpp
+#include <iostream>
+#include <fstream>
+#include <memory>
+
+#include "input.h"
+#include "importer.h"
+#include "output.h"
+#include "plain_text_exporter.h"
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  auto chain = Importer()
+             | PlainTextExporter()
+             | Output(std::cout);  // create a chain of steps to parse a file
+  for (int i = 1; i < argc; ++i)
+  {
+    std::cout << "Parsing file " << argv[i] << std::endl;
+    Input(std::ifstream(argv[i], std::ios_base::in|std::ios_base::binary)) | chain; // set the input file as an input stream
+    std::cout << std::endl;
+  }
+
+  return 0;
+}
+```
+
+### Transformer
+
+Transformer is an object that we can connect to the importer and exporter. The transformer receives data from the importer or another transformer and can transform it.
+
+![Example flow](doc/images/example_flow.png)
+
+For example, we can use transformer to filter emails if it contains a specific phrase. Other actions for transformer is to skip the data from the current callback or stop the parsing process.
+Below example shows how to use the transformer to filter mails with subject "Hello"
+This example shows how to use transformer object to filter out mails by keyword "Hello" in subject
+
+```cpp
+#include <iostream>
+#include <memory>
+
+#include "input.h"
+#include "parser.h"
+#include "importer.h"
+#include "output.h"
+#include "plain_text_exporter.h"
+#include "transformer_func.h"
+#include "parsing_chain.h"
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  Input(argv[1]) |
+  Importer()
+    | TransformerFunc([](Info &info) // Create an importer from file name and connect it to transformer
+      {
+        if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
+        {
+          auto subject = info.getAttributeValue<std::string>("subject"); // get the subject attribute
+          if (subject) // if subject attribute exists
+          {
+            if (subject->find("Hello") != std::string::npos) // if subject contains "Hello"
+            {
+              info.skip = true; // skip the current node
+            }
+          }
+        }
+      })
+    | PlainTextExporter() // sets exporter to plain text
+    | Output(std::cout);
+  return 0;
+}
+```
+
+Transformers can be joined together to create complex transformations/filtration. For example, we can create a transformer that filters mails with subject "Hello" and limit the number of mails to 10.
+This example shows how to connect together many transformers. In this example we have two transformer. The first filter out mails by keyword "Hello". The second one cancels all process if reach the limit of 10 mails.
+
+```cpp
+#include <iostream>
+#include <memory>
+
+#include "input.h"
+#include "parser.h"
+#include "importer.h"
+#include "output.h"
+#include "plain_text_exporter.h"
+#include "transformer_func.h"
+#include "parsing_chain.h"
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  Input(argv[1]) |
+  Importer() |
+    TransformerFunc([](Info &info) // Create an input from file name, importer and connect them to transformer
+    {
+      if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
+      {
+        auto subject = info.getAttributeValue<std::string>("subject"); // get the subject attribute
+        if (subject) // if subject attribute exists
+        {
+          if (subject->find("Hello") != std::string::npos) // if subject contains "Hello"
+          {
+            info.skip = true; // skip the current node
+          }
+        }
+      }
+    }) |
+    TransformerFunc([counter = 0, max_mails = 1](Info &info) mutable // Create a transformer and connect it to previous transformer
+    {
+      if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
+      {
+        if (++counter > max_mails) // if counter is greater than max_mails
+        {
+          info.cancel = true; // cancel the parsing process
+        }
+      }
+    }) |
+    PlainTextExporter() | // sets exporter to plain text
+    Output(std::cout);
+ return 0;
+}
+```
+
+### Callbacks Api
+
+Another approach to parse documents is to use the callbacks api. We can create specific parser object and connect it to the callback functions. In case of the callback api, we need to define writing parsed text by ourself.
+Below is a basic example of the callback api:
+
+```cpp
+#include <algorithm>
+#include <iostream>
+#include <memory>
+
+#include "parser.h"
+#include "parser_builder.h"
+#include "plain_text_writer.h"
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  ParserManager parser_manager; // Create parser manager (load parsers)
+  std::string path = argv[1];
+  auto parser_builder = parser_manager.findParserByExtension(path); // get the parser builder by extension
+  auto plain_text_writer = std::make_shared<PlainTextWriter>(); // create a plain text writer
+
+  Info open_tag(StandardTag::TAG_DOCUMENT);
+  plain_text_writer->write_to(open_tag, std::cout);
+  if (parser_builder) // if parser builder exists
+  {
+    (*parser_builder)->build(path) // build the parser
+            ->addOnNewNodeCallback([&plain_text_writer](Info &info) // add a callback function
+                                   {
+                                     plain_text_writer->write_to(info, std::cout); // write the node to the output stream
+                                   })
+                     .parse(); // start the parsing process
+  }
+  Info close_tag(StandardTag::TAG_CLOSE_DOCUMENT);
+  plain_text_writer->write_to(close_tag, std::cout);
+  return 0;
+}
+```
+
+In callback api we can add many callback functions to the parser and it works in similar way as the transformer in the stream api. So we are able to add a callback function to filter by mail topic or by mail number in similar way like in stream api.
+
+```cpp
+#include <algorithm>
+#include <iostream>
+#include <memory>
+
+#include "parser.h"
+#include "parser_builder.h"
+#include "plain_text_writer.h"
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  auto parser_manager = std::make_shared<ParserManager>(); // Create parser manager (load parsers)
+  std::string path = argv[1];
+  auto parser_builder = parser_manager->findParserByExtension(path); // get the parser builder by extension
+  PlainTextWriter plain_text_writer; // create a plain text writer
+  Info open_tag(StandardTag::TAG_DOCUMENT);
+  plain_text_writer.write_to(open_tag, std::cout);
+  if (parser_builder) // if parser builder exists
+  {
+    (*parser_builder)->withParserManager(parser_manager) // set the parser manager
+            .build(path) // build the parser
+            ->addOnNewNodeCallback([](Info &info) // add a callback function to filter by subject text
+                                   {
+                                     if (info.tag_name ==
+                                         StandardTag::TAG_MAIL) // if current node is mail
+                                     {
+                                       auto subject = info.getAttributeValue<std::string>(
+                                               "subject"); // get the subject attribute
+                                       if (subject) // if subject attribute exists
+                                       {
+                                         if (subject->find("Hello") != std::string::npos) // if subject contains "Hello"
+                                         {
+                                           info.skip = true; // skip the current node
+                                         }
+                                       }
+                                     }
+                                   })
+            .addOnNewNodeCallback([&plain_text_writer](
+                    Info &info) // add callback function to write the parsed text to the output stream
+                                  {
+                                    plain_text_writer.write_to(info, std::cout); // write the node to the output stream
+                                  })
+                     .parse(); // start the parsing process
+  }
+  Info close_tag(StandardTag::TAG_CLOSE_DOCUMENT);
+  plain_text_writer.write_to(close_tag, std::cout);
+  return 0;
+}
+```
+
+### SimpleExtractor
+
+The easiest way to parse the document is to use the docwire::SimpleExtractor. The simple extractor provides the basic functionality to parse the document.
+
+```cpp
+#include <iostream>
+#include "simple_extractor.h"
+
+int main(int argc, char* argv[])
+{
+  docwire::SimpleExtractor simple_extractor(argv[1]); // create a simple extractor
+  std::cout << simple_extractor.getPlainText(); // print the plain text of the document
+}
+```
+
+SimpleExtractor also supports custom callback functions, so we can define our own transform or filter functions
+and use them in the parsing process.
+
+```cpp
+#include <iostream>
+
+#include "parser.h"
+#include "simple_extractor.h"
+
+int main(int argc, char* argv[])
+{
+   using namespace docwire;
+   SimpleExtractor simple_extractor(argv[1]); // create a simple extractor
+   simple_extractor.addCallbackFunction([](Info &info)
+                                       {
+                                         if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
+                                         {
+                                           auto date = info.getAttributeValue<int>("date"); // get the date attribute
+                                           if (date) // if date attribute exists
+                                           {
+                                             if (*date < 1651437232) // if date is less than 01.05.2022 (1651437232 is the unix timestamp of 01.05.2022)
+                                             {
+                                               info.skip = true; // skip the current node
+                                             }
+                                           }
+                                         }
+                                       });
+   std::cout << simple_extractor.getPlainText(); // print the plain text of the document
 }
 ```
 
