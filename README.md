@@ -88,12 +88,7 @@ As we move forward, our focus remains on simplifying data processing, reducing d
 Basic example (parse file in any format, export to plain text and print to standard output):
 
 ```cpp
-#include <iostream>
-
-#include "input.h"
-#include "importer.h"
-#include "output.h"
-#include "plain_text_exporter.h"
+#include "docwire.h"
 
 int main(int argc, char* argv[])
 {
@@ -113,17 +108,8 @@ We can also define a second exporter and export output as html to output.html fi
 This example shows how to use the API to parse a file and export it to plain text and html.
 
 ```cpp
-#include <iostream>
+#include "docwire.h"
 #include <fstream>
-#include <memory>
-
-#include "html_exporter.h"
-#include "input.h"
-#include "importer.h"
-#include "output.h"
-#include "plain_text_exporter.h"
-#include "transformer_func.h"
-#include "parsing_chain.h"
 
 int main(int argc, char* argv[])
 {
@@ -149,14 +135,8 @@ In first step we need to create parsing process by connecting the importer and e
 This example shows how to use the API to parse multiple files.
 
 ```cpp
-#include <iostream>
+#include "docwire.h"
 #include <fstream>
-#include <memory>
-
-#include "input.h"
-#include "importer.h"
-#include "output.h"
-#include "plain_text_exporter.h"
 
 int main(int argc, char* argv[])
 {
@@ -186,16 +166,7 @@ Below example shows how to use the transformer to filter mails with subject "Hel
 This example shows how to use transformer object to filter out mails by keyword "Hello" in subject
 
 ```cpp
-#include <iostream>
-#include <memory>
-
-#include "input.h"
-#include "parser.h"
-#include "importer.h"
-#include "output.h"
-#include "plain_text_exporter.h"
-#include "transformer_func.h"
-#include "parsing_chain.h"
+#include "docwire.h"
 
 int main(int argc, char* argv[])
 {
@@ -226,16 +197,7 @@ Transformers can be joined together to create complex transformations/filtration
 This example shows how to connect together many transformers. In this example we have two transformer. The first filter out mails by keyword "Hello". The second one cancels all process if reach the limit of 10 mails.
 
 ```cpp
-#include <iostream>
-#include <memory>
-
-#include "input.h"
-#include "parser.h"
-#include "importer.h"
-#include "output.h"
-#include "plain_text_exporter.h"
-#include "transformer_func.h"
-#include "parsing_chain.h"
+#include "docwire.h"
 
 int main(int argc, char* argv[])
 {
@@ -278,13 +240,8 @@ Another approach to parse documents is to use the callbacks api. We can create s
 Below is a basic example of the callback api:
 
 ```cpp
-#include <algorithm>
-#include <iostream>
+#include "docwire.h"
 #include <memory>
-
-#include "parser.h"
-#include "parser_builder.h"
-#include "plain_text_writer.h"
 
 int main(int argc, char* argv[])
 {
@@ -314,13 +271,7 @@ int main(int argc, char* argv[])
 In callback api we can add many callback functions to the parser and it works in similar way as the transformer in the stream api. So we are able to add a callback function to filter by mail topic or by mail number in similar way like in stream api.
 
 ```cpp
-#include <algorithm>
-#include <iostream>
-#include <memory>
-
-#include "parser.h"
-#include "parser_builder.h"
-#include "plain_text_writer.h"
+#include "docwire.h"
 
 int main(int argc, char* argv[])
 {
@@ -369,8 +320,7 @@ int main(int argc, char* argv[])
 The easiest way to parse the document is to use the docwire::SimpleExtractor. The simple extractor provides the basic functionality to parse the document.
 
 ```cpp
-#include <iostream>
-#include "simple_extractor.h"
+#include "docwire.h"
 
 int main(int argc, char* argv[])
 {
@@ -383,10 +333,7 @@ SimpleExtractor also supports custom callback functions, so we can define our ow
 and use them in the parsing process.
 
 ```cpp
-#include <iostream>
-
-#include "parser.h"
-#include "simple_extractor.h"
+#include "docwire.h"
 
 int main(int argc, char* argv[])
 {
