@@ -33,7 +33,7 @@ set(DOXYGEN_USE_MDFILE_AS_MAINPAGE ../README.md)
 
 doxygen_add_docs(
     doxygen
-    ../README.md api.dox plugins.dox cli.dox ../src/importer.h ../src/exporter.h ../src/transformer_func.h ../src/parsing_chain.h ../src/html_writer.h ../src/meta_data_writer.h ../src/parser.h ../src/parser_builder.h ../src/parser_manager.h  ../src/parser_parameters.h ../src/parser_wrapper.h ../src/plain_text_writer.h ../src/simple_extractor.h ../src/standard_filter.h ../src/metadata.h ../src/link.h ../src/formatting_style.h ../src/exception.h ../src/parser_provider.h
+    ../README.md api.dox cli.dox ../src/importer.h ../src/exporter.h ../src/transformer_func.h ../src/parsing_chain.h ../src/html_writer.h ../src/meta_data_writer.h ../src/parser.h ../src/parser_builder.h ../src/parser_manager.h  ../src/parser_parameters.h ../src/parser_wrapper.h ../src/plain_text_writer.h ../src/simple_extractor.h ../src/standard_filter.h ../src/metadata.h ../src/link.h ../src/formatting_style.h ../src/exception.h ../src/parser_provider.h
     ../examples/example_1.cpp ../examples/example_2.cpp ../examples/example_3.cpp ../examples/example_4.cpp ../examples/example_5.cpp ../examples/example_6.cpp ../examples/example_7.cpp ../examples/example_8.cpp ../examples/example_9.cpp
     COMMENT "Generate html documentation of DocWire SDK"
     ALL
