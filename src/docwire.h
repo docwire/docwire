@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_DOCWIRE_H
 #define DOCWIRE_DOCWIRE_H
 
+#include "classify.h"
 #include "decompress_archives.h"
 #include "input.h"
 #include "output.h"
@@ -22,5 +23,6 @@
 #include "parsing_chain.h"
 #include "simple_extractor.h"
 #include "transformer_func.h"
+#include "translate_to.h"
 
 #endif

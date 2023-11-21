@@ -131,6 +131,38 @@ int main(int argc, char* argv[])
 }
 ```
 
+Classify file in any format (Office, PDF, mail, etc) to any categories:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  if (argc > 1)
+  {
+    using namespace docwire;
+    Input(argv[1]) | Importer() | PlainTextExporter() | openai::Classify({ "agreement", "invoice", "report", "legal", "other"}, "api-key-1234") | Output(std::cout);
+  }
+  return 0;
+}
+```
+
+Translate document in any format (Office, PDF, mail, etc) to other language:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  if (argc > 1)
+  {
+    using namespace docwire;
+    Input(argv[1]) | Importer() | PlainTextExporter() | openai::TranslateTo("french", "api-key-1234") | Output(std::cout);
+  }
+  return 0;
+}
+```
+
 Reusing single parsing chain to parse multiple input files:
 
 ```cpp
