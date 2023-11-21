@@ -83,26 +83,171 @@ As we move forward, our focus remains on simplifying data processing, reducing d
 <a name="examples"></a>
 ## Examples
 
-Basic example (parse file in any format, export to plain text and print to standard output):
-```cpp
-#include <iostream>
+Parse file in any format (Office, PDF, mail, etc) having its path, export to plain text and print to standard output:
 
-#include "input.h"
-#include "importer.h"
-#include "output.h"
-#include "plain_text_exporter.h"
+```cpp
+#include "docwire.h"
 
 int main(int argc, char* argv[])
 {
   if (argc > 1)
   {
     using namespace docwire;
-    Input(argv[1]) |
-      Importer() |
-      PlainTextExporter() |
-      Output(std::cout);
+    Input(argv[1]) | Importer() | PlainTextExporter() | Output(std::cout);
   }
   return 0;
+}
+```
+
+Parse file in any format (Office, PDF, mail, etc) having stream, export to HTML and save to file stream:
+
+```cpp
+#include "docwire.h"
+#include <fstream>
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+
+  Input(std::ifstream(argv[1], std::ios_base::binary)) | Importer() | HtmlExporter() | Output(std::ofstream("output.html"));
+
+  return 0;
+}
+```
+
+Parse all files in any format inside archives (ZIP, TAR, RAR, GZ, BZ2, XZ) recursively:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  if (argc > 1)
+  {
+    using namespace docwire;
+    Input(argv[1]) | DecompressArchives() | Importer() | PlainTextExporter() | Output(std::cout);
+  }
+  return 0;
+}
+```
+
+Classify file in any format (Office, PDF, mail, etc) to any categories:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  if (argc > 1)
+  {
+    using namespace docwire;
+    Input(argv[1]) | Importer() | PlainTextExporter() | openai::Classify({ "agreement", "invoice", "report", "legal", "other"}, "api-key-1234") | Output(std::cout);
+  }
+  return 0;
+}
+```
+
+Translate document in any format (Office, PDF, mail, etc) to other language:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  if (argc > 1)
+  {
+    using namespace docwire;
+    Input(argv[1]) | Importer() | PlainTextExporter() | openai::TranslateTo("french", "api-key-1234") | Output(std::cout);
+  }
+  return 0;
+}
+```
+
+Reusing single parsing chain to parse multiple input files:
+
+```cpp
+#include "docwire.h"
+#include <fstream>
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  auto chain = Importer() | PlainTextExporter() | Output(std::cout);  // create a chain of steps to parse a file
+  for (int i = 1; i < argc; ++i)
+    Input(std::ifstream(argv[i], std::ios_base::binary)) | chain; // set the input file as an input stream
+  return 0;
+}
+```
+
+Using transformer to filter out emails (eg. from Outlook PST mailbox) with subject containing "Hello":
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  Input(argv[1]) |
+  Importer()
+    | TransformerFunc([](Info &info) // Create an importer from file name and connect it to transformer
+      {
+        if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
+        {
+          auto subject = info.getAttributeValue<std::string>("subject"); // get the subject attribute
+          if (subject) // if subject attribute exists
+          {
+            if (subject->find("Hello") != std::string::npos) // if subject contains "Hello"
+            {
+              info.skip = true; // skip the current node
+            }
+          }
+        }
+      })
+    | PlainTextExporter() // sets exporter to plain text
+    | Output(std::cout);
+  return 0;
+}
+```
+
+![Example flow](doc/images/example_flow.png)
+
+Joining transformers to filter out emails (eg. from Outlook PST mailbox) with subject "Hello" and limit the number of mails to 10:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  Input(argv[1]) |
+  Importer() |
+    TransformerFunc([](Info &info) // Create an input from file name, importer and connect them to transformer
+    {
+      if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
+      {
+        auto subject = info.getAttributeValue<std::string>("subject"); // get the subject attribute
+        if (subject) // if subject attribute exists
+        {
+          if (subject->find("Hello") != std::string::npos) // if subject contains "Hello"
+          {
+            info.skip = true; // skip the current node
+          }
+        }
+      }
+    }) |
+    TransformerFunc([counter = 0, max_mails = 1](Info &info) mutable // Create a transformer and connect it to previous transformer
+    {
+      if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
+      {
+        if (++counter > max_mails) // if counter is greater than max_mails
+        {
+          info.cancel = true; // cancel the parsing process
+        }
+      }
+    }) |
+    PlainTextExporter() | // sets exporter to plain text
+    Output(std::cout);
+ return 0;
 }
 ```
 

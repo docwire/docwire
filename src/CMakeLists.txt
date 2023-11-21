@@ -324,6 +324,7 @@ set(PUBLIC_HEADERS
 	simple_extractor.h
 	defines.h
 	log.h
+	docwire.h
 )
 install(FILES ${PUBLIC_HEADERS} DESTINATION include/docwire)
 

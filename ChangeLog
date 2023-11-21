@@ -52,6 +52,10 @@ Unreleased:
     * Copyright-headers related scripts and configuration files moved to "tools" directory
     * Copyright-headers updated, SPDX license identifiers introduced
     * README.md used as main page in Doxygen API documentation
+    * Move examples from doxygen API introduction to README.md
+    * Remove obsolete documentation chapters and examples
+    * Add docwire.h as a general header simplyfing applications using SDK at the expence of compiling time
+    * Add examples for some OpenAI components
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed
