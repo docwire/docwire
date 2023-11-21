@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_DOCWIRE_H
 #define DOCWIRE_DOCWIRE_H
 
+#include "decompress_archives.h"
 #include "input.h"
 #include "output.h"
 #include "importer.h"

@@ -121,6 +121,26 @@ int main(int argc, char* argv[])
 }
 ```
 
+Parse all files in any format inside archives (ZIP, TAR, RAR, GZ, BZ2, XZ) recursively:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  if (argc > 1)
+  {
+    using namespace docwire;
+    Input(argv[1]) |
+      DecompressArchives() |
+      Importer() |
+      PlainTextExporter() |
+      Output(std::cout);
+  }
+  return 0;
+}
+```
+
 Reusing single parsing chain to parse multiple input files:
 
 ```cpp
