@@ -83,9 +83,7 @@ As we move forward, our focus remains on simplifying data processing, reducing d
 <a name="examples"></a>
 ## Examples
 
-### Importer and Exporter
-
-Basic example (parse file in any format, export to plain text and print to standard output):
+Parse file in any format (Office, PDF, mail, etc) having its path, export to plain text and print to standard output:
 
 ```cpp
 #include "docwire.h"
@@ -104,8 +102,7 @@ int main(int argc, char* argv[])
 }
 ```
 
-We can also define a second exporter and export output as html to output.html file.
-This example shows how to use the API to parse a file and export it to plain text and html.
+Parse file in any format (Office, PDF, mail, etc) having stream, export to HTML and save to file stream:
 
 ```cpp
 #include "docwire.h"
@@ -114,13 +111,7 @@ This example shows how to use the API to parse a file and export it to plain tex
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  // parse file and print to output.txt file
-  Input(std::ifstream(argv[1], std::ios_base::in|std::ios_base::binary))
-    | Importer()
-    | PlainTextExporter()
-    | Output(std::ofstream("output.txt"));
 
-  // parse file and print to output.html file
   Input(std::ifstream(argv[1], std::ios_base::in|std::ios_base::binary))
     | Importer()
     | HtmlExporter()
@@ -130,9 +121,7 @@ int main(int argc, char* argv[])
 }
 ```
 
-In case of parsing multiple files, we can use the same importer and exporter object for each file.
-In first step we need to create parsing process by connecting the importer and exporter and then we can start the parsing process by passing subsequent files to the importer.
-This example shows how to use the API to parse multiple files.
+Reusing single parsing chain to parse multiple input files:
 
 ```cpp
 #include "docwire.h"
@@ -155,15 +144,7 @@ int main(int argc, char* argv[])
 }
 ```
 
-### Transformer
-
-Transformer is an object that we can connect to the importer and exporter. The transformer receives data from the importer or another transformer and can transform it.
-
-![Example flow](doc/images/example_flow.png)
-
-For example, we can use transformer to filter emails if it contains a specific phrase. Other actions for transformer is to skip the data from the current callback or stop the parsing process.
-Below example shows how to use the transformer to filter mails with subject "Hello"
-This example shows how to use transformer object to filter out mails by keyword "Hello" in subject
+Using transformer to filter out emails (eg. from Outlook PST mailbox) with subject containing "Hello":
 
 ```cpp
 #include "docwire.h"
@@ -193,8 +174,9 @@ int main(int argc, char* argv[])
 }
 ```
 
-Transformers can be joined together to create complex transformations/filtration. For example, we can create a transformer that filters mails with subject "Hello" and limit the number of mails to 10.
-This example shows how to connect together many transformers. In this example we have two transformer. The first filter out mails by keyword "Hello". The second one cancels all process if reach the limit of 10 mails.
+![Example flow](doc/images/example_flow.png)
+
+Joining transformers to filter out emails (eg. from Outlook PST mailbox) with subject "Hello" and limit the number of mails to 10:
 
 ```cpp
 #include "docwire.h"
