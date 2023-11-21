@@ -93,10 +93,7 @@ int main(int argc, char* argv[])
   if (argc > 1)
   {
     using namespace docwire;
-    Input(argv[1]) |
-      Importer() |
-      PlainTextExporter() |
-      Output(std::cout);
+    Input(argv[1]) | Importer() | PlainTextExporter() | Output(std::cout);
   }
   return 0;
 }
@@ -112,10 +109,7 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
 
-  Input(std::ifstream(argv[1], std::ios_base::in|std::ios_base::binary))
-    | Importer()
-    | HtmlExporter()
-    | Output(std::ofstream("output.html"));
+  Input(std::ifstream(argv[1], std::ios_base::binary)) | Importer() | HtmlExporter() | Output(std::ofstream("output.html"));
 
   return 0;
 }
@@ -131,11 +125,7 @@ int main(int argc, char* argv[])
   if (argc > 1)
   {
     using namespace docwire;
-    Input(argv[1]) |
-      DecompressArchives() |
-      Importer() |
-      PlainTextExporter() |
-      Output(std::cout);
+    Input(argv[1]) | DecompressArchives() | Importer() | PlainTextExporter() | Output(std::cout);
   }
   return 0;
 }
@@ -150,16 +140,9 @@ Reusing single parsing chain to parse multiple input files:
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  auto chain = Importer()
-             | PlainTextExporter()
-             | Output(std::cout);  // create a chain of steps to parse a file
+  auto chain = Importer() | PlainTextExporter() | Output(std::cout);  // create a chain of steps to parse a file
   for (int i = 1; i < argc; ++i)
-  {
-    std::cout << "Parsing file " << argv[i] << std::endl;
-    Input(std::ifstream(argv[i], std::ios_base::in|std::ios_base::binary)) | chain; // set the input file as an input stream
-    std::cout << std::endl;
-  }
-
+    Input(std::ifstream(argv[i], std::ios_base::binary)) | chain; // set the input file as an input stream
   return 0;
 }
 ```
