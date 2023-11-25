@@ -4,7 +4,7 @@ choco install graphviz -y
 
 git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
-git checkout tags/2023.08.09
+git checkout tags/2023.11.20
 .\bootstrap-vcpkg.bat
 cd ..
 
