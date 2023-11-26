@@ -56,6 +56,7 @@ Unreleased:
     * Remove obsolete documentation chapters and examples
     * Add docwire.h as a general header simplyfing applications using SDK at the expence of compiling time
     * Add examples for some OpenAI components
+    * Upgrade VCPKG and in the same time all SDK dependencies to 2023.11.20
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed
