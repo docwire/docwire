@@ -105,5 +105,5 @@ jobs:
         if: always()
         with:
           name: x64-osx-dynamic-logs
-          path: vcpkg/buildtrees/docwire/*.log
+          path: vcpkg/buildtrees/*/*.log
           if-no-files-found: error
