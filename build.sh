@@ -2,6 +2,7 @@ set -e
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	brew install md5sha1sum automake autogen doxygen
+	brew install python-setuptools
 elif [[ "$OSTYPE" == "linux"* ]]; then
 	if [[ "$GITHUB_ACTIONS" == "true" ]]; then
 		sudo apt-get install -y autopoint
