@@ -15,6 +15,10 @@ fi
 git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
 git checkout tags/2023.11.20
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	sed -i -e 's/0.63/1.3.0/' ports/vcpkg-tool-meson/vcpkg.json
+	sed -i -e 's/0.63.0/1.3.0/' ports/vcpkg-tool-meson/portfile.cmake
+fi
 ./bootstrap-vcpkg.sh
 cd ..
 
