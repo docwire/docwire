@@ -113,6 +113,7 @@ In our pursuit of excellence, DocWire SDK is committed to ongoing Research and D
     - DetectSentiment: Analyze and detect sentiment in text.
     - AnalyzeData: Perform data analysis on text content.
     - Chat: Conduct chat-based interactions and conversations.
+- Supports multiple LLM models: gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-3.5-turbo-1106, gpt-4, gpt-4-32k and gpt-4-1106-preview (world events up to April 2023, 128k context window that can fit more than 300 pages of text in a single prompt). More are coming.
 - Equipped with a high-grade, scriptable, and trainable OCR that has LSTM neural networks-based character recognition
 - Incremental parsing returning data as soon as they are available
 - Cross-platform: Linux, Windows, MacOSX, and more to come
@@ -201,6 +202,22 @@ int main(int argc, char* argv[])
   {
     using namespace docwire;
     Input(argv[1]) | Importer() | PlainTextExporter() | openai::TranslateTo("french", "api-key-1234") | Output(std::cout);
+  }
+  return 0;
+}
+```
+
+Detect sentiment of document in any format (Office, PDF, mail, etc) using newest GPT-4 Turbo model with 128K context:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  if (argc > 1)
+  {
+    using namespace docwire;
+    Input(argv[1]) | Importer() | PlainTextExporter() | openai::DetectSentiment("api-key-1234", openai::Model::gpt4_1106_preview) | Output(std::cout);
   }
   return 0;
 }
