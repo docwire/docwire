@@ -13,6 +13,7 @@ Explore the latest updates, contribute to the community, and find the most up-to
 - [Awards](#awards)
 - [Installation](#installation)
 - [API documentation](#api-documentation)
+- [Console application (CLI)](#console-application)
 - [License](#license)
 - [Authors](#authors)
 - [External links](#external-links)
@@ -405,6 +406,95 @@ You might wonder why we chose ReadTheDocs to host our documentation. While some 
 We believe in making the integration of DocWire as smooth as possible, and providing our documentation through ReadTheDocs is just one way we're committed to simplifying your experience.
 
 Explore the documentation, experiment with the library, and feel free to reach out if you have any questions or feedback. We're here to support you on your journey with DocWire.
+
+<a name="console-application"></a>
+## Console Application (CLI)
+
+Welcome to the DocWire Console Application (DocWire CLI). This versatile command-line tool empowers users to extract content from documents, including text, document structure, and metadata. Whether you're processing documents for analysis, summarization, sentiment detection, or translation, DocWire CLI has you covered.
+
+### Usage
+
+To run the program and process a document, use the following command:
+
+```bash
+docwire [options] file_name
+```
+
+### Basic options
+- **&ndash;&ndash;help**: Display the help message.
+- **&ndash;&ndash;version**: Display the DocWire version.
+- **&ndash;&ndash;verbose**: Enable verbose logging.
+- **&ndash;&ndash;input-file <file_path>**: Specify the path to the file to process (or you can provide filename without --input-file).
+- **&ndash;&ndash;output_type <type>** (default: plain_text): Set the output type. Available types include plain_text, html (preserving document structure), csv (structured data), and metadata (document information).
+
+### OpenAI Integration (New Features!)
+
+Unlock the power of OpenAI with the following options:
+
+- **&ndash;&ndash;openai-chat <prompt>**: Initiate a chat prompt for processing exported data via OpenAI.
+- **&ndash;&ndash;openai-extract-entities**: Extract entities from exported data via OpenAI.
+- **&ndash;&ndash;openai-extract-keywords <N>**: Extract N keywords/key phrases from exported data via OpenAI.
+- **&ndash;&ndash;openai-summarize**: Summarize exported data via OpenAI.
+- **&ndash;&ndash;openai-detect-sentiment**: Detect sentiment of exported data via OpenAI.
+- **&ndash;&ndash;openai-analyze-data**: Analyze exported data for important insights and generate conclusions via OpenAI.
+- **&ndash;&ndash;openai-classify <category>**: Classify exported data via OpenAI to one of the specified categories.
+- **&ndash;&ndash;openai-translate-to <language>**: Language to translate exported data to via OpenAI.
+- **&ndash;&ndash;openai-key <key>**: OpenAI API key.
+- **&ndash;&ndash;openai-model <model>** (default: gpt35_turbo): Choose the OpenAI model. Available models are: gpt35_turbo, gpt35_turbo_16k, gpt35_turbo_1106, gpt4, gpt4_32k and gpt4_1106_preview.
+- **&ndash;&ndash;openai-temperature <temp>**: Force specified temperature for OpenAI prompts.
+
+### Additional Options
+
+- **&ndash;&ndash;language <lang> (default: eng)**: Set the document language for OCR. Available language values include eng (English), spa (Spanish), rus (Russian), and pol (Polish).
+- **&ndash;&ndash;use-stream <yes|no> (default: 0)**: Pass the file stream to the SDK instead of the filename.
+- **&ndash;&ndash;min_creation_time <timestamp>**: Filter emails by minimum creation time (currently applicable only to emails in PST/OST files).
+- **&ndash;&ndash;max_creation_time <timestamp>**: Filter emails by maximum creation time (currently applicable only to emails in PST/OST files).
+- **&ndash;&ndash;max_nodes_number <number>**: Filter by the maximum number of nodes.
+- **&ndash;&ndash;folder_name <name>**: Filter emails by folder name.
+- **&ndash;&ndash;attachment_extension <type>**: Filter by attachment type.
+- **&ndash;&ndash;table-style <style> (default: table_look, deprecated)**: Set the table style. Available styles include table_look, one_row, and one_col.
+- **&ndash;&ndash;url-style <style> (default: extended, deprecated)**: Set the URL style. Available styles include text_only, extended, and underscored.
+- **&ndash;&ndash;list-style-prefix <prefix> (default: " * ", deprecated)**: Set the output list prefix.
+- **&ndash;&ndash;log_file <file_path>**: Set the path to the log file.
+- **&ndash;&ndash;plugins_path <path>**: Set a non-standard path to DocWire plugins.
+
+Note: The "min_creation_time" and "max_creation_time" options currently work only for emails within PST/OST files.
+
+### Example Usage
+
+#### Extracting Structured Content in HTML Format
+
+To extract structured content in HTML format, use the following command:
+
+```bash
+docwire --output_type html document.docx
+```
+
+#### Leveraging OpenAI for Intelligent Document Analysis
+
+Harness the power of OpenAI to analyze and extract valuable insights from your document. For example, initiate a chat prompt to interact with the document's content:
+
+```bash
+docwire --openai-chat "What are the key points in the document provided?" document.docx
+```
+
+#### Sentiment Analysis for Document Understanding
+
+Gain a deeper understanding of the document's sentiment using OpenAI. Detect the sentiment of the exported data with the following command:
+
+```bash
+docwire --openai-detect-sentiment document.docx
+```
+
+#### Dynamic Language Translation for Multilingual Documents
+
+Translate your document into another language using OpenAI. Specify the target language with the following command:
+
+```bash
+docwire --openai-translate-to spanish document.docx
+```
+
+Happy Document Processing with DocWire CLI!
 
 <a name="license"></a>
 ## License
