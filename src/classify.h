@@ -22,7 +22,7 @@ namespace openai
 class DllExport Classify : public Chat
 {
 public:
-	Classify(const std::set<std::string>& categories, const std::string& api_key, float temperature = 0);
+	Classify(const std::set<std::string>& categories, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0);
 	Classify(const Classify& other);
 	virtual ~Classify();
 

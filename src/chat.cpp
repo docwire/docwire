@@ -28,11 +28,12 @@ struct Chat::Implementation
 {
 	std::string m_system_message;
 	std::string m_api_key;
+	Model m_model;
 	float m_temperature;
 };
 
-Chat::Chat(const std::string& system_message, const std::string& api_key, float temperature)
-	: impl(new Implementation{system_message, api_key, temperature})
+Chat::Chat(const std::string& system_message, const std::string& api_key, Model model, float temperature)
+	: impl(new Implementation{system_message, api_key, model, temperature})
 {
 	docwire_log_func_with_args(system_message, temperature);
 }
@@ -50,12 +51,26 @@ Chat::~Chat()
 namespace
 {
 
-std::string prepare_query(const std::string& system_msg, const std::string& user_msg, float temperature)
+std::string model_to_string(Model model)
+{
+	switch (model)
+	{
+		case Model::gpt35_turbo: return "gpt-3.5-turbo";
+		case Model::gpt35_turbo_16k: return "gpt-3.5-turbo-16k";
+		case Model::gpt35_turbo_1106: return "gpt-3.5-turbo-1106";
+		case Model::gpt4: return "gpt-4";
+		case Model::gpt4_32k: return "gpt-4-32k";
+		case Model::gpt4_1106_preview: return "gpt-4-1106-preview";
+		default: return "?";
+	}
+}
+
+std::string prepare_query(const std::string& system_msg, const std::string& user_msg, Model model, float temperature)
 {
 	docwire_log_func_with_args(system_msg, user_msg);
 	boost::json::object query
 	{
-		{ "model", "gpt-3.5-turbo" },
+		{ "model", model_to_string(model) },
 		{ "messages", boost::json::array
 			{
 				boost::json::object {{ "role", "system" }, {"content", system_msg}},
@@ -117,7 +132,7 @@ void Chat::process(Info &info) const
 	data_stream << in_stream->rdbuf();
 	if (path)
 		delete in_stream;
-	std::stringstream content_stream { parse_response(post_request(prepare_query(impl->m_system_message, data_stream.str(), impl->m_temperature), impl->m_api_key)) + '\n' };
+	std::stringstream content_stream { parse_response(post_request(prepare_query(impl->m_system_message, data_stream.str(), impl->m_model, impl->m_temperature), impl->m_api_key)) + '\n' };
 	Info new_info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&content_stream}, {"name", ""}});
 	emit(new_info);
 }

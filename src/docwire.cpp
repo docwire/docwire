@@ -68,6 +68,12 @@ namespace docwire
 	using magic_enum::ostream_operators::operator<<;
 }
 
+namespace docwire::openai
+{
+	using magic_enum::istream_operators::operator>>;
+	using magic_enum::ostream_operators::operator<<;
+}
+
 using magic_enum::istream_operators::operator>>;
 using magic_enum::ostream_operators::operator<<;
 
@@ -110,6 +116,7 @@ int main(int argc, char* argv[])
 		("openai-classify", po::value<std::vector<std::string>>()->multitoken(), "classify exported data via OpenAI to one of specified categories")
 		("openai-translate-to", po::value<std::string>(), "language to translate exported data to via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
+		("openai-model", po::value<openai::Model>()->default_value(openai::Model::gpt35_turbo), enum_names_str<openai::Model>().c_str())
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
 		("language", po::value<Language>()->default_value(Language::eng), "set document language for OCR")
 		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
@@ -223,18 +230,20 @@ int main(int argc, char* argv[])
 	{
 		std::string prompt = vm["openai-chat"].as<std::string>();
 		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::Chat chat = vm.count("openai-temperature") ?
-			openai::Chat(prompt, api_key, vm["openai-temperature"].as<float>()) :
-			openai::Chat(prompt, api_key);
+			openai::Chat(prompt, api_key, model, vm["openai-temperature"].as<float>()) :
+			openai::Chat(prompt, api_key, model);
 		chain = chain | chat;
 	}
 
 	if (vm.count("openai-extract-entities"))
 	{
 		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::ExtractEntities extract_entities = vm.count("openai-temperature") ?
-			openai::ExtractEntities(api_key, vm["openai-temperature"].as<float>()) :
-			openai::ExtractEntities(api_key);
+			openai::ExtractEntities(api_key, model, vm["openai-temperature"].as<float>()) :
+			openai::ExtractEntities(api_key, model);
 		chain = chain | extract_entities;
 	}
 
@@ -242,36 +251,40 @@ int main(int argc, char* argv[])
 	{
 		unsigned int max_keywords = vm["openai-extract-keywords"].as<unsigned int>();
 		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::ExtractKeywords extract_keywords = vm.count("openai-temperature") ?
-			openai::ExtractKeywords(max_keywords, api_key, vm["openai-temperature"].as<float>()) :
-			openai::ExtractKeywords(max_keywords, api_key);
+			openai::ExtractKeywords(max_keywords, api_key, model, vm["openai-temperature"].as<float>()) :
+			openai::ExtractKeywords(max_keywords, api_key, model);
 		chain = chain | extract_keywords;
 	}
 
 	if (vm.count("openai-summarize"))
 	{
 		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::Summarize summarize = vm.count("openai-temperature") ?
-			openai::Summarize(api_key, vm["openai-temperature"].as<float>()) :
-			openai::Summarize(api_key);
+			openai::Summarize(api_key, model, vm["openai-temperature"].as<float>()) :
+			openai::Summarize(api_key, model);
 		chain = chain | summarize;
 	}
 
 	if (vm.count("openai-detect-sentiment"))
 	{
 		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::DetectSentiment detect_sentiment = vm.count("openai-temperature") ?
-			openai::DetectSentiment(api_key, vm["openai-temperature"].as<float>()) :
-			openai::DetectSentiment(api_key);
+			openai::DetectSentiment(api_key, model, vm["openai-temperature"].as<float>()) :
+			openai::DetectSentiment(api_key, model);
 		chain = chain | detect_sentiment;
 	}
 
 	if (vm.count("openai-analyze-data"))
 	{
 		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::AnalyzeData analyze_data = vm.count("openai-temperature") ?
-			openai::AnalyzeData(api_key, vm["openai-temperature"].as<float>()) :
-			openai::AnalyzeData(api_key);
+			openai::AnalyzeData(api_key, model, vm["openai-temperature"].as<float>()) :
+			openai::AnalyzeData(api_key, model);
 		chain = chain | analyze_data;
 	}
 
@@ -280,9 +293,10 @@ int main(int argc, char* argv[])
 		const std::vector<std::string>& categories = vm["openai-classify"].as<std::vector<std::string>>();
 		std::set<std::string> categories_set(categories.begin(), categories.end());
 		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::Classify classify = vm.count("openai-temperature") ?
-			openai::Classify(categories_set, api_key, vm["openai-temperature"].as<float>()) :
-			openai::Classify(categories_set, api_key);
+			openai::Classify(categories_set, api_key, model, vm["openai-temperature"].as<float>()) :
+			openai::Classify(categories_set, api_key, model);
 		chain = chain | classify;
 	}
 
@@ -290,9 +304,10 @@ int main(int argc, char* argv[])
 	{
 		std::string language = vm["openai-translate-to"].as<std::string>();
 		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::TranslateTo translate_to = vm.count("openai-temperature") ?
-			openai::TranslateTo(language, api_key, vm["openai-temperature"].as<float>()) :
-			openai::TranslateTo(language, api_key);
+			openai::TranslateTo(language, api_key, model, vm["openai-temperature"].as<float>()) :
+			openai::TranslateTo(language, api_key, model);
 		chain = chain | translate_to;
 	}
 

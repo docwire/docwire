@@ -18,8 +18,8 @@ namespace docwire
 namespace openai
 {
 
-ExtractEntities::ExtractEntities(const std::string& api_key, float temperature)
-	: Chat("Your task is to find all dates, timespans, addresses, companies and person names inside every message. Show it as formatted list.", api_key, temperature)
+ExtractEntities::ExtractEntities(const std::string& api_key, Model model, float temperature)
+	: Chat("Your task is to find all dates, timespans, addresses, companies and person names inside every message. Show it as formatted list.", api_key, model, temperature)
 {
 	docwire_log_func();
 }
