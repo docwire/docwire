@@ -20,10 +20,16 @@ namespace docwire
 namespace openai
 {
 
+enum class Model
+{
+	gpt35_turbo, gpt35_turbo_16k, gpt35_turbo_1106,
+	gpt4, gpt4_32k, gpt4_1106_preview
+};
+
 class DllExport Chat : public ChainElement
 {
 public:
-	Chat(const std::string& system_message, const std::string& api_key, float temperature = 0.7);
+	Chat(const std::string& system_message, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0.7);
 	Chat(const Chat& other);
 	virtual ~Chat();
 

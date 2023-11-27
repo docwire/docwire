@@ -57,6 +57,7 @@ Unreleased:
     * Add docwire.h as a general header simplyfing applications using SDK at the expence of compiling time
     * Add examples for some OpenAI components
     * Upgrade VCPKG and in the same time all SDK dependencies to 2023.11.20
+    * Add support for gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-3.5-turbo-1106, gpt-4, gpt-4-32k and gpt-4-1106-preview models selection
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed
