@@ -31,9 +31,12 @@ set(DOXYGEN_USE_MDFILE_AS_MAINPAGE ../README.md)
 # Generate 'doxygen' target
 # -----------------------------------------------------
 
+include(../tools/generate_3rdparty_components_doc.cmake)
+
 doxygen_add_docs(
     doxygen
     ../README.md api.dox ../src/importer.h ../src/exporter.h ../src/transformer_func.h ../src/parsing_chain.h ../src/html_writer.h ../src/meta_data_writer.h ../src/parser.h ../src/parser_builder.h ../src/parser_manager.h  ../src/parser_parameters.h ../src/parser_wrapper.h ../src/plain_text_writer.h ../src/simple_extractor.h ../src/standard_filter.h ../src/metadata.h ../src/link.h ../src/formatting_style.h ../src/exception.h ../src/parser_provider.h
+    ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
     COMMENT "Generate html documentation of DocWire SDK"
     ALL
 )
