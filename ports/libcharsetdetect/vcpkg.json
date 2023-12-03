@@ -2,6 +2,8 @@
 	"name": "libcharsetdetect",
 	"version-date": "2017-04-03",
 	"description": "libcharsetdetect",
+	"homepage": "https://github.com/batterseapower/libcharsetdetect",
+	"license": "BSD-3-Clause",
 	"dependencies": [
 		{
 			"name": "vcpkg-cmake",

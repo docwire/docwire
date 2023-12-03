@@ -2,6 +2,7 @@
 	"name": "wv2",
 	"version": "0.2.3",
 	"description": "wv2",
+	"license": "LGPL-2.0-only",
 	"dependencies": [
 		{
 			"name": "vcpkg-cmake",
