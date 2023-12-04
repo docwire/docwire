@@ -89,7 +89,7 @@ endfunction()
 
 function(extract_full_license_info port_name out_var)
 	message("Extracting full license info")
-	file(READ ${CMAKE_SOURCE_DIR}/vcpkg/installed/x64-linux-dynamic/share/${port_name}/copyright copyright_text)
+	file(READ ${CMAKE_SOURCE_DIR}/vcpkg/installed/${VCPKG_TARGET_TRIPLET}/share/${port_name}/copyright copyright_text)
 	set(${out_var} ${copyright_text} PARENT_SCOPE)
 endfunction()
 
@@ -244,5 +244,8 @@ function(write_port_info file_name port_name)
 	set(printed_ports ${printed_ports} CACHE INTERNAL "")
 endfunction()
 
+if (NOT DEFINED VCPKG_TARGET_TRIPLET)
+	message(FATAL_ERROR "VPKG_TARGET_TRIPLET must be set.")
+endif()
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md "# 3rdparty components\n\n")
 write_dependencies(${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md docwire)
