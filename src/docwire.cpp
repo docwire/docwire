@@ -329,15 +329,15 @@ int main(int argc, char* argv[])
 	}
 catch (Exception& ex)
   {
-      std::cout << "Error processing file " + file_name + ".\n" + ex.getBacktrace();
+		std::cerr << "Error processing file " + file_name + ".\n" + ex.getBacktrace();
   }
 	catch (const std::exception& e)
 	{
-		std::cout << "Error processing file " + file_name + ".\n" + e.what() << std::endl;
+		std::cerr << "Error processing file " + file_name + ".\n" + e.what() << std::endl;
 	}
   catch (...)
   {
-    std::cout << "Error processing file " + file_name + ". Unknown error.\n";
+		std::cerr << "Error processing file " + file_name + ". Unknown error.\n";
   }
 
   return 0;
