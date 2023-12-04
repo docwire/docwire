@@ -31,6 +31,7 @@
 #include "post.h"
 #include "standard_filter.h"
 #include "summarize.h"
+#include "text_to_speech.h"
 #include "transformer_func.h"
 #include "translate_to.h"
 #include "version.h"
@@ -115,8 +116,11 @@ int main(int argc, char* argv[])
 		("openai-analyze-data", "analyze exported data for inportant insights and generate conclusions via OpenAI")
 		("openai-classify", po::value<std::vector<std::string>>()->multitoken(), "classify exported data via OpenAI to one of specified categories")
 		("openai-translate-to", po::value<std::string>(), "language to translate exported data to via OpenAI")
+		("openai-text-to-speech", "convert text to speech via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
 		("openai-model", po::value<openai::Model>()->default_value(openai::Model::gpt35_turbo), enum_names_str<openai::Model>().c_str())
+		("openai-tts-model", po::value<openai::TextToSpeech::Model>()->default_value(openai::TextToSpeech::Model::tts1), enum_names_str<openai::TextToSpeech::Model>().c_str())
+		("openai-voice", po::value<openai::TextToSpeech::Voice>()->default_value(openai::TextToSpeech::Voice::alloy), enum_names_str<openai::TextToSpeech::Voice>().c_str())
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
 		("language", po::value<Language>()->default_value(Language::eng), "set document language for OCR")
 		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
@@ -309,6 +313,14 @@ int main(int argc, char* argv[])
 			openai::TranslateTo(language, api_key, model, vm["openai-temperature"].as<float>()) :
 			openai::TranslateTo(language, api_key, model);
 		chain = chain | translate_to;
+	}
+
+	if (vm.count("openai-text-to-speech"))
+	{
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::TextToSpeech::Model model = vm["openai-tts-model"].as<openai::TextToSpeech::Model>();
+		openai::TextToSpeech::Voice voice = vm["openai-voice"].as<openai::TextToSpeech::Voice>();
+		chain = chain | openai::TextToSpeech(api_key, model, voice);
 	}
 
 	try
