@@ -13,6 +13,7 @@
 
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
+#include <curlpp/Infos.hpp>
 #include <curlpp/Options.hpp>
 #include "exception.h"
 #include <fstream>
@@ -90,6 +91,9 @@ Post::process(Info &info) const
 	try
 	{
 		request.perform();
+		auto response_code = curlpp::infos::ResponseCode::get(request);
+		if (response_code < 200 || response_code > 299)
+			throw RequestFailed("HTTP response code is " + std::to_string(response_code) + " with response " + response_stream.str());
 	}
 	catch (curlpp::LogicError &e)
 	{
