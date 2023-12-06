@@ -32,6 +32,7 @@
 #include "standard_filter.h"
 #include "summarize.h"
 #include "text_to_speech.h"
+#include "transcribe.h"
 #include "transformer_func.h"
 #include "translate_to.h"
 #include "version.h"
@@ -117,6 +118,7 @@ int main(int argc, char* argv[])
 		("openai-classify", po::value<std::vector<std::string>>()->multitoken(), "classify exported data via OpenAI to one of specified categories")
 		("openai-translate-to", po::value<std::string>(), "language to translate exported data to via OpenAI")
 		("openai-text-to-speech", "convert text to speech via OpenAI")
+		("openai-transcribe", "convert speech to text (transcribe) via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
 		("openai-model", po::value<openai::Model>()->default_value(openai::Model::gpt35_turbo), enum_names_str<openai::Model>().c_str())
 		("openai-tts-model", po::value<openai::TextToSpeech::Model>()->default_value(openai::TextToSpeech::Model::tts1), enum_names_str<openai::TextToSpeech::Model>().c_str())
@@ -186,7 +188,16 @@ int main(int argc, char* argv[])
 
 	InputBase input = use_stream ? InputBase(&in_stream) : InputBase(file_name);
 
-	ParsingChain chain = input | DecompressArchives() | Importer(parameters, parser_manager);
+	ParsingChain chain = input | DecompressArchives();
+	if (vm.count("openai-transcribe"))
+	{
+		std::string api_key = vm["openai-key"].as<std::string>();
+		chain = chain | openai::Transcribe(api_key);
+	}
+	else
+	{
+		chain = chain | Importer(parameters, parser_manager);
+	}
 
 	if (vm.count("max_nodes_number"))
 	{
