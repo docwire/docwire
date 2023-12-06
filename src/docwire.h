@@ -23,6 +23,9 @@
 #include "html_exporter.h"
 #include "parsing_chain.h"
 #include "simple_extractor.h"
+#include "summarize.h"
+#include "text_to_speech.h"
+#include "transcribe.h"
 #include "transformer_func.h"
 #include "translate_to.h"
 
