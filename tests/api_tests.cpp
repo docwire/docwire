@@ -28,6 +28,7 @@
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "pthread.h"
+#include <regex>
 #include "transformer_func.h"
 #include "input.h"
 #include "log.h"
@@ -609,6 +610,29 @@ TEST(Http, Post)
 	output_val.as_object()["headers"].as_object().erase("user-agent");
 
 	EXPECT_EQ(read_test_file("http_post.out.json"), serialize(output_val));
+}
+
+TEST(Http, PostForm)
+{
+	std::shared_ptr<ParserManager> parser_manager(new ParserManager());
+	std::stringstream output;
+	std::ifstream in("1.docx", std::ios_base::binary);
+	ASSERT_NO_THROW(
+	{
+		Input(&in)
+			| Importer(ParserParameters(), parser_manager)
+			| PlainTextExporter()
+			| http::Post("https://postman-echo.com/post", {{"field1", "value1"}, {"field2", "value2"}}, "file", "file.docx")
+			| Output(output);
+	});
+
+	using namespace boost::json;
+	std::string output_str = std::regex_replace(output.str(), std::regex("boundary=[^\"]+"), "boundary=<boundary>");
+	value output_val = parse(output_str);
+	output_val.as_object()["headers"].as_object().erase("x-amzn-trace-id");
+	output_val.as_object()["headers"].as_object().erase("user-agent");
+
+	EXPECT_EQ(read_test_file("http_post_form.out.json"), serialize(output_val));
 }
 
 namespace test_ns
