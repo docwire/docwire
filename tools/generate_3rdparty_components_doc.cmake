@@ -227,23 +227,32 @@ function(write_port_info file_name port_name)
 		return()
 	endif()
 	message("*** Processing ${port_name} ...")
-	file(APPEND ${file_name} "## ${port_name}\n\n")
 	extract_version(${port_name} version)
 	extract_homepage(${port_name} homepage)
 	port_required_by(${port_name} required_by)
 	docwire_modules_using_dependency(${port_name} modules)
-	file(APPEND ${file_name} "Version: ${version}\nHomepage: ${homepage}\nRequired by: ${required_by}\nDocWire modules: ${modules}\n\n")
-	file(APPEND ${file_name} "### Short license summary\n")
 	extract_license_expression(${port_name} license_expr)
-	file(APPEND ${file_name} "SPDX-License-Identifier: ${license_expr}\n")
+	file(APPEND ${file_name}
+		"## ${port_name}\n\n"
+		"### Basic information\n\n"
+		"Version: ${version}\n\n"
+		"Homepage: ${homepage}\n\n"
+		"Required by: ${required_by}\n\n"
+		"DocWire modules: ${modules}\n\n")
+	file(APPEND ${file_name} "### Short license summary\n\n")
+	file(APPEND ${file_name} "SPDX-License-Identifier: ${license_expr}\n\n")
 	parse_spdx_license_expression(${license_expr} license_ids)
 	message("licenses_ids=${license_ids}")
 	foreach(license_id ${license_ids})
 		license_description_from_license_id(${license_id} license_desc)
-		file(APPEND ${file_name} "${license_desc}\n")
+		file(APPEND ${file_name} "${license_id}: ${license_desc}\n\n")
 	endforeach()
 	extract_full_license_info(${port_name} copyright_text)
-	file(APPEND ${file_name} "\n### Full copyright information\n```\n${copyright_text}\n```\n\n")
+	file(APPEND ${file_name}
+		"### Full copyright information and disclaimer\n"
+		"```\n"
+		"${copyright_text}\n"
+		"```\n\n")
 	write_dependencies(${file_name} ${port_name})
 	message("Port ${port_name} processed")
 	list(APPEND printed_ports ${port_name})
@@ -253,5 +262,15 @@ endfunction()
 if (NOT DEFINED VCPKG_TARGET_TRIPLET)
 	message(FATAL_ERROR "VPKG_TARGET_TRIPLET must be set.")
 endif()
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md "# 3rdparty components\n\n")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
+	"# 3rdparty components used\n\n"
+	"The DocWire SDK incorporates code that falls under licenses separate from the GNU General Public License or the DocWire Commercial License;\n"
+	"instead, it operates under specific licenses granted by the original authors.\n\n"
+	"We express our gratitude for all contributions to the DocWire SDK and encourage users to acknowledge these contributions.\n"
+	"It is recommended that programs using the SDK include these acknowledgments, along with relevant license statements and disclaimers,\n"
+	"in an appendix to the documentation.\n\n"
+	"It's important to note that all third-party components integrated into the DocWire SDK are licensed under open-source licenses.\n"
+	"This allows their free usage, even in closed-source commercial software, without incurring licensing fees.\n\n"
+	"Compliance with and acknowledgment of the licenses associated with third-party components is required only for those specific components used in your application.\n\n"
+	"For a convenient and swift application of all necessary statements, you can utilize the following summary:\n\n")
 write_dependencies(${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md docwire)
