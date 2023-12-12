@@ -165,7 +165,7 @@ function(license_description_from_license_id license_id out_var)
 	set(license_desc_GPL-2.0 "The GNU GPL is the most widely used free software license and has a strong copyleft requirement. When distributing derived works, the source code of the work must be made available under the same license. There are multiple variants of the GNU GPL, each with different requirements.")
 	set(license_desc_ISC "A permissive license lets people do anything with your code with proper attribution and without warranty. The ISC license is functionally equivalent to the BSD 2-Clause and MIT licenses, removing some language that is no longer necessary.")
 	set(license_desc_Zlib "A short permissive license, compatible with GPL. Requires altered source versions to be documented as such.")
-	set(license_desc_LGPL-2.0 "Primarily used for software libraries, the GNU LGPL requires that derived works be licensed under the same license, but works that only link to it do not fall under this restriction. There are two commonly used versions of the GNU LGPL.")
+	set(license_desc_LGPL-2.1 "Primarily used for software libraries, the GNU LGPL requires that derived works be licensed under the same license, but works that only link to it do not fall under this restriction. There are two commonly used versions of the GNU LGPL.")
 	set(license_desc_LGPL-3.0 "Permissions of this copyleft license are conditioned on making available complete source code of licensed works and modifications under the same license or the GNU GPLv3. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. However, a larger work using the licensed work through interfaces provided by the licensed work may be distributed under different terms and without source code for the larger work.")
 	set(license_desc_Apache-2.0 "A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code.")
 	# license description from https://curl.se/docs/copyright.html
@@ -176,6 +176,8 @@ function(license_description_from_license_id license_id out_var)
 	set(license_desc_libpng-2.0 "The libpng-2.0 license is a permissive open-source license that allows the use, modification, and distribution of the libpng library in both commercial and non-commercial projects, with a disclaimer of warranty.")
 	# license description from https://gitlab.com/libtiff/libtiff
 	set(license_desc_libtiff "Silicon Graphics has seen fit to allow us to give this work away. It is free. There is no support or guarantee of any sort as to its operations, correctness, or whatever. If you do anything useful with all or parts of it you need to honor the copyright notices. I would also be interested in knowing about it and, hopefully, be acknowledged.")
+	# reuse description. LGPL-2.1 introduced only updates and clarifications
+	set(license_desc_LGPL-2.0 ${license_desc_LGPL-2.1})
 	if (DEFINED license_desc_${license_id})
 		set(${out_var} ${license_desc_${license_id}} PARENT_SCOPE)
 		return()
