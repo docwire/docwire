@@ -279,9 +279,6 @@ function(write_port_info file_name port_name)
 	set(printed_ports ${printed_ports} CACHE INTERNAL "")
 endfunction()
 
-if (NOT DEFINED VCPKG_TARGET_TRIPLET)
-	message(FATAL_ERROR "VPKG_TARGET_TRIPLET must be set.")
-endif()
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
 	"# 3rdparty components used\n\n"
 	"The DocWire SDK incorporates code that falls under licenses separate from the GNU General Public License or the DocWire Commercial License;\n"
@@ -291,6 +288,17 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
 	"in an appendix to the documentation.\n\n"
 	"It's important to note that all third-party components integrated into the DocWire SDK are licensed under open-source licenses.\n"
 	"This allows their free usage, even in closed-source commercial software, without incurring licensing fees.\n\n"
-	"Compliance with and acknowledgment of the licenses associated with third-party components is required only for those specific components used in your application.\n\n"
-	"For a convenient and swift application of all necessary statements, you can utilize the following summary:\n\n")
-write_dependencies(${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md docwire)
+	"Compliance with and acknowledgment of the licenses associated with third-party components is required only for those specific components used in your application.\n\n")
+if (DEFINED ENV{READTHEDOCS})
+	file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
+		"Due to the platform-dependent nature of SDK compilation, the comprehensive list of components is included in the offline documentation,\n"
+		"conveniently situated in the same section as this statement within the online documentation.\n"
+		"Access to this information is available upon the successful compilation of the SDK on the designated platform.\n\n")
+else()
+	if (NOT DEFINED VCPKG_TARGET_TRIPLET)
+		message(FATAL_ERROR "VPKG_TARGET_TRIPLET must be set.")
+	endif()
+	file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
+		"For a convenient and swift application of all necessary statements, you can utilize the following summary:\n\n")
+	write_dependencies(${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md docwire)
+endif()
