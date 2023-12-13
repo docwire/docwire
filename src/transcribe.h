@@ -9,24 +9,23 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_HTTP_POST_H
-#define DOCWIRE_HTTP_POST_H
+#ifndef DOCWIRE_TRANSCRIBE_H
+#define DOCWIRE_TRANSCRIBE_H
 
 #include "chain_element.h"
 #include "exception.h"
 
 namespace docwire
 {
-namespace http
+namespace openai
 {
 
-class DllExport Post : public ChainElement
+class DllExport Transcribe : public ChainElement
 {
 public:
-	Post(const std::string& url, const std::string& oauth2_bearer_token = "");
-	Post(const std::string& url, const std::map<std::string, std::string> form, const std::string& pipe_field_name, const std::string& default_file_name, const std::string& oauth2_bearer_token = "");
-	Post(const Post& other);
-	virtual ~Post();
+	Transcribe(const std::string& api_key);
+	Transcribe(const Transcribe& other);
+	virtual ~Transcribe();
 
 	/**
 	* @brief Executes transform operation for given node data.
@@ -41,21 +40,19 @@ public:
 	}
 
 	/**
-	* @brief Creates clone of the Post
-	* @return new Post
+	* @brief Creates clone of the Transcribe
+	* @return new Transcribe
 	*/
-	Post* clone() const override;
+	Transcribe* clone() const override;
 
-	DOCWIRE_EXCEPTION_DEFINE(RequestFailed, RuntimeError);
-	DOCWIRE_EXCEPTION_DEFINE(RequestIncorrect, LogicError);
-	DOCWIRE_EXCEPTION_DEFINE(FileTagIncorrect, LogicError);
+	DOCWIRE_EXCEPTION_DEFINE(HttpError, RuntimeError);
 
 private:
 	struct Implementation;
 	std::unique_ptr<Implementation> impl;
 };
 
-} // namespace http
+} // namespace openai
 } // namespace docwire
 
-#endif //DOCWIRE_HTTP_POST_H
+#endif //DOCWIRE_OPENAI_TRANSCRIBE_H

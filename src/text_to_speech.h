@@ -9,24 +9,33 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_HTTP_POST_H
-#define DOCWIRE_HTTP_POST_H
+#ifndef DOCWIRE_OPENAI_TEXT_TO_SPEECH_H
+#define DOCWIRE_OPENAI_TEXT_TO_SPEECH_H
 
 #include "chain_element.h"
 #include "exception.h"
 
 namespace docwire
 {
-namespace http
+namespace openai
 {
 
-class DllExport Post : public ChainElement
+class DllExport TextToSpeech : public ChainElement
 {
 public:
-	Post(const std::string& url, const std::string& oauth2_bearer_token = "");
-	Post(const std::string& url, const std::map<std::string, std::string> form, const std::string& pipe_field_name, const std::string& default_file_name, const std::string& oauth2_bearer_token = "");
-	Post(const Post& other);
-	virtual ~Post();
+	enum class Model
+	{
+		tts1, tts1_hd
+	};
+
+	enum class Voice
+	{
+		alloy, echo, fable, onyx, nova, shimmer
+	};
+
+	TextToSpeech(const std::string& api_key, Model model = Model::tts1, Voice voice = Voice::alloy);
+	TextToSpeech(const TextToSpeech& other);
+	virtual ~TextToSpeech();
 
 	/**
 	* @brief Executes transform operation for given node data.
@@ -41,21 +50,20 @@ public:
 	}
 
 	/**
-	* @brief Creates clone of the Post
-	* @return new Post
+	* @brief Creates clone of the TextToSpeech
+	* @return new TextToSpeech
 	*/
-	Post* clone() const override;
+	TextToSpeech* clone() const override;
 
-	DOCWIRE_EXCEPTION_DEFINE(RequestFailed, RuntimeError);
-	DOCWIRE_EXCEPTION_DEFINE(RequestIncorrect, LogicError);
-	DOCWIRE_EXCEPTION_DEFINE(FileTagIncorrect, LogicError);
+	DOCWIRE_EXCEPTION_DEFINE(HttpError, RuntimeError);
+	DOCWIRE_EXCEPTION_DEFINE(ParseResponseError, RuntimeError);
 
 private:
 	struct Implementation;
 	std::unique_ptr<Implementation> impl;
 };
 
-} // namespace http
+} // namespace openai
 } // namespace docwire
 
-#endif //DOCWIRE_HTTP_POST_H
+#endif //DOCWIRE_OPENAI_TEXT_TO_SPEECH_H

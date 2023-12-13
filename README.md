@@ -114,7 +114,9 @@ In our pursuit of excellence, DocWire SDK is committed to ongoing Research and D
     - DetectSentiment: Analyze and detect sentiment in text.
     - AnalyzeData: Perform data analysis on text content.
     - Chat: Conduct chat-based interactions and conversations.
-- Supports multiple LLM models: gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-3.5-turbo-1106, gpt-4, gpt-4-32k and gpt-4-1106-preview (world events up to April 2023, 128k context window that can fit more than 300 pages of text in a single prompt). More are coming.
+    - TextToSpeech: Perform written text into spoken words (voice) conversion (TTS).
+    - Transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
+- Supports multiple LLM models: gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-3.5-turbo-1106, gpt-4, gpt-4-32k and gpt-4-1106-preview (world events up to April 2023, 128k context window that can fit more than 300 pages of text in a single prompt), whisper-1, tts-1. More are coming.
 - Equipped with a high-grade, scriptable, and trainable OCR that has LSTM neural networks-based character recognition
 - Incremental parsing returning data as soon as they are available
 - Cross-platform: Linux, Windows, MacOSX, and more to come
@@ -219,6 +221,38 @@ int main(int argc, char* argv[])
   {
     using namespace docwire;
     Input(argv[1]) | Importer() | PlainTextExporter() | openai::DetectSentiment("api-key-1234", openai::Model::gpt4_1106_preview) | Output(std::cout);
+  }
+  return 0;
+}
+```
+
+Make a voice summary of document in any format (Office, PDF, mail, etc) in two steps: summarize using GPT model and convert the summary to speech using text to speech model. Result is saved to mp3 file:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  if (argc > 1)
+  {
+    using namespace docwire;
+    Input(argv[1]) | Importer() | PlainTextExporter() | openai::Summarize("api-key-1234") | openai::TextToSpeech("api-key-1234") | Output(std::ofstream("summary.mp3"));
+  }
+  return 0;
+}
+```
+
+Make a text summary of voice recording (e.g. mp3 file with meeting recording) in two steps: convert voice to text using Whisper-1 model and summarize text using GPT model:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  if (argc > 1)
+  {
+    using namespace docwire;
+    Input(argv[1]) | openai::Transcribe("api-key-1234") | PlainTextExporter() | openai::Summarize("api-key-1234") | Output(std::cout);
   }
   return 0;
 }
@@ -439,9 +473,13 @@ Unlock the power of OpenAI with the following options:
 - **&ndash;&ndash;openai-analyze-data**: Analyze exported data for important insights and generate conclusions via OpenAI.
 - **&ndash;&ndash;openai-classify <category>**: Classify exported data via OpenAI to one of the specified categories.
 - **&ndash;&ndash;openai-translate-to <language>**: Language to translate exported data to via OpenAI.
+- **&ndash;&ndash;openai-text-to-speech**: Convert text to speech via OpenAI
+- **&ndash;&ndash;openai-transcribe**: Convert speech to text (transcribe) via OpenAI
 - **&ndash;&ndash;openai-key <key>**: OpenAI API key.
 - **&ndash;&ndash;openai-model <model>** (default: gpt35_turbo): Choose the OpenAI model. Available models are: gpt35_turbo, gpt35_turbo_16k, gpt35_turbo_1106, gpt4, gpt4_32k and gpt4_1106_preview.
 - **&ndash;&ndash;openai-temperature <temp>**: Force specified temperature for OpenAI prompts.
+- **&ndash;&ndash;openai-tts-model <model>** (default: tts1): Choose the TTS model. Available models are: tts1, tts1_hd.
+- **&ndash;&ndash;openai-voice <voice>** (default: alloy): Choose voice for text to speech conversion. Available voices are: alloy, echo, fable, onyx, nova, shimmer.
 
 ### Additional Options
 
@@ -492,6 +530,14 @@ Translate your document into another language using OpenAI. Specify the target l
 
 ```bash
 docwire --openai-translate-to spanish document.docx
+```
+
+#### Summarization and text to speech conversion
+
+Summarize your document using GPT model, convert summary to audio using TTS model and read it loud:
+
+```bash
+docwire document.doc --openai-summarize --openai-text-to-speech | ffplay -nodisp -autoexit -
 ```
 
 Happy Document Processing with DocWire CLI!

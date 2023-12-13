@@ -11,6 +11,8 @@ add_library(docwire_core SHARED
         extract_keywords.cpp
         detect_sentiment.cpp
         analyze_data.cpp
+        text_to_speech.cpp
+        transcribe.cpp
         exception.cpp
         decompress_archives.cpp
         list_style.cpp
@@ -295,6 +297,8 @@ set(PUBLIC_HEADERS
 	extract_keywords.h
 	detect_sentiment.h
 	analyze_data.h
+	text_to_speech.h
+	transcribe.h
 	metadata.h
 	formatting_style.h
 	decompress_archives.h
