@@ -224,7 +224,7 @@ function(write_dependencies file_name port_name)
 		endif()
 		message(dep_name: ${dep_name})
 		message(dep_host: ${dep_host})
-		if(${dep_name} STREQUAL boost-uninstall OR ${dep_name} STREQUAL libiconv)
+		if(${dep_name} STREQUAL boost-uninstall OR ${dep_name} STREQUAL libiconv OR ${dep_name} STREQUAL pthread)
 			continue() # empty package
 		endif()
 		if(${dep_host})
