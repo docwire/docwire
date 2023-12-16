@@ -454,6 +454,20 @@ function(write_port_info file_name port_name)
 	set(printed_ports ${printed_ports} CACHE INTERNAL "")
 endfunction()
 
+function(check_if_empty_package port_name out_var)
+	if(${port_name} STREQUAL getopt OR ${port_name} STREQUAL boost-uninstall OR ${port_name} STREQUAL pthread)
+		set(${out_var} TRUE PARENT_SCOPE)
+	elseif(${port_name} STREQUAL dirent AND NOT ${VCPKG_TARGET_TRIPLET} MATCHES "uwp")
+		set(${out_var} TRUE PARENT_SCOPE)
+	elseif(${port_name} STREQUAL libiconv AND NOT ${VCPKG_TARGET_TRIPLET} MATCHES "windows" AND NOT ${VCPKG_TARGET_TRIPLET} MATCHES "uwp" AND NOT ${VCPKG_TARGET_TRIPLET} MATCHES "mingw" AND NOT ${VCPKG_TARGET_TRIPLET} MATCHES "android")
+		set(${out_var} TRUE PARENT_SCOPE)
+	elseif(${port_name} STREQUAL pthreads AND NOT ${VCPKG_TARGET_TRIPLET} MATCHES "windows" AND NOT ${VCPKG_TARGET_TRIPLET} MATCHES "uwp")
+		set(${out_var} TRUE PARENT_SCOPE)
+	else()
+		set(${out_var} FALSE PARENT_SCOPE)
+	endif()
+endfunction()
+
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
 	"# 3rdparty components used\n\n"
 	"The DocWire SDK incorporates code that falls under licenses separate from the GNU General Public License or the DocWire Commercial License;\n"
@@ -477,8 +491,9 @@ else()
 		"For a convenient and swift application of all necessary statements, you can utilize the following summary:\n\n")
 	all_dependencies(dependencies)
 	foreach(dep ${dependencies})
-		if(dep STREQUAL getopt OR dep STREQUAL dirent OR dep STREQUAL boost-uninstall OR dep STREQUAL libiconv OR dep STREQUAL pthread OR dep STREQUAL pthreads)
-			continue() # empty packages
+		check_if_empty_package(${dep} is_empty_package)
+		if(is_empty_package)
+			continue()
 		endif()
 		write_port_info(${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md ${dep})
 	endforeach()
