@@ -85,6 +85,7 @@ function(port_default_features port_name out_var)
 endfunction()
 
 function(traverse_dependency_tree_from_port port_name use_default_features features)
+	set(use_default_features TRUE) # this is forced in non-manifest mode, TODO: update if manifest-mode is implemented
 	if(${use_default_features})
 		port_default_features(${port_name} def_features)
 		list(APPEND features ${def_features})
