@@ -2,6 +2,8 @@
 	"name": "unzip",
 	"version-string": "1.01e",
 	"description": "unzip",
+	"homepage": "http://www.winimage.com/zLibDll",
+	"license": "Zlib",
 	"dependencies": [
 		{
 			"name": "vcpkg-cmake",

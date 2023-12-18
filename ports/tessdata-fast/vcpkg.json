@@ -2,6 +2,8 @@
 	"name": "tessdata-fast",
 	"version": "4.1.0",
 	"description": "tessdata-fast",
+	"homepage": "https://github.com/tesseract-ocr/tessdata_fast",
+	"license": "Apache-2.0",
 	"dependencies": [
 		{
 			"name": "vcpkg-cmake",

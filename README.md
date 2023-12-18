@@ -552,6 +552,10 @@ Product is double licensed:
 
 Please contact SILVERCODERS (http://silvercoders.com) for a commercial license for DocWire SDK.
 
+In addition DocWire SDK incorporates code that falls under licenses separate from the GNU General Public License or the DocWire Commercial License;
+instead, it operates under specific opensource licenses granted by the original authors.
+Details are described in "3rdparty components used" documentation chapter.
+
 Please keep in mind that any attempt to circumvent the terms of the GNU General Public License by employing wrappers, pipelines,
 client/server protocols, etc. is illegal. You must purchase a commercial license if your program, which is distributed under a license
 other than the GNU General Public License version 2, directly or indirectly calls any portion of this code.
