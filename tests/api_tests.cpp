@@ -53,6 +53,7 @@ protected:
         FormattingStyle style{};
         style.list_style.setPrefix(" * ");
         parameters += ParserParameters{ "formatting_style", style };
+        parameters += ParserParameters("language", Language::pol);
   }
 
 };
@@ -146,6 +147,12 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(1, 9, "numbers", std::nullopt),
         std::make_tuple(1, 9, "key", std::nullopt),
         std::make_tuple(1, 9, "html", std::nullopt),
+        std::make_tuple(1, 6, "bmp", std::nullopt),
+        std::make_tuple(1, 6, "jpg", std::nullopt),
+        std::make_tuple(1, 6, "jpeg", std::nullopt),
+        std::make_tuple(1, 6, "png", std::nullopt),
+        std::make_tuple(1, 6, "tiff", std::nullopt),
+        std::make_tuple(1, 6, "webp", std::nullopt),
         std::make_tuple(1, 1, "pst", std::nullopt)
                       ),
     [](const ::testing::TestParamInfo<DocumentTests::ParamType>& info) {
@@ -509,6 +516,12 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(1, 9, "numbers"),
         std::make_tuple(1, 9, "key"),
         std::make_tuple(1, 9, "html"),
+        std::make_tuple(1, 6, "bmp"),
+        std::make_tuple(1, 6, "jpg"),
+        std::make_tuple(1, 6, "jpeg"),
+        std::make_tuple(1, 6, "png"),
+        std::make_tuple(1, 6, "tiff"),
+        std::make_tuple(1, 6, "webp"),
         std::make_tuple(1, 1, "pst")
                       ),
     [](const ::testing::TestParamInfo<MultithreadedTest::ParamType>& info) {
