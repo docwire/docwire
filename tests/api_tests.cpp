@@ -18,6 +18,7 @@
 #include <fstream>
 #include "html_exporter.h"
 #include "importer.h"
+#include "language.h"
 #include <iterator>
 #include <array>
 #include "../src/simple_extractor.h"

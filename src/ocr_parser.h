@@ -16,8 +16,8 @@
 #include <memory>
 #include <iosfwd>
 
-
 #include "formatting_style.h"
+#include "language.h"
 #include "parser.h"
 #include "parser_builder.h"
 

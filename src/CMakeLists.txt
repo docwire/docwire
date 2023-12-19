@@ -301,6 +301,7 @@ set(PUBLIC_HEADERS
 	transcribe.h
 	metadata.h
 	formatting_style.h
+	language.h
 	decompress_archives.h
 	exception.h
 	attachment.h
