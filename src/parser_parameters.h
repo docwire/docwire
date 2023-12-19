@@ -28,7 +28,7 @@ namespace docwire
  *
  * Example:
  * @code
- * ParserParameters parameters("language", Language::english); // Important: explicit type
+ * ParserParameters parameters("language", Language::eng); // Important: explicit type
  * parameters += ParserParameters("TESSDATA_PREFIX", "tessdata"); // Adds second parameter
  *
  * Importer importer("img.jpg");
