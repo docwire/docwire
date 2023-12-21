@@ -54,7 +54,7 @@ protected:
         FormattingStyle style{};
         style.list_style.setPrefix(" * ");
         parameters += ParserParameters{ "formatting_style", style };
-        parameters += ParserParameters("language", Language::pol);
+        parameters += ParserParameters("languages", std::set { Language::pol });
   }
 
 };

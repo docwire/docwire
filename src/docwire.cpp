@@ -39,6 +39,7 @@
 #include "version.h"
 #include "parsing_chain.h"
 #include "input.h"
+#include <set>
 
 using namespace docwire;
 
@@ -125,7 +126,7 @@ int main(int argc, char* argv[])
 		("openai-tts-model", po::value<openai::TextToSpeech::Model>()->default_value(openai::TextToSpeech::Model::tts1), enum_names_str<openai::TextToSpeech::Model>().c_str())
 		("openai-voice", po::value<openai::TextToSpeech::Voice>()->default_value(openai::TextToSpeech::Voice::alloy), enum_names_str<openai::TextToSpeech::Voice>().c_str())
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
-		("language", po::value<Language>()->default_value(Language::eng), "set document language for OCR")
+		("language", po::value<std::vector<Language>>()->default_value({Language::eng}, "eng"), "set document language(s) for OCR")
 		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
 		("min_creation_time", po::value<unsigned int>(), "filter emails by min creation time")
 		("max_creation_time", po::value<unsigned int>(), "filter emails by max creation time")
@@ -180,7 +181,12 @@ int main(int argc, char* argv[])
 
 	ParserParameters parameters;
 	parameters += ParserParameters("formatting_style", formatting_style);
-	parameters += ParserParameters("language", vm["language"].as<Language>());
+	if (vm.count("language"))
+	{
+		const std::vector<Language>& languages = vm["language"].as<std::vector<Language>>();
+		std::set<Language> languages_set(languages.begin(), languages.end());
+		parameters += ParserParameters("languages", languages_set);
+	}
 
 	docwire_log_vars(use_stream, file_name);
 	std::ifstream in_stream;

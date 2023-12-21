@@ -30,6 +30,7 @@
 #include "exception.h"
 #include "log.h"
 #include "misc.h"
+#include <numeric>
 
 namespace docwire
 {
@@ -178,7 +179,7 @@ bool cancel (void* data, int words)
 
 using magic_enum::ostream_operators::operator<<;
 
-std::string OCRParser::plainText(const FormattingStyle& formatting, const Language lang) const
+std::string OCRParser::plainText(const FormattingStyle& formatting, const std::set<Language>& languages) const
 {
     tessAPIWrapper api{ nullptr, tessAPIDeleter };
     try
@@ -200,7 +201,14 @@ std::string OCRParser::plainText(const FormattingStyle& formatting, const Langua
       impl->m_tessdata_prefix = locate_resource("tessdata-fast").string();
     }
 
-    if (api->Init(impl->m_tessdata_prefix.c_str(), boost::lexical_cast<std::string>(lang).c_str())) {
+    std::string langs = std::accumulate(languages.begin(), languages.end(), std::string{},
+      [](const std::string& acc, const Language& lang)
+      {
+        return acc + (acc.empty() ? "" : "+") + boost::lexical_cast<std::string>(lang);
+      });
+    docwire_log_var(langs);
+
+    if (api->Init(impl->m_tessdata_prefix.c_str(), langs.c_str())) {
         throw Exception{ "Could not initialize tesseract.\n" };
     }
 
@@ -279,8 +287,8 @@ OCRParser::parse() const
 {
   docwire_log(debug) << "Using OCR parser.";
   Info info(StandardTag::TAG_TEXT);
-  auto language = m_parameters.getParameterValue<Language>("language");
-  info.plain_text = plainText(getFormattingStyle(), language ? *language : Language::eng);
+  auto language = m_parameters.getParameterValue<std::set<Language>>("languages");
+  info.plain_text = plainText(getFormattingStyle(), language ? *language : std::set({ Language::eng }));
   impl->m_on_new_node_signal(info);
 }
 

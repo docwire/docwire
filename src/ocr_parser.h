@@ -47,7 +47,8 @@ public:
 
     void setTessdataPrefix(const std::string& tessdata_prefix);
     bool isOCR() const;
-    std::string plainText(const FormattingStyle& formatting, const Language lang) const;
+private:
+    std::string plainText(const FormattingStyle& formatting, const std::set<Language>& languages) const;
 };
 
 } // namespace docwire
