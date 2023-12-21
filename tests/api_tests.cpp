@@ -317,6 +317,43 @@ TEST_P(MiscDocumentTest, SimpleExtractorTest)
 
     // WHEN
     SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
+	if (file_name.find(".png") != std::string::npos)
+	{
+		ParserParameters parameters{};
+		std::set<Language> langs;
+		if (file_name.find("_eng") != std::string::npos)
+			langs.insert(Language::eng);
+		if (file_name.find("_chi_sim") != std::string::npos)
+			langs.insert(Language::chi_sim);
+		if (file_name.find("_fra") != std::string::npos)
+			langs.insert(Language::fra);
+		if (file_name.find("_deu") != std::string::npos)
+			langs.insert(Language::deu);
+		if (file_name.find("_chi_tra") != std::string::npos)
+			langs.insert(Language::chi_tra);
+		if (file_name.find("_rus") != std::string::npos)
+			langs.insert(Language::rus);
+		if (file_name.find("_jpn") != std::string::npos)
+			langs.insert(Language::jpn);
+		if (file_name.find("_spa") != std::string::npos)
+			langs.insert(Language::spa);
+		if (file_name.find("_ara") != std::string::npos)
+			langs.insert(Language::ara);
+		if (file_name.find("_lat") != std::string::npos)
+			langs.insert(Language::lat);
+		if (file_name.find("_grc") != std::string::npos)
+			langs.insert(Language::grc);
+		if (file_name.find("_hin") != std::string::npos)
+			langs.insert(Language::hin);
+		if (file_name.find("_san") != std::string::npos)
+			langs.insert(Language::san);
+		if (file_name.find("_swa") != std::string::npos)
+			langs.insert(Language::swa);
+		if (file_name.find("_kor") != std::string::npos)
+			langs.insert(Language::kor);
+		parameters += ParserParameters("languages", langs);
+		simple_extractor.addParameters(parameters);
+	}
     std::string parsed_text{ simple_extractor.getPlainText() };
         
     // THEN
@@ -372,7 +409,11 @@ INSTANTIATE_TEST_SUITE_P(
         "test.tar.gz",
         "test.tar.bz2",
         "test.tar.xz",
-        "test.rar"
+        "test.rar",
+		"multilang_eng_chi_sim_fra_deu.png",
+		"multilang_chi_tra_rus_jpn.png",
+		"multilang_spa_ara_lat_grc.png",
+		"multilang_hin_san_swa_kor.png"
                       ),
     [](const ::testing::TestParamInfo<MiscDocumentTest::ParamType>& info) {
         std::string file_name = info.param;
