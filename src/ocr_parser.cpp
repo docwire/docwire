@@ -288,7 +288,7 @@ OCRParser::parse() const
   docwire_log(debug) << "Using OCR parser.";
   Info info(StandardTag::TAG_TEXT);
   auto language = m_parameters.getParameterValue<std::set<Language>>("languages");
-  info.plain_text = plainText(getFormattingStyle(), language ? *language : std::set({ Language::eng }));
+  info.plain_text = plainText(getFormattingStyle(), language && language->size() > 0 ? *language : std::set({ Language::eng }));
   impl->m_on_new_node_signal(info);
 }
 
