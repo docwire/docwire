@@ -61,6 +61,8 @@ Unreleased:
     * Move CLI documentation to README
     * openai::TextToSpeech and openai::Transcribe transformers added
     * Add automatic generation of 3rdparty components licensing documentation chapter
+    * Add support for all Tesseract OCR languages
+    * Add support for multiple languages in single OCR process
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed

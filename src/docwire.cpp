@@ -23,6 +23,7 @@
 #include "formatting_style.h"
 #include "html_exporter.h"
 #include "importer.h"
+#include "language.h"
 #include "log.h"
 #include <magic_enum_iostream.hpp>
 #include "meta_data_exporter.h"
@@ -38,6 +39,7 @@
 #include "version.h"
 #include "parsing_chain.h"
 #include "input.h"
+#include <set>
 
 using namespace docwire;
 
@@ -124,7 +126,7 @@ int main(int argc, char* argv[])
 		("openai-tts-model", po::value<openai::TextToSpeech::Model>()->default_value(openai::TextToSpeech::Model::tts1), enum_names_str<openai::TextToSpeech::Model>().c_str())
 		("openai-voice", po::value<openai::TextToSpeech::Voice>()->default_value(openai::TextToSpeech::Voice::alloy), enum_names_str<openai::TextToSpeech::Voice>().c_str())
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
-		("language", po::value<Language>()->default_value(Language::eng), "set document language for OCR")
+		("language", po::value<std::vector<Language>>()->default_value({Language::eng}, "eng"), "Set the document language(s) for OCR as ISO 639-3 identifiers like: spa, fra, deu, rus, chi_sim, chi_tra etc. More than 100 languages are supported. Multiple languages can be enabled.")
 		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
 		("min_creation_time", po::value<unsigned int>(), "filter emails by min creation time")
 		("max_creation_time", po::value<unsigned int>(), "filter emails by max creation time")
@@ -179,7 +181,11 @@ int main(int argc, char* argv[])
 
 	ParserParameters parameters;
 	parameters += ParserParameters("formatting_style", formatting_style);
-	parameters += ParserParameters("language", vm["language"].as<Language>());
+	if (vm.count("language"))
+	{
+		const std::vector<Language>& languages = vm["language"].as<std::vector<Language>>();
+		parameters += ParserParameters("languages", languages);
+	}
 
 	docwire_log_vars(use_stream, file_name);
 	std::ifstream in_stream;

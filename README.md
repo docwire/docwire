@@ -1,6 +1,6 @@
 # DocWire SDK
 
-DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Community Choice & Microsoft support. AI-driven processing. Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining, document analysis. Offline processing possible for security and confidentiality.
+DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Community Choice & Microsoft support. AI-driven processing. Supports nearly 100 data formats, including email boxes and OCR in more than 100 languages. Boost efficiency in text extraction, web data extraction, data mining, document analysis. Offline processing possible for security and confidentiality.
 
 **Embark on an exciting journey with DocWire SDK, where the philosophies of C++ converge with the power of data processing innovation. Explore the limitless possibilities today and witness the substantial enhancements that set it apart from its predecessor, DocToText.**
 
@@ -89,7 +89,7 @@ In our pursuit of excellence, DocWire SDK is committed to ongoing Research and D
     - Webpages: HTML, HTM, and CSS files
     - Rich Text Format: RTF files
     - Email formats with attachments: EML files, MS Outlook PST, OST files
-    - Image formats: JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP with OCR capabilities
+    - Image formats: JPG, JPEG, JFIF, BMP, PNM, PNG, TIFF, WEBP with OCR capabilities in more than 100 languages and multiple languages in single picture.
     - Apple iWork: PAGES, NUMBERS, KEYNOTE files
     - ODFXML (FODP, FODS, FODT)
     - Archives (ZIP, TAR, RAR, GZ, BZ2, XZ)
@@ -117,7 +117,7 @@ In our pursuit of excellence, DocWire SDK is committed to ongoing Research and D
     - TextToSpeech: Perform written text into spoken words (voice) conversion (TTS).
     - Transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
 - Supports multiple LLM models: gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-3.5-turbo-1106, gpt-4, gpt-4-32k and gpt-4-1106-preview (world events up to April 2023, 128k context window that can fit more than 300 pages of text in a single prompt), whisper-1, tts-1. More are coming.
-- Equipped with a high-grade, scriptable, and trainable OCR that has LSTM neural networks-based character recognition
+- Equipped with a high-grade, scriptable, and trainable OCR that has LSTM neural networks-based character recognition OCR capabilities in more than 100 languages and multiple languages in single picture.
 - Incremental parsing returning data as soon as they are available
 - Cross-platform: Linux, Windows, MacOSX, and more to come
 - Can be embedded in your application (SDK)
@@ -483,7 +483,7 @@ Unlock the power of OpenAI with the following options:
 
 ### Additional Options
 
-- **&ndash;&ndash;language <lang> (default: eng)**: Set the document language for OCR. Available language values include eng (English), spa (Spanish), rus (Russian), and pol (Polish).
+- **&ndash;&ndash;language <lang> (default: eng)**: Set the document language(s) for OCR as ISO 639-3 identifiers like: spa, fra, deu, rus, chi_sim, chi_tra etc. More than 100 languages are supported. Multiple languages can be enabled.
 - **&ndash;&ndash;use-stream <yes|no> (default: 0)**: Pass the file stream to the SDK instead of the filename.
 - **&ndash;&ndash;min_creation_time <timestamp>**: Filter emails by minimum creation time (currently applicable only to emails in PST/OST files).
 - **&ndash;&ndash;max_creation_time <timestamp>**: Filter emails by maximum creation time (currently applicable only to emails in PST/OST files).

@@ -50,14 +50,6 @@ namespace docwire
 		ListStyle list_style;
 	};
 
-	enum class Language 
-	{
-		eng,
-		spa,
-		rus,
-		pol,
-	};
-
 	enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
 } // namespace docwire
 

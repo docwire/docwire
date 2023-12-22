@@ -9,6 +9,7 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include "gtest/gtest.h"
 #include "../src/exception.h"
@@ -18,8 +19,10 @@
 #include <fstream>
 #include "html_exporter.h"
 #include "importer.h"
+#include "language.h"
 #include <iterator>
 #include <array>
+#include "magic_enum_iostream.hpp"
 #include "../src/simple_extractor.h"
 #include "../src/standard_filter.h"
 #include <optional>
@@ -33,10 +36,11 @@
 #include "input.h"
 #include "log.h"
 
-void dots_to_underscores(std::string& str)
+void escape_test_name(std::string& str)
 {
     std::transform(str.cbegin(), str.cend(), str.begin(), [](const auto ch)
         {   if(ch == '.') return '_'; 
+            else if(ch == '-') return '_';
             else return ch; 
         }
     );
@@ -53,6 +57,7 @@ protected:
         FormattingStyle style{};
         style.list_style.setPrefix(" * ");
         parameters += ParserParameters{ "formatting_style", style };
+        parameters += ParserParameters("languages", std::vector { Language::pol });
   }
 
 };
@@ -146,6 +151,12 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(1, 9, "numbers", std::nullopt),
         std::make_tuple(1, 9, "key", std::nullopt),
         std::make_tuple(1, 9, "html", std::nullopt),
+        std::make_tuple(1, 6, "bmp", std::nullopt),
+        std::make_tuple(1, 6, "jpg", std::nullopt),
+        std::make_tuple(1, 6, "jpeg", std::nullopt),
+        std::make_tuple(1, 6, "png", std::nullopt),
+        std::make_tuple(1, 6, "tiff", std::nullopt),
+        std::make_tuple(1, 6, "webp", std::nullopt),
         std::make_tuple(1, 1, "pst", std::nullopt)
                       ),
     [](const ::testing::TestParamInfo<DocumentTests::ParamType>& info) {
@@ -283,7 +294,7 @@ INSTANTIATE_TEST_SUITE_P(
                       ),
     [](const ::testing::TestParamInfo<HTMLWriterTest::ParamType>& info) {
         std::string file_name = info.param;
-        dots_to_underscores(file_name);
+        escape_test_name(file_name);
 
         std::string name = file_name + "_basic_html_tests";
         return name;
@@ -309,6 +320,22 @@ TEST_P(MiscDocumentTest, SimpleExtractorTest)
 
     // WHEN
     SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
+	if (file_name.find(".png") != std::string::npos)
+	{
+		std::vector<std::string> fn_parts;
+		boost::split(fn_parts, file_name, boost::is_any_of("-."));
+		ParserParameters parameters{};
+		std::vector<Language> langs;
+		for (std::string fn_part: fn_parts)
+		{
+			std::string_view fn_part_view = fn_part;
+			std::optional<Language> lang = magic_enum::enum_cast<Language>(fn_part_view, magic_enum::case_insensitive);
+			if (lang)
+				langs.push_back(*lang);
+		}
+		parameters += ParserParameters("languages", langs);
+		simple_extractor.addParameters(parameters);
+	}
     std::string parsed_text{ simple_extractor.getPlainText() };
         
     // THEN
@@ -364,12 +391,15 @@ INSTANTIATE_TEST_SUITE_P(
         "test.tar.gz",
         "test.tar.bz2",
         "test.tar.xz",
-        "test.rar"
+        "test.rar",
+		"multilang-chi_sim-fra-deu-eng.png",
+		"multilang-chi_tra-rus-jpn.png",
+		"multilang-spa-ara-lat-grc.png",
+		"multilang-hin-san-swa-kor-eng.png"
                       ),
     [](const ::testing::TestParamInfo<MiscDocumentTest::ParamType>& info) {
         std::string file_name = info.param;
-        dots_to_underscores(file_name);
-
+        escape_test_name(file_name);
         std::string name = file_name + "_simple_extractor_test";
         return name;
     });
@@ -509,6 +539,12 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(1, 9, "numbers"),
         std::make_tuple(1, 9, "key"),
         std::make_tuple(1, 9, "html"),
+        std::make_tuple(1, 6, "bmp"),
+        std::make_tuple(1, 6, "jpg"),
+        std::make_tuple(1, 6, "jpeg"),
+        std::make_tuple(1, 6, "png"),
+        std::make_tuple(1, 6, "tiff"),
+        std::make_tuple(1, 6, "webp"),
         std::make_tuple(1, 1, "pst")
                       ),
     [](const ::testing::TestParamInfo<MultithreadedTest::ParamType>& info) {

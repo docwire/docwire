@@ -49,6 +49,7 @@ function(run_tests build_type)
 	vcpkg_execute_required_process(
 		COMMAND "ctest"
 			-V
+			--no-tests=error
 		WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}
 		LOGNAME test-${PORT}-${triplet_build_type}
 	)
