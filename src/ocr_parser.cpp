@@ -179,7 +179,7 @@ bool cancel (void* data, int words)
 
 using magic_enum::ostream_operators::operator<<;
 
-std::string OCRParser::plainText(const FormattingStyle& formatting, const std::set<Language>& languages) const
+std::string OCRParser::plainText(const FormattingStyle& formatting, const std::vector<Language>& languages) const
 {
     tessAPIWrapper api{ nullptr, tessAPIDeleter };
     try
@@ -287,8 +287,8 @@ OCRParser::parse() const
 {
   docwire_log(debug) << "Using OCR parser.";
   Info info(StandardTag::TAG_TEXT);
-  auto language = m_parameters.getParameterValue<std::set<Language>>("languages");
-  info.plain_text = plainText(getFormattingStyle(), language && language->size() > 0 ? *language : std::set({ Language::eng }));
+  auto language = m_parameters.getParameterValue<std::vector<Language>>("languages");
+  info.plain_text = plainText(getFormattingStyle(), language && language->size() > 0 ? *language : std::vector({ Language::eng }));
   impl->m_on_new_node_signal(info);
 }
 

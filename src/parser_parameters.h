@@ -28,7 +28,7 @@ namespace docwire
  *
  * Example:
  * @code
- * ParserParameters parameters("languages", std::set<Language>(Language::eng));
+ * ParserParameters parameters("languages", std::vector<Language>(Language::eng));
  * parameters += ParserParameters("TESSDATA_PREFIX", "tessdata"); // Adds second parameter
  *
  * Importer importer("img.jpg");

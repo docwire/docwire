@@ -184,8 +184,7 @@ int main(int argc, char* argv[])
 	if (vm.count("language"))
 	{
 		const std::vector<Language>& languages = vm["language"].as<std::vector<Language>>();
-		std::set<Language> languages_set(languages.begin(), languages.end());
-		parameters += ParserParameters("languages", languages_set);
+		parameters += ParserParameters("languages", languages);
 	}
 
 	docwire_log_vars(use_stream, file_name);

@@ -9,6 +9,7 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include "gtest/gtest.h"
 #include "../src/exception.h"
@@ -21,6 +22,7 @@
 #include "language.h"
 #include <iterator>
 #include <array>
+#include "magic_enum_iostream.hpp"
 #include "../src/simple_extractor.h"
 #include "../src/standard_filter.h"
 #include <optional>
@@ -34,10 +36,11 @@
 #include "input.h"
 #include "log.h"
 
-void dots_to_underscores(std::string& str)
+void escape_test_name(std::string& str)
 {
     std::transform(str.cbegin(), str.cend(), str.begin(), [](const auto ch)
         {   if(ch == '.') return '_'; 
+            else if(ch == '-') return '_';
             else return ch; 
         }
     );
@@ -54,7 +57,7 @@ protected:
         FormattingStyle style{};
         style.list_style.setPrefix(" * ");
         parameters += ParserParameters{ "formatting_style", style };
-        parameters += ParserParameters("languages", std::set { Language::pol });
+        parameters += ParserParameters("languages", std::vector { Language::pol });
   }
 
 };
@@ -291,7 +294,7 @@ INSTANTIATE_TEST_SUITE_P(
                       ),
     [](const ::testing::TestParamInfo<HTMLWriterTest::ParamType>& info) {
         std::string file_name = info.param;
-        dots_to_underscores(file_name);
+        escape_test_name(file_name);
 
         std::string name = file_name + "_basic_html_tests";
         return name;
@@ -319,38 +322,17 @@ TEST_P(MiscDocumentTest, SimpleExtractorTest)
     SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
 	if (file_name.find(".png") != std::string::npos)
 	{
+		std::vector<std::string> fn_parts;
+		boost::split(fn_parts, file_name, boost::is_any_of("-."));
 		ParserParameters parameters{};
-		std::set<Language> langs;
-		if (file_name.find("_eng") != std::string::npos)
-			langs.insert(Language::eng);
-		if (file_name.find("_chi_sim") != std::string::npos)
-			langs.insert(Language::chi_sim);
-		if (file_name.find("_fra") != std::string::npos)
-			langs.insert(Language::fra);
-		if (file_name.find("_deu") != std::string::npos)
-			langs.insert(Language::deu);
-		if (file_name.find("_chi_tra") != std::string::npos)
-			langs.insert(Language::chi_tra);
-		if (file_name.find("_rus") != std::string::npos)
-			langs.insert(Language::rus);
-		if (file_name.find("_jpn") != std::string::npos)
-			langs.insert(Language::jpn);
-		if (file_name.find("_spa") != std::string::npos)
-			langs.insert(Language::spa);
-		if (file_name.find("_ara") != std::string::npos)
-			langs.insert(Language::ara);
-		if (file_name.find("_lat") != std::string::npos)
-			langs.insert(Language::lat);
-		if (file_name.find("_grc") != std::string::npos)
-			langs.insert(Language::grc);
-		if (file_name.find("_hin") != std::string::npos)
-			langs.insert(Language::hin);
-		if (file_name.find("_san") != std::string::npos)
-			langs.insert(Language::san);
-		if (file_name.find("_swa") != std::string::npos)
-			langs.insert(Language::swa);
-		if (file_name.find("_kor") != std::string::npos)
-			langs.insert(Language::kor);
+		std::vector<Language> langs;
+		for (std::string fn_part: fn_parts)
+		{
+			std::string_view fn_part_view = fn_part;
+			std::optional<Language> lang = magic_enum::enum_cast<Language>(fn_part_view, magic_enum::case_insensitive);
+			if (lang)
+				langs.push_back(*lang);
+		}
 		parameters += ParserParameters("languages", langs);
 		simple_extractor.addParameters(parameters);
 	}
@@ -410,15 +392,14 @@ INSTANTIATE_TEST_SUITE_P(
         "test.tar.bz2",
         "test.tar.xz",
         "test.rar",
-		"multilang_eng_chi_sim_fra_deu.png",
-		"multilang_chi_tra_rus_jpn.png",
-		"multilang_spa_ara_lat_grc.png",
-		"multilang_hin_san_swa_kor.png"
+		"multilang-chi_sim-fra-deu-eng.png",
+		"multilang-chi_tra-rus-jpn.png",
+		"multilang-spa-ara-lat-grc.png",
+		"multilang-hin-san-swa-kor-eng.png"
                       ),
     [](const ::testing::TestParamInfo<MiscDocumentTest::ParamType>& info) {
         std::string file_name = info.param;
-        dots_to_underscores(file_name);
-
+        escape_test_name(file_name);
         std::string name = file_name + "_simple_extractor_test";
         return name;
     });
