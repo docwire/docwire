@@ -118,7 +118,7 @@ struct pffItem
 	}
 	~pffItem()
 	{
-//		libpff_item_free(&handle, nullptr);
+		libpff_item_free(&handle, nullptr);
 	}
 	pffItem& operator=(pffItem&& in)
 	{
@@ -305,7 +305,7 @@ class Message
 class Folder
 {
   public:
-	explicit Folder(pffItem folderHandle)
+	explicit Folder(pffItem&& folderHandle)
 		: _folderHandle(std::move(folderHandle))
 	{
 	}
@@ -411,6 +411,7 @@ PSTParser::Implementation::parse_element(const char* buffer, size_t size, const 
         .withParameters(m_parameters)
         .build(buffer, size)
         ->parse();
+      delete *parser_builder;
     }
   }
 }
@@ -517,10 +518,15 @@ void PSTParser::Implementation::parse() const
   unsigned int mail_counter = 0;
   parse_internal(root_folder, 0, mail_counter);
 
-  if (handle)
+  if (file)
   {
     libpff_file_close(file, &error);
+    libpff_file_free(&file, &error);
+  }
+  if (handle)
+  {
     libbfio_handle_close(handle, &error);
+    libbfio_handle_free(&handle, &error);
     std::remove(filename.c_str());
     handle = nullptr;
   }
@@ -596,7 +602,9 @@ PSTParser::isPST() const
   if (handle)
   {
     libpff_file_close(file, &error);
+    libpff_file_free(&file, &error);
     libbfio_handle_close(handle, &error);
+    libbfio_handle_free(&handle, &error);
     std::remove(filename.c_str());
     handle = nullptr;
   }

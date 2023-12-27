@@ -27,6 +27,13 @@ set(CMAKE_CXX_STANDARD 17)
 
 option(DOCWIRE_DOC "Compile Documentation" ON)
 option(DOCWIRE_TRACE "Enable Tracing" OFF)
+option(ADDRESS_SANITIZER "Enable address sanitizer" OFF)
+
+if (ADDRESS_SANITIZER)
+	message(STATUS "Address sanitizer enabled")
+	add_compile_options(-fsanitize=address)
+	add_link_options(-fsanitize=address)
+endif()
 
 enable_testing ()
 

@@ -107,3 +107,27 @@ jobs:
           name: x64-osx-dynamic-logs
           path: vcpkg/buildtrees/*/*.log
           if-no-files-found: error
+
+  x64-linux-dynamic-address-sanitizer:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/cache/restore@v3
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-binary-cache-x64-linux-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+          restore-keys: |
+            vcpkg-binary-cache-x64-linux-dynamic
+      - run: ./build.sh
+        env:
+          ADDRESS_SANITIZER: enabled
+          ASAN_OPTIONS: detect_leaks=0
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: x64-linux-dynamic-address-sanitizer-logs
+          path: vcpkg/buildtrees/*/*.log
+          if-no-files-found: error

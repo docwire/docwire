@@ -76,6 +76,7 @@ struct EMLParser::Implementation
 							.build(text.c_str(), text.length());
 			parser->addOnNewNodeCallback(callback);
 			parser->parse();
+			delete *parser_builder;
 		}
 		return stream.str();
 	}
@@ -158,6 +159,7 @@ struct EMLParser::Implementation
 						.withOnNewNodeCallbacks({[this](Info &info){m_owner->sendTag(info.tag_name, info.plain_text, info.attributes);}})
 						.build(plain.c_str(), plain.length());
 						parser->parse();
+					delete *parser_builder;
 				}
 			}
 			m_owner->sendTag(StandardTag::TAG_CLOSE_ATTACHMENT);

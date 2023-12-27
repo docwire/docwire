@@ -5931,7 +5931,7 @@ struct PDFParser::Implementation
 															 333, 0, 333, 333, 0, 333, 333, 333, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 															 0, 0, 0, 0, 0, 0, 0, 944, 0, 266, 0, 0, 0, 0, 611, 722, 944, 300, 0,
 															 0, 0, 0, 0, 722, 0, 0, 0, 278, 0, 0, 278, 500, 722, 500, 0, 0, 0};
-					font_metrics->m_widths.insert(font_metrics->m_widths.end(), times_bold_italic_widths, times_bold_italic_widths + 224);
+					font_metrics->m_widths.insert(font_metrics->m_widths.end(), std::begin(times_bold_italic_widths), std::end(times_bold_italic_widths));
 
 					font_metrics = &((*this)["Helvetica-Bold"]);
 					font_metrics->m_font_name = "Helvetica-Bold";
@@ -5965,7 +5965,7 @@ struct PDFParser::Implementation
 															333, 0, 333, 333, 0, 333, 333, 333, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 															0, 0, 0, 0, 0, 0, 1000, 0, 370, 0, 0, 0, 0, 611, 778, 1000, 365, 0, 0,
 															0, 0, 0, 889, 0, 0, 0, 278, 0, 0, 278, 611, 944, 611, 0, 0, 0, 0};
-					font_metrics->m_widths.insert(font_metrics->m_widths.end(), helvetica_bold_widths, helvetica_bold_widths + 224);
+					font_metrics->m_widths.insert(font_metrics->m_widths.end(), std::begin(helvetica_bold_widths), std::end(helvetica_bold_widths));
 
 					font_metrics = &((*this)["Courier"]);
 					font_metrics->m_font_name = "Courier";
@@ -6034,7 +6034,7 @@ struct PDFParser::Implementation
 														333, 333, 333, 333, 0, 333, 333, 0, 333, 333, 333, 1000, 0, 0, 0, 0, 0, 0, 0,
 														0, 0, 0, 0, 0, 0, 0, 0, 0, 1000, 0, 300, 0, 0, 0, 0, 667, 778, 1000, 330, 0,
 														0, 0, 0, 0, 722, 0, 0, 0, 278, 0, 0, 278, 500, 722, 556, 0, 0, 0, 0};
-					font_metrics->m_widths.insert(font_metrics->m_widths.end(), times_bold_widths, times_bold_widths + 224);
+					font_metrics->m_widths.insert(font_metrics->m_widths.end(), std::begin(times_bold_widths), std::end(times_bold_widths));
 
 					font_metrics = &((*this)["Symbol"]);
 					font_metrics->m_font_name = "Symbol";
@@ -6067,7 +6067,7 @@ struct PDFParser::Implementation
 													250, 713, 603, 603, 1042, 987, 603, 987, 603, 494, 329, 790, 790, 786, 713, 384,
 													384, 384, 384, 384, 384, 494, 494, 494, 494, 329, 274, 0, 686, 686, 686, 384, 384,
 													384, 384, 384, 384, 494, 494, 494, 0};
-					font_metrics->m_widths.insert(font_metrics->m_widths.end(), symbol_widths, symbol_widths + 224);
+					font_metrics->m_widths.insert(font_metrics->m_widths.end(), std::begin(symbol_widths), std::end(symbol_widths));
 
 					font_metrics = &((*this)["Helvetica"]);
 					font_metrics->m_font_name = "Helvetica";
@@ -6100,7 +6100,7 @@ struct PDFParser::Implementation
 													   1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1000, 0, 370, 0, 0, 0, 0,
 													   556, 778, 1000, 365, 0, 0, 0, 0, 0, 889, 0, 0, 0, 278, 0, 0, 222, 611, 944, 611,
 													   0, 0, 0, 0};
-					font_metrics->m_widths.insert(font_metrics->m_widths.end(), helvetica_widths, helvetica_widths + 224);
+					font_metrics->m_widths.insert(font_metrics->m_widths.end(), std::begin(helvetica_widths), std::end(helvetica_widths));
 
 					font_metrics = &((*this)["Helvetica-BoldOblique"]);
 					font_metrics->m_font_name = "Helvetica-BoldOblique";
@@ -6134,7 +6134,7 @@ struct PDFParser::Implementation
 																  0, 333, 333, 0, 333, 333, 333, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 																  0, 0, 0, 0, 1000, 0, 370, 0, 0, 0, 0, 611, 778, 1000, 365, 0, 0, 0, 0,
 																  0, 889, 0, 0, 0, 278, 0, 0, 278, 611, 944, 611, 0, 0, 0, 0};
-					font_metrics->m_widths.insert(font_metrics->m_widths.end(), helvetica_bold_oblique_widths, helvetica_bold_oblique_widths + 224);
+					font_metrics->m_widths.insert(font_metrics->m_widths.end(), std::begin(helvetica_bold_oblique_widths), std::end(helvetica_bold_oblique_widths));
 
 					font_metrics = &((*this)["ZapfDingbats"]);
 					font_metrics->m_font_name = "ZapfDingbats";
@@ -6168,7 +6168,7 @@ struct PDFParser::Implementation
 														 748, 924, 748, 918, 927, 928, 928, 834, 873, 828, 924, 924, 917, 930, 931, 463,
 														 883, 836, 836, 867, 867, 696, 696, 874, 0, 874, 760, 946, 771, 865, 771, 888, 967,
 														 888, 831, 873, 927, 970, 918, 0};
-					font_metrics->m_widths.insert(font_metrics->m_widths.end(), zapf_dingbats_widths, zapf_dingbats_widths + 224);
+					font_metrics->m_widths.insert(font_metrics->m_widths.end(), std::begin(zapf_dingbats_widths), std::end(zapf_dingbats_widths));
 
 					font_metrics = &((*this)["Courier-Bold"]);
 					font_metrics->m_font_name = "Courier-Bold";
@@ -6219,7 +6219,7 @@ struct PDFParser::Implementation
 														  333, 333, 333, 0, 333, 333, 0, 333, 333, 333, 889, 0, 0, 0, 0, 0, 0, 0, 0,
 														  0, 0, 0, 0, 0, 0, 0, 0, 889, 0, 276, 0, 0, 0, 0, 556, 722, 944, 310, 0, 0,
 														  0, 0, 0, 667, 0, 0, 0, 278, 0, 0, 278, 500, 667, 500, 0, 0, 0, 0};
-					font_metrics->m_widths.insert(font_metrics->m_widths.end(), times_italic_widths, times_italic_widths + 224);
+					font_metrics->m_widths.insert(font_metrics->m_widths.end(), std::begin(times_italic_widths), std::end(times_italic_widths));
 
 					font_metrics = &((*this)["Times-Roman"]);
 					font_metrics->m_font_name = "Times-Roman";
@@ -6251,7 +6251,7 @@ struct PDFParser::Implementation
 													   0, 333, 333, 333, 333, 333, 333, 333, 333, 0, 333, 333, 0, 333, 333, 333, 1000,
 													   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 889, 0, 276, 0, 0, 0, 0, 611, 722,
 													   889, 310, 0, 0, 0, 0, 0, 667, 0, 0, 0, 278, 0, 0, 278, 500, 722, 500, 0, 0, 0, 0};
-					font_metrics->m_widths.insert(font_metrics->m_widths.end(), times_roman_widths, times_roman_widths + 224);
+					font_metrics->m_widths.insert(font_metrics->m_widths.end(), std::begin(times_roman_widths), std::end(times_roman_widths));
 
 					font_metrics = &((*this)["Helvetica-Oblique"]);
 					font_metrics->m_font_name = "Helvetica-Oblique";
@@ -6284,7 +6284,7 @@ struct PDFParser::Implementation
 															   333, 333, 333, 0, 333, 333, 0, 333, 333, 333, 1000, 0, 0, 0, 0, 0, 0, 0, 0,
 															   0, 0, 0, 0, 0, 0, 0, 0, 1000, 0, 370, 0, 0, 0, 0, 556, 778, 1000, 365, 0, 0,
 															   0, 0, 0, 889, 0, 0, 0, 278, 0, 0, 222, 611, 944, 611, 0, 0, 0, 0};
-					font_metrics->m_widths.insert(font_metrics->m_widths.end(), helvetica_oblique_widths, helvetica_oblique_widths + 224);
+					font_metrics->m_widths.insert(font_metrics->m_widths.end(), std::begin(helvetica_oblique_widths), std::end(helvetica_oblique_widths));
 				}
 		};
 
