@@ -35,6 +35,12 @@ if (ADDRESS_SANITIZER)
 	add_link_options(-fsanitize=address)
 endif()
 
+if (THREAD_SANITIZER)
+	message(STATUS "Thread sanitizer enabled")
+	add_compile_options(-fsanitize=thread)
+	add_link_options(-fsanitize=thread)
+endif()
+
 enable_testing ()
 
 file(WRITE ${CMAKE_SOURCE_DIR}/version.h "#define VERSION \"${DOCWIRE_VERSION}\"")

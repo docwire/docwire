@@ -31,8 +31,10 @@ else
 	VCPKG_TRIPLET=x64-linux-dynamic
 fi
 
-if [[ "$ADDRESS_SANITIZER" == "enabled" ]]; then
+if [[ "$SANITIZER" == "address" ]]; then
 	FEATURES="[address-sanitizer]"
+elif [[ "$SANITIZER" == "thread" ]]; then
+	FEATURES="[thread-sanitizer]"
 else
 	FEATURES=""
 fi

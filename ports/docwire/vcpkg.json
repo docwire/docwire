@@ -8,6 +8,10 @@
 		"address-sanitizer":
 		{
 			"description": "Enable address sanitizer in debug build"
+		},
+		"thread-sanitizer":
+		{
+			"description": "Enable thread sanitizer in debug build"
 		}
 	},
 	"dependencies": [
