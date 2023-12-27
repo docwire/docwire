@@ -354,14 +354,11 @@ std::string PPTParser::plainText(const FormattingStyle& formatting)
 {	
 	docwire_log(debug) << "Using PPT parser.";
 
-	ThreadSafeOLEStorage* storage = NULL;
-	ThreadSafeOLEStreamReader* reader = NULL;
 	try
 	{
-		if (impl->m_buffer)
-			storage = new ThreadSafeOLEStorage(impl->m_buffer, impl->m_buffer_size);
-		else
-			storage = new ThreadSafeOLEStorage(impl->m_file_name);
+		std::unique_ptr<ThreadSafeOLEStorage> storage = impl->m_buffer ?
+			std::make_unique<ThreadSafeOLEStorage>(impl->m_buffer, impl->m_buffer_size) :
+			std::make_unique<ThreadSafeOLEStorage>(impl->m_file_name);
 		if (!storage->isValid())
 			throw Exception("Error opening " + impl->m_file_name + " as OLE file");
 		impl->assertFileIsNotEncrypted(*storage);
@@ -379,46 +376,22 @@ std::string PPTParser::plainText(const FormattingStyle& formatting)
 				// warning TODO: Check if there is a better way to get PowerPoint version.
 				if (dirs[i] == "Text_Content")
 				{
-					reader = (ThreadSafeOLEStreamReader*)storage->createStreamReader("Text_Content");
+					std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("Text_Content") };
 					if (reader == NULL)
 						throw Exception("Stream Text_Content has been found in the list, but it could not be open: " + storage->getLastError());
 					impl->parseOldPPT(*storage, *reader, text);
-					delete reader;
-					reader = NULL;
-					delete storage;
-					storage = NULL;
 					return text;
 				}
 			}
 		}
-		reader = (ThreadSafeOLEStreamReader*)storage->createStreamReader("PowerPoint Document");
+		std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("PowerPoint Document") };
 		if (reader == NULL)
 			throw Exception("PowerPoint Document stream was not found inside " + impl->m_file_name);
 		impl->parsePPT(*reader, text);
-		delete reader;
-		reader = NULL;
-		delete storage;
-		storage = NULL;
 		return text;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (reader)
-			delete reader;
-		reader = NULL;
-		if (storage)
-			delete storage;
-		storage = NULL;
-		throw;
 	}
 	catch (Exception& ex)
 	{
-		if (reader)
-			delete reader;
-		reader = NULL;
-		if (storage)
-			delete storage;
-		storage = NULL;
 		throw;
 	}
 }

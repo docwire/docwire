@@ -229,8 +229,8 @@ ODFXMLParser::parse() const
 	docwire_log(debug) << "Using ODFXML parser.";
 	auto formatting_style = getFormattingStyle();
   plainText(XmlParseMode::PARSE_XML, formatting_style);
-
-  Info info(StandardTag::TAG_METADATA, "", metaData().getFieldsAsAny());
+	Metadata meta_data = metaData();
+  Info info(StandardTag::TAG_METADATA, "", meta_data.getFieldsAsAny());
   extended_impl->m_on_new_node_signal(info);
 }
 
