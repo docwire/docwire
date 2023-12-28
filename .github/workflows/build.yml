@@ -148,7 +148,7 @@ jobs:
       - run: ./build.sh
         env:
           SANITIZER: thread
-          TSAN_OPTIONS: suppressions=$PWD/tools/thread_sanitizer_suppressions.txt
+          TSAN_OPTIONS: suppressions=${{ github.workspace }}/tools/thread_sanitizer_suppressions.txt
       - uses: actions/upload-artifact@v3
         if: always()
         with:
