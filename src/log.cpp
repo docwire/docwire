@@ -13,6 +13,8 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/core/demangle.hpp>
+#include <boost/date_time/c_local_time_adjustor.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/json.hpp>
 #include <chrono>
 #include <ctime>
@@ -98,9 +100,19 @@ log_record_stream::log_record_stream(severity_level severity, source_location lo
 	}
 	else
 		*log_stream << "," << std::endl;
-	std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-	std::ostringstream time_stream;
-	time_stream << std::put_time(std::localtime(&t), "%FT%T%z");
+
+	boost::posix_time::ptime utc_time = boost::posix_time::second_clock::universal_time();
+	boost::date_time::c_local_adjustor<boost::posix_time::ptime> local_adjustor;
+	boost::posix_time::ptime local_time = local_adjustor.utc_to_local(utc_time);
+	boost::posix_time::time_duration timezone_offset = local_time - utc_time;
+	long timezone_offset_seconds = timezone_offset.total_seconds();
+	int timezone_offset_hours = timezone_offset_seconds / 3600;
+	int timezone_offset_minutes = (timezone_offset_seconds % 3600) / 60;
+	std::stringstream time_stream;
+	time_stream
+		<< boost::posix_time::to_iso_extended_string(local_time)
+		<< std::setw(5) << std::setfill('0') << std::internal << std::showpos << timezone_offset_hours * 100 + timezone_offset_minutes;
+
 	*this
 		<< std::make_pair("timestamp", time_stream.str())
 		<< std::make_pair("severity", severity)
