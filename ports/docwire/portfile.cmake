@@ -11,7 +11,9 @@ else()
 endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS_DEBUG
-	FEATURES address-sanitizer ADDRESS_SANITIZER
+	FEATURES
+		address-sanitizer ADDRESS_SANITIZER
+		thread-sanitizer THREAD_SANITIZER
 )
 
 vcpkg_cmake_configure(

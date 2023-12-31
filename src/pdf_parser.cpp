@@ -22,6 +22,7 @@
 #include <map>
 #include "metadata.h"
 #include "misc.h"
+#include <mutex>
 #include <new>
 #include "pthread.h"
 #include <set>
@@ -8291,13 +8292,17 @@ PDFParser::Implementation::PredefinedSimpleEncodings PDFParser::Implementation::
 PDFParser::Implementation::PDFReader::CompressionCodes PDFParser::Implementation::PDFReader::m_compression_codes;
 PDFParser::Implementation::PDFReader::OperatorCodes PDFParser::Implementation::PDFReader::m_operator_codes;
 
+std::mutex podofo_mutex;
+
 PDFParser::PDFParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
   : Parser(inParserManager)
 {
 	impl = NULL;
 	try
 	{
+		podofo_mutex.lock();
 		impl = new Implementation(this);
+		podofo_mutex.unlock();
 		impl->m_data_stream = NULL;
 		impl->m_data_stream = new std::ifstream(file_name, std::ifstream::in | std::ifstream::binary);
 	}
@@ -8377,7 +8382,9 @@ PDFParser::parse() const
 {
 	docwire_log(debug) << "Using PDF parser.";
 	impl->loadDocument();
+	podofo_mutex.lock();
 	impl->parseText();
+	podofo_mutex.unlock();
 }
 
 } // namespace docwire
