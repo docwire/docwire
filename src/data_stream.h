@@ -16,6 +16,9 @@
 #include <string>
 #include "defines.h"
 
+namespace docwire
+{
+
 class DataStream
 {
 	public:
@@ -72,5 +75,7 @@ class DllExport BufferStream : public DataStream
 		std::string name();
 		DataStream* clone();
 };
+
+} // namespace docwire
 
 #endif	//DOCWIRE_DATA_STREAM_H

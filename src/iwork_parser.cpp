@@ -26,6 +26,9 @@
 #include "misc.h"
 #include "metadata.h"
 
+namespace docwire
+{
+
 //Functions for parsing date/duration. Not sure if they should be here (in this file)
 static std::string ParseDate(std::string& format, long value)
 {
@@ -2198,3 +2201,5 @@ std::string IWorkParser::plainText(const FormattingStyle& formatting)
 		throw ParsingError("Extracting plaintext failed", ex);
 	}
 }
+
+} // namespace docwire

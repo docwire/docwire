@@ -19,6 +19,9 @@
 #include "wv2/olestream.h"
 #include "defines.h"
 
+namespace docwire
+{
+
 class ThreadSafeOLEStorage;
 using namespace wvWare;
 class DataStream;
@@ -58,5 +61,7 @@ class DllExport ThreadSafeOLEStreamReader : public wvWare::AbstractOLEStreamRead
 		S32 readS32() override;
 		bool read(U8 *buffer, size_t length) override;
 };
+
+} // namespace docwire
 
 #endif // DOCWIRE_THREAD_SAFE_OLE_STREAM_READER_H

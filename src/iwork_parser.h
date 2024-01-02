@@ -18,11 +18,9 @@
 
 namespace docwire
 {
-	struct FormattingStyle;
-	class Metadata;
-}
 
-using namespace docwire;
+struct FormattingStyle;
+class Metadata;
 
 class IWorkParser
 {
@@ -42,5 +40,7 @@ class IWorkParser
 	DOCWIRE_EXCEPTION_DEFINE(UnzipError, RuntimeError);
 	DOCWIRE_EXCEPTION_DEFINE(ParsingError, RuntimeError);
 };
+
+} // namespace docwire
 
 #endif

@@ -14,6 +14,9 @@
 #include <new>
 #include <string.h>
 
+namespace docwire
+{
+
 struct FileStream::Implementation
 {
 	FILE* m_file;
@@ -254,3 +257,5 @@ DataStream* BufferStream::clone()
 {
 	return new BufferStream(impl->m_buffer, impl->m_size);
 }
+
+} // namespace docwire

@@ -25,6 +25,9 @@
 #include "thread_safe_ole_storage.h"
 #include "thread_safe_ole_stream_reader.h"
 
+namespace docwire
+{
+
 struct XLSBParser::Implementation
 {
 	struct XLSBContent
@@ -821,3 +824,5 @@ std::string XLSBParser::plainText(const FormattingStyle& formatting)
 	unzip.close();
 	return text;
 }
+
+} // namespace docwire

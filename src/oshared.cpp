@@ -21,6 +21,9 @@
 #include "thread_safe_ole_stream_reader.h"
 #include "thread_safe_ole_storage.h"
 
+namespace docwire
+{
+
 using namespace wvWare;
 
 static bool read_vt_string(ThreadSafeOLEStreamReader* reader, std::string& s)
@@ -438,3 +441,5 @@ void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& sli
 		throw;
 	}
 }
+
+} // namespace docwire

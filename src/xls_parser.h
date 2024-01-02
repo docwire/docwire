@@ -16,13 +16,12 @@
 #include <string>
 #include <vector>
 
-class ThreadSafeOLEStorage;
-
 namespace docwire
 {
-	struct FormattingStyle;
 
-using namespace docwire;
+class ThreadSafeOLEStorage;
+
+	struct FormattingStyle;
 
 class XLSParser
 {

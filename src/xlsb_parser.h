@@ -17,11 +17,9 @@
 
 namespace docwire
 {
-	struct FormattingStyle;
-	class Metadata;
-}
 
-using namespace docwire;
+struct FormattingStyle;
+class Metadata;
 
 class XLSBParser
 {
@@ -38,5 +36,7 @@ class XLSBParser
 		std::string plainText(const FormattingStyle& formatting);
 		Metadata metaData();
 };
+
+} // namespace docwire
 
 #endif

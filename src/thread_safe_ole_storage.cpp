@@ -20,6 +20,9 @@
 #include <cstring>
 #include "thread_safe_ole_stream_reader.h"
 
+namespace docwire
+{
+
 struct ThreadSafeOLEStorage::Implementation
 {
 	bool m_is_valid_ole;
@@ -755,3 +758,5 @@ void ThreadSafeOLEStorage::streamDestroyed(OLEStream* stream)
 {
 	//nothing to do. Stream is already self-sufficient and storage does not care about it
 }
+
+} // namespace docwire
