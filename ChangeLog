@@ -65,6 +65,7 @@ Unreleased:
     * Add support for multiple languages in single OCR process
     * Address sanitizer CMake option, VCPKG feature and GitHub CI added, detected memory errors and some leaks fixed
     * Thread sanitizer CMake option, VCPKG feature and GitHub CI added, detected thread errors fixed
+    * Fix missing header files in doxygen documentation and in "make install"
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed

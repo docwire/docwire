@@ -288,50 +288,8 @@ if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_core> DESTINATION bin CONFIGURATIONS Debug)
 endif()
 
-set(PUBLIC_HEADERS
-	chat.h
-	extract_entities.h
-	summarize.h
-	translate_to.h
-	classify.h
-	extract_keywords.h
-	detect_sentiment.h
-	analyze_data.h
-	text_to_speech.h
-	transcribe.h
-	metadata.h
-	formatting_style.h
-	language.h
-	decompress_archives.h
-	exception.h
-	attachment.h
-	variant.h
-	parser.h
-	parser_manager.h
-	parser_builder.h
-	parser_parameters.h
-	post.h
-	basic_parser_provider.h
-	parser_provider.h
-	standard_filter.h
-	writer.h
-	plain_text_writer.h
-	html_writer.h
-	csv_writer.h
-	importer.h
-	output.h
-	plain_text_exporter.h
-	html_exporter.h
-	csv_exporter.h
-	meta_data_exporter.h
-	transformer_func.h
-	parsing_chain.h
-	simple_extractor.h
-	defines.h
-	log.h
-	docwire.h
-)
-install(FILES ${PUBLIC_HEADERS} DESTINATION include/docwire)
+file(GLOB HEADERS "*.h")
+install(FILES ${HEADERS} DESTINATION include/docwire)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR APPLE)
 	if(APPLE)
