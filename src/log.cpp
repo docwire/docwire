@@ -27,7 +27,7 @@
 namespace docwire
 {
 
-static std::atomic<severity_level> log_verbosity = info;
+static std::atomic<severity_level> log_verbosity = severity_level(error + 1);
 
 void set_log_verbosity(severity_level severity)
 {
