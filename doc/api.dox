@@ -193,13 +193,4 @@
  *      </ul>
  * </table>
  *
- * \section logging Logs mechanism
- * DocWire parsers generate many logs with current processing status, warnings and errors. By default all logs are sent
- * to standard error stream, but there is an option to change it or also turn off logs mechanism. To redirect logs stream
- * or turn on/off logs we can use docwire::ParserParameters (\ref parser_parameters) as below:
- * \code
- * std::ofstream* my_log_stream = new std::ofstream("output_logs.txt");
- * docwire::ParserParameters parameters("log_stream", my_log_stream); // set log stream parameter
- * parameters += docwire::ParserParameters("verbose_logging", true); // turn on logs mechanism
- * \endcode
  */

@@ -12,6 +12,7 @@ Explore the latest updates, contribute to the community, and find the most up-to
 - [Examples](#examples)
 - [Awards](#awards)
 - [Installation](#installation)
+- [Logging](#logging)
 - [API documentation](#api-documentation)
 - [Console application (CLI)](#console-application)
 - [License](#license)
@@ -407,6 +408,43 @@ You're all set! You've successfully installed the DocWire library using vcpkg. Y
 
 ### Compatibility Note
 Please note that DocWire is currently compatible with vcpkg tagged as version 2023.11.20. While this version is recommended for use, be aware that updates may become available in the near future. Supported triplets are: x64-linux-dynamic, x64-windows and x64-osx-dynamic.
+
+<a name="logging"></a>
+## Logging
+
+DocWire SDK generate extensive logs that provide insights into the current processing status, warnings, and errors. In the latest version of the SDK, the logging mechanism has been enhanced to output logs in JSON format, offering several advantages.
+
+The enhanced logging mechanism in the DocWire SDK provides developers with powerful tools for monitoring and debugging data processing. Whether redirecting logs to a custom stream or leveraging the flexibility of JSON formatting, the logging system is designed to meet the diverse needs of users.
+
+### JSON Format for Logging
+
+The logs are now formatted in JSON, providing a structured and machine-readable representation of the information. This format is advantageous for various reasons:
+
+- **Structured Data**: JSON allows for a clear and organized representation of log data, making it easy to extract specific information.
+
+- **Compatibility**: JSON is widely supported by various tools and platforms, ensuring compatibility and ease of integration into existing workflows.
+
+- **Readability**: The human-readable nature of JSON logs facilitates manual inspection and troubleshooting when needed.
+
+- **Flexibility**: JSON's key-value pair structure accommodates a wide range of log information, enhancing the flexibility of the logging system.
+
+### Configuring Logging
+
+To configure the logging parameters, the SDK provides a set of functions. Users can set the log verbosity level, customize the log stream, and create log record streams with specific severity levels and source locations.
+
+### Log Macros
+
+The SDK includes convenient macros for logging, such as:
+
+- docwire_log(severity): Conditionally logs based on the specified severity level.
+
+- docwire_log_vars(...): Logs variables with associated values.
+
+- docwire_log_func_with_args(...): Logs function entry with associated arguments.
+
+### Additional Logging Features
+
+The SDK introduces new features like logging source locations, custom streamable types, and handling of iterable and dereferenceable objects.
 
 <a name="api-documentation"></a>
 ## API Documentation
