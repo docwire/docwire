@@ -9,9 +9,11 @@ Explore the latest updates, contribute to the community, and find the most up-to
 ## Table Of Contents
 - [The Goal](#the-goal)
 - [Features](#features)
+- [Revolutionary API Concept](#api-concept)
 - [Examples](#examples)
 - [Awards](#awards)
 - [Installation](#installation)
+- [Logging](#logging)
 - [API documentation](#api-documentation)
 - [Console application (CLI)](#console-application)
 - [License](#license)
@@ -126,6 +128,55 @@ In our pursuit of excellence, DocWire SDK is committed to ongoing Research and D
 - Parsing chain elements communicate based on Boost Signals
 - Custom parsing chain elements can be added (importers, transformers, exporters)
 - Small binaries, fast native C++ code
+
+<a name="api-concept"></a>
+## Revolutionary API concept
+
+### Seamless Integration of PipeChain and DataTree
+
+Welcome to the DocWire SDK, where we redefine document processing through groundbreaking API concepts. In this chapter, let's delve into the two pillars shaping our approach: PipeChain and DataTree. Revolutionize your document processing with an SDK that seamlessly blends familiar development practices like C++ ranges, DOM tree and SAX parser-inspired processing model providing an unparalleled and dynamic coding experience. Explore the revolutionary synergy between PipeChain and DataTree.
+
+### PipeChain: Streamlining Data Flow
+
+**Expressive Code Flow**:
+Unlock the power of PipeChain, a concept inspired by C++ ranges that brings a familiar and expressive coding experience.
+
+**Versatile Chain Elements**:
+Break free from rigidity. Our chain elements transcend traditional boundaries, accommodating everything from document parsers to custom exporters. Just as manipulating DOM elements, you'll find these versatile elements provide unparalleled flexibility.
+
+**Extensible Functionality**:
+Expand your capabilities effortlessly. Our chain elements support a variety of functionalities, allowing you to seamlessly integrate new components, akin to extending SAX parser or DOM tree iterator behavior.
+
+**Examples of Information Flowing Through PipeChain**:
+- **Emails**: Process and analyze email content seamlessly within the chain, extracting key information like subject, sender, and attachments.
+- **Email Attachments**: Dive into attachments effortlessly, extracting details such as file types, sizes, and embedded content.
+- **Folders**: Navigate through folders, organizing and processing documents or emails stored within them.
+- **Archives**: Unpack archives with ease, whether they contain documents, images, or nested folders.
+- **Mailboxes**: Manage entire mailboxes as a cohesive unit, transforming and exporting data efficiently.
+- **Pages**: Navigate through pages of documents, extracting text, styles, and metadata.
+- **Paragraphs**: Process paragraphs individually, extracting and transforming text, styles, and more.
+- **Tables**: Efficiently handle tabular data, extracting, transforming, and exporting information seamlessly.
+- **Links**: Navigate through hyperlinks, capturing URLs, anchor text, and associated metadata.
+- **Images**: Process images effortlessly, extracting details like format, dimensions, and embedded text.
+
+### DataTree: Navigating the Information Landscape
+
+**Tree of Information Flow**:
+Dive into the structured information universe with DataTree, reminiscent of navigating the DOM tree in HTML. Beyond the document tree, our API handles the intricate tree of documents within archives, attachments within emails, and more.
+
+**Transformative Chain Elements**:
+Explore the transformative power of DataTree with document parsers, custom transformers, and dynamic exporters. Each chain element acts as a SAX parser, providing a dynamic and efficient approach to processing. Like SAX parsers, our chain elements efficiently traverse and process data as it flows through the pipeline.
+
+**Unified Transformation**:
+Harmonize your processing across different levels of the information tree, similar to traversing the DOM tree. Whether it's a document page or an attachment within an email, our unified transformation approach ensures coherence throughout.
+
+### Uniting PipeChain and DataTree: Elevate Your Processing
+
+**Comprehensive Structure**:
+Merge the structured flow of PipeChain with the depth of information in DataTree, creating a revolutionary approach that is as comfortable as working with the DOM tree in HTML. Embrace a comprehensive system that navigates, transforms, and exports data seamlessly.
+
+**Effortless Adaptability**:
+Experience the synergy of PipeChain and DataTree, effortlessly adapting to diverse document structures. Elevate your document processing game with a harmonious blend of expressive code, structured information, and an efficient SAX parser-inspired processing model.
 
 <a name="examples"></a>
 ## Examples
@@ -408,6 +459,43 @@ You're all set! You've successfully installed the DocWire library using vcpkg. Y
 ### Compatibility Note
 Please note that DocWire is currently compatible with vcpkg tagged as version 2023.11.20. While this version is recommended for use, be aware that updates may become available in the near future. Supported triplets are: x64-linux-dynamic, x64-windows and x64-osx-dynamic.
 
+<a name="logging"></a>
+## Logging
+
+DocWire SDK generate extensive logs that provide insights into the current processing status, warnings, and errors. In the latest version of the SDK, the logging mechanism has been enhanced to output logs in JSON format, offering several advantages.
+
+The enhanced logging mechanism in the DocWire SDK provides developers with powerful tools for monitoring and debugging data processing. Whether redirecting logs to a custom stream or leveraging the flexibility of JSON formatting, the logging system is designed to meet the diverse needs of users.
+
+### JSON Format for Logging
+
+The logs are now formatted in JSON, providing a structured and machine-readable representation of the information. This format is advantageous for various reasons:
+
+- **Structured Data**: JSON allows for a clear and organized representation of log data, making it easy to extract specific information.
+
+- **Compatibility**: JSON is widely supported by various tools and platforms, ensuring compatibility and ease of integration into existing workflows.
+
+- **Readability**: The human-readable nature of JSON logs facilitates manual inspection and troubleshooting when needed.
+
+- **Flexibility**: JSON's key-value pair structure accommodates a wide range of log information, enhancing the flexibility of the logging system.
+
+### Configuring Logging
+
+To configure the logging parameters, the SDK provides a set of functions. Users can set the log verbosity level, customize the log stream, and create log record streams with specific severity levels and source locations.
+
+### Log Macros
+
+The SDK includes convenient macros for logging, such as:
+
+- docwire_log(severity): Conditionally logs based on the specified severity level.
+
+- docwire_log_vars(...): Logs variables with associated values.
+
+- docwire_log_func_with_args(...): Logs function entry with associated arguments.
+
+### Additional Logging Features
+
+The SDK introduces new features like logging source locations, custom streamable types, and handling of iterable and dereferenceable objects.
+
 <a name="api-documentation"></a>
 ## API Documentation
 The API documentation for the DocWire SDK/library is readily available in various formats to assist you in seamlessly integrating it into your projects. Whether you prefer reading detailed doxygen-style documentation, accessing it through binary packages, or installing it via package managers like Vcpkg, we've got you covered.
@@ -571,7 +659,6 @@ Simply stop using the product if you disagree with this viewpoint.
 ## External links
 
 - [Project homepage - DocWire](https://docwire.io)
-- [Cloud API on RapidAPI](https://rapidapi.com/docwire-docwire-default/api/docwire-doctotext)
 - [SourceForge project page](https://sourceforge.net/projects/doctotext)
 - [LinkedIn page](https://www.linkedin.com/company/docwire-it-services-consulting)
 - [Project homepage - Silvercoders](https://silvercoders.com/en/products/doctotext)

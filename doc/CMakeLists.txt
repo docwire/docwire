@@ -39,7 +39,7 @@ file(GLOB HEADERS "../src/*.h")
 
 doxygen_add_docs(
     doxygen
-    ../README.md api.dox ${HEADERS}
+    ../README.md ${HEADERS}
     ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
     COMMENT "Generate html documentation of DocWire SDK"
     ALL
