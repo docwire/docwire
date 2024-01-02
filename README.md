@@ -659,7 +659,6 @@ Simply stop using the product if you disagree with this viewpoint.
 ## External links
 
 - [Project homepage - DocWire](https://docwire.io)
-- [Cloud API on RapidAPI](https://rapidapi.com/docwire-docwire-default/api/docwire-doctotext)
 - [SourceForge project page](https://sourceforge.net/projects/doctotext)
 - [LinkedIn page](https://www.linkedin.com/company/docwire-it-services-consulting)
 - [Project homepage - Silvercoders](https://silvercoders.com/en/products/doctotext)
