@@ -32,6 +32,9 @@
 #include "thread_safe_ole_stream_reader.h"
 #include "thread_safe_ole_storage.h"
 
+namespace docwire
+{
+
 using namespace wvWare;
 
 enum RecordType
@@ -450,3 +453,5 @@ Metadata PPTParser::metaData()
 		throw;
 	}
 }
+
+} // namespace docwire

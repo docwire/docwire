@@ -138,7 +138,7 @@ public:
 
   void parseAsCsv(std::ostream &out_stream) const
   {
-    parseText<experimental::CsvExporter>(out_stream);
+    parseText<CsvExporter>(out_stream);
   }
 
   std::string

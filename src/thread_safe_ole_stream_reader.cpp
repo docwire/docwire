@@ -14,6 +14,9 @@
 #include "data_stream.h"
 #include <new>
 
+namespace docwire
+{
+
 using namespace wvWare;
 
 struct ThreadSafeOLEStreamReader::Implementation
@@ -311,3 +314,5 @@ S32 ThreadSafeOLEStreamReader::readS32()
 		return 0;
 	return (S32)data;
 }
+
+} // namespace docwire

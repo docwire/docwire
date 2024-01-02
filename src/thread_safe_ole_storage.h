@@ -17,6 +17,9 @@
 #include "wv2/olestorage.h"
 #include "defines.h"
 
+namespace docwire
+{
+
 class ThreadSafeOLEStreamReader;
 using namespace wvWare;
 
@@ -42,5 +45,7 @@ class DllExport ThreadSafeOLEStorage : public AbstractOLEStorage
 	private:
 		void streamDestroyed(OLEStream* stream) override;
 };
+
+} // namespace docwire
 
 #endif // DOCWIRE_THREAD_SAFE_OLE_STORAGE_H
