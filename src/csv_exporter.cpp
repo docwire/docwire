@@ -18,9 +18,6 @@
 namespace docwire
 {
 
-namespace experimental
-{
-
 struct CsvExporter::Implementation
 {
 	std::stringstream m_stream;
@@ -52,7 +49,5 @@ void CsvExporter::ImplementationDeleter::operator()(CsvExporter::Implementation*
 {
 	delete impl;
 }
-
-} // namespace experimental
 
 } // namespace docwire

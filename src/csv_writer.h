@@ -21,9 +21,6 @@ namespace docwire
 {
   struct Info;
 
-namespace experimental
-{
-
 /**
  * @brief The CsvWriter class
  *
@@ -57,8 +54,6 @@ private:
   std::vector<std::string> m_curr_line;
   std::string m_curr_cell;
 };
-
-} // namespace experimental
 
 } // namespace docwire
 

@@ -17,9 +17,6 @@
 namespace docwire
 {
 
-namespace experimental
-{
-
 /**
  * @brief Exports data to CSV format.
  */
@@ -46,8 +43,6 @@ private:
 	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
 	std::unique_ptr<Implementation, ImplementationDeleter> impl;
 };
-
-} // namespace experimental
 
 } // namespace docwire
 

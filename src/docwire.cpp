@@ -235,7 +235,7 @@ int main(int argc, char* argv[])
 			chain | HtmlExporter();
 			break;
 		case OutputType::csv:
-			chain | experimental::CsvExporter();
+			chain | CsvExporter();
 			break;
 		case OutputType::metadata:
 			chain | MetaDataExporter();

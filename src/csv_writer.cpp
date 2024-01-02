@@ -15,9 +15,6 @@
 namespace docwire
 {
 
-namespace experimental
-{
-
 void
 CsvWriter::write_to(const Info &info, std::ostream &stream)
 {
@@ -54,7 +51,5 @@ CsvWriter::clone() const
 {
   return new CsvWriter(*this);
 }
-
-} // namespace experimental
 
 } // namespace docwire
