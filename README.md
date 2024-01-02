@@ -9,6 +9,7 @@ Explore the latest updates, contribute to the community, and find the most up-to
 ## Table Of Contents
 - [The Goal](#the-goal)
 - [Features](#features)
+- [Revolutionary API Concept](#api-concept)
 - [Examples](#examples)
 - [Awards](#awards)
 - [Installation](#installation)
@@ -127,6 +128,55 @@ In our pursuit of excellence, DocWire SDK is committed to ongoing Research and D
 - Parsing chain elements communicate based on Boost Signals
 - Custom parsing chain elements can be added (importers, transformers, exporters)
 - Small binaries, fast native C++ code
+
+<a name="api-concept"></a>
+## Revolutionary API concept
+
+### Seamless Integration of PipeChain and DataTree
+
+Welcome to the DocWire SDK, where we redefine document processing through groundbreaking API concepts. In this chapter, let's delve into the two pillars shaping our approach: PipeChain and DataTree. Revolutionize your document processing with an SDK that seamlessly blends familiar development practices like C++ ranges, DOM tree and SAX parser-inspired processing model providing an unparalleled and dynamic coding experience. Explore the revolutionary synergy between PipeChain and DataTree.
+
+### PipeChain: Streamlining Data Flow
+
+**Expressive Code Flow**:
+Unlock the power of PipeChain, a concept inspired by C++ ranges that brings a familiar and expressive coding experience.
+
+**Versatile Chain Elements**:
+Break free from rigidity. Our chain elements transcend traditional boundaries, accommodating everything from document parsers to custom exporters. Just as manipulating DOM elements, you'll find these versatile elements provide unparalleled flexibility.
+
+**Extensible Functionality**:
+Expand your capabilities effortlessly. Our chain elements support a variety of functionalities, allowing you to seamlessly integrate new components, akin to extending SAX parser or DOM tree iterator behavior.
+
+**Examples of Information Flowing Through PipeChain**:
+- **Emails**: Process and analyze email content seamlessly within the chain, extracting key information like subject, sender, and attachments.
+- **Email Attachments**: Dive into attachments effortlessly, extracting details such as file types, sizes, and embedded content.
+- **Folders**: Navigate through folders, organizing and processing documents or emails stored within them.
+- **Archives**: Unpack archives with ease, whether they contain documents, images, or nested folders.
+- **Mailboxes**: Manage entire mailboxes as a cohesive unit, transforming and exporting data efficiently.
+- **Pages**: Navigate through pages of documents, extracting text, styles, and metadata.
+- **Paragraphs**: Process paragraphs individually, extracting and transforming text, styles, and more.
+- **Tables**: Efficiently handle tabular data, extracting, transforming, and exporting information seamlessly.
+- **Links**: Navigate through hyperlinks, capturing URLs, anchor text, and associated metadata.
+- **Images**: Process images effortlessly, extracting details like format, dimensions, and embedded text.
+
+### DataTree: Navigating the Information Landscape
+
+**Tree of Information Flow**:
+Dive into the structured information universe with DataTree, reminiscent of navigating the DOM tree in HTML. Beyond the document tree, our API handles the intricate tree of documents within archives, attachments within emails, and more.
+
+**Transformative Chain Elements**:
+Explore the transformative power of DataTree with document parsers, custom transformers, and dynamic exporters. Each chain element acts as a SAX parser, providing a dynamic and efficient approach to processing. Like SAX parsers, our chain elements efficiently traverse and process data as it flows through the pipeline.
+
+**Unified Transformation**:
+Harmonize your processing across different levels of the information tree, similar to traversing the DOM tree. Whether it's a document page or an attachment within an email, our unified transformation approach ensures coherence throughout.
+
+### Uniting PipeChain and DataTree: Elevate Your Processing
+
+**Comprehensive Structure**:
+Merge the structured flow of PipeChain with the depth of information in DataTree, creating a revolutionary approach that is as comfortable as working with the DOM tree in HTML. Embrace a comprehensive system that navigates, transforms, and exports data seamlessly.
+
+**Effortless Adaptability**:
+Experience the synergy of PipeChain and DataTree, effortlessly adapting to diverse document structures. Elevate your document processing game with a harmonious blend of expressive code, structured information, and an efficient SAX parser-inspired processing model.
 
 <a name="examples"></a>
 ## Examples
