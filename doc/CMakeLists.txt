@@ -35,7 +35,7 @@ set(DOXYGEN_USE_MDFILE_AS_MAINPAGE ../README.md)
 
 include(../tools/generate_3rdparty_components_doc.cmake)
 
-file(GLOB HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
+file(GLOB HEADERS "../src/*.h")
 
 doxygen_add_docs(
     doxygen
