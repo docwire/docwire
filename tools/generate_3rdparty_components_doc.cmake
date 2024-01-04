@@ -176,7 +176,7 @@ function(extract_full_license_info port_name out_var)
 	if (port_name STREQUAL gettext-libintl)
 		set(port_name gettext)
 	endif()
-	file(READ ${CMAKE_SOURCE_DIR}/vcpkg/installed/${VCPKG_TARGET_TRIPLET}/share/${port_name}/copyright copyright_text)
+	file(READ ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share/${port_name}/copyright copyright_text)
 	set(${out_var} ${copyright_text} PARENT_SCOPE)
 endfunction()
 
