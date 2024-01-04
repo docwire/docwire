@@ -67,6 +67,7 @@ Unreleased:
     * Thread sanitizer CMake option, VCPKG feature and GitHub CI added, detected thread errors fixed
     * Fix missing header files in doxygen documentation and in "make install"
     * Add missing docwire namespace to all classes
+    * Add "Versioning" documentation chapter
 
 Unreleased:
     * EML parser crash for unknown attachment file name extensions fixed

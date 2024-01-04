@@ -13,6 +13,7 @@ Explore the latest updates, contribute to the community, and find the most up-to
 - [Examples](#examples)
 - [Awards](#awards)
 - [Installation](#installation)
+- [Versioning](#versioning)
 - [Logging](#logging)
 - [API documentation](#api-documentation)
 - [Console application (CLI)](#console-application)
@@ -458,6 +459,79 @@ You're all set! You've successfully installed the DocWire library using vcpkg. Y
 
 ### Compatibility Note
 Please note that DocWire is currently compatible with vcpkg tagged as version 2023.11.20. While this version is recommended for use, be aware that updates may become available in the near future. Supported triplets are: x64-linux-dynamic, x64-windows and x64-osx-dynamic.
+
+<a name="versioning"></a>
+## Versioning
+
+DocWire SDK introduces a distinctive versioning methodology, deviating from conventional semantic versioning (SemVer) in favor of a dynamic, date-centric system. This chapter elucidates the versioning strategy of DocWire SDK, shedding light on its unique attributes and the benefits derived from this innovative approach.
+
+### Versioning Scheme
+
+#### Date-Based Versioning
+
+DocWire SDK's versioning system integrates release dates as a pivotal element. Each release is identified by a specific date, providing users with a transparent timeline of updates and enhancements. This approach ensures clarity and enables users to comprehend the evolution of the SDK over time.
+
+#### "Live at the Head" Concept
+
+Adhering to the "live at the head" philosophy, DocWire SDK always grants immediate access to the latest version, representing the current state of the codebase. This model allows users to benefit from the most recent features, improvements, and bug fixes without waiting for formal releases, enhancing the overall user experience.
+
+#### Planned Release Cycle
+
+To maintain a balance between regular updates and stability, DocWire SDK plans one release or tagging per quarter. This structured release cycle incorporates new features and improvements. In the event of discovering serious bugs or multiple smaller issues, additional releases may occur to ensure the continual delivery of a high-quality SDK.
+
+#### Inspired by VCPKG Project Versioning
+
+DocWire SDK draws inspiration from the versioning approach of the VCPKG project. As VCPKG serves as the preferred method for installing the SDK, users familiar with VCPKG will find a similar versioning philosophy in DocWire SDK, reinforcing a cohesive and familiar experience.
+
+### Advantages of Date-Based Versioning
+
+#### Continuous Evolution
+
+The date-based versioning strategy fosters a model of continuous evolution, allowing for swift development and deployment of new features. This ensures users have timely access to the latest advancements and can choose to stay current or opt for specific versions tailored to their requirements.
+
+#### Improved Collaboration
+
+Transparent and chronological versioning facilitates collaboration among developers, contributors, and users. This inclusive model enables everyone to track the SDK's progress, understand the sequence of changes, and contribute to discussions around specific releases, fostering a sense of community and shared ownership.
+
+#### Rapid Issue Resolution
+
+The "live at the head" concept accelerates issue resolution by providing prompt access to bug fixes and improvements. This agile approach ensures that users encounter fewer obstacles, leading to a more responsive and satisfying experience.
+
+#### User-Centric Updates
+
+DocWire SDK's versioning approach prioritizes user-centric updates, enabling developers to make informed decisions about when to integrate the latest changes into their projects. This flexibility empowers users to tailor their SDK experience based on specific features or fixes introduced in each release.
+
+### Codebase Strategy
+
+DocWire SDK maintains a single code branch, focusing on continuous improvement of the API and staying up-to-date with integrated external services. This strategy prioritizes innovation over stability, ensuring that resources are directed towards enhancing the SDK rather than maintaining outdated code branches. This approach aligns with industry best practices and optimizes the SDK for evolving technology landscapes.
+
+### Long-Term Support (LTS) Agreements
+
+Recognizing the diverse needs of our users, DocWire SDK offers Long-Term Support (LTS) agreements, providing a tailored solution for those seeking sustained stability and reliability. The LTS agreement is designed to address specific concerns related to feature stability, API consistency, and platform support, offering peace of mind as projects progress and evolve.
+
+#### Customized Stability
+
+With an LTS agreement, customers can select specific features or aspects of the API that are crucial to their projects. This ensures that the chosen features remain stable and will not be subject to unexpected changes or removals as the SDK continues to evolve. Customized stability empowers users to build and maintain applications with confidence, knowing that the core functionalities they rely on will remain consistent over time.
+
+#### API Consistency
+
+For projects that demand a consistent API, the LTS agreement provides assurance that the API's core elements will remain unchanged throughout the agreed-upon support period. This commitment to API consistency enables developers to build and maintain applications with minimal disruptions, fostering a stable and reliable development environment.
+
+#### Platform Support Assurance
+
+The LTS agreement extends to platform support, offering a guarantee that the SDK will continue to support selected platforms. This is particularly beneficial for projects with specific platform dependencies, ensuring that compatibility is maintained even as new SDK updates are introduced. Customers can negotiate the details of platform support to align with their project requirements.
+
+#### Tailored Support Duration
+
+DocWire SDK understands that the definition of "long-term" can vary based on individual project timelines and needs. Therefore, LTS agreements come with the flexibility to negotiate the support duration, allowing customers to align the agreement with their project's lifecycle and development roadmap.
+
+#### Ongoing Collaboration
+
+An LTS agreement signifies an ongoing collaboration between DocWire SDK and the customer. It establishes a dedicated channel for communication, ensuring that any concerns or specific requirements related to stability, API, or platform support are addressed promptly. This collaborative approach reflects our commitment to supporting our users throughout their development journey.
+
+#### How to Enquire about LTS
+
+To explore the possibilities of an LTS agreement or to discuss specific requirements, please reach out to our dedicated support team. We are committed to working closely with our users to create customized LTS agreements that cater to the unique demands of their projects, providing a solid foundation for long-term success.
 
 <a name="logging"></a>
 ## Logging
