@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 # Get version from ChangeLog and store it in DOCWIRE_VERSION and SIMPLE_DOCWIRE_VERSION
 function(extract_version)
 	file(READ "${CMAKE_CURRENT_SOURCE_DIR}/ChangeLog" changelog_text)
-	if(${changelog_text} MATCHES "Version ([0-9]+\\.[0-9]+\\.[0-9]+):")
+	if(${changelog_text} MATCHES "Version ([0-9]+\\.[0-9]+\\.[0-9]+)")
 		set(simple_doc_ver ${CMAKE_MATCH_1})
 	else()
 		message(FATAL_ERROR "Could not extract version number from ChangeLog")
