@@ -53,3 +53,4 @@ configure_file(index.html ${CMAKE_BINARY_DIR}/doc/index.html COPYONLY)
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/docwire/doc)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/index.html DESTINATION share/docwire/doc)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ChangeLog DESTINATION share/docwire/doc)

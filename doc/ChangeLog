@@ -1,80 +1,58 @@
-Unreleased:
-    * CsvWriter class added
-    * Moved pst/ost parser and eml parser to separated plugin
-    * TAG_IMAGE added with plain text exporter support
-    * HTML parser refactored - sending tags for document elements incrementally
-    * HTML to plain text conversion use better table layout algorithm from plain text exporter
-    * Improved whitespaces support (inline formatting context) in HTML parser
-    * TAG_SECTION and TAG_SPAN added with HTML parser, HTML exporter and plain text exporter support
-    * Remove wrong usage of TAG_STYLE
-    * HTML parser passes all attributes to tags with "html:" prefix
-    * Improved support for subparsers tag signals in EML parser
-    * All tags that have no closing tag are marged with / symbol at the end (XHTML way)
-    * Missing support for link, image and list tags added to HtmlWriter
-    * HtmlWriter option to restore all attributes with "html:" prefix passed from HTMLParser added
-    * Added Input class (wrapper for stream or filename) and ChainElement class (base class for importer, exporter and transformer)
-    * HTMLParser send style tags with css text
-    * HtmlWriter restores style tags with css text
-    * Generating signals for empty rows and cells that are missing/skipped in original XLSX files
-    * Minimum table row height (empty rows and cells) in plain text writer set to 1 line to better restore document layout
-    * Caching build environment docker images in GitHub Packages
-    * Log mechanism refactored
-    * MSVC docker image scripts updated
-    * VCPKG used to build required dependencies on all supported platforms
-    * Do not use docker for GitHub CI
-    * Official support for Mingw build dropped (as there is no official support in VCPKG)
-    * Dynamic linking of MSVC runtime for all libraries and executables
-    * Upgrade GoogleTest to 1.12.1
-    * DecompressArchives chain element added that supports ZIP, TAR, RAR, GZ, BZ2 and XZ formats - enabled by default in CLI utility.
-    * Mimetic library replaced with MailIO
-    * Using GitHub Actions Cache to store compiled dependencies
-    * Upload build-time logs to GitHub artifacts
-    * GitHub Actions warnings fixed with upgrading actions scripts
-    * Use VCPKG triplet names as platform suffixes
-    * Added VCPKG port for SDK and build binaries using VCPKG
-    * Use vcpkg export command to create binary archives
-    * Cleanups in CMake scripts
-    * Dockerfiles and related scripts removed
-    * New strategy of searching for plugins, resources and test files
-    * Upgrade VCPKG and in the same time all SDK dependencies to 2023.08.09
-    * Remove C API and focus on modern C++ API
-    * Rename DocToText to DocWire SDK
-    * Rename text_extractor CLI application to docwire
-    * Refactor CLI to use Boost.Program_options to allow easy extending
-    * Add --use-stream option to CLI
-    * Move PlainTextExporter, HtmlExporter, CsvExporter and MetaDataExporter to separate files
-    * Exporters derive from ChainElement class, generate TAG_FILE and can be placed in any position of parsing chain. Output class added.
-    * http::Post transformer added
-    * LogicError and RuntimeError exception classes added that allows easy nesting and will replace Exception class
-    * Initial integration with OpenAI API - openai::Chat transformer added
-    * openai::TranslateTo, openai::Summarize, openai::ExtractEntities, openai::Classify, openai::ExtractKeywords, openai::DetectSentiment and openai::AnalyzeData transformers added
-    * EML parser improved for windows end-of-line characters
-    * Copyright-headers related scripts and configuration files moved to "tools" directory
-    * Copyright-headers updated, SPDX license identifiers introduced
-    * README.md used as main page in Doxygen API documentation
-    * Move examples from doxygen API introduction to README.md
-    * Remove obsolete documentation chapters and examples
-    * Add docwire.h as a general header simplyfing applications using SDK at the expence of compiling time
-    * Add examples for some OpenAI components
-    * Upgrade VCPKG and in the same time all SDK dependencies to 2023.11.20
-    * Add support for gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-3.5-turbo-1106, gpt-4, gpt-4-32k and gpt-4-1106-preview models selection
-    * Move CLI documentation to README
-    * openai::TextToSpeech and openai::Transcribe transformers added
-    * Add automatic generation of 3rdparty components licensing documentation chapter
-    * Add support for all Tesseract OCR languages
-    * Add support for multiple languages in single OCR process
-    * Address sanitizer CMake option, VCPKG feature and GitHub CI added, detected memory errors and some leaks fixed
-    * Thread sanitizer CMake option, VCPKG feature and GitHub CI added, detected thread errors fixed
-    * Fix missing header files in doxygen documentation and in "make install"
-    * Add missing docwire namespace to all classes
-    * Add "Versioning" documentation chapter
+## Version 2024.01.05
 
-Unreleased:
-    * EML parser crash for unknown attachment file name extensions fixed
-    * MacOSX building process refactored to use VCPKG
-    * PDF parser infinite loop when font is unknown fixed
-    * HTML parser memory write error fixed
-    * Extracting version number from ChangeLog instead of Git tag to enable building from source archive
+### Archives Support
+
+- Unveiling the DecompressArchives chain element for seamless handling of ZIP, TAR, RAR, GZ, BZ2, and XZ formats. This feature is now the default in the CLI utility, enhancing document processing efficiency.
+
+### HTML Support Improvements
+
+- Significantly enhancing HTML parsing with incremental tagging for document elements and a refined table layout algorithm, leading to more accurate HTML to plain text conversion. The improved whitespace support in the inline formatting context ensures precise rendering.
+
+### OpenAI Models
+
+- Integrating with the OpenAI API, introducing transformers like openai::Chat, openai::TranslateTo, openai::Summarize, openai::ExtractEntities, openai::Classify, openai::ExtractKeywords, openai::DetectSentiment, openai::TextToSpeech, and openai::Transcribe. Additionally, extending support for models such as gpt-3.5-turbo, gpt-4, and gpt-4-1106-preview broadens the spectrum of available options for users.
+
+### Other SDK Improvements
+
+- Introducing the CsvWriter class for efficient CSV handling.
+- Separating pst/ost and eml parsers into a dedicated plugin for improved modularity.
+- Incorporating the Input class (a wrapper for stream or filename) and the ChainElement class (the base class for importer, exporter, and transformer) to streamline workflows.
+- Enhancing support for subparsers tag signals in the EML parser.
+- Upgrading OCR support to include all Tesseract OCR languages and enabling processing in multiple languages in a single OCR process.
+
+### Build System and Infrastructure
+
+- Abandoning Docker for GitHub CI, and adopting improved caching of build environment images in GitHub Packages, resulting in faster build times.
+- Implementing GitHub Actions Cache to store compiled dependencies for increased efficiency.
+- Upgrading GoogleTest to version 1.12.1 for robust testing.
+- Dynamically linking MSVC runtime for all libraries and executables, enhancing runtime efficiency.
+- Introducing Address and Thread sanitizers in the CMake options, VCPKG features, and GitHub CI to detect and fix memory and thread errors.
+- Refactoring building process to use VCPKG.
+- Upgrading VCPKG and SDK dependencies to version 2023.11.20 for enhanced stability.
+- Incorporating VCPKG for managing dependencies and using VCPKG triplet names as platform suffixes.
+- Utilizing VCPKG export command to create binary archives, streamlining the build process.
+- Introducing the http::Post transformer for efficient HTTP POST operations.
+
+### Documentation
+
+- Strategic improvements in documentation, with README.md serving as the primary page in Doxygen API documentation.
+- Consolidating examples in README.md and removing obsolete documentation chapters for a more focused and user-friendly experience.
+- Adding automatic generation of the 3rd-party components licensing documentation chapter for transparency.
+
+### Other Changes
+
+- Renaming DocToText to DocWire SDK for a more impactful brand representation.
+- Streamlining the search strategy for plugins, resources, and test files.
+- Introducing logic-specific error exception classes (LogicError and RuntimeError) for improved code readability and management.
+- Refactoring the CLI to use Boost.Program_options for easy extensibility.
+- Seamless extraction of the version number from ChangeLog for source archive builds, enhancing versioning practices.
+- Addressing EML parser crashes for unknown attachment file name extensions.
+- Resolving PDF parser infinite loop issues when the font is unknown.
+- Fixing HTML parser memory write errors.
+
+### Summary
+
+These updates collectively contribute to a more robust, feature-rich, and user-friendly DocWire SDK experience, with enhanced OCR capabilities, advanced sanitization, improved dependency management, and versatile OpenAI model integration.
 
 Version 5.0.9:
     * Replace README file with more detailed README.md prepared for public GitHub repository

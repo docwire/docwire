@@ -3,8 +3,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Get version from ChangeLog and store it in DOCWIRE_VERSION and SIMPLE_DOCWIRE_VERSION
 function(extract_version)
-	file(READ "${CMAKE_CURRENT_SOURCE_DIR}/ChangeLog" changelog_text)
-	if(${changelog_text} MATCHES "Version ([0-9]+\\.[0-9]+\\.[0-9]+):")
+	file(READ "${CMAKE_CURRENT_SOURCE_DIR}/doc/ChangeLog" changelog_text)
+	if(${changelog_text} MATCHES "Version ([0-9]+\\.[0-9]+\\.[0-9]+)")
 		set(simple_doc_ver ${CMAKE_MATCH_1})
 	else()
 		message(FATAL_ERROR "Could not extract version number from ChangeLog")
@@ -45,7 +45,7 @@ enable_testing ()
 
 file(WRITE ${CMAKE_SOURCE_DIR}/version.h "#define VERSION \"${DOCWIRE_VERSION}\"")
 file(WRITE ${CMAKE_BINARY_DIR}/VERSION "${DOCWIRE_VERSION}")
-install(FILES ${CMAKE_SOURCE_DIR}/ChangeLog ${CMAKE_BINARY_DIR}/VERSION DESTINATION share/docwire)
+install(FILES ${CMAKE_BINARY_DIR}/VERSION DESTINATION share/docwire)
 
 add_subdirectory(src)
 
