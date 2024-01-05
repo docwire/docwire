@@ -1,6 +1,6 @@
 {
 	"name": "docwire",
-	"version-date": "2024-01-04",
+	"version-date": "2024-01-05",
 	"description": "Data processing library/SDK. Parses DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT), PST, OST and more. Contains embedded OCR engine and CLI utiity.",
 	"license": "GPL-2.0-only OR LicenseRef-DocWire-Commercial",
 	"features":
