@@ -62,7 +62,7 @@ void Transcribe::process(Info &info) const
 	std::stringstream response_stream;
 	try
 	{
-		Input(in_stream) | http::Post("https://api.openai.com/v1/audio/transcriptions", {{"model", "whisper-1"}, {"response_format", "text"}}, "file", "audio.mp3", impl->m_api_key) | Output(response_stream);
+		Input(in_stream) | http::Post("https://api.openai.com/v1/audio/transcriptions", {{"model", "whisper-1"}, {"response_format", "text"}}, "file", DefaultFileName("audio.mp3"), impl->m_api_key) | Output(response_stream);
 	}
 	catch (const http::Post::RequestFailed& e)
 	{

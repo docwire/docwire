@@ -658,7 +658,7 @@ TEST(Http, PostForm)
 		Input(&in)
 			| Importer(ParserParameters(), parser_manager)
 			| PlainTextExporter()
-			| http::Post("https://postman-echo.com/post", {{"field1", "value1"}, {"field2", "value2"}}, "file", "file.docx")
+			| http::Post("https://postman-echo.com/post", {{"field1", "value1"}, {"field2", "value2"}}, "file", DefaultFileName("file.docx"))
 			| Output(output);
 	});
 

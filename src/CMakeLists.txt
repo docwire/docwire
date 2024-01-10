@@ -1,4 +1,3 @@
-set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INSTALL_RPATH .)
 
 add_library(docwire_core SHARED

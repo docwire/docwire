@@ -70,7 +70,7 @@ public:
       if (std::filesystem::is_directory(root))
       {
         for (auto &dir_entry : std::filesystem::directory_iterator{root})
-          if (dir_entry.is_regular_file() && correct_extensions.find(dir_entry.path().extension().u8string()) != correct_extensions.end())
+          if (dir_entry.is_regular_file() && correct_extensions.find(dir_entry.path().extension().string()) != correct_extensions.end())
             loadProvider(dir_entry.path());
           else
             docwire_log(error) << "Skipping " << dir_entry.path() << " - not a regular file or incorrect extension";

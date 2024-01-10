@@ -1,6 +1,6 @@
 # DocWire SDK
 
-DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Community Choice & Microsoft support. AI-driven processing. Supports nearly 100 data formats, including email boxes and OCR in more than 100 languages. Boost efficiency in text extraction, web data extraction, data mining, document analysis. Offline processing possible for security and confidentiality.
+DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing. Supports nearly 100 data formats, including email boxes and OCR in more than 100 languages. Boost efficiency in text extraction, web data extraction, data mining, document analysis. Offline processing possible for security and confidentiality.
 
 **Embark on an exciting journey with DocWire SDK, where the philosophies of C++ converge with the power of data processing innovation. Explore the limitless possibilities today and witness the substantial enhancements that set it apart from its predecessor, DocToText.**
 
@@ -24,7 +24,7 @@ Explore the latest updates, contribute to the community, and find the most up-to
 <a name="the-goal"></a>
 ## The Goal
 
-Introducing DocWire SDK: Revolutionizing Data Processing in C++17/20
+Introducing DocWire SDK: Revolutionizing Data Processing in C++20
 
 Unlock the future of data processing with the DocWire SDK, an award-winning, cutting-edge framework that builds upon the legacy of the acclaimed DocToText library. Committed to pushing the boundaries of modern C++ dialects, we are dedicated to enhancing productivity, simplifying development, and delivering a seamless experience for both developers and businesses.
 
@@ -40,7 +40,7 @@ In the dynamic landscape of data processing, the selection of a programming lang
 
 ### For Developers: Elevate Your Capabilities
 
-If you've experienced the power of DocToText, brace yourself for a substantial upgrade. Staying ahead with C++17 and soon C++20, we integrate advanced features such as ranges and concurrency. DocWire SDK evolves to handle a spectrum of data processing tasks, including robust HTTP capabilities, comprehensive network APIs, and efficient web data extraction.
+If you've experienced the power of DocToText, brace yourself for a substantial upgrade. Staying ahead with C++20, we integrate advanced features such as ranges and concurrency. DocWire SDK evolves to handle a spectrum of data processing tasks, including robust HTTP capabilities, comprehensive network APIs, and efficient web data extraction.
 
 We understand the need for comprehensive solutions in today's development landscape. DocWire SDK seamlessly integrates into C++ applications, providing solutions for text extraction, data conversion, data scraping, and data mining.
 

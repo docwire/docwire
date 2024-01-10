@@ -1,5 +1,3 @@
-set(CMAKE_CXX_STANDARD 17)
-
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(api_tests api_tests.cpp)
