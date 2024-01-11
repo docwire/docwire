@@ -106,7 +106,7 @@ Post::process(Info &info) const
 			private:
 				void add(::curl_httppost ** first, ::curl_httppost ** last)
 				{
-					curl_formadd(first, last, CURLFORM_PTRNAME, m_field_name.c_str(), CURLFORM_BUFFER, m_file_name.v.c_str(), CURLFORM_BUFFERPTR, m_buffer->c_str(), CURLFORM_BUFFERLENGTH, m_buffer->size(), CURLFORM_END);
+					curl_formadd(first, last, CURLFORM_PTRNAME, m_field_name.c_str(), CURLFORM_BUFFER, m_file_name.v.u8string().c_str(), CURLFORM_BUFFERPTR, m_buffer->c_str(), CURLFORM_BUFFERLENGTH, m_buffer->size(), CURLFORM_END);
 				}
 				std::string m_field_name;
 				FileName m_file_name;
