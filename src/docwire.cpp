@@ -99,6 +99,7 @@ std::string enum_names_str()
 
 int main(int argc, char* argv[])
 {
+	bool local_processing;
 	bool use_stream;
 	FormattingStyle formatting_style;
 
@@ -127,6 +128,7 @@ int main(int argc, char* argv[])
 		("openai-voice", po::value<openai::TextToSpeech::Voice>()->default_value(openai::TextToSpeech::Voice::alloy), enum_names_str<openai::TextToSpeech::Voice>().c_str())
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
 		("language", po::value<std::vector<Language>>()->default_value({Language::eng}, "eng"), "Set the document language(s) for OCR as ISO 639-3 identifiers like: spa, fra, deu, rus, chi_sim, chi_tra etc. More than 100 languages are supported. Multiple languages can be enabled.")
+		("local-processing", po::value<bool>(&local_processing)->default_value(true), "process documents locally including OCR")
 		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
 		("min_creation_time", po::value<unsigned int>(), "filter emails by min creation time")
 		("max_creation_time", po::value<unsigned int>(), "filter emails by max creation time")
@@ -200,46 +202,46 @@ int main(int argc, char* argv[])
 		std::string api_key = vm["openai-key"].as<std::string>();
 		chain = chain | openai::Transcribe(api_key);
 	}
-	else
+	else if (local_processing)
 	{
 		chain = chain | Importer(parameters, parser_manager);
-	}
 
-	if (vm.count("max_nodes_number"))
-	{
-		chain = chain | TransformerFunc(StandardFilter::filterByMaxNodeNumber(vm["max_nodes_number"].as<unsigned int>()));
-	}
-	if (vm.count("min_creation_time"))
-	{
-		chain = chain | TransformerFunc(StandardFilter::filterByMailMinCreationTime(vm["min_creation_time"].as<unsigned int>()));
-	}
-	if (vm.count("max_creation_time"))
-	{
-		chain = chain | TransformerFunc(StandardFilter::filterByMailMaxCreationTime(vm["max_creation_time"].as<unsigned int>()));
-	}
-	if (vm.count("folder_name"))
-	{
-		chain = chain | TransformerFunc(StandardFilter::filterByFolderName({vm["folder_name"].as<std::string>()}));
-	}
-	if (vm.count("attachment_extension"))
-	{
-		chain = chain | TransformerFunc(StandardFilter::filterByAttachmentType({vm["attachment_extension"].as<std::string>()}));
-	}
+		if (vm.count("max_nodes_number"))
+		{
+			chain = chain | TransformerFunc(StandardFilter::filterByMaxNodeNumber(vm["max_nodes_number"].as<unsigned int>()));
+		}
+		if (vm.count("min_creation_time"))
+		{
+			chain = chain | TransformerFunc(StandardFilter::filterByMailMinCreationTime(vm["min_creation_time"].as<unsigned int>()));
+		}
+		if (vm.count("max_creation_time"))
+		{
+			chain = chain | TransformerFunc(StandardFilter::filterByMailMaxCreationTime(vm["max_creation_time"].as<unsigned int>()));
+		}
+		if (vm.count("folder_name"))
+		{
+			chain = chain | TransformerFunc(StandardFilter::filterByFolderName({vm["folder_name"].as<std::string>()}));
+		}
+		if (vm.count("attachment_extension"))
+		{
+			chain = chain | TransformerFunc(StandardFilter::filterByAttachmentType({vm["attachment_extension"].as<std::string>()}));
+		}
 
-	switch (vm["output_type"].as<OutputType>())
-	{
-		case OutputType::plain_text:
-			chain | PlainTextExporter();
-			break;
-		case OutputType::html:
-			chain | HtmlExporter();
-			break;
-		case OutputType::csv:
-			chain | CsvExporter();
-			break;
-		case OutputType::metadata:
-			chain | MetaDataExporter();
-			break;
+		switch (vm["output_type"].as<OutputType>())
+		{
+			case OutputType::plain_text:
+				chain | PlainTextExporter();
+				break;
+			case OutputType::html:
+				chain | HtmlExporter();
+				break;
+			case OutputType::csv:
+				chain | CsvExporter();
+				break;
+			case OutputType::metadata:
+				chain | MetaDataExporter();
+				break;
+		}
 	}
 
 	if (vm.count("http-post"))

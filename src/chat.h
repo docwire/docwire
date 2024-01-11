@@ -23,7 +23,7 @@ namespace openai
 enum class Model
 {
 	gpt35_turbo, gpt35_turbo_16k, gpt35_turbo_1106,
-	gpt4, gpt4_32k, gpt4_1106_preview
+	gpt4, gpt4_32k, gpt4_1106_preview, gpt4_vision_preview
 };
 
 class DllExport Chat : public ChainElement

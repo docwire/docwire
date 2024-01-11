@@ -55,6 +55,11 @@ target_link_libraries(docwire_core PRIVATE magic_enum::magic_enum)
 find_package(unofficial-curlpp CONFIG REQUIRED)
 target_link_libraries(docwire_core PRIVATE unofficial::curlpp::curlpp)
 
+find_library(botan_lib botan-3 REQUIRED)
+find_path(botan_incdir NAMES botan/base64.h)
+target_link_libraries(docwire_core PRIVATE ${botan_lib})
+target_include_directories(docwire_core PRIVATE ${botan_incdir})
+
 if(MSVC)
     add_definitions(-DMSVC_BUILD)
     find_path(wv2_inc_dir wv2/parser.h REQUIRED)

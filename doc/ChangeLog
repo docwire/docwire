@@ -1,6 +1,7 @@
 ## Unreleased
 
 - Upgrade to C++20 standard
+- Integration with OpenAI Vision added
 
 ## Version 2024.01.05
 
