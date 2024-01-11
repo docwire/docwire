@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # Get version from ChangeLog and store it in DOCWIRE_VERSION and SIMPLE_DOCWIRE_VERSION
 function(extract_version)
@@ -22,8 +22,6 @@ extract_version()
 
 project(docwire VERSION ${SIMPLE_DOCWIRE_VERSION} LANGUAGES CXX C)
 message(STATUS "Build docwire: ${DOCWIRE_VERSION}")
-
-set(CMAKE_CXX_STANDARD 17)
 
 option(DOCWIRE_DOC "Compile Documentation" ON)
 option(DOCWIRE_TRACE "Enable Tracing" OFF)

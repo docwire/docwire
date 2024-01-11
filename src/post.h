@@ -1,5 +1,5 @@
 /*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Community Choice & Microsoft support. AI-driven processing.   */
+/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
 /*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
 /*  document analysis. Offline processing possible for security and confidentiality                                                          */
 /*                                                                                                                                           */
@@ -14,9 +14,18 @@
 
 #include "chain_element.h"
 #include "exception.h"
+#include <filesystem>
 
 namespace docwire
 {
+
+struct DefaultFileName
+{
+	std::filesystem::path v;
+	explicit DefaultFileName(const std::filesystem::path& p)
+		: v(p) {}
+};
+
 namespace http
 {
 
@@ -24,7 +33,7 @@ class DllExport Post : public ChainElement
 {
 public:
 	Post(const std::string& url, const std::string& oauth2_bearer_token = "");
-	Post(const std::string& url, const std::map<std::string, std::string> form, const std::string& pipe_field_name, const std::string& default_file_name, const std::string& oauth2_bearer_token = "");
+	Post(const std::string& url, const std::map<std::string, std::string> form, const std::string& pipe_field_name, const DefaultFileName& default_file_name, const std::string& oauth2_bearer_token = "");
 	Post(const Post& other);
 	virtual ~Post();
 

@@ -1,5 +1,5 @@
 /*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Community Choice & Microsoft support. AI-driven processing.   */
+/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
 /*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
 /*  document analysis. Offline processing possible for security and confidentiality                                                          */
 /*                                                                                                                                           */
@@ -658,7 +658,7 @@ TEST(Http, PostForm)
 		Input(&in)
 			| Importer(ParserParameters(), parser_manager)
 			| PlainTextExporter()
-			| http::Post("https://postman-echo.com/post", {{"field1", "value1"}, {"field2", "value2"}}, "file", "file.docx")
+			| http::Post("https://postman-echo.com/post", {{"field1", "value1"}, {"field2", "value2"}}, "file", DefaultFileName("file.docx"))
 			| Output(output);
 	});
 

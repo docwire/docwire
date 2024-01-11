@@ -1,5 +1,5 @@
 /*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Community Choice & Microsoft support. AI-driven processing.   */
+/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
 /*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
 /*  document analysis. Offline processing possible for security and confidentiality                                                          */
 /*                                                                                                                                           */
@@ -32,16 +32,16 @@ struct Post::Implementation
 	std::string m_url;
 	std::optional<std::map<std::string, std::string>> m_form;
 	std::string m_pipe_field_name;
-	std::string m_default_file_name;
+	DefaultFileName m_default_file_name;
 	std::string m_oauth2_bearer_token;
 };
 
 Post::Post(const std::string& url, const std::string& oauth2_bearer_token)
-	: impl(new Implementation{url, std::nullopt, "", "", oauth2_bearer_token})
+	: impl(new Implementation{url, std::nullopt, "", DefaultFileName{""}, oauth2_bearer_token})
 {
 }
 
-Post::Post(const std::string& url, const std::map<std::string, std::string> form, const std::string& pipe_field_name, const std::string& default_file_name, const std::string& oauth2_bearer_token)
+Post::Post(const std::string& url, const std::map<std::string, std::string> form, const std::string& pipe_field_name, const DefaultFileName& default_file_name, const std::string& oauth2_bearer_token)
 	: impl(new Implementation{url, form, pipe_field_name, default_file_name, oauth2_bearer_token})
 {
 }
@@ -83,10 +83,16 @@ Post::process(Info &info) const
 			parts.push_back(new curlpp::FormParts::Content(f.first, f.second));
 		std::stringstream data_stream;
 		data_stream << in_stream->rdbuf();
+		struct FileName
+		{
+			std::filesystem::path v;
+			explicit FileName(const std::filesystem::path& fn)
+				: v(fn) {}
+		};
 		class FileBuffer : public curlpp::FormPart
 		{
 			public:
-				FileBuffer(const std::string& field_name, const std::string& file_name, std::shared_ptr<std::string> buffer)
+				FileBuffer(const std::string& field_name, const FileName& file_name, std::shared_ptr<std::string> buffer)
 					: FormPart(field_name), m_field_name(field_name), m_file_name(file_name), m_buffer(buffer)
 				{
 				}
@@ -100,13 +106,13 @@ Post::process(Info &info) const
 			private:
 				void add(::curl_httppost ** first, ::curl_httppost ** last)
 				{
-					curl_formadd(first, last, CURLFORM_PTRNAME, m_field_name.c_str(), CURLFORM_BUFFER, m_file_name.c_str(), CURLFORM_BUFFERPTR, m_buffer->c_str(), CURLFORM_BUFFERLENGTH, m_buffer->size(), CURLFORM_END);
+					curl_formadd(first, last, CURLFORM_PTRNAME, m_field_name.c_str(), CURLFORM_BUFFER, m_file_name.v.u8string().c_str(), CURLFORM_BUFFERPTR, m_buffer->c_str(), CURLFORM_BUFFERLENGTH, m_buffer->size(), CURLFORM_END);
 				}
 				std::string m_field_name;
-				std::string m_file_name;
+				FileName m_file_name;
 				std::shared_ptr<std::string> m_buffer;
 		};
-		std::string file_name = name ? *name : (path ? std::filesystem::path(*path).filename().u8string() : impl->m_default_file_name);
+		FileName file_name { name ? std::filesystem::path(*name) : (path ? std::filesystem::path(*path).filename() : impl->m_default_file_name.v) };
 		parts.push_back(new FileBuffer(impl->m_pipe_field_name, file_name, std::make_shared<std::string>(data_stream.str())));
 		request.setOpt(new curlpp::options::HttpPost(parts));
 	}
