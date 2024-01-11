@@ -1,5 +1,5 @@
 /*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Community Choice & Microsoft support. AI-driven processing.   */
+/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
 /*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
 /*  document analysis. Offline processing possible for security and confidentiality                                                          */
 /*                                                                                                                                           */
@@ -48,7 +48,7 @@ static void readme()
   // warning TODO: Generate readme string literal automatically.
   std::cout <<
 	"/*********************************************************************************************************************************************/\n"
-	"/*  DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Community Choice & Microsoft support. AI-driven processing.   */\n"
+	"/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */\n"
 	"/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */\n"
 	"/*  document analysis. Offline processing possible for security and confidentiality                                                          */\n"
 	"/*                                                                                                                                           */\n"

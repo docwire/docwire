@@ -18,7 +18,7 @@ set(DOXYGEN_GENERATE_HTML YES)
 
 set(DOXYGEN_PROJECT_NAME "DocWire SDK")
 set(DOXYGEN_PROJECT_NUMBER ${DOCWIRE_VERSION})
-set(DOXYGEN_PROJECT_BRIEF "DocWire SDK: Award-winning modern data processing in C++17/20. SourceForge Community Choice & Microsoft support. AI-driven processing. Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining, document analysis. Offline processing possible for security and confidentiality")
+set(DOXYGEN_PROJECT_BRIEF "DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing. Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining, document analysis. Offline processing possible for security and confidentiality")
 set(DOXYGEN_STRIP_FROM_PATH ../src/)
 set(DOXYGEN_GENERATE_LATEX NO) # Added for consistency. It is set to NO by default by the CMake module.
 set(DOXYGEN_EXAMPLE_PATH ../examples/)
