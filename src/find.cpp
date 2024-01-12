@@ -9,25 +9,35 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DOCWIRE_H
-#define DOCWIRE_DOCWIRE_H
-
-#include "classify.h"
-#include "decompress_archives.h"
-#include "detect_sentiment.h"
 #include "find.h"
-#include "input.h"
-#include "output.h"
-#include "importer.h"
-#include "plain_text_exporter.h"
-#include "plain_text_writer.h"
-#include "html_exporter.h"
-#include "parsing_chain.h"
-#include "simple_extractor.h"
-#include "summarize.h"
-#include "text_to_speech.h"
-#include "transcribe.h"
-#include "transformer_func.h"
-#include "translate_to.h"
 
-#endif
+#include "log.h"
+
+namespace docwire
+{
+namespace openai
+{
+
+Find::Find(const std::string& what, const std::string& api_key, Model model, float temperature)
+	: Chat("Search for every phrase \"" + what + "\" in provided text. Partial matches are accepted. If image is provided instead of text, match objects or events as well. Start answer with number of matches (in digits) or 0 if not found and then describe what you found and where exactly matches are located.", api_key, model, temperature)
+{
+	docwire_log_func_with_args(what);
+}
+
+Find::Find(const Find& other)
+	: Chat(other)
+{
+	docwire_log_func();
+}
+
+Find::~Find()
+{
+}
+
+Find* Find::clone() const
+{
+	return new Find(*this);
+}
+
+} // namespace openai
+} // namespace docwire

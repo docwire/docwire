@@ -10,6 +10,7 @@ add_library(docwire_core SHARED
         extract_keywords.cpp
         detect_sentiment.cpp
         analyze_data.cpp
+        find.cpp
         text_to_speech.cpp
         transcribe.cpp
         exception.cpp

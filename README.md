@@ -116,6 +116,7 @@ In our pursuit of excellence, DocWire SDK is committed to ongoing Research and D
     - ExtractKeywords: Identify and extract keywords from text.
     - DetectSentiment: Analyze and detect sentiment in text.
     - AnalyzeData: Perform data analysis on text content.
+    - Find: Search for phrases, objects or events in text or images (object detection, event detection).
     - Chat: Conduct chat-based interactions and conversations.
     - TextToSpeech: Perform written text into spoken words (voice) conversion (TTS).
     - Transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
@@ -305,6 +306,24 @@ int main(int argc, char* argv[])
   {
     using namespace docwire;
     Input(argv[1]) | openai::Transcribe("api-key-1234") | PlainTextExporter() | openai::Summarize("api-key-1234") | Output(std::cout);
+  }
+  return 0;
+}
+```
+
+Find phrases, objects and events in text or image using GPT model:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  if (argc > 1)
+  {
+    using namespace docwire;
+    Input(argv[1]) | openai::Find("car", "api-key-1234") | Output(std::cout);
+    Input(argv[1]) | openai::Find("person", "api-key-1234") | Output(std::cout);
+    Input(argv[1]) | openai::Find("running", "api-key-1234") | Output(std::cout);
   }
   return 0;
 }
@@ -635,6 +654,7 @@ Unlock the power of OpenAI with the following options:
 - **&ndash;&ndash;openai-analyze-data**: Analyze exported data for important insights and generate conclusions via OpenAI.
 - **&ndash;&ndash;openai-classify <category>**: Classify exported data via OpenAI to one of the specified categories.
 - **&ndash;&ndash;openai-translate-to <language>**: Language to translate exported data to via OpenAI.
+- **&ndash;&ndash;openai-find <what>**: Find specified phrase, object or event in text or image via OpenAI.
 - **&ndash;&ndash;openai-text-to-speech**: Convert text to speech via OpenAI
 - **&ndash;&ndash;openai-transcribe**: Convert speech to text (transcribe) via OpenAI
 - **&ndash;&ndash;openai-key <key>**: OpenAI API key.
@@ -700,6 +720,16 @@ Summarize your document using GPT model, convert summary to audio using TTS mode
 
 ```bash
 docwire document.doc --openai-summarize --openai-text-to-speech | ffplay -nodisp -autoexit -
+```
+
+#### Searching for objects or events in image or photo
+
+Find objects or events in image using GPT model:
+
+```bash
+docwire --openai-find car --local-processing=off image.jpg
+docwire --openai-find person --local-processing=off image.jpg
+docwire --openai-find running --local-processing=off image.jpg
 ```
 
 Happy Document Processing with DocWire CLI!

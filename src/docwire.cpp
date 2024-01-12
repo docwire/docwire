@@ -20,6 +20,7 @@
 #include "exception.h"
 #include "extract_entities.h"
 #include "extract_keywords.h"
+#include "find.h"
 #include "formatting_style.h"
 #include "html_exporter.h"
 #include "importer.h"
@@ -120,6 +121,7 @@ int main(int argc, char* argv[])
 		("openai-analyze-data", "analyze exported data for inportant insights and generate conclusions via OpenAI")
 		("openai-classify", po::value<std::vector<std::string>>()->multitoken(), "classify exported data via OpenAI to one of specified categories")
 		("openai-translate-to", po::value<std::string>(), "language to translate exported data to via OpenAI")
+		("openai-find", po::value<std::string>(), "find phrase, object or event in text or image via OpenAI")
 		("openai-text-to-speech", "convert text to speech via OpenAI")
 		("openai-transcribe", "convert speech to text (transcribe) via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
@@ -332,6 +334,17 @@ int main(int argc, char* argv[])
 			openai::TranslateTo(language, api_key, model, vm["openai-temperature"].as<float>()) :
 			openai::TranslateTo(language, api_key, model);
 		chain = chain | translate_to;
+	}
+
+	if (vm.count("openai-find"))
+	{
+		std::string what = vm["openai-find"].as<std::string>();
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::Model model = vm["openai-model"].as<openai::Model>();
+		openai::Find find = vm.count("openai-temperature") ?
+			openai::Find(what, api_key, model, vm["openai-temperature"].as<float>()) :
+			openai::Find(what, api_key, model);
+		chain = chain | find;
 	}
 
 	if (vm.count("openai-text-to-speech"))

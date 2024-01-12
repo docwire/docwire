@@ -9,25 +9,32 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DOCWIRE_H
-#define DOCWIRE_DOCWIRE_H
+#ifndef DOCWIRE_OPENAI_FIND_H
+#define DOCWIRE_OPENAI_FIND_H
 
-#include "classify.h"
-#include "decompress_archives.h"
-#include "detect_sentiment.h"
-#include "find.h"
-#include "input.h"
-#include "output.h"
-#include "importer.h"
-#include "plain_text_exporter.h"
-#include "plain_text_writer.h"
-#include "html_exporter.h"
-#include "parsing_chain.h"
-#include "simple_extractor.h"
-#include "summarize.h"
-#include "text_to_speech.h"
-#include "transcribe.h"
-#include "transformer_func.h"
-#include "translate_to.h"
+#include "chat.h"
+#include "exception.h"
 
-#endif
+namespace docwire
+{
+namespace openai
+{
+
+class DllExport Find : public Chat
+{
+public:
+	Find(const std::string& what, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0);
+	Find(const Find& other);
+	virtual ~Find();
+
+	/**
+	* @brief Creates clone of the Find
+	* @return new Find
+	*/
+	Find* clone() const override;
+};
+
+} // namespace openai
+} // namespace docwire
+
+#endif //DOCWIRE_OPENAI_FIND_H

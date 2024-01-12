@@ -2,6 +2,9 @@
 
 - Upgrade to C++20 standard
 - Integration with OpenAI Vision added
+- openai::find transformer - find phrase, object or event in text or image via OpenAI
+- openai-find option added to DocWire CLI
+- local-processing option added to DocWire CLI - turn on/off local document processing including OCR
 
 ## Version 2024.01.05
 
