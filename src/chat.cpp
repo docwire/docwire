@@ -31,10 +31,11 @@ struct Chat::Implementation
 	std::string m_api_key;
 	Model m_model;
 	float m_temperature;
+	ImageDetail m_image_detail;
 };
 
-Chat::Chat(const std::string& system_message, const std::string& api_key, Model model, float temperature)
-	: impl(new Implementation{system_message, api_key, model, temperature})
+Chat::Chat(const std::string& system_message, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+	: impl(new Implementation{system_message, api_key, model, temperature, image_detail})
 {
 	docwire_log_func_with_args(system_message, temperature);
 }
@@ -67,9 +68,20 @@ std::string model_to_string(Model model)
 	}
 }
 
+std::string image_detail_to_string(ImageDetail image_detail)
+{
+	switch (image_detail)
+	{
+		case ImageDetail::low: return "low";
+		case ImageDetail::high: return "high";
+		case ImageDetail::automatic: return "auto";
+		default: throw Chat::IncorrectArgumentValue("Incorrect image detail value");
+	}
+}
+
 enum class UserMsgType { text, image_url };
 
-std::string prepare_query(const std::string& system_msg, UserMsgType user_msg_type, const std::string& user_msg, Model model, float temperature)
+std::string prepare_query(const std::string& system_msg, UserMsgType user_msg_type, const std::string& user_msg, Model model, float temperature, ImageDetail image_detail)
 {
 	docwire_log_func_with_args(system_msg, user_msg);
 	boost::json::object query
@@ -89,7 +101,10 @@ std::string prepare_query(const std::string& system_msg, UserMsgType user_msg_ty
 						boost::json::array {
 							boost::json::object {
 								{ "type", "image_url"},
-								{ "image_url", boost::json::object {{ "url", user_msg }} }
+								{ "image_url", boost::json::object {
+									{ "url", user_msg },
+									{ "detail", image_detail_to_string(image_detail) }
+								}}
 							}
 						}
 				}}
@@ -175,7 +190,7 @@ void Chat::process(Info &info) const
 	}
 	if (path)
 		delete in_stream;
-	std::stringstream content_stream { parse_response(post_request(prepare_query(impl->m_system_message, user_msg_type, data_stream.str(), impl->m_model, impl->m_temperature), impl->m_api_key)) + '\n' };
+	std::stringstream content_stream { parse_response(post_request(prepare_query(impl->m_system_message, user_msg_type, data_stream.str(), impl->m_model, impl->m_temperature, impl->m_image_detail), impl->m_api_key)) + '\n' };
 	Info new_info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&content_stream}, {"name", ""}});
 	emit(new_info);
 }

@@ -18,8 +18,8 @@ namespace docwire
 namespace openai
 {
 
-Find::Find(const std::string& what, const std::string& api_key, Model model, float temperature)
-	: Chat("Search for every phrase \"" + what + "\" in provided text. Partial matches are accepted. If image is provided instead of text, match objects or events as well. Start answer with number of matches (in digits) or 0 if not found and then describe what you found and where exactly matches are located.", api_key, model, temperature)
+Find::Find(const std::string& what, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+	: Chat("Search for every phrase \"" + what + "\" in provided text. Partial matches are accepted. If image is provided instead of text, match objects or events as well. Start answer with number of matches (in digits) or 0 if not found and then describe what you found and where exactly matches are located.", api_key, model, temperature, image_detail)
 {
 	docwire_log_func_with_args(what);
 }

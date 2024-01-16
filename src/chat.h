@@ -26,10 +26,15 @@ enum class Model
 	gpt4, gpt4_32k, gpt4_1106_preview, gpt4_vision_preview
 };
 
+enum class ImageDetail
+{
+	low, high, automatic
+};
+
 class DllExport Chat : public ChainElement
 {
 public:
-	Chat(const std::string& system_message, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0.7);
+	Chat(const std::string& system_message, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0.7, ImageDetail image_detail = ImageDetail::automatic);
 	Chat(const Chat& other);
 	virtual ~Chat();
 
@@ -53,6 +58,7 @@ public:
 
 	DOCWIRE_EXCEPTION_DEFINE(HttpError, RuntimeError);
 	DOCWIRE_EXCEPTION_DEFINE(ParseResponseError, RuntimeError);
+	DOCWIRE_EXCEPTION_DEFINE(IncorrectArgumentValue, LogicError);
 
 private:
 	struct Implementation;
