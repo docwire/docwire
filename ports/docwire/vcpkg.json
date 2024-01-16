@@ -12,6 +12,10 @@
 		"thread-sanitizer":
 		{
 			"description": "Enable thread sanitizer in debug build"
+		},
+		"tests":
+		{
+			"description": "Enable automatic tests"
 		}
 	},
 	"dependencies": [

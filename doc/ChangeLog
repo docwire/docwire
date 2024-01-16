@@ -5,6 +5,7 @@
 - openai::find transformer - find phrase, object or event in text or image via OpenAI
 - openai-find option added to DocWire CLI
 - local-processing option added to DocWire CLI - turn on/off local document processing including OCR
+- Running automatic tests is optional and enabled with VCPKG feature
 
 ## Version 2024.01.05
 
