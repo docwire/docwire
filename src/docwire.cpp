@@ -316,7 +316,7 @@ int main(int argc, char* argv[])
 		openai::ImageDetail image_detail = vm["openai-image-detail"].as<openai::ImageDetail>();
 		openai::AnalyzeData analyze_data = vm.count("openai-temperature") ?
 			openai::AnalyzeData(api_key, model, vm["openai-temperature"].as<float>(), image_detail) :
-			openai::AnalyzeData(api_key, model, 0. image_detail);
+			openai::AnalyzeData(api_key, model, 0, image_detail);
 		chain = chain | analyze_data;
 	}
 
