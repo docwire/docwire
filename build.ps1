@@ -13,7 +13,7 @@ $VCPKG_TRIPLET="x64-windows"
 Get-Date | Out-File -FilePath ports\docwire\disable_binary_cache.tmp
 $Env:SOURCE_PATH = "$PWD"
 $Env:VCPKG_KEEP_ENV_VARS = "SOURCE_PATH"
-vcpkg\vcpkg --overlay-ports=ports install docwire:$VCPKG_TRIPLET
+vcpkg\vcpkg --overlay-ports=ports install docwire[tests]:$VCPKG_TRIPLET
 
 $version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\VERSION
 vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.

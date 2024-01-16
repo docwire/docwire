@@ -32,11 +32,11 @@ else
 fi
 
 if [[ "$SANITIZER" == "address" ]]; then
-	FEATURES="[address-sanitizer]"
+	FEATURES="[tests,address-sanitizer]"
 elif [[ "$SANITIZER" == "thread" ]]; then
-	FEATURES="[thread-sanitizer]"
+	FEATURES="[tests,thread-sanitizer]"
 else
-	FEATURES=""
+	FEATURES="[tests]"
 fi
 
 date > ./ports/docwire/.disable_binary_cache
