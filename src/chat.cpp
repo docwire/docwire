@@ -77,7 +77,7 @@ std::string prepare_query(const std::string& system_msg, UserMsgType user_msg_ty
 		{ "model", model_to_string(model) },
 		{ "max_tokens",
 			model == Model::gpt4_vision_preview ?
-				4096 :
+				1024 :
 				boost::json::value(nullptr)
 		},
 		{ "messages", boost::json::array
