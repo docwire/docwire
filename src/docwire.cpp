@@ -202,7 +202,7 @@ int main(int argc, char* argv[])
 	if (vm.count("openai-transcribe"))
 	{
 		std::string api_key = vm["openai-key"].as<std::string>();
-		chain = chain | openai::Transcribe(api_key);
+		chain = chain | openai::Transcribe(api_key) | PlainTextExporter();
 	}
 	else if (local_processing)
 	{
