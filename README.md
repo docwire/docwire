@@ -188,6 +188,7 @@ Parse file in any format (Office, PDF, mail, etc) having its path, export to pla
 ```cpp
 #include "docwire.h"
 #include <cassert>
+#include <sstream>
 
 int main(int argc, char* argv[])
 {
@@ -206,6 +207,7 @@ Parse file in any format (Office, PDF, mail, etc) having stream, export to HTML 
 ```cpp
 #include "docwire.h"
 #include <cassert>
+#include <sstream>
 
 int main(int argc, char* argv[])
 {
@@ -237,6 +239,7 @@ Classify file in any format (Office, PDF, mail, etc) to any categories:
 ```cpp
 #include "docwire.h"
 #include <cassert>
+#include <sstream>
 
 int main(int argc, char* argv[])
 {
@@ -255,6 +258,7 @@ Translate document in any format (Office, PDF, mail, etc) to other language:
 ```cpp
 #include "docwire.h"
 #include <cassert>
+#include <sstream>
 
 int main(int argc, char* argv[])
 {
@@ -272,6 +276,7 @@ Detect sentiment of document in any format (Office, PDF, mail, etc) using newest
 
 ```cpp
 #include "docwire.h"
+#include <sstream>
 
 int main(int argc, char* argv[])
 {
@@ -318,6 +323,7 @@ Find phrases, objects and events in text or image using GPT model:
 
 ```cpp
 #include "docwire.h"
+#include <sstream>
 
 int main(int argc, char* argv[])
 {
