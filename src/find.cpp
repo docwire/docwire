@@ -9,31 +9,35 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OPENAI_CLASSIFY_H
-#define DOCWIRE_OPENAI_CLASSIFY_H
+#include "find.h"
 
-#include "chat.h"
+#include "log.h"
 
 namespace docwire
 {
 namespace openai
 {
 
-class DllExport Classify : public Chat
+Find::Find(const std::string& what, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+	: Chat("Search for every phrase \"" + what + "\" in provided text. Partial matches are accepted. If image is provided instead of text, match objects or events as well. Start answer with number of matches (in digits) or 0 if not found and then describe what you found and where exactly matches are located.", api_key, model, temperature, image_detail)
 {
-public:
-	Classify(const std::set<std::string>& categories, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
-	Classify(const Classify& other);
-	virtual ~Classify();
+	docwire_log_func_with_args(what);
+}
 
-	/**
-	* @brief Creates clone of the Classify
-	* @return new Classify
-	*/
-	Classify* clone() const override;
-};
+Find::Find(const Find& other)
+	: Chat(other)
+{
+	docwire_log_func();
+}
+
+Find::~Find()
+{
+}
+
+Find* Find::clone() const
+{
+	return new Find(*this);
+}
 
 } // namespace openai
 } // namespace docwire
-
-#endif //DOCWIRE_OPENAI_CLASSIFY_H

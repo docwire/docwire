@@ -15,6 +15,7 @@
 #include "classify.h"
 #include "decompress_archives.h"
 #include "detect_sentiment.h"
+#include "find.h"
 #include "input.h"
 #include "output.h"
 #include "importer.h"

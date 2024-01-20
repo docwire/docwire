@@ -40,7 +40,7 @@ void PlainTextExporter::process(Info &info) const
 	impl->m_writer.write_to(info, impl->m_stream);
 	if (info.tag_name == StandardTag::TAG_CLOSE_DOCUMENT)
 	{
-		Info info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&impl->m_stream}, {"name", ""}});
+		Info info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&impl->m_stream}, {"name", std::string("plain_text_export.txt")}});
 		emit(info);
 	}
 }

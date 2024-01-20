@@ -32,15 +32,15 @@ else
 fi
 
 if [[ "$SANITIZER" == "address" ]]; then
-	FEATURES="[address-sanitizer]"
+	FEATURES="[tests,address-sanitizer]"
 elif [[ "$SANITIZER" == "thread" ]]; then
-	FEATURES="[thread-sanitizer]"
+	FEATURES="[tests,thread-sanitizer]"
 else
-	FEATURES=""
+	FEATURES="[tests]"
 fi
 
 date > ./ports/docwire/.disable_binary_cache
-SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS=SOURCE_PATH ./vcpkg/vcpkg --overlay-ports=./ports install docwire$FEATURES:$VCPKG_TRIPLET
+SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS="SOURCE_PATH;OPENAI_API_KEY" ./vcpkg/vcpkg --overlay-ports=./ports install docwire$FEATURES:$VCPKG_TRIPLET
 
 version=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/VERSION`
 ./vcpkg/vcpkg --overlay-ports=./ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.

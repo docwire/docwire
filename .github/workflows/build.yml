@@ -18,8 +18,7 @@ jobs:
             vcpkg-binary-cache-x64-linux-dynamic
       - run: ./build.sh
         env:
-          ghcr_login: ${{ github.actor }}
-          ghcr_password: ${{ github.token }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       - uses: actions/cache/save@v3
         if: always()
         with:
@@ -54,8 +53,7 @@ jobs:
       - run:
           ./build.ps1
         env:
-          ghcr_login: ${{ github.actor }}
-          ghcr_password: ${{ github.token }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       - uses: actions/cache/save@v3
         if: always()
         with:
@@ -89,6 +87,8 @@ jobs:
             vcpkg-binary-cache-x64-osx-dynamic
       - run:
           ./build.sh
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       - uses: actions/cache/save@v3
         if: always()
         with:
@@ -123,6 +123,7 @@ jobs:
             vcpkg-binary-cache-x64-linux-dynamic
       - run: ./build.sh
         env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SANITIZER: address
           ASAN_OPTIONS: detect_leaks=0
       - uses: actions/upload-artifact@v3
@@ -147,6 +148,7 @@ jobs:
             vcpkg-binary-cache-x64-linux-dynamic
       - run: ./build.sh
         env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SANITIZER: thread
           TSAN_OPTIONS: suppressions=${{ github.workspace }}/tools/thread_sanitizer_suppressions.txt
       - uses: actions/upload-artifact@v3

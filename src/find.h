@@ -9,31 +9,32 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OPENAI_CLASSIFY_H
-#define DOCWIRE_OPENAI_CLASSIFY_H
+#ifndef DOCWIRE_OPENAI_FIND_H
+#define DOCWIRE_OPENAI_FIND_H
 
 #include "chat.h"
+#include "exception.h"
 
 namespace docwire
 {
 namespace openai
 {
 
-class DllExport Classify : public Chat
+class DllExport Find : public Chat
 {
 public:
-	Classify(const std::set<std::string>& categories, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
-	Classify(const Classify& other);
-	virtual ~Classify();
+	Find(const std::string& what, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
+	Find(const Find& other);
+	virtual ~Find();
 
 	/**
-	* @brief Creates clone of the Classify
-	* @return new Classify
+	* @brief Creates clone of the Find
+	* @return new Find
 	*/
-	Classify* clone() const override;
+	Find* clone() const override;
 };
 
 } // namespace openai
 } // namespace docwire
 
-#endif //DOCWIRE_OPENAI_CLASSIFY_H
+#endif //DOCWIRE_OPENAI_FIND_H

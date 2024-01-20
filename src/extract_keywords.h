@@ -22,7 +22,7 @@ namespace openai
 class DllExport ExtractKeywords : public Chat
 {
 public:
-	ExtractKeywords(unsigned int max_keywords, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0);
+	ExtractKeywords(unsigned int max_keywords, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
 	ExtractKeywords(const ExtractKeywords& other);
 	virtual ~ExtractKeywords();
 

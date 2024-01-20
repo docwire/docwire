@@ -1,6 +1,13 @@
 ## Unreleased
 
 - Upgrade to C++20 standard
+- Integration with OpenAI Vision added
+- openai::find transformer - find phrase, object or event in text or image via OpenAI
+- openai-find option added to DocWire CLI
+- local-processing option added to DocWire CLI - turn on/off local document processing including OCR
+- Running automatic tests is optional and enabled with VCPKG feature
+- Add image detail argumument to all openai transformers based on chat models and --openai-image-detail option to CLI
+- Make examples from README.md runnable as part of automatic tests
 
 ## Version 2024.01.05
 
