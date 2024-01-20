@@ -53,11 +53,6 @@ vcpkg_install_copyright(FILE_LIST ${SOURCE_PATH}/LICENSE ${SOURCE_PATH}/doc/COPY
 function(run_tests build_type)
 	set(triplet_build_type ${TARGET_TRIPLET}-${build_type})
 	message(STATUS "Testing ${triplet_build_type}")
-	if ("$ENV{OPENAI_API_KEY}" STREQUAL "")
-		message(STATUS "OPEN_API_KEY is empty or undefined")
-	else()
-		message(STATUS "OPEN_API_KEY is defined")
-	endif()
 	vcpkg_execute_required_process(
 		COMMAND "ctest"
 			-V
