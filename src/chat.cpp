@@ -186,7 +186,7 @@ void Chat::process(Info &info) const
 		);
 		std::string base64Encoded = Botan::base64_encode(inputData);
 		docwire_log_var(base64Encoded);
-		data_stream << "data:image/jpeg;base64," << base64Encoded;
+		data_stream << "data:image/*;base64," << base64Encoded;
 	}
 	if (path)
 		delete in_stream;
