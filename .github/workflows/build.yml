@@ -40,6 +40,7 @@ jobs:
             build-script: ./build.sh
             cache-key: vcpkg-binary-cache-x64-linux-dynamic
             sanitizer: thread
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@v3
