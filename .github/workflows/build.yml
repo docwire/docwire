@@ -1,159 +1,61 @@
 name: Build
 on: [pull_request, workflow_dispatch]
 jobs:
-  x64-linux-dynamic:
-    runs-on: ubuntu-22.04
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            triplet: x64-linux-dynamic
+            sanitizer: ""
+          - os: windows-2019
+            triplet: x64-windows
+            sanitizer: ""
+          - os: macos-12
+            triplet: x64-osx-dynamic
+            sanitizer: ""
+          - os: ubuntu-22.04
+            triplet: x64-linux-dynamic
+            sanitizer: address
+          - os: ubuntu-22.04
+            triplet: x64-linux-dynamic
+            sanitizer: thread
+    name: ${{ matrix.triplet }}${{ matrix.sanitizer != '' && format('-{0}-sanitizer', matrix.sanitizer) || '' }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 150
-    permissions:
-      packages: write
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: actions/cache/restore@v3
         with:
-          path: ~/.cache/vcpkg/archives
-          key: vcpkg-binary-cache-x64-linux-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+          path: ${{ runner.os == 'Windows' && '~\\AppData\\Local\\vcpkg\\archives' || '~/.cache/vcpkg/archives' }}
+          key: vcpkg-binary-cache-${{ matrix.triplet }}-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
           restore-keys: |
-            vcpkg-binary-cache-x64-linux-dynamic
-      - run: ./build.sh
+            vcpkg-binary-cache-${{ matrix.triplet }}
+      - run: ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SANITIZER: ${{ matrix.sanitizer }}
+          ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0' || '' }}
+          TSAN_OPTIONS: ${{ matrix.sanitizer == 'thread' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
       - uses: actions/cache/save@v3
-        if: always()
+        if: always() && matrix.sanitizer == ''
         with:
-          path: ~/.cache/vcpkg/archives
-          key: vcpkg-binary-cache-x64-linux-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+          path: ${{ runner.os == 'Windows' && '~\\AppData\\Local\\vcpkg\\archives' || '~/.cache/vcpkg/archives' }}
+          key: vcpkg-binary-cache-${{ matrix.triplet }}-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
       - uses: actions/upload-artifact@v3
+        if: always() && matrix.sanitizer == ''
         with:
-          name: x64-linux-dynamic-binaries
+          name: ${{ matrix.triplet }}-binaries
           path: |
-            ./docwire*.bz2
-            ./docwire*.sha1
+              ${{ runner.os == 'Windows' && './docwire*.zip' || './docwire*.bz2' }}
+              ./docwire*.sha1
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: x64-linux-dynamic-logs
-          path: vcpkg/buildtrees/*/*.log
-          if-no-files-found: error
-  x64-windows:
-    runs-on: windows-2019
-    timeout-minutes: 150
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: actions/cache/restore@v3
-        with:
-          path: ~\AppData\Local\vcpkg\archives
-          key: vcpkg-binary-cache-x64-windows-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
-          restore-keys: |
-            vcpkg-binary-cache-x64-windows
-      - run:
-          ./build.ps1
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      - uses: actions/cache/save@v3
-        if: always()
-        with:
-          path: ~\AppData\Local\vcpkg\archives
-          key: vcpkg-binary-cache-x64-windows-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
-      - uses: actions/upload-artifact@v3
-        with:
-          name: x64-windows-binaries
-          path: |
-            ./docwire*.zip
-            ./docwire*.sha1
-          if-no-files-found: error
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: x64-windows-logs
-          path: vcpkg/buildtrees/*/*.log
-          if-no-files-found: error
-  x64-osx-dynamic:
-    runs-on: macos-12
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: actions/cache/restore@v3
-        with:
-          path: ~/.cache/vcpkg/archives
-          key: vcpkg-binary-cache-x64-osx-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
-          restore-keys: |
-            vcpkg-binary-cache-x64-osx-dynamic
-      - run:
-          ./build.sh
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      - uses: actions/cache/save@v3
-        if: always()
-        with:
-          path: ~/.cache/vcpkg/archives
-          key: vcpkg-binary-cache-x64-osx-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
-      - uses: actions/upload-artifact@v3
-        with:
-          name: x64-osx-dynamic-binaries
-          path: |
-            ./docwire*.bz2
-            ./docwire*.sha1
-          if-no-files-found: error
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: x64-osx-dynamic-logs
-          path: vcpkg/buildtrees/*/*.log
-          if-no-files-found: error
-
-  x64-linux-dynamic-address-sanitizer:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 150
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: actions/cache/restore@v3
-        with:
-          path: ~/.cache/vcpkg/archives
-          key: vcpkg-binary-cache-x64-linux-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
-          restore-keys: |
-            vcpkg-binary-cache-x64-linux-dynamic
-      - run: ./build.sh
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          SANITIZER: address
-          ASAN_OPTIONS: detect_leaks=0
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: x64-linux-dynamic-address-sanitizer-logs
-          path: vcpkg/buildtrees/*/*.log
-          if-no-files-found: error
-
-  x64-linux-dynamic-thread-sanitizer:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 150
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: actions/cache/restore@v3
-        with:
-          path: ~/.cache/vcpkg/archives
-          key: vcpkg-binary-cache-x64-linux-dynamic-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
-          restore-keys: |
-            vcpkg-binary-cache-x64-linux-dynamic
-      - run: ./build.sh
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          SANITIZER: thread
-          TSAN_OPTIONS: suppressions=${{ github.workspace }}/tools/thread_sanitizer_suppressions.txt
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: x64-linux-dynamic-thread-sanitizer-logs
+          name: ${{ matrix.triplet }}-${{ matrix.sanitizer == '' && 'binaries' || format('{0}-sanitizer', matrix.sanitizer) }}-logs
           path: vcpkg/buildtrees/*/*.log
           if-no-files-found: error
