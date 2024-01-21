@@ -8,34 +8,20 @@ jobs:
         include:
           - os: ubuntu-22.04
             triplet: x64-linux-dynamic
-            build-script: ./build.sh
-            file-pattern: |
-              ./docwire*.bz2
-              ./docwire*.sha1
             sanitizer: ""
           - os: windows-2019
             triplet: x64-windows
-            build-script: ./build.ps1
-            file-pattern: |
-              ./docwire*.zip
-              ./docwire*.sha1
             sanitizer: ""
           - os: macos-12
             triplet: x64-osx-dynamic
-            build-script: ./build.sh
-            file-pattern: |
-              ./docwire*.bz2
-              ./docwire*.sha1
             sanitizer: ""
           - os: ubuntu-22.04
             triplet: x64-linux-dynamic
-            build-script: ./build.sh
             sanitizer: address
           - os: ubuntu-22.04
             triplet: x64-linux-dynamic
-            build-script: ./build.sh
             sanitizer: thread
-    name: ${{ matrix.triplet }}${{ matrix.sanitizer != '' && format('{0}-sanitizer', matrix.sanitizer) || '' }}
+    name: ${{ matrix.triplet }}${{ matrix.sanitizer != '' && format('-{0}-sanitizer', matrix.sanitizer) || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 150
     steps:
@@ -48,7 +34,7 @@ jobs:
           key: vcpkg-binary-cache-${{ matrix.triplet }}-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
           restore-keys: |
             vcpkg-binary-cache-${{ matrix.triplet }}
-      - run: ${{ matrix.build-script }}
+      - run: ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SANITIZER: ${{ matrix.sanitizer }}
@@ -63,7 +49,9 @@ jobs:
         if: always() && matrix.sanitizer == ''
         with:
           name: ${{ matrix.triplet }}-binaries
-          path: ${{ matrix.file-pattern }}
+          path: |
+              ${{ runner.os == 'Windows' && './docwire*.zip' || './docwire*.bz2' }}
+              ./docwire*.sha1
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         if: always()
