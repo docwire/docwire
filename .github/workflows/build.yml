@@ -8,19 +8,11 @@ jobs:
         include:
           - os: ubuntu-22.04
             triplet: x64-linux-dynamic
-            sanitizer: ""
           - os: windows-2019
             triplet: x64-windows
-            sanitizer: ""
           - os: macos-12
             triplet: x64-osx-dynamic
-            sanitizer: ""
-          - os: ubuntu-22.04
-            triplet: x64-linux-dynamic
-            sanitizer: address
-          - os: ubuntu-22.04
-            triplet: x64-linux-dynamic
-            sanitizer: thread
+        sanitizer: ["", address, thread]
     name: ${{ matrix.triplet }}${{ matrix.sanitizer != '' && format('-{0}-sanitizer', matrix.sanitizer) || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 150

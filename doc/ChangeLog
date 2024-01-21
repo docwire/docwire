@@ -9,6 +9,7 @@
 - Add image detail argumument to all openai transformers based on chat models and --openai-image-detail option to CLI
 - Make examples from README.md runnable as part of automatic tests
 - Introduce github actions strategy matrix for CI jobs
+- Enable Address and Thread sanitizers on all platforms
 
 ## Version 2024.01.05
 
