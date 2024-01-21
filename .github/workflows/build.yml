@@ -56,7 +56,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SANITIZER: ${{ matrix.sanitizer }}
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0' || '' }}
-          TSAN_OPTIONS: ${{ matrix.sanitizer == 'thread' && suppressions=${{ github.workspace }}/tools/thread_sanitizer_suppressions.txt || '' }}
+          TSAN_OPTIONS: ${{ matrix.sanitizer == 'thread' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
       - uses: actions/cache/save@v3
         if: always() && matrix.sanitizer == ''
         with:
