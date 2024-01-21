@@ -5,6 +5,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        dummy: [dummy]
         include:
           - os: ubuntu-22.04
             artifact-name: x64-linux-dynamic-binaries
