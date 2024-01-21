@@ -15,7 +15,6 @@ jobs:
               ./docwire*.bz2
               ./docwire*.sha1
             sanitizer: ""
-            additional-env: {}
           - os: windows-2019
             artifact-name: x64-windows-binaries
             build-script: ./build.ps1
@@ -24,7 +23,6 @@ jobs:
               ./docwire*.zip
               ./docwire*.sha1
             sanitizer: ""
-            additional-env: {}
           - os: macos-12
             artifact-name: x64-osx-dynamic-binaries
             build-script: ./build.sh
@@ -33,23 +31,16 @@ jobs:
               ./docwire*.bz2
               ./docwire*.sha1
             sanitizer: ""
-            additional-env: {}
           - os: ubuntu-22.04
             artifact-name: x64-linux-dynamic-address-sanitizer
             build-script: ./build.sh
             cache-key: vcpkg-binary-cache-x64-linux-dynamic
             sanitizer: address
-            additional-env:
-              SANITIZER: address
-              ASAN_OPTIONS: detect_leaks=0
           - os: ubuntu-22.04
             artifact-name: x64-linux-dynamic-thread-sanitizer
             build-script: ./build.sh
             cache-key: vcpkg-binary-cache-x64-linux-dynamic
             sanitizer: thread
-            additional-env:
-              SANITIZER: thread
-              TSAN_OPTIONS: suppressions=${{ github.workspace }}/tools/thread_sanitizer_suppressions.txt
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@v3
@@ -64,7 +55,9 @@ jobs:
       - run: ${{ matrix.build-script }}
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ${{ matrix.additional-env }}
+          SANITIZER: ${{ matrix.sanitizer }}
+          ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0' || '' }}
+          TSAN_OPTIONS: ${{ matrix.sanitizer == 'thread' && suppressions=${{ github.workspace }}/tools/thread_sanitizer_suppressions.txt || '' }}
       - uses: actions/cache/save@v3
         if: always() && matrix.sanitizer == ''
         with:
