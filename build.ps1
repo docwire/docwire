@@ -33,7 +33,7 @@ if ($Env:OPENAI_API_KEY -ne $null -and $env:OPENAI_API_KEY -ne "") {
 } else {
     Write-Host "DEBUG: OPENAI_API_KEY does not exist."
 }
-vcpkg\vcpkg --overlay-ports=ports install docwire$FEATURES:$VCPKG_TRIPLET
+vcpkg\vcpkg --overlay-ports=ports install docwire${FEATURES}:${VCPKG_TRIPLET}
 
 $version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\VERSION
 vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
