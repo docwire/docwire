@@ -5932,7 +5932,6 @@ struct PDFParser::Implementation
 															 333, 0, 333, 333, 0, 333, 333, 333, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 															 0, 0, 0, 0, 0, 0, 0, 944, 0, 266, 0, 0, 0, 0, 611, 722, 944, 300, 0,
 															 0, 0, 0, 0, 722, 0, 0, 0, 278, 0, 0, 278, 500, 722, 500, 0, 0, 0};
-					font_metrics->m_widths.reserve(font_metrics->m_widths.size() + std::size(times_bold_italic_widths));
 					font_metrics->m_widths.insert(font_metrics->m_widths.end(), std::begin(times_bold_italic_widths), std::end(times_bold_italic_widths));
 
 					font_metrics = &((*this)["Helvetica-Bold"]);
