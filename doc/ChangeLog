@@ -10,6 +10,7 @@
 - Make examples from README.md runnable as part of automatic tests
 - Introduce github actions strategy matrix for CI jobs
 - Enable Address and Thread sanitizers on all platforms
+- Enable Address and Thread sanitizers in release builds when vcpkg port sanitizers feature flags are enabled
 
 ## Version 2024.01.05
 
