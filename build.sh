@@ -26,10 +26,11 @@ fi
 cd ..
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-	if [[ $(arch) == 'arm64' ]];
-		VCPKG_TRIPLET=amd64-osx-dynamic
+	if [[ $(arch) == 'arm64' ]]; then
+		VCPKG_TRIPLET=arm64-osx-dynamic
 	else
 		VCPKG_TRIPLET=x64-osx-dynamic
+	fi
 else
 	VCPKG_TRIPLET=x64-linux-dynamic
 fi
