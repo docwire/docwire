@@ -86,6 +86,7 @@ namespace
 		boost::algorithm::erase_all(normalized, "struct ");
 		boost::algorithm::replace_all(normalized, "(void)", "()");
 		boost::algorithm::replace_all(normalized, ", ", ",");
+		boost::algorithm::replace_all(normalized, "> >", ">>");
 		return normalized;
 	}
 } // anonymous namespace
