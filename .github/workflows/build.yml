@@ -5,22 +5,40 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2019, macos-12]
-        triplet: [x64-linux-dynamic, x64-windows, x64-osx-dynamic]
+        os: [ubuntu-22.04, windows-2019, macos-12, flyci-macos-large-latest-m1]
+        triplet: [x64-linux-dynamic, x64-windows, x64-osx-dynamic, arm64-osx-dynamic]
         sanitizer: ["", "address", "thread"]
         exclude:
           - os: ubuntu-22.04
             triplet: x64-windows
           - os: ubuntu-22.04
             triplet: x64-osx-dynamic
+          - os: ubuntu-22.04
+            triplet: arm64-osx-dynamic
           - os: windows-2019
             triplet: x64-linux-dynamic
           - os: windows-2019
             triplet: x64-osx-dynamic
+          - os: windows-2019
+            triplet: arm64-osx-dynamic
           - os: macos-12
             triplet: x64-linux-dynamic
           - os: macos-12
             triplet: x64-windows
+          - os: macos-12
+            triplet: arm64-osx-dynamic
+          - os: flyci-macos-large-latest-m1
+            triplet: x64-linux-dynamic
+          - os: flyci-macos-large-latest-m1
+            triplet: x64-windows
+          - os: flyci-macos-large-latest-m1
+            triplet: x64-osx-dynamic
+          - os: flyci-macos-large-latest-m1
+            triplet: amd64-osx-dynamic
+            sanitizer: address
+          - os: flyci-macos-large-latest-m1
+            triplet: amd64-osx-dynamic
+            sanitizer: thread
     name: ${{ matrix.triplet }}${{ matrix.sanitizer != '' && format('-{0}-sanitizer', matrix.sanitizer) || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 150
