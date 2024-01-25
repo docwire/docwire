@@ -482,9 +482,9 @@ vcpkg overlay add docwire/ports
 This command ensures that vcpkg adds the DocWire overlay for subsequent installations.
 
 5. **Install DocWire:**
-Now that the overlay is set up, you can use vcpkg to install the DocWire library:
+Now that the overlay is set up, you can use vcpkg to install the DocWire library (see compatibility note for supported platforms/triplets):
 ```
-vcpkg install docwire
+vcpkg install docwire:x64-linux-dynamic
 ```
 6. **Download Binary Archives (Alternative):**
 As an alternative to building from source, users can also download pre-built binary archives that contain the results of the vcpkg export command for DocWire. These archives can be found in the "Releases" section of the DocWire GitHub repository.
@@ -503,7 +503,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake ..
 You're all set! You've successfully installed the DocWire library using vcpkg. You can now use the DocWire library in your code to perform text extraction from documents. 
 
 ### Compatibility Note
-Please note that DocWire is currently compatible with vcpkg tagged as version 2023.11.20. While this version is recommended for use, be aware that updates may become available in the near future. Supported triplets are: x64-linux-dynamic, x64-windows and x64-osx-dynamic.
+Please note that DocWire is currently compatible with vcpkg tagged as version 2023.11.20. While this version is recommended for use, be aware that updates may become available in the near future. Supported triplets are: x64-linux-dynamic, x64-windows, x64-osx-dynamic and arm64-osx-dynamic.
 
 <a name="versioning"></a>
 ## Versioning
