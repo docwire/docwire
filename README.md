@@ -58,6 +58,10 @@ DocWire SDK transcends being a mere successor; it's a quantum leap in addressing
 - **Enhanced Cloud Integration**: Develop features to seamlessly integrate with various cloud platforms, allowing users to leverage cloud resources for scalable and efficient data processing.
 - **Improved NLP Integration**: Building on our existing OpenAI integration, we aim to enhance natural language processing capabilities for even more accurate and insightful data extraction.
 - **Powerhouse for data processing**: With continued support for various import formats and expanded export options, DocWire SDK is evolving into a powerhouse for data processing.
+- **Enhanced Structured Content Extraction for AI Applications**: We are committed to advancing the capabilities of DocWire SDK to meet the growing demands of AI and NLP developers. Our roadmap includes the development of more sophisticated algorithms for structured content extraction, enabling the SDK to identify and categorize document elements with greater precision. This will include improved recognition of semantic structures within the text, such as headings, subheadings, and thematic breaks, which are crucial for training AI models in tasks like document summarization, topic modeling, and content classification.
+- **Customizable Content Selection for Model Training**: Recognizing the diverse needs of AI applications, we plan to introduce customizable content selection features within the SDK. This will empower developers to specify which document elements should be included or excluded during the data extraction process, tailoring the dataset to the specific requirements of their AI models. Whether it's extracting dialogue from scripts, narrative passages from articles, or key points from reports, DocWire SDK will provide the flexibility needed for targeted model training.
+- **Integration with Advanced NLP Libraries**: To further support the development of AI and NLP applications, DocWire SDK will integrate with advanced NLP libraries, providing out-of-the-box support for common NLP tasks such as tokenization, part-of-speech tagging, named entity recognition, and sentiment analysis. This integration will streamline the workflow for developers, allowing them to preprocess and analyze text within the same framework used for data extraction.
+- **Support for Custom AI Model Deployment**: As AI models become increasingly specialized, there is a need for frameworks that can accommodate custom model deployment. DocWire SDK will offer support for integrating custom-trained AI models, enabling developers to leverage their proprietary algorithms within the data processing pipeline. This will facilitate a seamless transition from model training to deployment, ensuring that developers can maximize the performance and accuracy of their AI applications.
 - **Top-notch Documentation and Support**: Expect nothing but the best. We are committed to providing high-quality documentation and fanatical customer support, ensuring a smooth and efficient experience for every user.
 
 ### Examples of Input and Output Sources
@@ -138,6 +142,7 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
 - Supports multiple LLM models: gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-3.5-turbo-1106, gpt-4, gpt-4-32k and gpt-4-1106-preview (world events up to April 2023, 128k context window that can fit more than 300 pages of text in a single prompt), gpt4_vision_preview (with ability to understand images), whisper-1, tts-1. More are coming.
 - Equipped with a high-grade, scriptable, and trainable OCR that has LSTM neural networks-based character recognition OCR capabilities in more than 100 languages and multiple languages in single picture.
 - Incremental parsing returning data as soon as they are available
+- Structured Content Extraction: DocWire SDK excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
 - Cross-platform: Linux, Windows, MacOSX, and more to come
 - Can be embedded in your application (SDK)
 - Can be integrated with other data mining and data analytics applications
@@ -194,6 +199,17 @@ Merge the structured flow of PipeChain with the depth of information in DataTree
 
 **Effortless Adaptability**:
 Experience the synergy of PipeChain and DataTree, effortlessly adapting to diverse document structures. Elevate your document processing game with a harmonious blend of expressive code, structured information, and an efficient SAX parser-inspired processing model.
+
+### AI-Enhanced Document Processing
+
+**AI-Driven Insights and Transformations**:
+DocWire SDK's API is designed to accommodate the integration of AI-driven insights and transformations. By incorporating AI models directly into the PipeChain, developers can enrich the data processing pipeline with advanced capabilities such as semantic analysis, context-aware summarization, and intelligent content categorization. This integration allows for the dynamic application of AI insights at various stages of the document processing workflow, enhancing the overall value and utility of the extracted data.
+
+**Custom AI Model Integration**:
+The API concept extends to support custom AI model integration, enabling developers to inject their own trained models into the processing chain. This flexibility ensures that the SDK can adapt to the unique requirements of specialized AI applications, providing a tailored processing environment that aligns with the developer's vision.
+
+**Seamless AI and Data Processing Synergy**:
+DocWire SDK's API fosters a seamless synergy between AI and data processing. By blending AI functionalities with traditional data extraction, the API offers a unified approach to document processing that leverages the best of both worlds. This synergy is particularly advantageous for developers working on cutting-edge AI projects, as it allows them to harness the full potential of their models within a robust data processing framework.
 
 <a name="examples"></a>
 ## Examples
