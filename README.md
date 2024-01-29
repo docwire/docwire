@@ -44,6 +44,20 @@ If you've experienced the power of DocToText, brace yourself for a substantial u
 
 We understand the need for comprehensive solutions in today's development landscape. DocWire SDK seamlessly integrates into C++ applications, providing solutions for text extraction, data conversion, data scraping, and data mining.
 
+### Optimized for NLP and AI Projects
+
+DocWire SDK is engineered to be the cornerstone of your NLP and AI projects. With its advanced data preparation capabilities, it ensures that your input data is of the highest quality, which is crucial for the performance of your models.
+
+- **Data Cleaning and Preprocessing**: Before feeding data into your NLP models, it's essential to clean and preprocess it. DocWire SDK provides powerful tools to remove noise, correct formatting issues, and standardize data, ensuring that your models are trained on clean and relevant datasets.
+
+- **Content Filtering and Removal**: Unwanted content can skew the results of your NLP models. DocWire SDK allows you to define rules to filter out irrelevant sections, such as boilerplate text, disclaimers, or headers and footers, ensuring that only pertinent content is passed to your models.
+
+- **Output Sanitization**: When integrating NLP models into production systems, it's vital to sanitize outputs to prevent the leakage of sensitive information. DocWire SDK offers features to detect and redact personal data, confidential information, and other sensitive content from your outputs.
+
+- **Downstream Application Readiness**: The quality of data not only affects model training but also the performance of downstream applications. DocWire SDK prepares and sanitizes your data to ensure that it meets the requirements of subsequent systems, whether they are analytics platforms, customer relationship management tools, or content management systems.
+
+By incorporating DocWire SDK into your workflow, you can significantly enhance the quality of your NLP and AI applications, leading to more accurate insights and better decision-making.
+
 ### For Businesses: A Quantum Leap in Data Processing
 
 DocWire SDK transcends being a mere successor; it's a quantum leap in addressing complex data processing tasks. Our support for diverse document formats is expanding, including PDF, DOC, XLS, and more. Extracting insights from email boxes, databases, websites, and harnessing the latest AI features are pivotal components of our commitment.
@@ -77,6 +91,12 @@ DocWire SDK transcends being a mere successor; it's a quantum leap in addressing
 In our pursuit of excellence, DocWire SDK is committed to ongoing Research and Development. Our R&D goals are designed to address the evolving challenges in data processing and to leverage cutting-edge technologies to provide our users with a robust and efficient toolkit. Our current R&D goals include:
 
 - **Enhanced AI Capabilities**: We are continuously pushing the boundaries of AI integration by exploring new models and refining existing ones to provide state-of-the-art data processing. This includes running large AI models locally, which presents challenges such as managing model size, optimizing speed, and ensuring high-quality outputs. Addressing these issues is crucial for enabling powerful on-device AI without the need for constant cloud connectivity.
+
+- **Advanced Data Sanitization Techniques**: We are developing sophisticated data sanitization techniques to further enhance the safety and privacy of AI models. These techniques will enable the SDK to automatically detect and redact sensitive information, ensuring that data used for training and inference is free from personal identifiers and confidential content.
+
+- **Customizable Data Preparation Workflows**: Recognizing the diverse needs of AI and NLP applications, we are working on customizable data preparation workflows. These workflows will allow developers to define and automate the steps required to clean, preprocess, and format data for their specific use cases, streamlining the path from raw data to actionable insights.
+
+- **Enhanced Support for Multilingual Data Processing**: As AI applications become increasingly global, the need for multilingual data processing grows. We are enhancing DocWire SDK's capabilities to handle a wide range of languages and scripts, ensuring that developers can prepare data for multilingual models with ease and accuracy.
 
 - **Long-Term Memory for AI Models**: To enhance the performance of AI models, we are researching the integration of vector databases and other innovative solutions that can provide long-term memory capabilities. This will allow AI models to retain and access vast amounts of data efficiently, improving their predictive accuracy and contextual understanding.
 
@@ -143,6 +163,15 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
 - Equipped with a high-grade, scriptable, and trainable OCR that has LSTM neural networks-based character recognition OCR capabilities in more than 100 languages and multiple languages in single picture.
 - Incremental parsing returning data as soon as they are available
 - Structured Content Extraction: DocWire SDK excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
+
+- **NLP Model Training Data Preparation**: Prepare your training data with precision. DocWire SDK's structured content extraction is ideal for preparing datasets for NLP model training. By extracting only the relevant sections of text, you can create clean, focused datasets that lead to more effective and efficient model training.
+
+- **Data Sanitization for AI Safety**: Ensure the safety and integrity of your AI models. DocWire SDK's data sanitization capabilities help prevent the introduction of biased, sensitive, or inappropriate content into your models, safeguarding the quality and reliability of your AI applications.
+
+- **Customizable Data Cleaning Pipelines**: Tailor your data cleaning process to fit the unique needs of your project. With DocWire SDK, you can build customizable pipelines that automate the cleaning, normalization, and transformation of your data, saving time and reducing the potential for human error.
+
+- **Seamless Integration with AI and NLP Libraries**: DocWire SDK is designed to work hand-in-hand with popular AI and NLP libraries. Its flexible API allows for easy integration, enabling you to preprocess data within the same framework used for model training and inference.
+
 - Cross-platform: Linux, Windows, MacOSX, and more to come
 - Can be embedded in your application (SDK)
 - Can be integrated with other data mining and data analytics applications
