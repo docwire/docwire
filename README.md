@@ -165,9 +165,10 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
 <a name="features"></a>
 ## Features
 
-- Able to extract/import and export text, images, formatting, and metadata along with annotations
-- Data can be transformed between import and export (filtering, aggregating, etc)
-- Equipped with multiple importers:
+- Able to extract/import and export **text, images, formatting, and metadata along with annotations**
+- **Data can be transformed** between import and export (filtering, aggregating, etc)
+
+- **Equipped with multiple importers**:
     - Microsoft Office new Office Open XML (OOXML): DOCX, XLSX, PPTX files
     - Microsoft Office old binary formats: DOC, XLS, XLSB, PPT files
     - OpenOffice/LibreOffice Open Document Format (ODF): ODT, ODS, ODP files
@@ -185,13 +186,16 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
     - Other structured text formats: JSON, YML, YAML, RSS, CONF files
     - Other unstructured text formats: MD, LOG files
     - DICOM (DCM) as an additional commercial plugin
-- Equipped with multiple exporters:
+
+- **Equipped with multiple exporters**:
     - Plain text: Easily extract and export text content.
     - HTML: Export content in HTML format for web use.
     - CSV: Export data to Comma-Separated Values format.
     - XLSX and more are coming: Additional export formats for diverse use cases.
-- HTTP::Post transformer: Facilitate seamless communication with external HTTP APIs or services, enabling data exchange and integration with external systems.
-- Integration with OpenAI API, including transformers like:
+
+- HTTP::Post transformer: Facilitate **seamless communication with external HTTP APIs or services**, enabling data exchange and integration with external systems.
+
+- **Integration with OpenAI API**, including transformers like:
     - TranslateTo: Translate text or image to different languages.
     - Summarize: Generate summarized content from longer texts or description of images.
     - ExtractEntities: Extract entities and key information from text and image.
@@ -203,10 +207,12 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
     - Chat: Conduct chat-based interactions and conversations with text input and image input.
     - TextToSpeech: Perform written text into spoken words (voice) conversion (TTS).
     - Transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
-- Supports multiple LLM models: gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-3.5-turbo-1106, gpt-4, gpt-4-32k and gpt-4-1106-preview (world events up to April 2023, 128k context window that can fit more than 300 pages of text in a single prompt), gpt4_vision_preview (with ability to understand images), whisper-1, tts-1. More are coming.
-- Equipped with a high-grade, scriptable, and trainable OCR that has LSTM neural networks-based character recognition OCR capabilities in more than 100 languages and multiple languages in single picture.
-- Incremental parsing returning data as soon as they are available
-- Structured Content Extraction: DocWire SDK excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
+
+- **Supports multiple LLM models**: gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-3.5-turbo-1106, gpt-4, gpt-4-32k and gpt-4-1106-preview (world events up to April 2023, 128k context window that can fit more than 300 pages of text in a single prompt), gpt4_vision_preview (with ability to understand images), whisper-1, tts-1. More are coming.
+- **Equipped with a high-grade, scriptable, and trainable OCR** that has LSTM neural networks-based character recognition OCR capabilities in more than 100 languages and multiple languages in single picture.
+- **Incremental parsing** returning data as soon as they are available
+
+- **Structured Content Extraction**: DocWire SDK excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
 
 - **Preprocessing for Embeddings**: Use DocWire SDK to clean and preprocess text data, ensuring that the input to your embedding models is of high quality and free from noise.
 
@@ -234,13 +240,13 @@ ional AI, document summarization, and topic extraction.
 
 - **Enhanced AI and NLP Support**: DocWire SDK is not only a tool for data extraction but also a powerful ally for AI and NLP developers. With its advanced chunking and semantic unit preservation, the SDK is perfectly suited for preparing data for AI models that require a deep understanding of document structure and content. Whether you're working on machine learning, deep learning, or any other AI project, DocWire SDK provides the features you need to ensure your data is ready for the challenge.
 
-- Cross-platform: Linux, Windows, MacOSX, and more to come
-- Can be embedded in your application (SDK)
-- Can be integrated with other data mining and data analytics applications
-- Parsing process can be easily designed by connecting objects with the pipe `|` operator into a chain
+- **Cross-platform**: Linux, Windows, MacOSX, and more to come
+- **Can be embedded** in your application (SDK)
+- **Can be integrated** with other data mining and data analytics applications
+- **Parsing process can be easily designed** by connecting objects with the pipe `|` operator into a chain
 - Parsing chain elements communicate based on Boost Signals
-- Custom parsing chain elements can be added (importers, transformers, exporters)
-- Small binaries, fast native C++ code
+- **Custom parsing chain elements can be added** (importers, transformers, exporters)
+- **Small binaries, fast** native C++ code
 
 <a name="api-concept"></a>
 ## Revolutionary API concept
