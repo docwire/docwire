@@ -296,11 +296,38 @@ struct PlainTextWriter::Implementation
 		return std::make_shared<TextElement>(text);
 	}
 
-  std::shared_ptr<TextElement>
-  write_footer(const Info &info) const
-  {
-    return std::make_shared<TextElement>("\n");
-  }
+	std::shared_ptr<TextElement> write_header(const Info &info)
+	{
+		header_mode = true;
+		return std::make_shared<TextElement>("");
+	}
+
+	std::shared_ptr<TextElement> write_close_header(const Info &info)
+	{
+		header_mode = false;
+		return std::make_shared<TextElement>("\n");
+	}
+
+	std::shared_ptr<TextElement> write_footer(const Info &info)
+	{
+		footer_mode = true;
+		footer_stream.str("");
+		return std::make_shared<TextElement>("");
+	}
+
+	std::shared_ptr<TextElement> write_close_footer(const Info &info)
+	{
+		footer_mode = false;
+		return std::make_shared<TextElement>("");
+	}
+
+	std::shared_ptr<TextElement> write_close_document(const Info &info)
+	{
+		std::string footer = footer_stream.str();
+		if (!footer.empty())
+			footer +=  '\n';
+		return std::make_shared<TextElement>("\n" + footer);
+	}
 
   std::map<std::string, std::function<std::shared_ptr<TextElement>(const Info &info)>> plain_text_writers;
 
@@ -326,8 +353,12 @@ struct PlainTextWriter::Implementation
         {StandardTag::TAG_CLOSE_LIST, [this](const Info &info){return write_close_list(info);}},
         {StandardTag::TAG_LIST_ITEM, [this](const Info &info){return write_list_item(info);}},
         {StandardTag::TAG_CLOSE_LIST_ITEM, [this](const Info &info){return write_close_list_item(info);}},
+        {StandardTag::TAG_HEADER, [this](const Info &info){return write_header(info);}},
+        {StandardTag::TAG_CLOSE_HEADER, [this](const Info &info){return write_close_header(info);}},
+        {StandardTag::TAG_FOOTER, [this](const Info &info){return write_footer(info);}},
+        {StandardTag::TAG_CLOSE_FOOTER, [this](const Info &info){return write_close_footer(info);}},
         {StandardTag::TAG_COMMENT, [this](const Info &info){return write_comment(info);}},
-        {StandardTag::TAG_CLOSE_DOCUMENT, [this](const Info &info){return write_footer(info);}}
+        {StandardTag::TAG_CLOSE_DOCUMENT, [this](const Info &info){return write_close_document(info);}}
       };
   };
 
@@ -452,7 +483,7 @@ struct PlainTextWriter::Implementation
       if (writer_iterator != plain_text_writers.end())
       {
         auto text_element = writer_iterator->second(info);
-        text_element->write_to(stream);
+        text_element->write_to(footer_mode ? footer_stream : stream);
       }
     }
   }
@@ -463,7 +494,11 @@ struct PlainTextWriter::Implementation
   int list_counter;
   bool first_cell_in_row;
   bool list_mode{ false };
+  bool header_mode{false};
+  bool footer_mode{false};
+  std::stringstream footer_stream;
   std::vector<std::vector<Cell>> table;
+  std::string footer;
 };
 
 PlainTextWriter::PlainTextWriter()
@@ -479,6 +514,8 @@ PlainTextWriter::PlainTextWriter(const PlainTextWriter &plainTextWriter)
   impl->list_counter = plainTextWriter.impl->list_counter;
   impl->first_cell_in_row = plainTextWriter.impl->first_cell_in_row;
   impl->list_mode = plainTextWriter.impl->list_mode;
+  impl->header_mode = plainTextWriter.impl->header_mode;
+  impl->footer_mode = plainTextWriter.impl->footer_mode;
   impl->table = plainTextWriter.impl->table;
 }
 
@@ -490,6 +527,8 @@ PlainTextWriter::operator=(const PlainTextWriter &plainTextWriter)
   impl->list_counter = plainTextWriter.impl->list_counter;
   impl->first_cell_in_row = plainTextWriter.impl->first_cell_in_row;
   impl->list_mode = plainTextWriter.impl->list_mode;
+  impl->header_mode = plainTextWriter.impl->header_mode;
+  impl->footer_mode = plainTextWriter.impl->footer_mode;
   impl->table = plainTextWriter.impl->table;
 
   return *this;

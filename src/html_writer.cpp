@@ -168,6 +168,10 @@ struct HtmlWriter::Implementation
     {StandardTag::TAG_CLOSE_LIST, [](const Info &info) { return std::make_shared<TextElement>("</ul>"); }},
     {StandardTag::TAG_LIST_ITEM, [](const Info &info) { return std::make_shared<TextElement>("<li>"); }},
     {StandardTag::TAG_CLOSE_LIST_ITEM, [](const Info &info) { return std::make_shared<TextElement>("</li>"); }},
+    {StandardTag::TAG_HEADER, [](const Info &info) { return std::make_shared<TextElement>("<header>"); }},
+    {StandardTag::TAG_CLOSE_HEADER, [](const Info &info) { return std::make_shared<TextElement>("</header>"); }},
+    {StandardTag::TAG_FOOTER, [](const Info &info) { return std::make_shared<TextElement>("<footer>"); }},
+    {StandardTag::TAG_CLOSE_FOOTER, [](const Info &info) { return std::make_shared<TextElement>("</footer>"); }},
     {StandardTag::TAG_DOCUMENT, [this](const Info &info) { return write_open_header(); }},
     {StandardTag::TAG_CLOSE_DOCUMENT, [this](const Info &info) { return write_footer(); }},
     {StandardTag::TAG_STYLE, [this](const Info &info) { return write_style(info); }}};

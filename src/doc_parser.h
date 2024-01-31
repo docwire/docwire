@@ -27,11 +27,13 @@ class DOCParser : public Parser
 	private:
 		struct Implementation;
 		Implementation* impl;
+		friend class TextHandler;
+		friend class SubDocumentHandler;
+		void plainText(const FormattingStyle& formatting) const;
 
 	public:
 
     void parse() const override;
-    Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
 		Parser& withParameters(const ParserParameters &parameters) override;
     static std::vector <std::string> getExtensions() {return {"doc", "dot"};}
 
@@ -39,7 +41,6 @@ class DOCParser : public Parser
 		DOCParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
 		~DOCParser();
 		bool isDOC();
-		std::string plainText(const FormattingStyle& formatting) const;
 		Metadata metaData() const;
 };
 
