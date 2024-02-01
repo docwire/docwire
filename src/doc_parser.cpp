@@ -489,7 +489,9 @@ class TextHandler : public wvWare::TextHandler
 						UString hyperlink_url;
 						for (i = 1; i < params.length() && params[i] != '"'; i++)
 							hyperlink_url += UString(params[i]);
-						res_text = UString(formatUrl(ustring_to_string(hyperlink_url), ustring_to_string(m_curr_state->field_value), m_formatting).c_str());
+						m_parent->sendTag(StandardTag::TAG_LINK, "", {{"url", ustring_to_string(hyperlink_url)}});
+						m_parent->sendTag(StandardTag::TAG_TEXT, ustring_to_string(m_curr_state->field_value));
+						m_parent->sendTag(StandardTag::TAG_CLOSE_LINK);
 					}
 					else
 						res_text = params + UString(" ") + m_curr_state->field_value;
