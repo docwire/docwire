@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_DOC_PARSER_H
 #define DOCWIRE_DOC_PARSER_H
 
+#include "exception.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include <string>
@@ -29,6 +30,7 @@ class DOCParser : public Parser
 		Implementation* impl;
 		friend class TextHandler;
 		friend class SubDocumentHandler;
+		friend class TableHandler;
 		void plainText(const FormattingStyle& formatting) const;
 
 	public:
@@ -42,6 +44,8 @@ class DOCParser : public Parser
 		~DOCParser();
 		bool isDOC();
 		Metadata metaData() const;
+
+	DOCWIRE_EXCEPTION_DEFINE(ParsingError, RuntimeError);
 };
 
 } // namespace docwire
