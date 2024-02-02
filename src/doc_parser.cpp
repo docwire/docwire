@@ -359,6 +359,7 @@ class TextHandler : public wvWare::TextHandler
 					m_curr_state->table_state.push(TableState::in_cell);
 				}
 			}
+			m_parent->sendTag(StandardTag::TAG_P);
 			if (((Parser9x*)m_parser)->m_currentParagraph->size() > 0)
 			{
 				if (m_comments_parsed)
@@ -390,7 +391,7 @@ class TextHandler : public wvWare::TextHandler
 		void paragraphEnd()
 		{
 			docwire_log_func();
-			m_parent->sendTag(StandardTag::TAG_TEXT, "\n");
+			m_parent->sendTag(StandardTag::TAG_CLOSE_P);
 			if (!((Parser9x*)m_parser)->m_currentParagraph->empty())
 			{
 				m_prev_par_fc = ((Parser9x*)m_parser)->m_currentParagraph->back().m_startFC;

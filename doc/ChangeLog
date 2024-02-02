@@ -13,7 +13,7 @@
 - Enable Address and Thread sanitizers in release builds when vcpkg port sanitizers feature flags are enabled
 - Add arm64-osx-dynamic triplet to continuous integration to support Apple Silicon platforms (M1, M2, M3 etc)
 - Refactor DOC format parser: returning results incrementally
-- Refactor DOC format parser: improve parsing of tables, hyperlinks
+- Refactor DOC format parser: improve parsing of tables, hyperlinks and paragraphs
 - Add support for headers and footers to plain text and html exporters.
 
 ## Version 2024.01.05
