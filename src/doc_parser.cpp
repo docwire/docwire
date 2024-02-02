@@ -53,21 +53,17 @@ using namespace wvWare;
 static pthread_mutex_t parser_factory_mutex_1 = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t parser_factory_mutex_2 = PTHREAD_MUTEX_INITIALIZER;
 
-struct CurrentTable
+enum class TableState
 {
-	bool in_table;
-	std::string curr_cell_text;
-	svector curr_row_cells;
-	std::vector<svector> rows;
-	CurrentTable() : in_table(false) {};
+	in_table,
+	in_row,
+	in_cell
 };
 
 struct CurrentHeaderFooter
 {
 	bool in_header;
 	bool in_footer;
-	UString header;
-	UString footer;
 	CurrentHeaderFooter() : in_header(false), in_footer(false) {};
 };
 
@@ -89,7 +85,7 @@ enum FieldPart
 
 struct CurrentState
 {
-	CurrentTable table;
+	std::stack<TableState> table_state;
 	CurrentHeaderFooter header_footer;
 	std::list<std::string> obj_texts;
 	std::list<std::string>::iterator obj_texts_iter;
@@ -314,20 +310,11 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 	}
 }
 
-static std::string format_comment(const std::string& author, const std::string& text)
-{
-	std::string comment = "\n[[[COMMENT BY " + author + "]]]\n" + text;
-	if (text.empty() || *text.rbegin() != '\n')
-		comment += "\n";
-	comment += "[[[---]]]\n";
-	return comment;
-}
-
 class TextHandler : public wvWare::TextHandler
 {
 	private:
+		const DOCParser* m_parent;
 		const wvWare::Parser* m_parser;
-		UString* Text;
 		CurrentState* m_curr_state;
 		FormattingStyle m_formatting;
 		bool m_comments_parsed;
@@ -335,11 +322,10 @@ class TextHandler : public wvWare::TextHandler
 		U32 m_prev_par_fc;
 
 	public:
-		TextHandler(const wvWare::Parser* parser, UString* text, CurrentState* curr_state,
+		TextHandler(const DOCParser* parent, const wvWare::Parser* parser, CurrentState* curr_state,
 				const FormattingStyle& formatting)
-			: m_parser(parser), m_curr_state(curr_state), m_comments_parsed(false), m_prev_par_fc(0)
+			: m_parent(parent), m_parser(parser), m_curr_state(curr_state), m_comments_parsed(false), m_prev_par_fc(0)
 		{
-			Text = text;
 			m_curr_state = curr_state;
 			m_formatting = formatting;
 		}
@@ -359,13 +345,36 @@ class TextHandler : public wvWare::TextHandler
 		void paragraphStart(SharedPtr<const ParagraphProperties>
 			paragraphProperties)
 		{
+			docwire_log_func();
+			if (!m_curr_state->table_state.empty())
+			{
+				if (m_curr_state->table_state.top() == TableState::in_table)
+				{
+					m_parent->sendTag(StandardTag::TAG_CLOSE_TABLE);
+					m_curr_state->table_state.pop();
+				}
+				else if (m_curr_state->table_state.top() == TableState::in_row)
+				{
+					m_parent->sendTag(StandardTag::TAG_TD);
+					m_curr_state->table_state.push(TableState::in_cell);
+				}
+			}
+			m_parent->sendTag(StandardTag::TAG_P);
 			if (((Parser9x*)m_parser)->m_currentParagraph->size() > 0)
 			{
 				if (m_comments_parsed)
 				{
 					for (int i = 0; i < m_comments.size(); i++)
 					if (m_comments[i].fc >= m_prev_par_fc && m_comments[i].fc < ((Parser9x*)m_parser)->m_currentParagraph->back().m_startFC)
-						(*Text) += utf8_to_ustring(format_comment(m_comments[i].author, m_comments[i].text));
+					{
+						std::string comment_text = m_comments[i].text;
+						std::replace(comment_text.begin(), comment_text.end(), '\x0b', '\n');
+						m_parent->sendTag(StandardTag::TAG_COMMENT, "",
+							{
+								{ "author",  m_comments[i].author },
+								{"comment", comment_text }
+							});
+					}
 				}
 				else
 				{
@@ -377,24 +386,12 @@ class TextHandler : public wvWare::TextHandler
 					m_comments_parsed = true;
 				}
 			}
-			if (m_curr_state->table.in_table && (!paragraphProperties->pap().fInTable))
-			{
-				m_curr_state->table.in_table = false;
-				(*Text) += utf8_to_ustring(formatTable(m_curr_state->table.rows, m_formatting));
-				m_curr_state->table.rows.clear();
-			}
 		}
 
 		void paragraphEnd()
 		{
-			if (m_curr_state->table.in_table)
-				m_curr_state->table.curr_cell_text += "\n";
-			else if (m_curr_state->header_footer.in_header)
-				m_curr_state->header_footer.header += UString("\n");
-			else if (m_curr_state->header_footer.in_footer)
-				m_curr_state->header_footer.footer += UString("\n");
-			else
-				(*Text) += UString("\n");
+			docwire_log_func();
+			m_parent->sendTag(StandardTag::TAG_CLOSE_P);
 			if (!((Parser9x*)m_parser)->m_currentParagraph->empty())
 			{
 				m_prev_par_fc = ((Parser9x*)m_parser)->m_currentParagraph->back().m_startFC;
@@ -403,18 +400,17 @@ class TextHandler : public wvWare::TextHandler
 
 		void runOfText (const UString &text, SharedPtr< const Word97::CHP > chp)
 		{
+			docwire_log_func();
 			if (m_curr_state->field_part == FIELD_PART_PARAMS)
 				m_curr_state->field_params += text;
 			else if (m_curr_state->field_part == FIELD_PART_VALUE)
 				m_curr_state->field_value += text;
-			else if (m_curr_state->table.in_table)
-				m_curr_state->table.curr_cell_text += ustring_to_string(text);
-			else if (m_curr_state->header_footer.in_header)
-				m_curr_state->header_footer.header += text;
-			else if (m_curr_state->header_footer.in_footer)
-				m_curr_state->header_footer.footer += text;
 			else
-				(*Text) += text;
+			{
+				std::string t = ustring_to_string(text);
+				std::replace(t.begin(), t.end(), '\x0b', '\n');
+				m_parent->sendTag(StandardTag::TAG_TEXT, t);
+			}
 		}
 
 		void specialCharacter(SpecialCharacter character,
@@ -435,6 +431,7 @@ class TextHandler : public wvWare::TextHandler
 		void fieldStart(const FLD *fld,
 			SharedPtr<const Word97::CHP> chp)
 		{
+			docwire_log_func();
 			m_curr_state->field_type = (FieldType)fld->flt;
 			m_curr_state->field_part = FIELD_PART_PARAMS;
 			switch (fld->flt)
@@ -445,7 +442,9 @@ class TextHandler : public wvWare::TextHandler
 						docwire_log(warning) << "Unexpected OLE object reference.";
 					else
 					{
-						(*Text) += utf8_to_ustring(*m_curr_state->obj_texts_iter);
+						std::string obj_text = *m_curr_state->obj_texts_iter;
+						std::replace(obj_text.begin(), obj_text.end(), '\x0b', '\n');
+						m_parent->sendTag(StandardTag::TAG_TEXT, obj_text);
 						m_curr_state->obj_texts_iter++;
 					}
 					break;
@@ -458,12 +457,14 @@ class TextHandler : public wvWare::TextHandler
 		void fieldSeparator(const FLD* fld,
 			SharedPtr<const Word97::CHP> chp)
 		{
+			docwire_log_func();
 			m_curr_state->field_part = FIELD_PART_VALUE;
 		}
 
 		void fieldEnd(const FLD* fld,
 			SharedPtr<const Word97::CHP> chp)
 		{
+			docwire_log_func();
 			UString params = m_curr_state->field_params;
 			int i = 0;
 			while (i < params.length() && params[i] == ' ') i++;
@@ -489,7 +490,9 @@ class TextHandler : public wvWare::TextHandler
 						UString hyperlink_url;
 						for (i = 1; i < params.length() && params[i] != '"'; i++)
 							hyperlink_url += UString(params[i]);
-						res_text = UString(formatUrl(ustring_to_string(hyperlink_url), ustring_to_string(m_curr_state->field_value), m_formatting).c_str());
+						m_parent->sendTag(StandardTag::TAG_LINK, "", {{"url", ustring_to_string(hyperlink_url)}});
+						m_parent->sendTag(StandardTag::TAG_TEXT, ustring_to_string(m_curr_state->field_value));
+						m_parent->sendTag(StandardTag::TAG_CLOSE_LINK);
 					}
 					else
 						res_text = params + UString(" ") + m_curr_state->field_value;
@@ -499,90 +502,134 @@ class TextHandler : public wvWare::TextHandler
 			}
 			m_curr_state->field_type = FLT_NONE;
 			m_curr_state->field_part = FIELD_PART_NONE;
-			if (m_curr_state->table.in_table)
-				m_curr_state->table.curr_cell_text += ustring_to_string(res_text);
-			else if (m_curr_state->header_footer.in_header)
-				m_curr_state->header_footer.header += res_text;
-			else if (m_curr_state->header_footer.in_footer)
-				m_curr_state->header_footer.footer += res_text;
-			else
-				(*Text) += res_text;
+			std::string t = ustring_to_string(res_text);
+			std::replace(t.begin(), t.end(), '\x0b', '\n');
+			m_parent->sendTag(StandardTag::TAG_TEXT, t);
 		}
 
 		void endOfDocument()
 		{
+			docwire_log_func();
 			if (m_comments_parsed)
 				for (int i = 0; i < m_comments.size(); i++)
 					if (m_comments[i].fc >= m_prev_par_fc)
-						(*Text) += utf8_to_ustring(format_comment(m_comments[i].author, m_comments[i].text));
+					{
+						std::string comment_text = m_comments[i].text;
+						std::replace(comment_text.begin(), comment_text.end(), '\x0b', '\n');
+						m_parent->sendTag(StandardTag::TAG_COMMENT, "",
+							{
+								{ "author",  m_comments[i].author },
+								{"comment", comment_text }
+							});
+					}
 		}
 };
 
 class TableHandler : public wvWare::TableHandler
 {
 	private:
-		UString* Text;
-		CurrentTable* m_curr_table;
+		const DOCParser* m_parent;
+		CurrentState& m_current_state;
 
 	public:
-		TableHandler(UString* text, CurrentTable* curr_table)
+		TableHandler(const DOCParser* parent, CurrentState& current_state)
+			: m_parent(parent), m_current_state(current_state)
 		{
-			Text = text;
-			m_curr_table = curr_table;
 		}
 
 		void tableRowStart(SharedPtr<const Word97::TAP> tap)
 		{
-			m_curr_table->in_table = true;
+			docwire_log_func();
+			if (m_current_state.table_state.empty() || m_current_state.table_state.top() == TableState::in_cell)
+			{
+				m_parent->sendTag(StandardTag::TAG_TABLE);
+				m_current_state.table_state.push(TableState::in_table);
+			}
+			if (m_current_state.table_state.top() != TableState::in_table)
+				throw DOCParser::ParsingError("Unexpected start of table row");
+			m_parent->sendTag(StandardTag::TAG_TR);
+			m_current_state.table_state.push(TableState::in_row);
 		}
 
 		void tableRowEnd()
 		{
-			m_curr_table->rows.push_back(m_curr_table->curr_row_cells);
-			m_curr_table->curr_row_cells.clear();
+			docwire_log_func();
+			if (m_current_state.table_state.empty())
+				throw DOCParser::ParsingError("Unexpected end of table row");
+			if (m_current_state.table_state.top() == TableState::in_cell)
+			{
+				m_parent->sendTag(StandardTag::TAG_CLOSE_TD);
+				m_current_state.table_state.pop();
+			}
+			if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row)
+				throw DOCParser::ParsingError("Unexpected end of table row");
+			m_parent->sendTag(StandardTag::TAG_CLOSE_TR);
+			m_current_state.table_state.pop();
 		}
 
 		void tableCellStart()
 		{
+			docwire_log_func();
+			if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row)
+				throw DOCParser::ParsingError("Unexpected start of table cell");
+			m_parent->sendTag(StandardTag::TAG_TD);
+			m_current_state.table_state.push(TableState::in_cell);
 		}
 
 		void tableCellEnd()
 		{
-			m_curr_table->curr_row_cells.push_back(m_curr_table->curr_cell_text);
-			m_curr_table->curr_cell_text = "";
+			docwire_log_func();
+			if (!m_current_state.table_state.empty() && m_current_state.table_state.top() == TableState::in_table)
+			{
+				m_parent->sendTag(StandardTag::TAG_CLOSE_TABLE);
+				m_current_state.table_state.pop();
+			}
+			if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_cell)
+				throw DOCParser::ParsingError("Unexpected end of table cell");
+			m_parent->sendTag(StandardTag::TAG_CLOSE_TD);
+			m_current_state.table_state.pop();
 		}
 };
 
 class SubDocumentHandler : public wvWare::SubDocumentHandler
 {
 	private:
+		const DOCParser* m_parent;
 		CurrentHeaderFooter* m_curr_header_footer;
 	
 	public:
-		SubDocumentHandler(CurrentHeaderFooter* curr_header_footer)
-			: m_curr_header_footer(curr_header_footer)
+		SubDocumentHandler(const DOCParser* parent, CurrentHeaderFooter* curr_header_footer)
+			: m_parent(parent), m_curr_header_footer(curr_header_footer)
 		{
 		}
 
 		virtual void headerStart(HeaderData::Type type)
 		{
+			docwire_log_func();
 			switch (type)
 			{
 				case HeaderData::HeaderOdd:
 				case HeaderData::HeaderEven:
 				case HeaderData::HeaderFirst:
 					m_curr_header_footer->in_header = true;
+					m_parent->sendTag(StandardTag::TAG_HEADER);
 					break;
 				case HeaderData::FooterOdd:
 				case HeaderData::FooterEven:
 				case HeaderData::FooterFirst:
 					m_curr_header_footer->in_footer = true;
+					m_parent->sendTag(StandardTag::TAG_FOOTER);
 					break;
 			}
 		}
 
 		virtual void headerEnd()
 		{
+			docwire_log_func();
+			if (m_curr_header_footer->in_header)
+				m_parent->sendTag(StandardTag::TAG_CLOSE_HEADER);
+			if (m_curr_header_footer->in_footer)
+				m_parent->sendTag(StandardTag::TAG_CLOSE_FOOTER);
 			m_curr_header_footer->in_header = false;
 			m_curr_header_footer->in_footer = false;
 		}
@@ -593,7 +640,6 @@ struct DOCParser::Implementation
 	const char* m_buffer;
 	size_t m_buffer_size;
 	std::string m_file_name;
-	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
 DOCParser::DOCParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
@@ -667,7 +713,7 @@ bool DOCParser::isDOC()
 	return true;
 }
 
-std::string DOCParser::plainText(const FormattingStyle& formatting) const
+void DOCParser::plainText(const FormattingStyle& formatting) const
 {
 	CurrentState curr_state;
 	docwire_log(debug) << "Opening " << impl->m_file_name << " as OLE file to parse all embedded objects in supported formats.";
@@ -746,12 +792,11 @@ std::string DOCParser::plainText(const FormattingStyle& formatting) const
 			throw EncryptedFileException("File is encrypted");
 		throw Exception("Creating parser failed");
 	}
-	UString text;
-	TextHandler text_handler(parser, &text, &curr_state, formatting);
+	TextHandler text_handler(this, parser, &curr_state, formatting);
 	parser->setTextHandler(&text_handler);
-	TableHandler table_handler(&text, &curr_state.table);
+	TableHandler table_handler(this, curr_state);
 	parser->setTableHandler(&table_handler);
-	SubDocumentHandler sub_document_handler(&curr_state.header_footer);
+	SubDocumentHandler sub_document_handler(this, &curr_state.header_footer);
 	parser->setSubDocumentHandler(&sub_document_handler);
 	cerr_redirection.redirect();
 	bool res = parser->parse();
@@ -759,16 +804,6 @@ std::string DOCParser::plainText(const FormattingStyle& formatting) const
 	if (!res)
 		throw Exception("Parsing document failed");
 	text_handler.endOfDocument();
-	if (curr_state.header_footer.header != "")
-		text = curr_state.header_footer.header + UString("\n") + text;
-	if (curr_state.header_footer.footer != "")
-		text += UString("\n") + curr_state.header_footer.footer;
-	std::string s = ustring_to_string(text);
-	// 0x0b character (vertical tab) is used as no-breaking carraige return.
-	std::replace(s.begin(), s.end(), '\x0b', '\n');
-	Info new_info(StandardTag::TAG_TEXT, s);
-  impl->m_on_new_node_signal(new_info);
-	return s;
 }
 
 Metadata DOCParser::metaData() const
@@ -814,14 +849,7 @@ DOCParser::parse() const
   plainText(formating);
 
   Metadata metadata = metaData();
-	Info metadata_info(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
-  impl->m_on_new_node_signal(metadata_info);
-}
-
-Parser& DOCParser::addOnNewNodeCallback(NewNodeCallback callback)
-{
-  impl->m_on_new_node_signal.connect(callback);
-  return *this;
+	sendTag(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
 }
 
 } // namespace docwire

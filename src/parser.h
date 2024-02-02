@@ -62,6 +62,11 @@ public:
   inline static const std::string TAG_LIST_ITEM = "list-item"; ///< Tag for list item
   inline static const std::string TAG_CLOSE_LIST_ITEM = "/list-item"; ///< Tag for closing list item
 
+  inline static const std::string TAG_HEADER = "header"; ///< Tag for header
+  inline static const std::string TAG_CLOSE_HEADER = "/header"; ///< Tag for closing header
+  inline static const std::string TAG_FOOTER = "footer"; ///< Tag for footer
+  inline static const std::string TAG_CLOSE_FOOTER = "/footer"; ///< Tag for closing footer
+
   inline static const std::string TAG_MAIL = "mail"; ///< Tag for mail. Attributes: "subject": std::string, "date": uint (unix timestamp).
   inline static const std::string TAG_CLOSE_MAIL = "/mail"; ///< Tag for closing mail.
   inline static const std::string TAG_MAIL_BODY = "mail-body"; ///< Tag for mail body.

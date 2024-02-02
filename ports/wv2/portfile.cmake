@@ -9,7 +9,7 @@ vcpkg_from_github(
 vcpkg_list(SET options)
 
 if(VCPKG_TARGET_IS_OSX)
-	vcpkg_list(APPEND options "-DCMAKE_CXX_STANDARD=17")
+	vcpkg_list(APPEND options "-DCMAKE_CXX_STANDARD=14")
 endif()
 
 vcpkg_cmake_configure(
