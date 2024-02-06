@@ -40,23 +40,19 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: actions/cache/restore@v3
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@v6
         with:
-          path: ${{ runner.os == 'Windows' && '~\\AppData\\Local\\vcpkg\\archives' || '~/.cache/vcpkg/archives' }}
-          key: vcpkg-binary-cache-${{ matrix.triplet }}-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
-          restore-keys: |
-            vcpkg-binary-cache-${{ matrix.triplet }}
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
       - run: ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SANITIZER: ${{ matrix.sanitizer }}
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
           TSAN_OPTIONS: ${{ matrix.sanitizer == 'thread' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
-      - uses: actions/cache/save@v3
-        if: always() && matrix.sanitizer == ''
-        with:
-          path: ${{ runner.os == 'Windows' && '~\\AppData\\Local\\vcpkg\\archives' || '~/.cache/vcpkg/archives' }}
-          key: vcpkg-binary-cache-${{ matrix.triplet }}-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
       - uses: actions/upload-artifact@v3
         if: always() && matrix.sanitizer == ''
         with:
