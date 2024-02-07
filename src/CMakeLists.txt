@@ -45,6 +45,8 @@ add_library(docwire_core SHARED
         parsing_chain.cpp
         input.cpp)
 
+target_compile_features(docwire_core PUBLIC cxx_std_20)
+
 find_package(Boost REQUIRED COMPONENTS filesystem system json program_options)
 target_link_libraries(docwire_core PRIVATE Boost::filesystem Boost::system Boost::json)
 target_include_directories(docwire_core PRIVATE ${Boost_INCLUDE_DIRS})
