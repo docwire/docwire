@@ -17,6 +17,7 @@
 - Add support for headers and footers to plain text and html exporters.
 - Upgrade VCPKG to version 2024.01.12
 - Replace manual GitHub actions cache with VCPKG GitHub Actions cache feature (x-gha)
+- Add Ubuntu 20.22 GitHub runner to continuous integration (automatic tests)
 
 ## Version 2024.01.05
 

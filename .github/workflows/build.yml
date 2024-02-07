@@ -5,10 +5,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2019, macos-12, flyci-macos-large-latest-m1]
+        os: [ubuntu-20.04, ubuntu-22.04, windows-2019, macos-12, flyci-macos-large-latest-m1]
         triplet: [x64-linux-dynamic, x64-windows, x64-osx-dynamic, arm64-osx-dynamic]
         sanitizer: ["", "address", "thread"]
         exclude:
+          - os: ubuntu-20.04
+            triplet: x64-windows
+          - os: ubuntu-20.04
+            triplet: x64-osx-dynamic
+          - os: ubuntu-20.04
+            triplet: arm64-osx-dynamic
           - os: ubuntu-22.04
             triplet: x64-windows
           - os: ubuntu-22.04
@@ -33,7 +39,7 @@ jobs:
             triplet: x64-windows
           - os: flyci-macos-large-latest-m1
             triplet: x64-osx-dynamic
-    name: ${{ matrix.triplet }}${{ matrix.sanitizer != '' && format('-{0}-sanitizer', matrix.sanitizer) || '' }}
+    name: ${{ matrix.triplet }}-${{ matrix.os }}${{ matrix.sanitizer != '' && format('-{0}-sanitizer', matrix.sanitizer) || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 150
     steps:
