@@ -164,7 +164,15 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	po::notify(vm);
+	try
+	{
+		po::notify(vm);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << "Error: " << e.what() << std::endl;
+		return 1;
+	}
 
 	if (vm.count("verbose"))
 	{
