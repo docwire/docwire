@@ -52,7 +52,12 @@ jobs:
           script: |
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-      - run: ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
+      - run: |
+          if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10
+            sudo update-alternatives --set gcc /usr/bin/gcc-10
+          fi
+          ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
