@@ -40,7 +40,7 @@ vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=d
 
 New-Item docwire-$version\docwire.bat -ItemType File -Value "@`"%~dp0\\installed\\x64-windows\\tools\\docwire.bat`" %*"
 
-$abi_suffix = Get-Content vcpkg\nstalled/$VCPKG_TRIPLET\share\docwire\abi-id.txt
+$abi_suffix = Get-Content vcpkg\nstalled\$VCPKG_TRIPLET\share\docwire\abi-id.txt
 $full_suffix = "$version-$VCPKG_TRIPLET-$abi_suffix"
 Compress-Archive -LiteralPath docwire-$version -DestinationPath docwire-$full_suffix.zip
 Get-FileHash -Algorithm SHA1 docwire-$full_suffix.zip > docwire-$full_suffix.zip.sha1
