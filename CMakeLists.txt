@@ -48,6 +48,13 @@ file(WRITE ${CMAKE_SOURCE_DIR}/version.h "#define VERSION \"${DOCWIRE_VERSION}\"
 file(WRITE ${CMAKE_BINARY_DIR}/VERSION "${DOCWIRE_VERSION}")
 install(FILES ${CMAKE_BINARY_DIR}/VERSION DESTINATION share/docwire)
 
+string(TOLOWER ${CMAKE_CXX_COMPILER_ID} compiler_id)
+if(compiler_id STREQUAL "gnu")
+    set(compiler_id "gcc")
+endif()
+file(WRITE ${CMAKE_BINARY_DIR}/abi-id.txt "${compiler_id}-${CMAKE_CXX_COMPILER_VERSION}")
+install(FILES ${CMAKE_BINARY_DIR}/abi-id.txt DESTINATION share/docwire)
+
 add_subdirectory(src)
 
 file( GLOB extras extras/* )

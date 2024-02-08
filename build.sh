@@ -53,5 +53,7 @@ version=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/VERSION`
 echo "\$(dirname \"\$0\")/installed/$VCPKG_TRIPLET/tools/docwire.sh \"\$@\"" > docwire-$version/docwire.sh
 chmod u+x docwire-$version/docwire.sh
 
-tar -cjvf docwire-$version-$VCPKG_TRIPLET.tar.bz2 docwire-$version
-sha1sum docwire-$version-$VCPKG_TRIPLET.tar.bz2 > docwire-$version-$VCPKG_TRIPLET.tar.bz2.sha1
+abi_suffix=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/abi-id.txt`
+full_suffix="$version-$VCPKG_TRIPLET-$abi_suffix"
+tar -cjvf docwire-$full_suffix.tar.bz2 docwire-$version
+sha1sum docwire-$full_suffix.tar.bz2 > docwire-$full_suffix.tar.bz2.sha1
