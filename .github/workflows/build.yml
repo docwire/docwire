@@ -61,7 +61,7 @@ jobs:
           SANITIZER: ${{ matrix.sanitizer }}
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
           TSAN_OPTIONS: ${{ matrix.sanitizer == 'thread' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v4
         if: always() && matrix.sanitizer == ''
         with:
           name: ${{ matrix.triplet }}-${{ matrix.os }}-binaries
