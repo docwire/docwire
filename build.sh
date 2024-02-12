@@ -52,7 +52,8 @@ version=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/VERSION`
 
 echo "\$(dirname \"\$0\")/installed/$VCPKG_TRIPLET/tools/docwire.sh \"\$@\"" > docwire-$version/docwire.sh
 chmod u+x docwire-$version/docwire.sh
-docwire-$version/docwire.sh tests/1.pdf # test run
+docwire-$version/docwire.sh tests/1.pdf # test run - relative path
+$PWD/docwire-$version/docwire.sh tests/1.doc # test run - absolute path
 
 abi_suffix=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/abi-id.txt`
 full_suffix="$version-$VCPKG_TRIPLET-$abi_suffix"

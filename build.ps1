@@ -41,7 +41,8 @@ $version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\VERSION
 vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
 
 New-Item docwire-$version\docwire.bat -ItemType File -Value "@`"%~dp0\\installed\\x64-windows\\tools\\docwire.bat`" %*"
-& "docwire-$version\docwire.bat" "tests\1.pdf" # test run
+& "docwire-$version\docwire.bat" "tests\1.pdf" # test run - relative path
+& "$PWD\docwire-$version\docwire.bat" "tests\1.doc" # test run - absolute path
 
 $abi_suffix = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\abi-id.txt
 $full_suffix = "$version-$VCPKG_TRIPLET-$abi_suffix"
