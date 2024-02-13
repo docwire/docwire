@@ -40,9 +40,19 @@ vcpkg\vcpkg --overlay-ports=ports install docwire${FEATURES}:${VCPKG_TRIPLET}
 $version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\VERSION
 vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
 
-New-Item docwire-$version\docwire.bat -ItemType File -Value "@`"%~dp0\\installed\\x64-windows\\tools\\docwire.bat`" %*"
-& "docwire-$version\docwire.bat" "tests\1.pdf" # test run - relative path
-& "$PWD\docwire-$version\docwire.bat" "tests\1.doc" # test run - absolute path
+(Get-Content tools\setup_env.sh) -replace "vcpkg_triplet=.*", "vcpkg_triplet=\"$VCPKG_TRIPLET\"" | Set-Content docwire-$version\setup_env.ps1
+
+# test run - relative path
+(
+    . docwire-$version\setup_env.ps1
+    docwire tests\1.pdf
+)
+
+# test run - absolute path
+(
+    . $PWD\docwire-$version\setup_env.ps1
+    docwire tests\1.doc
+)
 
 $abi_suffix = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\abi-id.txt
 $full_suffix = "$version-$VCPKG_TRIPLET-$abi_suffix"

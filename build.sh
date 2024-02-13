@@ -45,15 +45,25 @@ else
 fi
 
 date > ./ports/docwire/.disable_binary_cache
+SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS=SOURCE_PATH ./vcpkg/vcpkg --overlay-ports=./ports remove docwire:$VCPKG_TRIPLET
 SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS="SOURCE_PATH;OPENAI_API_KEY" ./vcpkg/vcpkg --overlay-ports=./ports install docwire$FEATURES:$VCPKG_TRIPLET
 
 version=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/VERSION`
 ./vcpkg/vcpkg --overlay-ports=./ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
 
-echo "\$(dirname \"\$0\")/installed/$VCPKG_TRIPLET/tools/docwire.sh \"\$@\"" > docwire-$version/docwire.sh
-chmod u+x docwire-$version/docwire.sh
-docwire-$version/docwire.sh tests/1.pdf # test run - relative path
-$PWD/docwire-$version/docwire.sh tests/1.doc # test run - absolute path
+cp tools/setup_env.sh docwire-$version/setup_env.sh
+sed -i "s/vcpkg_triplet=.*/vcpkg_triplet=\"$VCPKG_TRIPLET\"/" docwire-$version/setup_env.sh
+
+# test run - relative path
+(
+	. docwire-$version/setup_env.sh
+	docwire tests/1.pdf
+)
+# test run - absolute path
+(
+	. $PWD/docwire-$version/setup_env.sh
+	docwire tests/1.doc
+)
 
 abi_suffix=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/abi-id.txt`
 full_suffix="$version-$VCPKG_TRIPLET-$abi_suffix"

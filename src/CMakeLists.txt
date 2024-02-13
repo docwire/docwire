@@ -298,25 +298,6 @@ endif()
 file(GLOB HEADERS "*.h")
 install(FILES ${HEADERS} DESTINATION include/docwire)
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR APPLE)
-	if(APPLE)
-		file(WRITE ${CMAKE_BINARY_DIR}/docwire.sh "BASEDIR=$(dirname \"$0\")
-			DYLD_FALLBACK_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH $BASEDIR/docwire \"$@\"")
-	else()
-		file(WRITE ${CMAKE_BINARY_DIR}/docwire.sh "BASEDIR=$(dirname \"$0\")
-			LD_LIBRARY_PATH=$BASEDIR/../lib:$BASEDIR/../lib/docwire_system_libraries:$LD_LIBRARY_PATH $BASEDIR/docwire \"$@\"")
-	endif()
-    execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/docwire.sh)
-	install(PROGRAMS ${CMAKE_BINARY_DIR}/docwire.sh DESTINATION bin)
-elseif(MSVC)
-	file(WRITE ${CMAKE_BINARY_DIR}/docwire.bat
-		"@echo off
-		set BASEDIR=%~dp0
-		set PATH=%BASEDIR%\\..\\bin;%BASEDIR%\\..\\bin\\docwire_system_libraries;%PATH%
-		\"%BASEDIR%\\docwire.exe\" %*")
-	install(PROGRAMS ${CMAKE_BINARY_DIR}/docwire.bat DESTINATION bin)
-endif()
-
 set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_INSTALL_DEBUG_LIBRARIES TRUE)
