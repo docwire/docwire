@@ -52,7 +52,7 @@ version=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/VERSION`
 ./vcpkg/vcpkg --overlay-ports=./ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
 
 cp tools/setup_env.sh docwire-$version/setup_env.sh
-sed -i "s/vcpkg_triplet=.*/vcpkg_triplet=\"$VCPKG_TRIPLET\"/" docwire-$version/setup_env.sh
+sed -i "" "s/vcpkg_triplet=.*/vcpkg_triplet=\"$VCPKG_TRIPLET\"/" docwire-$version/setup_env.sh
 
 # test run - relative path
 (
