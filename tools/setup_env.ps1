@@ -6,7 +6,7 @@ if (-not $args) {
         Write-Host "Usage: . ./setup_env.sh [<directory>]" -ForegroundColor Red
         Exit 1
     }
-    $installed_dir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $installed_dir = Join-Path -Path (Split-Path -Parent $MyInvocation.MyCommand.Path) -ChildPath "installed/$vcpkg_triplet"
 }
 else {
     $installed_dir = (Resolve-Path $args[0]).Path
