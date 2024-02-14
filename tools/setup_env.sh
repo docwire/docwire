@@ -1,14 +1,13 @@
+#!/bin/bash
+set -e
+
 if [[ -z "$1" ]]; then
     vcpkg_triplet="" # this line can be replaced during build stage
     if [[ -z "$vcpkg_triplet" ]]; then
         echo "Usage: . ./setup_env.sh [<directory>]" >&2
         return 1 || exit 1
     fi
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        installed_dir="$( cd "$( dirname "${(%):-%x}" )" && cd "installed/$vcpkg_triplet" && pwd )" # zsh version
-    else
-        installed_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd "installed/$vcpkg_triplet" && pwd )" # bash version
-    fi
+    installed_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd "installed/$vcpkg_triplet" && pwd )" # bash version
 else
     installed_dir="$( cd "$1" && pwd )"
 fi
