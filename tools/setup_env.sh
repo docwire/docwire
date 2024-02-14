@@ -5,6 +5,7 @@ if [[ -z "$1" ]]; then
         return 1 || exit 1
     fi
     if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "script location: $( dirname "$0" )"
         installed_dir="$( cd "$( dirname "$0" )" && cd "installed/$vcpkg_triplet" && pwd )" # zsh version
     else
         installed_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd "installed/$vcpkg_triplet" && pwd )" # bash version
