@@ -40,7 +40,7 @@ vcpkg\vcpkg --overlay-ports=ports install docwire${FEATURES}:${VCPKG_TRIPLET}
 $version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\VERSION
 vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
 
-(Get-Content tools\setup_env.sh) -replace 'vcpkg_triplet=.*', "vcpkg_triplet=`"$VCPKG_TRIPLET`"" | Set-Content docwire-$version\setup_env.ps1
+(Get-Content tools\setup_env.ps1) -replace 'vcpkg_triplet = .*', "vcpkg_triplet = `"$VCPKG_TRIPLET`"" | Set-Content docwire-$version\setup_env.ps1
 
 # test run - relative path
 & {
