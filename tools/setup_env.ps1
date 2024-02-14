@@ -6,7 +6,7 @@ if (-not $args) {
         Write-Host "Usage: . ./setup_env.sh [<directory>]" -ForegroundColor Red
         Exit 1
     }
-    $installed_dir = (Get-Location).Path
+    $installed_dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 }
 else {
     $installed_dir = (Resolve-Path $args[0]).Path
