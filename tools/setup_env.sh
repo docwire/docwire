@@ -22,12 +22,12 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     export DYLD_FALLBACK_LIBRARY_PATH="$installed_dir/lib:$installed_dir/lib/docwire_system_libraries:$DYLD_FALLBACK_LIBRARY_PATH"
     export CPLUS_INCLUDE_PATH="$installed_dir/include:$CPLUS_INCLUDE_PATH"
     export LIBRARY_PATH="$installed_dir/lib:$installed_dir/lib/docwire_system_libraries:$LIBRARY_PATH"
-    export OSSL_MODULES="$installed_dir/lib/ossl-modules"
+    export OPENSSL_MODULES="$installed_dir/lib/ossl-modules"
 else
     export PATH="$installed_dir/tools:$PATH"
     export LD_LIBRARY_PATH="$installed_dir/lib:$installed_dir/lib/docwire_system_libraries:$LD_LIBRARY_PATH"
     export CPLUS_INCLUDE_PATH="$installed_dir/include:$CPLUS_INCLUDE_PATH"
     export LIBRARY_PATH="$installed_dir/lib:$LIBRARY_PATH"
-    export OSSL_MODULES="$installed_dir/lib/ossl-modules"
+    export OPENSSL_MODULES="$installed_dir/lib/ossl-modules"
 fi
 echo "The environment has been configured for DocWire SDK installed in $installed_dir." 2>&1
