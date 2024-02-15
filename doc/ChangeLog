@@ -21,6 +21,7 @@
 - Introduce compiler name and version suffixes to binary archive names
 - Add basic automatic test for running DocWire CLI
 - Add setup_env.sh and setup_env.ps1 scripts for setting up environment instead of docwire.sh and docwire.bat CLI wrappers
+- Add windows-2022 runner to continuous integration
 
 ## Version 2024.01.05
 

@@ -5,7 +5,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, windows-2019, macos-12, flyci-macos-large-latest-m1]
+        os: [ubuntu-20.04, ubuntu-22.04, windows-2019, windows-2022, macos-12, flyci-macos-large-latest-m1]
         triplet: [x64-linux-dynamic, x64-windows, x64-osx-dynamic, arm64-osx-dynamic]
         sanitizer: ["", "address", "thread"]
         exclude:
@@ -26,6 +26,12 @@ jobs:
           - os: windows-2019
             triplet: x64-osx-dynamic
           - os: windows-2019
+            triplet: arm64-osx-dynamic
+          - os: windows-2022
+            triplet: x64-linux-dynamic
+          - os: windows-2022
+            triplet: x64-osx-dynamic
+          - os: windows-2022
             triplet: arm64-osx-dynamic
           - os: macos-12
             triplet: x64-linux-dynamic
