@@ -1,5 +1,4 @@
 set -e
-echo "RUNNER_DEBUG=$RUNNER_DEBUG"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	brew install md5sha1sum automake autogen doxygen
