@@ -23,6 +23,7 @@
 - Add setup_env.sh and setup_env.ps1 scripts for setting up environment instead of docwire.sh and docwire.bat CLI wrappers
 - Add windows-2022 runner to continuous integration
 - Fix build errors on MSVC 2022
+- Add possibility to set default logging verbosity using DOCWIRE_LOG_VERBOSITY environment variable
 
 ## Version 2024.01.05
 
