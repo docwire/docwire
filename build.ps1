@@ -62,7 +62,13 @@ Write-Host "Testing setup_env.ps1 and DocWire CLI."
 }
 Write-Host "Tests ended."
 
+Write-Host "Calculating archive suffix."
 $abi_suffix = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\abi-id.txt
 $full_suffix = "$version-$VCPKG_TRIPLET-$abi_suffix"
+Write-Host "Archive suffix is $full_suffix."
+
+Write-Host "Compressing archive."
 Compress-Archive -LiteralPath docwire-$version -DestinationPath docwire-$full_suffix.zip
+Write-Host "Calculating SHA1."
 Get-FileHash -Algorithm SHA1 docwire-$full_suffix.zip > docwire-$full_suffix.zip.sha1
+Write-Host "Done."
