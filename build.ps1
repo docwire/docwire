@@ -42,6 +42,7 @@ vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=d
 
 (Get-Content tools\setup_env.ps1) -replace 'vcpkg_triplet = .*', "vcpkg_triplet = `"$VCPKG_TRIPLET`"" | Set-Content docwire-$version\setup_env.ps1
 
+Write-Host "Testing setup_env.ps1 and DocWire CLI."
 & {
     Write-Host "Testing setup_env.ps1 and DocWire CLI with relative path."
     Write-Host "Executing setup_env.ps1."
@@ -59,6 +60,7 @@ vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=d
     docwire tests\1.doc
     Write-Host "Test ended."
 }
+Write-Host "Tests ended."
 
 $abi_suffix = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\abi-id.txt
 $full_suffix = "$version-$VCPKG_TRIPLET-$abi_suffix"
