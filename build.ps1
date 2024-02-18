@@ -44,18 +44,18 @@ vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=d
 
 # test run - relative path
 & {
-    . docwire-$version\setup_env.ps1 2>&1
-    docwire tests\1.pdf 2>&1
+    . docwire-$version\setup_env.ps1
+    docwire tests\1.pdf
 }
 
 # test run - absolute path
 & {
     Write-Host "Executing setup_env.ps1."
-    . $PWD\docwire-$version\setup_env.ps1 2>&1
+    . $PWD\docwire-$version\setup_env.ps1
     Write-Host "Executing docwire --version"
     docwire --version
     Write-Host "Executing docwire tests\1.doc"
-    docwire tests\1.doc 2>&1
+    docwire tests\1.doc
     Write-Host "Executing docwire --help"
     docwire --help
     Write-Host "Executing docwire without arguments"
