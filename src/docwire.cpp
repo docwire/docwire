@@ -380,14 +380,17 @@ int main(int argc, char* argv[])
 catch (Exception& ex)
   {
 		std::cerr << "Error processing file " + file_name + ".\n" + ex.getBacktrace();
+		return 2;
   }
 	catch (const std::exception& e)
 	{
 		std::cerr << "Error processing file " + file_name + ".\n" + e.what() << std::endl;
+		return 2;
 	}
   catch (...)
   {
 		std::cerr << "Error processing file " + file_name + ". Unknown error.\n";
+		return 2;
   }
 
   return 0;
