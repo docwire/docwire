@@ -44,14 +44,14 @@ vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=d
 
 # test run - relative path
 & {
-    . docwire-$version\setup_env.ps1
-    docwire tests\1.pdf
+    . docwire-$version\setup_env.ps1 2>&1
+    docwire tests\1.pdf 2>&1
 }
 
 # test run - absolute path
 & {
-    . $PWD\docwire-$version\setup_env.ps1
-    docwire tests\1.doc
+    . $PWD\docwire-$version\setup_env.ps1 2>&1
+    docwire tests\1.doc 2>&1
 }
 
 $abi_suffix = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\abi-id.txt
