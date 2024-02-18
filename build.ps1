@@ -50,8 +50,17 @@ vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=d
 
 # test run - absolute path
 & {
+    Write-Host "Executing setup_env.ps1."
     . $PWD\docwire-$version\setup_env.ps1 2>&1
+    Write-Host "Executing docwire --version"
+    docwire --version
+    Write-Host "Executing docwire tests\1.doc"
     docwire tests\1.doc 2>&1
+    Write-Host "Executing docwire --help"
+    docwire --help
+    Write-Host "Executing docwire without arguments"
+    docwire
+    Write-Host "Script block end"
 }
 
 $abi_suffix = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\abi-id.txt
