@@ -48,7 +48,7 @@ Write-Host "Testing setup_env.ps1 and DocWire CLI."
     Write-Host "Executing setup_env.ps1."
     . docwire-$version\setup_env.ps1
     Write-Host "Executing docwire tests\1.pdf"
-    docwire tests\1.pdf || Write-Host "docwire tests\1.pdf failed!"
+    docwire tests\1.pdf || Write-Host "docwire tests\1.pdf failed: $($Error[0].Exception.Message)"
     Write-Host "Test ended."
 }
 
@@ -57,7 +57,7 @@ Write-Host "Testing setup_env.ps1 and DocWire CLI."
     Write-Host "Executing setup_env.ps1."
     . $PWD\docwire-$version\setup_env.ps1
     Write-Host "Executing docwire tests\1.doc"
-    docwire tests\1.doc || Write-Host "docwire tests\1.doc failed!"
+    docwire tests\1.doc || Write-Host "docwire tests\1.doc failed: $($Error[0].Exception.Message)"
     Write-Host "Test ended."
 }
 Write-Host "Tests ended."
