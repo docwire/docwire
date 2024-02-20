@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 if (-not $args) {
     $vcpkg_triplet = "" # this line can be replaced during build stage
     if (-not $vcpkg_triplet) {
-        Write-Host "Usage: . ./setup_env.sh [<directory>]" -ForegroundColor Red
+        Write-Host "Usage: . ./setup_env.ps1 [<directory>]" -ForegroundColor Red
         Exit 1
     }
     $installed_dir = Join-Path -Path (Split-Path -Parent $MyInvocation.MyCommand.Path) -ChildPath "installed/$vcpkg_triplet"
