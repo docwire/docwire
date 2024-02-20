@@ -37,6 +37,12 @@ if ($Env:OPENAI_API_KEY -ne $null -and $env:OPENAI_API_KEY -ne "") {
 }
 vcpkg\vcpkg --overlay-ports=ports install docwire${FEATURES}:${VCPKG_TRIPLET}
 
+if ($Env:SANITIZER -ne $null -and $env:SANITIZER -ne "")
+{
+    Write-Host "Sanitizer $Env:SANITIZER is enabled. Exiting without building archive and running CLI tests."
+    Exit 0
+}
+
 $version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\VERSION
 vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
 
