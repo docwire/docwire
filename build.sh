@@ -1,15 +1,8 @@
 set -e
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-	brew install md5sha1sum automake autogen doxygen
-elif [[ "$OSTYPE" == "linux"* ]]; then
-	if [[ "$GITHUB_ACTIONS" == "true" ]]; then
-		sudo apt-get install -y autopoint
-		sudo apt-get install -y doxygen
-	fi
-else
-	echo "Unknown OS type." >&2
-	exit 1
+if [[ "$OSTYPE" != "darwin"* && "$OSTYPE" != "linux"* ]]; then
+    echo "Error: Not supported OS type." >&2
+    exit 1
 fi
 
 git clone https://github.com/microsoft/vcpkg.git

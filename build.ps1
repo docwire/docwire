@@ -1,9 +1,5 @@
 $ErrorActionPreference = "Stop"
 
-choco install archiver -y
-choco install doxygen.install -y
-choco install graphviz -y
-
 git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
 git checkout tags/2024.01.12
