@@ -25,6 +25,7 @@
 - Fix build errors on MSVC 2022
 - Add possibility to set default logging verbosity using DOCWIRE_LOG_VERBOSITY environment variable
 - Set DocWire logging severity to 'debug' if github actions debug logging is enabled
+- Move installing required specific for operation system dependencies to github actions configuration file
 
 ## Version 2024.01.05
 
