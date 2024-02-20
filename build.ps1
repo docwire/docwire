@@ -1,10 +1,18 @@
 $ErrorActionPreference = "Stop"
 
-git clone https://github.com/microsoft/vcpkg.git
-cd vcpkg
-git checkout tags/2024.01.12
-.\bootstrap-vcpkg.bat
-cd ..
+if ($env:DOWNLOAD_VCPKG -ne "0")
+{
+    if (Test-Path vcpkg)
+    {
+        Write-Host "Error: vcpkg directory already exists. Remove it or set DOWNLOAD_VCPKG=0 if you are sure directory content is correct."
+        exit 1
+    }
+    git clone https://github.com/microsoft/vcpkg.git
+    cd vcpkg
+    git checkout tags/2024.01.12
+    .\bootstrap-vcpkg.bat
+    cd ..
+}
 
 $VCPKG_TRIPLET="x64-windows"
 
@@ -39,38 +47,45 @@ if ($Env:SANITIZER -ne $null -and $env:SANITIZER -ne "")
     Exit 0
 }
 
-$version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\VERSION
-vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
+if ($env:EXPORT_VCPKG -ne "0")
+{
+    $version = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\VERSION
+    vcpkg\vcpkg --overlay-ports=ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
 
-(Get-Content tools\setup_env.ps1) -replace 'vcpkg_triplet = .*', "vcpkg_triplet = `"$VCPKG_TRIPLET`"" | Set-Content docwire-$version\setup_env.ps1
+    (Get-Content tools\setup_env.ps1) -replace 'vcpkg_triplet = .*', "vcpkg_triplet = `"$VCPKG_TRIPLET`"" | Set-Content docwire-$version\setup_env.ps1
 
-Write-Host "Testing setup_env.ps1 and DocWire CLI."
-& {
-    Write-Host "Testing setup_env.ps1 and DocWire CLI with relative path."
-    Write-Host "Executing setup_env.ps1."
-    . docwire-$version\setup_env.ps1
-    Write-Host "Executing docwire tests\1.pdf"
-    docwire tests\1.pdf
-    Write-Host "Test ended."
-} 2>&1
+    Write-Host "Testing setup_env.ps1 and DocWire CLI."
+    & {
+        Write-Host "Testing setup_env.ps1 and DocWire CLI with relative path."
+        Write-Host "Executing setup_env.ps1."
+        . docwire-$version\setup_env.ps1
+        Write-Host "Executing docwire tests\1.pdf"
+        docwire tests\1.pdf
+        Write-Host "Test ended."
+    } 2>&1
 
-& {
-    Write-Host "Testing setup_env.ps1 and Docwire CLI with absolute path."
-    Write-Host "Executing setup_env.ps1."
-    . $PWD\docwire-$version\setup_env.ps1
-    Write-Host "Executing docwire tests\1.doc"
-    docwire tests\1.doc
-    Write-Host "Test ended."
-} 2>&1
-Write-Host "Tests ended."
+    & {
+        Write-Host "Testing setup_env.ps1 and Docwire CLI with absolute path."
+        Write-Host "Executing setup_env.ps1."
+        . $PWD\docwire-$version\setup_env.ps1
+        Write-Host "Executing docwire tests\1.doc"
+        docwire tests\1.doc
+        Write-Host "Test ended."
+    } 2>&1
+    Write-Host "Tests ended."
 
-Write-Host "Calculating archive suffix."
-$abi_suffix = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\abi-id.txt
-$full_suffix = "$version-$VCPKG_TRIPLET-$abi_suffix"
-Write-Host "Archive suffix is $full_suffix."
+    if ($env:CREATE_ARCHIVE -eq "1")
+    {
+        Write-Host "Calculating archive suffix."
+        $abi_suffix = Get-Content vcpkg\installed\$VCPKG_TRIPLET\share\docwire\abi-id.txt
+        $full_suffix = "$version-$VCPKG_TRIPLET-$abi_suffix"
+        Write-Host "Archive suffix is $full_suffix."
 
-Write-Host "Compressing archive."
-Compress-Archive -LiteralPath docwire-$version -DestinationPath docwire-$full_suffix.zip
-Write-Host "Calculating SHA1."
-Get-FileHash -Algorithm SHA1 docwire-$full_suffix.zip > docwire-$full_suffix.zip.sha1
+        Write-Host "Compressing archive."
+        Compress-Archive -LiteralPath docwire-$version -DestinationPath docwire-$full_suffix.zip
+        Write-Host "Calculating SHA1."
+        Get-FileHash -Algorithm SHA1 docwire-$full_suffix.zip > docwire-$full_suffix.zip.sha1
+    }
+}
+
 Write-Host "Done."

@@ -65,6 +65,7 @@ jobs:
           ${{ runner.os == 'Windows' && 'choco install archiver doxygen.install graphviz -y' || '' }}
           ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
+          CREATE_ARCHIVE: "1"
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SANITIZER: ${{ matrix.sanitizer }}
