@@ -13,7 +13,7 @@ else
 fi
 
 if [[ ! -f "$installed_dir/tools/docwire" ]]; then
-    echo "Error: directory \"$installed_dir\" does not look correctly." >&2
+    echo "Error: The directory \"$installed_dir\" does not appear to be correct." >&2
     return 1 || exit 1
 fi
 

@@ -13,7 +13,7 @@ else {
 }
 
 if (-not (Test-Path "$installed_dir\tools\docwire.exe")) {
-    Write-Host "Error: directory `"$installed_dir`" does not look correctly." -ForegroundColor Red
+    Write-Host "Error: The directory `"$installed_dir`" does not appear to be correct." -ForegroundColor Red
     Exit 1
 }
 
