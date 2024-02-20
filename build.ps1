@@ -57,7 +57,7 @@ Write-Host "Testing setup_env.ps1 and DocWire CLI."
         Write-Host "docwire tests\1.pdf failed: $($_.Exception.Message)"
     }
     Write-Host "Test ended."
-}
+} 2>&1
 
 & {
     Write-Host "Testing setup_env.ps1 and Docwire CLI with absolute path."
@@ -73,7 +73,7 @@ Write-Host "Testing setup_env.ps1 and DocWire CLI."
         Write-Host "docwire tests\1.doc failed: $($_.Exception.Message)"
     }
     Write-Host "Test ended."
-}
+} 2>&1
 Write-Host "Tests ended."
 
 Write-Host "Calculating archive suffix."
