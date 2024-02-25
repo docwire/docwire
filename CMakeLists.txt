@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.16)
-set(CMAKE_CXX_STANDARD 20)
 
 # Get version from ChangeLog and store it in DOCWIRE_VERSION and SIMPLE_DOCWIRE_VERSION
 function(extract_version)
@@ -32,6 +31,7 @@ if (ADDRESS_SANITIZER)
 		message(STATUS "Address sanitizer enabled")
 		add_compile_options(-fsanitize=address)
 		add_link_options(-fsanitize=address)
+		message(STATUS "ASAN_OPTIONS environment variable: $ENV{ASAN_OPTIONS}")
 	elseif (MSVC)
 		message(WARNING "Address sanitizer is not enabled in release mode for MSVC version less than 17.4 due to known issues")
 	endif()
@@ -48,6 +48,13 @@ enable_testing ()
 file(WRITE ${CMAKE_SOURCE_DIR}/version.h "#define VERSION \"${DOCWIRE_VERSION}\"")
 file(WRITE ${CMAKE_BINARY_DIR}/VERSION "${DOCWIRE_VERSION}")
 install(FILES ${CMAKE_BINARY_DIR}/VERSION DESTINATION share/docwire)
+
+string(TOLOWER ${CMAKE_CXX_COMPILER_ID} compiler_id)
+if(compiler_id STREQUAL "gnu")
+    set(compiler_id "gcc")
+endif()
+file(WRITE ${CMAKE_BINARY_DIR}/abi-id.txt "${compiler_id}-${CMAKE_CXX_COMPILER_VERSION}")
+install(FILES ${CMAKE_BINARY_DIR}/abi-id.txt DESTINATION share/docwire)
 
 add_subdirectory(src)
 

@@ -34,7 +34,7 @@ struct XmlName
 	{
 	}
 
-	bool operator==(const XmlName& right)
+	bool operator==(const XmlName& right) const
 	{
 		return nspace == right.nspace && name == right.name;
 	}

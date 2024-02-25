@@ -20,6 +20,7 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <magic_enum.hpp>
 #include <pthread.h>
 #include <sstream>
 #include <stack>
@@ -27,7 +28,14 @@
 namespace docwire
 {
 
-static std::atomic<severity_level> log_verbosity = severity_level(error + 1);
+static std::atomic<severity_level> log_verbosity = []() {
+    if (const char* env_var = std::getenv("DOCWIRE_LOG_VERBOSITY")) {
+        if (auto level = magic_enum::enum_cast<severity_level>(env_var)) {
+            return *level;
+        }
+    }
+    return severity_level(error + 1);
+}();
 
 void set_log_verbosity(severity_level severity)
 {

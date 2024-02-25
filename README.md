@@ -577,49 +577,88 @@ DocWire has embraced vcpkg as the preferred installation method for several comp
 - **Seamless CMake Integration:** vcpkg seamlessly integrates with the CMake build system, simplifying the incorporation of DocWire into CMake-based projects.
 By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, user-friendly, and well-supported solution that guarantees a smooth installation experience.
 
-### Installation Steps
-1. **Install vcpkg:**
-If you haven't already installed vcpkg, you can do so by following the instructions in the [vcpkg documentation.](https://github.com/microsoft/vcpkg).
-2. **Integrate vcpkg:**
-Ensure that vcpkg is integrated with your development environment by running the following command:
-```
-vcpkg integrate install
-```
-3. **Clone the DocWire Repository:**
+### Supported Platforms
+ DocWire SDK is compatible with a variety of operating systems. Windows, Linux, and macOS are supported officially (Supported triplets are: x64-linux-dynamic, x64-windows, x64-osx-dynamic and arm64-osx-dynamic). but in theory it can be run on other operating systems as well. To ensure compatibility our continuous integration tests run on the following GitHub runners:
+
+- [ubuntu-22.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
+- [ubuntu-20.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2004-Readme.md) with gcc upgraded to version 11
+- [windows-2022](https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md)
+- [windows-2019](https://github.com/actions/runner-images/blob/main/images/windows/Windows2019-Readme.md)
+- [macos-12](https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md)
+- [flyci-macos-large-latest-m1](https://www.flyci.net/docs/githubrunners/hardware)
+
+### Required Tools
+Development tools required to install DocWire SDK are similar to those in the [vcpkg "getting started" documentation.](https://github.com/microsoft/vcpkg?tab=readme-ov-file#getting-started)
+In addition to vcpkg requirements, DocWire SDK requires the following tools:
+- GCC 11 or higher on Linux because of C++20 support
+- MSVC 2019 or higher on Windows because of C++20 support
+- Doxygen is required for documentation generation
+
+### Installation via build.sh or build.ps1 scripts
+The current preferred installation method is via build.sh or build.ps1 scripts. The script will automatically install vcpkg, select correct triplet, add required overlays and install DocWire SDK with all dependencies from sources.
+
+1. **Clone the DocWire Repository:**
 Clone the DocWire repository from GitHub if you haven't already:
 ```
 git clone https://github.com/docwire/docwire.git
 ```
-4. **Set Up Overlay:**
-To configure vcpkg to recognize the DocWire overlay, use the following command:
-```
-vcpkg overlay add docwire/ports
-```
-This command ensures that vcpkg adds the DocWire overlay for subsequent installations.
 
-5. **Install DocWire:**
-Now that the overlay is set up, you can use vcpkg to install the DocWire library (see compatibility note for supported platforms/triplets):
+2. **Run build.sh (Linux, MacOS) or build.ps1 (Windows):**
+
+- Linux, MacOS:
 ```
-vcpkg install docwire:x64-linux-dynamic
-```
-6. **Download Binary Archives (Alternative):**
-As an alternative to building from source, users can also download pre-built binary archives that contain the results of the vcpkg export command for DocWire. These archives can be found in the "Releases" section of the DocWire GitHub repository.
-7. **Link with Your Project:**
-After installation, configure your project settings to link with the DocWire library and its dependencies. You can use one of the following example CMake commands to build your project:
-- Using vcpkg toolchain file from downloaded prebuilt binaries:
-```
-cmake -DCMAKE_TOOLCHAIN_FILE=docwire/scripts/buildsystems/vcpkg.cmake ..
-```
-- Using vcpkg toolchain file from the vcpkg repository:
-```
-cmake -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake ..
+cd docwire
+./build.sh
 ```
 
-### Usage and Conclusion
-You're all set! You've successfully installed the DocWire library using vcpkg. You can now use the DocWire library in your code to perform text extraction from documents. 
+- Windows:
+```
+cd docwire
+./build.ps1
+```
 
-### Compatibility Note
-Please note that DocWire is currently compatible with vcpkg tagged as version 2023.11.20. While this version is recommended for use, be aware that updates may become available in the near future. Supported triplets are: x64-linux-dynamic, x64-windows, x64-osx-dynamic and arm64-osx-dynamic.
+After building process is completed, binaries will be exported using "vcpkg export" command and available in docwire-`<version>` directory. This directory can be integrated with your development environment.
+
+3. **Integrate with your project or development environment**
+
+You can use vcpkg toolchain file to integrate DocWire SDK with your CMake project:
+```
+cmake -DCMAKE_TOOLCHAIN_FILE=docwire-<version>/scripts/buildsystems/vcpkg.cmake ..
+```
+
+For other building systems or to use DocWire CLI utility you can integrate DocWire SDK with your development environment running the following command:
+- Linux, MacOS:
+```
+. docwire-<version>/setup_env.sh
+```
+- Windows:
+```
+. docwire-<version>\setup_env.ps1
+```
+or:
+```
+cd docwire-<version>
+vcpkg integrate install
+```
+
+### Installation in preexisting vcpkg instance
+If you are using preexisting vcpkg instance please note that DocWire is currently compatible with vcpkg tagged as version 2024.01.12.
+
+You need to do the configuration, installation and integration manually. Please follow recommendations in vcpkg documentation and check content of build.sh or build.ps1 script for details.
+
+Required overlays are located in "ports" subdirectory.
+
+### Download Binary Archives:
+As an alternative to building from source, users can also download pre-built binary archives that contain the results of the build.sh or build.ps1 command. These archives can be found in the "Releases" section of the DocWire GitHub repository.
+
+Please note that vcpkg recommends installation from sources because of possible incompatibility issues. Ensure that downloaded archives are 100% compatible with your system.
+
+After you download and decompress the archive please follow the integration instructions in the previous section.
+
+We are working on a solution that allows users to install DocWire SDK binaries with more reliable method, using vcpkg binary cache with ABI hashing feature in the future.
+
+### Conclusion
+You're all set! You've successfully installed the DocWire library using vcpkg. You can now use the DocWire library in your code to perform text extraction and other data processing tasks. 
 
 <a name="versioning"></a>
 ## Versioning

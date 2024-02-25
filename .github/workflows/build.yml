@@ -5,10 +5,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2019, macos-12, flyci-macos-large-latest-m1]
+        os: [ubuntu-20.04, ubuntu-22.04, windows-2019, windows-2022, macos-12, flyci-macos-large-latest-m1]
         triplet: [x64-linux-dynamic, x64-windows, x64-osx-dynamic, arm64-osx-dynamic]
         sanitizer: ["", "address", "thread"]
         exclude:
+          - os: ubuntu-20.04
+            triplet: x64-windows
+          - os: ubuntu-20.04
+            triplet: x64-osx-dynamic
+          - os: ubuntu-20.04
+            triplet: arm64-osx-dynamic
           - os: ubuntu-22.04
             triplet: x64-windows
           - os: ubuntu-22.04
@@ -20,6 +26,12 @@ jobs:
           - os: windows-2019
             triplet: x64-osx-dynamic
           - os: windows-2019
+            triplet: arm64-osx-dynamic
+          - os: windows-2022
+            triplet: x64-linux-dynamic
+          - os: windows-2022
+            triplet: x64-osx-dynamic
+          - os: windows-2022
             triplet: arm64-osx-dynamic
           - os: macos-12
             triplet: x64-linux-dynamic
@@ -33,41 +45,44 @@ jobs:
             triplet: x64-windows
           - os: flyci-macos-large-latest-m1
             triplet: x64-osx-dynamic
-    name: ${{ matrix.triplet }}${{ matrix.sanitizer != '' && format('-{0}-sanitizer', matrix.sanitizer) || '' }}
+    name: ${{ matrix.triplet }}-${{ matrix.os }}${{ matrix.sanitizer != '' && format('-{0}-sanitizer', matrix.sanitizer) || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 150
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/cache/restore@v3
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@v7
         with:
-          path: ${{ runner.os == 'Windows' && '~\\AppData\\Local\\vcpkg\\archives' || '~/.cache/vcpkg/archives' }}
-          key: vcpkg-binary-cache-${{ matrix.triplet }}-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
-          restore-keys: |
-            vcpkg-binary-cache-${{ matrix.triplet }}
-      - run: ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+      - run: |
+          ${{ matrix.os == 'ubuntu-20.04' && 'sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt-get update && sudo apt-get install gcc-11 g++-11 -y && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 && sudo update-alternatives --set gcc /usr/bin/gcc-11' || '' }}
+          ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint doxygen' || '' }}
+          ${{ runner.os == 'macOS' && 'brew install md5sha1sum automake autogen doxygen' || '' }}
+          ${{ runner.os == 'Windows' && 'choco install archiver doxygen.install graphviz -y' || '' }}
+          ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
+          CREATE_ARCHIVE: "1"
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SANITIZER: ${{ matrix.sanitizer }}
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
           TSAN_OPTIONS: ${{ matrix.sanitizer == 'thread' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
-      - uses: actions/cache/save@v3
-        if: always() && matrix.sanitizer == ''
+          DOCWIRE_LOG_VERBOSITY: ${{ runner.debug == '1' && 'debug' || '' }}
+      - uses: actions/upload-artifact@v4
+        if: success() && matrix.sanitizer == ''
         with:
-          path: ${{ runner.os == 'Windows' && '~\\AppData\\Local\\vcpkg\\archives' || '~/.cache/vcpkg/archives' }}
-          key: vcpkg-binary-cache-${{ matrix.triplet }}-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
-      - uses: actions/upload-artifact@v3
-        if: always() && matrix.sanitizer == ''
-        with:
-          name: ${{ matrix.triplet }}-binaries
+          name: ${{ matrix.triplet }}-${{ matrix.os }}-binaries
           path: |
               ${{ runner.os == 'Windows' && './docwire*.zip' || './docwire*.bz2' }}
               ./docwire*.sha1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ matrix.triplet }}-${{ matrix.sanitizer == '' && 'binaries' || format('{0}-sanitizer', matrix.sanitizer) }}-logs
+          name: ${{ matrix.triplet }}-${{ matrix.os }}-${{ matrix.sanitizer == '' && 'binaries' || format('{0}-sanitizer', matrix.sanitizer) }}-logs
           path: vcpkg/buildtrees/*/*.log
           if-no-files-found: error
