@@ -208,7 +208,7 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
     - TextToSpeech: Perform written text into spoken words (voice) conversion (TTS).
     - Transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
 
-- **Supports multiple LLM models**: gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-3.5-turbo-1106, gpt-4, gpt-4-32k and gpt-4-1106-preview (world events up to April 2023, 128k context window that can fit more than 300 pages of text in a single prompt), gpt4_vision_preview (with ability to understand images), whisper-1, tts-1. More are coming.
+- **Supports multiple LLM models**: gpt-3.5-turbo, gpt-3.5-turbo-0125, gpt-3.5-turbo-1106, gpt-4, gpt-4-0613, gpt-4-32k, gpt-4-32k-0613, gpt-4-turbo-preview (world events up to December 2023, 128k context window that can fit more than 300 pages of text in a single prompt), gpt-4-0125-preview, gpt-4-1106-preview, gpt-4-vision-preview (with ability to understand images), gpt-4-1106-vision-preview, whisper-1, tts-1. More are coming.
 - **Equipped with a high-grade, scriptable, and trainable OCR** that has LSTM neural networks-based character recognition OCR capabilities in more than 100 languages and multiple languages in single picture.
 - **Incremental parsing** returning data as soon as they are available
 
@@ -397,8 +397,7 @@ int main(int argc, char* argv[])
   std::stringstream out_stream;
 
   Input("data_processing_definition.doc") | Importer() | PlainTextExporter() | openai::TranslateTo("spanish", std::getenv("OPENAI_API_KEY")) | Output(out_stream);
-  assert(out_stream.str() == "El procesamiento de datos se refiere a las actividades realizadas sobre datos en bruto para convertirlos en información significativa. Implica recopilar, organizar, analizar e interpretar datos para extraer ideas útiles y respaldar la toma de decisiones. Esto puede incluir tareas como ordenar, filtrar, resumir y transformar datos mediante diversos métodos computacionales y estadísticos. El procesamiento de datos es esencial en varios campos, incluyendo negocios, ciencia y tecnología, ya que permite a las organizaciones obtener conocimientos valiosos de grandes conjuntos de datos, tomar decisiones informadas y mejorar la eficiencia en general.\n");
-
+  assert(out_stream.str() == "El procesamiento de datos se refiere a las actividades realizadas en datos crudos para convertirlos en información significativa. Implica recolectar, organizar, analizar e interpretar datos para extraer ideas útiles y apoyar la toma de decisiones. Esto puede incluir tareas como ordenar, filtrar, resumir y transformar datos a través de varios métodos computacionales y estadísticos. El procesamiento de datos es esencial en varios campos, incluyendo negocios, ciencia y tecnología, ya que permite a las organizaciones obtener conocimientos valiosos de grandes conjuntos de datos, tomar decisiones informadas y mejorar la eficiencia general.\n");
   return 0;
 }
 ```
@@ -414,7 +413,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  Input("1.doc") | Importer() | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_1106_preview) | Output(std::cout);
+  Input("1.doc") | Importer() | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_turbo_preview) | Output(std::cout);
 
   return 0;
 }
@@ -839,7 +838,7 @@ Unlock the power of OpenAI with the following options:
 - **&ndash;&ndash;openai-text-to-speech**: Convert text to speech via OpenAI
 - **&ndash;&ndash;openai-transcribe**: Convert speech to text (transcribe) via OpenAI
 - **&ndash;&ndash;openai-key <key>**: OpenAI API key.
-- **&ndash;&ndash;openai-model <model>** (default: gpt35_turbo): Choose the OpenAI model. Available models are: gpt35_turbo, gpt35_turbo_16k, gpt35_turbo_1106, gpt4, gpt4_32k and gpt4_1106_preview.
+- **&ndash;&ndash;openai-model <model>** (default: gpt35_turbo): Choose the OpenAI model. Available models are: gpt35_turbo, gpt35_turbo_0125, gpt35_turbo_1106, gpt4, gpt4_0613, gpt4_32k, gpt4_32k_0613, gpt4_turbo_preview, gpt4_0125_preview, gpt4_1106_preview, gpt4_vision_preview and gpt4_1106_vision_preview.
 - **&ndash;&ndash;openai-temperature <temp>**: Force specified temperature for OpenAI prompts.
 - **&ndash;&ndash;openai-image-detail <detail>**: Force specified image detail parameter for OpenAI image prompts. Available options are: low, high and automatic.
 - **&ndash;&ndash;openai-tts-model <model>** (default: tts1): Choose the TTS model. Available models are: tts1, tts1_hd.

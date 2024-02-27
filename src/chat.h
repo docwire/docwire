@@ -22,8 +22,11 @@ namespace openai
 
 enum class Model
 {
-	gpt35_turbo, gpt35_turbo_16k, gpt35_turbo_1106,
-	gpt4, gpt4_32k, gpt4_1106_preview, gpt4_vision_preview
+	gpt35_turbo, gpt35_turbo_0125, gpt35_turbo_1106,
+	gpt4, gpt4_0613,
+	gpt4_32k, gpt4_32k_0613,
+	gpt4_turbo_preview, gpt4_0125_preview, gpt4_1106_preview,
+	gpt4_vision_preview, gpt4_1106_vision_preview
 };
 
 enum class ImageDetail

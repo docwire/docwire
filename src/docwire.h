@@ -17,6 +17,7 @@
 #include "detect_sentiment.h"
 #include "find.h"
 #include "input.h"
+#include "log.h"
 #include "output.h"
 #include "importer.h"
 #include "plain_text_exporter.h"

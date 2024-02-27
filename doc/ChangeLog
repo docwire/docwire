@@ -28,6 +28,7 @@
 - Move installing required specific for operation system dependencies to github actions configuration file
 - Add support for DOWNLOAD_VCPKG, EXPORT_VCPKG and CREATE_ARCHIVE environment variables in build.sh and build.ps1 scripts
 - Update installation documentation
+- Update list of available OpenAI GPT models
 
 ## Version 2024.01.05
 
