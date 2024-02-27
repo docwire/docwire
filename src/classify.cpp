@@ -20,7 +20,8 @@ namespace openai
 {
 
 Classify::Classify(const std::set<std::string>& categories, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
-	: Chat("Your task is to classify every message to one of the following categories: " + boost::algorithm::join(categories, ", "),
+	: Chat("Your task is to classify every message to one of the following categories: " + boost::algorithm::join(categories, ", ")
+			+ ". Answer with the category name only.",
 			api_key, model, temperature, image_detail)
 {
 	docwire_log_func_with_args(categories, temperature);

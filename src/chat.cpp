@@ -58,12 +58,17 @@ std::string model_to_string(Model model)
 	switch (model)
 	{
 		case Model::gpt35_turbo: return "gpt-3.5-turbo";
-		case Model::gpt35_turbo_16k: return "gpt-3.5-turbo-16k";
+		case Model::gpt35_turbo_0125: return "gpt-3.5-turbo-0125";
 		case Model::gpt35_turbo_1106: return "gpt-3.5-turbo-1106";
 		case Model::gpt4: return "gpt-4";
+		case Model::gpt4_0613: return "gpt-4-0613";
 		case Model::gpt4_32k: return "gpt-4-32k";
+		case Model::gpt4_32k_0613: return "gpt-4-32k-0613";
+		case Model::gpt4_turbo_preview: return "gpt-4-turbo-preview";
+		case Model::gpt4_0125_preview: return "gpt-4-0125-preview";
 		case Model::gpt4_1106_preview: return "gpt-4-1106-preview";
 		case Model::gpt4_vision_preview: return "gpt-4-vision-preview";
+		case Model::gpt4_1106_vision_preview: return "gpt-4-1106-vision-preview";
 		default: return "?";
 	}
 }
