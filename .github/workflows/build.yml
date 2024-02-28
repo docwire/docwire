@@ -66,7 +66,8 @@ jobs:
           ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
           CREATE_ARCHIVE: "1"
-          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+          BINARY_CACHE_GITHUB_USER: "github-actions"
+          BINARY_CACHE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SANITIZER: ${{ matrix.sanitizer }}
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0:detect_container_overflow=0' || '' }}

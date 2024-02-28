@@ -14,6 +14,26 @@ if ($env:DOWNLOAD_VCPKG -ne "0")
     cd ..
 }
 
+if ($env:BINARY_CACHE_GITHUB_TOKEN)
+{
+    Write-Host "Configuring GitHub packages binary cache."
+    $NUGET = & "vcpkg\vcpkg" fetch nuget | select -last 1
+    Write-Host "Using NuGet: $NUGET"
+    $OWNER = $env:GITHUB_REPOSITORY_OWNER -or "docwire"
+    Write-Host "Using GitHub owner: $OWNER"
+    $SOURCE_URL = "https://nuget.pkg.github.com/$OWNER/index.json"
+    Write-Host "Using cache source: $SOURCE_URL"
+    $SOURCE_NAME = "docwire_github"
+    & "$NUGET" sources add -source "$SOURCE_URL" -storepasswordincleartext -name "$SOURCE_NAME" -username $env:BINARY_CACHE_GITHUB_USER -password $env:BINARY_CACHE_GITHUB_TOKEN
+    & "$NUGET" setapikey $env:BINARY_CACHE_GITHUB_TOKEN -source "$SOURCE_URL"
+    $env:VCPKG_BINARY_CACHE = "clear;nuget,$SOURCE_NAME,readwrite"
+    Write-Host "GitHub packages binary cache enabled."
+}
+else
+{
+    Write-Host "GitHub packages binary cache disabled."
+}
+
 $VCPKG_TRIPLET="x64-windows"
 
 if ($Env:SANITIZER -eq "address")

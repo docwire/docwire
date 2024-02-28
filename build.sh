@@ -29,6 +29,23 @@ if [[ "$DOWNLOAD_VCPKG" != "0" ]]; then
 	cd ..
 fi
 
+if [[ -n "$BINARY_CACHE_GITHUB_TOKEN" ]]; then
+	echo "Configuring GitHub packages binary cache."
+	NUGET=`./vcpkg/vcpkg fetch nuget | tail -n1`
+	echo "Using NuGet: $NUGET"
+	$OWNER = $env:GITHUB_REPOSITORY_OWNER -or "docwire"
+	echo "Using GitHub owner: $OWNER"
+	$SOURCE_URL = "https://nuget.pkg.github.com/$OWNER/index.json"
+	echo "Using cache source: $SOURCE_URL"
+	SOURCE_NAME="docwire_github"
+	mono "$NUGET" sources add -source "$SOURCE_URL" -storepasswordincleartext -name "$SOURCE_NAME" -username "$BINARY_CACHE_GITHUB_USER" -password "$BINARY_CACHE_GITHUB_TOKEN"
+	mono "$NUGET" setapikey "$BINARY_CACHE_GITHUB_TOKEN" -source "$SOURCE_URL"
+	export VCPKG_BINARY_CACHE="clear;nuget,$SOURCE_NAME,readwrite"
+	echo "GitHub packages binary cache enabled."
+else
+	echo "GitHub packages binary cache disabled."
+fi
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	if [[ $(arch) == 'arm64' ]]; then
 		VCPKG_TRIPLET=arm64-osx-dynamic
