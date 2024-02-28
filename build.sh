@@ -33,7 +33,7 @@ if [[ -n "$BINARY_CACHE_GITHUB_TOKEN" ]]; then
 	echo "Configuring GitHub packages binary cache."
 	NUGET=`./vcpkg/vcpkg fetch nuget | tail -n1`
 	echo "Using NuGet: $NUGET"
-	$OWNER="${BINARY_CACHE_GITHUB_USER:-docwire}"
+	$OWNER="${GITHUB_REPOSITORY_OWNER:-docwire}"
 	echo "Using GitHub owner: $OWNER"
 	$SOURCE_URL="https://nuget.pkg.github.com/$OWNER/index.json"
 	echo "Using cache source: $SOURCE_URL"
