@@ -49,6 +49,12 @@ else
 	$FEATURES = "[tests]"
 }
 
+if ($env:DEBUG -eq "1")
+{
+    $env:DOCWIRE_LOG_VERBOSITY = "debug"
+    $VCPKG_DEBUG_OPTION = "--debug"
+}
+
 Get-Date | Out-File -FilePath ports\docwire\disable_binary_cache.tmp
 $Env:SOURCE_PATH = "$PWD"
 $Env:VCPKG_KEEP_ENV_VARS = "SOURCE_PATH;DOCWIRE_LOG_VERBOSITY;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS"
@@ -59,7 +65,7 @@ if ($Env:OPENAI_API_KEY -ne $null -and $env:OPENAI_API_KEY -ne "") {
 } else {
     Write-Host "DEBUG: OPENAI_API_KEY does not exist."
 }
-vcpkg\vcpkg --overlay-ports=ports install docwire${FEATURES}:${VCPKG_TRIPLET}
+vcpkg\vcpkg --overlay-ports=ports install ${$VCPKG_DEBUG_OPTION} docwire${FEATURES}:${VCPKG_TRIPLET}
 
 if ($Env:SANITIZER -ne $null -and $env:SANITIZER -ne "")
 {
