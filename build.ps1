@@ -26,7 +26,7 @@ if ($env:BINARY_CACHE_GITHUB_TOKEN)
     $SOURCE_NAME = "docwire_github"
     & "$NUGET" sources add -source "$SOURCE_URL" -storepasswordincleartext -name "$SOURCE_NAME" -username $env:BINARY_CACHE_GITHUB_USER -password $env:BINARY_CACHE_GITHUB_TOKEN
     & "$NUGET" setapikey $env:BINARY_CACHE_GITHUB_TOKEN -source "$SOURCE_URL"
-    $env:VCPKG_BINARY_CACHE = "clear;nuget,$SOURCE_NAME,readwrite"
+    $env:VCPKG_BINARY_SOURCES = "clear;nuget,$SOURCE_NAME,readwrite"
     Write-Host "GitHub packages binary cache enabled."
 }
 else
