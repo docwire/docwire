@@ -69,7 +69,7 @@ jobs:
           ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
           CREATE_ARCHIVE: "1"
-          BINARY_CACHE_GITHUB_USER: ${{ secrets.BINARY_CACHE_GITHUB_USER }}
+          BINARY_CACHE_GITHUB_USER: "github-actions"
           BINARY_CACHE_GITHUB_TOKEN: "${{ secrets.BINARY_CACHE_GITHUB_TOKEN }}"
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SANITIZER: ${{ matrix.sanitizer }}
