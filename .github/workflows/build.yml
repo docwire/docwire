@@ -70,7 +70,7 @@ jobs:
         env:
           CREATE_ARCHIVE: "1"
           BINARY_CACHE_GITHUB_USER: "github-actions"
-          BINARY_CACHE_GITHUB_TOKEN: "${{ secrets.BINARY_CACHE_GITHUB_TOKEN }}"
+          BINARY_CACHE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SANITIZER: ${{ matrix.sanitizer }}
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
