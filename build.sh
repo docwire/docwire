@@ -42,7 +42,7 @@ if [[ -n "$BINARY_CACHE_GITHUB_TOKEN" ]]; then
 		mono "$NUGET" setapikey "$BINARY_CACHE_GITHUB_TOKEN" -source "$SOURCE_URL"
 		VCPKG_BINARY_SOURCES+=";nuget,$SOURCE_NAME,readwrite"
 	done
-	export VCPKG_BINARY_SOURCES="clear;$VCPKG_BINARY_SOURCES"
+	export VCPKG_BINARY_SOURCES="clear$VCPKG_BINARY_SOURCES"
 	echo "Using binary sources: $VCPKG_BINARY_SOURCES"
 	echo "GitHub packages binary cache enabled."
 else
