@@ -19,7 +19,7 @@ if ($env:BINARY_CACHE_GITHUB_TOKEN)
     Write-Host "Configuring GitHub packages binary cache."
     $NUGET = & "vcpkg\vcpkg" fetch nuget | select -last 1
     Write-Host "Using NuGet: $NUGET"
-    $OWNER = $env:GITHUB_REPOSITORY_OWNER -or "docwire"
+    $OWNER = $env:GITHUB_REPOSITORY_OWNER ?? "docwire"
     Write-Host "Using GitHub owner: $OWNER"
     $SOURCE_URL = "https://nuget.pkg.github.com/$OWNER/index.json"
     Write-Host "Using cache source: $SOURCE_URL"
