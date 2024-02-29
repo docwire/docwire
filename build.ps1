@@ -19,14 +19,18 @@ if ($env:BINARY_CACHE_GITHUB_TOKEN)
     Write-Host "Configuring GitHub packages binary cache."
     $NUGET = & "vcpkg\vcpkg" fetch nuget | select -last 1
     Write-Host "Using NuGet: $NUGET"
-    $OWNER = $env:GITHUB_REPOSITORY_OWNER ?? "docwire"
-    Write-Host "Using GitHub owner: $OWNER"
-    $SOURCE_URL = "https://nuget.pkg.github.com/$OWNER/index.json"
-    Write-Host "Using cache source: $SOURCE_URL"
-    $SOURCE_NAME = "docwire_github"
-    & "$NUGET" sources add -source "$SOURCE_URL" -storepasswordincleartext -name "$SOURCE_NAME" -username $env:BINARY_CACHE_GITHUB_USER -password $env:BINARY_CACHE_GITHUB_TOKEN
-    & "$NUGET" setapikey $env:BINARY_CACHE_GITHUB_TOKEN -source "$SOURCE_URL"
-    $env:VCPKG_BINARY_SOURCES = "clear;nuget,$SOURCE_NAME,readwrite"
+    $BINARY_CACHE_GITHUB_OWNERS = $env:BINARY_CACHE_GITHUB_OWNERS ?? "docwire"
+    foreach ($OWNER in $BINARY_CACHE_GITHUB_OWNERS)
+    {
+        $SOURCE_URL = "https://nuget.pkg.github.com/$OWNER/index.json"
+        Write-Host "Using cache source: $SOURCE_URL"
+        $SOURCE_NAME = "${OWNER}_github"
+        & "$NUGET" sources add -source "$SOURCE_URL" -storepasswordincleartext -name "$SOURCE_NAME" -username $env:BINARY_CACHE_GITHUB_USER -password $env:BINARY_CACHE_GITHUB_TOKEN
+        & "$NUGET" setapikey $env:BINARY_CACHE_GITHUB_TOKEN -source "$SOURCE_URL"
+        $VCPKG_BINARY_SOURCES += ";nuget,$SOURCE_NAME,readwrite"
+    }
+    $VCPKG_BINARY_SOURCES = "clear" + $VCPKG_BINARY_SOURCES
+    Write-Host "Using binary sources: $VCPKG_BINARY_SOURCES"
     Write-Host "GitHub packages binary cache enabled."
 }
 else

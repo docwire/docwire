@@ -33,14 +33,17 @@ if [[ -n "$BINARY_CACHE_GITHUB_TOKEN" ]]; then
 	echo "Configuring GitHub packages binary cache."
 	NUGET=`./vcpkg/vcpkg fetch nuget | tail -n1`
 	echo "Using NuGet: $NUGET"
-	OWNER="${GITHUB_REPOSITORY_OWNER:-docwire}"
-	echo "Using GitHub owner: $OWNER"
-	SOURCE_URL="https://nuget.pkg.github.com/$OWNER/index.json"
-	echo "Using cache source: $SOURCE_URL"
-	SOURCE_NAME="docwire_github"
-	mono "$NUGET" sources add -source "$SOURCE_URL" -storepasswordincleartext -name "$SOURCE_NAME" -username "$BINARY_CACHE_GITHUB_USER" -password "$BINARY_CACHE_GITHUB_TOKEN"
-	mono "$NUGET" setapikey "$BINARY_CACHE_GITHUB_TOKEN" -source "$SOURCE_URL"
-	export VCPKG_BINARY_SOURCES="clear;nuget,$SOURCE_NAME,readwrite"
+	BINARY_CACHE_GITHUB_OWNERS="${BINARY_CACHE_GITHUB_OWNERS:-docwire}"
+	for OWNER in $BINARY_CACHE_GITHUB_OWNERS; do
+		SOURCE_URL="https://nuget.pkg.github.com/$OWNER/index.json"
+		echo "Using cache source: $SOURCE_URL"
+		SOURCE_NAME="${OWNER}_github"
+		mono "$NUGET" sources add -source "$SOURCE_URL" -storepasswordincleartext -name "$SOURCE_NAME" -username "$BINARY_CACHE_GITHUB_USER" -password "$BINARY_CACHE_GITHUB_TOKEN"
+		mono "$NUGET" setapikey "$BINARY_CACHE_GITHUB_TOKEN" -source "$SOURCE_URL"
+		VCPKG_BINARY_SOURCES+=";nuget,$SOURCE_NAME,readwrite"
+	done
+	export VCPKG_BINARY_SOURCES="clear;$VCPKG_BINARY_SOURCES"
+	echo "Using binary sources: $VCPKG_BINARY_SOURCES"
 	echo "GitHub packages binary cache enabled."
 else
 	echo "GitHub packages binary cache disabled."
