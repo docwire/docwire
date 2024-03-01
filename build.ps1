@@ -29,7 +29,7 @@ if ($env:BINARY_CACHE_GITHUB_TOKEN)
         & "$NUGET" setapikey $env:BINARY_CACHE_GITHUB_TOKEN -source "$SOURCE_URL"
         $VCPKG_BINARY_SOURCES += ";nuget,$SOURCE_NAME,readwrite"
     }
-    $VCPKG_BINARY_SOURCES = "clear" + $VCPKG_BINARY_SOURCES
+    $env:VCPKG_BINARY_SOURCES = "clear" + $VCPKG_BINARY_SOURCES
     Write-Host "Using binary sources: $VCPKG_BINARY_SOURCES"
     Write-Host "GitHub packages binary cache enabled."
 }
