@@ -70,7 +70,7 @@ jobs:
           CREATE_ARCHIVE: "1"
           BINARY_CACHE_GITHUB_USER: "github-actions"
           BINARY_CACHE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          BINARY_CACHE_GITHUB_OWNERS: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner != github.event.pull_request.base.repo.owner) && format('{0} {1}', github.event.pull_request.base.repo.owner, github.event.pull_request.head.repo.owner) || github.repository_owner }}
+          BINARY_CACHE_GITHUB_OWNERS: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner != github.event.pull_request.base.repo.owner) && format('{0} {1}', github.event.pull_request.base.repo.owner.login, github.event.pull_request.head.repo.owner.login) || github.repository_owner }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SANITIZER: ${{ matrix.sanitizer }}
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
