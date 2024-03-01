@@ -1,5 +1,7 @@
 name: Build
 on: [pull_request, workflow_dispatch]
+permissions:
+  packages: write
 jobs:
   build:
     strategy:
@@ -66,12 +68,14 @@ jobs:
           ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
           CREATE_ARCHIVE: "1"
-          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+          BINARY_CACHE_GITHUB_USER: "github-actions"
+          BINARY_CACHE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          BINARY_CACHE_GITHUB_OWNERS: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner != github.event.pull_request.base.repo.owner) && format('{0} {1}', github.event.pull_request.base.repo.owner.login, github.event.pull_request.head.repo.owner.login) || github.repository_owner }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SANITIZER: ${{ matrix.sanitizer }}
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
           TSAN_OPTIONS: ${{ matrix.sanitizer == 'thread' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
-          DOCWIRE_LOG_VERBOSITY: ${{ runner.debug == '1' && 'debug' || '' }}
+          DEBUG: ${{ runner.debug }}
       - uses: actions/upload-artifact@v4
         if: success() && matrix.sanitizer == ''
         with:
