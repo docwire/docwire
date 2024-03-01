@@ -20,7 +20,7 @@ if ($env:BINARY_CACHE_GITHUB_TOKEN)
     $NUGET = & "vcpkg\vcpkg" fetch nuget | select -last 1
     Write-Host "Using NuGet: $NUGET"
     $BINARY_CACHE_GITHUB_OWNERS = $env:BINARY_CACHE_GITHUB_OWNERS ?? "docwire"
-    foreach ($OWNER in $BINARY_CACHE_GITHUB_OWNERS)
+    foreach ($OWNER in $BINARY_CACHE_GITHUB_OWNERS.Split(" "))
     {
         $SOURCE_URL = "https://nuget.pkg.github.com/$OWNER/index.json"
         Write-Host "Using cache source: $SOURCE_URL"
