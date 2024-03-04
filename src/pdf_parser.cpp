@@ -683,6 +683,11 @@ log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfContent& c)
 	return s;
 }
 
+namespace
+{
+	std::mutex podofo_freetype_mutex;
+} // anonymous namespace
+
 struct PDFParser::Implementation
 {
 	PoDoFo::PdfMemDocument m_pdf_document;
@@ -8011,7 +8016,9 @@ struct PDFParser::Implementation
 								}
 								try
 								{
+									podofo_freetype_mutex.lock();
 									pCurFont = page->GetResources()->GetFont(font_name);
+									podofo_freetype_mutex.unlock();
 								}
 								catch (PoDoFo::PdfError &error)
 								{
@@ -8309,7 +8316,9 @@ PDFParser::~PDFParser()
 	{
 		if (impl->m_data_stream)
 			delete impl->m_data_stream;
+		podofo_freetype_mutex.lock();
 		delete impl;
+		podofo_freetype_mutex.unlock();
 	}
 }
 
