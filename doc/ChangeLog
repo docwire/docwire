@@ -37,6 +37,7 @@
 - Fix threading data-race problem in PDF parser related to freetype library font list management
 - Fix threading data-race problem in OCR parser related to libtiff library
 - Fix threading data-race problem in ODF/OOXML parser related to std::regex
+- Make hardcoded 30 sec OCR timeout configurable (no timeout by default)
 
 ## Version 2024.01.05
 

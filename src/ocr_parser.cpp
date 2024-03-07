@@ -262,7 +262,11 @@ std::string OCRParser::plainText(const FormattingStyle& formatting, const std::v
 
     api->SetImage(inverted.get());
     tesseract::ETEXT_DESC monitor;
-    monitor.set_deadline_msecs(TIMEOUT);
+    auto ocr_timeout = m_parameters.getParameterValue<int32_t>("ocr_timeout");
+    if (ocr_timeout)
+    {
+        monitor.set_deadline_msecs(*ocr_timeout);
+    }
     monitor.cancel = &cancel;
     monitor.cancel_this = &(impl->m_on_new_node_signal);
     api->Recognize(&monitor);

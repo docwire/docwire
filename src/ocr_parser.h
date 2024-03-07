@@ -30,7 +30,6 @@ private:
     struct Implementation;
     struct ImplementationDeleter { void operator() (Implementation*); };
     std::unique_ptr<Implementation, ImplementationDeleter> impl;
-    const unsigned int TIMEOUT = 30000;
 
 public:
     static std::string get_default_tessdata_prefix();
