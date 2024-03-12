@@ -9,7 +9,7 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "basic_parser_provider.h"
+#include "office_formats_parser_provider.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include "gtest/gtest.h"
@@ -88,7 +88,7 @@ TEST_P(DocumentTests, ReadFromFileTest)
         std::stringstream output_stream{};
 
         Input(file_name) |
-          MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
+          MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
           PlainTextExporter() |
           Output(output_stream);
 
@@ -123,7 +123,7 @@ TEST_P(DocumentTests, ReadFromBufferTest)
         std::stringstream output_stream{};
 
         Input(&ifs_input) |
-          MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
+          MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
           PlainTextExporter() |
           Output(output_stream);
 
@@ -204,7 +204,7 @@ TEST_P(MetadataTest, ReadFromFileTest)
         std::stringstream output_stream{};
 
         Input(file_name) |
-          MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>() |
+          MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
           MetaDataExporter() |
           Output(output_stream);
 
@@ -260,7 +260,7 @@ TEST_P(CallbackTest, ReadFromFileTest)
     std::stringstream output_stream{};
 
     Input(file_name) |
-        MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>() |
+        MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
         TransformerFunc(callback) |
         PlainTextExporter() |
         Output(output_stream);
@@ -300,7 +300,7 @@ TEST_P(HTMLWriterTest, RedFromFileTest)
     std::stringstream output_stream{};
 
     Input(file_name) |
-        MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>() |
+        MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
         HtmlExporter() |
         Output(output_stream);
 
@@ -365,7 +365,7 @@ TEST_P(MiscDocumentTest, ReadFromFileTest)
 
     Input(file_name) |
         DecompressArchives() |
-        MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
+        MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
         PlainTextExporter() |
         Output(output_stream);
 
@@ -462,7 +462,7 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     try 
     {
         Input(file_name) |
-            MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>() |
+            MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
             PlainTextExporter() |
             Output(output_stream);
         FAIL() << "We are not supporting password protected files yet. Why didn\'t we catch exception?\n";
@@ -501,12 +501,12 @@ void* thread_func(void* data)
         std::stringstream output_stream{};
 
         Input(*file_name) |
-          MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>() |
+          MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
           PlainTextExporter() |
           Output(output_stream);
 
         Input(*file_name) |
-          MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>() |
+          MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
           MetaDataExporter() |
           Output(output_stream);
     } catch (Exception& ex) {
@@ -626,7 +626,7 @@ TEST_P(MultiPageFilterTest, ReadFromFileTests)
     std::stringstream output_stream{};
 
     Input(file_name) |
-        MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>() |
+        MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
         TransformerFunc([MAX_PAGES, counter = 0](Info &info) mutable
         {
             if (info.tag_name == StandardTag::TAG_PAGE) {++counter;}
@@ -670,7 +670,7 @@ TEST(HtmlWriter, RestoreAttributes)
 	std::stringstream output;
 	std::ifstream in("1.html");
 	Input(&in)
-		| MultiformatParser<BasicParserProvider>()
+		| MultiformatParser<OfficeFormatsParserProvider>()
 		| HtmlExporter(HtmlExporter::RestoreOriginalAttributes{true})
 		| Output(output);
 
@@ -684,7 +684,7 @@ TEST(Http, Post)
 	ASSERT_NO_THROW(
 	{
 		Input(&in)
-			| MultiformatParser<BasicParserProvider>()
+			| MultiformatParser<OfficeFormatsParserProvider>()
 			| PlainTextExporter()
 			| http::Post("https://postman-echo.com/post")
 			| Output(output);
@@ -705,7 +705,7 @@ TEST(Http, PostForm)
 	ASSERT_NO_THROW(
 	{
 		Input(&in)
-			| MultiformatParser<BasicParserProvider>()
+			| MultiformatParser<OfficeFormatsParserProvider>()
 			| PlainTextExporter()
 			| http::Post("https://postman-echo.com/post", {{"field1", "value1"}, {"field2", "value2"}}, "file", DefaultFileName("file.docx"))
 			| Output(output);

@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "basic_parser_provider.h"
+#include "office_formats_parser_provider.h"
 #include "parser_wrapper.h"
 #include "html_parser.h"
 #include "doc_parser.h"
@@ -31,12 +31,12 @@ namespace docwire
 {
 
 void
-BasicParserProvider::addExtensions(const std::vector<std::string> &extensions)
+OfficeFormatsParserProvider::addExtensions(const std::vector<std::string> &extensions)
 {
   available_extensions.insert(extensions.begin(), extensions.end());
 }
 
-BasicParserProvider::BasicParserProvider()
+OfficeFormatsParserProvider::OfficeFormatsParserProvider()
 {
   addExtensions(HTMLParser::getExtensions());
   addExtensions(DOCParser::getExtensions());
@@ -52,13 +52,13 @@ BasicParserProvider::BasicParserProvider()
 }
 
 bool
-BasicParserProvider::isExtensionInVector(const std::string &extension, const std::vector<std::string> &extension_list) const
+OfficeFormatsParserProvider::isExtensionInVector(const std::string &extension, const std::vector<std::string> &extension_list) const
 {
   return std::find(extension_list.begin(), extension_list.end(), extension) != extension_list.end();
 }
 
 std::optional<ParserBuilder*>
-BasicParserProvider::findParserByExtension(const std::string &inExtension) const
+OfficeFormatsParserProvider::findParserByExtension(const std::string &inExtension) const
 {
   if (isExtensionInVector(inExtension, HTMLParser::getExtensions()))
   {
@@ -124,7 +124,7 @@ is_valid(const char* buffer, size_t size)
 }
 
 std::optional<ParserBuilder*>
-BasicParserProvider::findParserByData(const std::vector<char>& buffer) const
+OfficeFormatsParserProvider::findParserByData(const std::vector<char>& buffer) const
 {
   if (is_valid<HTMLParser, &HTMLParser::isHTML>(buffer.data(), buffer.size()))
   {
@@ -170,7 +170,7 @@ BasicParserProvider::findParserByData(const std::vector<char>& buffer) const
 }
 
 std::set<std::string>
-BasicParserProvider::getAvailableExtensions() const
+OfficeFormatsParserProvider::getAvailableExtensions() const
 {
   return available_extensions;
 }

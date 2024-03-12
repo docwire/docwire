@@ -114,7 +114,7 @@ namespace
 /**
  * @brief This class template is used to import a file and parse it using available parsers.
  * @code
- * Input("file.pdf") | MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>(parameters) | HtmlExporter() | std::cout; // Imports file.pdf and exports it to std::cout as HTML
+ * Input("file.pdf") | MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) | HtmlExporter() | std::cout; // Imports file.pdf and exports it to std::cout as HTML
  * @endcode
  *
  * @see Parser

@@ -10,8 +10,8 @@
 /*********************************************************************************************************************************************/
 
 
-#ifndef DOCWIRE_BASIC_PARSER_PROVIDER_H
-#define DOCWIRE_BASIC_PARSER_PROVIDER_H
+#ifndef DOCWIRE_OFFICE_FORMATS_PARSER_PROVIDER_H
+#define DOCWIRE_OFFICE_FORMATS_PARSER_PROVIDER_H
 
 #include "parser_provider.h"
 #include "defines.h"
@@ -19,10 +19,10 @@
 namespace docwire
 {
 
-class DllExport BasicParserProvider : public ParserProvider
+class DllExport OfficeFormatsParserProvider : public ParserProvider
 {
 public:
-  BasicParserProvider();
+  OfficeFormatsParserProvider();
   std::optional<ParserBuilder*> findParserByExtension(const std::string &extension) const override;
   std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override;
   std::set<std::string> getAvailableExtensions() const override;
@@ -35,4 +35,4 @@ private:
 
 } // namespace docwire
 
-#endif //DOCWIRE_BASIC_PARSER_PROVIDER_H
+#endif //DOCWIRE_OFFICE_FORMATS_PARSER_PROVIDER_H

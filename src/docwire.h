@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_DOCWIRE_H
 #define DOCWIRE_DOCWIRE_H
 
-#include "basic_parser_provider.h"
+#include "office_formats_parser_provider.h"
 #include "classify.h"
 #include "decompress_archives.h"
 #include "detect_sentiment.h"

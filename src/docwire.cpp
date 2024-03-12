@@ -13,7 +13,7 @@
 #include <memory>
 #include <fstream>
 #include "analyze_data.h"
-#include "basic_parser_provider.h"
+#include "office_formats_parser_provider.h"
 #include "classify.h"
 #include "csv_exporter.h"
 #include "decompress_archives.h"
@@ -215,7 +215,7 @@ int main(int argc, char* argv[])
 	}
 	else if (local_processing)
 	{
-		chain = chain | MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>(parameters);
+		chain = chain | MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters);
 
 		if (vm.count("max_nodes_number"))
 		{
