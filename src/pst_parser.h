@@ -20,11 +20,12 @@
 
 #include "parser.h"
 #include "parser_builder.h"
-#include "parser_manager.h"
 #include "formatting_style.h"
 
 namespace docwire
 {
+
+class Importer;
 
 class PSTParser : public Parser
 {
@@ -38,8 +39,8 @@ public:
   Parser &withParameters(const ParserParameters &parameters) override;
   static std::vector<std::string> getExtensions() {return {"pst", "ost"};}
 
-  PSTParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
-  PSTParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+  PSTParser(const std::string& file_name, const Importer* inImporter = nullptr);
+  PSTParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
   ~PSTParser();
   bool isPST() const;
 };

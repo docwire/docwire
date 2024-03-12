@@ -33,9 +33,6 @@ private:
   std::set<std::string> available_extensions;
 };
 
-extern "C" DllExport MailParserProvider plugin_parser_provider;
-MailParserProvider plugin_parser_provider;
-
 } // namespace docwire
 
 #endif //DOCWIRE_MAIL_PARSER_PROVIDER_H

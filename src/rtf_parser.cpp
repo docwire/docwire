@@ -42,8 +42,8 @@ struct RTFParser::Implementation
 	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-RTFParser::RTFParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+RTFParser::RTFParser(const std::string& file_name, const Importer* inImporter)
+: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -65,8 +65,8 @@ RTFParser::RTFParser(const std::string& file_name, const std::shared_ptr<ParserM
 	}
 }
 
-RTFParser::RTFParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+RTFParser::RTFParser(const char* buffer, size_t size, const Importer* inImporter)
+: Parser(inImporter)
 {
 	impl = NULL;
 	try

@@ -185,7 +185,7 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
     - Comma-Separated Values: CSV files
     - Other structured text formats: JSON, YML, YAML, RSS, CONF files
     - Other unstructured text formats: MD, LOG files
-    - DICOM (DCM) as an additional commercial plugin
+    - DICOM (DCM) as an additional commercial library
 
 - **Equipped with multiple exporters**:
     - Plain text: Easily extract and export text content.
@@ -326,7 +326,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  Input("data_processing_definition.doc") | Importer() | PlainTextExporter() | Output(out_stream);
+  Input("data_processing_definition.doc") | MultiformatParser<BasicParserProvider>() | PlainTextExporter() | Output(out_stream);
   assert(out_stream.str() == "Data processing refers to the activities performed on raw data to convert it into meaningful information. It involves collecting, organizing, analyzing, and interpreting data to extract useful insights and support decision-making. This can include tasks such as sorting, filtering, summarizing, and transforming data through various computational and statistical methods. Data processing is essential in various fields, including business, science, and technology, as it enables organizations to derive valuable knowledge from large datasets, make informed decisions, and improve overall efficiency.\n\n");
 
   return 0;
@@ -345,7 +345,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  Input(std::ifstream("data_processing_definition.docx", std::ios_base::binary)) | Importer() | HtmlExporter() | Output(out_stream);
+  Input(std::ifstream("data_processing_definition.docx", std::ios_base::binary)) | MultiformatParser<BasicParserProvider>() | HtmlExporter() | Output(out_stream);
   assert(out_stream.str() == "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>DocWire</title>\n</head>\n<body>\n<p>Data processing refers to the activities performed on raw data to convert it into meaningful information. It involves collecting, organizing, analyzing, and interpreting data to extract useful insights and support decision-making. This can include tasks such as sorting, filtering, summarizing, and transforming data through various computational and statistical methods.</p><p>Data processing is essential in various fields, including business, science, and technology, as it enables organizations to derive valuable knowledge from large datasets, make informed decisions, and improve overall efficiency.</p></body>\n</html>\n");
 
   return 0;
@@ -360,7 +360,7 @@ Parse all files in any format inside archives (ZIP, TAR, RAR, GZ, BZ2, XZ) recur
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  Input("test.zip") | DecompressArchives() | Importer() | PlainTextExporter() | Output(std::cout);
+  Input("test.zip") | DecompressArchives() | MultiformatParser<BasicParserProvider, OcrParserProvider>() | PlainTextExporter() | Output(std::cout);
   return 0;
 }
 ```
@@ -377,7 +377,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  Input("document_processing_market_trends.odt") | Importer() | PlainTextExporter() | openai::Classify({ "agreement", "invoice", "report", "legal", "other"}, std::getenv("OPENAI_API_KEY")) | Output(out_stream);
+  Input("document_processing_market_trends.odt") | MultiformatParser<BasicParserProvider>() | PlainTextExporter() | openai::Classify({ "agreement", "invoice", "report", "legal", "other"}, std::getenv("OPENAI_API_KEY")) | Output(out_stream);
   assert(out_stream.str() == "report\n");
 
   return 0;
@@ -396,7 +396,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  Input("data_processing_definition.doc") | Importer() | PlainTextExporter() | openai::TranslateTo("spanish", std::getenv("OPENAI_API_KEY")) | Output(out_stream);
+  Input("data_processing_definition.doc") | MultiformatParser<BasicParserProvider>() | PlainTextExporter() | openai::TranslateTo("spanish", std::getenv("OPENAI_API_KEY")) | Output(out_stream);
   assert(out_stream.str() == "El procesamiento de datos se refiere a las actividades realizadas en datos crudos para convertirlos en información significativa. Implica recolectar, organizar, analizar e interpretar datos para extraer ideas útiles y apoyar la toma de decisiones. Esto puede incluir tareas como ordenar, filtrar, resumir y transformar datos a través de varios métodos computacionales y estadísticos. El procesamiento de datos es esencial en varios campos, incluyendo negocios, ciencia y tecnología, ya que permite a las organizaciones obtener conocimientos valiosos de grandes conjuntos de datos, tomar decisiones informadas y mejorar la eficiencia general.\n");
   return 0;
 }
@@ -413,7 +413,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  Input("1.doc") | Importer() | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_turbo_preview) | Output(std::cout);
+  Input("1.doc") | MultiformatParser<BasicParserProvider>() | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_turbo_preview) | Output(std::cout);
 
   return 0;
 }
@@ -427,7 +427,7 @@ Make a voice summary of document in any format (Office, PDF, mail, etc) in two s
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  Input("1.doc") | Importer() | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | openai::TextToSpeech(std::getenv("OPENAI_API_KEY")) | Output(std::ofstream("summary.mp3"));
+  Input("1.doc") | MultiformatParser<BasicParserProvider>() | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | openai::TextToSpeech(std::getenv("OPENAI_API_KEY")) | Output(std::ofstream("summary.mp3"));
 
   return 0;
 }
@@ -478,7 +478,7 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
 
-  auto chain = Importer() | PlainTextExporter() | Output(std::cout);  // create a chain of steps to parse a file
+  auto chain = MultiformatParser<BasicParserProvider>() | PlainTextExporter() | Output(std::cout);  // create a chain of steps to parse a file
   for (int i = 1; i < 3; ++i)
     Input(std::ifstream(std::to_string(i) + ".docx", std::ios_base::binary)) | chain; // set the input file as an input stream
 
@@ -495,7 +495,7 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
   Input("1.pst") |
-  Importer()
+  MultiformatParser<MailParserProvider>()
     | TransformerFunc([](Info &info) // Create an importer from file name and connect it to transformer
       {
         if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
@@ -527,7 +527,7 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
   Input("1.pst") |
-  Importer() |
+  MultiformatParser<MailParserProvider>() |
     TransformerFunc([](Info &info) // Create an input from file name, importer and connect them to transformer
     {
       if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
@@ -857,7 +857,6 @@ Unlock the power of OpenAI with the following options:
 - **&ndash;&ndash;url-style <style> (default: extended, deprecated)**: Set the URL style. Available styles include text_only, extended, and underscored.
 - **&ndash;&ndash;list-style-prefix <prefix> (default: " * ", deprecated)**: Set the output list prefix.
 - **&ndash;&ndash;log_file <file_path>**: Set the path to the log file.
-- **&ndash;&ndash;plugins_path <path>**: Set a non-standard path to DocWire plugins.
 
 Note: The "min_creation_time" and "max_creation_time" options currently work only for emails within PST/OST files.
 

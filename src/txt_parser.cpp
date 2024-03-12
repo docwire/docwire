@@ -30,8 +30,8 @@ struct TXTParser::Implementation
 	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-TXTParser::TXTParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+TXTParser::TXTParser(const std::string& file_name, const Importer* inImporter)
+: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -52,8 +52,8 @@ TXTParser::TXTParser(const std::string& file_name, const std::shared_ptr<ParserM
 	}
 }
 
-TXTParser::TXTParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+TXTParser::TXTParser(const char* buffer, size_t size, const Importer* inImporter)
+: Parser(inImporter)
 {
 	impl = NULL;
 	try

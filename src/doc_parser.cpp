@@ -642,8 +642,8 @@ struct DOCParser::Implementation
 	std::string m_file_name;
 };
 
-DOCParser::DOCParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+DOCParser::DOCParser(const std::string& file_name, const Importer* inImporter)
+: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -661,8 +661,8 @@ DOCParser::DOCParser(const std::string& file_name, const std::shared_ptr<ParserM
 	}
 }
 
-DOCParser::DOCParser(const char *buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+DOCParser::DOCParser(const char *buffer, size_t size, const Importer* inImporter)
+: Parser(inImporter)
 {
 	impl = NULL;
 	try

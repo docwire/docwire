@@ -13,6 +13,7 @@
 #include <memory>
 #include <fstream>
 #include "analyze_data.h"
+#include "basic_parser_provider.h"
 #include "classify.h"
 #include "csv_exporter.h"
 #include "decompress_archives.h"
@@ -27,7 +28,9 @@
 #include "language.h"
 #include "log.h"
 #include <magic_enum_iostream.hpp>
+#include "mail_parser_provider.h"
 #include "meta_data_exporter.h"
+#include "ocr_parser_provider.h"
 #include "output.h"
 #include "plain_text_exporter.h"
 #include "post.h"
@@ -142,7 +145,6 @@ int main(int argc, char* argv[])
 		("url-style", po::value<UrlStyle>(&formatting_style.url_style)->default_value(UrlStyle::extended), (enum_names_str<UrlStyle>() + " (deprecated)").c_str())
 		("list-style-prefix", po::value<std::string>()->default_value(" * "), "set output list prefix (deprecated)")
 		("log_file", po::value<std::string>(), "set path to log file")
-		("plugins_path", po::value<std::string>()->default_value(""), "set non-standard path to docwire plugins")
 	;
 
 	po::positional_options_description pos_desc;
@@ -188,8 +190,6 @@ int main(int argc, char* argv[])
 
 	std::string file_name = vm["input-file"].as<std::string>();
 
-	std::shared_ptr<ParserManager> parser_manager { new ParserManager(vm["plugins_path"].as<std::string>()) };
-
 	formatting_style.list_style.setPrefix(vm["list-style-prefix"].as<std::string>());
 
 	ParserParameters parameters;
@@ -215,7 +215,7 @@ int main(int argc, char* argv[])
 	}
 	else if (local_processing)
 	{
-		chain = chain | Importer(parameters, parser_manager);
+		chain = chain | MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>(parameters);
 
 		if (vm.count("max_nodes_number"))
 		{

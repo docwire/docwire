@@ -18,7 +18,6 @@
 #include "chain_element.h"
 #include "parser.h"
 #include "parser_builder.h"
-#include "parser_manager.h"
 #include "parser_parameters.h"
 #include "defines.h"
 
@@ -32,7 +31,7 @@ class Importer;
  * auto reverse_text = [](Info &info) {
  *   std::reverse(info.plain_text.begin(), info.plain_text.end())}; // create function to reverse text in callback
  * TransformerFunc transformer(reverse_text); // wraps into ChainElement
- * Importer(parser_manager, "test.pdf") | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
+ * Input("test.pdf") | MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>(parameters) | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
  * @endcode
  */
 class DllExport TransformerFunc : public ChainElement

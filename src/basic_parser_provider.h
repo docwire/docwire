@@ -33,9 +33,6 @@ private:
   std::set<std::string> available_extensions;
 };
 
-extern "C" DllExport BasicParserProvider plugin_parser_provider;
-BasicParserProvider plugin_parser_provider;
-
 } // namespace docwire
 
 #endif //DOCWIRE_BASIC_PARSER_PROVIDER_H

@@ -26,6 +26,7 @@
 #include "misc.h"
 #include <iostream>
 #include "charsetdetect.h"
+#include <set>
 
 using namespace htmlcxx::HTML;
 
@@ -655,8 +656,8 @@ struct HTMLParser::Implementation
 	DataStream* m_data_stream{};
 };
 
-HTMLParser::HTMLParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+HTMLParser::HTMLParser(const std::string& file_name, const Importer* inImporter)
+: Parser(inImporter)
 {
 	impl = nullptr;
 	try
@@ -679,8 +680,8 @@ HTMLParser::HTMLParser(const std::string& file_name, const std::shared_ptr<Parse
 	}
 }
 
-HTMLParser::HTMLParser(const char *buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+HTMLParser::HTMLParser(const char *buffer, size_t size, const Importer* inImporter)
+: Parser(inImporter)
 {
 	impl = nullptr;
 	try

@@ -18,6 +18,7 @@
 #include <iostream>
 #include <algorithm>
 #include <filesystem>
+#include "importer.h"
 #include <memory>
 #include <chrono>
 #include <sstream>
@@ -390,7 +391,7 @@ struct PSTParser::Implementation
   size_t m_size;
   std::istream *m_data_stream;
   boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
-  std::shared_ptr<ParserManager> parserManager;
+  const Importer* m_importer;
   const unsigned int MAILS_LIMIT = 50;
 
   private:
@@ -401,12 +402,12 @@ struct PSTParser::Implementation
 void
 PSTParser::Implementation::parse_element(const char* buffer, size_t size, const std::string& extension) const
 {
-  if (parserManager)
+  if (m_importer)
   {
-    auto parser_builder = parserManager->findParserByExtension(extension);
+    auto parser_builder = m_importer->findParserByExtension(extension);
     if (parser_builder)
     {
-      (*parser_builder)->withParserManager(parserManager)
+      (*parser_builder)->withImporter(*m_importer)
         .withOnNewNodeCallbacks({[this](Info &info){m_owner->sendTag(info.tag_name, info.plain_text, info.attributes);}})
         .withParameters(m_parameters)
         .build(buffer, size)
@@ -547,18 +548,18 @@ PSTParser::withParameters(const ParserParameters &parameters)
   return *this;
 }
 
-PSTParser::PSTParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+PSTParser::PSTParser(const std::string& file_name, const Importer* inImporter)
+: Parser(inImporter)
 {
   impl = new Implementation(file_name, this);
-  impl->parserManager = inParserManager;
+  impl->m_importer = inImporter;
 }
 
-PSTParser::PSTParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+PSTParser::PSTParser(const char* buffer, size_t size, const Importer* inImporter)
+: Parser(inImporter)
 {
   impl = new Implementation(buffer, size, this);
-  impl->parserManager = inParserManager;
+  impl->m_importer = inImporter;
 }
 
 PSTParser::~PSTParser()

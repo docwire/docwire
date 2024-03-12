@@ -32,9 +32,6 @@ private:
   std::set<std::string> available_extensions;
 };
 
-extern "C" DllExport OcrParserProvider plugin_parser_provider;
-OcrParserProvider plugin_parser_provider;
-
 } // namespace docwire
 
 #endif //DOCWIRE_OCR_PARSER_PROVIDER_H

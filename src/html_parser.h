@@ -16,7 +16,6 @@
 #include <vector>
 #include "parser.h"
 #include "parser_builder.h"
-#include "parser_manager.h"
 
 namespace docwire
 {
@@ -35,8 +34,8 @@ class HTMLParser : public Parser
     static std::vector <std::string> getExtensions() {return {"html", "htm"};}
 		Parser& withParameters(const ParserParameters &parameters) override;
 
-		explicit HTMLParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
-		HTMLParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+		explicit HTMLParser(const std::string& file_name, const Importer* inImporter = nullptr);
+		HTMLParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
 		~HTMLParser();
 		bool isHTML();
 		Metadata metaData() const;

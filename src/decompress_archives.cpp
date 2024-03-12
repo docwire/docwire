@@ -18,6 +18,7 @@
 #include <fstream>
 #include "log.h"
 #include "parser.h"
+#include <set>
 
 namespace docwire
 {

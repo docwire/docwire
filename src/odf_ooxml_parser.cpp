@@ -333,8 +333,8 @@ struct ODFOOXMLParser::ExtendedImplementation
 	}
 };
 
-ODFOOXMLParser::ODFOOXMLParser(const string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+ODFOOXMLParser::ODFOOXMLParser(const string& file_name, const Importer* inImporter)
+: Parser(inImporter)
 {
 	extended_impl = NULL;
 	try
@@ -370,8 +370,8 @@ ODFOOXMLParser::ODFOOXMLParser(const string& file_name, const std::shared_ptr<Pa
 	}
 }
 
-ODFOOXMLParser::ODFOOXMLParser(const char *buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+ODFOOXMLParser::ODFOOXMLParser(const char *buffer, size_t size, const Importer* inImporter)
+: Parser(inImporter)
 {
 	extended_impl = NULL;
 	try

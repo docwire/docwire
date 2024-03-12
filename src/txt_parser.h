@@ -20,6 +20,8 @@
 namespace docwire
 {
 
+class Importer;
+
 class TXTParser : public Parser
 {
 	private:
@@ -33,8 +35,8 @@ class TXTParser : public Parser
 		Parser& withParameters(const ParserParameters &parameters) override;
 		static std::vector <std::string> getExtensions();
 
-		TXTParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
-		TXTParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+		TXTParser(const std::string& file_name, const Importer* inImporter = nullptr);
+		TXTParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
 		~TXTParser();
 		std::string plainText() const;
 };

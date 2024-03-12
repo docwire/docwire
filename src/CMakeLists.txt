@@ -25,14 +25,12 @@ add_library(docwire_core SHARED
         thread_safe_ole_stream_reader.cpp
         data_stream.cpp
         parser.cpp
-        parser_manager.cpp
         parser_parameters.cpp
         post.cpp
         html_writer.cpp
         csv_writer.cpp
         plain_text_writer.cpp
         standard_filter.cpp
-        simple_extractor.cpp
         importer.cpp
         output.cpp
         plain_text_exporter.cpp
@@ -269,7 +267,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif()
 
 add_executable(docwire docwire.cpp)
-target_link_libraries(docwire PRIVATE docwire_core Boost::program_options)
+target_link_libraries(docwire PRIVATE docwire_core docwire_parsers docwire_mail docwire_ocr Boost::program_options)
 
 if (DOCWIRE_TRACE)
    target_sources(docwire_core PRIVATE tracing)
@@ -278,21 +276,16 @@ if (DOCWIRE_TRACE)
 endif()
 
 install(TARGETS docwire DESTINATION bin)
-if (MSVC)
-	set(plugins_dir bin/docwire_plugins)
-else()
-	set(plugins_dir lib/docwire_plugins)
-endif()
-install(TARGETS docwire_ocr LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
-install(TARGETS docwire_mail LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
-install(TARGETS docwire_parsers LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
 install(TARGETS docwire_core)
+install(TARGETS docwire_ocr)
+install(TARGETS docwire_mail)
+install(TARGETS docwire_parsers)
 
 if(MSVC)
-	install(FILES $<TARGET_PDB_FILE:docwire_ocr> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
-	install(FILES $<TARGET_PDB_FILE:docwire_mail> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
-	install(FILES $<TARGET_PDB_FILE:docwire_parsers> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
 	install(FILES $<TARGET_PDB_FILE:docwire_core> DESTINATION bin CONFIGURATIONS Debug)
+    install(FILES $<TARGET_PDB_FILE:docwire_ocr> DESTINATION bin CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:docwire_mail> DESTINATION bin CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:docwire_parsers> DESTINATION bin CONFIGURATIONS Debug)
 endif()
 
 file(GLOB HEADERS "*.h")

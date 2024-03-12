@@ -21,6 +21,7 @@
 namespace docwire
 {
 	class FormattingStyle;
+	class Importer;
 	class Metadata;
 
 class DOCParser : public Parser
@@ -39,8 +40,8 @@ class DOCParser : public Parser
 		Parser& withParameters(const ParserParameters &parameters) override;
     static std::vector <std::string> getExtensions() {return {"doc", "dot"};}
 
-		DOCParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
-		DOCParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+		DOCParser(const std::string& file_name, const Importer* inImporter = nullptr);
+		DOCParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
 		~DOCParser();
 		bool isDOC();
 		Metadata metaData() const;

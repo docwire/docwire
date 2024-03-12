@@ -23,22 +23,18 @@ namespace docwire
 class Importer::Implementation
 {
 public:
-  Implementation(const std::shared_ptr<ParserManager> &parser_manager,
-                 const ParserParameters &parameters, Importer& owner)
-    : m_parser_manager(parser_manager),
-      m_parameters(parameters),
+  Implementation(const ParserParameters &parameters, Importer& owner)
+    : m_parameters(parameters),
       m_owner(owner)
   {}
 
   Implementation(const Implementation &other, Importer& owner)
-    : m_parser_manager(other.m_parser_manager),
-      m_parameters(other.m_parameters),
+    : m_parameters(other.m_parameters),
       m_owner(owner)
   {}
 
   Implementation(const Implementation &&other, Importer& owner)
-    : m_parser_manager(other.m_parser_manager),
-      m_parameters(other.m_parameters),
+    : m_parameters(other.m_parameters),
       m_owner(owner)
   {}
 
@@ -97,7 +93,7 @@ public:
       {
         if (isReadable(path))
         {
-          builder = std::shared_ptr<ParserBuilder>(m_parser_manager->findParserByExtension(file_path).value_or(nullptr));
+          builder = std::shared_ptr<ParserBuilder>(m_owner.findParserByExtension(file_path).value_or(nullptr));
         }
         else
         {
@@ -112,12 +108,12 @@ public:
     else if(input_stream)
     {
       buffer = std::vector<char>((std::istreambuf_iterator<char>(*input_stream)), std::istreambuf_iterator<char>());
-      builder = std::shared_ptr<ParserBuilder>(m_parser_manager->findParserByData(buffer).value_or(nullptr));
+      builder = std::shared_ptr<ParserBuilder>(m_owner.findParserByData(buffer).value_or(nullptr));
     }
     if (builder)
     {
       auto &builder_ref = builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
-        .withParserManager(m_parser_manager)
+        .withImporter(m_owner)
         .withParameters(m_parameters);
 
       if (!file_path.empty())
@@ -135,14 +131,14 @@ public:
           docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
           std::vector<char> buffer;
           load_file_to_buffer(file_path, buffer);
-          auto second_builder = m_parser_manager->findParserByData(buffer);
+          auto second_builder = m_owner.findParserByData(buffer);
           if (!second_builder)
           {
             throw ParsingFailed("Error parsing file: " + file_path  + ". Tried different parsers, but file could not be recognized as another format. File may be corrupted or encrypted", ex);
           }
           std::shared_ptr<ParserBuilder>(*second_builder)
                   ->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
-                  .withParserManager(m_parser_manager)
+                  .withImporter(m_owner)
                   .withParameters(m_parameters)
                   .build(buffer.data(), buffer.size())->parse();
         }
@@ -166,16 +162,15 @@ public:
     m_parameters += parameters;
   }
 
-  std::shared_ptr<ParserManager> m_parser_manager;
   std::shared_ptr<ParserBuilder> m_parser_builder;
 
   ParserParameters m_parameters;
   Importer& m_owner;
 };
 
-Importer::Importer(const ParserParameters &parameters, const std::shared_ptr<ParserManager> &parser_manager)
+Importer::Importer(const ParserParameters &parameters)
 {
-  impl = std::unique_ptr<Implementation>{new Implementation{parser_manager, parameters, *this}};
+  impl = std::unique_ptr<Implementation>{new Implementation{parameters, *this}};
 }
 
 Importer::Importer(const Importer &other)
@@ -210,12 +205,6 @@ void
 Importer::process(Info& info) const
 {
   impl->process(info);
-}
-
-Importer*
-Importer::clone() const
-{
-  return new Importer(*this);
 }
 
 void

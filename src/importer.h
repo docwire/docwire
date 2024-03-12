@@ -17,32 +17,22 @@
 
 #include "chain_element.h"
 #include "exception.h"
+#include <optional>
 #include "parser.h"
 #include "parser_builder.h"
-#include "parser_manager.h"
 #include "parser_parameters.h"
 #include "defines.h"
 
 namespace docwire
 {
 
-/**
- * @brief The Importer class. This class is used to import a file and parse it using available parsers.
- * @code
- * Importer(parser_manager, "file.pdf") | HtmlExporter() | std::cout; // Imports file.pdf and exports it to std::cout as HTML
- * @endcode
- *
- * @see Parser
- */
 class DllExport Importer : public ChainElement
 {
 public:
   /**
    * @param parameters parser parameters
-   * @param parser_manager pointer to the parser manager
    */
-  explicit Importer(const ParserParameters &parameters = ParserParameters(),
-                    const std::shared_ptr<ParserManager> &parser_manager = std::make_shared<ParserManager>());
+  explicit Importer(const ParserParameters &parameters = ParserParameters());
 
   Importer(const Importer &other);
 
@@ -59,7 +49,6 @@ public:
     return false;
   }
 
-  Importer* clone() const override;
   /**
    * @brief Sets new input stream to parse
    * @param input_stream new input stream to parse
@@ -71,6 +60,9 @@ public:
    * @param parameters parser parameters
    */
   void add_parameters(const ParserParameters &parameters);
+
+  virtual std::optional<ParserBuilder*> findParserByExtension(const std::string &file_name) const = 0;
+  virtual std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const = 0;
 
   DOCWIRE_EXCEPTION_DEFINE(FileNotReadable, RuntimeError);
   DOCWIRE_EXCEPTION_DEFINE(FileNotFound, RuntimeError);
@@ -86,6 +78,81 @@ protected:
 private:
   class Implementation;
   std::unique_ptr<Implementation> impl;
+};
+
+class ParserProvider;
+
+namespace
+{
+  template<typename... ProviderTypeNames>
+  std::optional<ParserBuilder*> findParserByExtension(const std::string& extension)
+  {
+    std::unique_ptr<ParserProvider> providers[] = {std::unique_ptr<ParserProvider>(new ProviderTypeNames)...};
+    for (auto& provider : providers)
+    {
+      auto builder = provider->findParserByExtension(extension);
+      if (builder)
+        return builder;
+    }
+    return std::nullopt;
+  }
+
+  template<typename... ProviderTypeNames>
+  std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer)
+  {
+    std::unique_ptr<ParserProvider> providers[] = {std::unique_ptr<ParserProvider>(new ProviderTypeNames)...};
+    for (auto& provider : providers)
+    {
+      auto builder = provider->findParserByData(buffer);
+      if (builder)
+        return builder;
+    }
+    return std::nullopt;
+  }
+} // anonymous namespace
+
+/**
+ * @brief This class template is used to import a file and parse it using available parsers.
+ * @code
+ * Input("file.pdf") | MultiformatParser<BasicParserProvider, MailParserProvider, OcrParserProvider>(parameters) | HtmlExporter() | std::cout; // Imports file.pdf and exports it to std::cout as HTML
+ * @endcode
+ *
+ * @see Parser
+ */
+template<typename ProviderTypeName, typename... ProviderTypeNames>
+class MultiformatParser : public Importer
+{
+  public:
+    MultiformatParser(const ParserParameters &parameters = ParserParameters())
+      : Importer(parameters)
+    {}
+
+    MultiformatParser<ProviderTypeName, ProviderTypeNames...>* clone() const override
+    {
+      return new MultiformatParser<ProviderTypeName, ProviderTypeNames...>(*this);
+    }
+
+  /**
+   * @brief Returns parser builder for given extension type or nullopt if no parser is found.
+   * @param file_name file name with extension (e.g. ".txt", ".docx", etc.)
+   * @return specific parser builder or nullopt if no parser is found
+   */
+  std::optional<ParserBuilder*> findParserByExtension(const std::string &file_name) const override
+  {
+    std::string extension = file_name.substr(file_name.find_last_of(".") + 1);
+    std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+    return docwire::findParserByExtension<ProviderTypeName, ProviderTypeNames...>(extension);
+  }
+
+  /**
+   * @brief Returns parser builder for given raw data or nullopt if no parser is found.
+   * @param buffer buffer of raw data
+   * @return specific parser builder or nullopt if no parser is found
+   */
+  std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override
+  {
+    return docwire::findParserByData<ProviderTypeName, ProviderTypeNames...>(buffer);
+  }
 };
 
 
