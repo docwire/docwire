@@ -215,7 +215,7 @@ int main(int argc, char* argv[])
 	}
 	else if (local_processing)
 	{
-		chain = chain | MultiformatParser<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters);
+		chain = chain | ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters);
 
 		if (vm.count("max_nodes_number"))
 		{
