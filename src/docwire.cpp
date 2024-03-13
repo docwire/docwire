@@ -24,7 +24,6 @@
 #include "find.h"
 #include "formatting_style.h"
 #include "html_exporter.h"
-#include "importer.h"
 #include "language.h"
 #include "log.h"
 #include <magic_enum_iostream.hpp>
@@ -32,6 +31,7 @@
 #include "meta_data_exporter.h"
 #include "ocr_parser_provider.h"
 #include "output.h"
+#include "parse_detected_format.h"
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "standard_filter.h"

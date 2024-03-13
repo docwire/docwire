@@ -27,12 +27,12 @@
 #include "magic_enum_iostream.hpp"
 #include "mail_parser_provider.h"
 #include "meta_data_exporter.h"
-#include "../src/simple_extractor.h"
 #include "../src/standard_filter.h"
 #include <optional>
 #include <algorithm>
 #include "ocr_parser_provider.h"
 #include "output.h"
+#include "parse_detected_format.h"
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "pthread.h"
