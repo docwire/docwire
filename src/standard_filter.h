@@ -15,6 +15,7 @@
 #include <algorithm>
 #include "parser.h"
 #include "defines.h"
+#include <vector>
 
 namespace docwire
 {
