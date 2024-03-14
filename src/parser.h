@@ -19,13 +19,12 @@
 #include <memory>
 
 #include "formatting_style.h"
-#include "parser_manager.h"
 #include "parser_parameters.h"
 #include "defines.h"
 
 namespace docwire
 {
-
+class Importer;
 /**
  * @brief Contains set of basic tags using in parsers.
  */
@@ -126,9 +125,9 @@ class DllExport Parser
 public:
   /**
    *
-   * @param inParserManager parser manager contains all available parsers which could be used recursive
+   * @param inImporter importer known about all available parsers which could be used recursive
    */
-  explicit Parser(const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+  explicit Parser(const Importer* inImporter = nullptr);
 
   virtual ~Parser() = default;
 
@@ -160,7 +159,7 @@ protected:
   }
   Info sendTag(const Info &info) const;
 
-  std::shared_ptr<ParserManager> m_parser_manager;
+  const Importer* m_importer;
   ParserParameters m_parameters;
 
 private:

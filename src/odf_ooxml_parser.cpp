@@ -296,9 +296,9 @@ struct ODFOOXMLParser::ExtendedImplementation
 				xml_stream.next();
 			}
 		}
-		catch (Exception& ex)
+		catch (const std::exception& e)
 		{
-			docwire_log(error) << "Error parsing word/comments.xml. Error message: " << ex.getBacktrace();
+			docwire_log(error) << "Error parsing word/comments.xml. Error message: " << e.what();
 			return false;
 		}
 		return true;
@@ -325,16 +325,16 @@ struct ODFOOXMLParser::ExtendedImplementation
 			XmlStream xml_stream(xml, m_interf->manageXmlParser(), m_interf->getXmlOptions());
 			m_interf->parseXmlData(xml_stream, mode, options, &zipfile);
 		}
-		catch (Exception& ex)
+		catch (const std::exception& e)
 		{
-			docwire_log(error) << "Error parsing styles.xml. Error message: " << ex.getBacktrace();
+			docwire_log(error) << "Error parsing styles.xml. Error message: " << e.what();
 			return;
 		}
 	}
 };
 
-ODFOOXMLParser::ODFOOXMLParser(const string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+ODFOOXMLParser::ODFOOXMLParser(const string& file_name, const Importer* inImporter)
+: Parser(inImporter)
 {
 	extended_impl = NULL;
 	try
@@ -370,8 +370,8 @@ ODFOOXMLParser::ODFOOXMLParser(const string& file_name, const std::shared_ptr<Pa
 	}
 }
 
-ODFOOXMLParser::ODFOOXMLParser(const char *buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+ODFOOXMLParser::ODFOOXMLParser(const char *buffer, size_t size, const Importer* inImporter)
+: Parser(inImporter)
 {
 	extended_impl = NULL;
 	try
@@ -457,11 +457,11 @@ bool ODFOOXMLParser::isODFOOXML()
 	{
 		FILE* f = fopen(extended_impl->m_file_name.c_str(), "r");
 		if (f == NULL)
-			throw Exception("Error opening file " + extended_impl->m_file_name);
+			throw RuntimeError("Error opening file " + extended_impl->m_file_name);
 		fclose(f);
 	}
 	else if (extended_impl->m_buffer_size == 0)
-		throw Exception("Memory buffer is empty");
+		throw RuntimeError("Memory buffer is empty");
 	ZipReader zipfile;
 	if (extended_impl->m_buffer)
 		zipfile.setBuffer(extended_impl->m_buffer, extended_impl->m_buffer_size);
@@ -502,11 +502,11 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 	{
 		if (extended_impl->fileIsEncrypted())
 			throw EncryptedFileException("File is encrypted according to the Microsoft Office Document Cryptography Specification. Exact file format cannot be determined");
-		throw Exception("Error opening file " + extended_impl->m_file_name + " as zip file");
+		throw RuntimeError("Error opening file " + extended_impl->m_file_name + " as zip file");
 	}
 	string main_file_name = locate_main_file(zipfile);
 	if (main_file_name == "")
-		throw Exception("Could not locate main file inside zipped file (" + extended_impl->m_file_name + ")");
+		throw RuntimeError("Could not locate main file inside zipped file (" + extended_impl->m_file_name + ")");
 	//according to the ODF specification, we must skip blank nodes. Otherwise output may be messed up.
 	if (main_file_name == "content.xml")
 	{
@@ -524,7 +524,7 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 		if (!zipfile.loadDirectory())
 		{
 			zipfile.close();
-			throw Exception("Error loading zip directory of file " + extended_impl->m_file_name);
+			throw RuntimeError("Error loading zip directory of file " + extended_impl->m_file_name);
 		}
 		for (int i = 1; zipfile.read("ppt/slides/slide" + int_to_str(i) + ".xml", &content) && i < 2500; i++)
 		{
@@ -533,11 +533,10 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 			{
 				extractText(content, mode, options, &zipfile, slide_text);
 			}
-			catch (Exception& ex)
+			catch (const std::exception& e)
 			{
-				ex.appendError("Error while parsing file ppt/slides/slide" + int_to_str(i) + ".xml");
 				zipfile.close();
-				throw;
+				throw RuntimeError("Error while parsing file ppt/slides/slide" + int_to_str(i) + ".xml", e);
 			}
 			text += slide_text;
 		}
@@ -562,7 +561,7 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 			else
 			{
 				zipfile.close();
-				throw Exception("XML stripping not possible for xlsx format");
+				throw RuntimeError("XML stripping not possible for xlsx format");
 			}
 			try
 			{
@@ -583,10 +582,10 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 					xml_stream.next();
 				}
 			}
-			catch (Exception& ex)
+			catch (const std::exception& e)
 			{
 				zipfile.close();
-				throw Exception("Error parsing xl/sharedStrings.xml");
+				throw RuntimeError("Error parsing xl/sharedStrings.xml", e);
 			}
 		}
 		for (int i = 1; zipfile.read("xl/worksheets/sheet" + int_to_str(i) + ".xml", &content); i++)
@@ -596,11 +595,10 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 			{
 				extractText(content, mode, options, &zipfile, sheet_text);
 			}
-			catch (Exception& ex)
+			catch (const std::exception& e)
 			{
-				ex.appendError("Error while parsing file xl/worksheets/sheet" + int_to_str(i) + ".xml");
 				zipfile.close();
-				throw;
+				throw RuntimeError("Error while parsing file xl/worksheets/sheet" + int_to_str(i) + ".xml", e);
 			}
 			text += sheet_text;
 		}
@@ -610,17 +608,16 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 		if (!zipfile.read(main_file_name, &content))
 		{
 			zipfile.close();
-			throw Exception("Error reading xml contents of " + main_file_name);
+			throw RuntimeError("Error reading xml contents of " + main_file_name);
 		}
 		try
 		{
 			extractText(content, mode, options, &zipfile, text);
 		}
-		catch (Exception& ex)
+		catch (const std::exception& e)
 		{
 			zipfile.close();
-			ex.appendError("Error parsing xml contents of " + main_file_name);
-			throw;
+			throw RuntimeError("Error parsing xml contents of " + main_file_name, e);
 		}
 	}
 	zipfile.close();
@@ -640,7 +637,7 @@ Metadata ODFOOXMLParser::metaData() const
 	{
 		if (extended_impl->fileIsEncrypted())
 			throw EncryptedFileException("File is encrypted according to the Microsoft Office Document Cryptography Specification. Exact file format cannot be determined");
-		throw Exception("Error opening file " + extended_impl->m_file_name + " as zip file");
+		throw RuntimeError("Error opening file " + extended_impl->m_file_name + " as zip file");
 	}
 	if (zipfile.exists("meta.xml"))
 	{
@@ -649,17 +646,16 @@ Metadata ODFOOXMLParser::metaData() const
 		if (!zipfile.read("meta.xml", &meta_xml))
 		{
 			zipfile.close();
-			throw Exception("Error reading meta.xml");
+			throw RuntimeError("Error reading meta.xml");
 		}
 		try
 		{
 			parseODFMetadata(meta_xml, meta);
 		}
-		catch (Exception& ex)
+		catch (const std::exception& e)
 		{
-			ex.appendError("Error parsing meta.xml");
 			zipfile.close();
-			throw;
+			throw RuntimeError("Error parsing meta.xml", e);
 		}
 	}
 	else if (zipfile.exists("docProps/core.xml"))
@@ -668,7 +664,7 @@ Metadata ODFOOXMLParser::metaData() const
 		if (!zipfile.read("docProps/core.xml", &core_xml))
 		{
 			zipfile.close();
-			throw Exception("Error reading docProps/core.xml");
+			throw RuntimeError("Error reading docProps/core.xml");
 		}
 		try
 		{
@@ -695,18 +691,17 @@ Metadata ODFOOXMLParser::metaData() const
 				xml_stream.next();
 			}
 		}
-		catch (Exception& ex)
+		catch (const std::exception& e)
 		{
 			zipfile.close();
-			ex.appendError("Error parsing docProps/core.xml");
-			throw;
+			throw RuntimeError("Error parsing docProps/core.xml", e);
 		}
 
 		std::string app_xml;
 		if (!zipfile.read("docProps/app.xml", &app_xml))
 		{
 			zipfile.close();
-			throw Exception("Error reading docProps/app.xml");
+			throw RuntimeError("Error reading docProps/app.xml");
 		}
 		try
 		{
@@ -721,11 +716,10 @@ Metadata ODFOOXMLParser::metaData() const
 				app_stream.next();
 			}
 		}
-		catch (Exception& ex)
+		catch (const std::exception& e)
 		{
 			zipfile.close();
-			ex.appendError("Error parsing docProps/app.xml");
-			throw;
+			throw RuntimeError("Error parsing docProps/app.xml", e);
 		}
 	}
 	if (meta.pageCount() == -1)

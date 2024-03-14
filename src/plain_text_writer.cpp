@@ -443,9 +443,9 @@ struct PlainTextWriter::Implementation
       else if (tags[i].tag_name != StandardTag::TAG_CLOSE_TR && tags[i].tag_name != StandardTag::TAG_CLOSE_TD)
       {
         if (table.empty())
-          throw Exception("Cell content in table without rows.");
+          throw LogicError("Cell content in table without rows.");
          if (table.back().empty())
-          throw Exception("Cell content in table row without cells.");
+          throw LogicError("Cell content in table row without cells.");
         table.back().back().write(tags[i]);
       }
     }

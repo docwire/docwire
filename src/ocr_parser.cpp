@@ -80,14 +80,14 @@ OCRParser::OCRParser(const OCRParser& ocr_parser)
   }
 }
 
-OCRParser::OCRParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+OCRParser::OCRParser(const std::string& file_name, const Importer* inImporter)
+: Parser(inImporter)
 {
   impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{file_name}, ImplementationDeleter{}};
 }
 
-OCRParser::OCRParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+OCRParser::OCRParser(const char* buffer, size_t size, const Importer* inImporter)
+: Parser(inImporter)
 {
   impl = std::unique_ptr<Implementation, ImplementationDeleter> {new Implementation{buffer, size}, ImplementationDeleter{}};
 }
@@ -209,7 +209,7 @@ std::string OCRParser::plainText(const FormattingStyle& formatting, const std::v
     docwire_log_var(langs);
 
     if (api->Init(impl->m_tessdata_prefix.c_str(), langs.c_str())) {
-        throw Exception{ "Could not initialize tesseract.\n" };
+        throw RuntimeError{ "Could not initialize Tesseract." };
     }
 
     // Read the image and convert to a gray-scale image

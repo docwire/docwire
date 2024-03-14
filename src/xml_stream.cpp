@@ -82,7 +82,7 @@ XmlStream::XmlStream(const std::string &xml, bool manage_xml_parser, int xml_par
 				cleanupXmlParser();
 			delete impl;
 			impl = NULL;
-			throw Exception("Cannot initialize XmlStream: xmlReaderForMemory has failed");
+			throw RuntimeError("Cannot initialize XmlStream: xmlReaderForMemory has failed");
 		}
 		if (xmlTextReaderRead(impl->m_reader) != 1)
 		{
@@ -91,7 +91,7 @@ XmlStream::XmlStream(const std::string &xml, bool manage_xml_parser, int xml_par
 			xmlFreeTextReader(impl->m_reader);
 			delete impl;
 			impl = NULL;
-			throw Exception("Cannot initialize XmlStream: xmlTextReaderRead has failed");
+			throw RuntimeError("Cannot initialize XmlStream: xmlTextReaderRead has failed");
 		}
 		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(impl->m_reader) << ", depth=" << xmlTextReaderDepth(impl->m_reader) << ", name=" << (char*)xmlTextReaderConstLocalName(impl->m_reader);
 		impl->m_curr_depth = xmlTextReaderDepth(impl->m_reader);
@@ -102,7 +102,7 @@ XmlStream::XmlStream(const std::string &xml, bool manage_xml_parser, int xml_par
 			xmlFreeTextReader(impl->m_reader);
 			delete impl;
 			impl = NULL;
-			throw Exception("Cannot initialize XmlStream: xmlTextReaderDepth has failed");
+			throw RuntimeError("Cannot initialize XmlStream: xmlTextReaderDepth has failed");
 		}
 		docwire_log(debug) << "Starting curr_depth: " << impl->m_curr_depth;
 	}

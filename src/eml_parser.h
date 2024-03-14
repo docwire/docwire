@@ -22,6 +22,7 @@ namespace docwire
 {
 
 struct FormattingStyle;
+class Importer;
 class Metadata;
 class Attachment;
 
@@ -32,8 +33,8 @@ class EMLParser : public Parser
 		Implementation* impl;
 
 	public:
-		EMLParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
-		EMLParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr);
+		EMLParser(const std::string& file_name, const Importer* inImporter = nullptr);
+		EMLParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
 		~EMLParser();
 		void parse() const override;
 		static std::vector<std::string> getExtensions() {return {"eml"};}

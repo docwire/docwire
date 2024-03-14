@@ -43,8 +43,8 @@ void Parser::ImplementationDeleter::operator()(Parser::Implementation *impl)
   delete impl;
 }
 
-Parser::Parser(const std::shared_ptr<ParserManager> &inParserManager)
-    : m_parser_manager(inParserManager)
+Parser::Parser(const Importer* inImporter)
+    : m_importer(inImporter)
 {
   base_impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{}, ImplementationDeleter{}};
 }

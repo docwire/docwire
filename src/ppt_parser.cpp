@@ -193,7 +193,7 @@ struct PPTParser::Implementation
 				reader.seek(len, SEEK_CUR);
 		}
 		if (!reader.isValid())
-			throw Exception("OLE Reader has reported an error while parsing PPT file: " + reader.getLastError());
+			throw RuntimeError("OLE Reader has reported an error while parsing PPT file: " + reader.getLastError());
 	}
 
 	bool oleEof(ThreadSafeOLEStreamReader& reader)
@@ -205,7 +205,7 @@ struct PPTParser::Implementation
 	{
 		std::vector<unsigned char> content(reader.size());
 		if (!reader.read(&*content.begin(), reader.size()))	//this stream should only contain text
-			throw Exception("Error reading Text_Content stream");
+			throw RuntimeError("Error reading Text_Content stream");
 		text = std::string(content.begin(), content.end());
 		std::string codepage;
 		if (get_codepage_from_document_summary_info(storage, codepage))
@@ -251,10 +251,9 @@ struct PPTParser::Implementation
 			{
 				parseRecord(rec_type, rec_len, reader, text);
 			}
-			catch (Exception& ex)
+			catch (const std::exception& e)
 			{
-				ex.appendError("Error while reading following record: type=" + int_to_str(rec_type) + ", begin=" + int_to_str(pos) + ", end=" + int_to_str(pos + rec_len - 1));
-				throw;
+				throw RuntimeError("Error while reading following record: type=" + int_to_str(rec_type) + ", begin=" + int_to_str(pos) + ", end=" + int_to_str(pos + rec_len - 1), e);
 			}
 		}
 	}
@@ -363,7 +362,7 @@ std::string PPTParser::plainText(const FormattingStyle& formatting)
 			std::make_unique<ThreadSafeOLEStorage>(impl->m_buffer, impl->m_buffer_size) :
 			std::make_unique<ThreadSafeOLEStorage>(impl->m_file_name);
 		if (!storage->isValid())
-			throw Exception("Error opening " + impl->m_file_name + " as OLE file");
+			throw RuntimeError("Error opening " + impl->m_file_name + " as OLE file");
 		impl->assertFileIsNotEncrypted(*storage);
 		std::string text;
 		std::vector<std::string> dirs;
@@ -381,7 +380,7 @@ std::string PPTParser::plainText(const FormattingStyle& formatting)
 				{
 					std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("Text_Content") };
 					if (reader == NULL)
-						throw Exception("Stream Text_Content has been found in the list, but it could not be open: " + storage->getLastError());
+						throw RuntimeError("Stream Text_Content has been found in the list, but it could not be open: " + storage->getLastError());
 					impl->parseOldPPT(*storage, *reader, text);
 					return text;
 				}
@@ -389,13 +388,13 @@ std::string PPTParser::plainText(const FormattingStyle& formatting)
 		}
 		std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("PowerPoint Document") };
 		if (reader == NULL)
-			throw Exception("PowerPoint Document stream was not found inside " + impl->m_file_name);
+			throw RuntimeError("PowerPoint Document stream was not found inside " + impl->m_file_name);
 		impl->parsePPT(*reader, text);
 		return text;
 	}
-	catch (Exception& ex)
+	catch (const std::exception& e)
 	{
-		throw;
+		throw RuntimeError("Error while parsing " + impl->m_file_name, e);
 	}
 }
 
@@ -425,10 +424,10 @@ Metadata PPTParser::metaData()
 					meta.setPageCountType(Metadata::NONE);
 				}
 			}
-			catch (Exception& ex)
+			catch (const std::exception& e)
 			{
 				meta.setPageCountType(Metadata::NONE);
-				docwire_log(error) << ex.getBacktrace();
+				docwire_log(error) << e.what();
 			}
 		}
 		else{
@@ -438,14 +437,7 @@ Metadata PPTParser::metaData()
 		storage = NULL;
 		return meta;
 	}
-	catch (std::bad_alloc& ba)
-	{
-		if (storage)
-			delete storage;
-		storage = NULL;
-		throw;
-	}
-	catch (Exception& ex)
+	catch (const std::exception& e)
 	{
 		if (storage)
 			delete storage;

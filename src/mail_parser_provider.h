@@ -23,8 +23,8 @@ class DllExport MailParserProvider : public ParserProvider
 {
 public:
   MailParserProvider();
-  std::optional<ParserBuilder*> findParserByExtension(const std::string &inExtension) const override;
-  std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override;
+  std::unique_ptr<ParserBuilder> findParserByExtension(const std::string &inExtension) const override;
+  std::unique_ptr<ParserBuilder> findParserByData(const std::vector<char>& buffer) const override;
   std::set<std::string> getAvailableExtensions() const override;
 
 private:
@@ -32,9 +32,6 @@ private:
   bool isExtensionInVector(const std::string &extension, const std::vector<std::string> &extension_list) const;
   std::set<std::string> available_extensions;
 };
-
-extern "C" DllExport MailParserProvider plugin_parser_provider;
-MailParserProvider plugin_parser_provider;
 
 } // namespace docwire
 

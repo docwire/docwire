@@ -30,6 +30,10 @@
 - Update installation documentation
 - Update list of available OpenAI GPT models
 - Replace VCPKG GitHub Actions cache feature (x-gha) with GitHub Packages nuget cache to allow public readonly cache usage
+- Replace runtime loading of parser providers plugins with compile-time templates to allow static linking of SDK
+- Remove deprecated SimpleExtractor class
+- Rename BasicParserProvider class to OfficeFormatsParserProvider and docwire_parsers library to docwire_office_formats
+- Remove deprecated Exception class
 
 ## Version 2024.01.05
 

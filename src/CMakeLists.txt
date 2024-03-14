@@ -25,14 +25,12 @@ add_library(docwire_core SHARED
         thread_safe_ole_stream_reader.cpp
         data_stream.cpp
         parser.cpp
-        parser_manager.cpp
         parser_parameters.cpp
         post.cpp
         html_writer.cpp
         csv_writer.cpp
         plain_text_writer.cpp
         standard_filter.cpp
-        simple_extractor.cpp
         importer.cpp
         output.cpp
         plain_text_exporter.cpp
@@ -110,7 +108,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(docwire_core PRIVATE dl)
 endif()
 
-add_library(docwire_parsers SHARED
+add_library(docwire_office_formats SHARED
         entities.cpp
         zip_reader.cpp
         oshared.cpp
@@ -128,12 +126,12 @@ add_library(docwire_parsers SHARED
         txt_parser.cpp
         xls_parser.cpp
         xlsb_parser.cpp
-        basic_parser_provider.cpp)
+        office_formats_parser_provider.cpp)
 
 find_package(LibXml2 REQUIRED)
 find_package(ZLIB REQUIRED)
 
-target_include_directories(docwire_parsers PUBLIC
+target_include_directories(docwire_office_formats PUBLIC
         ../
         .
         ${LIBXML2_INCLUDE_DIR}
@@ -151,7 +149,7 @@ if(MSVC)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
     find_package(Iconv REQUIRED)
-    target_link_libraries(docwire_parsers PRIVATE
+    target_link_libraries(docwire_office_formats PRIVATE
             ${podofo}
             ${unzip}
             ${wvWare}
@@ -164,7 +162,7 @@ if(MSVC)
             ZLIB::ZLIB
             Iconv::Iconv
             )
-    target_compile_options(docwire_parsers PUBLIC /Zc:__cplusplus /Zc:preprocessor)
+    target_compile_options(docwire_office_formats PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 else()
     find_library(podofo podofo REQUIRED)
     find_package(Freetype REQUIRED)
@@ -179,7 +177,7 @@ else()
     find_library(wv2 wv2 REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
-    target_link_libraries(docwire_parsers PRIVATE
+    target_link_libraries(docwire_office_formats PRIVATE
         ${podofo}
         Freetype::Freetype
         ${unzip}
@@ -192,7 +190,7 @@ else()
         docwire_core
         )
     find_path(unzip_incdir unzip.h)
-    target_include_directories(docwire_parsers PRIVATE ${unzip_incdir})
+    target_include_directories(docwire_office_formats PRIVATE ${unzip_incdir})
 endif()
 
 add_library(docwire_ocr SHARED ocr_parser_provider.cpp ocr_parser.cpp)
@@ -264,12 +262,12 @@ find_package(mailio CONFIG REQUIRED)
 target_link_libraries(docwire_mail PRIVATE mailio)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-   set_target_properties(docwire_parsers PROPERTIES PREFIX "")
+   set_target_properties(docwire_office_formats PROPERTIES PREFIX "")
    set_target_properties(docwire_core PROPERTIES PREFIX "")
 endif()
 
 add_executable(docwire docwire.cpp)
-target_link_libraries(docwire PRIVATE docwire_core Boost::program_options)
+target_link_libraries(docwire PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr Boost::program_options)
 
 if (DOCWIRE_TRACE)
    target_sources(docwire_core PRIVATE tracing)
@@ -278,21 +276,16 @@ if (DOCWIRE_TRACE)
 endif()
 
 install(TARGETS docwire DESTINATION bin)
-if (MSVC)
-	set(plugins_dir bin/docwire_plugins)
-else()
-	set(plugins_dir lib/docwire_plugins)
-endif()
-install(TARGETS docwire_ocr LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
-install(TARGETS docwire_mail LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
-install(TARGETS docwire_parsers LIBRARY DESTINATION ${plugins_dir} RUNTIME DESTINATION ${plugins_dir})
 install(TARGETS docwire_core)
+install(TARGETS docwire_ocr)
+install(TARGETS docwire_mail)
+install(TARGETS docwire_office_formats)
 
 if(MSVC)
-	install(FILES $<TARGET_PDB_FILE:docwire_ocr> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
-	install(FILES $<TARGET_PDB_FILE:docwire_mail> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
-	install(FILES $<TARGET_PDB_FILE:docwire_parsers> DESTINATION ${plugins_dir} CONFIGURATIONS Debug)
 	install(FILES $<TARGET_PDB_FILE:docwire_core> DESTINATION bin CONFIGURATIONS Debug)
+    install(FILES $<TARGET_PDB_FILE:docwire_ocr> DESTINATION bin CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:docwire_mail> DESTINATION bin CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:docwire_office_formats> DESTINATION bin CONFIGURATIONS Debug)
 endif()
 
 file(GLOB HEADERS "*.h")

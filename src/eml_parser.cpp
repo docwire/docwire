@@ -17,6 +17,7 @@
 #include "attachment.h"
 #include "exception.h"
 #include "htmlcxx/html/CharsetConverter.h"
+#include "importer.h"
 #include <iostream>
 #include "log.h"
 #include "metadata.h"
@@ -39,10 +40,10 @@ struct EMLParser::Implementation
 	bool m_error;
 	std::string m_file_name;
 	std::istream* m_data_stream;
-	const std::shared_ptr<ParserManager> m_parser_manager;
+	const Importer* m_importer;
 
-	Implementation(const std::shared_ptr<ParserManager> &inParserManager, EMLParser* owner)
-    : m_parser_manager(inParserManager),
+	Implementation(const Importer* inImporter, EMLParser* owner)
+    : m_importer(inImporter),
       m_owner(owner)
   {}
 
@@ -68,15 +69,14 @@ struct EMLParser::Implementation
 		PlainTextWriter writer;
 		std::stringstream stream;
 		auto callback = [&writer, &stream](const Info &info){writer.write_to(info, stream);};
-		auto parser_builder = m_parser_manager->findParserByExtension(type);
+		auto parser_builder = m_importer->findParserByExtension(type);
 		if (parser_builder)
 		{
-			auto parser = (*parser_builder)->withParserManager(m_parser_manager)
+			auto parser = parser_builder->withImporter(*m_importer)
 							.withParameters(m_owner->m_parameters)
 							.build(text.c_str(), text.length());
 			parser->addOnNewNodeCallback(callback);
 			parser->parse();
-			delete *parser_builder;
 		}
 		return stream.str();
 	}
@@ -102,12 +102,12 @@ struct EMLParser::Implementation
 				docwire_log(debug) << "HTML content subtype detected";
 				try
 				{
-					if (m_parser_manager)
+					if (m_importer)
 					{
 						plain = parseText(plain, "html");
 					}
 				}
-				catch (Exception& ex)
+				catch (const std::exception& e)
 				{
 					docwire_log(warning) << "Warning: Error while parsing html content";
 				}
@@ -119,12 +119,12 @@ struct EMLParser::Implementation
 					docwire_log(debug) << "Charset is not specified";
 					try
 					{
-						if (m_parser_manager)
+						if (m_importer)
 						{
 							plain = parseText(plain, "txt");
 						}
 					}
-					catch (Exception& ex)
+					catch (const std::exception& e)
 					{
 						docwire_log(warning) << "Warning: Error while parsing text content";
 					}
@@ -142,7 +142,7 @@ struct EMLParser::Implementation
 			docwire_log(debug) << "It is not a multipart message. It's attachment probably.";
 			std::string plain = mime_entity.content();
 
-			if (m_parser_manager)
+			if (m_importer)
 			{
 			std::string file_name = mime_entity.name();
 			docwire_log(debug) << "File name: " << file_name;
@@ -152,14 +152,13 @@ struct EMLParser::Implementation
 				StandardTag::TAG_ATTACHMENT, "", {{"name", file_name}, {"size", plain.length()}, {"extension", extension}});
 			if(!info.skip)
 			{
-				auto parser_builder = m_parser_manager->findParserByExtension(file_name);
+				auto parser_builder = m_importer->findParserByExtension(file_name);
 				if (parser_builder)
 				{
-					auto parser = (*parser_builder)->withParserManager(m_parser_manager)
+					auto parser = parser_builder->withImporter(*m_importer)
 						.withOnNewNodeCallbacks({[this](Info &info){m_owner->sendTag(info.tag_name, info.plain_text, info.attributes);}})
 						.build(plain.c_str(), plain.length());
 						parser->parse();
-					delete *parser_builder;
 				}
 			}
 			m_owner->sendTag(StandardTag::TAG_CLOSE_ATTACHMENT);
@@ -188,13 +187,13 @@ struct EMLParser::Implementation
 	}
 };
 
-EMLParser::EMLParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
-  : Parser(inParserManager)
+EMLParser::EMLParser(const std::string& file_name, const Importer* inImporter)
+  : Parser(inImporter)
 {
 	impl = NULL;
 	try
 	{
-		impl = new Implementation(inParserManager, this);
+		impl = new Implementation(inImporter, this);
 		impl->m_data_stream = NULL;
 		impl->m_data_stream = new std::ifstream(file_name.c_str());
 	}
@@ -210,13 +209,13 @@ EMLParser::EMLParser(const std::string& file_name, const std::shared_ptr<ParserM
 	}
 }
 
-EMLParser::EMLParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
-  : Parser(inParserManager)
+EMLParser::EMLParser(const char* buffer, size_t size, const Importer* inImporter)
+  : Parser(inImporter)
 {
 	impl = NULL;
 	try
 	{
-		impl = new Implementation(inParserManager, this);
+		impl = new Implementation(inImporter, this);
 		impl->m_data_stream = NULL;
 		impl->m_data_stream = new std::stringstream(std::string(buffer, size));
 	}
@@ -280,7 +279,7 @@ bool EMLParser::isEML() const
 	if (!impl->m_data_stream->good())
 	{
 		docwire_log(error) << "Error opening file " << impl->m_file_name;
-		throw Exception("Error opening file " + impl->m_file_name);
+		throw RuntimeError("Error opening file: " + impl->m_file_name);
 	}
 	message mime_entity = parse_message(*impl->m_data_stream);
 	std::string from = mime_entity.from_to_string();
@@ -296,15 +295,15 @@ std::string EMLParser::plainText(const FormattingStyle& formatting) const
 	std::string text;
 	if (!isEML())
 	{
-		docwire_log(error) << "Specified file is not valid EML file";
-		throw Exception("Specified file is not valid EML file");
+		docwire_log(error) << "The specified file is not a valid EML file";
+		throw RuntimeError("The specified file is not a valid EML file");
 	}
 	docwire_log(debug) << "stream_pos=" << impl->m_data_stream->tellg();
 	impl->m_data_stream->clear();
 	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
 	{
-		docwire_log(error) << "Stream seek operation failed";
-		throw Exception("Stream seek operation failed");
+		docwire_log(error) << "The stream seek operation failed";
+		throw RuntimeError("The stream seek operation failed");
 	}
 	message mime_entity = parse_message(*impl->m_data_stream);
 	impl->extractPlainText(mime_entity, text, formatting);
@@ -317,16 +316,16 @@ Metadata EMLParser::metaData()
 	impl->m_data_stream->clear();
 	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
 	{
-		docwire_log(error) << "Stream seek operation failed";
-		throw Exception("Stream seek operation failed");
+		docwire_log(error) << "The stream seek operation failed";
+		throw RuntimeError("The stream seek operation failed");
 	}
 	if (!isEML())
-		throw Exception("Specified file is not valid EML file");
+		throw RuntimeError("The specified file is not a valid EML file");
 	impl->m_data_stream->clear();
 	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
 	{
-		docwire_log(error) << "Stream seek operation failed";
-		throw Exception("Stream seek operation failed");
+		docwire_log(error) << "The stream seek operation failed";
+		throw RuntimeError("The stream seek operation failed");
 	}
 	message mime_entity = parse_message(*impl->m_data_stream);
 	metadata.setAuthor(mime_entity.from_to_string());

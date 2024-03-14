@@ -19,68 +19,6 @@
 namespace docwire
 {
 
-struct Exception::Implementation
-{
-	std::list<std::string> m_errors;
-};
-
-Exception::Exception() noexcept
-{
-	impl = new Implementation;
-}
-
-Exception::Exception(const std::string &first_error_message) noexcept
-{
-	impl = new Implementation;
-	impl->m_errors.push_back(first_error_message);
-}
-
-Exception::Exception(const Exception &ex) noexcept
-{
-	impl = new Implementation;
-	*impl = *ex.impl;
-}
-
-Exception::~Exception() noexcept
-{
-	if (impl)
-		delete impl;
-}
-
-Exception& Exception::operator = (const Exception& ex) noexcept
-{
-	*impl = *ex.impl;
-	return *this;
-}
-
-
-std::string Exception::getBacktrace()
-{
-	std::string backtrace = "Backtrace:\n";
-	int index = 1;
-	for (std::list<std::string>::iterator it = impl->m_errors.begin(); it != impl->m_errors.end(); ++it)
-	{
-		backtrace += int_to_str(index) + ". " + (*it) + "\n";
-		++index;
-	}
-	return backtrace;
-}
-
-void Exception::appendError(const std::string &error_message)
-{
-	impl->m_errors.push_back(error_message);
-}
-
-std::list<std::string>::iterator Exception::getErrorIterator() const
-{
-	return impl->m_errors.begin();
-}
-
-size_t Exception::getErrorCount() const
-{
-	return impl->m_errors.size();
-}
-
 namespace
 {
 

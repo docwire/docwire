@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_DOCWIRE_H
 #define DOCWIRE_DOCWIRE_H
 
+#include "office_formats_parser_provider.h"
 #include "classify.h"
 #include "decompress_archives.h"
 #include "detect_sentiment.h"
@@ -19,12 +20,13 @@
 #include "input.h"
 #include "log.h"
 #include "output.h"
-#include "importer.h"
+#include "mail_parser_provider.h"
+#include "ocr_parser_provider.h"
+#include "parse_detected_format.h"
 #include "plain_text_exporter.h"
 #include "plain_text_writer.h"
 #include "html_exporter.h"
 #include "parsing_chain.h"
-#include "simple_extractor.h"
 #include "summarize.h"
 #include "text_to_speech.h"
 #include "transcribe.h"

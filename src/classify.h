@@ -13,6 +13,7 @@
 #define DOCWIRE_OPENAI_CLASSIFY_H
 
 #include "chat.h"
+#include <set>
 
 namespace docwire
 {

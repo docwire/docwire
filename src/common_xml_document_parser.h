@@ -85,10 +85,10 @@ class CommonXMLDocumentParser
 		///parses xml data for given xml stream. It executes commands for each xml tag
 		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile) const;
 
-		///extracts text from xml data. It uses parseXmlData internally. Throws Exception on fail
+		///extracts text from xml data. It uses parseXmlData internally. Throws RuntimeError on fail
 		void extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile, std::string& text) const;
 
-		///usefull since two parsers use this. Throws Exception on fail
+		///usefull since two parsers use this. Throws RuntimeError on fail
 		void parseODFMetadata(const std::string &xml_content, Metadata &metadata) const;
 
 		///this is helpful function to format comment

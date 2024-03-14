@@ -9,6 +9,7 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include "office_formats_parser_provider.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include "gtest/gtest.h"
@@ -16,6 +17,7 @@
 #include <pthread.h>
 #include <string_view>
 #include <tuple>
+#include "decompress_archives.h"
 #include <fstream>
 #include "html_exporter.h"
 #include "importer.h"
@@ -23,11 +25,14 @@
 #include <iterator>
 #include <array>
 #include "magic_enum_iostream.hpp"
-#include "../src/simple_extractor.h"
+#include "mail_parser_provider.h"
+#include "meta_data_exporter.h"
 #include "../src/standard_filter.h"
 #include <optional>
 #include <algorithm>
+#include "ocr_parser_provider.h"
 #include "output.h"
+#include "parse_detected_format.h"
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "pthread.h"
@@ -62,7 +67,7 @@ protected:
 
 };
 
-TEST_P(DocumentTests, SimpleExtractorTest)
+TEST_P(DocumentTests, ReadFromFileTest)
 {
     const auto [lower, upper, format, style] = GetParam();
 
@@ -80,11 +85,15 @@ TEST_P(DocumentTests, SimpleExtractorTest)
         SCOPED_TRACE("file_name = " + file_name);
 
         // WHEN
-        SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
+        std::stringstream output_stream{};
 
-        simple_extractor.addParameters(parameters);
+        Input(file_name) |
+          ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
+          PlainTextExporter() |
+          Output(output_stream);
 
-        std::string parsed_text{ simple_extractor.getPlainText() };
+        std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
+            std::istreambuf_iterator<char>{}};
 
         // THEN
         EXPECT_EQ(expected_text, parsed_text);
@@ -111,11 +120,10 @@ TEST_P(DocumentTests, ReadFromBufferTest)
         std::ifstream ifs_input{ file_name, std::ios_base::binary };
 
         // WHEN
-        auto parser_manager = std::make_shared<ParserManager>(); // create parser manager
         std::stringstream output_stream{};
 
         Input(&ifs_input) |
-          Importer(parameters, parser_manager) |
+          ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
           PlainTextExporter() |
           Output(output_stream);
 
@@ -175,7 +183,7 @@ protected:
     };
 };
 
-TEST_P(MetadataTest, SimpleExtractorTest)
+TEST_P(MetadataTest, ReadFromFileTest)
 {
     auto format = GetParam();
 
@@ -193,8 +201,15 @@ TEST_P(MetadataTest, SimpleExtractorTest)
         SCOPED_TRACE("file_name = " + file_name);
 
         // WHEN
-        SimpleExtractor extractor{ file_name };
-        std::string parsed_text{ extractor.getMetaData() };
+        std::stringstream output_stream{};
+
+        Input(file_name) |
+          ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
+          MetaDataExporter() |
+          Output(output_stream);
+
+        std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
+            std::istreambuf_iterator<char>{}};
 
         // THEN
         EXPECT_EQ(expected_text, parsed_text);
@@ -202,7 +217,7 @@ TEST_P(MetadataTest, SimpleExtractorTest)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    SimpleExtractorMetadataTests, MetadataTest,
+    ReadFromFileMetadataTests, MetadataTest,
     ::testing::Values(
         "odt", "ods", "odp", "odg", "rtf", "doc", "xls", "ppt", "docx", "xlsx", "pptx", "html"
                       ),
@@ -225,7 +240,7 @@ protected:
 };
 
 
-TEST_P(CallbackTest, SimpleExtractorTest)
+TEST_P(CallbackTest, ReadFromFileTest)
 {
     const auto [name, out_name, callback] = GetParam();
 
@@ -242,12 +257,16 @@ TEST_P(CallbackTest, SimpleExtractorTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
+    std::stringstream output_stream{};
 
-    simple_extractor.addCallbackFunction(callback);
-    simple_extractor.addParameters(parameters);
+    Input(file_name) |
+        ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
+        TransformerFunc(callback) |
+        PlainTextExporter() |
+        Output(output_stream);
 
-    std::string parsed_text{ simple_extractor.getPlainText() };
+        std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
+            std::istreambuf_iterator<char>{}};
 
     // THEN
     EXPECT_EQ(expected_text, parsed_text);
@@ -263,7 +282,7 @@ class HTMLWriterTest : public ::testing::TestWithParam<const char*>
 {
 };
 
-TEST_P(HTMLWriterTest, SimpleExtractorTest)
+TEST_P(HTMLWriterTest, ReadFromFileTest)
 {
     // GIVEN
     auto name = GetParam();
@@ -278,15 +297,22 @@ TEST_P(HTMLWriterTest, SimpleExtractorTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
-    std::string parsed_text{ simple_extractor.getHtmlText() };
+    std::stringstream output_stream{};
+
+    Input(file_name) |
+        ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
+        HtmlExporter() |
+        Output(output_stream);
+
+    std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
+        std::istreambuf_iterator<char>{}};
         
     // THEN
     EXPECT_EQ(expected_text, parsed_text);
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    SimpleExtractorHTMLTest, HTMLWriterTest,
+    ReadFromFileHTMLWriterTest, HTMLWriterTest,
     ::testing::Values(
         "1.docx", "2.docx", "3.docx", "4.docx", "5.docx", "6.docx", "7.docx", "8.docx", "9.docx", "10.docx",
         "1.doc", "2.doc", "3.doc", "4.doc", "5.doc", "6.doc", "7.doc", "8.doc", "9.doc",
@@ -304,7 +330,7 @@ class MiscDocumentTest : public ::testing::TestWithParam<const char*>
 {
 };
 
-TEST_P(MiscDocumentTest, SimpleExtractorTest)
+TEST_P(MiscDocumentTest, ReadFromFileTest)
 {
     // GIVEN
     auto name = GetParam();
@@ -319,12 +345,11 @@ TEST_P(MiscDocumentTest, SimpleExtractorTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
+    ParserParameters parameters{};
 	if (file_name.find(".png") != std::string::npos)
 	{
 		std::vector<std::string> fn_parts;
 		boost::split(fn_parts, file_name, boost::is_any_of("-."));
-		ParserParameters parameters{};
 		std::vector<Language> langs;
 		for (std::string fn_part: fn_parts)
 		{
@@ -334,9 +359,18 @@ TEST_P(MiscDocumentTest, SimpleExtractorTest)
 				langs.push_back(*lang);
 		}
 		parameters += ParserParameters("languages", langs);
-		simple_extractor.addParameters(parameters);
 	}
-    std::string parsed_text{ simple_extractor.getPlainText() };
+
+    std::stringstream output_stream{};
+
+    Input(file_name) |
+        DecompressArchives() |
+        ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
+        PlainTextExporter() |
+        Output(output_stream);
+
+    std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
+        std::istreambuf_iterator<char>{}};
         
     // THEN
     EXPECT_EQ(expected_text, parsed_text);
@@ -400,7 +434,7 @@ INSTANTIATE_TEST_SUITE_P(
     [](const ::testing::TestParamInfo<MiscDocumentTest::ParamType>& info) {
         std::string file_name = info.param;
         escape_test_name(file_name);
-        std::string name = file_name + "_simple_extractor_test";
+        std::string name = file_name + "_read_from_file_test";
         return name;
     });
 
@@ -423,11 +457,14 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
-        
+    std::stringstream output_stream{};
+
     try 
     {
-        std::string parsed_text{ simple_extractor.getPlainText() };
+        Input(file_name) |
+            ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
+            PlainTextExporter() |
+            Output(output_stream);
         FAIL() << "We are not supporting password protected files yet. Why didn\'t we catch exception?\n";
     }
     catch (const std::exception& ex)
@@ -442,7 +479,7 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    SimpleExtractorTests, PasswordProtectedTest,
+    ReadFromFilePasswordProtectedTests, PasswordProtectedTest,
     ::testing::Values(
         "doc", "docx", "key", "pages", "numbers", "odp", "pdf", "ppt", "pptx", "xls", "xlsb", "xlsx"
                       ),
@@ -460,18 +497,26 @@ void* thread_func(void* data)
 {
 	std::string* file_name = (std::string*)data;
 
-	SimpleExtractor extractor{ *file_name };
     try {
-      extractor.getPlainText();
-      extractor.getMetaData();
-    } catch (Exception& ex) {
+        std::stringstream output_stream{};
+
+        Input(*file_name) |
+          ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
+          PlainTextExporter() |
+          Output(output_stream);
+
+        Input(*file_name) |
+          ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
+          MetaDataExporter() |
+          Output(output_stream);
+    } catch (const std::exception& e) {
         return new bool(false);
     }
 
 	pthread_exit(NULL);
 }
 
-TEST_P(MultithreadedTest, SimpleExtractorTests)
+TEST_P(MultithreadedTest, ReadFromFileTests)
 {
     const auto [lower, upper, format] = GetParam();
 
@@ -556,7 +601,7 @@ class MultiPageFilterTest : public ::testing::TestWithParam<std::tuple<int, int,
 {
 };
 
-TEST_P(MultiPageFilterTest, SimpleExtractorTests)
+TEST_P(MultiPageFilterTest, ReadFromFileTests)
 {
   const auto [lower, upper, format] = GetParam();
   const int MAX_PAGES = 2;
@@ -578,13 +623,20 @@ TEST_P(MultiPageFilterTest, SimpleExtractorTests)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    SimpleExtractor simple_extractor{ file_name }; // create a simple extractor
-    simple_extractor.addChainElement(new TransformerFunc([MAX_PAGES, counter = 0](Info &info) mutable
-                                   {
-                                     if (info.tag_name == StandardTag::TAG_PAGE) {++counter;}
-                                     if (info.tag_name == StandardTag::TAG_PAGE && counter > MAX_PAGES) {info.cancel = true;}
-                                   }));
-    std::string parsed_text{ simple_extractor.getPlainText() };
+    std::stringstream output_stream{};
+
+    Input(file_name) |
+        ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
+        TransformerFunc([MAX_PAGES, counter = 0](Info &info) mutable
+        {
+            if (info.tag_name == StandardTag::TAG_PAGE) {++counter;}
+            if (info.tag_name == StandardTag::TAG_PAGE && counter > MAX_PAGES) {info.cancel = true;}
+        }) |
+        PlainTextExporter() |
+        Output(output_stream);
+
+    std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
+        std::istreambuf_iterator<char>{}};
 
     // THEN
     EXPECT_EQ(expected_text, parsed_text);
@@ -615,11 +667,10 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST(HtmlWriter, RestoreAttributes)
 {
-	std::shared_ptr<ParserManager> parser_manager(new ParserManager());
 	std::stringstream output;
 	std::ifstream in("1.html");
 	Input(&in)
-		| Importer(ParserParameters(), parser_manager)
+		| ParseDetectedFormat<OfficeFormatsParserProvider>()
 		| HtmlExporter(HtmlExporter::RestoreOriginalAttributes{true})
 		| Output(output);
 
@@ -628,13 +679,12 @@ TEST(HtmlWriter, RestoreAttributes)
 
 TEST(Http, Post)
 {
-	std::shared_ptr<ParserManager> parser_manager(new ParserManager());
 	std::stringstream output;
 	std::ifstream in("1.docx", std::ios_base::binary);
 	ASSERT_NO_THROW(
 	{
 		Input(&in)
-			| Importer(ParserParameters(), parser_manager)
+			| ParseDetectedFormat<OfficeFormatsParserProvider>()
 			| PlainTextExporter()
 			| http::Post("https://postman-echo.com/post")
 			| Output(output);
@@ -650,13 +700,12 @@ TEST(Http, Post)
 
 TEST(Http, PostForm)
 {
-	std::shared_ptr<ParserManager> parser_manager(new ParserManager());
 	std::stringstream output;
 	std::ifstream in("1.docx", std::ios_base::binary);
 	ASSERT_NO_THROW(
 	{
 		Input(&in)
-			| Importer(ParserParameters(), parser_manager)
+			| ParseDetectedFormat<OfficeFormatsParserProvider>()
 			| PlainTextExporter()
 			| http::Post("https://postman-echo.com/post", {{"field1", "value1"}, {"field2", "value2"}}, "file", DefaultFileName("file.docx"))
 			| Output(output);

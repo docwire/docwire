@@ -23,17 +23,19 @@
 namespace docwire
 {
 
+class Importer;
+
 template<typename ParserType>
 class DllExport ParserWrapper : public Parser
 {
 public:
-  explicit ParserWrapper(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager = nullptr)
-  : Parser(inParserManager),
+  explicit ParserWrapper(const std::string& file_name, const Importer* inImporter = nullptr)
+  : Parser(inImporter),
     m_parser(ParserType(file_name))
   {}
 
-  ParserWrapper(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager = nullptr)
-  : Parser(inParserManager) ,
+  ParserWrapper(const char* buffer, size_t size, const Importer* inImporter = nullptr)
+  : Parser(inImporter) ,
     m_parser(ParserType(buffer, size))
   {}
 
@@ -49,9 +51,9 @@ public:
     return *this;
   }
 
-  void setParserManager(const std::shared_ptr<ParserManager> &inParserManager)
+  void setImporter(const Importer* inImporter)
   {
-    m_parser_manager = inParserManager;
+    m_importer = inImporter;
   }
 
 private:
@@ -63,15 +65,15 @@ class DllExport wrapper_parser_creator
 {
 public:
   static std::unique_ptr<Parser>
-  create(const std::string &inFileName, const std::shared_ptr<ParserManager> &parserManager)
+  create(const std::string &inFileName, const Importer* inImporter)
   {
-    return std::make_unique<ParserWrapper<ParserType>>(inFileName, parserManager);
+    return std::make_unique<ParserWrapper<ParserType>>(inFileName, inImporter);
   }
 
   static std::unique_ptr<Parser>
-  create(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &parserManager)
+  create(const char* buffer, size_t size, const Importer* inImporter)
   {
-    return std::make_unique<ParserWrapper<ParserType>>(buffer, size, parserManager);
+    return std::make_unique<ParserWrapper<ParserType>>(buffer, size, inImporter);
   }
 };
 
@@ -80,15 +82,15 @@ class DllExport parser_creator
 {
 public:
   static std::unique_ptr<Parser>
-  create(const std::string &inFileName, const std::shared_ptr<ParserManager> &parserManager)
+  create(const std::string &inFileName, const Importer* inImporter)
   {
-    return std::make_unique<ParserType>(inFileName, parserManager);
+    return std::make_unique<ParserType>(inFileName, inImporter);
   }
 
   static std::unique_ptr<Parser>
-  create(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &parserManager)
+  create(const char* buffer, size_t size, const Importer* inImporter)
   {
-    return std::make_unique<ParserType>(buffer, size, parserManager);
+    return std::make_unique<ParserType>(buffer, size, inImporter);
   }
 };
 
@@ -109,7 +111,7 @@ public:
   std::unique_ptr<Parser>
   build(const std::string &inFileName) const override
   {
-    auto parser = m_parser_creator.create(inFileName, m_parser_manager);
+    auto parser = m_parser_creator.create(inFileName, m_importer);
     for (auto &callback : m_callbacks)
     {
       parser->addOnNewNodeCallback(callback);
@@ -121,7 +123,7 @@ public:
   std::unique_ptr<Parser>
   build(const char* buffer, size_t size) const override
   {
-    auto parser =  m_parser_creator.create(buffer, size, m_parser_manager);
+    auto parser =  m_parser_creator.create(buffer, size, m_importer);
     for (auto &callback : m_callbacks)
     {
       parser->addOnNewNodeCallback(callback);
@@ -136,9 +138,9 @@ public:
     return *this;
   }
 
-  ParserBuilder& withParserManager(const std::shared_ptr<ParserManager> &inParserManager) override
+  ParserBuilder& withImporter(const Importer& inImporter) override
   {
-    m_parser_manager = inParserManager;
+    m_importer = &inImporter;
     return *this;
   }
 
@@ -151,7 +153,7 @@ public:
 private:
   ParserCreator m_parser_creator;
   std::vector<NewNodeCallback> m_callbacks;
-  std::shared_ptr<ParserManager> m_parser_manager;
+  const Importer* m_importer;
   ParserParameters m_parameters;
 };
 } // namespace docwire

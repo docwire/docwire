@@ -17,12 +17,14 @@
 #include <memory>
 #include <functional>
 #include "parser.h"
-#include "parser_manager.h"
 #include "parser_parameters.h"
 #include "defines.h"
 
 namespace docwire
 {
+
+class Importer;
+
 /**
  * Abstract class to build parsers. Parser could be built from path to file or from data buffer.
  */
@@ -52,10 +54,10 @@ public:
   virtual ParserBuilder &withOnNewNodeCallbacks(const std::vector<NewNodeCallback> &callbacks) = 0;
 
   /**
-   * @brief Sets parser manager.
-   * @param inParserManager
+   * @brief Sets importer.
+   * @param inImporter
    */
-  virtual ParserBuilder &withParserManager(const std::shared_ptr<ParserManager> &inParserManager) = 0;
+  virtual ParserBuilder &withImporter(const Importer& inImporter) = 0;
 
   /**
    * @brief Sets parser parameters.

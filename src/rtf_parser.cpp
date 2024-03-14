@@ -42,8 +42,8 @@ struct RTFParser::Implementation
 	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-RTFParser::RTFParser(const std::string& file_name, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+RTFParser::RTFParser(const std::string& file_name, const Importer* inImporter)
+: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -65,8 +65,8 @@ RTFParser::RTFParser(const std::string& file_name, const std::shared_ptr<ParserM
 	}
 }
 
-RTFParser::RTFParser(const char* buffer, size_t size, const std::shared_ptr<ParserManager> &inParserManager)
-: Parser(inParserManager)
+RTFParser::RTFParser(const char* buffer, size_t size, const Importer* inImporter)
+: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -101,7 +101,7 @@ RTFParser::~RTFParser()
 bool RTFParser::isRTF() const
 {
 	if (!impl->m_data_stream->open())
-		throw Exception("Error opening file " + impl->m_file_name);
+		throw RuntimeError("Error opening file " + impl->m_file_name);
 	char buf[6];
 	if (!impl->m_data_stream->read(buf, sizeof(char), 5))
 	{
@@ -559,9 +559,9 @@ std::string RTFParser::plainText() const
 	try
 	{
 		if (!isRTF())	//check if this is really rtf file
-			throw Exception("File " + impl->m_file_name + " is not rtf");
+			throw RuntimeError("File " + impl->m_file_name + " is not rtf");
 		if (!impl->m_data_stream->open())
-			throw Exception("Error opening file " + impl->m_file_name);
+			throw RuntimeError("Error opening file " + impl->m_file_name);
 		int ch;
 		RTFParserState state;
 		state.groups.push(RTFGroup());
@@ -620,7 +620,7 @@ std::string RTFParser::plainText() const
 					}
 			}
 			if (state.groups.size() == 0)	//it will crash soon if groups.size() returns zero... better to check
-				throw Exception("File " + impl->m_file_name + " is corrupted");
+				throw RuntimeError("File " + impl->m_file_name + " is corrupted");
 		}
 		impl->m_data_stream->close();
 		if (converter != NULL)
@@ -675,18 +675,18 @@ static void parse_rtf_time(const std::string& s, tm& time)
 Metadata RTFParser::metaData() const
 {
 	if (!isRTF())	//check if this is really rtf file
-		throw Exception("File " + impl->m_file_name + " is not rtf");
+		throw RuntimeError("File " + impl->m_file_name + " is not rtf");
 	
 	Metadata meta;
 	docwire_log(debug) << "Extracting metadata.";
 	if (!impl->m_data_stream->open())
-		throw Exception("Error opening file " + impl->m_file_name);
+		throw RuntimeError("Error opening file " + impl->m_file_name);
 	size_t stream_size = impl->m_data_stream->size();
 	std::vector<char> content_buffer(stream_size);
 	if (!impl->m_data_stream->read(&content_buffer[0], 1, stream_size))
 	{
 		impl->m_data_stream->close();
-		throw Exception("Error reading file " + impl->m_file_name);
+		throw RuntimeError("Error reading file " + impl->m_file_name);
 	}
 	std::string content(content_buffer.begin(), content_buffer.end());
 	size_t p = content.find("\\author ");

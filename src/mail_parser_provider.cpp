@@ -28,18 +28,18 @@ MailParserProvider::MailParserProvider()
   addExtensions(PSTParser::getExtensions());
 }
 
-std::optional<ParserBuilder*>
+std::unique_ptr<ParserBuilder>
 MailParserProvider::findParserByExtension(const std::string &inExtension) const
 {
   if (isExtensionInVector(inExtension, EMLParser::getExtensions()))
   {
-    return new ParserBuilderWrapper<parser_creator<EMLParser>>();
+    return std::make_unique<ParserBuilderWrapper<parser_creator<EMLParser>>>();
   }
   else if(isExtensionInVector(inExtension, PSTParser::getExtensions()))
   {
-    return new ParserBuilderWrapper<parser_creator<PSTParser>>();
+    return std::make_unique<ParserBuilderWrapper<parser_creator<PSTParser>>>();
   }
-  return std::nullopt;
+  return nullptr;
 }
 
 template <typename T, bool(T::*valid_method)() const>
@@ -58,18 +58,18 @@ is_valid(const char* buffer, size_t size)
   return (parser.*valid_method)();
 }
 
-std::optional<ParserBuilder*>
+std::unique_ptr<ParserBuilder>
 MailParserProvider::findParserByData(const std::vector<char>& buffer) const
 {
   if (is_valid<EMLParser, &EMLParser::isEML>(buffer.data(), buffer.size()))
   {
-    return new ParserBuilderWrapper<wrapper_parser_creator<EMLParser>>();
+    return std::make_unique<ParserBuilderWrapper<wrapper_parser_creator<EMLParser>>>();
   }
   else if (is_valid<PSTParser, &PSTParser::isPST>(buffer.data(), buffer.size()))
   {
-    return new ParserBuilderWrapper<parser_creator<PSTParser>>();
+    return std::make_unique<ParserBuilderWrapper<parser_creator<PSTParser>>>();
   }
-  return std::nullopt;
+  return nullptr;
 }
 
 std::set<std::string>

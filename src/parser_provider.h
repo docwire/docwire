@@ -31,22 +31,25 @@ public:
   /**
    * @brief Returns parser builder for given extension type or nullopt if no parser is found.
    * @param inExtension file extension (e.g. ".txt", ".docx", etc.)
-   * @return specific parser builder or nullopt if no parser is found
+   * @return unique_ptr to specific parser builder or null unique_ptr if no parser is found
    */
-  virtual std::optional<ParserBuilder*> findParserByExtension(const std::string &extension) const = 0;
+  virtual std::unique_ptr<ParserBuilder> findParserByExtension(const std::string &extension) const = 0;
 
   /**
    * @brief Returns parser builder for given raw data or nullopt if no parser is found.
    * @param buffer buffer of raw data
-   * @return specific parser builder or nullopt if no parser is found
+   * @return unique_ptr to specific parser builder or null unique_ptr if no parser is found
    */
-  virtual std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const = 0;
+  virtual std::unique_ptr<ParserBuilder> findParserByData(const std::vector<char>& buffer) const = 0;
+
 
   /**
    * @brief Returns all available parsers.
    * @return sets of all available parsers
    */
   virtual std::set<std::string> getAvailableExtensions() const = 0;
+
+  virtual ~ParserProvider() = default;
 };
 
 } // namespace docwire

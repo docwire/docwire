@@ -18,6 +18,7 @@
 #include <fstream>
 #include "log.h"
 #include "parser.h"
+#include <set>
 
 namespace docwire
 {
@@ -51,7 +52,7 @@ public:
 			la_ssize_t bytes_read = archive_read_data(m_archive, m_buffer, m_buf_size);
 			docwire_log(debug) << bytes_read << " bytes read";
 			if (bytes_read < 0)
-				throw Exception(archive_error_string(m_archive));
+				throw RuntimeError(archive_error_string(m_archive));
 			if (bytes_read == 0)
 				return traits_type::eof();
 			setg(m_buffer, m_buffer, m_buffer + bytes_read);
@@ -116,7 +117,7 @@ public:
 		archive_read_support_format_all(m_archive);
 		int r = archive_read_open(m_archive, &data, nullptr, archive_read_callback, archive_close_callback);
 		if (r != ARCHIVE_OK)
-			throw Exception(archive_error_string(m_archive));
+			throw RuntimeError(archive_error_string(m_archive));
 	}
 
 	~ArchiveReader()
@@ -143,7 +144,7 @@ public:
 		if (r != ARCHIVE_OK)
 		{
 			docwire_log(error) << "archive_read_next_header() error: " << archive_error_string(m_archive);
-			throw Exception(archive_error_string(m_archive));
+			throw RuntimeError(archive_error_string(m_archive));
 		}
 		return Entry(m_archive, entry);
 	}
@@ -211,7 +212,7 @@ DecompressArchives::process(Info &info) const
 	std::optional<std::string> name = info.getAttributeValue<std::string>("name");
 	docwire_log_vars(path, name);
 	if(!path && !stream)
-		throw Exception("No path or stream in TAG_FILE");
+		throw LogicError("No path or stream in TAG_FILE");
 	auto is_supported = [](const std::string& fn)
 	{
 		std::set<std::string> supported_extensions { ".zip", ".tar", ".rar", ".gz", ".bz2", ".xz" };
@@ -244,7 +245,7 @@ DecompressArchives::process(Info &info) const
 		}
 		docwire_log(debug) << "Archive decompressed successfully";
 	}
-	catch (Exception& e)
+	catch (const std::exception& e)
 	{
 		docwire_log(error) << e.what();
 		in_stream->clear();

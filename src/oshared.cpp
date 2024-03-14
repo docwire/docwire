@@ -131,30 +131,30 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, Metadata& meta)
 {
 	docwire_log(debug) << "Extracting metadata.";
 	if (!storage.isValid())
-		throw Exception("Error opening " + storage.name() + " as OLE file");
+		throw RuntimeError("Error opening " + storage.name() + " as OLE file");
 	ThreadSafeOLEStreamReader* reader = NULL;
 	reader = (ThreadSafeOLEStreamReader*)storage.createStreamReader("\005SummaryInformation");
 	if (reader == NULL)
-		throw Exception("Error opening SummaryInformation stream");
+		throw RuntimeError("Error opening SummaryInformation stream");
 	try
 	{
 		size_t field_set_stream_start = reader->tell();
 		U16 byte_order;
 		if (!reader->readU16(byte_order) || byte_order != 0xFFFE)
-			throw Exception("Incorrect ByteOrder value");
+			throw RuntimeError("Incorrect ByteOrder value");
 		U16 version;
 		if (!reader->readU16(version) || version != 0x00)
-			throw Exception("Incorrect Version value");
+			throw RuntimeError("Incorrect Version value");
 		reader->seek(4, SEEK_CUR); //system indentifier
 		for (int i = 0; i < 4; i++)
 		{
 			U32 clsid_part;
 			if (!reader->readU32(clsid_part) || clsid_part != 0x00)
-				throw Exception("Incorrect CLSID value");
+				throw RuntimeError("Incorrect CLSID value");
 		}
 		U32 num_property_sets;
 		if (!reader->readU32(num_property_sets) || (num_property_sets != 0x01 && num_property_sets != 0x02))
-			throw Exception("Incorrect number of property sets");
+			throw RuntimeError("Incorrect number of property sets");
 		reader->seek(16, SEEK_CUR);	// fmtid0_part
 		U32 offset;
 		reader->readU32(offset);
@@ -240,10 +240,10 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, Metadata& meta)
 			}
 			reader->seek(p, SEEK_SET);
 			if (!reader->isValid())
-				throw Exception("OLE Reader error message: " + reader->getLastError());
+				throw RuntimeError("OLE Reader error message: " + reader->getLastError());
 		}
 		if (!reader->isValid())
-			throw Exception("OLE Reader error message: " + reader->getLastError());
+			throw RuntimeError("OLE Reader error message: " + reader->getLastError());
 		delete reader;
 	}
 	catch (std::bad_alloc& ba)
@@ -253,13 +253,12 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, Metadata& meta)
 		reader = NULL;
 		throw;
 	}
-	catch (Exception& ex)
+	catch (const std::exception& e)
 	{
 		if (reader)
 			delete reader;
 		reader = NULL;
-		ex.appendError("Error while parsing SummaryInformation stream");
-		throw;
+		throw RuntimeError("Error while parsing SummaryInformation stream", e);
 	}
 }
 
@@ -270,42 +269,35 @@ static ThreadSafeOLEStreamReader* open_oshared_document_summary_info(ThreadSafeO
 	{
 		reader = (ThreadSafeOLEStreamReader*)storage.createStreamReader("\005DocumentSummaryInformation");
 		if (reader == NULL)
-			throw Exception("Error opening DocumentSummaryInformation stream");
+			throw RuntimeError("Error opening DocumentSummaryInformation stream");
 		field_set_stream_start = reader->tell();
 		U16 byte_order;
 		if (!reader->readU16(byte_order) || byte_order != 0xFFFE)
-			throw Exception("Incorrect ByteOrder value");
+			throw RuntimeError("Incorrect ByteOrder value");
 		U16 version;
 		if (!reader->readU16(version) || version != 0x00)
-			throw Exception("Incorrect Version value");
+			throw RuntimeError("Incorrect Version value");
 		reader->seek(4, SEEK_CUR);	// system indentifier
 		for (int i = 0; i < 4; i++)
 		{
 			U32 clsid_part;;
 			if (!reader->readU32(clsid_part) || clsid_part != 0x00)
-				throw Exception("Incorrect CLSID value");
+				throw RuntimeError("Incorrect CLSID value");
 		}
 		U32 num_property_sets;
 		if (!reader->readU32(num_property_sets) || (num_property_sets != 0x01 && num_property_sets != 0x02))
-			throw Exception("Incorrect number of property sets");
+			throw RuntimeError("Incorrect number of property sets");
 		reader->seek(16, SEEK_CUR);	//fmtid0_part
 		if (!reader->isValid())
-			throw Exception("OLE Reader error message: " + reader->getLastError());
+			throw RuntimeError("OLE Reader error message: " + reader->getLastError());
 		return reader;
 	}
-	catch (std::bad_alloc& ba)
+	catch (const std::exception& e)
 	{
 		if (reader)
 			delete reader;
 		reader = NULL;
-		throw;
-	}
-	catch (Exception& ex)
-	{
-		if (reader)
-			delete reader;
-		reader = NULL;
-		throw;
+		throw RuntimeError("Error while opening DocumentSummaryInformation stream", e);
 	}
 }
 
@@ -361,20 +353,12 @@ bool get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storage, std:
 			return false;
 		}
 	}
-	catch (std::bad_alloc& ba)
+	catch (const std::exception& e)
 	{
 		if (reader)
 			delete reader;
 		reader = NULL;
-		docwire_log(error) << "Error while getting codepage info. Reason: bad_alloc.";
-		throw;
-	}
-	catch (Exception& ex)
-	{
-		if (reader)
-			delete reader;
-		reader = NULL;
-		docwire_log(error) << "Error while getting codepage info. Error message:" << ex.getBacktrace();
+		docwire_log(error) << "Error while getting codepage info. Error message:" << e.what();
 		return false;
 	}
 	delete reader;
@@ -387,7 +371,7 @@ void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& sli
 	docwire_log(debug) << "Extracting additional metadata.";
 	size_t field_set_stream_start;
 	if (!storage.isValid())
-		throw Exception("Error opening " + storage.name() + " as OLE file");
+		throw RuntimeError("Error opening " + storage.name() + " as OLE file");
 	ThreadSafeOLEStreamReader* reader = NULL;
 	try
 	{
@@ -416,29 +400,21 @@ void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& sli
 			}
 			reader->seek(p, SEEK_SET);
 			if (!reader->isValid())
-				throw Exception("OLE reader error message: " + reader->getLastError());
+				throw RuntimeError("OLE reader error message: " + reader->getLastError());
 		}
 		if (!slide_count_found)
 			slide_count = -1;
 		if (!reader->isValid())
-			throw Exception("OLE reader error message: " + reader->getLastError());
+			throw RuntimeError("OLE reader error message: " + reader->getLastError());
 		delete reader;
 		reader = NULL;
 	}
-	catch (std::bad_alloc& ba)
+	catch (const std::exception& e)
 	{
 		if (reader)
 			delete reader;
 		reader = NULL;
-		throw;
-	}
-	catch (Exception& ex)
-	{
-		if (reader)
-			delete reader;
-		reader = NULL;
-		ex.appendError("Error while parsing DocumentSummaryInformation stream");
-		throw;
+		throw RuntimeError("Error while parsing DocumentSummaryInformation stream", e);
 	}
 }
 
