@@ -556,7 +556,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			{
 				parser.extractText(content, mode, options, zipfile, object_text);
 			}
-			catch (const std::exception& ex)
+			catch (const std::exception& e)
 			{
 				docwire_log(error) << "Error parsing file." << content_fn << e;
 			}

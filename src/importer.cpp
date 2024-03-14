@@ -136,8 +136,7 @@ public:
           {
             throw ParsingFailed("Error parsing file: " + file_path  + ". Tried different parsers, but file could not be recognized as another format. File may be corrupted or encrypted", ex);
           }
-          std::shared_ptr<ParserBuilder>(*second_builder)
-                  ->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
+          second_builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
                   .withImporter(m_owner)
                   .withParameters(m_parameters)
                   .build(buffer.data(), buffer.size())->parse();

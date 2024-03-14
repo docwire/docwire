@@ -34,7 +34,7 @@ std::unique_ptr<ParserBuilder> findParserByExtension(const std::string& extensio
     if (builder)
       return builder;
   }
-  return std::nullopt;
+  return nullptr;
 }
 
 template<typename... ProviderTypeNames>
@@ -47,7 +47,7 @@ std::unique_ptr<ParserBuilder> findParserByData(const std::vector<char>& buffer)
     if (builder)
       return builder;
   }
-  return std::nullopt;
+  return nullptr;
 }
 
 /**
@@ -88,7 +88,7 @@ class ParseDetectedFormat : public Importer
    * @param buffer buffer of raw data
    * @return specific parser builder or null unique_ptr if no parser is found
    */
-  std::unique_ptr<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override
+  std::unique_ptr<ParserBuilder> findParserByData(const std::vector<char>& buffer) const override
   {
     return docwire::findParserByData<ProviderTypeName, ProviderTypeNames...>(buffer);
   }
