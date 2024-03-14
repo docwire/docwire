@@ -47,6 +47,8 @@ public:
    * @return sets of all available parsers
    */
   virtual std::set<std::string> getAvailableExtensions() const = 0;
+
+  virtual ~ParserProvider() = default;
 };
 
 } // namespace docwire
