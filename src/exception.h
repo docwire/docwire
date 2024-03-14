@@ -32,6 +32,32 @@ namespace docwire
  * if (input_data.size() == 0)
  *     throw LogicError("Input data is empty");
  * \endcode
+ *
+ * The nested exception is there for cases when you want to use LogicError
+ * as a wrapper for another exception. The nested exception can be any
+ * std::exception-based class. For example, if you want to wrap a standard
+ * library exception then you can use nested exception to pass it to upper
+ * layers. The what() message of LogicError will contain what() message of
+ * nested exception, so you can use it to get more detailed information
+ * about the cause of the error.
+ *
+ * Example:
+ * \code
+ * try
+ * {
+ *     // some code that may throw an exception
+ * }
+ * catch (const std::runtime_error& e)
+ * {
+ *     throw LogicError("Something went wrong", e);
+ * }
+ * \endcode
+ *
+ * In this example, if the code between try-catch block throws an exception
+ * of type std::runtime_error, then the exception will be caught, wrapped
+ * into LogicError and re-thrown. The LogicError will have what() message
+ * that is concatenation of "Something went wrong" and what() message of
+ * the nested std::runtime_error exception.
  */
 class DllExport LogicError : public std::logic_error
 {
@@ -49,6 +75,7 @@ public:
 	LogicError(const std::string& message, const std::exception& nested);
 };
 
+
 /**
  * @brief The exception class that is thrown when a runtime error occurs.
  *
@@ -61,6 +88,32 @@ public:
  * if (!allocateMemory())
  *     throw RuntimeError("Not enough memory");
  * \endcode
+ *
+ * The nested exception is there for cases when you want to use RuntimeError
+ * as a wrapper for another exception. The nested exception can be any
+ * std::exception-based class. For example, if you want to wrap a standard
+ * library exception then you can use nested exception to pass it to upper
+ * layers. The what() message of RuntimeError will contain what() message of
+ * nested exception, so you can use it to get more detailed information
+ * about the cause of the error.
+ *
+ * Example:
+ * \code
+ * try
+ * {
+ *     // some code that may throw an exception
+ * }
+ * catch (const std::runtime_error& e)
+ * {
+ *     throw RuntimeError("Something went wrong", e);
+ * }
+ * \endcode
+ *
+ * In this example, if the code between try-catch block throws an exception
+ * of type std::runtime_error, then the exception will be caught, wrapped
+ * into RuntimeError and re-thrown. The RuntimeError will have what() message
+ * that is concatenation of "Something went wrong" and what() message of
+ * the nested std::runtime_error exception.
  */
 class DllExport RuntimeError : public std::runtime_error
 {
@@ -77,6 +130,7 @@ public:
 	 */
 	RuntimeError(const std::string& message, const std::exception& nested);
 };
+
 
 
 class EncryptedFileException : public docwire::RuntimeError

@@ -282,7 +282,7 @@ class HTMLWriterTest : public ::testing::TestWithParam<const char*>
 {
 };
 
-TEST_P(HTMLWriterTest, RedFromFileTest)
+TEST_P(HTMLWriterTest, ReadFromFileTest)
 {
     // GIVEN
     auto name = GetParam();

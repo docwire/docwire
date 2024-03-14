@@ -17,7 +17,6 @@
 
 #include "chain_element.h"
 #include "exception.h"
-#include <optional>
 #include "parser.h"
 #include "parser_builder.h"
 #include "parser_parameters.h"
@@ -61,8 +60,8 @@ public:
    */
   void add_parameters(const ParserParameters &parameters);
 
-  virtual std::optional<ParserBuilder*> findParserByExtension(const std::string &file_name) const = 0;
-  virtual std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const = 0;
+  virtual std::unique_ptr<ParserBuilder> findParserByExtension(const std::string &file_name) const = 0;
+  virtual std::unique_ptr<ParserBuilder> findParserByData(const std::vector<char>& buffer) const = 0;
 
   DOCWIRE_EXCEPTION_DEFINE(FileNotReadable, RuntimeError);
   DOCWIRE_EXCEPTION_DEFINE(FileNotFound, RuntimeError);

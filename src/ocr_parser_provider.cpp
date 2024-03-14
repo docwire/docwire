@@ -26,7 +26,7 @@ OcrParserProvider::OcrParserProvider()
   addExtensions(OCRParser::getExtensions());
 }
 
-std::optional<ParserBuilder*>
+std::unique_ptr<ParserBuilder>
 OcrParserProvider::findParserByExtension(const std::string &inExtension) const
 {
   if (isExtensionInVector(inExtension, OCRParser::getExtensions()))
@@ -52,7 +52,7 @@ is_valid(const char* buffer, size_t size)
   return (parser.*valid_method)();
 }
 
-std::optional<ParserBuilder*>
+std::unique_ptr<ParserBuilder>
 OcrParserProvider::findParserByData(const std::vector<char>& buffer) const
 {
   if (is_valid<OCRParser, &OCRParser::isOCR>(buffer.data(), buffer.size()))

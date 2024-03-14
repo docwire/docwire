@@ -101,7 +101,7 @@ RTFParser::~RTFParser()
 bool RTFParser::isRTF() const
 {
 	if (!impl->m_data_stream->open())
-		throw ("Error opening file " + impl->m_file_name);
+		throw RuntimeError("Error opening file " + impl->m_file_name);
 	char buf[6];
 	if (!impl->m_data_stream->read(buf, sizeof(char), 5))
 	{

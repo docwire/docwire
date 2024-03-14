@@ -23,8 +23,8 @@ class DllExport MailParserProvider : public ParserProvider
 {
 public:
   MailParserProvider();
-  std::optional<ParserBuilder*> findParserByExtension(const std::string &inExtension) const override;
-  std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override;
+  std::unique_ptr<ParserBuilder> findParserByExtension(const std::string &inExtension) const override;
+  std::unique_ptr<ParserBuilder> findParserByData(const std::vector<char>& buffer) const override;
   std::set<std::string> getAvailableExtensions() const override;
 
 private:

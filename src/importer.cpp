@@ -74,7 +74,7 @@ public:
     }
     Info new_doc(StandardTag::TAG_DOCUMENT);
     m_owner.emit(new_doc);
-    std::shared_ptr<ParserBuilder> builder;
+    std::unique_ptr<ParserBuilder> builder;
     std::vector<char> buffer;
     std::istream* input_stream = nullptr;
     std::string file_path;
@@ -93,7 +93,7 @@ public:
       {
         if (isReadable(path))
         {
-          builder = std::shared_ptr<ParserBuilder>(m_owner.findParserByExtension(file_path).value_or(nullptr));
+          builder = m_owner.findParserByExtension(file_path);
         }
         else
         {
@@ -108,7 +108,7 @@ public:
     else if(input_stream)
     {
       buffer = std::vector<char>((std::istreambuf_iterator<char>(*input_stream)), std::istreambuf_iterator<char>());
-      builder = std::shared_ptr<ParserBuilder>(m_owner.findParserByData(buffer).value_or(nullptr));
+      builder = m_owner.findParserByData(buffer);
     }
     if (builder)
     {

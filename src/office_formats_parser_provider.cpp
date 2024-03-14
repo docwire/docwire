@@ -57,7 +57,7 @@ OfficeFormatsParserProvider::isExtensionInVector(const std::string &extension, c
   return std::find(extension_list.begin(), extension_list.end(), extension) != extension_list.end();
 }
 
-std::optional<ParserBuilder*>
+std::unique_ptr<ParserBuilder*>
 OfficeFormatsParserProvider::findParserByExtension(const std::string &inExtension) const
 {
   if (isExtensionInVector(inExtension, HTMLParser::getExtensions()))
@@ -123,7 +123,7 @@ is_valid(const char* buffer, size_t size)
   return (parser.*valid_method)();
 }
 
-std::optional<ParserBuilder*>
+std::unique_ptr<ParserBuilder>
 OfficeFormatsParserProvider::findParserByData(const std::vector<char>& buffer) const
 {
   if (is_valid<HTMLParser, &HTMLParser::isHTML>(buffer.data(), buffer.size()))

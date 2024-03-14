@@ -407,12 +407,11 @@ PSTParser::Implementation::parse_element(const char* buffer, size_t size, const 
     auto parser_builder = m_importer->findParserByExtension(extension);
     if (parser_builder)
     {
-      (*parser_builder)->withImporter(*m_importer)
+      parser_builder->withImporter(*m_importer)
         .withOnNewNodeCallbacks({[this](Info &info){m_owner->sendTag(info.tag_name, info.plain_text, info.attributes);}})
         .withParameters(m_parameters)
         .build(buffer, size)
         ->parse();
-      delete *parser_builder;
     }
   }
 }

@@ -558,7 +558,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			}
 			catch (const std::exception& ex)
 			{
-				docwire_log(error) << "Error parsing " << content_fn;
+				docwire_log(error) << "Error parsing file." << content_fn << e;
 			}
 			text += object_text;
 		}

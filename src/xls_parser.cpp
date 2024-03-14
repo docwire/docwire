@@ -993,7 +993,7 @@ std::string XLSParser::plainText(ThreadSafeOLEStorage& storage, const Formatting
 		if (reader)
 			delete reader;
 		reader = NULL;
-		throw;
+		throw RuntimeError("Error while parsing XLS file", e);
 	}
 }
 

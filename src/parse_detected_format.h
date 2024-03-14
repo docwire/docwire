@@ -25,7 +25,7 @@ namespace docwire
 class ParserProvider;
 
 template<typename... ProviderTypeNames>
-std::optional<ParserBuilder*> findParserByExtension(const std::string& extension)
+std::unique_ptr<ParserBuilder> findParserByExtension(const std::string& extension)
 {
   std::unique_ptr<ParserProvider> providers[] = {std::unique_ptr<ParserProvider>(new ProviderTypeNames)...};
   for (auto& provider : providers)
@@ -38,7 +38,7 @@ std::optional<ParserBuilder*> findParserByExtension(const std::string& extension
 }
 
 template<typename... ProviderTypeNames>
-std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer)
+std::unique_ptr<ParserBuilder> findParserByData(const std::vector<char>& buffer)
 {
   std::unique_ptr<ParserProvider> providers[] = {std::unique_ptr<ParserProvider>(new ProviderTypeNames)...};
   for (auto& provider : providers)
@@ -74,9 +74,9 @@ class ParseDetectedFormat : public Importer
   /**
    * @brief Returns parser builder for given extension type or nullopt if no parser is found.
    * @param file_name file name with extension (e.g. ".txt", ".docx", etc.)
-   * @return specific parser builder or nullopt if no parser is found
+   * @return specific parser builder or null unique_ptr if no parser is found
    */
-  std::optional<ParserBuilder*> findParserByExtension(const std::string &file_name) const override
+  std::unique_ptr<ParserBuilder> findParserByExtension(const std::string &file_name) const override
   {
     std::string extension = file_name.substr(file_name.find_last_of(".") + 1);
     std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
@@ -86,9 +86,9 @@ class ParseDetectedFormat : public Importer
   /**
    * @brief Returns parser builder for given raw data or nullopt if no parser is found.
    * @param buffer buffer of raw data
-   * @return specific parser builder or nullopt if no parser is found
+   * @return specific parser builder or null unique_ptr if no parser is found
    */
-  std::optional<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override
+  std::unique_ptr<ParserBuilder*> findParserByData(const std::vector<char>& buffer) const override
   {
     return docwire::findParserByData<ProviderTypeName, ProviderTypeNames...>(buffer);
   }
