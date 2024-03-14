@@ -133,7 +133,7 @@ bool ODFXMLParser::isODFXML()
 	{
 		std::ifstream file(extended_impl->m_file_name.c_str(), std::ios_base::in|std::ios_base::binary);
 		if (!file.is_open())
-			throw Exception("Error opening file: " + extended_impl->m_file_name);
+			throw RuntimeError("Error opening file: " + extended_impl->m_file_name);
 		xml_content = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 		file.close();
 	}
@@ -152,7 +152,7 @@ std::string ODFXMLParser::plainText(XmlParseMode mode, FormattingStyle& formatti
 	{
 		std::ifstream file(extended_impl->m_file_name.c_str(), std::ios_base::in|std::ios_base::binary);
 		if (!file.is_open())
-			throw Exception("Error opening file: " + extended_impl->m_file_name);
+			throw RuntimeError("Error opening file: " + extended_impl->m_file_name);
 		xml_content = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 		file.close();
 	}
@@ -165,10 +165,9 @@ std::string ODFXMLParser::plainText(XmlParseMode mode, FormattingStyle& formatti
 	{
 		extractText(xml_content, mode, formatting_style, NULL, text);
 	}
-	catch (Exception& ex)
+	catch (const std::exception& e)
 	{
-		ex.appendError("Error parsing Flat XML file");
-		throw;
+		throw RuntimeError("Error parsing Flat XML file", e);
 	}
 	return text;
 }
@@ -185,7 +184,7 @@ Metadata ODFXMLParser::metaData() const
 	{
 		std::ifstream file(extended_impl->m_file_name.c_str(), std::ios_base::in|std::ios_base::binary);
 		if (!file.is_open())
-			throw Exception("Error opening file: " + extended_impl->m_file_name);
+			throw RuntimeError("Error opening file: " + extended_impl->m_file_name);
 		xml_content = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 		file.close();
 	}
@@ -193,10 +192,9 @@ Metadata ODFXMLParser::metaData() const
 	{
 		parseODFMetadata(xml_content, metadata);
 	}
-	catch (Exception& ex)
+	catch (const std::exception& e)
 	{
-		ex.appendError("Error parsing metadata in Flat XML file");
-		throw;
+		throw RuntimeError("Error parsing metadata in Flat XML file", e);
 	}
 	if (metadata.pageCount() == -1)
 	{

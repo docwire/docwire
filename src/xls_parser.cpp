@@ -705,10 +705,10 @@ struct XLSParser::Implementation
 		while (read_status)
 		{
 			if (oleEof(reader))
-				throw Exception("Error while parsing XLS: No BOF record found");
+				throw RuntimeError("Error while parsing XLS: No BOF record found");
 			U16 rec_type, rec_len;
 			if (!reader.readU16(rec_type) || !reader.readU16(rec_len))
-				throw Exception("Error while parsing XLS, OLE Reader has reported an error: " + reader.getLastError());
+				throw RuntimeError("Error while parsing XLS, OLE Reader has reported an error: " + reader.getLastError());
 			enum BofRecordTypes
 			{
 				BOF_BIFF_2 = 0x009,
@@ -728,7 +728,7 @@ struct XLSParser::Implementation
 						{
 							U16 biff_ver, data_type;
 							if (!reader.readU16(biff_ver) || !reader.readU16(data_type))
-								throw Exception("Error while parsing XLS, OLE Reader has reported an error: " + reader.getLastError());
+								throw RuntimeError("Error while parsing XLS, OLE Reader has reported an error: " + reader.getLastError());
 							//On microsoft site there is documentation only for "BIFF8". Documentation from OpenOffice is better:
 							/*
 								BIFF5:
@@ -794,17 +794,17 @@ struct XLSParser::Implementation
 					break;
 				}
 				else
-					throw Exception("Error while parsing XLS: Invalid BOF record, size of this record should have 8 or 16 bytes length");
+					throw RuntimeError("Error while parsing XLS: Invalid BOF record, size of this record should have 8 or 16 bytes length");
 			}
 			else
 			{
 				rec.resize(126);
 				if (!reader.read(&*rec.begin(), 126))
-					throw Exception("OLE Reader has reported an error: " + reader.getLastError());
+					throw RuntimeError("OLE Reader has reported an error: " + reader.getLastError());
 			}
 		}
 		if (oleEof(reader))
-			throw Exception("Error while parsing XLS: No BOF record found");
+			throw RuntimeError("Error while parsing XLS: No BOF record found");
 		bool eof_rec_found = false;
 		while (read_status)
 		{
@@ -812,7 +812,7 @@ struct XLSParser::Implementation
 			if (!reader.readU16(rec_type))
 			{
 				if (text.length() == 0)
-					throw Exception("Error while parsing XLS, type of record could not be read. OLE Reader has reported an error: " + reader.getLastError());
+					throw RuntimeError("Error while parsing XLS, type of record could not be read. OLE Reader has reported an error: " + reader.getLastError());
 				docwire_log(error) << "Error while parsing XLS, type of record could not be read. OLE Reader has reported an error: " << reader.getLastError();
 				break;
 			}
@@ -825,7 +825,7 @@ struct XLSParser::Implementation
 			if (!reader.readU16(rec_len))
 			{
 				if (text.length() == 0)
-					throw Exception("Error while parsing XLS, length of record could not be read. OLE Reader has reported an error: " + reader.getLastError());
+					throw RuntimeError("Error while parsing XLS, length of record could not be read. OLE Reader has reported an error: " + reader.getLastError());
 				docwire_log(error) << "Error while parsing XLS, length of record could not be read. OLE Reader has reported an error: " << reader.getLastError();
 				break;
 			}
@@ -946,20 +946,13 @@ std::string XLSParser::plainText(const FormattingStyle& formatting)
 		else
 			storage = new ThreadSafeOLEStorage(impl->m_file_name);
 		if (!storage->isValid())
-			throw Exception("Error opening " + impl->m_file_name + " as OLE file. OLE Storage error: " + storage->getLastError());
+			throw RuntimeError("Error opening " + impl->m_file_name + " as OLE file. OLE Storage error: " + storage->getLastError());
 		std::string text = plainText(*storage, formatting);
 		delete storage;
 		storage = NULL;
 		return text;
 	}
-	catch (std::bad_alloc& ba)
-	{
-		if (storage)
-			delete storage;
-		storage = NULL;
-		throw;
-	}
-	catch (Exception& ex)
+	catch (const std::exception& e)
 	{
 		if (storage)
 			delete storage;
@@ -984,7 +977,7 @@ std::string XLSParser::plainText(ThreadSafeOLEStorage& storage, const Formatting
 			if (reader == NULL)
 			{
 				ole_storage_error = "Book: " + storage.getLastError() + "\n";
-				throw Exception("Cannot open Book or Workbook stream:\n" + ole_storage_error);
+				throw RuntimeError("Cannot open Book or Workbook stream:\n" + ole_storage_error);
 			}
 		}
 		std::string text;
@@ -994,15 +987,7 @@ std::string XLSParser::plainText(ThreadSafeOLEStorage& storage, const Formatting
 		reader = NULL;
 		return text;
 	}
-	catch (std::bad_alloc& ba)
-	{
-		pthread_mutex_unlock(&parser_mutex);
-		if (reader)
-			delete reader;
-		reader = NULL;
-		throw;
-	}
-	catch (Exception& ex)
+	catch (const std::exception& e)
 	{
 		pthread_mutex_unlock(&parser_mutex);
 		if (reader)
@@ -1027,20 +1012,12 @@ Metadata XLSParser::metaData()
 		storage = NULL;
 		return meta;
 	}
-	catch (std::bad_alloc& ba)
+	catch (const std::exception& e)
 	{
 		if (storage)
 			delete storage;
 		storage = NULL;
-		throw;
-	}
-	catch (Exception& ex)
-	{
-		if (storage)
-			delete storage;
-		storage = NULL;
-		ex.appendError("Error while parsing metadata");
-		throw;
+		throw RuntimeError("Error while parsing metadata", e);
 	}
 }
 

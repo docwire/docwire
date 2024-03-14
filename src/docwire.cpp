@@ -377,11 +377,6 @@ int main(int argc, char* argv[])
 	{
 		chain | Output(std::cout);
 	}
-catch (Exception& ex)
-  {
-		std::cerr << "Error processing file " + file_name + ".\n" + ex.getBacktrace();
-		return 2;
-  }
 	catch (const std::exception& e)
 	{
 		std::cerr << "Error processing file " + file_name + ".\n" + e.what() << std::endl;

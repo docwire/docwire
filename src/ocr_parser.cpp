@@ -209,7 +209,7 @@ std::string OCRParser::plainText(const FormattingStyle& formatting, const std::v
     docwire_log_var(langs);
 
     if (api->Init(impl->m_tessdata_prefix.c_str(), langs.c_str())) {
-        throw Exception{ "Could not initialize tesseract.\n" };
+        throw RuntimeError{ "Could not initialize Tesseract." };
     }
 
     // Read the image and convert to a gray-scale image

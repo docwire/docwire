@@ -62,11 +62,11 @@ void
 Output::process(Info &info) const
 {
 	if (info.tag_name != StandardTag::TAG_FILE)
-		throw Exception("Only TAG_FILE tags are supported by Output chain element");
+		throw LogicError("Only TAG_FILE tags are supported by Output chain element");
 	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
 	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
 	if(!path && !stream)
-		throw Exception("No path or stream in TAG_FILE");
+		throw LogicError("No path or stream in TAG_FILE");
 	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
 	*impl->m_out_stream << in_stream->rdbuf();
 	if (path)

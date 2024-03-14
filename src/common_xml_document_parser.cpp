@@ -556,7 +556,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			{
 				parser.extractText(content, mode, options, zipfile, object_text);
 			}
-			catch (Exception& ex)
+			catch (const std::exception& ex)
 			{
 				docwire_log(error) << "Error parsing " << content_fn;
 			}
@@ -645,10 +645,9 @@ void CommonXMLDocumentParser::extractText(const std::string& xml_contents, XmlPa
 		XmlStream xml_stream(xml, impl->m_manage_xml_parser, getXmlOptions());
 		text = parseXmlData(xml_stream, mode, options, zipfile);
 	}
-	catch (Exception& ex)
+	catch (const std::exception& e)
 	{
-		ex.appendError("Error parsing XML contents");
-		throw;
+		throw RuntimeError("Error parsing XML contents", e);
 	}
 }
 
@@ -701,10 +700,9 @@ void CommonXMLDocumentParser::parseODFMetadata(const std::string &xml_content, M
 			xml_stream.next();
 		}
 	}
-	catch (Exception& ex)
+	catch (const std::exception& e)
 	{
-		ex.appendError("Error while parsing ODF metadata");
-		throw;
+		throw RuntimeError("Error while parsing ODF metadata", e);
 	}
 }
 

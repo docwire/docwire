@@ -721,11 +721,11 @@ HTMLParser::withParameters(const ParserParameters &parameters)
 bool HTMLParser::isHTML()
 {
 	if (!impl->m_data_stream->open())
-		throw Exception("Error opening file " + impl->m_file_name);
+		throw RuntimeError("Error opening file " + impl->m_file_name);
 	size_t size = impl->m_data_stream->size();
 	std::string content(size, 0);
 	if (!impl->m_data_stream->read(&content[0], sizeof(unsigned char), size))
-		throw Exception("Error reading file " + impl->m_file_name);
+		throw RuntimeError("Error reading file " + impl->m_file_name);
 	impl->m_data_stream->close();
 	return content.find("<html") != std::string::npos || content.find("<HTML") != std::string::npos;
 }
@@ -735,11 +735,11 @@ HTMLParser::parse() const
 {
 	docwire_log(debug) << "Using HTML parser.";
 	if (!impl->m_data_stream->open())
-		throw Exception("Error opening file " + impl->m_file_name);
+		throw RuntimeError("Error opening file " + impl->m_file_name);
 	size_t size = impl->m_data_stream->size();
 	std::string content(size, 0);
 	if (!impl->m_data_stream->read(&content[0], sizeof(unsigned char), size))
-		throw Exception("Error reading file " + impl->m_file_name);
+		throw RuntimeError("Error reading file " + impl->m_file_name);
 	impl->m_data_stream->close();
 	SaxParser parser(content, impl->m_skip_decoding, this);
 	parser.parse(content);
@@ -752,11 +752,11 @@ Metadata HTMLParser::metaData() const
 	docwire_log(debug) << "Extracting metadata.";
 	Metadata meta;
 	if (!impl->m_data_stream->open())
-		throw Exception("Error opening file " + impl->m_file_name);
+		throw RuntimeError("Error opening file " + impl->m_file_name);
 	size_t size = impl->m_data_stream->size();
 	std::string content(size, 0);
 	if (!impl->m_data_stream->read(&content[0], sizeof(unsigned char), size))
-		throw Exception("Error reading file " + impl->m_file_name);
+		throw RuntimeError("Error reading file " + impl->m_file_name);
 	impl->m_data_stream->close();
 	MetaSaxParser parser(meta);
 	parser.parse(content);

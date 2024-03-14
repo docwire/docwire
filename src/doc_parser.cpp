@@ -691,7 +691,7 @@ bool DOCParser::isDOC()
 	if (!impl->m_buffer)
 		f = fopen(impl->m_file_name.c_str(), "r");
 	if (f == NULL && !impl->m_buffer)
-		throw Exception("Error opening file " + impl->m_file_name);
+		throw RuntimeError("Error opening file " + impl->m_file_name);
 	if (f)
 		fclose(f);
 	cerr_log_redirection cerr_redirection(docwire_current_source_location());
@@ -726,13 +726,13 @@ void DOCParser::plainText(const FormattingStyle& formatting) const
 		else
 			storage = new ThreadSafeOLEStorage(impl->m_file_name);
 		if (!storage->isValid())
-			throw Exception("Error opening " + impl->m_file_name + " as OLE file");
+			throw RuntimeError("Error opening " + impl->m_file_name + " as OLE file");
 		if (storage->enterDirectory("ObjectPool"))
 		{
 			docwire_log(debug) << "ObjectPool found, embedded OLE objects probably exist.";
 			std::vector<std::string> obj_list;
 			if (!storage->getStreamsAndStoragesList(obj_list))
-				throw Exception("Error while loading list of streams and storages in ObjectPool directory. OLE Storage has reported an error: " + storage->getLastError());
+				throw RuntimeError("Error while loading list of streams and storages in ObjectPool directory. OLE Storage has reported an error: " + storage->getLastError());
 			for (size_t i = 0; i < obj_list.size(); ++i)
 			{
 				docwire_log(debug) << "OLE object entry found: " << obj_list[i];
@@ -742,7 +742,7 @@ void DOCParser::plainText(const FormattingStyle& formatting) const
 				{
 					std::vector<std::string> obj_list;
 					if (!storage->getStreamsAndStoragesList(obj_list))
-						throw Exception("Error while loading list of streams and storages in " + currect_dir + " directory. OLE Storage has reported an error: " + storage->getLastError());
+						throw RuntimeError("Error while loading list of streams and storages in " + currect_dir + " directory. OLE Storage has reported an error: " + storage->getLastError());
 					if (find(obj_list.begin(), obj_list.end(), "Workbook") != obj_list.end())
 					{
 						docwire_log(debug) << "Embedded MS Excel workbook detected.";
@@ -752,9 +752,9 @@ void DOCParser::plainText(const FormattingStyle& formatting) const
 							XLSParser xls("");
 							obj_text = xls.plainText(*storage, formatting);
 						}
-						catch (Exception& ex)
+						catch (const std::exception& e)
 						{
-							docwire_log(error) << "Error while parsing embedded MS Excel workbook:\n" << ex.getBacktrace();
+							docwire_log(error) << "Error while parsing embedded MS Excel workbook:\n" << e.what();
 						}
 					}
 					storage->leaveDirectory();
@@ -769,13 +769,7 @@ void DOCParser::plainText(const FormattingStyle& formatting) const
 		storage->leaveDirectory();
 		curr_state.obj_texts_iter = curr_state.obj_texts.begin();
 	}
-	catch (std::bad_alloc& ba)
-	{
-		if (storage)
-			delete storage;
-		throw;
-	}
-	catch (Exception& ex)
+	catch (const std::exception& e)
 	{
 		if (storage)
 			delete storage;
@@ -790,7 +784,7 @@ void DOCParser::plainText(const FormattingStyle& formatting) const
 	{
 		if (parser && parser->fib().fEncrypted)
 			throw EncryptedFileException("File is encrypted");
-		throw Exception("Creating parser failed");
+		throw RuntimeError("Creating parser failed");
 	}
 	TextHandler text_handler(this, parser, &curr_state, formatting);
 	parser->setTextHandler(&text_handler);
@@ -802,7 +796,7 @@ void DOCParser::plainText(const FormattingStyle& formatting) const
 	bool res = parser->parse();
 	cerr_redirection.restore();
 	if (!res)
-		throw Exception("Parsing document failed");
+		throw RuntimeError("Parsing document failed");
 	text_handler.endOfDocument();
 }
 
@@ -821,13 +815,7 @@ Metadata DOCParser::metaData() const
 		storage = NULL;
 		return meta;
 	}
-	catch (std::bad_alloc& ba)
-	{
-		if (storage)
-			delete storage;
-		throw;
-	}
-	catch (Exception& ex)
+	catch (const std::exception& e)
 	{
 		if (storage)
 			delete storage;

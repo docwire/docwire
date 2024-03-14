@@ -108,7 +108,7 @@ struct EMLParser::Implementation
 						plain = parseText(plain, "html");
 					}
 				}
-				catch (Exception& ex)
+				catch (const std::exception& e)
 				{
 					docwire_log(warning) << "Warning: Error while parsing html content";
 				}
@@ -125,7 +125,7 @@ struct EMLParser::Implementation
 							plain = parseText(plain, "txt");
 						}
 					}
-					catch (Exception& ex)
+					catch (const std::exception& e)
 					{
 						docwire_log(warning) << "Warning: Error while parsing text content";
 					}
@@ -281,7 +281,7 @@ bool EMLParser::isEML() const
 	if (!impl->m_data_stream->good())
 	{
 		docwire_log(error) << "Error opening file " << impl->m_file_name;
-		throw Exception("Error opening file " + impl->m_file_name);
+		throw RuntimeError("Error opening file " + impl->m_file_name);
 	}
 	message mime_entity = parse_message(*impl->m_data_stream);
 	std::string from = mime_entity.from_to_string();
@@ -298,14 +298,14 @@ std::string EMLParser::plainText(const FormattingStyle& formatting) const
 	if (!isEML())
 	{
 		docwire_log(error) << "Specified file is not valid EML file";
-		throw Exception("Specified file is not valid EML file");
+		throw RuntimeError("Specified file is not valid EML file");
 	}
 	docwire_log(debug) << "stream_pos=" << impl->m_data_stream->tellg();
 	impl->m_data_stream->clear();
 	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
 	{
 		docwire_log(error) << "Stream seek operation failed";
-		throw Exception("Stream seek operation failed");
+		throw RuntimeError("Stream seek operation failed");
 	}
 	message mime_entity = parse_message(*impl->m_data_stream);
 	impl->extractPlainText(mime_entity, text, formatting);
@@ -319,15 +319,15 @@ Metadata EMLParser::metaData()
 	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
 	{
 		docwire_log(error) << "Stream seek operation failed";
-		throw Exception("Stream seek operation failed");
+		throw RuntimeError("Stream seek operation failed");
 	}
 	if (!isEML())
-		throw Exception("Specified file is not valid EML file");
+		throw RuntimeError("Specified file is not valid EML file");
 	impl->m_data_stream->clear();
 	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
 	{
 		docwire_log(error) << "Stream seek operation failed";
-		throw Exception("Stream seek operation failed");
+		throw RuntimeError("Stream seek operation failed");
 	}
 	message mime_entity = parse_message(*impl->m_data_stream);
 	metadata.setAuthor(mime_entity.from_to_string());

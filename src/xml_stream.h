@@ -24,7 +24,7 @@ class XmlStream
 		Implementation* impl;
 
 	public:
-		///Throws Exception if initialization has failed.
+		///Throws RuntimeError if initialization has failed.
 		XmlStream(const std::string& xml, bool manage_xml_parser, int xml_parse_options = 0);
 		~XmlStream();
 		operator bool();

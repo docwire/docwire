@@ -509,7 +509,7 @@ void* thread_func(void* data)
           ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
           MetaDataExporter() |
           Output(output_stream);
-    } catch (Exception& ex) {
+    } catch (const std::exception& e) {
         return new bool(false);
     }
 

@@ -515,7 +515,7 @@ std::filesystem::path locate_subpath(const std::filesystem::path& sub_path)
 		if (!full_path.empty())
 			return full_path;
 	}
-	throw Exception("Subpath not found");
+	throw RuntimeError("Subpath not found");
 }
 
 std::filesystem::path locate_resource(const std::filesystem::path& resource_sub_path)

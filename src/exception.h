@@ -20,99 +20,64 @@
 
 namespace docwire
 {
-	/**
-		This class is implementation of std::exception, which is used by DocWire.
-		In this implementation, errors can be formed in "stack".
 
-		In order to create exception just call:
-		\code
-		throw Exception("First error");
-		\endcode
-
-		You can catch exception and add one more error:
-		\code
-		catch (Exception& ex)
-		{
-			ex.appendError("Next error message");
-			throw;
-		}
-		\endcode
-
-		or you can catch exception and get "backtrace":
-		\code
-		catch (Exception& ex)
-		{
-			docwire_log(error) << ex.getBacktrace();
-		}
-		\endcode
-	**/
-	class DllExport Exception : public std::exception
-	{
-		private:
-			struct Implementation;
-			Implementation* impl;
-
-		public:
-
-			Exception() noexcept;
-
-			/**
-				The constructor.
-				\param first_error_message first error message (gives information about cause of an error).
-			**/
-			explicit Exception(const std::string& first_error_message) noexcept;
-
-			Exception(const Exception& ex) noexcept;
-
-			~Exception() noexcept;
-
-			Exception& operator = (const Exception& ex) noexcept;
-
-			const char* what(){ return "docwire_exception"; }
-
-			/**
-				Returns a string with all error messages. Each error message is numbered and separated by "\n".
-				Suppose we have thrown an exception:
-				\code
-				throw Exception("First error message");
-				\endcode
-				Next, we have added one more error:
-				\code
-				ex.appendError("Second error message");
-				\endcode
-				In the result getBacktrace will return a string: "Backtrace:\n1. First error message\n2. Second error message\n"
-			**/
-			std::string getBacktrace();
-
-			/**
-				Adds one more error message.
-			**/
-			void appendError(const std::string& error_message);
-
-			/**
-				returns an iterator to the first error message.
-			**/
-			std::list<std::string>::iterator getErrorIterator() const;
-
-			/**
-				Returns a number of error messages.
-			**/
-			size_t getErrorCount() const;
-	};
-
+/**
+ * @brief The exception class that is thrown when a logical error occurs.
+ *
+ * This exception class is derived from std::logic_error and should be used
+ * whenever logical error occurs, e.g. when input data is invalid.
+ *
+ * Example:
+ * \code
+ * if (input_data.size() == 0)
+ *     throw LogicError("Input data is empty");
+ * \endcode
+ */
 class DllExport LogicError : public std::logic_error
 {
 public:
+	/**
+	 * @brief Constructs the exception object.
+	 * @param message the exception message.
+	 */
 	LogicError(const std::string& message);
+	/**
+	 * @brief Constructs the exception object.
+	 * @param message the exception message.
+	 * @param nested nested exception.
+	 */
 	LogicError(const std::string& message, const std::exception& nested);
 };
 
+/**
+ * @brief The exception class that is thrown when a runtime error occurs.
+ *
+ * This exception class is derived from std::runtime_error and should be used
+ * whenever runtime error occurs, e.g. when there is not enough memory or
+ * when network connection is lost.
+ *
+ * Example:
+ * \code
+ * if (!allocateMemory())
+ *     throw RuntimeError("Not enough memory");
+ * \endcode
+ */
 class DllExport RuntimeError : public std::runtime_error
 {
 public:
+	/**
+	 * @brief Constructs the exception object.
+	 * @param message the exception message.
+	 */
 	RuntimeError(const std::string& message);
+	/**
+	 * @brief Constructs the exception object.
+	 * @param message the exception message.
+	 * @param nested nested exception.
+	 */
 	RuntimeError(const std::string& message, const std::exception& nested);
 };
+
 
 class EncryptedFileException : public docwire::RuntimeError
 {

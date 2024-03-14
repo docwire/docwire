@@ -131,12 +131,12 @@ std::string TXTParser::plainText() const
 	{
 		std::string encoding;
 		if (!impl->m_data_stream->open())
-			throw Exception("Could not open file: " + impl->m_file_name);
+			throw RuntimeError("Could not open file: " + impl->m_file_name);
 		std::string content;
 		size_t file_size = impl->m_data_stream->size();
 		content.resize(file_size);
 		if (!impl->m_data_stream->read(&content[0], 1, file_size))
-			throw Exception("Could not read from file: " + impl->m_file_name);
+			throw RuntimeError("Could not read from file: " + impl->m_file_name);
 		impl->m_data_stream->close();
 		charset_detector = csd_open();
 		if (charset_detector == (csd_t)-1)
@@ -186,7 +186,7 @@ std::string TXTParser::plainText() const
 		else
 			text = content;
 	}
-	catch (Exception& ex)
+	catch (const std::exception& e)
 	{
 		impl->m_data_stream->close();
 		if (converter)
@@ -195,7 +195,7 @@ std::string TXTParser::plainText() const
 		if (charset_detector)
 			csd_close(charset_detector);
 		charset_detector = NULL;
-		throw;
+		throw RuntimeError("Could not parse text: " + std::string(e.what()));
 	}
 	text.erase(std::remove(text.begin(), text.end(), '\r'), text.end());
 	return text;
