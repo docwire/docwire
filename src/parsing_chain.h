@@ -15,6 +15,7 @@
 #include <memory>
 #include <iostream>
 #include "defines.h"
+#include <vector>
 
 namespace docwire
 {
