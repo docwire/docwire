@@ -26,6 +26,7 @@
 #include "wv2/fields.h"
 #include "wv2/handlers.h"
 #include "metadata.h"
+#include <mutex>
 #include "oshared.h"
 #include "wv2/paragraphproperties.h"
 #include "wv2/parserfactory.h"

@@ -15,6 +15,7 @@
 #include <iostream>
 #include <libxml/xmlreader.h>
 #include "log.h"
+#include <mutex.h>
 
 namespace docwire
 {
