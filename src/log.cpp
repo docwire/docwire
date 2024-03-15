@@ -361,6 +361,7 @@ namespace
 struct cerr_log_redirection::implementation
 {
 	std::ostringstream string_stream;
+	std::unique_lock<std::mutex> cerr_log_redirection_mutex_lock;
 };
 
 cerr_log_redirection::cerr_log_redirection(source_location location)
@@ -379,7 +380,7 @@ void cerr_log_redirection::redirect()
 {
 	if (log_verbosity_includes(debug))
 	{
-		cerr_log_redirection_mutex.lock();
+		m_impl->cerr_log_redirection_mutex_lock = std::unique_lock<std::mutex>(cerr_log_redirection_mutex);
 		m_cerr_buf_backup = std::cerr.rdbuf(m_impl->string_stream.rdbuf());
 	}
 	else
@@ -392,7 +393,7 @@ void cerr_log_redirection::restore()
 	if (m_cerr_buf_backup != nullptr)
 	{
 		std::cerr.rdbuf(m_cerr_buf_backup);
-		cerr_log_redirection_mutex.unlock();
+		m_impl->cerr_log_redirection_mutex_lock.unlock();
 		m_cerr_buf_backup = nullptr;
 		if (!m_impl->string_stream.str().empty())
 		{
