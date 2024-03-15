@@ -22,7 +22,6 @@
 #include "log.h"
 #include "metadata.h"
 #include "plain_text_writer.h"
-#include <pthread.h>
 #include <mailio/message.hpp>
 
 namespace docwire
@@ -32,7 +31,10 @@ using mailio::mime;
 using mailio::message;
 using mailio::codec;
 
-pthread_mutex_t charset_converter_mutex = PTHREAD_MUTEX_INITIALIZER;
+namespace
+{
+	std::mutex charset_converter_mutex;	
+} // anonymous namespace
 
 struct EMLParser::Implementation
 {
@@ -51,14 +53,12 @@ struct EMLParser::Implementation
 	{
 		try
 		{
-			pthread_mutex_lock(&charset_converter_mutex);
+			std::lock_guard<std::mutex> charset_converter_mutex_lock(charset_converter_mutex);
 			htmlcxx::CharsetConverter converter(charset, "UTF-8");
 			text = converter.convert(text);
-			pthread_mutex_unlock(&charset_converter_mutex);
 		}
 		catch (htmlcxx::CharsetConverter::Exception& ex)
 		{
-			pthread_mutex_unlock(&charset_converter_mutex);
 			docwire_log(warning) << "Warning: Cant convert text to UTF-8 from " + charset;
 		}
 	}

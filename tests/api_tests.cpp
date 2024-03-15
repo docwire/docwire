@@ -12,9 +12,9 @@
 #include "office_formats_parser_provider.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
+#include <future>
 #include "gtest/gtest.h"
 #include "../src/exception.h"
-#include <pthread.h>
 #include <string_view>
 #include <tuple>
 #include "decompress_archives.h"
@@ -35,7 +35,6 @@
 #include "parse_detected_format.h"
 #include "plain_text_exporter.h"
 #include "post.h"
-#include "pthread.h"
 #include <regex>
 #include "transformer_func.h"
 #include "input.h"
@@ -493,34 +492,26 @@ class MultithreadedTest : public ::testing::TestWithParam<std::tuple<int, int, c
 {
 };
 
-void* thread_func(void* data)
+void thread_func(const std::string& file_name)
 {
-	std::string* file_name = (std::string*)data;
+    std::stringstream output_stream{};
 
-    try {
-        std::stringstream output_stream{};
+    Input(file_name) |
+      ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
+      PlainTextExporter() |
+      Output(output_stream);
 
-        Input(*file_name) |
-          ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
-          PlainTextExporter() |
-          Output(output_stream);
-
-        Input(*file_name) |
-          ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
-          MetaDataExporter() |
-          Output(output_stream);
-    } catch (const std::exception& e) {
-        return new bool(false);
-    }
-
-	pthread_exit(NULL);
+    Input(file_name) |
+      ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
+      MetaDataExporter() |
+      Output(output_stream);
 }
 
 TEST_P(MultithreadedTest, ReadFromFileTests)
 {
     const auto [lower, upper, format] = GetParam();
 
-    std::vector<pthread_t> threads;
+    std::vector<std::future<void>> threads;
 
     std::vector<std::string> file_names(upper - lower + 1);
 
@@ -529,34 +520,21 @@ TEST_P(MultithreadedTest, ReadFromFileTests)
         return std::to_string(i++) + "." + format_str;
     });
 
-    for(auto& file_name : file_names)
+    for(const auto& file_name : file_names)
     {
         // GIVEN
-      SCOPED_TRACE("file_name = " + file_name);
+        SCOPED_TRACE("file_name = " + file_name);
 
         // WHEN
-      pthread_t thread;
-      int res = pthread_create(&thread, NULL, thread_func, (void*)&file_name);
-
-      EXPECT_FALSE(res) << "Error creating thread " << res;
-      threads.push_back(thread);
+        threads.push_back(std::async(std::launch::async, thread_func, file_name));
     }
 
     // THEN
-    bool all_ok = true;
-    for (int i = 0; i < threads.size(); i++)
+    for (auto& thread : threads)
     {
-      void *status;
-      int res = pthread_join(threads[i], &status);
-      if (!res)
-        docwire_log(info) << "Thread " << i << " finished successfully.";
-      else
-      {
-        docwire_log(info) << "Thread " << i << " finished with error.";
-        all_ok = false;
-      }
+        thread.get();
+        docwire_log(info) << "Thread finished successfully.";
     }
-    ASSERT_TRUE(all_ok);
 }
 
 

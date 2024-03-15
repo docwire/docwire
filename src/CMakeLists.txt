@@ -98,7 +98,7 @@ else()
     else()
         find_library(archive archive REQUIRED)
     endif()
-    target_link_libraries(docwire_core PRIVATE ${wvWare} pthread ${archive})
+    target_link_libraries(docwire_core PRIVATE ${wvWare} ${archive})
     target_include_directories(docwire_core PUBLIC ${wvWare_incdir})
 endif()
 
@@ -184,7 +184,6 @@ else()
         ${wv2}
         ${htmlcxx}
         LibXml2::LibXml2 ${libxml2_dep_iconv} ${libxml2_dep_lzma}
-        pthread
         ZLIB::ZLIB
         ${charsetdetect}
         docwire_core
@@ -256,7 +255,7 @@ else()
     find_library(bfio bfio REQUIRED)
     find_library(pff pff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
-    target_link_libraries(docwire_mail PRIVATE ${bfio} ${pff} ${htmlcxx} pthread docwire_core)
+    target_link_libraries(docwire_mail PRIVATE ${bfio} ${pff} ${htmlcxx} docwire_core)
 endif()
 find_package(mailio CONFIG REQUIRED)
 target_link_libraries(docwire_mail PRIVATE mailio)

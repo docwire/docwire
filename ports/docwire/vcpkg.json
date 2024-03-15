@@ -71,10 +71,6 @@
 			"platform": "windows"
 		},
 		{
-			"name": "pthread",
-			"platform": "windows"
-		},
-		{
 			"name": "mailio"
 		},
 		{

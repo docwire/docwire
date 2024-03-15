@@ -38,6 +38,7 @@
 - Fix threading data-race problem in OCR parser related to libtiff library
 - Fix threading data-race problem in ODF/OOXML parser related to std::regex
 - Make hardcoded 30 sec OCR timeout configurable (no timeout by default)
+- Replace all pthread calls with modern C++ threading (std::mutex, std::lock_guard, std::async, std::future)
 
 ## Version 2024.01.05
 
