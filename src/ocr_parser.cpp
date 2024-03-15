@@ -214,12 +214,12 @@ std::string OCRParser::plainText(const FormattingStyle& formatting, const std::v
       });
     docwire_log_var(langs);
 
-    tesseract_libtiff_mutex.lock();
-    if (api->Init(impl->m_tessdata_prefix.c_str(), langs.c_str())) {
-        tesseract_libtiff_mutex.unlock();
-        throw RuntimeError{ "Could not initialize Tesseract." };
+    {
+        std::lock_guard<std::mutex> tesseract_libtiff_mutex_lock{ tesseract_libtiff_mutex };
+        if (api->Init(impl->m_tessdata_prefix.c_str(), langs.c_str())) {
+            throw RuntimeError{ "Could not initialize Tesseract." };
+        }
     }
-    tesseract_libtiff_mutex.unlock();
 
     // Read the image and convert to a gray-scale image
     PixWrapper gray{ nullptr, pixDeleter };

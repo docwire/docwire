@@ -8018,9 +8018,8 @@ struct PDFParser::Implementation
 								}
 								try
 								{
-									podofo_freetype_mutex.lock();
+									std::lock_guard<std::mutex> podofo_freetype_mutex_lock(podofo_freetype_mutex);
 									pCurFont = page->GetResources()->GetFont(font_name);
-									podofo_freetype_mutex.unlock();
 								}
 								catch (PoDoFo::PdfError &error)
 								{
@@ -8316,9 +8315,8 @@ PDFParser::~PDFParser()
 	{
 		if (impl->m_data_stream)
 			delete impl->m_data_stream;
-		podofo_freetype_mutex.lock();
+		std::lock_guard<std::mutex> podofo_freetype_mutex_lock(podofo_freetype_mutex);
 		delete impl;
-		podofo_freetype_mutex.unlock();
 	}
 }
 

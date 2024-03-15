@@ -239,7 +239,7 @@ if(MSVC)
             ${bfio}
             ${pff}
             docwire_core
-            ${htmlcxx}
+            ${htmlcxx})
     target_include_directories(docwire_mail PUBLIC
             ../
             .
