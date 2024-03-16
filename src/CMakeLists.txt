@@ -67,10 +67,8 @@ if(MSVC)
     set(wv2_prefix "${wv2_inc_dir}/..")
     find_library(wvWare wv2 HINTS "${wv2_prefix}/lib/static" REQUIRED)
     configure_file(${wv2_prefix}/bin/wv2.dll ${CMAKE_BINARY_DIR}/wv2.dll COPYONLY)
-    find_package(PThreads4W REQUIRED)
     find_package(LibArchive REQUIRED)
     target_link_libraries(docwire_core PRIVATE ${wvWare}
-                                                 PThreads4W::PThreads4W
                                                  LibArchive::LibArchive)
     target_include_directories(docwire_core PUBLIC ${wv2_inc_dir})
     target_compile_options(docwire_core PUBLIC /Zc:__cplusplus /Zc:preprocessor)
@@ -98,7 +96,7 @@ else()
     else()
         find_library(archive archive REQUIRED)
     endif()
-    target_link_libraries(docwire_core PRIVATE ${wvWare} pthread ${archive})
+    target_link_libraries(docwire_core PRIVATE ${wvWare} ${archive})
     target_include_directories(docwire_core PUBLIC ${wvWare_incdir})
 endif()
 
@@ -145,7 +143,6 @@ if(MSVC)
     find_library(podofo podofo REQUIRED)
     find_package(Freetype REQUIRED)
     find_library(unzip unzip REQUIRED)
-    find_package(PThreads4W REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
     find_library(charsetdetect charsetdetect REQUIRED)
     find_package(Iconv REQUIRED)
@@ -158,7 +155,6 @@ if(MSVC)
             ${charsetdetect}
             docwire_core
             Freetype::Freetype
-            PThreads4W::PThreads4W
             ZLIB::ZLIB
             Iconv::Iconv
             )
@@ -184,7 +180,6 @@ else()
         ${wv2}
         ${htmlcxx}
         LibXml2::LibXml2 ${libxml2_dep_iconv} ${libxml2_dep_lzma}
-        pthread
         ZLIB::ZLIB
         ${charsetdetect}
         docwire_core
@@ -240,13 +235,11 @@ if(MSVC)
     find_library(bfio NAMES bfio libbfio REQUIRED)
     find_library(pff NAMES pff libpff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
-    find_package(PThreads4W REQUIRED)
     target_link_libraries(docwire_mail PRIVATE
             ${bfio}
             ${pff}
             docwire_core
-            ${htmlcxx}
-            PThreads4W::PThreads4W)
+            ${htmlcxx})
     target_include_directories(docwire_mail PUBLIC
             ../
             .
@@ -256,7 +249,7 @@ else()
     find_library(bfio bfio REQUIRED)
     find_library(pff pff REQUIRED)
     find_library(htmlcxx htmlcxx REQUIRED)
-    target_link_libraries(docwire_mail PRIVATE ${bfio} ${pff} ${htmlcxx} pthread docwire_core)
+    target_link_libraries(docwire_mail PRIVATE ${bfio} ${pff} ${htmlcxx} docwire_core)
 endif()
 find_package(mailio CONFIG REQUIRED)
 target_link_libraries(docwire_mail PRIVATE mailio)

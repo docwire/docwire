@@ -26,6 +26,7 @@
 #include "wv2/fields.h"
 #include "wv2/handlers.h"
 #include "metadata.h"
+#include <mutex>
 #include "oshared.h"
 #include "wv2/paragraphproperties.h"
 #include "wv2/parserfactory.h"
@@ -33,7 +34,6 @@
 #include <sstream>
 #include "wv2/ustring.h"
 #include <vector>
-#include "pthread.h"
 #ifdef WIN32
 	#include <windows.h>
 #endif
@@ -50,8 +50,11 @@ namespace docwire
 
 using namespace wvWare;
 
-static pthread_mutex_t parser_factory_mutex_1 = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t parser_factory_mutex_2 = PTHREAD_MUTEX_INITIALIZER;
+namespace
+{
+	std::mutex parser_factory_mutex_1;
+	std::mutex parser_factory_mutex_2;
+} // anonymous namespace
 
 enum class TableState
 {
@@ -701,9 +704,11 @@ bool DOCParser::isDOC()
 		storage = new ThreadSafeOLEStorage(impl->m_buffer, impl->m_buffer_size);
 	else
 		storage = new ThreadSafeOLEStorage(impl->m_file_name);
-	pthread_mutex_lock(&parser_factory_mutex_1);
-	SharedPtr<wvWare::Parser> parser = ParserFactory::createParser(storage);
-	pthread_mutex_unlock(&parser_factory_mutex_1);
+	SharedPtr<wvWare::Parser> parser;
+	{
+		std::lock_guard<std::mutex> parser_factory_mutex_1_lock(parser_factory_mutex_1);
+		parser = ParserFactory::createParser(storage);
+	}
 	cerr_redirection.restore();
 	if (!parser || !parser->isOk())
 	{
@@ -776,9 +781,11 @@ void DOCParser::plainText(const FormattingStyle& formatting) const
 		throw;
 	}
 	cerr_log_redirection cerr_redirection(docwire_current_source_location());
-	pthread_mutex_lock(&parser_factory_mutex_2);
-	SharedPtr<wvWare::Parser> parser = ParserFactory::createParser(storage);
-	pthread_mutex_unlock(&parser_factory_mutex_2);
+	SharedPtr<wvWare::Parser> parser;
+	{
+		std::lock_guard<std::mutex> parser_factory_mutex_2_lock(parser_factory_mutex_2);
+		parser = ParserFactory::createParser(storage);
+	}
 	cerr_redirection.restore();
 	if (!parser || !parser->isOk())
 	{

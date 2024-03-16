@@ -30,6 +30,7 @@
 #include "exception.h"
 #include "log.h"
 #include "misc.h"
+#include <mutex>
 #include <numeric>
 
 namespace docwire
@@ -179,6 +180,11 @@ bool cancel (void* data, int words)
 
 using magic_enum::ostream_operators::operator<<;
 
+namespace
+{
+    std::mutex tesseract_libtiff_mutex;
+} // anonymous namespace
+
 std::string OCRParser::plainText(const FormattingStyle& formatting, const std::vector<Language>& languages) const
 {
     tessAPIWrapper api{ nullptr, tessAPIDeleter };
@@ -208,16 +214,20 @@ std::string OCRParser::plainText(const FormattingStyle& formatting, const std::v
       });
     docwire_log_var(langs);
 
-    if (api->Init(impl->m_tessdata_prefix.c_str(), langs.c_str())) {
-        throw RuntimeError{ "Could not initialize Tesseract." };
+    {
+        std::lock_guard<std::mutex> tesseract_libtiff_mutex_lock{ tesseract_libtiff_mutex };
+        if (api->Init(impl->m_tessdata_prefix.c_str(), langs.c_str())) {
+            throw RuntimeError{ "Could not initialize Tesseract." };
+        }
     }
 
     // Read the image and convert to a gray-scale image
     PixWrapper gray{ nullptr, pixDeleter };
 
+    tesseract_libtiff_mutex.lock();
     PixWrapper image(impl->m_file_name.empty() ? pixReadMem((const unsigned char*)(impl->m_buffer), impl->m_buffer_size)
                      : pixRead(impl->m_file_name.c_str()), pixDeleter);
-
+    tesseract_libtiff_mutex.unlock();
 
     PixWrapper inverted{ nullptr, pixDeleter };
     try
@@ -252,7 +262,11 @@ std::string OCRParser::plainText(const FormattingStyle& formatting, const std::v
 
     api->SetImage(inverted.get());
     tesseract::ETEXT_DESC monitor;
-    monitor.set_deadline_msecs(TIMEOUT);
+    auto ocr_timeout = m_parameters.getParameterValue<int32_t>("ocr_timeout");
+    if (ocr_timeout)
+    {
+        monitor.set_deadline_msecs(*ocr_timeout);
+    }
     monitor.cancel = &cancel;
     monitor.cancel_this = &(impl->m_on_new_node_signal);
     api->Recognize(&monitor);

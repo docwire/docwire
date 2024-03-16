@@ -19,7 +19,7 @@
 #include <map>
 #include "metadata.h"
 #include "misc.h"
-#include "pthread.h"
+#include <mutex>
 #include <sstream>
 #include <stack>
 #include <stdio.h>
@@ -551,7 +551,12 @@ static void execCommand(DataStream& data_stream, UString& text, int& skip, RTFPa
 		}
 	}
 }
-static pthread_mutex_t converter_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+namespace
+{
+	std::mutex converter_mutex;
+} // anonymous namespace
+
 std::string RTFParser::plainText() const
 {
 	UString text;
@@ -580,9 +585,10 @@ std::string RTFParser::plainText() const
 					if (!parseCommand(*impl->m_data_stream, cmd, arg))
 						break;
 					UString fragment_text;
-					pthread_mutex_lock(&converter_mutex);
-					execCommand(*impl->m_data_stream, fragment_text, skip, state, cmd, arg, converter);
-					pthread_mutex_unlock(&converter_mutex);
+					{
+						std::lock_guard<std::mutex> converter_mutex_lock(converter_mutex);
+						execCommand(*impl->m_data_stream, fragment_text, skip, state, cmd, arg, converter);
+					}
 					if (state.groups.top().in_annotation)
 						state.annotation_text += fragment_text;
 					else

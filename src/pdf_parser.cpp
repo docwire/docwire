@@ -24,7 +24,6 @@
 #include "misc.h"
 #include <mutex>
 #include <new>
-#include "pthread.h"
 #include <set>
 #include <sstream>
 #include <strstream>
@@ -41,7 +40,10 @@
 namespace docwire
 {
 
-static pthread_mutex_t load_document_mutex = PTHREAD_MUTEX_INITIALIZER;
+namespace
+{
+	std::mutex load_document_mutex;
+} // unnamed namespace
 
 //some functions specific for this parser
 
@@ -682,6 +684,11 @@ log_record_stream& operator<<(log_record_stream& s, const PoDoFo::PdfContent& c)
 	s << docwire_log_streamable_obj(c, c.Type, c.Keyword, c.Stack);
 	return s;
 }
+
+namespace
+{
+	std::mutex podofo_freetype_mutex;
+} // anonymous namespace
 
 struct PDFParser::Implementation
 {
@@ -8011,6 +8018,7 @@ struct PDFParser::Implementation
 								}
 								try
 								{
+									std::lock_guard<std::mutex> podofo_freetype_mutex_lock(podofo_freetype_mutex);
 									pCurFont = page->GetResources()->GetFont(font_name);
 								}
 								catch (PoDoFo::PdfError &error)
@@ -8225,7 +8233,7 @@ struct PDFParser::Implementation
 	void loadDocument()
 	{
 		docwire_log_func();
-    pthread_mutex_lock(&load_document_mutex);
+		std::lock_guard<std::mutex> load_document_mutex_lock(load_document_mutex);
 		resetDataStream();
 		try
 		{
@@ -8233,7 +8241,6 @@ struct PDFParser::Implementation
 		}
 		catch (const PoDoFo::PdfError& e)
 		{
-      pthread_mutex_unlock(&load_document_mutex);
 			docwire_log(error) << e;
 			if (e.GetCode() == PoDoFo::PdfErrorCode::NotCompiled || e.GetCode() == PoDoFo::PdfErrorCode::InternalLogic)
 			{
@@ -8244,7 +8251,6 @@ struct PDFParser::Implementation
 				throw RuntimeError("Pdf parsing failed", e);
 			}
 		}
-    pthread_mutex_unlock(&load_document_mutex);
 	}
 };
 
@@ -8309,6 +8315,7 @@ PDFParser::~PDFParser()
 	{
 		if (impl->m_data_stream)
 			delete impl->m_data_stream;
+		std::lock_guard<std::mutex> podofo_freetype_mutex_lock(podofo_freetype_mutex);
 		delete impl;
 	}
 }

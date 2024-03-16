@@ -17,13 +17,13 @@
 #include <map>
 #include <math.h>
 #include "misc.h"
+#include <mutex>
 #include "oshared.h"
 #include <set>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wv2/ustring.h>
-#include "pthread.h"
 #include "wv2/textconverter.h"
 #include "wv2/utilities.h"
 #include <vector>
@@ -36,8 +36,11 @@ using namespace wvWare;
 namespace docwire
 {
 
-static pthread_mutex_t xls_converter_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t parser_mutex = PTHREAD_MUTEX_INITIALIZER;
+namespace
+{
+	std::mutex xls_converter_mutex;
+	std::mutex parser_mutex;
+} // anonymous namespace
 
 enum RecordType
 {
@@ -352,10 +355,9 @@ struct XLSParser::Implementation
 				std::string c2(1, *s);
 				if (m_codepage != "ASCII")
 				{
-					pthread_mutex_lock(&xls_converter_mutex);
+					std::lock_guard<std::mutex> xls_converter_mutex_lock(xls_converter_mutex);
 					TextConverter tc(m_codepage);
 					dest += ustring_to_string(tc.convert(c2));
-					pthread_mutex_unlock(&xls_converter_mutex);
 				}
 				else
 					dest += c2;
@@ -968,7 +970,7 @@ std::string XLSParser::plainText(ThreadSafeOLEStorage& storage, const Formatting
 	ThreadSafeOLEStreamReader* reader = NULL;
 	try
 	{
-		pthread_mutex_lock(&parser_mutex);
+		std::lock_guard<std::mutex> parser_mutex_lock(parser_mutex);
 		reader = (ThreadSafeOLEStreamReader*)storage.createStreamReader("Workbook");
 		if (reader == NULL)
 		{
@@ -982,14 +984,12 @@ std::string XLSParser::plainText(ThreadSafeOLEStorage& storage, const Formatting
 		}
 		std::string text;
 		impl->parseXLS(*reader, text);
-		pthread_mutex_unlock(&parser_mutex);
 		delete reader;
 		reader = NULL;
 		return text;
 	}
 	catch (const std::exception& e)
 	{
-		pthread_mutex_unlock(&parser_mutex);
 		if (reader)
 			delete reader;
 		reader = NULL;

@@ -121,7 +121,7 @@ class ODFOOXMLParser::CommandHandlersSet
 			ODFOOXMLParser& p = (ODFOOXMLParser&)parser;
 			int expected_col_num = p.lastOOXMLColNum() + 1;
 			std::string cell_addr_attr = xml_stream.attribute("r");
-			std::regex cell_addr_rgx("([A-Z]+)([0-9]+)");
+			static const std::regex cell_addr_rgx("([A-Z]+)([0-9]+)");
 			std::smatch match;
 			if (std::regex_match(cell_addr_attr, match, cell_addr_rgx) && match.size() == 3)
 			{

@@ -21,7 +21,6 @@
 #include <iomanip>
 #include <iostream>
 #include <magic_enum.hpp>
-#include <pthread.h>
 #include <sstream>
 #include <stack>
 
@@ -354,11 +353,15 @@ DllExport std::unique_ptr<log_record_stream> create_log_record_stream(severity_l
 	return create_log_record_stream_func(severity, location);
 }
 
-static pthread_mutex_t cerr_log_redirection_mutex = PTHREAD_MUTEX_INITIALIZER;
+namespace
+{
+	std::mutex cerr_log_redirection_mutex;
+} // anonymous namespace
 
 struct cerr_log_redirection::implementation
 {
 	std::ostringstream string_stream;
+	std::unique_lock<std::mutex> cerr_log_redirection_mutex_lock;
 };
 
 cerr_log_redirection::cerr_log_redirection(source_location location)
@@ -377,7 +380,7 @@ void cerr_log_redirection::redirect()
 {
 	if (log_verbosity_includes(debug))
 	{
-		pthread_mutex_lock(&cerr_log_redirection_mutex);
+		m_impl->cerr_log_redirection_mutex_lock = std::unique_lock<std::mutex>(cerr_log_redirection_mutex);
 		m_cerr_buf_backup = std::cerr.rdbuf(m_impl->string_stream.rdbuf());
 	}
 	else
@@ -390,7 +393,7 @@ void cerr_log_redirection::restore()
 	if (m_cerr_buf_backup != nullptr)
 	{
 		std::cerr.rdbuf(m_cerr_buf_backup);
-		pthread_mutex_unlock(&cerr_log_redirection_mutex);
+		m_impl->cerr_log_redirection_mutex_lock.unlock();
 		m_cerr_buf_backup = nullptr;
 		if (!m_impl->string_stream.str().empty())
 		{

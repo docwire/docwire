@@ -15,40 +15,41 @@
 #include <iostream>
 #include <libxml/xmlreader.h>
 #include "log.h"
-#include "pthread.h"
+#include <mutex>
 
 namespace docwire
 {
 
 static size_t xml_parser_usage_counter = 0;
-static pthread_mutex_t xml_parser_usage_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+namespace
+{
+	std::mutex xml_parser_usage_counter_mutex;
+} // anonymous namespace
 
 static void checkXmlMemGet()
 {
 	//in windows 64 bit there is a problem with initialization of some pointers to functions.
 	//to make sure xmlMemGet will not be called twice I'm protecting this code with mutexes.
-	pthread_mutex_lock(&xml_parser_usage_counter_mutex);
+	std::lock_guard<std::mutex> xml_parser_usage_counter_mutex_lock(xml_parser_usage_counter_mutex);
 	if (!xmlFree)
 		xmlMemGet(&xmlFree, &xmlMalloc, &xmlRealloc, NULL);
-	pthread_mutex_unlock(&xml_parser_usage_counter_mutex);
 }
 
 static void initXmlParser()
 {
-	pthread_mutex_lock(&xml_parser_usage_counter_mutex);
+	std::lock_guard<std::mutex> xml_parser_usage_counter_mutex_lock(xml_parser_usage_counter_mutex);
 	if (xml_parser_usage_counter == 0)
 		xmlInitParser();
 	xml_parser_usage_counter++;
-	pthread_mutex_unlock(&xml_parser_usage_counter_mutex);
 }
 
 static void cleanupXmlParser()
 {
-	pthread_mutex_lock(&xml_parser_usage_counter_mutex);
+	std::lock_guard<std::mutex> xml_parser_usage_counter_mutex_lock(xml_parser_usage_counter_mutex);
 	xml_parser_usage_counter--;
 	if (xml_parser_usage_counter == 0)
 		xmlCleanupParser();
-	pthread_mutex_unlock(&xml_parser_usage_counter_mutex);
 }
 
 // warning TODO: Maybe it will be good direction if XmlStream will not require loading whole xml data at once? For now\
