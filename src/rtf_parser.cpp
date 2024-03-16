@@ -19,6 +19,7 @@
 #include <map>
 #include "metadata.h"
 #include "misc.h"
+#include <mutex>
 #include <sstream>
 #include <stack>
 #include <stdio.h>
