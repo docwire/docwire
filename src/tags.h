@@ -21,6 +21,7 @@
 #include <fstream>
 #include <optional>
 #include <variant>
+#include <vector>
 
 namespace docwire
 {
