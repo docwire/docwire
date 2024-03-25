@@ -1,5 +1,30 @@
 $ErrorActionPreference = "Stop"
 
+<#
+.SYNOPSIS
+Invokes an external command and fails the script if it exits with a non-zero exit code.
+
+.DESCRIPTION
+The invoke-externalcommand function is needed because PowerShell does not fail a script if a command it invokes exits with a non-zero exit code.
+This function works around that behavior by invoking the command and then checking the LASTEXITCODE variable.
+If the exit code is not zero, an error is thrown.
+
+.EXAMPLE
+Invoke-ExternalCommand { git commit -m "My commit message" }
+
+This command will invoke 'git commit' with the given arguments and fail the script if it exits with a non-zero exit code.
+#>
+function Invoke-ExternalCommand {
+    param(
+        [ScriptBlock]$ScriptBlock
+    )
+    & $ScriptBlock
+    if ($LASTEXITCODE -ne 0) {
+        $errorMessage = "Command { $ScriptBlock } failed with exit code $LASTEXITCODE."
+        throw $errorMessage
+    }
+}
+
 if ($env:DOWNLOAD_VCPKG -ne "0")
 {
     if (Test-Path vcpkg)
@@ -69,7 +94,9 @@ if ($Env:OPENAI_API_KEY -ne $null -and $env:OPENAI_API_KEY -ne "") {
 } else {
     Write-Host "DEBUG: OPENAI_API_KEY does not exist."
 }
-vcpkg\vcpkg --overlay-ports=ports install ${VCPKG_DEBUG_OPTION} docwire${FEATURES}:${VCPKG_TRIPLET}
+Invoke-ExternalCommand {
+    vcpkg\vcpkg --overlay-ports=ports install ${VCPKG_DEBUG_OPTION} docwire${FEATURES}:${VCPKG_TRIPLET}
+}
 
 if ($Env:SANITIZER -ne $null -and $env:SANITIZER -ne "")
 {
