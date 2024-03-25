@@ -327,7 +327,7 @@ struct File
   {
     return std::visit(
       overloaded {
-        [](const std::string& source) {
+        [](const std::filesystem::path& source) {
           return std::shared_ptr<std::istream>(new std::ifstream(source, std::ios::binary));
         },
         [](std::shared_ptr<std::istream> source) {
@@ -342,8 +342,8 @@ struct File
   {
     return std::visit(
       overloaded {
-        [](const std::string& source) {
-          return source;
+        [](const std::filesystem::path& source) {
+          return source.string();
         },
         [this](std::shared_ptr<std::istream> source) {
           return name.value_or("");
