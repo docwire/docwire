@@ -9,46 +9,25 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "plain_text_exporter.h"
+#ifndef DOCWIRE_LOG_VARIANT_H
+#define DOCWIRE_LOG_VARIANT_H
 
-//#include "parser.h"
-#include "plain_text_writer.h"
-#include <sstream>
+#include "log.h"
+#include <variant>
 
 namespace docwire
 {
 
-struct PlainTextExporter::Implementation
+template<typename... Ts>
+log_record_stream& operator<<(log_record_stream& log_stream, const std::variant<Ts...>& variant)
 {
-	std::shared_ptr<std::stringstream> m_stream;
-	PlainTextWriter m_writer;
-};
-
-PlainTextExporter::PlainTextExporter()
-	: impl(new Implementation)
-{}
-
-PlainTextExporter::PlainTextExporter(const PlainTextExporter& other)
-	: impl(new Implementation(), ImplementationDeleter())
-{
-}
-
-void PlainTextExporter::process(Info &info) const
-{
-	if (std::holds_alternative<tag::Document>(info.tag) || !impl->m_stream)
-		impl->m_stream = std::make_shared<std::stringstream>();
-	impl->m_writer.write_to(info.tag, *impl->m_stream);
-	if (std::holds_alternative<tag::CloseDocument>(info.tag))
-	{
-		Info info(tag::File{impl->m_stream, std::string("plain_text_export.txt")});
-		emit(info);
-		impl->m_stream.reset();
-	}
-}
-
-void PlainTextExporter::ImplementationDeleter::operator()(PlainTextExporter::Implementation* impl)
-{
-	delete impl;
+    std::visit([&](const auto& value)
+    {
+        log_stream << begin_complex() << docwire_log_streamable_type_of(variant) << std::make_pair("value", value) << end_complex();
+    }, variant);
+    return log_stream;
 }
 
 } // namespace docwire
+
+#endif // DOCWIRE_LOG_VARIANT_H

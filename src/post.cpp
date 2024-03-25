@@ -59,18 +59,14 @@ Post::~Post()
 void
 Post::process(Info &info) const
 {
-	if (info.tag_name != StandardTag::TAG_FILE)
+	if (!std::holds_alternative<tag::File>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	docwire_log(debug) << "TAG_FILE received";
-	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
-	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
-	std::optional<std::string> name = info.getAttributeValue<std::string>("name");
-	if(!path && !stream)
-		throw FileTagIncorrect("No path or stream in TAG_FILE");
-	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
+	docwire_log(debug) << "tag::File received";
+	const tag::File& file = std::get<tag::File>(info.tag);
+	std::shared_ptr<std::istream> in_stream = file.access_stream();
 
 	curlpp::Easy request;
 	request.setOpt<curlpp::options::Url>(impl->m_url);
@@ -112,7 +108,8 @@ Post::process(Info &info) const
 				FileName m_file_name;
 				std::shared_ptr<std::string> m_buffer;
 		};
-		FileName file_name { name ? std::filesystem::path(*name) : (path ? std::filesystem::path(*path).filename() : impl->m_default_file_name.v) };
+		std::string name = file.access_name();
+		FileName file_name { name.empty() ? impl->m_default_file_name.v : std::filesystem::path(name).filename() };
 		parts.push_back(new FileBuffer(impl->m_pipe_field_name, file_name, std::make_shared<std::string>(data_stream.str())));
 		request.setOpt(new curlpp::options::HttpPost(parts));
 	}
@@ -135,15 +132,15 @@ Post::process(Info &info) const
 		typedef curlpp::OptionTrait<std::string, CURLOPT_XOAUTH2_BEARER> XOAuth2Bearer;
 		request.setOpt(XOAuth2Bearer(impl->m_oauth2_bearer_token));
 	}
-	std::stringstream response_stream;
-	curlpp::options::WriteStream ws(&response_stream);
+	auto response_stream = std::make_shared<std::stringstream>();
+	curlpp::options::WriteStream ws(response_stream.get());
 	request.setOpt(ws);
 	try
 	{
 		request.perform();
 		auto response_code = curlpp::infos::ResponseCode::get(request);
 		if (response_code < 200 || response_code > 299)
-			throw RequestFailed("HTTP response code is " + std::to_string(response_code) + " with response " + response_stream.str());
+			throw RequestFailed("HTTP response code is " + std::to_string(response_code) + " with response " + response_stream->str());
 	}
 	catch (curlpp::LogicError &e)
 	{
@@ -153,10 +150,8 @@ Post::process(Info &info) const
 	{
 		throw RequestFailed("HTTP request failed", e);
 	}
-	Info new_info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&response_stream}, {"name", ""}});
+	Info new_info(tag::File{response_stream, ""});
 	emit(new_info);
-	if (path)
-		delete in_stream;
 }
 
 Post* Post::clone() const

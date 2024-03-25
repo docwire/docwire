@@ -17,9 +17,9 @@ NewNodeCallback StandardFilter::filterByFolderName(const std::vector<std::string
 {
   return [names](Info &info)
   {
-    if (info.tag_name != StandardTag::TAG_FOLDER)
+    if (!std::holds_alternative<tag::Folder>(info.tag))
       return;
-    auto folder_name = info.getAttributeValue<std::string>("name");
+    auto folder_name = std::get<tag::Folder>(info.tag).name;
     if (folder_name)
     {
       if (!std::any_of(names.begin(), names.end(), [&folder_name](const std::string &name){return (*folder_name) == name;}))
@@ -34,11 +34,11 @@ NewNodeCallback StandardFilter::filterByAttachmentType(const std::vector<std::st
 {
   return [types](Info &info)
   {
-    if (info.tag_name != StandardTag::TAG_ATTACHMENT)
+    if (!std::holds_alternative<tag::Attachment>(info.tag))
       return;
-    if (info.attributes.find("extension") == info.attributes.end())
+    if (!std::get<tag::Attachment>(info.tag).extension)
       return;
-    auto attachment_type = info.getAttributeValue<std::string>("extension");
+    auto attachment_type = std::get<tag::Attachment>(info.tag).extension;
     if (attachment_type)
     {
       if (!std::any_of(types.begin(), types.end(), [&attachment_type](const std::string &type){return (*attachment_type) == type;}))
@@ -53,9 +53,9 @@ NewNodeCallback StandardFilter::filterByMailMinCreationTime(unsigned int min_tim
 {
   return [min_time](Info &info)
   {
-    if (info.tag_name != StandardTag::TAG_MAIL)
+    if (!std::holds_alternative<tag::Mail>(info.tag))
       return;
-    auto mail_creation_time = info.getAttributeValue<unsigned int>("date");
+    auto mail_creation_time = std::get<tag::Mail>(info.tag).date;
     if (mail_creation_time)
     {
       if (*mail_creation_time < min_time)
@@ -70,9 +70,9 @@ NewNodeCallback StandardFilter::filterByMailMaxCreationTime(unsigned int max_tim
 {
   return [max_time](Info &info)
   {
-    if (info.tag_name != StandardTag::TAG_MAIL)
+    if (!std::holds_alternative<tag::Mail>(info.tag))
       return;
-    auto mail_creation_time = info.getAttributeValue<unsigned int>("date");
+    auto mail_creation_time = std::get<tag::Mail>(info.tag).date;
     if (mail_creation_time)
     {
       if (mail_creation_time > max_time)

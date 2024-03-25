@@ -13,11 +13,10 @@
 #define DOCWIRE_WRITER_H
 
 #include "defines.h"
+#include "tags.h"
 
 namespace docwire
 {
-
-struct Info;
 
 class TextElement
 {
@@ -44,7 +43,7 @@ public:
    * @param info structures using by the callback
    * @param file output stream
    */
-  virtual void write_to(const Info &info, std::ostream &file) = 0;
+  virtual void write_to(const Tag& tag, std::ostream &file) = 0;
 
   /**
    * @brief creates a new instance of Writer

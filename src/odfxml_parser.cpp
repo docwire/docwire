@@ -17,7 +17,6 @@
 #include <boost/signals2.hpp>
 #include <libxml/xmlreader.h>
 #include "log.h"
-#include "metadata.h"
 #include "misc.h"
 #include "xml_stream.h"
 
@@ -172,10 +171,10 @@ std::string ODFXMLParser::plainText(XmlParseMode mode, FormattingStyle& formatti
 	return text;
 }
 
-Metadata ODFXMLParser::metaData() const
+tag::Metadata ODFXMLParser::metaData() const
 {
 	docwire_log(debug) << "Extracting metadata.";
-	Metadata metadata;
+	tag::Metadata metadata;
 
 	std::string xml_content;
 	if (extended_impl->m_buffer_size > 0)
@@ -196,7 +195,7 @@ Metadata ODFXMLParser::metaData() const
 	{
 		throw RuntimeError("Error parsing metadata in Flat XML file", e);
 	}
-	if (metadata.pageCount() == -1)
+	if (!metadata.page_count)
 	{
 		// If we are processing ODP use slide count as page count
 		// If we are processing ODG extract page count the same way
@@ -208,7 +207,7 @@ Metadata ODFXMLParser::metaData() const
 			for (size_t pos = xml_content.find(page_str); pos != std::string::npos;
 					pos = xml_content.find(page_str, pos + page_str.length()))
 				page_count++;
-			metadata.setPageCount(page_count);
+			metadata.page_count = page_count;
 		}
 	}
 	return metadata;
@@ -227,8 +226,7 @@ ODFXMLParser::parse() const
 	docwire_log(debug) << "Using ODFXML parser.";
 	auto formatting_style = getFormattingStyle();
   plainText(XmlParseMode::PARSE_XML, formatting_style);
-	Metadata meta_data = metaData();
-  Info info(StandardTag::TAG_METADATA, "", meta_data.getFieldsAsAny());
+  Info info(metaData());
   extended_impl->m_on_new_node_signal(info);
 }
 

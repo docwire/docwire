@@ -13,6 +13,7 @@
 #define DOCWIRE_PPT_PARSER_H
 
 #include <string>
+#include "tags.h"
 #include <vector>
 
 namespace docwire
@@ -34,7 +35,7 @@ class PPTParser
     static std::vector<std::string> getExtensions() {return {"ppt", "pps"};}
 		bool isPPT();
 		std::string plainText(const FormattingStyle& formatting);
-		Metadata metaData();
+		tag::Metadata metaData();
 };
 
 } // namespace docwire

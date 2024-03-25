@@ -20,7 +20,6 @@
 #include <list>
 #include "log.h"
 #include <map>
-#include "metadata.h"
 #include "misc.h"
 #include <mutex>
 #include <new>
@@ -7762,7 +7761,7 @@ struct PDFParser::Implementation
 		for (size_t page_num = 0; page_num < page_count; page_num++)
 		{
 			docwire_log_var(page_num);
-			auto response = m_owner->sendTag(StandardTag::TAG_PAGE);
+			auto response = m_owner->sendTag(tag::Page{});
 			if (response.skip)
 			{
 				continue;
@@ -8093,12 +8092,12 @@ struct PDFParser::Implementation
 				std::string single_page_text;
 				page_text.getText(single_page_text);
 				single_page_text += "\n\n";
-				auto response = m_owner->sendTag(StandardTag::TAG_TEXT, single_page_text);
+				auto response = m_owner->sendTag(tag::Text{single_page_text});
 				if (response.cancel)
 				{
 					break;
 				}
-        auto response2 = m_owner->sendTag(StandardTag::TAG_CLOSE_PAGE);
+        auto response2 = m_owner->sendTag(tag::ClosePage{});
         if (response2.cancel)
         {
           break;
@@ -8112,7 +8111,7 @@ struct PDFParser::Implementation
 		}
 	}
 
-	void parseMetadata(PDFReader& pdf_reader, Metadata& metadata)
+	void parseMetadata(PDFReader& pdf_reader, tag::Metadata& metadata)
 	{
 		//according to PDF specification, we can extract: author, creation date and last modification date.
 		//LastModifyBy is not possible. Other metadata information available in PDF are not supported in Metadata class.
@@ -8127,7 +8126,7 @@ struct PDFParser::Implementation
 			{
 				got_author = true;
 				author->ConvertToLiteral();
-				metadata.setAuthor(author->m_value);
+				metadata.author = author->m_value;
 			}
 			PDFReader::PDFString* creation_date = info->getObjAsString("CreationDate");
 			if (creation_date)
@@ -8141,7 +8140,7 @@ struct PDFParser::Implementation
 					++offset;
 				creation_date_str.erase(0, offset);
 				parsePDFDate(creation_date_tm, creation_date_str);
-				metadata.setCreationDate(creation_date_tm);
+				metadata.creation_date = creation_date_tm;
 			}
 			PDFReader::PDFString* modify_date = info->getObjAsString("ModDate");
 			if (modify_date)
@@ -8155,7 +8154,7 @@ struct PDFParser::Implementation
 					++offset;
 				mod_date_str.erase(0, offset);
 				parsePDFDate(modify_date_tm, mod_date_str);
-				metadata.setLastModificationDate(modify_date_tm);
+				metadata.last_modification_date = modify_date_tm;
 			}
 		}
 		if (!got_author || !got_creation_date || !got_modify_date)
@@ -8174,7 +8173,7 @@ struct PDFParser::Implementation
 						std::string author;
 						while (pos < content.length() && content[pos] != '\"' && content[pos] != '\'' && content[pos] != '<')
 							author += content[pos];
-						metadata.setAuthor(author);
+						metadata.author = author;
 					}
 				}
 				if (!got_creation_date)
@@ -8195,7 +8194,7 @@ struct PDFParser::Implementation
 							creation_date += content[pos];
 						tm creation_date_tm;
 						if (string_to_date(creation_date, creation_date_tm))
-							metadata.setCreationDate(creation_date_tm);
+							metadata.creation_date = creation_date_tm;
 					}
 				}
 				if (!got_modify_date)
@@ -8216,12 +8215,12 @@ struct PDFParser::Implementation
 							modify_date += content[pos];
 						tm modify_date_tm;
 						if (string_to_date(modify_date, modify_date_tm))
-							metadata.setLastModificationDate(modify_date_tm);
+							metadata.last_modification_date = modify_date_tm;
 					}
 				}
 			}
 		}
-		metadata.setPageCount(m_pdf_document.GetPages().GetCount());
+		metadata.page_count = m_pdf_document.GetPages().GetCount();
 	}
 
 	void resetDataStream()
@@ -8338,9 +8337,9 @@ bool PDFParser::isPDF()
 	return true;
 }
 
-Metadata PDFParser::metaData()
+tag::Metadata PDFParser::metaData()
 {
-	Metadata metadata;
+	tag::Metadata metadata;
 	impl->loadDocument();
 	Implementation::PDFReader pdf_reader(impl->m_data_stream);
 	impl->parseMetadata(pdf_reader, metadata);

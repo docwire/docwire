@@ -24,7 +24,6 @@
 #include <vector>
 #include <cmath>
 #include "misc.h"
-#include "metadata.h"
 
 namespace docwire
 {
@@ -1782,7 +1781,7 @@ struct IWorkParser::Implementation
 		typedef void (IWorkMetadataContent::*XmlElementHandler)(void);
 
 		XmlReader* m_xml_reader;
-		Metadata* m_metadata;
+		tag::Metadata* m_metadata;
 		bool m_in_metadata;
 		bool m_in_authors;
 		bool m_in_publication_info;
@@ -1795,7 +1794,7 @@ struct IWorkParser::Implementation
 		std::string m_creation_date;
 		std::string m_last_modify_date;
 
-		IWorkMetadataContent(XmlReader& xml_reader, Metadata& metadata)
+		IWorkMetadataContent(XmlReader& xml_reader, tag::Metadata& metadata)
 		{
 			m_xml_reader = &xml_reader;
 			m_metadata = &metadata;
@@ -1818,20 +1817,20 @@ struct IWorkParser::Implementation
 				{
 					if (m_pages_count > 0)
 					{
-						m_metadata->setPageCount(m_pages_count);
+						m_metadata->page_count = m_pages_count;
 					}
 					if (m_authors.length() > 0)
 					{
 						std::vector<char> dest_authors(m_authors.length() * 2);
 						size_t decoded_size = decode_html_entities_utf8(&dest_authors[0], m_authors.data());
 						m_authors = std::string(&dest_authors[0], decoded_size);
-						m_metadata->setAuthor(m_authors);
+						m_metadata->author = m_authors;
 					}
 					if (m_creation_date.length() > 0)
 					{
 						tm creation_date;
 						if (string_to_date(m_creation_date, creation_date))
-							m_metadata->setCreationDate(creation_date);
+							m_metadata->creation_date = creation_date;
 						else
 							docwire_log(error) << "Error occured during parsing date: " << m_creation_date << ".";
 					}
@@ -1839,7 +1838,7 @@ struct IWorkParser::Implementation
 					{
 						tm last_modification_date;
 						if (string_to_date(m_last_modify_date, last_modification_date))
-							m_metadata->setLastModificationDate(last_modification_date);
+							m_metadata->last_modification_date = last_modification_date;
 						else
 							docwire_log(error) << "Error occured during parsing date: " << m_last_modify_date << ".";
 					}
@@ -1978,7 +1977,7 @@ struct IWorkParser::Implementation
 		}
 	};
 
-	void ReadMetadata(ZipReader& zipfile, Metadata& metadata)
+	void ReadMetadata(ZipReader& zipfile, tag::Metadata& metadata)
 	{
 		DataSource xml_data_source(zipfile, m_xml_file);
 		XmlReader xml_reader(xml_data_source);
@@ -2139,9 +2138,9 @@ bool IWorkParser::isIWork()
 	return true;
 }
 
-Metadata IWorkParser::metaData()
+tag::Metadata IWorkParser::metaData()
 {
-	Metadata metadata;
+	tag::Metadata metadata;
 	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);

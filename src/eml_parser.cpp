@@ -20,7 +20,6 @@
 #include "importer.h"
 #include <iostream>
 #include "log.h"
-#include "metadata.h"
 #include "plain_text_writer.h"
 #include <mailio/message.hpp>
 
@@ -68,7 +67,7 @@ struct EMLParser::Implementation
 		std::string parsed_text;
 		PlainTextWriter writer;
 		std::stringstream stream;
-		auto callback = [&writer, &stream](const Info &info){writer.write_to(info, stream);};
+		auto callback = [&writer, &stream](const Info &info){writer.write_to(info.tag, stream);};
 		auto parser_builder = m_importer->findParserByExtension(type);
 		if (parser_builder)
 		{
@@ -131,7 +130,7 @@ struct EMLParser::Implementation
 				}
 			}
 
-			m_owner->sendTag(StandardTag::TAG_TEXT, plain + "\n\n");
+			m_owner->sendTag(tag::Text{.text = plain + "\n\n"});
 
 			output += plain;
 			output += "\n\n";
@@ -149,19 +148,19 @@ struct EMLParser::Implementation
 			std::string extension = file_name.substr(file_name.find_last_of(".") + 1);
 			std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 			auto info = m_owner->sendTag(
-				StandardTag::TAG_ATTACHMENT, "", {{"name", file_name}, {"size", plain.length()}, {"extension", extension}});
+				tag::Attachment{.name = file_name, .size = plain.length(), .extension = extension});
 			if(!info.skip)
 			{
 				auto parser_builder = m_importer->findParserByExtension(file_name);
 				if (parser_builder)
 				{
 					auto parser = parser_builder->withImporter(*m_importer)
-						.withOnNewNodeCallbacks({[this](Info &info){m_owner->sendTag(info.tag_name, info.plain_text, info.attributes);}})
+						.withOnNewNodeCallbacks({[this](Info &info){m_owner->sendTag(info.tag);}})
 						.build(plain.c_str(), plain.length());
 						parser->parse();
 				}
 			}
-			m_owner->sendTag(StandardTag::TAG_CLOSE_ATTACHMENT);
+			m_owner->sendTag(tag::CloseAttachment{});
 			}
 		}
 		if (mime_entity.content_type().subtype == "alternative")
@@ -310,9 +309,9 @@ std::string EMLParser::plainText(const FormattingStyle& formatting) const
 	return text;
 }
 
-Metadata EMLParser::metaData()
+tag::Metadata EMLParser::metaData()
 {
-	Metadata metadata;
+	tag::Metadata metadata;
 	impl->m_data_stream->clear();
 	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
 	{
@@ -328,27 +327,29 @@ Metadata EMLParser::metaData()
 		throw RuntimeError("The stream seek operation failed");
 	}
 	message mime_entity = parse_message(*impl->m_data_stream);
-	metadata.setAuthor(mime_entity.from_to_string());
-	metadata.setCreationDate(to_tm(mime_entity.date_time()));
+	metadata.author = mime_entity.from_to_string();
+	metadata.creation_date = to_tm(mime_entity.date_time());
 
 	//in EML file format author is visible under key "From". And creation date is visible under key "Data".
 	//So, should I repeat the same values or skip them?
-	metadata.addField("From", mime_entity.from_to_string());
-	metadata.addField("Date", to_tm(mime_entity.date_time()));
+	metadata.email_attrs = attributes::Email
+	{
+		.from = mime_entity.from_to_string(),
+		.date = to_tm(mime_entity.date_time())
+	};
 
 	std::string to = mime_entity.recipients_to_string();
 	if (!to.empty())
-		metadata.addField("To", to);
-
+		metadata.email_attrs->to = to;
 	std::string subject = mime_entity.subject();
 	if (!subject.empty())
-		metadata.addField("Subject", subject);
+		metadata.email_attrs->subject = subject;
 	std::string reply_to = mime_entity.reply_address_to_string();
 	if (!reply_to.empty())
-		metadata.addField("Reply-To", reply_to);
+		metadata.email_attrs->reply_to = reply_to;
 	std::string sender = mime_entity.sender_to_string();
 	if (!sender.empty())
-		metadata.addField("Sender", sender);
+		metadata.email_attrs->sender = sender;
 	return metadata;
 }
 

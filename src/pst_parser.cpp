@@ -408,7 +408,7 @@ PSTParser::Implementation::parse_element(const char* buffer, size_t size, const 
     if (parser_builder)
     {
       parser_builder->withImporter(*m_importer)
-        .withOnNewNodeCallbacks({[this](Info &info){m_owner->sendTag(info.tag_name, info.plain_text, info.attributes);}})
+        .withOnNewNodeCallbacks({[this](Info &info){m_owner->sendTag(info.tag);}})
         .withParameters(m_parameters)
         .build(buffer, size)
         ->parse();
@@ -421,13 +421,13 @@ void PSTParser::Implementation::parse_internal(const Folder& root, int deep, uns
 	for (int i = 0; i < root.getSubFolderNumber(); ++i)
 	{
 		auto sub_folder = root.getSubFolder(i);
-    auto callback = m_owner->sendTag(StandardTag::TAG_FOLDER, "", {{"name", sub_folder.getName()}, {"level", deep}});
+    auto callback = m_owner->sendTag(tag::Folder{.name = sub_folder.getName(), .level = deep});
     if(callback.skip)
     {
       continue;
     }
     parse_internal(sub_folder, deep + 1, mail_counter);
-	m_owner->sendTag(StandardTag::TAG_CLOSE_FOLDER);
+	m_owner->sendTag(tag::CloseFolder{});
 	}
 	for (int i = 0; i < root.getMessageNumber(); ++i)
 	{
@@ -440,15 +440,15 @@ void PSTParser::Implementation::parse_internal(const Folder& root, int deep, uns
     auto html_text = message.getTextAsHtml();
     if(html_text)
     {
-      auto callback = m_owner->sendTag(StandardTag::TAG_MAIL, "", {{"subject", message.getName()}, {"date", message.getCreationDate()}, {"level", deep}});
+      auto callback = m_owner->sendTag(tag::Mail{.subject = message.getName(), .date = message.getCreationDate(), .level = deep});
       if(callback.skip)
       {
         continue;
       }
-      m_owner->sendTag(StandardTag::TAG_MAIL_BODY);
+      m_owner->sendTag(tag::MailBody{});
       parse_element(html_text->data(), html_text->size(), "html");
       ++mail_counter;
-      m_owner->sendTag(StandardTag::TAG_CLOSE_MAIL_BODY);
+      m_owner->sendTag(tag::CloseMailBody{});
     }
 
 		auto attachments = message.getAttachments();
@@ -457,15 +457,15 @@ void PSTParser::Implementation::parse_internal(const Folder& root, int deep, uns
       std::string extension = attachment.m_name.substr(attachment.m_name.find_last_of(".") + 1);
       std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
       auto callback = m_owner->sendTag(
-        StandardTag::TAG_ATTACHMENT, "", {{"name", attachment.m_name}, {"size", attachment.m_size}, {"extension", extension}});
+        tag::Attachment{.name = attachment.m_name, .size = attachment.m_size, .extension = extension});
       if(callback.skip)
       {
         continue;
       }
       parse_element((const char *) attachment.m_raw_data.get(), attachment.m_size, extension);
-      m_owner->sendTag(StandardTag::TAG_CLOSE_ATTACHMENT);
+      m_owner->sendTag(tag::CloseAttachment{});
     }
-	m_owner->sendTag(StandardTag::TAG_CLOSE_MAIL);
+	m_owner->sendTag(tag::CloseMail{});
 	}
 }
 

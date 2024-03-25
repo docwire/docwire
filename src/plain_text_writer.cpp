@@ -41,10 +41,10 @@ public:
     }
   }
 
-  void write(const Info &info)
+  void write(const Tag& tag)
   {
     std::stringstream stream;
-    writer.write_to(info, stream);
+    writer.write_to(tag, stream);
     write(stream.str());
     stream.str(std::string());
   }
@@ -101,84 +101,78 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_mail(const Info &info)
+  write_mail(const tag::Mail& mail)
   {
     std::string text = "";
-    auto level = info.getAttributeValue<int>("level");
-    if (level)
+    if (mail.level)
     {
-      text = add_tabs(text, *level);
+      text = add_tabs(text, *mail.level);
     }
     text += "mail: ";
-    auto subject = info.getAttributeValue<std::string>("subject");
-    if (subject)
+    if (mail.subject)
     {
-      text += *subject;
+      text += *mail.subject;
     }
-    auto date = info.getAttributeValue<unsigned int>("date");
-    if (date)
+    if (mail.date)
     {
-      text += " creation time: " + timestampToString(*date) + "\n";
+      text += " creation time: " + timestampToString(*mail.date) + "\n";
     }
     return std::make_shared<TextElement>(text);
   }
 
   std::shared_ptr<TextElement>
-  write_attachment(const Info &info)
+  write_attachment(const tag::Attachment& attachment)
   {
     std::string text = "attachment: \n\n";
-    auto name = info.getAttributeValue<std::string>("name");
-    if (name)
+    if (attachment.name)
     {
-      text += "name: " + *name + "\n";
+      text += "name: " + *attachment.name + "\n";
     }
     return std::make_shared<TextElement>(text);
   }
 
   std::shared_ptr<TextElement>
-  write_folder(const Info &info)
+  write_folder(const tag::Folder& folder)
   {
-    auto level = info.getAttributeValue<int>("level");
     std::string text = "";
-    if (level)
+    if (folder.level)
     {
-      text = add_tabs(text, *level);
+      text = add_tabs(text, *folder.level);
     }
     text += "folder: ";
-    auto name = info.getAttributeValue<std::string>("name");
-    if (name)
+    if (folder.name)
     {
-      text += *name + "\n";
+      text += *folder.name + "\n";
     }
     return std::make_shared<TextElement>(text);
   }
 
   std::shared_ptr<TextElement>
-  write_text(const Info &info)
+  write_text(const tag::Text& text)
   {
-    return std::make_shared<TextElement>(info.plain_text);
+    return std::make_shared<TextElement>(text.text);
   }
 
   std::shared_ptr<TextElement>
-  write_close_mail_body(const Info &info)
-  {
-    return std::make_shared<TextElement>("\n");
-  }
-
-  std::shared_ptr<TextElement>
-  write_close_attachment(const Info &info)
+  write_close_mail_body(const tag::CloseMailBody&)
   {
     return std::make_shared<TextElement>("\n");
   }
 
   std::shared_ptr<TextElement>
-  write_new_line(const Info &info)
+  write_close_attachment(const tag::CloseAttachment&)
   {
     return std::make_shared<TextElement>("\n");
   }
 
   std::shared_ptr<TextElement>
-  write_new_paragraph(const Info &info)
+  write_new_line(const tag::BreakLine&)
+  {
+    return std::make_shared<TextElement>("\n");
+  }
+
+  std::shared_ptr<TextElement>
+  write_new_paragraph(const tag::CloseParagraph&)
   {
     if (list_mode)
     {
@@ -188,59 +182,49 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_link(const Info &info)
+  write_link(const tag::Link& link)
   {
-    auto url = info.getAttributeValue<std::string>("url");
-
-    if (url)
+    if (link.url)
     {
-      return std::make_shared<TextElement>("<" + *url + ">");
+      return std::make_shared<TextElement>("<" + *link.url + ">");
     }
 
     return std::make_shared<TextElement>("\n");
   }
 
   std::shared_ptr<TextElement>
-  write_image(const Info &info)
+  write_image(const tag::Image& image)
   {
-    auto alt = info.getAttributeValue<std::string>("alt");
-    if (alt)
+    if (image.alt)
     {
-      return std::make_shared<TextElement>(*alt);
+      return std::make_shared<TextElement>(*image.alt);
     }
     return std::make_shared<TextElement>("");
   }
 
   std::shared_ptr<TextElement>
-  turn_on_table_mode(const Info &info)
+  turn_on_table_mode(const tag::Table&)
   {
     return std::make_shared<TextElement>("");
   }
 
   std::shared_ptr<TextElement>
-  turn_off_table_mode(const Info &info)
+  turn_off_table_mode(const tag::CloseTable&)
   {
     return std::make_shared<TextElement>("");
   }
 
   std::shared_ptr<TextElement>
-  write_list(const Info &info)
+  write_list(const tag::List& list)
   {
     list_mode = true;
     list_counter = 1;
-    list_type = info.getAttributeValue<std::string>("type").value_or("");
-    if (list_type.empty())
-    {
-      if (info.getAttributeValue<bool>("is_ordered").value_or(false))
-        list_type = "decimal";
-      else
-        list_type = info.getAttributeValue<std::string>("list_style_prefix").value_or("disc");
-    }
+    list_type = list.type;
     return std::make_shared<TextElement>("\n");
   }
 
   std::shared_ptr<TextElement>
-  write_close_list(const Info &info)
+  write_close_list(const tag::CloseList&)
   {
     list_mode = false;
     list_counter = 1;
@@ -248,7 +232,7 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_list_item(const Info &info)
+  write_list_item(const tag::ListItem&)
   {
     if (list_type == "none")
       return std::make_shared<TextElement>("");
@@ -261,32 +245,28 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_close_list_item(const Info &info)
+  write_close_list_item(const tag::CloseListItem&)
   {
     ++list_counter;
     return std::make_shared<TextElement>("\n");
   }
 
 	std::shared_ptr<TextElement>
-	write_comment(const Info &info)
+	write_comment(const tag::Comment& comment)
 	{
-		auto author = info.getAttributeValue<std::string>("author");
-		auto time = info.getAttributeValue<std::string>("time");
-		auto comment = info.getAttributeValue<std::string>("comment");
-
 		std::string text = "\n[[[";
-		if (author)
+		if (comment.author)
 		{
-			text += "COMMENT BY " + *author;
+			text += "COMMENT BY " + *comment.author;
 		}
-		if (time)
+		if (comment.time)
 		{
-			text += " (" + *time + ")";
+			text += " (" + *comment.time + ")";
 		}
 		text += "]]]\n";
-		if (comment)
+		if (comment.comment)
 		{
-			auto comment_text = *comment;
+			auto comment_text = *comment.comment;
 			text += comment_text;
 			if (comment_text.empty() || *comment_text.rbegin() != '\n')
 				text += "\n";
@@ -296,32 +276,32 @@ struct PlainTextWriter::Implementation
 		return std::make_shared<TextElement>(text);
 	}
 
-	std::shared_ptr<TextElement> write_header(const Info &info)
+	std::shared_ptr<TextElement> write_header(const tag::Header&)
 	{
 		header_mode = true;
 		return std::make_shared<TextElement>("");
 	}
 
-	std::shared_ptr<TextElement> write_close_header(const Info &info)
+	std::shared_ptr<TextElement> write_close_header(const tag::CloseHeader&)
 	{
 		header_mode = false;
 		return std::make_shared<TextElement>("\n");
 	}
 
-	std::shared_ptr<TextElement> write_footer(const Info &info)
+	std::shared_ptr<TextElement> write_footer(const tag::Footer&)
 	{
 		footer_mode = true;
 		footer_stream.str("");
 		return std::make_shared<TextElement>("");
 	}
 
-	std::shared_ptr<TextElement> write_close_footer(const Info &info)
+	std::shared_ptr<TextElement> write_close_footer(const tag::CloseFooter&)
 	{
 		footer_mode = false;
 		return std::make_shared<TextElement>("");
 	}
 
-	std::shared_ptr<TextElement> write_close_document(const Info &info)
+	std::shared_ptr<TextElement> write_close_document(const tag::CloseDocument&)
 	{
 		std::string footer = footer_stream.str();
 		if (!footer.empty())
@@ -329,38 +309,9 @@ struct PlainTextWriter::Implementation
 		return std::make_shared<TextElement>("\n" + footer);
 	}
 
-  std::map<std::string, std::function<std::shared_ptr<TextElement>(const Info &info)>> plain_text_writers;
-
   Implementation()
   {
-    plain_text_writers =
-      {
-        {StandardTag::TAG_MAIL, [this](const Info &info){return write_mail(info);}},
-        {StandardTag::TAG_ATTACHMENT, [this](const Info &info){return write_attachment(info);}},
-        {StandardTag::TAG_FOLDER, [this](const Info &info){return write_folder(info);}},
-        {"", [this](const Info &info){return write_text(info);}},
-        {StandardTag::TAG_TEXT, [this](const Info &info){return write_text(info);}},
-        {StandardTag::TAG_CLOSE_MAIL_BODY, [this](const Info &info){return write_close_mail_body(info);}},
-        {StandardTag::TAG_CLOSE_ATTACHMENT, [this](const Info &info){return write_close_attachment(info);}},
-        {StandardTag::TAG_BR, [this](const Info &info){return write_new_line(info);}},
-        {StandardTag::TAG_CLOSE_P, [this](const Info &info){return write_new_paragraph(info);}},
-        {StandardTag::TAG_CLOSE_SECTION, [this](const Info &info){return write_new_paragraph(info);}},
-        {StandardTag::TAG_TABLE, [this](const Info &info){return turn_on_table_mode(info);}},
-        {StandardTag::TAG_CLOSE_TABLE, [this](const Info &info){return turn_off_table_mode(info);}},
-        {StandardTag::TAG_LINK, [this](const Info &info){return write_link(info);}},
-        {StandardTag::TAG_IMAGE, [this](const Info &info){return write_image(info);}},
-        {StandardTag::TAG_LIST, [this](const Info &info){return write_list(info);}},
-        {StandardTag::TAG_CLOSE_LIST, [this](const Info &info){return write_close_list(info);}},
-        {StandardTag::TAG_LIST_ITEM, [this](const Info &info){return write_list_item(info);}},
-        {StandardTag::TAG_CLOSE_LIST_ITEM, [this](const Info &info){return write_close_list_item(info);}},
-        {StandardTag::TAG_HEADER, [this](const Info &info){return write_header(info);}},
-        {StandardTag::TAG_CLOSE_HEADER, [this](const Info &info){return write_close_header(info);}},
-        {StandardTag::TAG_FOOTER, [this](const Info &info){return write_footer(info);}},
-        {StandardTag::TAG_CLOSE_FOOTER, [this](const Info &info){return write_close_footer(info);}},
-        {StandardTag::TAG_COMMENT, [this](const Info &info){return write_comment(info);}},
-        {StandardTag::TAG_CLOSE_DOCUMENT, [this](const Info &info){return write_close_document(info);}}
-      };
-  };
+  }
 
   std::string add_shift(int count)
   {
@@ -415,7 +366,7 @@ struct PlainTextWriter::Implementation
   {
     for (unsigned int i = 0; i < tags.size(); ++i)
     {
-      if (tags[i].tag_name == StandardTag::TAG_TABLE)
+      if (std::holds_alternative<tag::Table>(tags[i]))
       {
         std::stringstream ss;
         PlainTextWriter writer;
@@ -424,23 +375,23 @@ struct PlainTextWriter::Implementation
         do
         {
           writer.write_to(tags[++i], ss);
-          if (tags[i].tag_name == StandardTag::TAG_TABLE)
+          if (std::holds_alternative<tag::Table>(tags[i]))
             open_table_tags++;
-          else if (tags[i].tag_name == StandardTag::TAG_CLOSE_TABLE)
+          else if (std::holds_alternative<tag::CloseTable>(tags[i]))
             open_table_tags--;
         }
         while (open_table_tags > 0);
         table.back().back().write(ss.str());
       }
-      else if (tags[i].tag_name == StandardTag::TAG_TR)
+      else if (std::holds_alternative<tag::TableRow>(tags[i]))
       {
         table.push_back({});
       }
-      else if (tags[i].tag_name == StandardTag::TAG_TD)
+      else if (std::holds_alternative<tag::TableCell>(tags[i]))
       {
         table.back().push_back(Cell());
       }
-      else if (tags[i].tag_name != StandardTag::TAG_CLOSE_TR && tags[i].tag_name != StandardTag::TAG_CLOSE_TD)
+      else if (!std::holds_alternative<tag::CloseTableRow>(tags[i]) && !std::holds_alternative<tag::CloseTableCell>(tags[i]))
       {
         if (table.empty())
           throw LogicError("Cell content in table without rows.");
@@ -452,9 +403,9 @@ struct PlainTextWriter::Implementation
     return render_table();
   }
 
-  void write_to(const Info &info, std::ostream &stream)
+  void write_to(const Tag& tag, std::ostream &stream)
   {
-    if (info.tag_name == StandardTag::TAG_CLOSE_TABLE)
+    if (std::holds_alternative<tag::CloseTable>(tag))
     {
       level--;
 
@@ -469,27 +420,53 @@ struct PlainTextWriter::Implementation
 
     if (level > 0)
     {
-      tags.push_back(info);
+      tags.push_back(tag);
     }
 
-    if (info.tag_name == StandardTag::TAG_TABLE)
+    if (std::holds_alternative<tag::Table>(tag))
     {
       level++;
     }
 
     if (level == 0)
     {
-      auto writer_iterator = plain_text_writers.find(info.tag_name);
-      if (writer_iterator != plain_text_writers.end())
-      {
-        auto text_element = writer_iterator->second(info);
+      auto text_element = std::visit(
+        overloaded
+        {
+          [this](const tag::Mail& tag){return write_mail(tag);},
+          [this](const tag::Attachment& tag){return write_attachment(tag);},
+          [this](const tag::Folder& tag){return write_folder(tag);},
+          [this](const tag::Text& tag){return write_text(tag);},
+          [this](const tag::CloseMailBody& tag){return write_close_mail_body(tag);},
+          [this](const tag::CloseAttachment& tag){return write_close_attachment(tag);},
+          [this](const tag::BreakLine& tag){return write_new_line(tag);},
+          [this](const tag::CloseParagraph& tag){return write_new_paragraph(tag);},
+          [this](const tag::CloseSection& tag){return write_new_paragraph(tag::CloseParagraph());},
+          [this](const tag::Table& tag){return turn_on_table_mode(tag);},
+          [this](const tag::CloseTable& tag){return turn_off_table_mode(tag);},
+          [this](const tag::Link& tag){return write_link(tag);},
+          [this](const tag::Image& tag){return write_image(tag);},
+          [this](const tag::List& tag){return write_list(tag);},
+          [this](const tag::CloseList& tag){return write_close_list(tag);},
+          [this](const tag::ListItem& tag){return write_list_item(tag);},
+          [this](const tag::CloseListItem& tag){return write_close_list_item(tag);},
+          [this](const tag::Header& tag){return write_header(tag);},
+          [this](const tag::CloseHeader& tag){return write_close_header(tag);},
+          [this](const tag::Footer& tag){return write_footer(tag);},
+          [this](const tag::CloseFooter& tag){return write_close_footer(tag);},
+          [this](const tag::Comment& tag){return write_comment(tag);},
+          [this](const tag::CloseDocument& tag){return write_close_document(tag);},
+          [](const auto&) {return std::shared_ptr<TextElement>{};}
+        },
+	      tag
+      );
+      if (text_element)
         text_element->write_to(footer_mode ? footer_stream : stream);
-      }
     }
   }
 
   int level { 0 };
-  std::vector<Info> tags;
+  std::vector<Tag> tags;
   std::string list_type;
   int list_counter;
   bool first_cell_in_row;
@@ -541,9 +518,9 @@ PlainTextWriter::ImplementationDeleter::operator()(Implementation *impl)
 }
 
 void
-PlainTextWriter::write_to(const Info &info, std::ostream &stream)
+PlainTextWriter::write_to(const Tag& tag, std::ostream &stream)
 {
-  impl->write_to(info, stream);
+  impl->write_to(tag, stream);
 }
 
 Writer*

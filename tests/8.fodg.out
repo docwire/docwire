@@ -2,14 +2,14 @@
 Some text
 List:
 
- * first
- * second
- * third
+* first
+* second
+* third
 Other list:
 
- * one
- * two
- * three
+* one
+* two
+* three
 
 
 Table:
@@ -27,14 +27,14 @@ Table with hyperlinks:
 Table with lists:
 first     second    third   
                             
- * one    1. one     * one  
- * two    2. two     * two  
- * three  3. three   * three
+* one     1. one    * one   
+* two     2. two    * two   
+* three   3. three  * three 
 fourth    fiveth    sixth   
                             
-1. one     * one    1. one  
-2. two     * two    2. two  
-3. three   * three          
+1. one    * one     1. one  
+2. two    * two     2. two  
+3. three  * three           
 seventh   eighth    nineth  
                             
                     1. one  

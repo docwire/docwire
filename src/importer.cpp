@@ -67,57 +67,27 @@ public:
   void
   process(Info& info)
   {
-    if (info.tag_name != StandardTag::TAG_FILE)
+    if (!std::holds_alternative<tag::File>(info.tag))
     {
       m_owner.emit(info);
       return;
     }
-    Info new_doc(StandardTag::TAG_DOCUMENT);
+    Info new_doc(tag::Document{});
     m_owner.emit(new_doc);
-    std::unique_ptr<ParserBuilder> builder;
-    std::vector<char> buffer;
-    std::istream* input_stream = nullptr;
-    std::string file_path;
-    if (info.getAttributeValue<std::istream*>("stream"))
+    auto file = std::get<tag::File>(info.tag);
+    if (std::holds_alternative<std::filesystem::path>(file.source))
     {
-      input_stream = *info.getAttributeValue<std::istream*>("stream");
-    }
-    else if(info.getAttributeValue<std::string>("path"))
-    {
-      file_path = *info.getAttributeValue<std::string>("path");
-    }
-    if (!file_path.empty())
-    {
-      std::filesystem::path path{file_path};
-      if (std::filesystem::exists(path))
-      {
-        if (isReadable(path))
-        {
-          builder = m_owner.findParserByExtension(file_path);
-        }
-        else
-        {
-          throw FileNotReadable("file " + file_path + " is not readable");
-        }
-      }
-      else
-      {
-        throw FileNotFound("file " + file_path + "  doesn't exist");
-      }
-    }
-    else if(input_stream)
-    {
-      buffer = std::vector<char>((std::istreambuf_iterator<char>(*input_stream)), std::istreambuf_iterator<char>());
-      builder = m_owner.findParserByData(buffer);
-    }
-    if (builder)
-    {
+      std::filesystem::path file_path = std::get<std::filesystem::path>(file.source);
+      if (!std::filesystem::exists(file_path))
+        throw FileNotFound("file " + file_path.string() + "  doesn't exist");
+      if (!isReadable(file_path))
+        throw FileNotReadable("file " + file_path.string() + " is not readable");
+      std::unique_ptr<ParserBuilder> builder = m_owner.findParserByExtension(file_path.string());
+      if (!builder)
+        throw UnknownFormat("File format was not recognized.");
       auto &builder_ref = builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
         .withImporter(m_owner)
         .withParameters(m_parameters);
-
-      if (!file_path.empty())
-      {
         try
         {
           builder_ref.build(file_path)->parse();
@@ -130,28 +100,31 @@ public:
         {
           docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
           std::vector<char> buffer;
-          load_file_to_buffer(file_path, buffer);
+          load_file_to_buffer(file_path.string(), buffer);
           auto second_builder = m_owner.findParserByData(buffer);
           if (!second_builder)
           {
-            throw ParsingFailed("Error parsing file: " + file_path  + ". Tried different parsers, but file could not be recognized as another format. File may be corrupted or encrypted", ex);
+            throw ParsingFailed("Error parsing file: " + file_path.string()  + ". Tried different parsers, but file could not be recognized as another format. File may be corrupted or encrypted", ex);
           }
           second_builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
                   .withImporter(m_owner)
                   .withParameters(m_parameters)
                   .build(buffer.data(), buffer.size())->parse();
         }
-      }
-      else
-      {
-        builder_ref.build(buffer.data(), buffer.size())->parse();
-      }
     }
-    else
+    else if (std::holds_alternative<std::shared_ptr<std::istream>>(file.source))
     {
-      throw UnknownFormat("File format was not recognized.");
+      std::shared_ptr<std::istream> input_stream = std::get<std::shared_ptr<std::istream>>(file.source);
+      std::vector<char> buffer = std::vector<char>((std::istreambuf_iterator<char>(*input_stream)), std::istreambuf_iterator<char>());
+      std::unique_ptr<ParserBuilder> builder = m_owner.findParserByData(buffer);
+      if (!builder)
+        throw UnknownFormat("File format was not recognized.");
+      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
+        .withImporter(m_owner)
+        .withParameters(m_parameters);
+      builder_ref.build(buffer.data(), buffer.size())->parse();
     }
-    Info end_doc(StandardTag::TAG_CLOSE_DOCUMENT);
+    Info end_doc(tag::CloseDocument{});
     m_owner.emit(end_doc);
   }
 

@@ -44,7 +44,7 @@ class DOCParser : public Parser
 		DOCParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
 		~DOCParser();
 		bool isDOC();
-		Metadata metaData() const;
+		tag::Metadata metaData() const;
 
 	DOCWIRE_EXCEPTION_DEFINE(ParsingError, RuntimeError);
 };

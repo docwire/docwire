@@ -17,7 +17,6 @@
 #include <iostream>
 #include "log.h"
 #include <map>
-#include "metadata.h"
 #include "misc.h"
 #include <sstream>
 #include <stdint.h>
@@ -590,7 +589,7 @@ struct XLSBParser::Implementation
 		}
 	}
 
-	void readMetadata(ZipReader& unzip, Metadata& metadata)
+	void readMetadata(ZipReader& unzip, tag::Metadata& metadata)
 	{
 		docwire_log(debug) << "Extracting metadata.";
 		std::string data;
@@ -602,7 +601,7 @@ struct XLSBParser::Implementation
 			data.erase(0, data.find("<TitlesOfParts>") + 15);
 			size_t pages_count_start = data.find("<vt:vector size=\"");
 			if (pages_count_start != std::string::npos)
-				metadata.setPageCount(strtol(data.c_str() + pages_count_start + 17, NULL, 10));
+				metadata.page_count = strtol(data.c_str() + pages_count_start + 17, NULL, 10);
 		}
 		data.clear();
 		if (!unzip.read("docProps/core.xml", &data))
@@ -617,7 +616,7 @@ struct XLSBParser::Implementation
 			{
 				author.erase(0, author.find(">") + 1);
 				if (author.length() > 0)
-					metadata.setAuthor(author);
+					metadata.author = author;
 			}
 		}
 		bool last_modify_by_exist = data.find("<cp:lastModifiedBy/>") == std::string::npos && data.find("<cp:lastModifiedBy") != std::string::npos;
@@ -630,7 +629,7 @@ struct XLSBParser::Implementation
 			{
 				last_modify_by.erase(0, last_modify_by.find(">") + 1);
 				if (last_modify_by.length() > 0)
-					metadata.setLastModifiedBy(last_modify_by);
+					metadata.last_modified_by = last_modify_by;
 			}
 		}
 		bool creation_date_exist = data.find("<dcterms:created/>") == std::string::npos && data.find("<dcterms:created") != std::string::npos;
@@ -644,7 +643,7 @@ struct XLSBParser::Implementation
 				creation_date.erase(0, creation_date.find(">") + 1);
 				tm creation_date_tm;
 				if (creation_date.length() > 0 && string_to_date(creation_date, creation_date_tm))
-					metadata.setCreationDate(creation_date_tm);
+					metadata.creation_date = creation_date_tm;
 			}
 		}
 		bool last_modification_date_exist = data.find("<dcterms:modified/>") == std::string::npos && data.find("<dcterms:modified") != std::string::npos;
@@ -658,7 +657,7 @@ struct XLSBParser::Implementation
 				last_modification_date.erase(0, last_modification_date.find(">") + 1);
 				tm last_modification_date_tm;
 				if (last_modification_date.length() > 0 && string_to_date(last_modification_date, last_modification_date_tm))
-					metadata.setLastModificationDate(last_modification_date_tm);
+					metadata.last_modification_date = last_modification_date_tm;
 			}
 		}
 	}
@@ -738,9 +737,9 @@ bool XLSBParser::isXLSB()
 	return true;
 }
 
-Metadata XLSBParser::metaData()
+tag::Metadata XLSBParser::metaData()
 {
-	Metadata metadata;
+	tag::Metadata metadata;
 	ZipReader unzip;
 	if (impl->m_buffer)
 		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);

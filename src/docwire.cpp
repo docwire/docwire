@@ -201,13 +201,10 @@ int main(int argc, char* argv[])
 	}
 
 	docwire_log_vars(use_stream, file_name);
-	std::ifstream in_stream;
-	if (use_stream)
-		in_stream.open(file_name, std::ios_base::binary);
+	ParsingChain chain = use_stream ?
+		(std::ifstream{file_name, std::ios_base::binary} | DecompressArchives()) :
+		(std::filesystem::path{file_name} | DecompressArchives());
 
-	InputBase input = use_stream ? InputBase(&in_stream) : InputBase(file_name);
-
-	ParsingChain chain = input | DecompressArchives();
 	if (vm.count("openai-transcribe"))
 	{
 		std::string api_key = vm["openai-key"].as<std::string>();
@@ -375,7 +372,7 @@ int main(int argc, char* argv[])
 
 	try
 	{
-		chain | Output(std::cout);
+		chain | std::cout;
 	}
 	catch (const std::exception& e)
 	{

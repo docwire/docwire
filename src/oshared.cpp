@@ -15,7 +15,6 @@
 #include "misc.h"
 #include <iostream>
 #include "log.h"
-#include "metadata.h"
 #include "wv2/utilities.h"
 #include <time.h>
 #include "thread_safe_ole_stream_reader.h"
@@ -111,8 +110,7 @@ static bool read_vt_filetime(ThreadSafeOLEStreamReader* reader, tm& time)
 	{
 		// Sometimes field exists but date is zero.
 		// Last modification time saved by LibreOffice 3.5 when document is created is an example.
-		time = tm();
-		return true;
+		return false;
 	}
 	unsigned long long int file_time = ((unsigned long long int)file_time_high << 32) | (unsigned long long int)file_time_low;
 	time_t t = (time_t)(file_time / 10000000 - 11644473600LL);
@@ -127,7 +125,7 @@ static bool read_vt_filetime(ThreadSafeOLEStreamReader* reader, tm& time)
 	return true;
 }
 
-void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, Metadata& meta)
+void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, tag::Metadata& meta)
 {
 	docwire_log(debug) << "Extracting metadata.";
 	if (!storage.isValid())
@@ -177,8 +175,7 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, Metadata& meta)
 					std::string author;
 					if (read_vt_string(reader, author))
 					{
-						meta.setAuthor(author);
-						meta.setAuthorType(Metadata::EXTRACTED);
+						meta.author = author;
 					}
 					break;
 				}
@@ -188,8 +185,7 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, Metadata& meta)
 					std::string last_modified_by;
 					if (read_vt_string(reader, last_modified_by))
 					{
-						meta.setLastModifiedBy(last_modified_by);
-						meta.setLastModifiedByType(Metadata::EXTRACTED);
+						meta.last_modified_by = last_modified_by;
 					}
 					break;
 				}
@@ -199,8 +195,7 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, Metadata& meta)
 					tm creation_date;
 					if (read_vt_filetime(reader, creation_date))
 					{
-						meta.setCreationDate(creation_date);
-						meta.setCreationDateType(Metadata::EXTRACTED);
+						meta.creation_date = creation_date;
 					}
 					break;
 				}
@@ -210,8 +205,7 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, Metadata& meta)
 					tm last_modification_date;
 					if (read_vt_filetime(reader, last_modification_date))
 					{
-						meta.setLastModificationDate(last_modification_date);
-						meta.setLastModificationDateType(Metadata::EXTRACTED);
+						meta.last_modification_date = last_modification_date;
 					}
 					break;
 				}
@@ -221,8 +215,7 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, Metadata& meta)
 					S32 page_count;
 					if (read_vt_i4(reader, page_count))
 					{
-						meta.setPageCount(page_count);
-						meta.setPageCountType(Metadata::EXTRACTED);
+						meta.page_count = page_count;
 					}
 					break;
 				}
@@ -232,8 +225,7 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, Metadata& meta)
 					S32 word_count;
 					if (read_vt_i4(reader, word_count))
 					{
-						meta.setWordCount(word_count);
-						meta.setWordCountType(Metadata::EXTRACTED);
+						meta.word_count = word_count;
 					}
 					break;
 				}

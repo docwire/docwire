@@ -20,33 +20,29 @@ namespace docwire
 
 struct HtmlExporter::Implementation
 {
-	RestoreOriginalAttributes m_restore_original_attributes;
-	std::stringstream m_stream;
+	std::shared_ptr<std::stringstream> m_stream;
 	HtmlWriter m_writer;
-	Implementation(RestoreOriginalAttributes restore_original_attributes)
-		: m_restore_original_attributes(restore_original_attributes),
-		m_writer(static_cast<HtmlWriter::RestoreOriginalAttributes>(m_restore_original_attributes))
-	{}
 };
 
-HtmlExporter::HtmlExporter(RestoreOriginalAttributes restore_original_attributes)
-  : impl(new Implementation(restore_original_attributes), ImplementationDeleter())
+HtmlExporter::HtmlExporter()
+  : impl(new Implementation(), ImplementationDeleter())
 {}
 
 HtmlExporter::HtmlExporter(const HtmlExporter& other)
-	: impl(new Implementation(other.impl->m_restore_original_attributes), ImplementationDeleter())
+	: impl(new Implementation(), ImplementationDeleter())
 {
 }
 
 void HtmlExporter::process(Info &info) const
 {
-	if (info.tag_name == StandardTag::TAG_DOCUMENT)
-		impl->m_stream.clear();
-	impl->m_writer.write_to(info, impl->m_stream);
-	if (info.tag_name == StandardTag::TAG_CLOSE_DOCUMENT)
+	if (std::holds_alternative<tag::Document>(info.tag) || !impl->m_stream)
+		impl->m_stream = std::make_shared<std::stringstream>();
+	impl->m_writer.write_to(info.tag, *impl->m_stream);
+	if (std::holds_alternative<tag::CloseDocument>(info.tag))
 	{
-		Info info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&impl->m_stream}, {"name", ""}});
+		Info info(tag::File{impl->m_stream, std::string("")});
 		emit(info);
+		impl->m_stream.reset();
 	}
 }
 

@@ -9,46 +9,24 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "plain_text_exporter.h"
+#ifndef DOCWIRE_LOG_CTIME_H
+#define DOCWIRE_LOG_CTIME_H
 
-//#include "parser.h"
-#include "plain_text_writer.h"
+#include <ctime>
+#include "log.h"
 #include <sstream>
 
 namespace docwire
 {
 
-struct PlainTextExporter::Implementation
+inline log_record_stream& operator<<(log_record_stream& log_stream, const tm& time)
 {
-	std::shared_ptr<std::stringstream> m_stream;
-	PlainTextWriter m_writer;
-};
-
-PlainTextExporter::PlainTextExporter()
-	: impl(new Implementation)
-{}
-
-PlainTextExporter::PlainTextExporter(const PlainTextExporter& other)
-	: impl(new Implementation(), ImplementationDeleter())
-{
-}
-
-void PlainTextExporter::process(Info &info) const
-{
-	if (std::holds_alternative<tag::Document>(info.tag) || !impl->m_stream)
-		impl->m_stream = std::make_shared<std::stringstream>();
-	impl->m_writer.write_to(info.tag, *impl->m_stream);
-	if (std::holds_alternative<tag::CloseDocument>(info.tag))
-	{
-		Info info(tag::File{impl->m_stream, std::string("plain_text_export.txt")});
-		emit(info);
-		impl->m_stream.reset();
-	}
-}
-
-void PlainTextExporter::ImplementationDeleter::operator()(PlainTextExporter::Implementation* impl)
-{
-	delete impl;
+    std::ostringstream date_stream;
+    date_stream << std::put_time(&time, "%Y-%m-%d %H:%M:%S");
+    log_stream << date_stream.str();
+    return log_stream;
 }
 
 } // namespace docwire
+
+#endif // DOCWIRE_LOG_CTIME_H

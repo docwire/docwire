@@ -66,7 +66,7 @@ protected:
 
 };
 
-TEST_P(DocumentTests, ReadFromFileTest)
+TEST_P(DocumentTests, ParseFromPathTest)
 {
     const auto [lower, upper, format, style] = GetParam();
 
@@ -84,22 +84,19 @@ TEST_P(DocumentTests, ReadFromFileTest)
         SCOPED_TRACE("file_name = " + file_name);
 
         // WHEN
-        std::stringstream output_stream{};
+        std::ostringstream output_stream{};
 
-        Input(file_name) |
+        std::filesystem::path(file_name) |
           ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
           PlainTextExporter() |
-          Output(output_stream);
-
-        std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
-            std::istreambuf_iterator<char>{}};
+          output_stream;
 
         // THEN
-        EXPECT_EQ(expected_text, parsed_text);
+        EXPECT_EQ(expected_text, output_stream.str());
     }
 }
 
-TEST_P(DocumentTests, ReadFromBufferTest)
+TEST_P(DocumentTests, ParseFromStreamTest)
 {
     const auto [lower, upper, format, style] = GetParam();
 
@@ -116,21 +113,16 @@ TEST_P(DocumentTests, ReadFromBufferTest)
 
         SCOPED_TRACE("file_name = " + file_name);
 
-        std::ifstream ifs_input{ file_name, std::ios_base::binary };
-
         // WHEN
-        std::stringstream output_stream{};
+        std::ostringstream output_stream{};
 
-        Input(&ifs_input) |
+        std::ifstream { file_name, std::ios_base::binary } |
           ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
           PlainTextExporter() |
-          Output(output_stream);
-
-        std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
-            std::istreambuf_iterator<char>{}};
+          output_stream;
 
         // THEN
-        EXPECT_EQ(expected_text, parsed_text);
+        EXPECT_EQ(expected_text, output_stream.str());
     }
 }
 
@@ -182,7 +174,7 @@ protected:
     };
 };
 
-TEST_P(MetadataTest, ReadFromFileTest)
+TEST_P(MetadataTest, ParseFromPathTest)
 {
     auto format = GetParam();
 
@@ -200,18 +192,15 @@ TEST_P(MetadataTest, ReadFromFileTest)
         SCOPED_TRACE("file_name = " + file_name);
 
         // WHEN
-        std::stringstream output_stream{};
+        std::ostringstream output_stream{};
 
-        Input(file_name) |
+        std::filesystem::path{file_name} |
           ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
           MetaDataExporter() |
-          Output(output_stream);
-
-        std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
-            std::istreambuf_iterator<char>{}};
+          output_stream;
 
         // THEN
-        EXPECT_EQ(expected_text, parsed_text);
+        EXPECT_EQ(expected_text, output_stream.str());
     }
 }
 
@@ -239,7 +228,7 @@ protected:
 };
 
 
-TEST_P(CallbackTest, ReadFromFileTest)
+TEST_P(CallbackTest, ParseFromPathTest)
 {
     const auto [name, out_name, callback] = GetParam();
 
@@ -256,19 +245,16 @@ TEST_P(CallbackTest, ReadFromFileTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    std::stringstream output_stream{};
+    std::ostringstream output_stream{};
 
-    Input(file_name) |
+    std::filesystem::path{file_name} |
         ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
         TransformerFunc(callback) |
         PlainTextExporter() |
-        Output(output_stream);
-
-        std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
-            std::istreambuf_iterator<char>{}};
+        output_stream;
 
     // THEN
-    EXPECT_EQ(expected_text, parsed_text);
+    EXPECT_EQ(expected_text, output_stream.str());
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -281,7 +267,7 @@ class HTMLWriterTest : public ::testing::TestWithParam<const char*>
 {
 };
 
-TEST_P(HTMLWriterTest, ReadFromFileTest)
+TEST_P(HTMLWriterTest, ParseFromPathTest)
 {
     // GIVEN
     auto name = GetParam();
@@ -296,18 +282,15 @@ TEST_P(HTMLWriterTest, ReadFromFileTest)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    std::stringstream output_stream{};
+    std::ostringstream output_stream{};
 
-    Input(file_name) |
+    std::filesystem::path{file_name} |
         ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
         HtmlExporter() |
-        Output(output_stream);
-
-    std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
-        std::istreambuf_iterator<char>{}};
+        output_stream;
         
     // THEN
-    EXPECT_EQ(expected_text, parsed_text);
+    EXPECT_EQ(expected_text, output_stream.str());
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -329,7 +312,7 @@ class MiscDocumentTest : public ::testing::TestWithParam<const char*>
 {
 };
 
-TEST_P(MiscDocumentTest, ReadFromFileTest)
+TEST_P(MiscDocumentTest, ParseFromPathTest)
 {
     // GIVEN
     auto name = GetParam();
@@ -360,19 +343,16 @@ TEST_P(MiscDocumentTest, ReadFromFileTest)
 		parameters += ParserParameters("languages", langs);
 	}
 
-    std::stringstream output_stream{};
+    std::ostringstream output_stream{};
 
-    Input(file_name) |
+    std::filesystem::path{file_name} |
         DecompressArchives() |
         ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
         PlainTextExporter() |
-        Output(output_stream);
-
-    std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
-        std::istreambuf_iterator<char>{}};
+        output_stream;
         
     // THEN
-    EXPECT_EQ(expected_text, parsed_text);
+    EXPECT_EQ(expected_text, output_stream.str());
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -456,14 +436,14 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    std::stringstream output_stream{};
+    std::ostringstream output_stream{};
 
     try 
     {
-        Input(file_name) |
+        std::filesystem::path{file_name} |
             ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
             PlainTextExporter() |
-            Output(output_stream);
+            output_stream;
         FAIL() << "We are not supporting password protected files yet. Why didn\'t we catch exception?\n";
     }
     catch (const std::exception& ex)
@@ -494,17 +474,17 @@ class MultithreadedTest : public ::testing::TestWithParam<std::tuple<int, int, c
 
 void thread_func(const std::string& file_name)
 {
-    std::stringstream output_stream{};
+    std::ostringstream output_stream{};
 
-    Input(file_name) |
+    std::filesystem::path{file_name} |
       ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
       PlainTextExporter() |
-      Output(output_stream);
+      output_stream;
 
-    Input(file_name) |
+    std::filesystem::path{file_name} |
       ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
       MetaDataExporter() |
-      Output(output_stream);
+      output_stream;
 }
 
 TEST_P(MultithreadedTest, ReadFromFileTests)
@@ -579,7 +559,7 @@ class MultiPageFilterTest : public ::testing::TestWithParam<std::tuple<int, int,
 {
 };
 
-TEST_P(MultiPageFilterTest, ReadFromFileTests)
+TEST_P(MultiPageFilterTest, ReadFromPathTests)
 {
   const auto [lower, upper, format] = GetParam();
   const int MAX_PAGES = 2;
@@ -601,23 +581,24 @@ TEST_P(MultiPageFilterTest, ReadFromFileTests)
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
-    std::stringstream output_stream{};
+    std::ostringstream output_stream{};
 
-    Input(file_name) |
+    std::filesystem::path{file_name} |
         ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
         TransformerFunc([MAX_PAGES, counter = 0](Info &info) mutable
         {
-            if (info.tag_name == StandardTag::TAG_PAGE) {++counter;}
-            if (info.tag_name == StandardTag::TAG_PAGE && counter > MAX_PAGES) {info.cancel = true;}
+            if (std::holds_alternative<tag::Page>(info.tag))
+            {
+                ++counter;
+                if (counter > MAX_PAGES)
+                    info.cancel = true;
+            }
         }) |
         PlainTextExporter() |
-        Output(output_stream);
-
-    std::string parsed_text{ std::istreambuf_iterator<char>{output_stream},
-        std::istreambuf_iterator<char>{}};
+        output_stream;
 
     // THEN
-    EXPECT_EQ(expected_text, parsed_text);
+    EXPECT_EQ(expected_text, output_stream.str());
   }
 
 }
@@ -643,33 +624,20 @@ INSTANTIATE_TEST_SUITE_P(
           return name;
         });
 
-TEST(HtmlWriter, RestoreAttributes)
-{
-	std::stringstream output;
-	std::ifstream in("1.html");
-	Input(&in)
-		| ParseDetectedFormat<OfficeFormatsParserProvider>()
-		| HtmlExporter(HtmlExporter::RestoreOriginalAttributes{true})
-		| Output(output);
-
-	EXPECT_EQ(read_test_file("1.html.restore_attributes.out.html"), output.str());
-}
-
 TEST(Http, Post)
 {
-	std::stringstream output;
-	std::ifstream in("1.docx", std::ios_base::binary);
+    std::ostringstream output_stream{};
 	ASSERT_NO_THROW(
 	{
-		Input(&in)
+		std::ifstream("1.docx", std::ios_base::binary)
 			| ParseDetectedFormat<OfficeFormatsParserProvider>()
 			| PlainTextExporter()
 			| http::Post("https://postman-echo.com/post")
-			| Output(output);
+			| output_stream;
 	});
 
 	using namespace boost::json;
-	value output_val = parse(output.str());
+	value output_val = parse(output_stream.str());
 	output_val.as_object()["headers"].as_object().erase("x-amzn-trace-id");
 	output_val.as_object()["headers"].as_object().erase("user-agent");
 
@@ -678,19 +646,18 @@ TEST(Http, Post)
 
 TEST(Http, PostForm)
 {
-	std::stringstream output;
-	std::ifstream in("1.docx", std::ios_base::binary);
+    std::ostringstream output_stream{};
 	ASSERT_NO_THROW(
 	{
-		Input(&in)
+		std::ifstream("1.docx", std::ios_base::binary)
 			| ParseDetectedFormat<OfficeFormatsParserProvider>()
 			| PlainTextExporter()
 			| http::Post("https://postman-echo.com/post", {{"field1", "value1"}, {"field2", "value2"}}, "file", DefaultFileName("file.docx"))
-			| Output(output);
+			| output_stream;
 	});
 
 	using namespace boost::json;
-	std::string output_str = std::regex_replace(output.str(), std::regex("boundary=[^\"]+"), "boundary=<boundary>");
+	std::string output_str = std::regex_replace(output_stream.str(), std::regex("boundary=[^\"]+"), "boundary=<boundary>");
 	value output_val = parse(output_str);
 	output_val.as_object()["headers"].as_object().erase("x-amzn-trace-id");
 	output_val.as_object()["headers"].as_object().erase("user-agent");

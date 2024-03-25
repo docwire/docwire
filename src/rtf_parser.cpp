@@ -17,7 +17,6 @@
 #include <iostream>
 #include "log.h"
 #include <map>
-#include "metadata.h"
 #include "misc.h"
 #include <mutex>
 #include <sstream>
@@ -643,7 +642,7 @@ std::string RTFParser::plainText() const
 	}
 }
 
-static void parse_rtf_time(const std::string& s, tm& time)
+static bool parse_rtf_time(const std::string& s, tm& time)
 {
 	time = tm();
 	size_t p2 = s.find("\\yr");
@@ -654,7 +653,7 @@ static void parse_rtf_time(const std::string& s, tm& time)
 		{
 			// Sometimes field exists but date is zero.
 			// Last modification time saved by LibreOffice 3.5 when document is created is an example.
-			return;
+			return false;
 		}
 		time.tm_year -= 1900;
 	}
@@ -676,14 +675,15 @@ static void parse_rtf_time(const std::string& s, tm& time)
 	p2 = s.find("\\sec");
 	if (p2 != std::string::npos)
 		std::istringstream(s.substr(p2 + 4)) >> time.tm_sec;
+	return true;
 }
 
-Metadata RTFParser::metaData() const
+tag::Metadata RTFParser::metaData() const
 {
 	if (!isRTF())	//check if this is really rtf file
 		throw RuntimeError("File " + impl->m_file_name + " is not rtf");
 	
-	Metadata meta;
+	tag::Metadata meta;
 	docwire_log(debug) << "Extracting metadata.";
 	if (!impl->m_data_stream->open())
 		throw RuntimeError("Error opening file " + impl->m_file_name);
@@ -701,7 +701,7 @@ Metadata RTFParser::metaData() const
 		std::string author;
 		for (int i = p + 8; content[i] != '{' && content[i] != '}'; i++)
 			author += content[i];
-		meta.setAuthor(author);
+		meta.author = author;
 	}
 	p = content.find("\\operator ");
 	if (p != std::string::npos)
@@ -709,7 +709,7 @@ Metadata RTFParser::metaData() const
 		std::string last_modified_by;
 		for (int i = p + 10; content[i] != '{' && content[i] != '}'; i++)
 			last_modified_by += content[i];
-		meta.setLastModifiedBy(last_modified_by);
+		meta.last_modified_by = last_modified_by;
 	}
 	p = content.find("\\creatim");
 	if (p != std::string::npos)
@@ -718,8 +718,8 @@ Metadata RTFParser::metaData() const
 		for (int i = p + 8; content[i] != '}'; i++)
 			s += content[i];
 		tm creation_date;
-		parse_rtf_time(s, creation_date);
-		meta.setCreationDate(creation_date);
+		if (parse_rtf_time(s, creation_date))
+			meta.creation_date = creation_date;
 	}
 	p = content.find("\\revtim");
 	if (p != std::string::npos)
@@ -728,8 +728,8 @@ Metadata RTFParser::metaData() const
 		for (int i = p + 7; content[i] != '}'; i++)
 			s += content[i];
 		tm last_modification_date;
-		parse_rtf_time(s, last_modification_date);
-		meta.setLastModificationDate(last_modification_date);
+		if (parse_rtf_time(s, last_modification_date))
+			meta.last_modification_date = last_modification_date;
 	}
 	p = content.find("\\nofpages");
 	if (p != std::string::npos)
@@ -739,7 +739,7 @@ Metadata RTFParser::metaData() const
 			s += content[i];
 		int page_count;
 		std::istringstream(s) >> page_count;
-		meta.setPageCount(page_count);
+		meta.page_count = page_count;
 	}
 	p = content.find("\\nofwords");
 	if (p != std::string::npos)
@@ -749,7 +749,7 @@ Metadata RTFParser::metaData() const
 			s += content[i];
 		int word_count;
 		std::istringstream(s) >> word_count;
-		meta.setWordCount(word_count);
+		meta.word_count = word_count;
 	}
 	impl->m_data_stream->close();
 	return meta;
@@ -766,11 +766,10 @@ void
 RTFParser::parse() const
 {
 	docwire_log(debug) << "Using RTF parser.";
-  Info info(StandardTag::TAG_TEXT, plainText());
+	Info info(tag::Text{.text = plainText()});
   impl->m_on_new_node_signal(info);
 
-  Metadata metadata = metaData();
-  Info metadata_info(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
+	Info metadata_info(metaData());
   impl->m_on_new_node_signal(metadata_info);
 }
 

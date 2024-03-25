@@ -15,6 +15,7 @@
 #include "parser.h"
 #include "parser_builder.h"
 #include <string>
+#include "tags.h"
 #include <vector>
 
 namespace docwire
@@ -38,7 +39,7 @@ class PDFParser : public Parser
     static std::vector<std::string> getExtensions() {return {"pdf"};}
 
 		bool isPDF();
-		Metadata metaData();
+		tag::Metadata metaData();
 };
 
 } // namespace docwire

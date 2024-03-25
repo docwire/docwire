@@ -20,10 +20,9 @@ namespace docwire
 
 struct Parser::Implementation
 {
-  Info
-  sendTag(const std::string& tag_name, const std::string& text, const std::map<std::string, std::any> &attributes) const
+  Info sendTag(const Tag& tag) const
   {
-    Info info(tag_name, text, attributes);
+    Info info(tag);
     m_on_new_node_signal(info);
     return info;
   }
@@ -49,15 +48,15 @@ Parser::Parser(const Importer* inImporter)
   base_impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{}, ImplementationDeleter{}};
 }
 
-Info Parser::sendTag(const std::string& tag_name, const std::string& text, const std::map<std::string, std::any> &attributes) const
+Info Parser::sendTag(const Tag& tag) const
 {
-  docwire_log(debug) << "Sending tag \"" << tag_name << "\" with text [" << text << "]";
-  return base_impl->sendTag(tag_name, text, attributes);
+  docwire_log_func_with_args(tag);
+  return base_impl->sendTag(tag);
 }
 
 Info Parser::sendTag(const Info &info) const
 {
-  return base_impl->sendTag(info.tag_name, info.plain_text, info.attributes);
+  return base_impl->sendTag(info.tag);
 }
 
 Parser& Parser::addOnNewNodeCallback(NewNodeCallback callback)

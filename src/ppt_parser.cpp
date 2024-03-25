@@ -16,7 +16,6 @@
 #include "log.h"
 #include <map>
 #include <math.h>
-#include "metadata.h"
 #include "misc.h"
 #include "oshared.h"
 #include <set>
@@ -398,9 +397,9 @@ std::string PPTParser::plainText(const FormattingStyle& formatting)
 	}
 }
 
-Metadata PPTParser::metaData()
+tag::Metadata PPTParser::metaData()
 {
-	Metadata meta;
+	tag::Metadata meta;
 	ThreadSafeOLEStorage* storage = NULL;
 	try
 	{
@@ -410,28 +409,20 @@ Metadata PPTParser::metaData()
 			storage = new ThreadSafeOLEStorage(impl->m_file_name);
 		parse_oshared_summary_info(*storage, meta);
 		// If page count not found use slide count as page count
-		if (meta.pageCount() == -1)
+		if (!meta.page_count)
 		{
 			int slide_count = 150;
 			try
 			{
 				parse_oshared_document_summary_info(*storage, slide_count);
 				if(slide_count!=-1){
-					meta.setPageCount(slide_count);
-					meta.setPageCountType(Metadata::EXTRACTED);
-				}
-				else{
-					meta.setPageCountType(Metadata::NONE);
+					meta.page_count = slide_count;
 				}
 			}
 			catch (const std::exception& e)
 			{
-				meta.setPageCountType(Metadata::NONE);
 				docwire_log(error) << e.what();
 			}
-		}
-		else{
-			meta.setPageCountType(Metadata::EXTRACTED);
 		}
 		delete storage;
 		storage = NULL;

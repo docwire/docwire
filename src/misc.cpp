@@ -271,7 +271,7 @@ bool string_to_date(const std::string& s, tm& date)
 std::string date_to_string(const tm& date)
 {
 	if (date.tm_year == 0)
-		return "";
+		throw RuntimeError{"Converting invalid date to string (tm_year == 0)"};
 	char buf[64];
 	strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &date);
 	return buf;

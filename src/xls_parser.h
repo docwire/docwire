@@ -12,8 +12,8 @@
 #ifndef DOCWIRE_XLS_PARSER_H
 #define DOCWIRE_XLS_PARSER_H
 
-#include "metadata.h"
 #include <string>
+#include "tags.h"
 #include <vector>
 
 namespace docwire
@@ -37,7 +37,7 @@ class XLSParser
 		bool isXLS();
 		std::string plainText(const FormattingStyle& formatting);
 		std::string plainText(ThreadSafeOLEStorage& storage, const FormattingStyle& formatting);
-		Metadata metaData();
+		tag::Metadata metaData();
 };
 
 } // namespace docwire
