@@ -44,6 +44,7 @@
 - Refactor Output class, rename it to OutputChainElement, add pipe operators to directly add output streams to parsing chain
 - Remove deprecated Metadata class, tag::Metadata is sufficient
 - Add common logging operators for std::variant and empty structs
+- Improve vcpkg install error handling in build.ps1
 
 ## Version 2024.01.05
 
