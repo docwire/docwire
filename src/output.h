@@ -43,7 +43,7 @@ public:
    */
   template<OStreamDerived T>
   OutputChainElement(T&& out_stream)
-    : OutputChainElement{std::make_shared<T>(std::move(out_stream))}
+    : OutputChainElement{std::static_pointer_cast<std::ostream>(std::make_shared<T>(std::move(out_stream)))}
   {}
 
   /**
@@ -54,7 +54,7 @@ public:
    */
   template<OStreamDerived T>
   OutputChainElement(T& out_stream)
-    : OutputChainElement(std::shared_ptr<T>{&out_stream, [](auto*) {}})
+    : OutputChainElement(std::static_pointer_cast<std::ostream>(std::shared_ptr<T>{&out_stream, [](auto*) {}}))
   {
   }
 
