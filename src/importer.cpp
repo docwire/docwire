@@ -90,7 +90,7 @@ public:
         .withParameters(m_parameters);
         try
         {
-          builder_ref.build(file_path)->parse();
+          builder_ref.build(file_path.string())->parse();
         }
         catch (EncryptedFileException &ex)
         {
