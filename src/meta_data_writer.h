@@ -21,21 +21,13 @@
 
 namespace docwire
 {
-/**
- * @brief The MetaDataWriter class writes the meta data of the document as plain text to an output stream.
- * @code
- * MetaDataWriter metaDataWriter;
- * parser.onNewNode([&metaDataWriter](Info &info){
- *      metaDataWriter.write_to(info, std::cout);
- *      }).parse();
- * @endcode
- */
+
 class DllExport MetaDataWriter : public Writer
 {
 public:
   /**
    * @brief Writes meta data of the document to an output stream.
-   * @param info data from callback
+   * @param tag data from callback
    * @param stream output stream
    */
   void write_to(const Tag& tag, std::ostream &stream) override;

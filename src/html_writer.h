@@ -21,20 +21,7 @@
 
 namespace docwire
 {
-/**
- * @brief The HTMLWriter class
- *
- * This class is used to converts the parsed data from callbacks into HTML format.
- *
- * example:
- * @code
- * ODFOOXMLParser parser("test.docx");
- * HTMLWriter writer;
- * parser.onNewNode([&writer](Info &info) {
- *      writer.write_to(info, std::cout); // convert callback to html ant writes to std::cout
- *      });
- * @endcode
- */
+
 class DllExport HtmlWriter : public Writer
 {
 public:
@@ -45,7 +32,7 @@ public:
 
   /**
    * @brief Converts text from callback to html format
-   * @param info data from callback
+   * @param tag data from callback
    * @param stream output stream
    */
   void write_to(const Tag& tag, std::ostream &stream) override;

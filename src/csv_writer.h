@@ -21,26 +21,12 @@ namespace docwire
 {
   struct Info;
 
-/**
- * @brief The CsvWriter class
- *
- * This class is used to converts the parsed data from callbacks into CSV format.
- *
- * example:
- * @code
- * ODFOOXMLParser parser("test.docx");
- * CsvWriter writer;
- * parser.onNewNode([&writer](Info &info) {
- *      writer.write_to(info, std::cout); // convert callback to csv and writes to std::cout
- *      });
- * @endcode
- */
 class DllExport CsvWriter : public Writer
 {
 public:
   /**
    * @brief Converts text from callback to CSV format
-   * @param info data from callback
+   * @param tag data from callback
    * @param stream output stream
    */
   void write_to(const Tag& tag, std::ostream &stream) override;
