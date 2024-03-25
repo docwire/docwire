@@ -251,7 +251,7 @@ struct CloseFooter {};
 struct Mail
 {
   std::optional<std::string> subject;
-  std::optional<uint> date;
+  std::optional<uint32_t> date;
   std::optional<int> level;
   void log_to_record_stream(log_record_stream& s) const
   {
