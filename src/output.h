@@ -36,7 +36,9 @@ public:
   /**
    * @param out_stream OutputChainElement stream. Parsing chain will be writing to this stream.
    */
-  OutputChainElement(std::shared_ptr<std::ostream> out_stream);
+  OutputChainElement(std::shared_ptr<std::ostream> out_stream)
+    : m_out_stream{std::move(out_stream)}
+  {}
 
   /**
    * @param out_stream OutputChainElement stream. Parsing chain will be writing to this stream.
@@ -58,11 +60,7 @@ public:
   {
   }
 
-  OutputChainElement(const OutputChainElement &other);
-
-  OutputChainElement(const OutputChainElement &&other);
-
-  virtual ~OutputChainElement();
+  virtual ~OutputChainElement() = default;
 
   OutputChainElement* clone() const override
   {
@@ -77,8 +75,7 @@ public:
   void process(Info &info) const override;
 
 private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
+  std::shared_ptr<std::ostream> m_out_stream;
 };
 
 template<ParsingChainOrChainElement E, OStreamDerived S>

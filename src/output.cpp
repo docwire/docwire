@@ -17,49 +17,13 @@
 namespace docwire
 {
 
-class OutputChainElement::Implementation
-{
-public:
-
-  Implementation(std::shared_ptr<std::ostream> out_stream)
-    : m_out_stream(out_stream)
-  {}
-
-  Implementation(const Implementation &other)
-    : m_out_stream(other.m_out_stream)
-  {}
-
-  Implementation(const Implementation &&other)
-    : m_out_stream(other.m_out_stream)
-  {}
-
-  std::shared_ptr<std::ostream> m_out_stream;
-};
-
-OutputChainElement::OutputChainElement(std::shared_ptr<std::ostream> out_stream)
-{
-  impl = std::unique_ptr<Implementation>{new Implementation{out_stream}};
-}
-
-OutputChainElement::OutputChainElement(const OutputChainElement &other)
-  : impl(new Implementation(*other.impl))
-{}
-
-OutputChainElement::OutputChainElement(const OutputChainElement &&other)
-  : impl(new Implementation(*other.impl))
-{}
-
-OutputChainElement::~OutputChainElement()
-{
-}
-
 void
 OutputChainElement::process(Info &info) const
 {
 	if (!std::holds_alternative<tag::File>(info.tag))
 		throw LogicError("Only tag::File tags are supported by OutputChainElement chain element");
 	std::shared_ptr<std::istream> in_stream = std::get<tag::File>(info.tag).access_stream();
-	*impl->m_out_stream << in_stream->rdbuf();
+	*m_out_stream << in_stream->rdbuf();
 }
 
 } // namespace docwire
