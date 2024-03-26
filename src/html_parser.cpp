@@ -516,7 +516,9 @@ class SaxParser : public ParserSax
 			docwire_log(debug) << "HTML text found: [" << text << "]";
 			if (m_in_style)
 			{
-				m_style_text += node.text();
+				std::string text = node.text();
+				text.erase(std::remove(text.begin(), text.end(), '\r'), text.end());
+				m_style_text += text;
 				return;
 			}
 			if (m_in_title || m_in_script)
