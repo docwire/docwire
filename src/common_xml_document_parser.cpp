@@ -17,7 +17,6 @@
 #include <libxml/xmlreader.h>
 #include <functional>
 #include "log.h"
-#include "metadata.h"
 #include "misc.h"
 #include "xml_stream.h"
 #include "xml_fixer.h"
@@ -75,11 +74,11 @@ struct CommonXMLDocumentParser::Implementation
 	int m_xml_options;
 	CommonXMLDocumentParser* m_parser;
 
-	void send_tag(const std::string& tag_name, const std::string& text = "", const std::map<std::string, std::any> &attr = {})
+	void send_tag(const Tag& tag)
 	{
 		if (!stop_emmit_signals)
 		{
-			Info info(tag_name, text, attr);
+			Info info(tag);
 			m_on_new_node_signal(info);
 		}
 	}
@@ -102,15 +101,15 @@ struct CommonXMLDocumentParser::Implementation
 
     if (is_underline)
     {
-      send_tag(StandardTag::TAG_CLOSE_U);
+      send_tag(tag::CloseUnderline{});
     }
     if (is_italic)
     {
-      send_tag(StandardTag::TAG_CLOSE_I);
+      send_tag(tag::CloseItalic{});
     }
     if (is_bold)
     {
-      send_tag(StandardTag::TAG_CLOSE_B);
+      send_tag(tag::CloseBold{});
     }
     reset_format();
   }
@@ -126,15 +125,15 @@ struct CommonXMLDocumentParser::Implementation
 
 		if (is_underline)
 		{
-			send_tag(StandardTag::TAG_CLOSE_U);
+			send_tag(tag::CloseUnderline{});
 		}
 		if (is_italic)
 		{
-			send_tag(StandardTag::TAG_CLOSE_I);
+			send_tag(tag::CloseItalic{});
 		}
 		if (is_bold)
 		{
-			send_tag(StandardTag::TAG_CLOSE_B);
+			send_tag(tag::CloseBold{});
 		}
 		reset_format();
 	}
@@ -148,15 +147,15 @@ struct CommonXMLDocumentParser::Implementation
     parser.parseXmlData(xml_stream, mode, options, zipfile);
     if (is_bold)
     {
-      send_tag(StandardTag::TAG_B);
+      send_tag(tag::Bold{});
     }
     if (is_italic)
     {
-      send_tag(StandardTag::TAG_I);
+      send_tag(tag::Italic{});
     }
     if (is_underline)
     {
-      send_tag(StandardTag::TAG_U);
+      send_tag(tag::Underline{});
     }
     xml_stream.levelUp();
     children_processed = true;
@@ -167,13 +166,13 @@ struct CommonXMLDocumentParser::Implementation
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
-    send_tag(StandardTag::TAG_P);
+    send_tag(tag::Paragraph{});
     docwire_log(debug) << "ODFOOXML_PARA command.";
     xml_stream.levelDown();
     text += parser.parseXmlData(xml_stream, mode, options, zipfile) + '\n';
     xml_stream.levelUp();
     children_processed = true;
-    send_tag(StandardTag::TAG_CLOSE_P);
+    send_tag(tag::CloseParagraph{});
   }
 
   void onODFOOXMLText(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
@@ -188,7 +187,7 @@ struct CommonXMLDocumentParser::Implementation
       children_processed = true;
       std::string s{content};
       if (space_preserve || !std::all_of(s.begin(), s.end(), [](auto c){return isspace(static_cast<unsigned char>(c));}))
-        send_tag(StandardTag::TAG_TEXT, s);
+        send_tag(tag::Text{.text = s});
     }
   }
 
@@ -197,13 +196,13 @@ struct CommonXMLDocumentParser::Implementation
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
-    send_tag(StandardTag::TAG_TABLE);
+    send_tag(tag::Table{});
     docwire_log(debug) << "onODFOOXMLTable command.";
     xml_stream.levelDown();
     text += parser.parseXmlData(xml_stream, mode, options, zipfile);
     xml_stream.levelUp();
     children_processed = true;
-    send_tag(StandardTag::TAG_CLOSE_TABLE);
+    send_tag(tag::CloseTable{});
   }
 
   void onODFOOXMLTableRow(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
@@ -211,13 +210,13 @@ struct CommonXMLDocumentParser::Implementation
                        bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
-    send_tag(StandardTag::TAG_TR);
+    send_tag(tag::TableRow{});
     docwire_log(debug) << "onODFOOXMLTableRow command.";
     xml_stream.levelDown();
     text += parser.parseXmlData(xml_stream, mode, options, zipfile);
     xml_stream.levelUp();
     children_processed = true;
-    send_tag(StandardTag::TAG_CLOSE_TR);
+    send_tag(tag::CloseTableRow{});
   }
 
   void onODFOOXMLTableColumn(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
@@ -225,13 +224,13 @@ struct CommonXMLDocumentParser::Implementation
                        bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
-    send_tag(StandardTag::TAG_TD);
+    send_tag(tag::TableCell{});
     docwire_log(debug) << "onODFOOXMLTableColumn command.";
     xml_stream.levelDown();
     text += parser.parseXmlData(xml_stream, mode, options, zipfile);
     xml_stream.levelUp();
     children_processed = true;
-    send_tag(StandardTag::TAG_CLOSE_TD);
+    send_tag(tag::CloseTableCell{});
   }
 
   void onODFOOXMLTextTag(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
@@ -284,9 +283,9 @@ struct CommonXMLDocumentParser::Implementation
 };
 
 void
-CommonXMLDocumentParser::trySendTag(const std::string& tag_name, const std::string& text, const std::map<std::string, std::any> &attr) const
+CommonXMLDocumentParser::trySendTag(const Tag& tag) const
 {
-  impl->send_tag(tag_name, text, attr);
+  impl->send_tag(tag);
 }
 
 void
@@ -314,7 +313,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 		{
 			docwire_log(debug) << "ODFOOXML_TAB command.";
 			text += "\t";
-			parser.impl->send_tag(StandardTag::TAG_TEXT, "\t", {});
+			parser.impl->send_tag(tag::Text{.text = "\t"});
 		}
 
 		static void onODFOOXMLSpace(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
@@ -330,7 +329,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			{
 				text += " ";
 			}
-			parser.impl->send_tag(StandardTag::TAG_TEXT, std::string(count, ' '));
+			parser.impl->send_tag(tag::Text{.text = std::string(count, ' ')});
 		}
 
 		static void onODFOOXMLUrl(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
@@ -339,13 +338,13 @@ class CommonXMLDocumentParser::CommandHandlersSet
 		{
 			docwire_log(debug) << "ODFOOXML_URL command.";
 			std::string mlink = xml_stream.attribute("href");
-      parser.impl->send_tag(StandardTag::TAG_LINK, "", {{"url", mlink}});
+			parser.impl->send_tag(tag::Link{.url = mlink});
 			xml_stream.levelDown();
 			std::string text_link = parser.parseXmlData(xml_stream, mode, options, zipfile);
 			text_link = formatUrl(mlink, text_link, options);
 			xml_stream.levelUp();
 			children_processed = true;
-      parser.impl->send_tag(StandardTag::TAG_CLOSE_LINK);
+			parser.impl->send_tag(tag::CloseLink{});
 		}
 
 		static void onODFOOXMLListStyle(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
@@ -389,7 +388,8 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			std::string style_name = xml_stream.attribute("style-name");
 			if (parser.getListDepth() <= 10 && !style_name.empty() && parser.getListStyles().find(style_name) != parser.getListStyles().end())
 				list_style = parser.getListStyles()[style_name].at(parser.getListDepth() - 1);
-			parser.impl->send_tag(StandardTag::TAG_LIST, "", { { "is_ordered", list_style == CommonXMLDocumentParser::number }, {"list_style_prefix", std::string(options.list_style.getPrefix())} });
+			std::string list_type = (list_style == CommonXMLDocumentParser::number ? "decimal" : "disc");
+			parser.impl->send_tag(tag::List{.type = list_type});
 
 			xml_stream.levelDown();
 			while (xml_stream)
@@ -402,11 +402,11 @@ class CommonXMLDocumentParser::CommandHandlersSet
 				}
 				else if (xml_stream)
 				{
-					parser.impl->send_tag(StandardTag::TAG_LIST_ITEM);
+					parser.impl->send_tag(tag::ListItem{});
 					list_vector.push_back(parser.parseXmlData(xml_stream, mode, options, zipfile));
 				}
 
-				parser.impl->send_tag(StandardTag::TAG_CLOSE_LIST_ITEM);
+				parser.impl->send_tag(tag::CloseListItem{});
 
 				xml_stream.levelUp();
 				xml_stream.next();
@@ -418,10 +418,10 @@ class CommonXMLDocumentParser::CommandHandlersSet
 				text += header;
 				if (list_vector.size() > 0)
 					text += "\n";
-					parser.impl->send_tag(StandardTag::TAG_BR);
+					parser.impl->send_tag(tag::BreakLine{});
 			}
 			--parser.getListDepth();
-			parser.impl->send_tag(StandardTag::TAG_CLOSE_LIST);
+			parser.impl->send_tag(tag::CloseList{});
 			if (list_style == CommonXMLDocumentParser::number)
 				text += formatNumberedList(list_vector);
 			else
@@ -436,7 +436,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			svector cell_vector;
 			std::vector<svector> row_vector;
 			docwire_log(debug) << "ODFOOXML_TABLE command.";
-			parser.impl->send_tag(StandardTag::TAG_TABLE);
+			parser.impl->send_tag(tag::Table{});
 			xml_stream.levelDown();
 			while (xml_stream)
 			{
@@ -444,27 +444,27 @@ class CommonXMLDocumentParser::CommandHandlersSet
 				{
 					xml_stream.levelDown();
 					cell_vector.clear();
-					parser.impl->send_tag(StandardTag::TAG_TR);
+					parser.impl->send_tag(tag::TableRow{});
 					while (xml_stream)
 					{
 						if (xml_stream.name() == "table-cell")
 						{
-							parser.impl->send_tag(StandardTag::TAG_TD);
+							parser.impl->send_tag(tag::TableCell{});
 							xml_stream.levelDown();
 							cell_vector.push_back(parser.parseXmlData(xml_stream, mode, options, zipfile));
 							xml_stream.levelUp();
-							parser.impl->send_tag(StandardTag::TAG_CLOSE_TD);
+							parser.impl->send_tag(tag::CloseTableCell{});
 						}
 						xml_stream.next();
 					}
 					row_vector.push_back(cell_vector);
 					xml_stream.levelUp();
-					parser.impl->send_tag(StandardTag::TAG_CLOSE_TR);
+					parser.impl->send_tag(tag::CloseTableRow{});
 				}
 				xml_stream.next();
 			}
 			xml_stream.levelUp();
-			parser.impl->send_tag(StandardTag::TAG_CLOSE_TABLE);
+			parser.impl->send_tag(tag::CloseTable{});
 			text += formatTable(row_vector, options);
 			children_processed = true;
 		}
@@ -511,9 +511,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 				xml_stream.next();
 			}
 			xml_stream.levelUp();
-      parser.trySendTag(StandardTag::TAG_COMMENT, "", {{"author",  creator},
-                                                       {"time",    date},
-                                                       {"comment", content}});
+			parser.trySendTag(tag::Comment{.author = creator, .time = date, .comment = content});
 			text += parser.formatComment(creator, date, content);
 			children_processed = true;
 		}
@@ -524,7 +522,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 		{
 			docwire_log(debug) << "ODF_LINE_BREAK command.";
 			text += "\n";
-			parser.impl->send_tag(StandardTag::TAG_BR);
+			parser.impl->send_tag(tag::BreakLine{});
 		}
 
 		static void onODFHeading(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
@@ -651,7 +649,7 @@ void CommonXMLDocumentParser::extractText(const std::string& xml_contents, XmlPa
 	}
 }
 
-void CommonXMLDocumentParser::parseODFMetadata(const std::string &xml_content, Metadata &metadata) const
+void CommonXMLDocumentParser::parseODFMetadata(const std::string &xml_content, tag::Metadata& metadata) const
 {
 	try
 	{
@@ -665,20 +663,20 @@ void CommonXMLDocumentParser::parseODFMetadata(const std::string &xml_content, M
 				while (xml_stream)
 				{
 					if (xml_stream.name() == "initial-creator")
-						metadata.setAuthor(xml_stream.stringValue());
+						metadata.author = xml_stream.stringValue();
 					if (xml_stream.name() == "creation-date")
 					{
 						tm creation_date;
 						string_to_date(xml_stream.stringValue(), creation_date);
-						metadata.setCreationDate(creation_date);
+						metadata.creation_date = creation_date;
 					}
 					if (xml_stream.name() == "creator")
-						metadata.setLastModifiedBy(xml_stream.stringValue());
+						metadata.last_modified_by = xml_stream.stringValue();
 					if (xml_stream.name() == "date")
 					{
 						tm last_modification_date;
 						string_to_date(xml_stream.stringValue(), last_modification_date);
-						metadata.setLastModificationDate(last_modification_date);
+						metadata.last_modification_date = last_modification_date;
 					}
 					if (xml_stream.name() == "document-statistic")
 					{
@@ -686,12 +684,12 @@ void CommonXMLDocumentParser::parseODFMetadata(const std::string &xml_content, M
 						if (attr.empty())
 							attr = xml_stream.attribute("page-count"); // older OpenOffice.org
 						if (!attr.empty())
-							metadata.setPageCount(str_to_int(attr));
+							metadata.page_count = str_to_int(attr);
 						attr = xml_stream.attribute("meta:word-count"); // LibreOffice 3.5
 						if (attr.empty())
 							attr = xml_stream.attribute("word-count"); // older OpenOffice.org
 						if (!attr.empty())
-							metadata.setWordCount(str_to_int(attr));
+							metadata.word_count = str_to_int(attr);
 					}
 					xml_stream.next();
 				}

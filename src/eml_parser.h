@@ -41,7 +41,7 @@ class EMLParser : public Parser
 
 		bool isEML() const;
 		std::string plainText(const FormattingStyle& formatting) const;
-		Metadata metaData();
+		tag::Metadata metaData();
 };
 
 } // namespace docwire

@@ -17,7 +17,6 @@ add_library(docwire_core SHARED
         decompress_archives.cpp
         list_style.cpp
         log.cpp
-        metadata.cpp
         misc.cpp
         variant.cpp
         parser_parameters.cpp

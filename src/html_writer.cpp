@@ -17,14 +17,70 @@
 namespace docwire
 {
 
+namespace
+{
+
+std::string to_space_separated(const std::vector<std::string>& v)
+{
+  return v.empty() ? std::string{} :
+    std::accumulate(v.begin()+1, v.end(), v.front(),
+                    [](const std::string& s, const auto& i) { return s + " " + i; });
+}
+
+using HtmlAttrs = std::map<std::string, std::string>;
+
+HtmlAttrs styling_attributes(const attributes::Styling& styling)
+{
+  HtmlAttrs attrs;
+  if (!styling.classes.empty())
+    attrs.insert({"class", to_space_separated(styling.classes)});
+  if (!styling.id.empty())
+    attrs.insert({"id", styling.id});
+  if (!styling.style.empty())
+    attrs.insert({"style", styling.style});
+  return attrs;
+}
+
+template<attributes::WithStyling T>
+HtmlAttrs styling_attributes(const T& tag)
+{
+  return styling_attributes(tag.styling);
+}
+
+std::string encoded(const std::string& value)
+{
+  std::string encoded;
+  encoded.reserve(value.size());
+  for (auto& ch: value)
+  {
+    switch(ch)
+    {
+      case '&': encoded += "&amp;"; break;
+      case '\"': encoded += "&quot;"; break;
+      case '\'': encoded += "&apos;"; break;
+      case '<': encoded += "&lt;"; break;
+      case '>': encoded += "&gt;"; break;
+      default: encoded += ch; break;
+    }
+  }
+  return encoded;
+}
+
+std::string to_string(const HtmlAttrs& attrs)
+{
+  return std::accumulate(attrs.begin(), attrs.end(), std::string{},
+    [](const std::string &attrs_string, const auto &a){return attrs_string + " " + a.first + "=\"" + encoded(a.second) + "\""; });
+}
+
+std::shared_ptr<TextElement> tag_with_attributes(const std::string& tag_name, const HtmlAttrs& attributes)
+{
+  return std::make_shared<TextElement>("<" + tag_name + to_string(attributes) + ">");
+}
+
+} // anonymous namespace
+
 struct HtmlWriter::Implementation
 {
-  Implementation(HtmlWriter::RestoreOriginalAttributes restore_original_attributes)
-    : m_restore_original_attributes(restore_original_attributes)
-  {
-  }
-
-  HtmlWriter::RestoreOriginalAttributes m_restore_original_attributes;
   bool m_header_is_open { false };
 
   std::shared_ptr<TextElement>
@@ -53,138 +109,85 @@ struct HtmlWriter::Implementation
     return std::make_shared<TextElement>(footer);
   }
 
-  std::string encoded(const std::string& value)
+  std::shared_ptr<TextElement> write_link(const tag::Link& link)
   {
-    std::string encoded;
-    encoded.reserve(value.size());
-    for (auto& ch: value)
-    {
-      switch(ch)
-      {
-        case '&': encoded += "&amp;"; break;
-        case '\"': encoded += "&quot;"; break;
-        case '\'': encoded += "&apos;"; break;
-        case '<': encoded += "&lt;"; break;
-        case '>': encoded += "&gt;"; break;
-        default: encoded += ch; break;
-      }
-    }
-    return encoded;
-  }
-
-  using HtmlAttrs = std::map<std::string, std::string>;
-
-  HtmlAttrs restored_original_attributes(const Info& info)
-  {
-    HtmlAttrs attrs;
-    if (m_restore_original_attributes == RestoreOriginalAttributes{true})
-      for (auto a: info.attributes)
-      {
-        if (boost::starts_with(a.first, "html:"))
-          attrs.insert({a.first.substr(5), std::any_cast<std::string>(a.second)});
-      }
-    return attrs;
-  }
-
-  std::string to_string(const HtmlAttrs& attrs)
-  {
-    return std::accumulate(attrs.begin(), attrs.end(), std::string{},
-      [this](const std::string &attrs_string, const auto &a){return attrs_string + " " + a.first + "=\"" + encoded(a.second) + "\""; });
-  }
-
-  std::shared_ptr<TextElement> tag_with_attributes(const std::string& tag_name, const HtmlAttrs& attributes)
-  {
-    return std::make_shared<TextElement>("<" + tag_name + to_string(attributes) + ">");
-  }
-
-  std::shared_ptr<TextElement> write_link(const Info& info)
-  {
-    HtmlAttrs attrs = restored_original_attributes(info);
-    attrs.insert({"href", info.getAttributeValue<std::string>("url").value() });
+    HtmlAttrs attrs = styling_attributes(link);
+    if (link.url)
+      attrs.insert({"href", *link.url });
     return tag_with_attributes("a", attrs);
   }
 
-  std::shared_ptr<TextElement> write_image(const Info& info)
+  std::shared_ptr<TextElement> write_image(const tag::Image& image)
   {
-    HtmlAttrs attrs = restored_original_attributes(info);
+    HtmlAttrs attrs = styling_attributes(image);
     attrs.insert(
     {
-      { "src", info.getAttributeValue<std::string>("src").value() },
-      { "alt", info.getAttributeValue<std::string>("alt").value_or("") }
+      { "src", image.src },
+      { "alt", image.alt.value_or("") }
     });
     return tag_with_attributes("img", attrs);
   }
 
-  std::shared_ptr<TextElement> write_list(const Info& info)
+  std::shared_ptr<TextElement> write_list(const tag::List& list)
   {
-    HtmlAttrs attrs = restored_original_attributes(info);
+    HtmlAttrs attrs = styling_attributes(list);
     std::string orig_style = attrs.count("style") ? attrs["style"] + "; " : "";
-    std::string list_type = info.getAttributeValue<std::string>("type").value_or("");
-    if (list_type.empty())
-    {
-      if (info.getAttributeValue<bool>("is_ordered").value_or(false))
-        list_type = "decimal";
-      else
-        list_type = info.getAttributeValue<std::string>("list_style_prefix").value_or("disc");
-    }
+    std::string list_type = list.type;
     if (list_type != "decimal" && list_type != "disc" && list_type != "none")
       list_type = '"' + list_type + '"';
     attrs.insert_or_assign("style", orig_style + "list-style-type: " + list_type);
     return tag_with_attributes("ul", attrs);
   }
 
-  std::shared_ptr<TextElement> write_style(const Info& info)
+  std::shared_ptr<TextElement> write_style(const tag::Style& style)
   {
     return std::make_shared<TextElement>(
-      m_restore_original_attributes == RestoreOriginalAttributes{true} ?
-        "<style type=\"text/css\">" + info.getAttributeValue<std::string>("css_text").value() + "</style>\n" : "");
+        "<style type=\"text/css\">" + style.css_text + "</style>\n"/* : ""*/);
   }
 
-  std::map<std::string, std::function<std::shared_ptr<TextElement>(const Info &info)>> writers = {
-    {StandardTag::TAG_P, [this](const Info &info) { return tag_with_attributes("p", restored_original_attributes(info)); }},
-    {StandardTag::TAG_CLOSE_P, [](const Info &info) { return std::make_shared<TextElement>("</p>"); }},
-    {StandardTag::TAG_SECTION, [this](const Info &info) { return tag_with_attributes("div", restored_original_attributes(info)); }},
-    {StandardTag::TAG_CLOSE_SECTION, [](const Info &info) { return std::make_shared<TextElement>("</div>"); }},
-    {StandardTag::TAG_SPAN, [this](const Info &info) { return tag_with_attributes("span", restored_original_attributes(info)); }},
-    {StandardTag::TAG_CLOSE_SPAN, [](const Info &info) { return std::make_shared<TextElement>("</span>"); }},
-    {StandardTag::TAG_B, [this](const Info &info) { return tag_with_attributes("b", restored_original_attributes(info)); }},
-    {StandardTag::TAG_CLOSE_B, [](const Info &info) { return std::make_shared<TextElement>("</b>"); }},
-    {StandardTag::TAG_I, [this](const Info &info) { return tag_with_attributes("i", restored_original_attributes(info)); }},
-    {StandardTag::TAG_CLOSE_I, [](const Info &info) { return std::make_shared<TextElement>("</i>"); }},
-    {StandardTag::TAG_U, [this](const Info &info) { return tag_with_attributes("u", restored_original_attributes(info)); }},
-    {StandardTag::TAG_CLOSE_U, [](const Info &info) { return std::make_shared<TextElement>("</u>"); }},
-    {StandardTag::TAG_TABLE, [this](const Info &info) { return tag_with_attributes("table", restored_original_attributes(info)); }},
-    {StandardTag::TAG_CLOSE_TABLE, [](const Info &info) { return std::make_shared<TextElement>("</table>"); }},
-    {StandardTag::TAG_TR, [this](const Info &info) { return tag_with_attributes("tr", restored_original_attributes(info)); }},
-    {StandardTag::TAG_CLOSE_TR, [](const Info &info) { return std::make_shared<TextElement>("</tr>"); }},
-    {StandardTag::TAG_TD, [this](const Info &info) { return tag_with_attributes("td", restored_original_attributes(info)); }},
-    {StandardTag::TAG_CLOSE_TD, [](const Info &info) { return std::make_shared<TextElement>("</td>"); }},
-    {StandardTag::TAG_BR, [](const Info &info) { return std::make_shared<TextElement>("<br />"); }},
-    {StandardTag::TAG_TEXT, [](const Info &info) { return std::make_shared<TextElement>(info.plain_text); }},
-    {StandardTag::TAG_LINK, [this](const Info &info) { return write_link(info); }},
-    {StandardTag::TAG_CLOSE_LINK, [](const Info &info) { return std::make_shared<TextElement>("</a>"); }},
-    {StandardTag::TAG_IMAGE, [this](const Info &info) { return write_image(info); }},
-    {StandardTag::TAG_LIST, [this](const Info &info) { return write_list(info); }},
-    {StandardTag::TAG_CLOSE_LIST, [](const Info &info) { return std::make_shared<TextElement>("</ul>"); }},
-    {StandardTag::TAG_LIST_ITEM, [](const Info &info) { return std::make_shared<TextElement>("<li>"); }},
-    {StandardTag::TAG_CLOSE_LIST_ITEM, [](const Info &info) { return std::make_shared<TextElement>("</li>"); }},
-    {StandardTag::TAG_HEADER, [](const Info &info) { return std::make_shared<TextElement>("<header>"); }},
-    {StandardTag::TAG_CLOSE_HEADER, [](const Info &info) { return std::make_shared<TextElement>("</header>"); }},
-    {StandardTag::TAG_FOOTER, [](const Info &info) { return std::make_shared<TextElement>("<footer>"); }},
-    {StandardTag::TAG_CLOSE_FOOTER, [](const Info &info) { return std::make_shared<TextElement>("</footer>"); }},
-    {StandardTag::TAG_DOCUMENT, [this](const Info &info) { return write_open_header(); }},
-    {StandardTag::TAG_CLOSE_DOCUMENT, [this](const Info &info) { return write_footer(); }},
-    {StandardTag::TAG_STYLE, [this](const Info &info) { return write_style(info); }}};
-
-  void write_to(const Info &info, std::ostream &stream)
+  void write_to(const Tag& tag, std::ostream &stream)
   {
-    if (info.tag_name != StandardTag::TAG_STYLE && m_header_is_open)
+    if (!std::holds_alternative<tag::Style>(tag) && m_header_is_open)
       write_close_header_open_body()->write_to(stream);
-    auto writer_iterator = writers.find(info.tag_name);
-    if (writer_iterator != writers.end())
-    {
-      writer_iterator->second(info)->write_to(stream);
-    }
+    std::shared_ptr<TextElement> text_element = std::visit(overloaded {
+      [](const tag::Paragraph& tag) { return tag_with_attributes("p", styling_attributes(tag)); },
+      [](const tag::CloseParagraph& tag) { return std::make_shared<TextElement>("</p>"); },
+      [](const tag::Section& tag) { return tag_with_attributes("div", styling_attributes(tag)); },
+      [](const tag::CloseSection& tag) { return std::make_shared<TextElement>("</div>"); },
+      [](const tag::Span& tag) { return tag_with_attributes("span", styling_attributes(tag)); },
+      [](const tag::CloseSpan& tag) { return std::make_shared<TextElement>("</span>"); },
+      [](const tag::Bold& tag) { return tag_with_attributes("b", styling_attributes(tag)); },
+      [](const tag::CloseBold& tag) { return std::make_shared<TextElement>("</b>"); },
+      [](const tag::Italic& tag) { return tag_with_attributes("i", styling_attributes(tag)); },
+      [](const tag::CloseItalic& tag) { return std::make_shared<TextElement>("</i>"); },
+      [](const tag::Underline& tag) { return tag_with_attributes("u", styling_attributes(tag)); },
+      [](const tag::CloseUnderline& tag) { return std::make_shared<TextElement>("</u>"); },
+      [](const tag::Table& tag) { return tag_with_attributes("table", styling_attributes(tag)); },
+      [](const tag::CloseTable& tag) { return std::make_shared<TextElement>("</table>"); },
+      [](const tag::TableRow& tag) { return tag_with_attributes("tr", styling_attributes(tag)); },
+      [](const tag::CloseTableRow& tag) { return std::make_shared<TextElement>("</tr>"); },
+      [](const tag::TableCell& tag) { return tag_with_attributes("td", styling_attributes(tag)); },
+      [](const tag::CloseTableCell& tag) { return std::make_shared<TextElement>("</td>"); },
+      [](const tag::BreakLine& tag) { return tag_with_attributes("br", styling_attributes(tag)); },
+      [](const tag::Text& tag) { return std::make_shared<TextElement>(tag.text); },
+      [this](const tag::Link& tag) { return write_link(tag); },
+      [](const tag::CloseLink& tag) { return std::make_shared<TextElement>("</a>"); },
+      [this](const tag::Image& tag) { return write_image(tag); },
+      [this](const tag::List& tag) { return write_list(tag); },
+      [](const tag::CloseList& tag) { return std::make_shared<TextElement>("</ul>"); },
+      [](const tag::ListItem& tag) { return std::make_shared<TextElement>("<li>"); },
+      [](const tag::CloseListItem& tag) { return std::make_shared<TextElement>("</li>"); },
+      [](const tag::Header& tag) { return std::make_shared<TextElement>("<header>"); },
+      [](const tag::CloseHeader& tag) { return std::make_shared<TextElement>("</header>"); },
+      [](const tag::Footer& tag) { return std::make_shared<TextElement>("<footer>"); },
+      [](const tag::CloseFooter& tag) { return std::make_shared<TextElement>("</footer>"); },
+      [this](const tag::Document& tag) { return write_open_header(); },
+      [this](const tag::CloseDocument& tag) { return write_footer(); },
+      [this](const tag::Style& tag) { return write_style(tag); },
+      [](const auto&) { return std::shared_ptr<TextElement>(); }
+    }, tag);
+    if (text_element)
+      text_element->write_to(stream);
   }
 };
 
@@ -193,19 +196,18 @@ void HtmlWriter::ImplementationDeleter::operator()(Implementation *impl)
   delete impl;
 }
 
-HtmlWriter::HtmlWriter(RestoreOriginalAttributes restore_original_attributes)
-  : impl(new Implementation(restore_original_attributes))
+HtmlWriter::HtmlWriter()
+  : impl(new Implementation())
 {
 }
 
 HtmlWriter::HtmlWriter(const HtmlWriter& html_writer)
-  : HtmlWriter(html_writer.impl->m_restore_original_attributes)
-{
-}
+  : impl(new Implementation(*html_writer.impl))
+{}
 
-void HtmlWriter::write_to(const Info &info, std::ostream &stream)
+void HtmlWriter::write_to(const Tag& tag, std::ostream &stream)
 {
-	impl->write_to(info, stream);
+	impl->write_to(tag, stream);
 }
 
 Writer*

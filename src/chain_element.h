@@ -81,5 +81,8 @@ private:
   std::shared_ptr<ChainElement> m_parent;
 };
 
+template<typename T>
+concept ParsingChainOrChainElement = std::derived_from<T, ParsingChain> || std::derived_from<T, ChainElement>;
+
 }
 #endif //DOCWIRE_CHAIN_ELEMENT_H

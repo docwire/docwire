@@ -48,35 +48,28 @@ Transcribe::~Transcribe()
 void Transcribe::process(Info &info) const
 {
 	docwire_log_func();
-	if (info.tag_name != StandardTag::TAG_FILE)
+	if (!std::holds_alternative<tag::File>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	docwire_log(debug) << "TAG_FILE received";
-	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
-	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
-	if(!path && !stream)
-		throw LogicError("No path or stream in TAG_FILE");
-	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
-	std::stringstream response_stream;
+	docwire_log(debug) << "tag::File received";
+	const tag::File& file = std::get<tag::File>(info.tag);
+	std::shared_ptr<std::istream> in_stream = file.access_stream();
+	auto response_stream = std::make_shared<std::ostringstream>();
 	try
 	{
-		Input(in_stream) | http::Post("https://api.openai.com/v1/audio/transcriptions", {{"model", "whisper-1"}, {"response_format", "text"}}, "file", DefaultFileName("audio.mp3"), impl->m_api_key) | Output(response_stream);
+		in_stream | http::Post("https://api.openai.com/v1/audio/transcriptions", {{"model", "whisper-1"}, {"response_format", "text"}}, "file", DefaultFileName("audio.mp3"), impl->m_api_key) | response_stream;
 	}
 	catch (const http::Post::RequestFailed& e)
 	{
-		if (path)
-			delete in_stream;
 		throw Transcribe::HttpError("Http POST failed", e);
 	}
-	if (path)
-		delete in_stream;
-	Info doc_info(StandardTag::TAG_DOCUMENT);
+	Info doc_info(tag::Document{});
 	emit(doc_info);
-	Info text_info(StandardTag::TAG_TEXT, response_stream.str());
+	Info text_info(tag::Text{response_stream->str()});
 	emit(text_info);
-	Info close_doc_info(StandardTag::TAG_CLOSE_DOCUMENT);
+	Info close_doc_info(tag::CloseDocument{});
 	emit(close_doc_info);
 }
 

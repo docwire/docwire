@@ -13,13 +13,13 @@
 #define DOCWIRE_XLSB_PARSER_H
 
 #include <string>
+#include "tags.h"
 #include <vector>
 
 namespace docwire
 {
 
 struct FormattingStyle;
-class Metadata;
 
 class XLSBParser
 {
@@ -34,7 +34,7 @@ class XLSBParser
     static std::vector<std::string> getExtensions() {return {"xlsb"};}
 		bool isXLSB();
 		std::string plainText(const FormattingStyle& formatting);
-		Metadata metaData();
+		tag::Metadata metaData();
 };
 
 } // namespace docwire

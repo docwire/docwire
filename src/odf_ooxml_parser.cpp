@@ -19,7 +19,6 @@
 #include <libxml2/libxml/xmlreader.h>
 #include "log.h"
 #include <map>
-#include "metadata.h"
 #include "misc.h"
 #include <regex>
 #include <stdlib.h>
@@ -78,8 +77,8 @@ class ODFOOXMLParser::CommandHandlersSet
 				int empty_rows_count = row_num - expected_row_num;
 				for (int i = 0; i < empty_rows_count; i++)
 				{
-					parser.trySendTag(StandardTag::TAG_TR);
-					parser.trySendTag(StandardTag::TAG_CLOSE_TR);
+					parser.trySendTag(tag::TableRow{});
+					parser.trySendTag(tag::CloseTableRow{});
 				}
 			}
 			p.setLastOOXMLRowNum(row_num);
@@ -89,11 +88,11 @@ class ODFOOXMLParser::CommandHandlersSet
 			// we accept when row id attribute is incorrect or missing
 			p.setLastOOXMLRowNum(expected_row_num);
 		}
-      parser.trySendTag(StandardTag::TAG_TR);
+      parser.trySendTag(tag::TableRow{});
       xml_stream.levelDown();
       text += parser.parseXmlData(xml_stream, mode, options, zipfile);
       xml_stream.levelUp();
-      parser.trySendTag(StandardTag::TAG_CLOSE_TR);
+      parser.trySendTag(tag::CloseTableRow{});
     }
 
   static void onOOXMLSheetData(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
@@ -102,11 +101,11 @@ class ODFOOXMLParser::CommandHandlersSet
   {
 	  ODFOOXMLParser& p = (ODFOOXMLParser&)parser;
 	  p.setLastOOXMLRowNum(0);
-    parser.trySendTag(StandardTag::TAG_TABLE);
+    parser.trySendTag(tag::Table{});
     xml_stream.levelDown();
     text += parser.parseXmlData(xml_stream, mode, options, zipfile);
     xml_stream.levelUp();
-    parser.trySendTag(StandardTag::TAG_CLOSE_TABLE);
+    parser.trySendTag(tag::CloseTable{});
   }
 
 		static void onOOXMLCell(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
@@ -136,8 +135,8 @@ class ODFOOXMLParser::CommandHandlersSet
 					int empty_cols_count = col_num - expected_col_num;
 					for (int i = 0; i < empty_cols_count; i++)
 					{
-						parser.trySendTag(StandardTag::TAG_TD);
-						parser.trySendTag(StandardTag::TAG_CLOSE_TD);
+						parser.trySendTag(tag::TableCell{});
+						parser.trySendTag(tag::CloseTableCell{});
 					}
 				}
 				p.setLastOOXMLColNum(col_num);
@@ -147,7 +146,7 @@ class ODFOOXMLParser::CommandHandlersSet
 				// we accept when cell address attribute is incorrect or missing
 				p.setLastOOXMLRowNum(expected_col_num);
 			}
-      parser.trySendTag(StandardTag::TAG_TD);
+      parser.trySendTag(tag::TableCell{});
 			if (xml_stream.attribute("t") == "s")
 			{
 				xml_stream.levelDown();
@@ -158,7 +157,7 @@ class ODFOOXMLParser::CommandHandlersSet
 				if (shared_string_index < parser.getSharedStrings().size())
 				{
 					text += parser.getSharedStrings()[shared_string_index].m_text;
-          parser.trySendTag(StandardTag::TAG_TEXT, parser.getSharedStrings()[shared_string_index].m_text);
+					parser.trySendTag(tag::Text{.text = parser.getSharedStrings()[shared_string_index].m_text});
 				}
 			}
 			else
@@ -167,7 +166,7 @@ class ODFOOXMLParser::CommandHandlersSet
         text += parser.parseXmlData(xml_stream, mode, options, zipfile);
 				xml_stream.levelUp();
 			}
-      parser.trySendTag(StandardTag::TAG_CLOSE_TD);
+			parser.trySendTag(tag::CloseTableCell{});
 			level_suffix = "\n";
 			children_processed = true;
 		}
@@ -192,9 +191,7 @@ class ODFOOXMLParser::CommandHandlersSet
 			{
 				const Comment& c = parser.getComments()[comment_id];
 				text += parser.formatComment(c.m_author, c.m_time, c.m_text);
-				parser.trySendTag(StandardTag::TAG_COMMENT, "", {{"author",  c.m_author},
-																													{"time",    c.m_time},
-																													{"comment", c.m_text}});
+				parser.trySendTag(tag::Comment{.author = c.m_author, .time = c.m_time, .comment = c.m_text});
 			}
 			else
 				docwire_log(warning) << "Comment with id " << comment_id << " not found, skipping.";
@@ -448,7 +445,7 @@ ODFOOXMLParser::onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_str
 	docwire_log(debug) << "OOXML_BREAK command.";
 	text += "\n";
 
-	parser.trySendTag(StandardTag::TAG_BR);
+	parser.trySendTag(tag::BreakLine{});
 }
 
 bool ODFOOXMLParser::isODFOOXML()
@@ -624,10 +621,10 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 	return text;
 }
 
-Metadata ODFOOXMLParser::metaData() const
+tag::Metadata ODFOOXMLParser::metaData() const
 {
 	docwire_log(debug) << "Extracting metadata.";
-	Metadata meta;
+	tag::Metadata meta;
 	ZipReader zipfile;
 	if (extended_impl->m_buffer)
 		zipfile.setBuffer(extended_impl->m_buffer, extended_impl->m_buffer_size);
@@ -673,20 +670,20 @@ Metadata ODFOOXMLParser::metaData() const
 			while (xml_stream)
 			{
 				if (xml_stream.name() == "creator")
-					meta.setAuthor(xml_stream.stringValue());
+					meta.author = xml_stream.stringValue();
 				if (xml_stream.name() == "created")
 				{
 					tm creation_date;
 					string_to_date(xml_stream.stringValue(), creation_date);
-					meta.setCreationDate(creation_date);
+					meta.creation_date = creation_date;
 				}
 				if (xml_stream.name() == "lastModifiedBy")
-					meta.setLastModifiedBy(xml_stream.stringValue());
+					meta.last_modified_by = xml_stream.stringValue();
 				if (xml_stream.name() == "modified")
 				{
 					tm last_modification_date;
 					string_to_date(xml_stream.stringValue(), last_modification_date);
-					meta.setLastModificationDate(last_modification_date);
+					meta.last_modification_date = last_modification_date;
 				}
 				xml_stream.next();
 			}
@@ -710,9 +707,9 @@ Metadata ODFOOXMLParser::metaData() const
 			while (app_stream)
 			{
 				if (app_stream.name() == "Pages")
-					meta.setPageCount(str_to_int(app_stream.stringValue()));
+					meta.page_count = str_to_int(app_stream.stringValue());
 				if (app_stream.name() == "Words")
-					meta.setWordCount(str_to_int(app_stream.stringValue()));
+					meta.word_count = str_to_int(app_stream.stringValue());
 				app_stream.next();
 			}
 		}
@@ -722,7 +719,7 @@ Metadata ODFOOXMLParser::metaData() const
 			throw RuntimeError("Error parsing docProps/app.xml", e);
 		}
 	}
-	if (meta.pageCount() == -1)
+	if (!meta.page_count)
 	{
 		// If we are processing PPT use slide count as page count
 		if (zipfile.exists("ppt/presentation.xml"))
@@ -730,7 +727,7 @@ Metadata ODFOOXMLParser::metaData() const
 			int page_count = 0;
 			for (int i = 1; zipfile.exists("ppt/slides/slide" + int_to_str(i) + ".xml"); i++)
 				page_count++;
-			meta.setPageCount(page_count);
+			meta.page_count = page_count;
 		}
 		else if (zipfile.exists("content.xml"))
 		{
@@ -746,7 +743,7 @@ Metadata ODFOOXMLParser::metaData() const
 				for (size_t pos = content.find(page_str); pos != std::string::npos;
 						pos = content.find(page_str, pos + page_str.length()))
 					page_count++;
-				meta.setPageCount(page_count);
+				meta.page_count = page_count;
 			}
 		}
 	}
@@ -760,9 +757,7 @@ ODFOOXMLParser::parse() const
 	docwire_log(debug) << "Using ODF/OOXML parser.";
 	auto formatting_style = getFormattingStyle();
 	plainText(XmlParseMode::PARSE_XML, formatting_style);
-
-	Metadata metadata = metaData();
-	trySendTag(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
+	trySendTag(metaData());
 }
 
 Parser& ODFOOXMLParser::addOnNewNodeCallback(NewNodeCallback callback)

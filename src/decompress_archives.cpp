@@ -84,7 +84,7 @@ public:
 
 		bool is_dir() { return (archive_entry_mode(m_entry) & AE_IFDIR); }
 
-		EntryIStream create_stream() { return EntryIStream(m_archive); }
+		std::unique_ptr<EntryIStream> create_stream() { return std::make_unique<EntryIStream>(m_archive); }
 
 		operator bool() { return m_entry != nullptr; }
 
@@ -201,30 +201,25 @@ private:
 void
 DecompressArchives::process(Info &info) const
 {
-	if (info.tag_name != StandardTag::TAG_FILE)
+	if (!std::holds_alternative<tag::File>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	docwire_log(debug) << "TAG_FILE received";
-	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
-	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
-	std::optional<std::string> name = info.getAttributeValue<std::string>("name");
-	docwire_log_vars(path, name);
-	if(!path && !stream)
-		throw LogicError("No path or stream in TAG_FILE");
+	docwire_log(debug) << "tag::File received";
+	const tag::File& file = std::get<tag::File>(info.tag);
 	auto is_supported = [](const std::string& fn)
 	{
 		std::set<std::string> supported_extensions { ".zip", ".tar", ".rar", ".gz", ".bz2", ".xz" };
 		return supported_extensions.count(std::filesystem::path(fn).extension().string()) > 0;
 	};
-	if ((path && !is_supported(*path)) || (name && !is_supported(*name)))
+	if (!is_supported(file.access_name()))
 	{
 		docwire_log(debug) << "Filename extension shows it is not an supported archive, skipping.";
 		emit(info);
 		return;
 	}
-	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
+	std::shared_ptr<std::istream> in_stream = file.access_stream();
 	try
 	{
 		docwire_log(debug) << "Decompressing archive";
@@ -238,8 +233,7 @@ DecompressArchives::process(Info &info) const
 				docwire_log(debug) << "Skipping directory entry";
 				continue;
 			}
-			ArchiveReader::EntryIStream entry_stream = entry.create_stream();
-			Info info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&entry_stream}, {"name", entry_name}});
+			Info info(tag::File{entry.create_stream(), entry_name});
 			process(info);
 			docwire_log(debug) << "End of processing compressed file " << entry_name;
 		}
@@ -252,8 +246,6 @@ DecompressArchives::process(Info &info) const
 		in_stream->seekg(std::ios::beg);
 		emit(info);
 	}
-	if (path)
-		delete in_stream;
 }
 
 DecompressArchives* DecompressArchives::clone() const

@@ -29,10 +29,10 @@ public:
 
   /**
    * @brief Converts text from callback to plain text format.
-   * @param info data from callback
+   * @param tag data from callback
    * @param stream output stream
    */
-  void write_to(const Info &info, std::ostream &stream) override;
+  void write_to(const Tag& tag, std::ostream &stream) override;
   /**
    * @brief Creates a new instance of PlainTextWriter.
    */

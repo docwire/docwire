@@ -17,44 +17,36 @@
 using namespace docwire;
 
 ParsingChain
-InputBase::operator|(ChainElement &chainElement) const
+InputChainElement::operator|(ChainElement &chainElement) const
 {
   return ParsingChain(*this, chainElement);
 }
 
 ParsingChain
-InputBase::operator|(ChainElement &&chainElement) const
+InputChainElement::operator|(ChainElement &&chainElement) const
 {
   return ParsingChain(*this, chainElement);
 }
 
 ParsingChain
-InputBase::operator|(ParsingChain &parsingChain)
+InputChainElement::operator|(ParsingChain &parsingChain)
 {
   parsingChain.process(*this);
   return parsingChain;
 }
 
 ParsingChain
-InputBase::operator|(ParsingChain &&parsingChain)
+InputChainElement::operator|(ParsingChain &&parsingChain)
 {
   parsingChain.process(*this);
   return parsingChain;
 }
 
 void
-InputBase::process(ChainElement& chain_element) const
+InputChainElement::process(ChainElement& chain_element) const
 {
   docwire_log_func();
-  docwire_log_var(m_path);
-  if (m_stream)
-  {
-    Info info(StandardTag::TAG_FILE, "", {{"stream", m_stream}});
-    chain_element.process(info);
-  }
-  else if (!m_path.empty())
-  {
-    Info info(StandardTag::TAG_FILE, "", {{"path", m_path}});
-    chain_element.process(info);
-  }
+  docwire_log_var(m_tag);
+  Info info{m_tag};
+  chain_element.process(info);
 }

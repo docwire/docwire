@@ -16,6 +16,7 @@
 #include <vector>
 #include "parser.h"
 #include "parser_builder.h"
+#include "tags.h"
 
 namespace docwire
 {
@@ -38,7 +39,7 @@ class HTMLParser : public Parser
 		HTMLParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
 		~HTMLParser();
 		bool isHTML();
-		Metadata metaData() const;
+		tag::Metadata metaData() const;
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).
 		void skipCharsetDecoding();
 };

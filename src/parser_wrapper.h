@@ -14,7 +14,6 @@
 
 #include <iostream>
 
-#include "metadata.h"
 #include "formatting_style.h"
 #include "parser.h"
 #include "parser_builder.h"
@@ -41,8 +40,8 @@ public:
 
   void parse() const override
   {
-    sendTag(StandardTag::TAG_TEXT,  m_parser.plainText(getFormattingStyle()));
-    sendTag(StandardTag::TAG_METADATA, "", m_parser.metaData().getFieldsAsAny());
+    sendTag(tag::Text{.text = m_parser.plainText(getFormattingStyle())});
+    sendTag(m_parser.metaData());
   }
 
   Parser &withParameters(const ParserParameters &parameters) override

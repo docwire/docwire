@@ -326,7 +326,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  Input("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | Output(out_stream);
+  std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | out_stream;
   assert(out_stream.str() == "Data processing refers to the activities performed on raw data to convert it into meaningful information. It involves collecting, organizing, analyzing, and interpreting data to extract useful insights and support decision-making. This can include tasks such as sorting, filtering, summarizing, and transforming data through various computational and statistical methods. Data processing is essential in various fields, including business, science, and technology, as it enables organizations to derive valuable knowledge from large datasets, make informed decisions, and improve overall efficiency.\n\n");
 
   return 0;
@@ -345,7 +345,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  Input(std::ifstream("data_processing_definition.docx", std::ios_base::binary)) | ParseDetectedFormat<OfficeFormatsParserProvider>() | HtmlExporter() | Output(out_stream);
+  std::ifstream("data_processing_definition.docx", std::ios_base::binary) | ParseDetectedFormat<OfficeFormatsParserProvider>() | HtmlExporter() | out_stream;
   assert(out_stream.str() == "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>DocWire</title>\n</head>\n<body>\n<p>Data processing refers to the activities performed on raw data to convert it into meaningful information. It involves collecting, organizing, analyzing, and interpreting data to extract useful insights and support decision-making. This can include tasks such as sorting, filtering, summarizing, and transforming data through various computational and statistical methods.</p><p>Data processing is essential in various fields, including business, science, and technology, as it enables organizations to derive valuable knowledge from large datasets, make informed decisions, and improve overall efficiency.</p></body>\n</html>\n");
 
   return 0;
@@ -360,7 +360,7 @@ Parse all files in any format inside archives (ZIP, TAR, RAR, GZ, BZ2, XZ) recur
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  Input("test.zip") | DecompressArchives() | ParseDetectedFormat<OfficeFormatsParserProvider, OcrParserProvider>() | PlainTextExporter() | Output(std::cout);
+  std::filesystem::path("test.zip") | DecompressArchives() | ParseDetectedFormat<OfficeFormatsParserProvider, OcrParserProvider>() | PlainTextExporter() | std::cout;
   return 0;
 }
 ```
@@ -377,7 +377,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  Input("document_processing_market_trends.odt") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::Classify({ "agreement", "invoice", "report", "legal", "other"}, std::getenv("OPENAI_API_KEY")) | Output(out_stream);
+  std::filesystem::path("document_processing_market_trends.odt") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::Classify({ "agreement", "invoice", "report", "legal", "other"}, std::getenv("OPENAI_API_KEY")) | out_stream;
   assert(out_stream.str() == "report\n");
 
   return 0;
@@ -396,7 +396,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  Input("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::TranslateTo("spanish", std::getenv("OPENAI_API_KEY")) | Output(out_stream);
+  std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::TranslateTo("spanish", std::getenv("OPENAI_API_KEY")) | out_stream;
   assert(out_stream.str() == "El procesamiento de datos se refiere a las actividades realizadas en datos crudos para convertirlos en información significativa. Implica recolectar, organizar, analizar e interpretar datos para extraer ideas útiles y apoyar la toma de decisiones. Esto puede incluir tareas como ordenar, filtrar, resumir y transformar datos a través de varios métodos computacionales y estadísticos. El procesamiento de datos es esencial en varios campos, incluyendo negocios, ciencia y tecnología, ya que permite a las organizaciones obtener conocimientos valiosos de grandes conjuntos de datos, tomar decisiones informadas y mejorar la eficiencia general.\n");
   return 0;
 }
@@ -411,9 +411,8 @@ Detect sentiment of document in any format (Office, PDF, mail, etc) using newest
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  std::stringstream out_stream;
 
-  Input("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_turbo_preview) | Output(std::cout);
+  std::filesystem::path("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_turbo_preview) | std::cout;
 
   return 0;
 }
@@ -427,7 +426,7 @@ Make a voice summary of document in any format (Office, PDF, mail, etc) in two s
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  Input("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | openai::TextToSpeech(std::getenv("OPENAI_API_KEY")) | Output(std::ofstream("summary.mp3"));
+  std::filesystem::path("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | openai::TextToSpeech(std::getenv("OPENAI_API_KEY")) | std::ofstream("summary.mp3");
 
   return 0;
 }
@@ -443,7 +442,7 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
 
-  Input("data_processing_definition.mp3") | openai::Transcribe(std::getenv("OPENAI_API_KEY")) | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | Output(std::cout);
+  std::filesystem::path("data_processing_definition.mp3") | openai::Transcribe(std::getenv("OPENAI_API_KEY")) | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | std::cout;
 
   return 0;
 }
@@ -460,9 +459,9 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  Input("scene_1.png") | openai::Find("car", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | Output(out_stream);
-  Input("scene_1.png") | openai::Find("person", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | Output(out_stream);
-  Input("scene_1.png") | openai::Find("running", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | Output(out_stream);
+  std::filesystem::path("scene_1.png") | openai::Find("car", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | out_stream;
+  std::filesystem::path("scene_1.png") | openai::Find("person", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | out_stream;
+  std::filesystem::path("scene_1.png") | openai::Find("running", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | out_stream;
 
   return 0;
 }
@@ -478,9 +477,9 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
 
-  auto chain = ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | Output(std::cout);  // create a chain of steps to parse a file
+  auto chain = ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | std::cout;  // create a chain of steps to parse a file
   for (int i = 1; i < 3; ++i)
-    Input(std::ifstream(std::to_string(i) + ".docx", std::ios_base::binary)) | chain; // set the input file as an input stream
+    std::ifstream(std::to_string(i) + ".docx", std::ios_base::binary) | chain; // set the input file as an input stream
 
   return 0;
 }
@@ -494,13 +493,13 @@ Using transformer to filter out emails (eg. from Outlook PST mailbox) with subje
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  Input("1.pst") |
+  std::filesystem::path("1.pst") |
   ParseDetectedFormat<MailParserProvider>()
     | TransformerFunc([](Info &info) // Create an importer from file name and connect it to transformer
       {
-        if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
+        if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
         {
-          auto subject = info.getAttributeValue<std::string>("subject"); // get the subject attribute
+          auto subject = std::get<tag::Mail>(info.tag).subject; // get the subject attribute
           if (subject) // if subject attribute exists
           {
             if (subject->find("Hello") != std::string::npos) // if subject contains "Hello"
@@ -511,7 +510,7 @@ int main(int argc, char* argv[])
         }
       })
     | PlainTextExporter() // sets exporter to plain text
-    | Output(std::cout);
+    | std::cout;
   return 0;
 }
 ```
@@ -526,13 +525,13 @@ Joining transformers to filter out emails (eg. from Outlook PST mailbox) with su
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  Input("1.pst") |
+  std::filesystem::path("1.pst") |
   ParseDetectedFormat<MailParserProvider>() |
     TransformerFunc([](Info &info) // Create an input from file name, importer and connect them to transformer
     {
-      if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
+      if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
       {
-        auto subject = info.getAttributeValue<std::string>("subject"); // get the subject attribute
+        auto subject = std::get<tag::Mail>(info.tag).subject; // get the subject attribute
         if (subject) // if subject attribute exists
         {
           if (subject->find("Hello") != std::string::npos) // if subject contains "Hello"
@@ -544,7 +543,7 @@ int main(int argc, char* argv[])
     }) |
     TransformerFunc([counter = 0, max_mails = 1](Info &info) mutable // Create a transformer and connect it to previous transformer
     {
-      if (info.tag_name == StandardTag::TAG_MAIL) // if current node is mail
+      if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
       {
         if (++counter > max_mails) // if counter is greater than max_mails
         {
@@ -553,7 +552,7 @@ int main(int argc, char* argv[])
       }
     }) |
     PlainTextExporter() | // sets exporter to plain text
-    Output(std::cout);
+    std::cout;
  return 0;
 }
 ```

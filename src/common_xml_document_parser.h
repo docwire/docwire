@@ -89,7 +89,7 @@ class CommonXMLDocumentParser
 		void extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile, std::string& text) const;
 
 		///usefull since two parsers use this. Throws RuntimeError on fail
-		void parseODFMetadata(const std::string &xml_content, Metadata &metadata) const;
+		void parseODFMetadata(const std::string &xml_content, tag::Metadata& metadata) const;
 
 		///this is helpful function to format comment
 		const std::string formatComment(const std::string& author, const std::string& time, const std::string& text);
@@ -125,7 +125,7 @@ class CommonXMLDocumentParser
 
 		void activeEmittingSignals(bool flag) const;
 
-		void trySendTag(const std::string& tag_name, const std::string& text = "", const std::map<std::string, std::any> &attr = {}) const;
+		void trySendTag(const Tag& tag) const;
 
 	//public interface
 	public:
@@ -133,7 +133,7 @@ class CommonXMLDocumentParser
 		virtual ~CommonXMLDocumentParser();
 		void setManageXmlParser(bool manage);
 		virtual std::string plainText(XmlParseMode mode, FormattingStyle& options) const = 0;
-		virtual Metadata metaData() const = 0;
+		virtual tag::Metadata metaData() const = 0;
 };
 
 } // namespace docwire

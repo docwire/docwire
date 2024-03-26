@@ -31,8 +31,8 @@ namespace docwire
     element_list = {first_element};
   }
 
-  ParsingChain::ParsingChain(const InputBase &input, ChainElement& element)
-  : m_input(&input),
+  ParsingChain::ParsingChain(const InputChainElement& input, ChainElement& element)
+  : m_input(std::make_shared<InputChainElement>(input)),
     first_element(std::shared_ptr<ChainElement>(element.clone()))
   {
     element_list = {first_element};
@@ -72,9 +72,9 @@ namespace docwire
   }
 
   void
-  ParsingChain::process(InputBase& input)
+  ParsingChain::process(InputChainElement& input)
   {
-    m_input = &input;
+    m_input = std::make_shared<InputChainElement>(input);
     if (last_element && last_element->is_leaf())
     {
       input.process(*first_element);

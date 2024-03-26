@@ -9,33 +9,24 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_METADATA_WRITER_H
-#define DOCWIRE_METADATA_WRITER_H
+#ifndef DOCWIRE_LOG_CTIME_H
+#define DOCWIRE_LOG_CTIME_H
 
-#include <iostream>
-#include <fstream>
-
-#include "parser.h"
-#include "writer.h"
-#include "defines.h"
+#include <ctime>
+#include "log.h"
+#include <sstream>
 
 namespace docwire
 {
 
-class DllExport MetaDataWriter : public Writer
+inline log_record_stream& operator<<(log_record_stream& log_stream, const tm& time)
 {
-public:
-  /**
-   * @brief Writes meta data of the document to an output stream.
-   * @param tag data from callback
-   * @param stream output stream
-   */
-  void write_to(const Tag& tag, std::ostream &stream) override;
-  /**
-   * @brief creates a new instance of MetaDataWriter
-   */
-  virtual Writer* clone() const override;
-};
+    std::ostringstream date_stream;
+    date_stream << std::put_time(&time, "%Y-%m-%d %H:%M:%S");
+    log_stream << date_stream.str();
+    return log_stream;
+}
+
 } // namespace docwire
 
-#endif //DOCWIRE_METADATA_WRITER_H
+#endif // DOCWIRE_LOG_CTIME_H

@@ -213,7 +213,7 @@ TXTParser::parse() const
 {
 	docwire_log(debug) << "Using TXT parser.";
 
-  Info info(StandardTag::TAG_TEXT, plainText());
+  Info info(tag::Text{.text = plainText()});
   impl->m_on_new_node_signal(info);
 }
 

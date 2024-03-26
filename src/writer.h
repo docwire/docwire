@@ -13,11 +13,10 @@
 #define DOCWIRE_WRITER_H
 
 #include "defines.h"
+#include "tags.h"
 
 namespace docwire
 {
-
-struct Info;
 
 class TextElement
 {
@@ -40,11 +39,11 @@ class DllExport Writer
 {
 public:
   /**
-   * @brief writes data from struct Info to the specific output stream
-   * @param info structures using by the callback
-   * @param file output stream
+   * @brief writes data from callback to the specific output stream
+   * @param tag data from callback
+   * @param stream output stream
    */
-  virtual void write_to(const Info &info, std::ostream &file) = 0;
+  virtual void write_to(const Tag& tag, std::ostream &stream) = 0;
 
   /**
    * @brief creates a new instance of Writer

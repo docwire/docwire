@@ -41,7 +41,7 @@ class ODFXMLParser : public Parser,
 		~ODFXMLParser();
 		bool isODFXML();
 		std::string plainText(XmlParseMode mode, FormattingStyle& formatting_style) const;
-		Metadata metaData() const;
+		tag::Metadata metaData() const;
 };
 
 } // namespace docwire

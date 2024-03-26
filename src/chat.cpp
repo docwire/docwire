@@ -123,11 +123,10 @@ std::string prepare_query(const std::string& system_msg, UserMsgType user_msg_ty
 std::string post_request(const std::string& query, const std::string& api_key)
 {
 	docwire_log_func_with_args(query);
-	std::stringstream query_stream { query };
-	std::stringstream response_stream;
+	std::ostringstream response_stream{};
 	try
 	{
-		Input(&query_stream) | http::Post("https://api.openai.com/v1/chat/completions", api_key) | Output(response_stream);
+		std::stringstream { query } | http::Post("https://api.openai.com/v1/chat/completions", api_key) | response_stream;
 	}
 	catch (const http::Post::RequestFailed& e)
 	{
@@ -161,21 +160,17 @@ bool has_txt_extension(const std::string& fn)
 void Chat::process(Info &info) const
 {
 	docwire_log_func();
-	if (info.tag_name != StandardTag::TAG_FILE)
+	if (!std::holds_alternative<tag::File>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	docwire_log(debug) << "TAG_FILE received";
-	std::optional<std::string> path = info.getAttributeValue<std::string>("path");
-	std::optional<std::istream*> stream = info.getAttributeValue<std::istream*>("stream");
-	std::optional<std::string> name = info.getAttributeValue<std::string>("name");
-	if(!path && !stream)
-		throw LogicError("No path or stream in TAG_FILE");
-	std::istream* in_stream = path ? new std::ifstream ((*path).c_str(), std::ios::binary ) : *stream;
+	docwire_log(debug) << "tag::File received";
+	const tag::File& file = std::get<tag::File>(info.tag);
+	std::shared_ptr<std::istream> in_stream = file.access_stream();
 	UserMsgType user_msg_type;
 	std::stringstream data_stream;
-	if ((path && has_txt_extension(*path)) || (name && has_txt_extension(*name)))
+	if (has_txt_extension(file.access_name()))
 	{
 		docwire_log(debug) << "Filename extension shows it is a text file.";
 		user_msg_type = UserMsgType::text;
@@ -193,10 +188,8 @@ void Chat::process(Info &info) const
 		docwire_log_var(base64Encoded);
 		data_stream << "data:image/*;base64," << base64Encoded;
 	}
-	if (path)
-		delete in_stream;
-	std::stringstream content_stream { parse_response(post_request(prepare_query(impl->m_system_message, user_msg_type, data_stream.str(), impl->m_model, impl->m_temperature, impl->m_image_detail), impl->m_api_key)) + '\n' };
-	Info new_info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&content_stream}, {"name", ""}});
+	auto content_stream = std::make_shared<std::stringstream>(parse_response(post_request(prepare_query(impl->m_system_message, user_msg_type, data_stream.str(), impl->m_model, impl->m_temperature, impl->m_image_detail), impl->m_api_key)) + '\n');
+	Info new_info(tag::File{content_stream, ""});
 	emit(new_info);
 }
 

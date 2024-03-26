@@ -15,6 +15,7 @@
 #include "parser.h"
 #include "parser_builder.h"
 #include <string>
+#include "tags.h"
 #include <vector>
 
 namespace docwire
@@ -40,7 +41,7 @@ class RTFParser : public Parser
 		~RTFParser();
 		bool isRTF() const;
 		std::string plainText() const;
-		Metadata metaData() const;
+		tag::Metadata metaData() const;
 };
 
 } // namespace docwire

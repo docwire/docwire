@@ -9,33 +9,25 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_METADATA_WRITER_H
-#define DOCWIRE_METADATA_WRITER_H
+#ifndef DOCWIRE_LOG_EMPTY_STRUCT_H
+#define DOCWIRE_LOG_EMPTY_STRUCT_H
 
-#include <iostream>
-#include <fstream>
-
-#include "parser.h"
-#include "writer.h"
-#include "defines.h"
+#include "log.h"
+#include <type_traits>
 
 namespace docwire
 {
 
-class DllExport MetaDataWriter : public Writer
+template <typename T>
+concept EmptyStruct = std::is_empty_v<T>;
+
+template <EmptyStruct T>
+log_record_stream& operator<<(log_record_stream& log_stream, const T& variant)
 {
-public:
-  /**
-   * @brief Writes meta data of the document to an output stream.
-   * @param tag data from callback
-   * @param stream output stream
-   */
-  void write_to(const Tag& tag, std::ostream &stream) override;
-  /**
-   * @brief creates a new instance of MetaDataWriter
-   */
-  virtual Writer* clone() const override;
-};
+    log_stream << "<empty_struct>";
+    return log_stream;
+}
+
 } // namespace docwire
 
-#endif //DOCWIRE_METADATA_WRITER_H
+#endif // DOCWIRE_LOG_EMPTY_STRUCT_H

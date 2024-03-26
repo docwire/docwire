@@ -16,20 +16,32 @@
 #include "chain_element.h"
 #include "parsing_chain.h"
 #include <filesystem>
+#include "tags.h"
 
 namespace docwire
 {
 
-class DllExport InputBase
+template<class T>
+concept IStreamDerived = std::derived_from<T, std::istream>;
+
+class DllExport InputChainElement
 {
 public:
-  explicit InputBase(std::istream* stream)
-  : m_stream(stream)
+  explicit InputChainElement(std::shared_ptr<std::istream> stream)
+  : m_tag{tag::File{.source=stream}}
   {}
 
-  explicit InputBase(const std::string &path)
-  : m_path(path),
-    m_stream(nullptr)
+  template<IStreamDerived T>
+  explicit InputChainElement(T&& stream)
+    : m_tag{tag::File{.source=std::make_shared<T>(std::move(stream))}}
+  {}
+
+  explicit InputChainElement(const std::filesystem::path& path)
+  : m_tag{tag::File{.source=path}}
+  {}
+
+  explicit InputChainElement(std::filesystem::path&& path)
+  : m_tag{tag::File{.source=std::move(path)}}
   {}
 
   ParsingChain operator|(ChainElement &chainElement) const;
@@ -43,42 +55,44 @@ public:
   void process(ChainElement& chain_element) const;
 
 private:
-  std::istream* m_stream;
-  std::string m_path;
+  tag::File m_tag;
 };
 
-template<class StreamClass> class StreamInput : public InputBase
+template<IStreamDerived T, ParsingChainOrChainElement U>
+ParsingChain operator|(std::shared_ptr<T> stream, U& chain_element)
 {
-  static_assert(std::is_base_of<std::istream, StreamClass>::value, "StreamClass must inherit from std::istream");
-  public:
-    explicit StreamInput(StreamClass&& stream)
-      : m_s(std::move(stream)), InputBase(&m_s)
-  {}
+  return InputChainElement(stream) | chain_element;
+}
 
-  private:
-    StreamClass m_s;
-};
-
-template<class T> class OtherInput : public InputBase
+template<IStreamDerived T, ParsingChainOrChainElement U>
+ParsingChain operator|(std::shared_ptr<T> stream, U&& chain_element)
 {
-  //static_assert(std::is_base_of<std::istream, StreamClass>::value, "StreamClass must inherit from std::istream");
-  public:
-    explicit OtherInput(const T& v)
-      : InputBase(v)
-  {}
-};
+  return InputChainElement(stream) | std::move(chain_element);
+}
 
-
-template<class T>
-using InputV=typename std::conditional<std::is_base_of_v<std::istream, T>,StreamInput<T>,/*InputBase*/OtherInput<T>>::type;
-
-template<class T>
-struct Input : InputV<T>
+template<IStreamDerived T, ParsingChainOrChainElement U>
+ParsingChain operator|(T&& stream, U& chain_element)
 {
-  using InputV<T>::InputV;
-};
+  return InputChainElement(std::move(stream)) | chain_element;
+}
 
-template<class T> Input(T) -> Input<T>;
+template<IStreamDerived T, ParsingChainOrChainElement U>
+ParsingChain operator|(T&& stream, U&& chain_element)
+{
+  return InputChainElement(std::move(stream)) | std::move(chain_element);
+}
+
+template<ParsingChainOrChainElement U>
+inline ParsingChain operator|(std::filesystem::path&& path, U& chain_element)
+{
+  return InputChainElement(std::move(path)) | chain_element;
+}
+
+template<ParsingChainOrChainElement U>
+inline ParsingChain operator|(std::filesystem::path&& path, U&& chain_element)
+{
+  return InputChainElement(std::move(path)) | std::move(chain_element);
+}
 
 }
 #endif //DOCWIRE_INPUT_H

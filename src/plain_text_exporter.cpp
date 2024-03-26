@@ -20,7 +20,7 @@ namespace docwire
 
 struct PlainTextExporter::Implementation
 {
-	std::stringstream m_stream;
+	std::shared_ptr<std::stringstream> m_stream;
 	PlainTextWriter m_writer;
 };
 
@@ -35,13 +35,14 @@ PlainTextExporter::PlainTextExporter(const PlainTextExporter& other)
 
 void PlainTextExporter::process(Info &info) const
 {
-	if (info.tag_name == StandardTag::TAG_DOCUMENT)
-		impl->m_stream.clear();
-	impl->m_writer.write_to(info, impl->m_stream);
-	if (info.tag_name == StandardTag::TAG_CLOSE_DOCUMENT)
+	if (std::holds_alternative<tag::Document>(info.tag) || !impl->m_stream)
+		impl->m_stream = std::make_shared<std::stringstream>();
+	impl->m_writer.write_to(info.tag, *impl->m_stream);
+	if (std::holds_alternative<tag::CloseDocument>(info.tag))
 	{
-		Info info(StandardTag::TAG_FILE, "", {{"stream", (std::istream*)&impl->m_stream}, {"name", std::string("plain_text_export.txt")}});
+		Info info(tag::File{impl->m_stream, std::string("plain_text_export.txt")});
 		emit(info);
+		impl->m_stream.reset();
 	}
 }
 

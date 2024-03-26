@@ -173,7 +173,7 @@ namespace
 bool cancel (void* data, int words)
 {
   auto* signal = reinterpret_cast<boost::signals2::signal<void(Info &info)>*>(data);
-  Info info;
+  Info info{tag::PleaseWait{}};
   (*signal)(info);
   return info.cancel;
 }
@@ -300,9 +300,9 @@ void
 OCRParser::parse() const
 {
   docwire_log(debug) << "Using OCR parser.";
-  Info info(StandardTag::TAG_TEXT);
   auto language = m_parameters.getParameterValue<std::vector<Language>>("languages");
-  info.plain_text = plainText(getFormattingStyle(), language && language->size() > 0 ? *language : std::vector({ Language::eng }));
+  std::string plain_text = plainText(getFormattingStyle(), language && language->size() > 0 ? *language : std::vector({ Language::eng }));
+  Info info(tag::Text{.text = plain_text});
   impl->m_on_new_node_signal(info);
 }
 

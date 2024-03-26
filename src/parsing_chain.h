@@ -20,7 +20,7 @@
 namespace docwire
 {
 
-class InputBase;
+class InputChainElement;
 
 class ChainElement;
 
@@ -29,13 +29,13 @@ class ChainElement;
   public:
     explicit ParsingChain(const ChainElement& element);
     ParsingChain(ChainElement& element1, ChainElement& element2);
-    ParsingChain(const InputBase &input, ChainElement& element);
+    ParsingChain(const InputChainElement& input, ChainElement& element);
     ParsingChain& operator|(const ChainElement& element);
     ParsingChain& operator|(ChainElement&& element);
 
-    void process(InputBase& input);
+    void process(InputChainElement& input);
   private:
-    const InputBase* m_input;
+    std::shared_ptr<InputChainElement> m_input;
     std::shared_ptr<ChainElement> first_element;
     std::shared_ptr<ChainElement> last_element;
     std::vector<std::shared_ptr<ChainElement>> element_list;

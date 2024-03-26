@@ -23,12 +23,8 @@ namespace docwire
 class DllExport HtmlExporter: public ChainElement
 {
 public:
-  enum class RestoreOriginalAttributes : bool {};
 
-  /**
-   * @param restore_original_attributes should original html attributes extracted by html parser be restored
-   */
-  HtmlExporter(RestoreOriginalAttributes restore_original_attributes = RestoreOriginalAttributes{false});
+  HtmlExporter();
 
 	HtmlExporter(const HtmlExporter& other);
 	virtual ~HtmlExporter() = default;

@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <regex>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include "data_stream.h"
 #include "exception.h"
@@ -22,7 +23,6 @@
 #include "htmlcxx/html/CharsetConverter.h"
 #include <list>
 #include "log.h"
-#include "metadata.h"
 #include "misc.h"
 #include <iostream>
 #include "charsetdetect.h"
@@ -48,21 +48,25 @@ bool str_iequals(const std::string& lhs, const std::string& rhs)
 	return strcasecmp(lhs.c_str(), rhs.c_str()) == 0;
 }
 
-std::map<std::string, std::any> html_node_attributes(const Node& node)
+attributes::Styling html_node_styling(const Node& node)
 {
-	std::map<std::string, std::any> attrs;
-	for (auto a: node.attributes())
+	attributes::Styling styling;
+	std::pair<bool, std::string> class_attr = node.attribute("class");
+	if (class_attr.first)
 	{
-		attrs.insert(make_pair("html:" + a.first, a.second));
-	};
-	return attrs;
-}
-
-Attributes operator+(const Attributes& lhs, const Attributes& rhs)
-{
-	Attributes result = lhs;
-	result.merge(Attributes(rhs));
-	return result;
+		boost::algorithm::split(styling.classes, class_attr.second, boost::is_any_of(" "));
+	}
+	std::pair<bool, std::string> id_attr = node.attribute("id");
+	if (id_attr.first)
+	{
+		styling.id = id_attr.second;
+	}
+	std::pair<bool, std::string> style_attr = node.attribute("style");
+	if (style_attr.first)
+	{
+		styling.style = style_attr.second;
+	}
+	return styling;
 }
 
 } // unnamed namespace
@@ -243,10 +247,10 @@ class SaxParser : public ParserSax
 					boost::trim_right(m_buffered_text);
 					m_last_char_in_inline_formatting_context = '\0'; // inline formatting context is now empty
 				}
-				m_parser->sendTag(StandardTag::TAG_TEXT, m_buffered_text);
+				m_parser->sendTag(tag::Text{.text = m_buffered_text});
 				m_buffered_text = "";
 			}
-			// All html elements that will emit TAG_P (as we do not have H1 etc)
+			// All html elements that will emit tag::Paragraph (as we do not have H1 etc)
 			CaseInsensitiveStringSet paragraph_elements({"h1", "h2", "h3", "h4", "h5", "h6", "p"});
 			if (isEnd)
 			{
@@ -256,36 +260,36 @@ class SaxParser : public ParserSax
 				{
 					m_in_style = false;
 					parseCSS();
-					m_parser->sendTag(StandardTag::TAG_STYLE, {{"css_text", m_style_text}});
+					m_parser->sendTag(tag::Style{.css_text = m_style_text});
 					m_style_text.clear();
 				}
 				else if (paragraph_elements.count(tag_name))
 				{
-					m_parser->sendTag(StandardTag::TAG_CLOSE_P);
+					m_parser->sendTag(tag::CloseParagraph{});
 				}
 				else if (str_iequals(tag_name, "div"))
 				{
-					m_parser->sendTag(StandardTag::TAG_CLOSE_SECTION);
+					m_parser->sendTag(tag::CloseSection{});
 				}
 				else if (str_iequals(tag_name, "span"))
 				{
-					m_parser->sendTag(StandardTag::TAG_CLOSE_SPAN);
+					m_parser->sendTag(tag::CloseSpan{});
 				}
 				else if (str_iequals(tag_name, "a"))
 				{
-					m_parser->sendTag(StandardTag::TAG_CLOSE_LINK);
+					m_parser->sendTag(tag::CloseLink{});
         }
 				else if (str_iequals(tag_name, "table"))
 				{
-					m_parser->sendTag(StandardTag::TAG_CLOSE_TABLE);
+					m_parser->sendTag(tag::CloseTable{});
 				}
 				else if (str_iequals(tag_name, "tr"))
 				{
-					m_parser->sendTag(StandardTag::TAG_CLOSE_TR);
+					m_parser->sendTag(tag::CloseTableRow{});
 				}
 				else if (str_iequals(tag_name, "td") || str_iequals(tag_name, "th"))
 				{
-					m_parser->sendTag(StandardTag::TAG_CLOSE_TD);
+					m_parser->sendTag(tag::CloseTableCell{});
 				}
 				else if ((strcasecmp(node.tagName().c_str(), "script") == 0 || strcasecmp(node.tagName().c_str(), "iframe") == 0) && m_in_script)
 				{
@@ -293,19 +297,19 @@ class SaxParser : public ParserSax
 				}
 				else if (str_iequals(tag_name, "ul") || str_iequals(tag_name, "ol"))
 				{
-					m_parser->sendTag(StandardTag::TAG_CLOSE_LIST);
+					m_parser->sendTag(tag::CloseList{});
 				}
 				else if (str_iequals(tag_name, "li"))
 				{
-					m_parser->sendTag(StandardTag::TAG_CLOSE_LIST_ITEM);
+					m_parser->sendTag(tag::CloseListItem{});
 				}
 				else if (str_iequals(tag_name, "b"))
 				{
-					m_parser->sendTag(StandardTag::TAG_CLOSE_B);
+					m_parser->sendTag(tag::CloseBold{});
 				}
 				else if (str_iequals(tag_name, "u"))
 				{
-					m_parser->sendTag(StandardTag::TAG_CLOSE_U);
+					m_parser->sendTag(tag::CloseUnderline{});
 				}
 			}
 			else if (strcasecmp(node.tagName().c_str(), "title") == 0)
@@ -315,17 +319,17 @@ class SaxParser : public ParserSax
 			else if (paragraph_elements.count(node.tagName()))
 			{
 				node.parseAttributes();
-				m_parser->sendTag(StandardTag::TAG_P, html_node_attributes(node));
+				m_parser->sendTag(tag::Paragraph{.styling=html_node_styling(node)});
 			}
 			else if (str_iequals(tag_name, "div"))
 			{
 				node.parseAttributes();
-				m_parser->sendTag(StandardTag::TAG_SECTION, html_node_attributes(node));
+				m_parser->sendTag(tag::Section{.styling=html_node_styling(node)});
 			}
 			else if (str_iequals(tag_name, "span"))
 			{
 				node.parseAttributes();
-				m_parser->sendTag(StandardTag::TAG_SPAN, html_node_attributes(node));
+				m_parser->sendTag(tag::Span{.styling=html_node_styling(node)});
 			}
 			else if (strcasecmp(node.tagName().c_str(), "ol") == 0
 					 || strcasecmp(node.tagName().c_str(), "ul") == 0)
@@ -345,18 +349,18 @@ class SaxParser : public ParserSax
 					else if (style_attributes["list-style"] == "none")
 						style_type_none = true;
 				}
-				m_parser->sendTag(StandardTag::TAG_LIST, Attributes{{"type", std::string(style_type_none ? "none": (str_iequals(tag_name, "ol") ? "decimal" : "disc"))}} + html_node_attributes(node));
+				m_parser->sendTag(tag::List{.type = std::string(style_type_none ? "none": (str_iequals(tag_name, "ol") ? "decimal" : "disc")), .styling=html_node_styling(node)});
 			}
 			else if (strcasecmp(node.tagName().c_str(), "br") == 0)
 			{
 				node.parseAttributes();
 				m_last_char_in_inline_formatting_context = '\0';
-				m_parser->sendTag(StandardTag::TAG_BR, html_node_attributes(node));
+				m_parser->sendTag(tag::BreakLine{.styling=html_node_styling(node)});
 			}
 			else if (str_iequals(tag_name, "li"))
 			{
 				node.parseAttributes();
-				m_parser->sendTag(StandardTag::TAG_LIST_ITEM, html_node_attributes(node));
+				m_parser->sendTag(tag::ListItem{.styling=html_node_styling(node)});
 			}
 			else if (strcasecmp(node.tagName().c_str(), "script") == 0 || strcasecmp(node.tagName().c_str(), "iframe") == 0)
 			{
@@ -376,7 +380,7 @@ class SaxParser : public ParserSax
 					else
 						convertToUtf8(url);
 				}
-				m_parser->sendTag(StandardTag::TAG_LINK, Attributes{{"url", url}} + html_node_attributes(node));
+				m_parser->sendTag(tag::Link{.url = url, .styling = html_node_styling(node)});
 			}
 			else if (strcasecmp(node.tagName().c_str(), "img") == 0)
 			{
@@ -395,32 +399,32 @@ class SaxParser : public ParserSax
 					alt = alt_attr.second;
 					convertToUtf8(alt);
 				}
-				m_parser->sendTag(StandardTag::TAG_IMAGE, Attributes{{"src", src}, {"alt", alt}} + html_node_attributes(node));
+				m_parser->sendTag(tag::Image{.src = src, .alt = alt, .styling = html_node_styling(node)});
 			}
 			else if (strcasecmp(node.tagName().c_str(), "table") == 0)
 			{
 				node.parseAttributes();
-				m_parser->sendTag(StandardTag::TAG_TABLE, html_node_attributes(node));
+				m_parser->sendTag(tag::Table{.styling=html_node_styling(node)});
 			}
 			else if (str_iequals(tag_name, "tr"))
 			{
 				node.parseAttributes();
-				m_parser->sendTag(StandardTag::TAG_TR, html_node_attributes(node));
+				m_parser->sendTag(tag::TableRow{.styling=html_node_styling(node)});
 			}
 			else if (str_iequals(tag_name, "td") || str_iequals(tag_name, "th"))
 			{
 				node.parseAttributes();
-				m_parser->sendTag(StandardTag::TAG_TD, html_node_attributes(node));
+				m_parser->sendTag(tag::TableCell{.styling=html_node_styling(node)});
 			}
 			else if (str_iequals(tag_name, "b"))
 			{
 				node.parseAttributes();
-				m_parser->sendTag(StandardTag::TAG_B, html_node_attributes(node));
+				m_parser->sendTag(tag::Bold{.styling=html_node_styling(node)});
 			}
 			else if (str_iequals(tag_name, "u"))
 			{
 				node.parseAttributes();
-				m_parser->sendTag(StandardTag::TAG_U, html_node_attributes(node));
+				m_parser->sendTag(tag::Underline{.styling=html_node_styling(node)});
 			}
 			else if (strcasecmp(node.tagName().c_str(), "body") == 0)
 			{
@@ -512,7 +516,9 @@ class SaxParser : public ParserSax
 			docwire_log(debug) << "HTML text found: [" << text << "]";
 			if (m_in_style)
 			{
-				m_style_text += node.text();
+				std::string text = node.text();
+				text.erase(std::remove(text.begin(), text.end(), '\r'), text.end());
+				m_style_text += text;
 				return;
 			}
 			if (m_in_title || m_in_script)
@@ -595,7 +601,7 @@ class SaxParser : public ParserSax
 class MetaSaxParser : public ParserSax
 {
 	private:
-		Metadata& m_meta;
+		tag::Metadata& m_meta;
 
 	protected:
 		void foundTag(Node node, bool isEnd) override
@@ -609,13 +615,13 @@ class MetaSaxParser : public ParserSax
 				// dcterms - old OpenOffice.org
 				if (strcasecmp(name.second.c_str(), "author") == 0 ||
 						strcasecmp(name.second.c_str(), "dcterms.creator") == 0)
-					m_meta.setAuthor(content.second);
+					m_meta.author = content.second;
 				else if (strcasecmp(name.second.c_str(), "changedby") == 0 ||
 						strcasecmp(name.second.c_str(), "dcterms.contributor") == 0)
 				{
 					// Multiple changedby meta tags are possible - LibreOffice 3.5 is an example
-					if (std::string(m_meta.lastModifiedBy()).empty())
-						m_meta.setLastModifiedBy(content.second);
+					if (!m_meta.last_modified_by)
+						m_meta.last_modified_by = content.second;
 				}
 				else if (strcasecmp(name.second.c_str(), "created") == 0 ||
 						strcasecmp(name.second.c_str(), "dcterms.issued") == 0)
@@ -623,19 +629,19 @@ class MetaSaxParser : public ParserSax
 					tm creation_date;
 					if (string_to_date(content.second, creation_date))
 					{
-					  m_meta.setCreationDate(creation_date);
+					  m_meta.creation_date = creation_date;
 					}
 				}
 				else if (strcasecmp(name.second.c_str(), "changed") == 0 ||
 						strcasecmp(name.second.c_str(), "dcterms.modified") == 0)
 				{
 					// Multiple changed meta tags are possible - LibreOffice 3.5 is an example
-					if (m_meta.lastModificationDate().tm_year == 0)
+					if (!m_meta.last_modification_date)
 					{
 						tm last_modification_date;
 						if (string_to_date(content.second, last_modification_date))
 						{
-							m_meta.setLastModificationDate(last_modification_date);
+							m_meta.last_modification_date = last_modification_date;
 						}
 					}
 				}
@@ -643,7 +649,7 @@ class MetaSaxParser : public ParserSax
 		}
 
 	public:
-		MetaSaxParser(Metadata& meta)
+		MetaSaxParser(tag::Metadata& meta)
 			: m_meta(meta)
 		{
 		};
@@ -743,14 +749,13 @@ HTMLParser::parse() const
 	impl->m_data_stream->close();
 	SaxParser parser(content, impl->m_skip_decoding, this);
 	parser.parse(content);
-  Metadata metadata = metaData();
-  sendTag(StandardTag::TAG_METADATA, "", metadata.getFieldsAsAny());
+	sendTag(metaData());
 }
 
-Metadata HTMLParser::metaData() const
+tag::Metadata HTMLParser::metaData() const
 {
 	docwire_log(debug) << "Extracting metadata.";
-	Metadata meta;
+	tag::Metadata meta;
 	if (!impl->m_data_stream->open())
 		throw RuntimeError("Error opening file " + impl->m_file_name);
 	size_t size = impl->m_data_stream->size();

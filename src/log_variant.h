@@ -9,33 +9,25 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_METADATA_WRITER_H
-#define DOCWIRE_METADATA_WRITER_H
+#ifndef DOCWIRE_LOG_VARIANT_H
+#define DOCWIRE_LOG_VARIANT_H
 
-#include <iostream>
-#include <fstream>
-
-#include "parser.h"
-#include "writer.h"
-#include "defines.h"
+#include "log.h"
+#include <variant>
 
 namespace docwire
 {
 
-class DllExport MetaDataWriter : public Writer
+template<typename... Ts>
+log_record_stream& operator<<(log_record_stream& log_stream, const std::variant<Ts...>& variant)
 {
-public:
-  /**
-   * @brief Writes meta data of the document to an output stream.
-   * @param tag data from callback
-   * @param stream output stream
-   */
-  void write_to(const Tag& tag, std::ostream &stream) override;
-  /**
-   * @brief creates a new instance of MetaDataWriter
-   */
-  virtual Writer* clone() const override;
-};
+    std::visit([&](const auto& value)
+    {
+        log_stream << begin_complex() << docwire_log_streamable_type_of(variant) << std::make_pair("value", value) << end_complex();
+    }, variant);
+    return log_stream;
+}
+
 } // namespace docwire
 
-#endif //DOCWIRE_METADATA_WRITER_H
+#endif // DOCWIRE_LOG_VARIANT_H

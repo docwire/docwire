@@ -997,10 +997,10 @@ std::string XLSParser::plainText(ThreadSafeOLEStorage& storage, const Formatting
 	}
 }
 
-Metadata XLSParser::metaData()
+tag::Metadata XLSParser::metaData()
 {
 	ThreadSafeOLEStorage* storage = NULL;
-	Metadata meta;
+	tag::Metadata meta;
 	try
 	{
 		if (impl->m_buffer)

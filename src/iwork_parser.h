@@ -14,6 +14,7 @@
 
 #include "exception.h"
 #include <string>
+#include "tags.h"
 #include <vector>
 
 namespace docwire
@@ -35,7 +36,7 @@ class IWorkParser
     static std::vector<std::string> getExtensions() {return {"pages", "key", "numbers"};}
 		bool isIWork();
 		std::string plainText(const FormattingStyle& formatting);
-		Metadata metaData();
+		tag::Metadata metaData();
 
 	DOCWIRE_EXCEPTION_DEFINE(UnzipError, RuntimeError);
 	DOCWIRE_EXCEPTION_DEFINE(ParsingError, RuntimeError);
