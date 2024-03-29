@@ -10,6 +10,7 @@
 /*********************************************************************************************************************************************/
 
 #include "ocr_parser.h"
+
 #include "parser_parameters.h"
 
 #include <leptonica/allheaders.h>
@@ -233,7 +234,7 @@ std::string OCRParser::plainText(const FormattingStyle& formatting, const std::v
     try
     {
         gray.reset(pixToGrayscale(image.get()));
-	    NUMA* histogram = pixGetGrayHistogram(gray.get(), 1);
+        std::unique_ptr<NUMA, decltype([](NUMA* numa) { numaDestroy(&numa); })> histogram{ pixGetGrayHistogram(gray.get(), 1) };
 
         double weight_sum{ 0 };
         double sum{ 0 };
@@ -284,8 +285,12 @@ void OCRParser::setTessdataPrefix(const std::string& tessdata_prefix)
 bool OCRParser::isOCR() const
 {
     if(impl == nullptr) return false;
-    Pix* image = impl->m_file_name.empty() ? pixReadMem((const unsigned char*)(impl->m_buffer), impl->m_buffer_size) :
-                 pixRead(impl->m_file_name.c_str());
+    std::unique_ptr<PIX, decltype([](PIX* pix) { pixDestroy(&pix); })> image
+    {
+        impl->m_file_name.empty() ?
+            pixReadMem((const unsigned char*)(impl->m_buffer), impl->m_buffer_size) :
+            pixRead(impl->m_file_name.c_str())
+    };
     return image != nullptr;
 }
 
