@@ -61,7 +61,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 150
     steps:
-      - uses: actions/checkout@v4
+      - name: "Checkout source code"
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Export GitHub Actions cache environment variables
@@ -70,7 +71,8 @@ jobs:
           script: |
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-      - run: |
+      - name: Build DocWire SDK
+        run: |
           ${{ matrix.os == 'ubuntu-20.04' && 'sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt-get update && sudo apt-get install gcc-11 g++-11 -y && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 && sudo update-alternatives --set gcc /usr/bin/gcc-11' || '' }}
           ${{ matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind' && 'sudo apt-get install -y valgrind' || '' }}
           ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint doxygen' || '' }}
@@ -87,7 +89,8 @@ jobs:
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
           TSAN_OPTIONS: ${{ matrix.sanitizer == 'thread' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
           DEBUG: ${{ runner.debug }}
-      - uses: actions/upload-artifact@v4
+      - name: "Upload binaries"
+        uses: actions/upload-artifact@v4
         if: success() && matrix.sanitizer == ''
         with:
           name: ${{ matrix.triplet }}-${{ matrix.os }}-binaries
@@ -95,7 +98,8 @@ jobs:
               ${{ runner.os == 'Windows' && './docwire*.zip' || './docwire*.bz2' }}
               ./docwire*.sha1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - name: "Upload logs"
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ${{ matrix.triplet }}-${{ matrix.os }}-${{ matrix.sanitizer == '' && 'binaries' || format('{0}-sanitizer', matrix.sanitizer) }}-logs
