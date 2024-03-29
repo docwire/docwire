@@ -92,12 +92,11 @@ static std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> make_xml_tex
 struct XmlStream::Implementation
 {
 	bool m_badbit = false;
-	LibXml2InitAndCleanupAtExit libxml2_init_and_cleanup_at_exit{};
 	std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> m_reader;
 	int m_curr_depth;
 
 	Implementation(const std::string& xml, int xml_parse_options)
-		: m_reader(make_xml_text_reader(xml, xml_parse_options))
+		: m_reader(make_xml_text_reader_safely(xml, xml_parse_options))
 	{
 		if (m_reader == NULL)
 			throw RuntimeError("Cannot initialize XmlStream: xmlReaderForMemory has failed");
