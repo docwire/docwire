@@ -63,6 +63,12 @@ if [[ "$SANITIZER" == "address" ]]; then
 	FEATURES="[tests,address-sanitizer]"
 elif [[ "$SANITIZER" == "thread" ]]; then
 	FEATURES="[tests,thread-sanitizer]"
+elif [[ "$SANITIZER" == "memcheck" ]]; then
+	FEATURES="[tests,memcheck]"
+elif [[ "$SANITIZER" == "helgrind" ]]; then
+	FEATURES="[tests,helgrind]"
+elif [[ "$SANITIZER" == "callgrind" ]]; then
+	FEATURES="[tests,callgrind]"
 else
 	FEATURES="[tests]"
 fi

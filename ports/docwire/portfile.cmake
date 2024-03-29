@@ -57,8 +57,24 @@ vcpkg_install_copyright(FILE_LIST ${SOURCE_PATH}/LICENSE ${SOURCE_PATH}/doc/COPY
 function(run_tests build_type)
 	set(triplet_build_type ${TARGET_TRIPLET}-${build_type})
 	message(STATUS "Testing ${triplet_build_type}")
+
+	set(valgrind_command "")
+	if(MEMCHECK_ENABLED)
+		set(valgrind_command valgrind --leak-check=full --gen-suppressions=yes --suppressions=${SOURCE_PATH}/tools/valgrind_suppressions.txt)
+	elseif(CALLGRIND_ENABLED)
+		set(valgrind_command valgrind --tool=callgrind)
+	elseif(HELGRIND_ENABLED)
+		set(valgrind_command valgrind --tool=helgrind --gen-suppressions=yes --suppressions=${SOURCE_PATH}/tools/valgrind_suppressions.txt)
+	endif()
+	if (valgrind_command)
+		set(valgrind_command ${valgrind_command} --trace-children=yes --error-exitcode=1)
+	endif()
+	if (valgrind_command)
+		message(STATUS "Using valgrind: ${valgrind_command}")
+	endif()
+
 	vcpkg_execute_required_process(
-		COMMAND "ctest"
+		COMMAND ${valgrind_command} "ctest"
 			-V
 			--no-tests=error
 		WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}
@@ -122,6 +138,9 @@ endfunction()
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS_NO_CMAKE
 	FEATURES
 		tests TESTS_ENABLED
+		memcheck MEMCHECK_ENABLED
+		helgrind HELGRIND_ENABLED
+		callgrind CALLGRIND_ENABLED
 )
 
 if (TESTS_ENABLED)
