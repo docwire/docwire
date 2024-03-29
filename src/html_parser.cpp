@@ -24,6 +24,7 @@
 #include <list>
 #include "log.h"
 #include "misc.h"
+#include <mutex>
 #include <iostream>
 #include "charsetdetect.h"
 #include <set>
