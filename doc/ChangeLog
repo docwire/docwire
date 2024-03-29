@@ -47,6 +47,7 @@
 - Improve vcpkg install error handling in build.ps1
 - Add Valgrind memcheck, helgrind, and callgrind support to automatic tests (GitHub CI), vcpkg port and build.sh
 - Fix threading data-race problems in HTML parser, OOXML parser and cerr logging redirection feature (DOC parser was affected)
+- Fix libxml2 initialization and deinitialization to prevent memory leaks and threading data-race problems in XmlStream class
 
 ## Version 2024.01.05
 

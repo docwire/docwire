@@ -279,7 +279,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 			xml = content;
 		try
 		{
-			XmlStream xml_stream(xml, m_interf->manageXmlParser(), m_interf->getXmlOptions());
+			XmlStream xml_stream(xml, m_interf->getXmlOptions());
 			xml_stream.levelDown();
 			while (xml_stream)
 			{
@@ -325,7 +325,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 			xml = content;
 		try
 		{
-			XmlStream xml_stream(xml, m_interf->manageXmlParser(), m_interf->getXmlOptions());
+			XmlStream xml_stream(xml, m_interf->getXmlOptions());
 			m_interf->parseXmlData(xml_stream, mode, options, &zipfile);
 		}
 		catch (const std::exception& e)
@@ -568,7 +568,7 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 			}
 			try
 			{
-				XmlStream xml_stream(xml, manageXmlParser(), getXmlOptions());
+				XmlStream xml_stream(xml, getXmlOptions());
 				xml_stream.levelDown();
 				while (xml_stream)
 				{
@@ -671,7 +671,7 @@ tag::Metadata ODFOOXMLParser::metaData() const
 		}
 		try
 		{
-			XmlStream xml_stream(core_xml, manageXmlParser(), getXmlOptions());
+			XmlStream xml_stream(core_xml, getXmlOptions());
 			xml_stream.levelDown();
 			while (xml_stream)
 			{
@@ -708,7 +708,7 @@ tag::Metadata ODFOOXMLParser::metaData() const
 		}
 		try
 		{
-			XmlStream app_stream(app_xml, manageXmlParser(), getXmlOptions());
+			XmlStream app_stream(app_xml, getXmlOptions());
 			app_stream.levelDown();
 			while (app_stream)
 			{

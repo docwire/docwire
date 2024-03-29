@@ -112,8 +112,6 @@ class CommonXMLDocumentParser
 		///gets options which has been set for XmlStream object. (xmlParserOption from libxml2)
 		int getXmlOptions() const;
 
-		bool manageXmlParser() const;
-
 		///disables modifying text data inside method onUnregisteredCommand
 		void disableText(bool disable) const;
 
@@ -131,7 +129,6 @@ class CommonXMLDocumentParser
 	public:
 		CommonXMLDocumentParser();
 		virtual ~CommonXMLDocumentParser();
-		void setManageXmlParser(bool manage);
 		virtual std::string plainText(XmlParseMode mode, FormattingStyle& options) const = 0;
 		virtual tag::Metadata metaData() const = 0;
 };

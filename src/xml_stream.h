@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_XML_STREAM_H
 #define DOCWIRE_XML_STREAM_H
 
+#include <memory>
 #include <string>
 
 namespace docwire
@@ -21,11 +22,11 @@ class XmlStream
 {
 	private:
 		struct Implementation;
-		Implementation* impl;
+		std::unique_ptr<Implementation> impl;
 
 	public:
 		///Throws RuntimeError if initialization has failed.
-		XmlStream(const std::string& xml, bool manage_xml_parser, int xml_parse_options = 0);
+		XmlStream(const std::string& xml, int xml_parse_options = 0);
 		~XmlStream();
 		operator bool();
 		void next();
