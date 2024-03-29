@@ -378,31 +378,25 @@ cerr_log_redirection::~cerr_log_redirection()
 
 void cerr_log_redirection::redirect()
 {
-	if (log_verbosity_includes(debug))
-	{
-		m_impl->cerr_log_redirection_mutex_lock = std::unique_lock<std::mutex>(cerr_log_redirection_mutex);
-		m_cerr_buf_backup = std::cerr.rdbuf(m_impl->string_stream.rdbuf());
-	}
-	else
-		std::cerr.setstate(std::ios::failbit);
+	m_impl->cerr_log_redirection_mutex_lock = std::unique_lock<std::mutex>(cerr_log_redirection_mutex);
+	m_cerr_buf_backup = std::cerr.rdbuf(m_impl->string_stream.rdbuf());
 	m_redirected = true;
 }
 
 void cerr_log_redirection::restore()
 {
-	if (m_cerr_buf_backup != nullptr)
+	std::cerr.rdbuf(m_cerr_buf_backup);
+	m_impl->cerr_log_redirection_mutex_lock.unlock();
+	m_cerr_buf_backup = nullptr;
+	if (log_verbosity_includes(debug))
 	{
-		std::cerr.rdbuf(m_cerr_buf_backup);
-		m_impl->cerr_log_redirection_mutex_lock.unlock();
-		m_cerr_buf_backup = nullptr;
-		if (!m_impl->string_stream.str().empty())
+		std::string redirected_cerr = m_impl->string_stream.str();
+		if (!redirected_cerr.empty())
 		{
 			std::unique_ptr<log_record_stream> log_record_stream = create_log_record_stream(debug, m_location);
-			*log_record_stream << m_impl->string_stream.str();
+			*log_record_stream << docwire_log_streamable_var(redirected_cerr);
 		}
 	}
-	else
-		std::cerr.clear();
 	m_redirected = false;
 }
 
