@@ -35,6 +35,7 @@ if ($env:DOWNLOAD_VCPKG -ne "0")
     git clone https://github.com/microsoft/vcpkg.git
     cd vcpkg
     git checkout tags/2024.01.12
+    git apply --verbose ..\tools\vcpkg_hotfixes\*.patch
     .\bootstrap-vcpkg.bat
     cd ..
 }
