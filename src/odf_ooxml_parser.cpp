@@ -20,6 +20,7 @@
 #include "log.h"
 #include <map>
 #include "misc.h"
+#include <mutex>
 #include <regex>
 #include <stdlib.h>
 #include <string.h>
