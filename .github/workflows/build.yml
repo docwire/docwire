@@ -105,5 +105,5 @@ jobs:
           name: ${{ matrix.triplet }}-${{ matrix.os }}-${{ matrix.sanitizer == '' && 'binaries' || format('{0}-sanitizer', matrix.sanitizer) }}-logs
           path: |
             vcpkg/buildtrees/*/*.log
-            ${{ matrix.sanitizer == 'callgrind' && 'vcpkg/buildtrees/*/callgrind.out.*' || '' }}
+            ${{ matrix.sanitizer == 'callgrind' && 'vcpkg/buildtrees/**/callgrind.out.*' || '' }}
           if-no-files-found: error
