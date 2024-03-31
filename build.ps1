@@ -36,9 +36,6 @@ if ($env:DOWNLOAD_VCPKG -ne "0")
     cd vcpkg
     git checkout tags/2024.01.12
     $patchFiles = Get-ChildItem -Path ..\tools\vcpkg_hotfixes\*.patch
-    foreach ($patchFile in $patchFiles) {
-        (Get-Content -Raw $patchFile.FullName) -replace "`n", "`r`n" | Set-Content $patchFile.FullName
-    }
     git apply --ignore-whitespace --verbose $patchFiles.FullName
     .\bootstrap-vcpkg.bat
     cd ..
