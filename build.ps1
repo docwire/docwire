@@ -39,7 +39,7 @@ if ($env:DOWNLOAD_VCPKG -ne "0")
     foreach ($patchFile in $patchFiles) {
         (Get-Content -Raw $patchFile.FullName) -replace "`n", "`r`n" | Set-Content $patchFile.FullName
     }
-    git apply --verbose $patchFiles.FullName
+    git apply --ignore-whitespace --verbose $patchFiles.FullName
     .\bootstrap-vcpkg.bat
     cd ..
 }
