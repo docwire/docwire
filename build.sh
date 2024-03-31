@@ -55,9 +55,6 @@ elif [[ "$SANITIZER" == "thread" ]]; then
 elif [[ "$SANITIZER" == "memcheck" ]]; then
 	FEATURES="[tests,memcheck]"
 elif [[ "$SANITIZER" == "helgrind" ]]; then
-	echo "Checking if helgrind is available and working fine."
-	valgrind --tool=helgrind --trace-children=yes --error-exitcode=1 --verbose ls
-	valgrind --tool=helgrind --trace-children=yes --error-exitcode=1 --verbose ctest -V --no-tests=error
 	FEATURES="[tests,helgrind]"
 elif [[ "$SANITIZER" == "callgrind" ]]; then
 	FEATURES="[tests,callgrind]"
