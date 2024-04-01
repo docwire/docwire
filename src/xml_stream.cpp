@@ -24,33 +24,66 @@ static size_t xml_parser_usage_counter = 0;
 
 namespace
 {
-	std::mutex xml_parser_usage_counter_mutex;
+
+std::mutex xml_parser_init_mutex;
+
+/**
+ * @brief Class for managing the initialization and cleanup of the libxml2 parser.
+ * 
+ * This class ensures that the libxml2 parser is initialized and cleaned up.
+ * Initialization is performed when the class object is constructed, and
+ * cleanup is performed when the class object is destroyed.
+ * 
+ * Object of this class should be created before any XML processing is performed, and
+ * exists until all XML processing is finished.
+ * 
+ * @warning You would like to make a static global object of this class probably but be
+ * aware that libxml2 also have some static initialization that should be performed first
+ * so static local object will be probably better.
+*/
+class LibXml2InitAndCleanup
+{
+	public:
+		LibXml2InitAndCleanup()
+		{
+			xmlInitParser();
+			xmlGetGlobalState(); // Immediately creating global state. Creating it later by xmlReaderForMemory or other functions causes false-positive memory leak reports.
+		}
+
+		~LibXml2InitAndCleanup()
+		{
+			xmlCleanupParser();
+		}
+};
+
+/**
+ * Creates a unique pointer to an xmlTextReader object safely.
+ *
+ * This function safely creates a unique pointer to an xmlTextReader object, ensuring proper memory management and thread safety.
+ * It provides a safer and more efficient way to handle the creation and destruction of xmlTextReader objects compared to directly using xmlReaderForMemory. 
+ * It leverages std::unique_ptr for automatic memory management and introduces a locking mechanism for thread safety.
+ * libxml2 is initialized if needed and cleaned up on application exit.
+ *
+ * @param xml The XML string to be parsed.
+ * @param xml_parse_options The options for parsing the XML.
+ *
+ * @return A unique pointer to an xmlTextReader object. Ownership is transferred to the caller.
+ */
+static std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> make_xml_text_reader_safely(const std::string& xml, int xml_parse_options)
+{
+	// xmlParserInit() is called both from LibXml2InitAndCleanup and from xmlReaderForMemory.
+	// libxml2 can be initialized and deinitialized multiple times because it checkes the value of
+	// internal xmlParserInitialized flag but thread-sanitizers show that it's not thread-safe.
+	std::lock_guard<std::mutex> xml_parser_init_mutex_lock(xml_parser_init_mutex);
+	// Init libxml2 immediately, but cleanup at application exit not to interfere with other threads or
+	// other code that uses libxml2.
+	static LibXml2InitAndCleanup init_and_cleanup{};
+	return std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)>(
+		xmlReaderForMemory(xml.c_str(), xml.length(), NULL, NULL, xml_parse_options),
+		&xmlFreeTextReader);
+}
+
 } // anonymous namespace
-
-static void checkXmlMemGet()
-{
-	//in windows 64 bit there is a problem with initialization of some pointers to functions.
-	//to make sure xmlMemGet will not be called twice I'm protecting this code with mutexes.
-	std::lock_guard<std::mutex> xml_parser_usage_counter_mutex_lock(xml_parser_usage_counter_mutex);
-	if (!xmlFree)
-		xmlMemGet(&xmlFree, &xmlMalloc, &xmlRealloc, NULL);
-}
-
-static void initXmlParser()
-{
-	std::lock_guard<std::mutex> xml_parser_usage_counter_mutex_lock(xml_parser_usage_counter_mutex);
-	if (xml_parser_usage_counter == 0)
-		xmlInitParser();
-	xml_parser_usage_counter++;
-}
-
-static void cleanupXmlParser()
-{
-	std::lock_guard<std::mutex> xml_parser_usage_counter_mutex_lock(xml_parser_usage_counter_mutex);
-	xml_parser_usage_counter--;
-	if (xml_parser_usage_counter == 0)
-		xmlCleanupParser();
-}
 
 // warning TODO: Maybe it will be good direction if XmlStream will not require loading whole xml data at once? For now\
 	if we want to parse one of OOXML/ODF/ODFXML files we need to load whole file into memory at once. It would be good\
@@ -58,74 +91,32 @@ static void cleanupXmlParser()
 
 struct XmlStream::Implementation
 {
-	bool m_badbit;
-	xmlTextReaderPtr m_reader;
+	bool m_badbit = false;
+	std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> m_reader;
 	int m_curr_depth;
-	bool m_manage_xml_parser;
+
+	Implementation(const std::string& xml, int xml_parse_options)
+		: m_reader(make_xml_text_reader_safely(xml, xml_parse_options))
+	{
+		if (m_reader == NULL)
+			throw RuntimeError("Cannot initialize XmlStream: xmlReaderForMemory has failed");
+		if (xmlTextReaderRead(m_reader.get()) != 1)
+			throw RuntimeError("Cannot initialize XmlStream: xmlTextReaderRead has failed");
+		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(m_reader.get()) << ", depth=" << xmlTextReaderDepth(m_reader.get()) << ", name=" << (char*)xmlTextReaderConstLocalName(m_reader.get());
+		m_curr_depth = xmlTextReaderDepth(m_reader.get());
+		if (m_curr_depth == -1)
+			throw RuntimeError("Cannot initialize XmlStream: xmlTextReaderDepth has failed");
+		docwire_log(debug) << "Starting curr_depth: " << m_curr_depth;
+	}
 };
 
-XmlStream::XmlStream(const std::string &xml, bool manage_xml_parser, int xml_parse_options)
+XmlStream::XmlStream(const std::string &xml, int xml_parse_options)
+	: impl(std::make_unique<Implementation>(xml, xml_parse_options))
 {
-	impl = NULL;
-	try
-	{
-		impl = new Implementation;
-		impl->m_reader = NULL;
-		impl->m_badbit = false;
-		impl->m_manage_xml_parser = manage_xml_parser;
-		checkXmlMemGet();
-		if (impl->m_manage_xml_parser)
-			initXmlParser();
-		impl->m_reader = xmlReaderForMemory(xml.c_str(), xml.length(), NULL, NULL, xml_parse_options);
-		if (impl->m_reader == NULL)
-		{
-			if (impl->m_manage_xml_parser)
-				cleanupXmlParser();
-			delete impl;
-			impl = NULL;
-			throw RuntimeError("Cannot initialize XmlStream: xmlReaderForMemory has failed");
-		}
-		if (xmlTextReaderRead(impl->m_reader) != 1)
-		{
-			if (impl->m_manage_xml_parser)
-				cleanupXmlParser();
-			xmlFreeTextReader(impl->m_reader);
-			delete impl;
-			impl = NULL;
-			throw RuntimeError("Cannot initialize XmlStream: xmlTextReaderRead has failed");
-		}
-		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(impl->m_reader) << ", depth=" << xmlTextReaderDepth(impl->m_reader) << ", name=" << (char*)xmlTextReaderConstLocalName(impl->m_reader);
-		impl->m_curr_depth = xmlTextReaderDepth(impl->m_reader);
-		if (impl->m_curr_depth == -1)
-		{
-			if (impl->m_manage_xml_parser)
-				cleanupXmlParser();
-			xmlFreeTextReader(impl->m_reader);
-			delete impl;
-			impl = NULL;
-			throw RuntimeError("Cannot initialize XmlStream: xmlTextReaderDepth has failed");
-		}
-		docwire_log(debug) << "Starting curr_depth: " << impl->m_curr_depth;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_reader != NULL)
-				xmlFreeTextReader(impl->m_reader);
-			delete impl;
-		}
-		throw;
-	}
 }
 
 XmlStream::~XmlStream()
 {
-	if (impl->m_reader != NULL)
-		xmlFreeTextReader(impl->m_reader);
-	if (impl->m_manage_xml_parser)
-		cleanupXmlParser();
-	delete impl;
 }
 
 XmlStream::operator bool()
@@ -138,24 +129,24 @@ void XmlStream::next()
 	docwire_log(debug) << "# next(). curr_depth=" << impl->m_curr_depth;
 	do
 	{
-		if (xmlTextReaderRead(impl->m_reader) != 1)
+		if (xmlTextReaderRead(impl->m_reader.get()) != 1)
 		{
 			docwire_log(debug) << "# End of file or error - Null";
 			impl->m_badbit = true;
 			return;
 		}
-		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(impl->m_reader) << ", depth=" << xmlTextReaderDepth(impl->m_reader) << ", name=" << (char*)xmlTextReaderConstLocalName(impl->m_reader);
-		if (xmlTextReaderDepth(impl->m_reader) < impl->m_curr_depth)
+		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(impl->m_reader.get()) << ", depth=" << xmlTextReaderDepth(impl->m_reader.get()) << ", name=" << (char*)xmlTextReaderConstLocalName(impl->m_reader.get());
+		if (xmlTextReaderDepth(impl->m_reader.get()) < impl->m_curr_depth)
 		{
 			impl->m_badbit = true;
 			docwire_log(debug) << "# End of level or error - Null";
 			return;
 		}
-	} while (xmlTextReaderNodeType(impl->m_reader) == 15 || xmlTextReaderDepth(impl->m_reader) > impl->m_curr_depth);
+	} while (xmlTextReaderNodeType(impl->m_reader.get()) == 15 || xmlTextReaderDepth(impl->m_reader.get()) > impl->m_curr_depth);
 	docwire_log(debug) << (
-		xmlTextReaderConstValue(impl->m_reader) == NULL ?
+		xmlTextReaderConstValue(impl->m_reader.get()) == NULL ?
 			std::string("# null value.") :
-			std::string("# value:") + (char*)xmlTextReaderConstValue(impl->m_reader)
+			std::string("# value:") + (char*)xmlTextReaderConstValue(impl->m_reader.get())
 		);
 	impl->m_badbit = false;
 }
@@ -165,7 +156,7 @@ void XmlStream::levelDown()
 	impl->m_curr_depth++;
 	docwire_log(debug) << "# levelDown(). curr_depth=" << impl->m_curr_depth;
 	// warning TODO: <a></a> is not empty according to xmlTextReaderIsEmptyElement(). Check if it is a problem.
-	if (xmlTextReaderIsEmptyElement(impl->m_reader) != 0)
+	if (xmlTextReaderIsEmptyElement(impl->m_reader.get()) != 0)
 	{
 		impl->m_badbit = true;
 		docwire_log(debug) << "# Empty or error - Null";
@@ -173,25 +164,25 @@ void XmlStream::levelDown()
 	}
 	do
 	{
-		if (xmlTextReaderRead(impl->m_reader) != 1)
+		if (xmlTextReaderRead(impl->m_reader.get()) != 1)
 		{
 			impl->m_badbit = true;
 			docwire_log(debug) << "# End of document - Null";
 			return;
 		}
-		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(impl->m_reader) << ", depth=" << xmlTextReaderDepth(impl->m_reader) << ", name=" << (char*)xmlTextReaderConstLocalName(impl->m_reader);
-		if (xmlTextReaderDepth(impl->m_reader) < impl->m_curr_depth)
+		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(impl->m_reader.get()) << ", depth=" << xmlTextReaderDepth(impl->m_reader.get()) << ", name=" << (char*)xmlTextReaderConstLocalName(impl->m_reader.get());
+		if (xmlTextReaderDepth(impl->m_reader.get()) < impl->m_curr_depth)
 		{
 			impl->m_badbit = true;
 			docwire_log(debug) << "# Level empty or error - Null";
 			return;
 		}
-	} while (xmlTextReaderNodeType(impl->m_reader) == 15);
-	docwire_log(debug) << "# name:" << (char*)xmlTextReaderConstLocalName(impl->m_reader) << "\n";
+	} while (xmlTextReaderNodeType(impl->m_reader.get()) == 15);
+	docwire_log(debug) << "# name:" << (char*)xmlTextReaderConstLocalName(impl->m_reader.get()) << "\n";
 	docwire_log(debug) << (
-		xmlTextReaderConstValue(impl->m_reader) == NULL ?
+		xmlTextReaderConstValue(impl->m_reader.get()) == NULL ?
 			std::string("# null value.") :
-			std::string("# value:") + (char*)xmlTextReaderConstValue(impl->m_reader)
+			std::string("# value:") + (char*)xmlTextReaderConstValue(impl->m_reader.get())
 		);
 }
 
@@ -206,54 +197,54 @@ void XmlStream::levelUp()
 	}
 	for(;;)
 	{
-		if (xmlTextReaderRead(impl->m_reader) != 1)
+		if (xmlTextReaderRead(impl->m_reader.get()) != 1)
 		{
 			impl->m_badbit = true;
 			docwire_log(debug) << "# End of document or error - Null";
 			return;
 		}
-		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(impl->m_reader) << ", depth=" << xmlTextReaderDepth(impl->m_reader) << ", name=" << (char*)xmlTextReaderConstLocalName(impl->m_reader);
-		if (xmlTextReaderNodeType(impl->m_reader) == 15 && xmlTextReaderDepth(impl->m_reader) == impl->m_curr_depth)
+		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(impl->m_reader.get()) << ", depth=" << xmlTextReaderDepth(impl->m_reader.get()) << ", name=" << (char*)xmlTextReaderConstLocalName(impl->m_reader.get());
+		if (xmlTextReaderNodeType(impl->m_reader.get()) == 15 && xmlTextReaderDepth(impl->m_reader.get()) == impl->m_curr_depth)
 		{
 			impl->m_badbit = false;
 			break;
 		}
 	}
-	docwire_log(debug) << "# name:" << (char*)xmlTextReaderConstLocalName(impl->m_reader);
+	docwire_log(debug) << "# name:" << (char*)xmlTextReaderConstLocalName(impl->m_reader.get());
 	docwire_log(debug) << (
-		xmlTextReaderConstValue(impl->m_reader) == NULL ?
+		xmlTextReaderConstValue(impl->m_reader.get()) == NULL ?
 			std::string("# null value.") :
-			std::string("# value:") + (char*)xmlTextReaderConstValue(impl->m_reader)
+			std::string("# value:") + (char*)xmlTextReaderConstValue(impl->m_reader.get())
 		);
 }
 
 char* XmlStream::content()
 {
 	docwire_log(debug) << "# content()";
-	return (char*)xmlTextReaderConstValue(impl->m_reader);
+	return (char*)xmlTextReaderConstValue(impl->m_reader.get());
 }
 
 std::string XmlStream::name()
 {
 	docwire_log(debug) << "# name()";
-	return (char*)xmlTextReaderConstLocalName(impl->m_reader);
+	return (char*)xmlTextReaderConstLocalName(impl->m_reader.get());
 }
 
 std::string XmlStream::fullName()
 {
 	docwire_log(debug) << "# fullName()";
-	return (char*)xmlTextReaderConstName(impl->m_reader);
+	return (char*)xmlTextReaderConstName(impl->m_reader.get());
 }
 
 std::string XmlStream::stringValue()
 {
 	docwire_log(debug) << "# stringValue()";
-	if (xmlTextReaderNodeType(impl->m_reader) != 1)
+	if (xmlTextReaderNodeType(impl->m_reader.get()) != 1)
 	{
 		docwire_log(debug) << "!!! Getting string value not from start tag.";
 		return "";
 	}
-	xmlNodePtr node = xmlTextReaderExpand(impl->m_reader);
+	xmlNodePtr node = xmlTextReaderExpand(impl->m_reader.get());
 	if (node == NULL)
 		return "";
 	xmlChar* val = xmlNodeListGetString(node->doc, node->xmlChildrenNode, 1);
@@ -267,12 +258,12 @@ std::string XmlStream::stringValue()
 std::string XmlStream::attribute(const std::string& attr_name)
 {
 	docwire_log(debug) << "# attribute()";
-	if (xmlTextReaderNodeType(impl->m_reader) != 1)
+	if (xmlTextReaderNodeType(impl->m_reader.get()) != 1)
 	{
 		docwire_log(debug) << "!!! Getting attribute not from start tag.";
 		return "";
 	}
-	xmlNodePtr node = xmlTextReaderExpand(impl->m_reader);
+	xmlNodePtr node = xmlTextReaderExpand(impl->m_reader.get());
 	if (node == NULL)
 		return "";
 	xmlChar* attr = xmlGetProp(node, (xmlChar*)attr_name.c_str());

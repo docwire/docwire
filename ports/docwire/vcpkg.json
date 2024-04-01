@@ -16,6 +16,18 @@
 		"tests":
 		{
 			"description": "Enable automatic tests"
+		},
+		"memcheck":
+		{
+			"description": "Enable valgrind memcheck in automatic tests"
+		},
+		"helgrind":
+		{
+			"description": "Enable valgrind helgrind in automatic tests"
+		},
+		"callgrind":
+		{
+			"description": "Enable valgrind callgrind in automatic tests"
 		}
 	},
 	"dependencies": [

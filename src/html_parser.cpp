@@ -24,6 +24,7 @@
 #include <list>
 #include "log.h"
 #include "misc.h"
+#include <mutex>
 #include <iostream>
 #include "charsetdetect.h"
 #include <set>
@@ -525,8 +526,12 @@ class SaxParser : public ParserSax
 				return;
 			// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace#what_is_whitespace
 			// Convert all whitespaces into spaces and reduce all adjacent spaces into a single space
-			static const std::regex whitespaces_regex(R"(\s+)");
-			text = std::regex_replace(text, whitespaces_regex, " ");
+			{
+				static std::mutex whitespaces_regex_mutex;
+				std::lock_guard<std::mutex> whitespaces_regex_mutex_lock(whitespaces_regex_mutex);
+				static const std::regex whitespaces_regex(R"(\s+)");
+				text = std::regex_replace(text, whitespaces_regex, " ");
+			}
 			docwire_log(debug) << "After converting and reducing whitespaces: [" << text << "]";
 			bool last_char_was_space = isspace((unsigned char)m_last_char_in_inline_formatting_context);
 			docwire_log(debug) << "Last char in inline formatting context was whitespace: " << last_char_was_space;

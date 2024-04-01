@@ -13,18 +13,7 @@ if [[ "$DOWNLOAD_VCPKG" != "0" ]]; then
 	git clone https://github.com/microsoft/vcpkg.git
 	cd vcpkg
 	git checkout tags/2024.01.12
-	if [[ "$OSTYPE" == "darwin"* ]]; then
-		# Temporary workaround to upgrade Meson to version 1.3.0 due to compatibility issues with certain Python versions.
-		# This upgrade is necessary because Meson version 0.63, which is the default in the current vcpkg version, does not work properly with these Python versions.
-		# These sed commands manually update the Meson version in the vcpkg-tool-meson port.
-		# Note: This is a temporary measure. The upgrade to Meson version 1.3.0 will be officially included in future versions of vcpkg.
-		sed -i -e 's/0.63/1.3.0/' ports/vcpkg-tool-meson/vcpkg.json
-		sed -i -e 's/0.63.0/1.3.0/' ports/vcpkg-tool-meson/portfile.cmake
-		sed -i -e 's/bb91cea0d66d8d036063dedec1f194d663399cdf/7368795d13081d4928a9ba04d48498ca2442624b/' ports/vcpkg-tool-meson/portfile.cmake
-		sed -i -e 's/e5888eb35dd4ab5fc0a16143cfbb5a7849f6d705e211a80baf0a8b753e2cf877a4587860a79cad129ec5f3474c12a73558ffe66439b1633d80b8044eceaff2da/b2dc940a8859d6b0af8cb762c896d3188cadc1e65e3c7d922d6cb9a4ed7a1be88cd4d51a8aa140319a75e467816e714c409cf74c71c830bbc5f96bb81c1845ce/' ports/vcpkg-tool-meson/portfile.cmake
-		sed -i -e 's/remove-freebsd-pcfile-specialization.patch/#/' ports/vcpkg-tool-meson/portfile.cmake
-		sed -i -e "s/intl_factory/packages['intl'] = intl_factory/" ports/vcpkg-tool-meson/meson-intl.patch
-	fi
+	git apply --verbose ../tools/vcpkg_hotfixes/*.patch
 	./bootstrap-vcpkg.sh
 	cd ..
 fi
@@ -63,6 +52,12 @@ if [[ "$SANITIZER" == "address" ]]; then
 	FEATURES="[tests,address-sanitizer]"
 elif [[ "$SANITIZER" == "thread" ]]; then
 	FEATURES="[tests,thread-sanitizer]"
+elif [[ "$SANITIZER" == "memcheck" ]]; then
+	FEATURES="[tests,memcheck]"
+elif [[ "$SANITIZER" == "helgrind" ]]; then
+	FEATURES="[tests,helgrind]"
+elif [[ "$SANITIZER" == "callgrind" ]]; then
+	FEATURES="[tests,callgrind]"
 else
 	FEATURES="[tests]"
 fi

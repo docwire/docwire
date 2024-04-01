@@ -57,7 +57,6 @@ struct CommonXMLDocumentParser::Implementation
     m_command_handlers["t"] = add_command_handler<>(&Implementation::onODFOOXMLTextTag);
   }
 
-	bool m_manage_xml_parser;
 	bool is_bold;
 	bool is_italic;
 	bool is_underline;
@@ -640,7 +639,7 @@ void CommonXMLDocumentParser::extractText(const std::string& xml_contents, XmlPa
 		 xml = xml_contents;
 	try
 	{
-		XmlStream xml_stream(xml, impl->m_manage_xml_parser, getXmlOptions());
+		XmlStream xml_stream(xml, getXmlOptions());
 		text = parseXmlData(xml_stream, mode, options, zipfile);
 	}
 	catch (const std::exception& e)
@@ -653,7 +652,7 @@ void CommonXMLDocumentParser::parseODFMetadata(const std::string &xml_content, t
 {
 	try
 	{
-		XmlStream xml_stream(xml_content, impl->m_manage_xml_parser, XML_PARSE_NOBLANKS);
+		XmlStream xml_stream(xml_content, XML_PARSE_NOBLANKS);
 		xml_stream.levelDown();
 		while (xml_stream)
 		{
@@ -738,11 +737,6 @@ bool CommonXMLDocumentParser::disabledText() const
 	return impl->m_disabled_text;
 }
 
-bool CommonXMLDocumentParser::manageXmlParser() const
-{
-	return impl->m_manage_xml_parser;
-}
-
 void CommonXMLDocumentParser::disableText(bool disable) const
 {
 	impl->m_disabled_text = disable;
@@ -766,7 +760,6 @@ CommonXMLDocumentParser::CommonXMLDocumentParser()
 	{
 		impl = new Implementation;
 		impl->m_list_depth = 0;
-		impl->m_manage_xml_parser = true;
 		impl->m_disabled_text = false;
 		impl->m_xml_options = 0;
 		impl->m_parser = this;
@@ -798,11 +791,6 @@ CommonXMLDocumentParser::CommonXMLDocumentParser()
 CommonXMLDocumentParser::~CommonXMLDocumentParser()
 {
 	cleanUp();
-}
-
-void CommonXMLDocumentParser::setManageXmlParser(bool manage)
-{
-	impl->m_manage_xml_parser = manage;
 }
 
 int CommonXMLDocumentParser::getXmlOptions() const

@@ -677,6 +677,24 @@ TEST(Exceptions, DefiningCreatingAndNested)
 	EXPECT_EQ(what_msg, "msg1 with nested test_ns::TestError2 msg2");
 }
 
+std::string sanitize_log_text(const std::string& orig_log_text)
+{
+    using namespace boost::json;
+	std::string log_text = "[\n";
+	value log_val = parse(orig_log_text + "]");
+	for (int i = 0; i < log_val.as_array().size(); i++)
+	{
+		if (i > 0)
+			log_text += ",\n";
+		log_val.as_array()[i].as_object()["timestamp"] = "<timestamp>";
+		log_val.as_array()[i].as_object()["thread_id"] = "<thread_id>";
+		log_val.as_array()[i].as_object()["line"] = "<line>";
+		log_text += serialize(log_val.as_array()[i]);
+	}
+	log_text += "\n]\n";
+    return log_text;
+}
+
 TEST(Logging, Dereferenceable)
 {
 	static_assert(is_iterable<std::vector<int>>::value);
@@ -703,19 +721,24 @@ TEST(Logging, Dereferenceable)
 	set_log_verbosity(info);
 	set_log_stream(&std::clog);
 
-	std::string log_text = "[\n";
-	using namespace boost::json;
-	value log_val = parse(log_stream.str() + "]");
-	for (int i = 0; i < log_val.as_array().size(); i++)
-	{
-		if (i > 0)
-			log_text += ",\n";
-		log_val.as_array()[i].as_object()["timestamp"] = "<timestamp>";
-		log_val.as_array()[i].as_object()["thread_id"] = "<thread_id>";
-		log_val.as_array()[i].as_object()["line"] = "<line>";
-		log_text += serialize(log_val.as_array()[i]);
-	}
-	log_text += "\n]\n";
-
+    std::string log_text = sanitize_log_text(log_stream.str());
 	ASSERT_EQ(read_test_file("logging_dereferenceable.out.json"), log_text);
+}
+
+TEST(Logging, CerrLogRedirection)
+{
+	std::stringstream log_stream;
+	set_log_stream(&log_stream);
+	set_log_verbosity(debug);
+
+    cerr_log_redirection cerr_redirection(docwire_current_source_location());
+	std::cerr << "Cerr test log message line 1" << std::endl;
+    std::cerr << "Cerr test log message line 2" << std::endl;
+	cerr_redirection.restore();
+
+    set_log_verbosity(info);
+	set_log_stream(&std::clog);
+
+    std::string log_text = sanitize_log_text(log_stream.str());
+    ASSERT_EQ(read_test_file("logging_cerr_log_redirection.out.json"), log_text);
 }

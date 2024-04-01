@@ -1,0 +1,3 @@
+[
+{"timestamp":"<timestamp>","severity":"debug","file":"api_tests.cpp","line":"<line>","function":"void Logging_CerrLogRedirection_Test::TestBody()","thread_id":"<thread_id>","log":{"redirected_cerr":"Cerr test log message line 1\nCerr test log message line 2\n"}}
+]
