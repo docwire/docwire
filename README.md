@@ -663,29 +663,21 @@ You're all set! You've successfully installed the DocWire library using vcpkg. Y
 
 DocWire SDK introduces a distinctive versioning methodology, deviating from conventional semantic versioning (SemVer) in favor of a dynamic, date-centric system. This chapter elucidates the versioning strategy of DocWire SDK, shedding light on its unique attributes and the benefits derived from this innovative approach.
 
-### Versioning Scheme
+### "Release Early, Release Often" Strategy with Date-Based Versioning
 
-#### Date-Based Versioning
+DocWire SDK's versioning system adopts the "release early, release often" concept, ensuring that users benefit from the latest features and improvements as soon as they are available. This approach minimizes the usage of outdated code, ensuring that resources are directed towards delivering the best possible user experience.
 
-DocWire SDK's versioning system integrates release dates as a pivotal element. Each release is identified by a specific date, providing users with a transparent timeline of updates and enhancements. This approach ensures clarity and enables users to comprehend the evolution of the SDK over time.
+DocWire SDK's versioning system integrates release dates as a pivotal element. Each release is identified by a specific date, providing users with a transparent timeline of updates and enhancements. In most cases new release is created immediately after merging of new feature or important bug fix to the main branch.
 
-#### "Live at the Head" Concept
+The "release early, release often" strategy is based on the idea that releasing code frequently allows for faster resolution of issues, faster feedback from users, and enables developers to incorporate community feedback more effectively. By releasing code more frequently, users benefit from the latest changes and features, enabling them to stay up-to-date with the SDK's evolution.
 
-Adhering to the "live at the head" philosophy, DocWire SDK always grants immediate access to the latest version, representing the current state of the codebase. This model allows users to benefit from the most recent features, improvements, and bug fixes without waiting for formal releases, enhancing the overall user experience.
+This approach is in line with industry best practices and aligns with the "live at the head" concept, providing users with a transparent timeline of updates and enhancements. This approach ensures clarity and enables users to comprehend the evolution of the SDK over time.
 
-#### Planned Release Cycle
-
-To maintain a balance between regular updates and stability, DocWire SDK plans one release or tagging per quarter. This structured release cycle incorporates new features and improvements. In the event of discovering serious bugs or multiple smaller issues, additional releases may occur to ensure the continual delivery of a high-quality SDK.
-
-#### Inspired by VCPKG Project Versioning
-
-DocWire SDK draws inspiration from the versioning approach of the VCPKG project. As VCPKG serves as the preferred method for installing the SDK, users familiar with VCPKG will find a similar versioning philosophy in DocWire SDK, reinforcing a cohesive and familiar experience.
-
-### Advantages of Date-Based Versioning
+### Advantages of "Release Early, Release Often"
 
 #### Continuous Evolution
 
-The date-based versioning strategy fosters a model of continuous evolution, allowing for swift development and deployment of new features. This ensures users have timely access to the latest advancements and can choose to stay current or opt for specific versions tailored to their requirements.
+The "release early, release often" strategy fosters a model of continuous evolution, allowing for swift development and deployment of new features. This ensures that users have timely access to the latest advancements and can choose to stay current or opt for specific versions tailored to their requirements.
 
 #### Improved Collaboration
 
@@ -693,7 +685,7 @@ Transparent and chronological versioning facilitates collaboration among develop
 
 #### Rapid Issue Resolution
 
-The "live at the head" concept accelerates issue resolution by providing prompt access to bug fixes and improvements. This agile approach ensures that users encounter fewer obstacles, leading to a more responsive and satisfying experience.
+The "release early, release often" concept accelerates issue resolution by providing prompt access to bug fixes and improvements. This agile approach ensures that users encounter fewer obstacles, leading to a more responsive and satisfying experience.
 
 #### User-Centric Updates
 
