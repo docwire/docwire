@@ -1,54 +1,340 @@
-## Unreleased
+## Version 2024.04.04
 
-- Upgrade to C++20 standard
-- Integration with OpenAI Vision added
-- openai::find transformer - find phrase, object or event in text or image via OpenAI
-- openai-find option added to DocWire CLI
-- local-processing option added to DocWire CLI - turn on/off local document processing including OCR
-- Running automatic tests is optional and enabled with VCPKG feature
-- Add image detail argumument to all openai transformers based on chat models and --openai-image-detail option to CLI
-- Make examples from README.md runnable as part of automatic tests
-- Introduce github actions strategy matrix for CI jobs
-- Enable Address and Thread sanitizers on all platforms
-- Enable Address and Thread sanitizers in release builds when vcpkg port sanitizers feature flags are enabled
-- Add arm64-osx-dynamic triplet to continuous integration to support Apple Silicon platforms (M1, M2, M3 etc)
-- Refactor DOC format parser: returning results incrementally
-- Refactor DOC format parser: improve parsing of tables, hyperlinks and paragraphs
-- Add support for headers and footers to plain text and html exporters.
-- Upgrade VCPKG to version 2024.01.12
-- Replace manual GitHub actions cache with VCPKG GitHub Actions cache feature (x-gha)
-- Add Ubuntu 20.22 GitHub runner to continuous integration (automatic tests)
-- Introduce compiler name and version suffixes to binary archive names
-- Add basic automatic test for running DocWire CLI
-- Add setup_env.sh and setup_env.ps1 scripts for setting up environment instead of docwire.sh and docwire.bat CLI wrappers
-- Add windows-2022 runner to continuous integration
-- Fix build errors on MSVC 2022
-- Add possibility to set default logging verbosity using DOCWIRE_LOG_VERBOSITY environment variable
-- Set DocWire logging severity to 'debug' if github actions debug logging is enabled
-- Move installing required specific for operation system dependencies to github actions configuration file
-- Add support for DOWNLOAD_VCPKG, EXPORT_VCPKG and CREATE_ARCHIVE environment variables in build.sh and build.ps1 scripts
-- Update installation documentation
-- Update list of available OpenAI GPT models
-- Replace VCPKG GitHub Actions cache feature (x-gha) with GitHub Packages nuget cache to allow public readonly cache usage
-- Replace runtime loading of parser providers plugins with compile-time templates to allow static linking of SDK
-- Remove deprecated SimpleExtractor class
-- Rename BasicParserProvider class to OfficeFormatsParserProvider and docwire_parsers library to docwire_office_formats
-- Remove deprecated Exception class
-- Fix threading data-race problem in PDF parser related to freetype library font list management
-- Fix threading data-race problem in OCR parser related to libtiff library
-- Fix threading data-race problem in ODF/OOXML parser related to std::regex
-- Make hardcoded 30 sec OCR timeout configurable (no timeout by default)
-- Replace all pthread calls with modern C++ threading (std::mutex, std::lock_guard, std::async, std::future)
-- Replace string constants and std::any attributes in document tags definitions with C++ structures and typed attributes
-- Refactor Input class, rename it to InputChainElement, add pipe operators to directly add input streams or file paths to parsing chain
-- Refactor Output class, rename it to OutputChainElement, add pipe operators to directly add output streams to parsing chain
-- Remove deprecated Metadata class, tag::Metadata is sufficient
-- Add common logging operators for std::variant and empty structs
-- Improve vcpkg install error handling in build.ps1
-- Add Valgrind memcheck, helgrind, and callgrind support to automatic tests (GitHub CI), vcpkg port and build.sh
-- Fix threading data-race problems in HTML parser, OOXML parser and cerr logging redirection feature (DOC parser was affected)
-- Fix libxml2 initialization and deinitialization to prevent memory leaks and threading data-race problems in XmlStream class
-- Fix memory leak in OCR parser
+The DocWire SDK is embracing a dynamic development approach with its new "Release Early, Release Often" strategy and date-based versioning. This shift aims to enhance user experience by ensuring rapid releases, allowing users to benefit from the latest advancements with greater transparency and efficiency. While this release focuses on adopting this new versioning strategy and updating documentation, it's important to note that the significant improvements in memory management, thread safety, document processing, and build configurations were introduced in earlier versions. These enhancements are documented in the ChangeLog, highlighting the SDK's ongoing evolution.
+
+> 🐰✨
+> In the world of code, where changes abound,
+> A rabbit hopped in, documentation found.
+> With every leap, a clearer path in sight,
+> Guiding through versions, making the future bright.
+> "Hop along," it cheered, with a joyful sound,
+> For in the realm of DocWire, clarity is crowned.
+> 🌟📚
+
+- **Documentation**
+	- Introduced a "Release Early, Release Often" strategy with date-based versioning for the DocWire SDK, enhancing transparency and ease of tracking updates.
+	- Updated the `ChangeLog` with details on significant enhancements including memory management, thread safety, document processing capabilities, and build configurations across various versions.
+- **Refactor**
+	- Modified the project's versioning approach in the `vcpkg.json` file to use "latest" as the version string, simplifying version management.
+	- Adjusted the `portfile.cmake` to reference the `master` branch directly, removing specific commit references for easier updates.
+
+## Version 2024.04.01
+
+This update enhances support for Valgrind tools (memcheck, helgrind, callgrind) across various components, improving memory checking and thread safety. It includes changes to build configurations, scripts, and source code to address memory leaks, data races, and simplify XML parsing management. Testing procedures have been updated to incorporate Valgrind tools, and patches have been applied for better compatibility and performance.
+
+> "In the realm of code, where the bytes do hop,  
+> A rabbit worked hard, in the garden non-stop.  
+> 🌱 With Valgrind in hand, and bugs in its sight,  
+> It leaped through the lines, from morning to night.  
+> 🐾 No leak too small, no race too fast,  
+> Ensuring the garden's safety, vast.  
+> 🥕 A cheer for the changes, so wisely sown,  
+> For a healthier codebase, robustly grown."
+
+- **New Features**
+	- Added support for additional sanitizers (`memcheck`, `helgrind`, `callgrind`) including Valgrind tools in build configurations and automatic tests.
+	- Introduced mutexes in various parsers for thread safety.
+	- Enhanced XML handling to prevent memory leaks.
+- **Bug Fixes**
+	- Fixed threading data-race issues in parsers and logging.
+	- Addressed memory leaks in XML processing.
+- **Refactor**
+	- Simplified error logging and XML parsing logic.
+	- Updated memory management for XML streams to use `std::unique_ptr`.
+- **Chores**
+	- Updated build scripts and configurations for improved testing and compatibility.
+	- Applied patches to address external library issues and Python incompatibilities in the build tool.
+
+## Version 2024.03.26
+
+This comprehensive update streamlines the codebase by enhancing file path handling, operation chaining, and streamlining output processes. It refactors document processing classes, introduces more structured and typed document element handling, and improves stream management. The changes aim to boost code readability, maintainability, and efficiency by leveraging modern C++ features and design patterns, significantly refining the development experience and output quality of the software.
+
+> In the realm of code where rabbits dare to hop,  
+> Changes vast and wide, improvements non-stop.  
+> With structured tags and streams so clear,  
+> The code now runs, without a fear.  
+> 🐰💻✨  
+> Through paths and chains, it finds its way,  
+> A brighter, sleeker, brand new day.
+
+- **New Features**
+    - Introduced structures for document elements to facilitate structured document creation and manipulation.
+    - Added common logging operators for enhanced debugging and error handling.
+    - Streamlined stream management in chat functionalities.
+    - Enhanced document processing with updated class refactoring and tagging system.
+- **Refactor**
+    - Simplified operation chaining and output handling in core functionalities.
+    - Updated document processing classes for better maintainability and readability.
+    - Refactored and renamed Input and Output classes for clearer code semantics.
+    - Enhanced parsing and output processes with modern C++ features.
+	- Updated CSS styling support in HTML documents for improved presentation.
+- **Bug Fixes**
+    - Fixed exception handling during command line argument parsing.
+- **Tests**
+    - Updated API tests to reflect new parsing and output stream handling methods.
+    - Modified HTML output tests to test new CSS styling changes.
+- **Chores**
+    - Removed deprecated code and files, improving codebase cleanliness.
+    - Added new utility function in build script for robust external command execution.
+
+## Version 2024.03.16
+
+The overarching theme of these changes involves enhancing thread safety and modernizing the codebase by transitioning from `pthread` to `std::mutex` for mutex management across various components. This includes adjustments in library linking, replacing `pthread_mutex_t` with `std::mutex`, and updating locking mechanisms to use `std::lock_guard`. These updates aim for better integration, dynamic configuration, and leveraging modern C++ standards for improved code maintainability and performance.
+
+> 🐰✨  
+> To the code we hop and bound,  
+> Where `pthread` once was found.  
+> Now `std::mutex` takes its place,  
+> With `std::lock_guard` to embrace.  
+> Thread safety, our newfound grace,  
+> In our codebase's every space.  
+> 🌟🐾
+
+- **Refactor**
+	- Enhanced thread safety across various parsers and components by standardizing the use of `std::mutex` for synchronization.
+	- Optimized library dependencies and linking for improved integration.
+	- Adjusted OCR timeout settings for better performance based on configuration values.
+- **Bug Fixes**
+	- Resolved potential threading issues by replacing outdated synchronization mechanisms with modern, safer alternatives.
+
+## Version 2024.03.14
+
+The project has undergone significant refactoring to enhance document processing capabilities by updating exception handling, refactoring class structures, and improving parser management. These changes aim to streamline document parsing, making the system more robust and easier to maintain.
+
+> 🐇✨📜  
+> In the realm of code, where parsers play,  
+> A rabbit hopped, refactoring away.  
+> "Out with the old, in with the new,  
+> Let's parse documents, efficient and true."  
+> With a twitch of its nose, and a flick of its ear,  
+> The code now runs smooth, oh so clear.  
+> 🌟🐾
+
+- **New Features**
+    - Enhanced document processing capabilities with improved format parsing.
+    - Introduced a new functionality for importing and parsing files based on file extension or content.
+- **Refactor**
+    - Replaced runtime loading of parser providers with compile-time templates for static linking, enhancing performance and reliability.
+    - Updated exception handling across various parsers for better clarity and error reporting.
+    - Transitioned to using `Importer` class across the application, removing dependencies on deprecated classes.
+- **Bug Fixes**
+    - Fixed inconsistencies in error handling by standardizing exceptions.
+- **Documentation**
+    - Updated documentation to reflect changes in parsing and error handling mechanisms.
+
+## Version 2024.03.01
+
+The recent updates focus on enhancing the GitHub Actions workflow and build scripts for better integration with GitHub Packages as a binary cache. It introduces a permissions adjustment, shifts from local caching strategies to leveraging GitHub Packages for NuGet, and emphasizes debugging capabilities. These changes aim to streamline development processes, improve cache utilization, and facilitate easier debugging.
+
+> 🐇✨  
+> In the realm of code where binaries dwell,  
+> A rabbit hopped, casting a magical spell.  
+> "Away with the old, in with the new,  
+> Let packages flow, and caches renew."  
+> With a twitch of its nose and a flick of its tail,  
+> Debugging turned simpler, and builds set to sail.  
+> 🌟📦
+
+- **New Features**
+	- Introduced GitHub Packages nuget cache for public readonly cache usage, enhancing build efficiency.
+- **Chores**
+	- Updated build configurations for both Windows and Linux environments to support the new caching mechanism.
+	- Adjusted environment variables and logging settings for improved debugging capabilities.
+
+## Version 2024.02.27
+
+The recent updates introduce an expansion and renaming of the supported large language models (LLMs), enhance OCR capabilities, refine text processing logic, and adjust sentiment detection to use a different LLM model. Additionally, there's an update in the documentation regarding available GPT models and minor modifications in the codebase, including a new instruction in the Classify constructor and an update in header file inclusion.
+
+> 🐰✨  
+> Changes are afoot, both big and small,  
+> In the world of code, where we heed the call.  
+> Models grow wise, and OCR sees clear,  
+> Sentiment's grasp, now draws near.  
+> Through files and docs, our journey we trace,  
+> A hop, a skip, in the digital space.  
+> 🥕🌟  
+
+- **New Features**
+	- Expanded and updated the list of supported LLM (Language Learning Models) for enhanced functionality.
+	- Enhanced OCR (Optical Character Recognition) capabilities for better text recognition.
+	- Refined text processing logic for improved efficiency.
+	- Adjusted sentiment detection to utilize a different LLM model for more accurate analysis.
+- **Documentation**
+	- Updated the documentation to reflect the new list of available OpenAI GPT models.
+- **Refactor**
+	- Modified the `Classify` constructor to include a new instruction for category name responses.
+	- Added a new header file inclusion for improved logging capabilities.
+
+## Version 2024.02.25
+
+The recent updates enhance the project's compatibility, performance, and user experience. Key improvements include expanding operating system support, refining build processes, and enhancing error handling. Additionally, the project's dependency management and testing capabilities have been significantly improved, ensuring a more robust and efficient development cycle. These changes collectively contribute to a more versatile and user-friendly software, catering to a wider audience and facilitating smoother project contributions.
+
+> 🐇✨
+> To the code that now flies on wings of change,  
+> A hop, a skip, in binary plains so wide and strange.  
+> Through windows new, and paths untrod,  
+> We weave our spells, in the realm of code, we prod.  
+> Let's cheer for the craft, so deftly enhanced,  
+> By paws that typed, and at problems glanced.  
+> 🚀🎉
+
+- **New Features**
+    - Added support for Windows 2022 in the build process.
+    - Introduced conditional cloning of a GitHub repository in build scripts.
+    - Enhanced testing and archiving logic in build scripts.
+    - Added export functionality for `docwire` and included version and ABI information in archives.
+    - Improved error handling and specific error messages in `docwire.cpp`.
+    - Updated environment setup scripts for better dependency handling and setup efficiency.
+
+- **Refactor**
+    - Adjusted package installations and environment variables based on the operating system in build configurations.
+    - Simplified compiler information handling and installation.
+    - Enhanced dynamic configuration capabilities in log verbosity settings.
+
+- **Bug Fixes**
+    - Fixed MSVC 2022 build errors and improved dependency handling in GitHub Actions.
+    - Updated conditional file renaming logic in `portfile.cmake` for better accuracy.
+
+- **Chores**
+    - Updated actions versions and modified the naming convention for job runs in GitHub workflows.
+    - Adjusted artifact upload action version and naming convention.
+
+## Version 2024.02.02
+
+This update brings significant improvements to document processing, with a focus on enhancing parsing capabilities and exporting functionalities. Key upgrades include incremental parsing results, better handling of tables, hyperlinks, paragraphs, and support for headers and footers in exports. Additionally, there's a notable change in the C++ standard for OSX targets, alongside comprehensive enhancements across parsing and writing components to streamline document handling and presentation.
+
+> In the realm of code, where documents roam,  
+> A rabbit hopped, making it home.  
+> Parsing tables, links, and more,  
+> With headers and footers, it did adore.  
+> 🐇💻✨  
+> "To improve, to enhance," it cheerfully sung,  
+> A leap for docs, a job well done.
+
+- **New Features**
+	- Added incremental parsing for DOC format files, enhancing the handling of tables, hyperlinks, and paragraphs.
+	- Introduced support for headers and footers in plain text and HTML exports.
+	- Implemented `<header>` and `<footer>` tags in HTML output for better document structure.
+- **Refactor**
+	- Modified code to use `enum class` for table state tracking, improving readability and maintainability.
+	- Updated text handling to process and tag content more efficiently.
+	- Adjusted HTML and plain text writers to handle new header and footer functionality.
+- **Tests**
+	- Updated HTML output in tests to reflect new parsing capabilities, including structured tables, paragraphs, and properly formatted hyperlinks.
+
+## Version 2024.01.25
+
+This update enhances the project's support for macOS, particularly for Apple Silicon (ARM64) platforms, by updating continuous integration configurations, documentation, and script adjustments. It ensures broader compatibility and efficiency in the build process, addressing the evolving landscape of macOS development environments.
+
+> In the realm of code, where the bits do hop,  
+> A rabbit worked, never wishing to stop.  
+> 🍏 For macOS, it leaped, with a bound so light,  
+> Ensuring the builds, in the night, were right.  
+> "To ARM64, we go!" it cheerfully said,  
+> With every line of code, it merrily led.  
+> 🐾 Through fields of green, where the data does flow,  
+> Our CodeRabbit thrives, making the CI glow.  
+
+- **New Features**
+	- Expanded continuous integration support for Apple Silicon platforms.
+	- Updated documentation for installing on different platforms with specific configurations.
+- **Documentation**
+	- Added platform-specific installation instructions in the README.
+- **Bug Fixes**
+	- Fixed a formatting issue in log normalization.
+- **Tests**
+	- Updated a test log entry for improved clarity.
+
+## Version 2024.01.22
+
+The recent modifications enhance the project's robustness and adaptability across various environments. By refining the build process, these changes incorporate dynamic feature selection and bolster code safety with the introduction of Address and Thread sanitizers. This comprehensive update ensures a more reliable and secure codebase, catering to diverse platforms and configurations. In addition efficiency boost in HTML parsing is introduced by optimizing whitespace management.
+
+> 🐇✨  
+> In the code's weave, under the moon's glow,  
+> A rabbit hops, leaving trails in the snow.  
+> With each bound and leap, sanitizers in tow,  
+> Ensuring the code, safe and sound, will grow.  
+> Oh, how the digital garden does flourish and flow!  
+> 🌟🐾
+
+- **New Features**
+	- Enabled Address and Thread sanitizers when specific feature flags are enabled, enhancing security and stability.
+- **Refactor**
+	- Improved efficiency and readability in HTML parser whitespace handling.
+- **Chores**
+	- Updated build configurations to support a wider range of operating systems and improve code safety with sanitizers.
+
+## Version 2024.01.21
+
+The recent modifications introduce a significant enhancement to the project's continuous integration (CI) process. By incorporating a matrix strategy within the GitHub Actions workflow, the build process now efficiently runs across different operating systems and utilizes various sanitizers. This update not only streamlines the job structure and artifact handling but also marks an improvement in the project's documentation to reflect these changes.
+
+> 🐇✨  
+> In the land of code and byte,  
+> A rabbit hopped into the night.  
+> With a matrix wide and vast,  
+> It refactored builds to run so fast.  
+> Across the OSs, it did dance,  
+> Giving every change a chance.  
+> 🌟📜 "To improve is to change," it squeaked with glee,  
+> "Behold the new CI strategy!"  
+
+- **Refactor**
+	- Improved the CI build process with a matrix strategy for various operating systems and sanitizers.
+
+## Version 2024.01.20
+
+Significantly enhances the capabilities of the DocWire SDK by integrating it with OpenAI Vision. The integration introduces advanced features and optimizations, including improved AI capabilities. The changes also include updates to environment variable handling, particularly the OPENAI_API_KEY, and the introduction of new classes and methods to support image processing and analysis. The upgrade to C++20 and the addition of functionalities such as the openai::find transformer, extended CLI options, and enhanced openai transformers mark a significant leap in the SDK's capabilities. Additionally, the new version includes improvements to testing configurations and dependencies, aiming for a robust and reliable development environment.
+
+> In the garden of code, where ideas take flight,  
+> DocWire blooms, a beacon of light.  
+> With AI's touch, and vision so keen,  
+> It sees the unseen, in the digital scene.  
+> Quantum dreams, in documentation lie,  
+> IoT whispers, beneath the digital sky.  
+> Though not in code, their promise we hold,  
+> A future of tech, daring and bold.  
+> Through the wires, data takes its form,  
+> In DocWire's embrace, it's transformed.  
+> A digital garden, ever so bright,  
+> Where bytes and bits, take their flight.  
+
+- **New Features**
+	- Enhanced DocWire SDK with AI capabilities
+	- Integrated C++20 and OpenAI Vision for advanced data processing.
+	- Added `openai-find` option for text and image search.
+	- Implemented base64 encoding and various image detail handling in chat functionalities.
+	- Expanded CLI options and made README examples testable.
+
+- **Documentation**
+	- Updated README with new capabilities and integration details.
+
+- **Refactor**
+	- Improved handling of environment variables and test configurations.
+
+- **Tests**
+	- Conditionally skipped tests based on the availability of `OPENAI_API_KEY`.
+	- Updated test configurations for enhanced testing capabilities.
+
+- **Bug Fixes**
+	- Fixed handling of `OPENAI_API_KEY` across various scripts and configurations.
+
+## Version 2024.01.11
+
+This upgrade enhances DocWire SDK's capabilities in handling a wide range of data processing tasks, including robust HTTP capabilities, comprehensive network APIs, and efficient web data extraction. Upgrade to the C++20 standard is a significant part of the changes in the release.
+
+> In the digital forge, where code takes flight,  
+> DocWire embarks on a journey, bold and bright.  
+> With C++20, it weaves its tale,  
+> A modern saga, where efficiency prevails.  
+> From text to web, it parses with grace,  
+> Unlocking data, setting the pace.  
+> A beacon of innovation, in the code sea,  
+> DocWire shines, with C++20.  
+
+- **Build and Documentation Updates:** Updated CMake configurations and improved project documentation. The project now utilizes the C++20 standard, integrating advanced features for more efficient data processing.
+- **Core Enhancements:** Introduced and refined functionalities for data analysis, attachment processing, and basic parsing.
+- **Parsing and Exporting:** Expanded capabilities for document parsing (including EML, HTML, iWork, ODF, OOXML, and PDF formats) and exporting data in CSV, HTML, and plain text formats.
+- **Utility Improvements:** Enhanced logging, metadata handling, and miscellaneous utility functions for better performance and usability.
 
 ## Version 2024.01.05
 

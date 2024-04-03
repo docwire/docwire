@@ -4,8 +4,6 @@ else()
 	vcpkg_from_github(
 		OUT_SOURCE_PATH SOURCE_PATH
 		REPO docwire/docwire
-		REF 2024.01.05
-		SHA512 8d16d7172897775adbbe8891ddb7326708a0e7d0a23961294ec1251af95b4b0af5689066594495b9327d50183080d98baa1d6f2002cdc1b285cef3683bc7af42
 		HEAD_REF master
 	)
 endif()
