@@ -1,3 +1,23 @@
+## Version 2024.04.04
+
+The DocWire SDK is embracing a dynamic development approach with its new "Release Early, Release Often" strategy and date-based versioning. This shift aims to enhance user experience by ensuring rapid releases, allowing users to benefit from the latest advancements with greater transparency and efficiency. While this release focuses on adopting this new versioning strategy and updating documentation, it's important to note that the significant improvements in memory management, thread safety, document processing, and build configurations were introduced in earlier versions. These enhancements are documented in the ChangeLog, highlighting the SDK's ongoing evolution.
+
+> 🐰✨
+> In the world of code, where changes abound,
+> A rabbit hopped in, documentation found.
+> With every leap, a clearer path in sight,
+> Guiding through versions, making the future bright.
+> "Hop along," it cheered, with a joyful sound,
+> For in the realm of DocWire, clarity is crowned.
+> 🌟📚
+
+- **Documentation**
+	- Introduced a "Release Early, Release Often" strategy with date-based versioning for the DocWire SDK, enhancing transparency and ease of tracking updates.
+	- Updated the `ChangeLog` with details on significant enhancements including memory management, thread safety, document processing capabilities, and build configurations across various versions.
+- **Refactor**
+	- Modified the project's versioning approach in the `vcpkg.json` file to use "latest" as the version string, simplifying version management.
+	- Adjusted the `portfile.cmake` to reference the `master` branch directly, removing specific commit references for easier updates.
+
 ## Version 2024.04.01
 
 This update enhances support for Valgrind tools (memcheck, helgrind, callgrind) across various components, improving memory checking and thread safety. It includes changes to build configurations, scripts, and source code to address memory leaks, data races, and simplify XML parsing management. Testing procedures have been updated to incorporate Valgrind tools, and patches have been applied for better compatibility and performance.
