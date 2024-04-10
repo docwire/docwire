@@ -26,12 +26,6 @@ public:
 	Summarize(const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
 	Summarize(const Summarize& other);
 	virtual ~Summarize();
-
-	/**
-	* @brief Creates clone of the Summarize
-	* @return new Summarize
-	*/
-	Summarize* clone() const override;
 };
 
 } // namespace openai

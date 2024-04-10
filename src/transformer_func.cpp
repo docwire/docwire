@@ -66,10 +66,4 @@ void TransformerFunc::process(Info &info) const
   impl->transform(info);
 }
 
-TransformerFunc*
-TransformerFunc::clone() const
-{
-  return new TransformerFunc(*this);
-}
-
 } // namespace docwire

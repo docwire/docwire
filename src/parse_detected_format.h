@@ -66,11 +66,6 @@ class ParseDetectedFormat : public Importer
       : Importer(parameters)
     {}
 
-    ParseDetectedFormat<ProviderTypeName, ProviderTypeNames...>* clone() const override
-    {
-      return new ParseDetectedFormat<ProviderTypeName, ProviderTypeNames...>(*this);
-    }
-
   /**
    * @brief Returns parser builder for given extension type or nullopt if no parser is found.
    * @param file_name file name with extension (e.g. ".txt", ".docx", etc.)

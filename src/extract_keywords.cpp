@@ -37,10 +37,5 @@ ExtractKeywords::~ExtractKeywords()
 {
 }
 
-ExtractKeywords* ExtractKeywords::clone() const
-{
-	return new ExtractKeywords(*this);
-}
-
 } // namespace openai
 } // namespace docwire

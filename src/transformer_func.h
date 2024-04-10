@@ -59,12 +59,6 @@ public:
     return false;
   }
 
-  /**
-   * @brief Creates clone of the TransformerFunc
-   * @return new TransformerFunc
-   */
-  TransformerFunc* clone() const override;
-
 private:
   class Implementation;
   std::unique_ptr<Implementation> impl;

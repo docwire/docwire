@@ -82,10 +82,4 @@ MetaDataWriter::write_to(const Tag& tag, std::ostream &file)
   }
 }
 
-Writer*
-MetaDataWriter::clone() const
-{
-  return new MetaDataWriter(*this);
-}
-
 } // namespace docwire

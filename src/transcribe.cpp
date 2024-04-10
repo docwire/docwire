@@ -73,10 +73,5 @@ void Transcribe::process(Info &info) const
 	emit(close_doc_info);
 }
 
-Transcribe* Transcribe::clone() const
-{
-	return new Transcribe(*this);
-}
-
 } // namespace openai
 } // namespace docwire

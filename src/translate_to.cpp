@@ -34,10 +34,5 @@ TranslateTo::~TranslateTo()
 {
 }
 
-TranslateTo* TranslateTo::clone() const
-{
-	return new TranslateTo(*this);
-}
-
 } // namespace openai
 } // namespace docwire

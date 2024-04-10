@@ -34,10 +34,5 @@ Find::~Find()
 {
 }
 
-Find* Find::clone() const
-{
-	return new Find(*this);
-}
-
 } // namespace openai
 } // namespace docwire

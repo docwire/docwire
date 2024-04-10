@@ -34,10 +34,5 @@ Summarize::~Summarize()
 {
 }
 
-Summarize* Summarize::clone() const
-{
-	return new Summarize(*this);
-}
-
 } // namespace openai
 } // namespace docwire

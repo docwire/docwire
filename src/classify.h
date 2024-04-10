@@ -26,12 +26,6 @@ public:
 	Classify(const std::set<std::string>& categories, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
 	Classify(const Classify& other);
 	virtual ~Classify();
-
-	/**
-	* @brief Creates clone of the Classify
-	* @return new Classify
-	*/
-	Classify* clone() const override;
 };
 
 } // namespace openai

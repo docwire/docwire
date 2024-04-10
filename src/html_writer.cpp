@@ -210,10 +210,4 @@ void HtmlWriter::write_to(const Tag& tag, std::ostream &stream)
 	impl->write_to(tag, stream);
 }
 
-Writer*
-HtmlWriter::clone() const
-{
-return new HtmlWriter(*this);
-}
-
 } // namespace docwire

@@ -39,12 +39,6 @@ public:
 		return false;
 	}
 
-	/**
-	* @brief Creates clone of the Transcribe
-	* @return new Transcribe
-	*/
-	Transcribe* clone() const override;
-
 	DOCWIRE_EXCEPTION_DEFINE(HttpError, RuntimeError);
 
 private:

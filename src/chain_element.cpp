@@ -58,18 +58,6 @@ ChainElement::operator=(const ChainElement &chain_element)
   return *this;
 }
 
-ParsingChain
-ChainElement::operator|(ChainElement& chainElement)
-{
-  return ParsingChain(*this, chainElement);
-}
-
-ParsingChain
-ChainElement::operator|(ChainElement&& chainElement)
-{
-  return ParsingChain(*this, chainElement);
-}
-
 void
 ChainElement::connect(const ChainElement &chain_element)
 {

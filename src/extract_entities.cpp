@@ -34,10 +34,5 @@ ExtractEntities::~ExtractEntities()
 {
 }
 
-ExtractEntities* ExtractEntities::clone() const
-{
-	return new ExtractEntities(*this);
-}
-
 } // namespace openai
 } // namespace docwire

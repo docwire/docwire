@@ -14,9 +14,9 @@
 
 namespace docwire
 {
-  ParsingChain::ParsingChain(ChainElement& element1, ChainElement& element2)
-  : first_element(std::shared_ptr<ChainElement>(element1.clone())),
-    last_element(std::shared_ptr<ChainElement>(element2.clone())),
+
+  ParsingChain::ParsingChain(std::shared_ptr<ChainElement> element1, std::shared_ptr<ChainElement> element2)
+  : first_element(element1), last_element(element2),
     m_input(nullptr)
   {
     first_element->connect(*last_element);
@@ -24,24 +24,16 @@ namespace docwire
     element_list = {first_element, last_element};
   }
 
-  ParsingChain::ParsingChain(const ChainElement& element)
-  : first_element(std::shared_ptr<ChainElement>(element.clone())),
-    m_input(nullptr)
-  {
-    element_list = {first_element};
-  }
-
-  ParsingChain::ParsingChain(const InputChainElement& input, ChainElement& element)
-  : m_input(std::make_shared<InputChainElement>(input)),
-    first_element(std::shared_ptr<ChainElement>(element.clone()))
+  ParsingChain::ParsingChain(std::shared_ptr<InputChainElement> input, std::shared_ptr<ChainElement> element)
+  : m_input(input),
+    first_element(element)
   {
     element_list = {first_element};
   }
 
   ParsingChain&
-  ParsingChain::operator|(const ChainElement& element)
+  ParsingChain::operator|(std::shared_ptr<ChainElement> element_ptr)
   {
-    auto element_ptr = std::shared_ptr<ChainElement>(element.clone());
     element_list.push_back(element_ptr);
     if (last_element)
     {
@@ -63,12 +55,6 @@ namespace docwire
       }
     }
     return *this;
-  }
-
-  ParsingChain&
-  ParsingChain::operator|(ChainElement&& element)
-  {
-    return operator|(element);
   }
 
   void

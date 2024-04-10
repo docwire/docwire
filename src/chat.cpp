@@ -193,10 +193,5 @@ void Chat::process(Info &info) const
 	emit(new_info);
 }
 
-Chat* Chat::clone() const
-{
-	return new Chat(*this);
-}
-
 } // namespace openai
 } // namespace docwire

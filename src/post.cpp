@@ -154,10 +154,5 @@ Post::process(Info &info) const
 	emit(new_info);
 }
 
-Post* Post::clone() const
-{
-	return new Post(*this);
-}
-
 } // namespace http
 } // namespace docwire

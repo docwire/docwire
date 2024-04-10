@@ -53,12 +53,6 @@ public:
 		return false;
 	}
 
-	/**
-	* @brief Creates clone of the Chat
-	* @return new Chat
-	*/
-	Chat* clone() const override;
-
 	DOCWIRE_EXCEPTION_DEFINE(HttpError, RuntimeError);
 	DOCWIRE_EXCEPTION_DEFINE(ParseResponseError, RuntimeError);
 	DOCWIRE_EXCEPTION_DEFINE(IncorrectArgumentValue, LogicError);

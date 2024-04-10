@@ -49,12 +49,6 @@ public:
 		return false;
 	}
 
-	/**
-	* @brief Creates clone of the TextToSpeech
-	* @return new TextToSpeech
-	*/
-	TextToSpeech* clone() const override;
-
 	DOCWIRE_EXCEPTION_DEFINE(HttpError, RuntimeError);
 	DOCWIRE_EXCEPTION_DEFINE(ParseResponseError, RuntimeError);
 

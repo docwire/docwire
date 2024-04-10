@@ -53,10 +53,4 @@ CsvWriter::write_to(const Tag& tag, std::ostream &stream)
   );
 }
 
-Writer*
-CsvWriter::clone() const
-{
-  return new CsvWriter(*this);
-}
-
 } // namespace docwire

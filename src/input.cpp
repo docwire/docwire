@@ -16,32 +16,6 @@
 
 using namespace docwire;
 
-ParsingChain
-InputChainElement::operator|(ChainElement &chainElement) const
-{
-  return ParsingChain(*this, chainElement);
-}
-
-ParsingChain
-InputChainElement::operator|(ChainElement &&chainElement) const
-{
-  return ParsingChain(*this, chainElement);
-}
-
-ParsingChain
-InputChainElement::operator|(ParsingChain &parsingChain)
-{
-  parsingChain.process(*this);
-  return parsingChain;
-}
-
-ParsingChain
-InputChainElement::operator|(ParsingChain &&parsingChain)
-{
-  parsingChain.process(*this);
-  return parsingChain;
-}
-
 void
 InputChainElement::process(ChainElement& chain_element) const
 {

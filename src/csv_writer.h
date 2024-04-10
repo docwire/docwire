@@ -30,10 +30,6 @@ public:
    * @param stream output stream
    */
   void write_to(const Tag& tag, std::ostream &stream) override;
-  /**
-   * @brief creates a new instance of HtmlWriter
-   */
-  virtual Writer* clone() const override;
 
 private:
   bool m_in_table { false };

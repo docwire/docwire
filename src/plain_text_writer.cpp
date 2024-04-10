@@ -523,10 +523,4 @@ PlainTextWriter::write_to(const Tag& tag, std::ostream &stream)
   impl->write_to(tag, stream);
 }
 
-Writer*
-PlainTextWriter::clone() const
-{
-  return new PlainTextWriter();
-}
-
 } // namespace docwire

@@ -135,10 +135,5 @@ void TextToSpeech::process(Info &info) const
 	emit(new_info);
 }
 
-TextToSpeech* TextToSpeech::clone() const
-{
-	return new TextToSpeech(*this);
-}
-
 } // namespace openai
 } // namespace docwire

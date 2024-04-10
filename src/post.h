@@ -49,12 +49,6 @@ public:
 		return false;
 	}
 
-	/**
-	* @brief Creates clone of the Post
-	* @return new Post
-	*/
-	Post* clone() const override;
-
 	DOCWIRE_EXCEPTION_DEFINE(RequestFailed, RuntimeError);
 	DOCWIRE_EXCEPTION_DEFINE(RequestIncorrect, LogicError);
 	DOCWIRE_EXCEPTION_DEFINE(FileTagIncorrect, LogicError);

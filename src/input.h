@@ -44,52 +44,62 @@ public:
   : m_tag{tag::File{.source=std::move(path)}}
   {}
 
-  ParsingChain operator|(ChainElement &chainElement) const;
-
-  ParsingChain operator|(ChainElement &&chainElement) const;
-
-  ParsingChain operator|(ParsingChain &parsingChain);
-
-  ParsingChain operator|(ParsingChain &&parsingChain);
-
   void process(ChainElement& chain_element) const;
 
 private:
   tag::File m_tag;
 };
 
+inline std::shared_ptr<ParsingChain> operator|(InputChainElement&& input, std::shared_ptr<ParsingChain> parsingChain)
+{
+  parsingChain->process(input);
+  return parsingChain;
+}
+
+template<ChainElementDerived T>
+std::shared_ptr<ParsingChain> operator|(std::shared_ptr<InputChainElement> input, std::shared_ptr<T> chainElement)
+{
+  return std::make_shared<ParsingChain>(input, chainElement);
+}
+
+template<ChainElementDerived T>
+std::shared_ptr<ParsingChain> operator|(InputChainElement&& input, T&& chainElement)
+{
+  return std::make_shared<ParsingChain>(std::make_shared<InputChainElement>(std::move(input)), std::make_shared<T>(std::move(chainElement)));
+}
+
 template<IStreamDerived T, ParsingChainOrChainElement U>
-ParsingChain operator|(std::shared_ptr<T> stream, U& chain_element)
+std::shared_ptr<ParsingChain> operator|(std::shared_ptr<T> stream, std::shared_ptr<U> chain_element)
 {
   return InputChainElement(stream) | chain_element;
 }
 
 template<IStreamDerived T, ParsingChainOrChainElement U>
-ParsingChain operator|(std::shared_ptr<T> stream, U&& chain_element)
+std::shared_ptr<ParsingChain> operator|(std::shared_ptr<T> stream, U&& chain_element)
 {
   return InputChainElement(stream) | std::move(chain_element);
 }
 
 template<IStreamDerived T, ParsingChainOrChainElement U>
-ParsingChain operator|(T&& stream, U& chain_element)
+std::shared_ptr<ParsingChain> operator|(T&& stream, std::shared_ptr<U> chain_element)
 {
   return InputChainElement(std::move(stream)) | chain_element;
 }
 
 template<IStreamDerived T, ParsingChainOrChainElement U>
-ParsingChain operator|(T&& stream, U&& chain_element)
+std::shared_ptr<ParsingChain> operator|(T&& stream, U&& chain_element)
 {
   return InputChainElement(std::move(stream)) | std::move(chain_element);
 }
 
 template<ParsingChainOrChainElement U>
-inline ParsingChain operator|(std::filesystem::path&& path, U& chain_element)
+inline std::shared_ptr<ParsingChain> operator|(std::filesystem::path&& path, std::shared_ptr<U> chain_element)
 {
   return InputChainElement(std::move(path)) | chain_element;
 }
 
 template<ParsingChainOrChainElement U>
-inline ParsingChain operator|(std::filesystem::path&& path, U&& chain_element)
+inline std::shared_ptr<ParsingChain> operator|(std::filesystem::path&& path, U&& chain_element)
 {
   return InputChainElement(std::move(path)) | std::move(chain_element);
 }

@@ -248,9 +248,4 @@ DecompressArchives::process(Info &info) const
 	}
 }
 
-DecompressArchives* DecompressArchives::clone() const
-{
-	return new DecompressArchives(*this);
-}
-
 } // namespace docwire

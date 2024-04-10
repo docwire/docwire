@@ -62,11 +62,6 @@ public:
 
   virtual ~OutputChainElement() = default;
 
-  OutputChainElement* clone() const override
-  {
-    return new OutputChainElement(*this);
-  }
-
   bool is_leaf() const override
   {
     return true;
@@ -79,38 +74,37 @@ private:
 };
 
 template<ParsingChainOrChainElement E, OStreamDerived S>
-ParsingChain operator|(E& element_or_chain, std::shared_ptr<S> stream)
+std::shared_ptr<ParsingChain> operator|(std::shared_ptr<E> element_or_chain, std::shared_ptr<S> stream)
 {
   return element_or_chain | OutputChainElement(stream);
 }
 
 template<ParsingChainOrChainElement E, OStreamDerived S>
-ParsingChain operator|(E&& element_or_chain, std::shared_ptr<S> stream)
+std::shared_ptr<ParsingChain> operator|(E&& element_or_chain, std::shared_ptr<S> stream)
 {
   return std::move(element_or_chain) | OutputChainElement(stream);
 }
 
 template<ParsingChainOrChainElement E, OStreamDerived S>
-ParsingChain operator|(E& element_or_chain, S&& stream)
+std::shared_ptr<ParsingChain> operator|(std::shared_ptr<E> element_or_chain, S&& stream)
 {
   return element_or_chain | OutputChainElement(std::move(stream));
 }
 
 template<ParsingChainOrChainElement E, OStreamDerived S>
-ParsingChain operator|(E&& element_or_chain, S&& stream)
+std::shared_ptr<ParsingChain> operator|(E&& element_or_chain, S&& stream)
 {
   return std::move(element_or_chain) | OutputChainElement(std::move(stream));
 }
 
-
 template<ParsingChainOrChainElement E, OStreamDerived S>
-ParsingChain operator|(E& element_or_chain, S& stream)
+std::shared_ptr<ParsingChain> operator|(std::shared_ptr<E> element_or_chain, S& stream)
 {
   return element_or_chain | OutputChainElement(stream);
 }
 
 template<ParsingChainOrChainElement E, OStreamDerived S>
-ParsingChain operator|(E&& element_or_chain, S& stream)
+std::shared_ptr<ParsingChain> operator|(E&& element_or_chain, S& stream)
 {
   return std::move(element_or_chain) | OutputChainElement(stream);
 }
