@@ -13,6 +13,7 @@
 #define DOCWIRE_IWORK_PARSER_H
 
 #include "exception.h"
+#include "parser.h"
 #include <string>
 #include "tags.h"
 #include <vector>
@@ -23,20 +24,26 @@ namespace docwire
 struct FormattingStyle;
 class Metadata;
 
-class IWorkParser
+class IWorkParser : public Parser
 {
 	private:
 		struct Implementation;
 		Implementation* impl;
 
 	public:
-		IWorkParser(const std::string& file_name);
-		IWorkParser(const char* buffer, size_t size);
+		IWorkParser(const std::string& file_name, const Importer* inImporter = nullptr);
+		IWorkParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
 		~IWorkParser();
     static std::vector<std::string> getExtensions() {return {"pages", "key", "numbers"};}
 		bool isIWork();
-		std::string plainText(const FormattingStyle& formatting);
-		tag::Metadata metaData();
+		std::string plainText(const FormattingStyle& formatting) const;
+		tag::Metadata metaData() const;
+
+		void parse() const override
+		{
+			sendTag(tag::Text{.text = plainText(getFormattingStyle())});
+			sendTag(metaData());
+		}
 
 	DOCWIRE_EXCEPTION_DEFINE(UnzipError, RuntimeError);
 	DOCWIRE_EXCEPTION_DEFINE(ParsingError, RuntimeError);

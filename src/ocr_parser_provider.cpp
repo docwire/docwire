@@ -31,7 +31,7 @@ OcrParserProvider::findParserByExtension(const std::string &inExtension) const
 {
   if (isExtensionInVector(inExtension, OCRParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<OCRParser>>>();
+    return std::make_unique<ParserBuilderWrapper<OCRParser>>();
   }
   return nullptr;
 }
@@ -57,7 +57,7 @@ OcrParserProvider::findParserByData(const std::vector<char>& buffer) const
 {
   if (is_valid<OCRParser, &OCRParser::isOCR>(buffer.data(), buffer.size()))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<OCRParser>>>();
+    return std::make_unique<ParserBuilderWrapper<OCRParser>>();
   }
   return nullptr;
 }

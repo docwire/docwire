@@ -671,7 +671,8 @@ struct XLSBParser::Implementation
 	}
 };
 
-XLSBParser::XLSBParser(const std::string& file_name)
+XLSBParser::XLSBParser(const std::string& file_name, const Importer* inImporter)
+	: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -689,7 +690,8 @@ XLSBParser::XLSBParser(const std::string& file_name)
 	}
 }
 
-XLSBParser::XLSBParser(const char *buffer, size_t size)
+XLSBParser::XLSBParser(const char *buffer, size_t size, const Importer* inImporter)
+	: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -737,7 +739,7 @@ bool XLSBParser::isXLSB()
 	return true;
 }
 
-tag::Metadata XLSBParser::metaData()
+tag::Metadata XLSBParser::metaData() const
 {
 	tag::Metadata metadata;
 	ZipReader unzip;
@@ -774,7 +776,7 @@ tag::Metadata XLSBParser::metaData()
 	return metadata;
 }
 
-std::string XLSBParser::plainText(const FormattingStyle& formatting)
+std::string XLSBParser::plainText(const FormattingStyle& formatting) const
 {
 	docwire_log(debug) << "Using XLSB parser.";
 	std::string text;

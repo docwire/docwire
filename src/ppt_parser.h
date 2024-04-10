@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_PPT_PARSER_H
 #define DOCWIRE_PPT_PARSER_H
 
+#include "parser.h"
 #include <string>
 #include "tags.h"
 #include <vector>
@@ -22,20 +23,26 @@ namespace docwire
 struct FormattingStyle;
 struct Metadata;
 
-class PPTParser
+class PPTParser : public Parser
 {
 	private:
 		struct Implementation;
 		Implementation* impl;
 
 	public:
-		PPTParser(const std::string& file_name);
-		PPTParser(const char* buffer, size_t size);
+		PPTParser(const std::string& file_name, const Importer* inImporter = nullptr);
+		PPTParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
 		~PPTParser();
     static std::vector<std::string> getExtensions() {return {"ppt", "pps"};}
 		bool isPPT();
-		std::string plainText(const FormattingStyle& formatting);
-		tag::Metadata metaData();
+		std::string plainText(const FormattingStyle& formatting) const;
+		tag::Metadata metaData() const;
+
+		void parse() const override
+		{
+			sendTag(tag::Text{.text = plainText(getFormattingStyle())});
+			sendTag(metaData());
+		}
 };
 
 } // namespace docwire

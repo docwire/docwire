@@ -2061,7 +2061,8 @@ struct IWorkParser::Implementation
 	}
 };
 
-IWorkParser::IWorkParser(const std::string& file_name)
+IWorkParser::IWorkParser(const std::string& file_name, const Importer* inImporter)
+	: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -2079,7 +2080,8 @@ IWorkParser::IWorkParser(const std::string& file_name)
 	}
 }
 
-IWorkParser::IWorkParser(const char* buffer, size_t size)
+IWorkParser::IWorkParser(const char* buffer, size_t size, const Importer* inImporter)
+	: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -2138,7 +2140,7 @@ bool IWorkParser::isIWork()
 	return true;
 }
 
-tag::Metadata IWorkParser::metaData()
+tag::Metadata IWorkParser::metaData() const
 {
 	tag::Metadata metadata;
 	ZipReader unzip;
@@ -2169,7 +2171,7 @@ tag::Metadata IWorkParser::metaData()
 	}
 }
 
-std::string IWorkParser::plainText(const FormattingStyle& formatting)
+std::string IWorkParser::plainText(const FormattingStyle& formatting) const
 {
 	docwire_log(debug) << "Using iWork parser.";
 	std::string text;

@@ -854,7 +854,8 @@ struct XLSParser::Implementation
 	}
 };
 
-XLSParser::XLSParser(const std::string& file_name)
+XLSParser::XLSParser(const std::string& file_name, const Importer* inImporter)
+	: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -874,7 +875,8 @@ XLSParser::XLSParser(const std::string& file_name)
 	}
 }
 
-XLSParser::XLSParser(const char *buffer, size_t size)
+XLSParser::XLSParser(const char *buffer, size_t size, const Importer* inImporter)
+	: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -938,7 +940,7 @@ bool XLSParser::isXLS()
 	}
 }
 
-std::string XLSParser::plainText(const FormattingStyle& formatting)
+std::string XLSParser::plainText(const FormattingStyle& formatting) const
 {
 	ThreadSafeOLEStorage* storage = NULL;
 	try
@@ -963,7 +965,7 @@ std::string XLSParser::plainText(const FormattingStyle& formatting)
 	}
 }
 
-std::string XLSParser::plainText(ThreadSafeOLEStorage& storage, const FormattingStyle& formatting)
+std::string XLSParser::plainText(ThreadSafeOLEStorage& storage, const FormattingStyle& formatting) const
 {
 	docwire_log(debug) << "Using XLS parser.";
 
@@ -997,7 +999,7 @@ std::string XLSParser::plainText(ThreadSafeOLEStorage& storage, const Formatting
 	}
 }
 
-tag::Metadata XLSParser::metaData()
+tag::Metadata XLSParser::metaData() const
 {
 	ThreadSafeOLEStorage* storage = NULL;
 	tag::Metadata meta;

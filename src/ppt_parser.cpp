@@ -275,7 +275,8 @@ struct PPTParser::Implementation
 	}
 };
 
-PPTParser::PPTParser(const std::string& file_name)
+PPTParser::PPTParser(const std::string& file_name, const Importer* inImporter)
+	: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -293,7 +294,8 @@ PPTParser::PPTParser(const std::string& file_name)
 	}
 }
 
-PPTParser::PPTParser(const char *buffer, size_t size)
+PPTParser::PPTParser(const char *buffer, size_t size, const Importer* inImporter)
+	: Parser(inImporter)
 {
 	impl = NULL;
 	try
@@ -351,7 +353,7 @@ bool PPTParser::isPPT()
 	}
 }
 
-std::string PPTParser::plainText(const FormattingStyle& formatting)
+std::string PPTParser::plainText(const FormattingStyle& formatting) const
 {	
 	docwire_log(debug) << "Using PPT parser.";
 
@@ -397,7 +399,7 @@ std::string PPTParser::plainText(const FormattingStyle& formatting)
 	}
 }
 
-tag::Metadata PPTParser::metaData()
+tag::Metadata PPTParser::metaData() const
 {
 	tag::Metadata meta;
 	ThreadSafeOLEStorage* storage = NULL;

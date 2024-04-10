@@ -33,11 +33,11 @@ MailParserProvider::findParserByExtension(const std::string &inExtension) const
 {
   if (isExtensionInVector(inExtension, EMLParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<EMLParser>>>();
+    return std::make_unique<ParserBuilderWrapper<EMLParser>>();
   }
   else if(isExtensionInVector(inExtension, PSTParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<PSTParser>>>();
+    return std::make_unique<ParserBuilderWrapper<PSTParser>>();
   }
   return nullptr;
 }
@@ -63,11 +63,11 @@ MailParserProvider::findParserByData(const std::vector<char>& buffer) const
 {
   if (is_valid<EMLParser, &EMLParser::isEML>(buffer.data(), buffer.size()))
   {
-    return std::make_unique<ParserBuilderWrapper<wrapper_parser_creator<EMLParser>>>();
+    return std::make_unique<ParserBuilderWrapper<EMLParser>>();
   }
   else if (is_valid<PSTParser, &PSTParser::isPST>(buffer.data(), buffer.size()))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<PSTParser>>>();
+    return std::make_unique<ParserBuilderWrapper<PSTParser>>();
   }
   return nullptr;
 }

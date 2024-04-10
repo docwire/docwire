@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_XLSB_PARSER_H
 #define DOCWIRE_XLSB_PARSER_H
 
+#include "parser.h"
 #include <string>
 #include "tags.h"
 #include <vector>
@@ -21,20 +22,26 @@ namespace docwire
 
 struct FormattingStyle;
 
-class XLSBParser
+class XLSBParser : public Parser
 {
 	private:
 		struct Implementation;
 		Implementation* impl;
 
 	public:
-		XLSBParser(const std::string& file_name);
-		XLSBParser(const char* buffer, size_t size);
+		XLSBParser(const std::string& file_name, const Importer* inImporter = nullptr);
+		XLSBParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
 		~XLSBParser();
     static std::vector<std::string> getExtensions() {return {"xlsb"};}
 		bool isXLSB();
-		std::string plainText(const FormattingStyle& formatting);
-		tag::Metadata metaData();
+		std::string plainText(const FormattingStyle& formatting) const;
+		tag::Metadata metaData() const;
+
+		void parse() const override
+		{
+			sendTag(tag::Text{.text = plainText(getFormattingStyle())});
+			sendTag(metaData());
+		}
 };
 
 } // namespace docwire
