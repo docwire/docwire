@@ -8268,9 +8268,10 @@ PDFParser::PDFParser(const std::string& file_name, const Importer* inImporter)
 	impl = NULL;
 	try
 	{
-		podofo_mutex.lock();
-		impl = new Implementation(this);
-		podofo_mutex.unlock();
+		{
+			std::lock_guard<std::mutex> podofo_mutex_lock(podofo_mutex);
+			impl = new Implementation(this);
+		}
 		impl->m_data_stream = NULL;
 		impl->m_data_stream = new std::ifstream(file_name, std::ifstream::in | std::ifstream::binary);
 	}
@@ -8351,9 +8352,10 @@ PDFParser::parse() const
 {
 	docwire_log(debug) << "Using PDF parser.";
 	impl->loadDocument();
-	podofo_mutex.lock();
-	impl->parseText();
-	podofo_mutex.unlock();
+	{
+		std::lock_guard<std::mutex> podofo_mutex_lock(podofo_mutex);
+		impl->parseText();
+	}
 }
 
 } // namespace docwire
