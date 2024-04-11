@@ -351,7 +351,7 @@ bool PPTParser::isPPT()
 	}
 }
 
-std::string PPTParser::plainText(const FormattingStyle& formatting) const
+std::string PPTParser::plainText() const
 {	
 	docwire_log(debug) << "Using PPT parser.";
 

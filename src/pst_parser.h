@@ -20,7 +20,6 @@
 
 #include "parser.h"
 #include "parser_builder.h"
-#include "formatting_style.h"
 
 namespace docwire
 {

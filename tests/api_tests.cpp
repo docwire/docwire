@@ -52,15 +52,12 @@ void escape_test_name(std::string& str)
 
 using namespace docwire;
 
-class DocumentTests :public ::testing::TestWithParam<std::tuple<int, int, const char*, std::optional<FormattingStyle>>> {
+class DocumentTests :public ::testing::TestWithParam<std::tuple<int, int, const char*>> {
 protected:
     ParserParameters parameters{};
 
     void SetUp() override
     {
-        FormattingStyle style{};
-        style.list_style.setPrefix(" * ");
-        parameters += ParserParameters{ "formatting_style", style };
         parameters += ParserParameters("languages", std::vector { Language::pol });
   }
 
@@ -68,7 +65,7 @@ protected:
 
 TEST_P(DocumentTests, ParseFromPathTest)
 {
-    const auto [lower, upper, format, style] = GetParam();
+    const auto [lower, upper, format] = GetParam();
 
     for(int i = lower; i <= upper; ++i)
     {
@@ -98,7 +95,7 @@ TEST_P(DocumentTests, ParseFromPathTest)
 
 TEST_P(DocumentTests, ParseFromStreamTest)
 {
-    const auto [lower, upper, format, style] = GetParam();
+    const auto [lower, upper, format] = GetParam();
 
     for(int i = lower; i <= upper; ++i)
     {
@@ -129,34 +126,34 @@ TEST_P(DocumentTests, ParseFromStreamTest)
 INSTANTIATE_TEST_SUITE_P(
     BasicTests, DocumentTests,
     ::testing::Values(
-        std::make_tuple(1, 9, "odt", std::nullopt),
-        std::make_tuple(1, 9, "fodt", std::nullopt),
-        std::make_tuple(1, 9, "ods", std::nullopt),
-        std::make_tuple(1, 9, "fods", std::nullopt),
-        std::make_tuple(1, 9, "odp", std::nullopt),
-        std::make_tuple(1, 9, "fodp", std::nullopt),
-        std::make_tuple(1, 9, "odg", std::nullopt),
-        std::make_tuple(1, 9, "fodg", std::nullopt),
-        std::make_tuple(1, 9, "rtf", std::nullopt),
-        std::make_tuple(1, 9, "doc", std::nullopt),
-        std::make_tuple(1, 9, "xls", std::nullopt),
-        std::make_tuple(1, 9, "xlsb", std::nullopt),
-        std::make_tuple(1, 9, "pdf", std::nullopt),
-        std::make_tuple(1, 9, "ppt", std::nullopt),
-        std::make_tuple(1, 9, "docx", std::nullopt),
-        std::make_tuple(1, 9, "xlsx", std::nullopt),
-        std::make_tuple(1, 9, "pptx", std::nullopt),
-        std::make_tuple(1, 9, "pages", std::nullopt),
-        std::make_tuple(1, 9, "numbers", std::nullopt),
-        std::make_tuple(1, 9, "key", std::nullopt),
-        std::make_tuple(1, 9, "html", std::nullopt),
-        std::make_tuple(1, 6, "bmp", std::nullopt),
-        std::make_tuple(1, 6, "jpg", std::nullopt),
-        std::make_tuple(1, 6, "jpeg", std::nullopt),
-        std::make_tuple(1, 6, "png", std::nullopt),
-        std::make_tuple(1, 6, "tiff", std::nullopt),
-        std::make_tuple(1, 6, "webp", std::nullopt),
-        std::make_tuple(1, 1, "pst", std::nullopt)
+        std::make_tuple(1, 9, "odt"),
+        std::make_tuple(1, 9, "fodt"),
+        std::make_tuple(1, 9, "ods"),
+        std::make_tuple(1, 9, "fods"),
+        std::make_tuple(1, 9, "odp"),
+        std::make_tuple(1, 9, "fodp"),
+        std::make_tuple(1, 9, "odg"),
+        std::make_tuple(1, 9, "fodg"),
+        std::make_tuple(1, 9, "rtf"),
+        std::make_tuple(1, 9, "doc"),
+        std::make_tuple(1, 9, "xls"),
+        std::make_tuple(1, 9, "xlsb"),
+        std::make_tuple(1, 9, "pdf"),
+        std::make_tuple(1, 9, "ppt"),
+        std::make_tuple(1, 9, "docx"),
+        std::make_tuple(1, 9, "xlsx"),
+        std::make_tuple(1, 9, "pptx"),
+        std::make_tuple(1, 9, "pages"),
+        std::make_tuple(1, 9, "numbers"),
+        std::make_tuple(1, 9, "key"),
+        std::make_tuple(1, 9, "html"),
+        std::make_tuple(1, 6, "bmp"),
+        std::make_tuple(1, 6, "jpg"),
+        std::make_tuple(1, 6, "jpeg"),
+        std::make_tuple(1, 6, "png"),
+        std::make_tuple(1, 6, "tiff"),
+        std::make_tuple(1, 6, "webp"),
+        std::make_tuple(1, 1, "pst")
                       ),
     [](const ::testing::TestParamInfo<DocumentTests::ParamType>& info) {
       std::string name = std::string{ std::get<2>(info.param) } + "_basic_tests";
@@ -221,9 +218,6 @@ protected:
 
     void SetUp() override
     {
-        FormattingStyle style{};
-        style.list_style.setPrefix(" * ");
-        parameters += ParserParameters{ "formatting_style", style };
   }
 };
 

@@ -22,7 +22,6 @@
 #include "extract_entities.h"
 #include "extract_keywords.h"
 #include "find.h"
-#include "formatting_style.h"
 #include "html_exporter.h"
 #include "language.h"
 #include "log.h"
@@ -105,7 +104,6 @@ int main(int argc, char* argv[])
 {
 	bool local_processing;
 	bool use_stream;
-	FormattingStyle formatting_style;
 
 	namespace po = boost::program_options;
 	po::options_description desc("Allowed options");
@@ -141,9 +139,6 @@ int main(int argc, char* argv[])
 		("max_nodes_number", po::value<unsigned int>(), "filter by max number of nodes")
 		("folder_name", po::value<std::string>(), "filter emails by folder name")
 		("attachment_extension", po::value<std::string>(), "filter by attachment type")
-		("table-style", po::value<TableStyle>(&formatting_style.table_style)->default_value(TableStyle::table_look), (enum_names_str<TableStyle>() + " (deprecated)").c_str())
-		("url-style", po::value<UrlStyle>(&formatting_style.url_style)->default_value(UrlStyle::extended), (enum_names_str<UrlStyle>() + " (deprecated)").c_str())
-		("list-style-prefix", po::value<std::string>()->default_value(" * "), "set output list prefix (deprecated)")
 		("log_file", po::value<std::string>(), "set path to log file")
 	;
 
@@ -198,10 +193,7 @@ int main(int argc, char* argv[])
 
 	std::string file_name = vm["input-file"].as<std::string>();
 
-	formatting_style.list_style.setPrefix(vm["list-style-prefix"].as<std::string>());
-
 	ParserParameters parameters;
-	parameters += ParserParameters("formatting_style", formatting_style);
 	if (vm.count("language"))
 	{
 		const std::vector<Language>& languages = vm["language"].as<std::vector<Language>>();

@@ -938,7 +938,7 @@ bool XLSParser::isXLS()
 	}
 }
 
-std::string XLSParser::plainText(const FormattingStyle& formatting) const
+std::string XLSParser::plainText() const
 {
 	ThreadSafeOLEStorage* storage = NULL;
 	try
@@ -949,7 +949,7 @@ std::string XLSParser::plainText(const FormattingStyle& formatting) const
 			storage = new ThreadSafeOLEStorage(impl->m_file_name);
 		if (!storage->isValid())
 			throw RuntimeError("Error opening " + impl->m_file_name + " as OLE file. OLE Storage error: " + storage->getLastError());
-		std::string text = plainText(*storage, formatting);
+		std::string text = plainText(*storage);
 		delete storage;
 		storage = NULL;
 		return text;
@@ -963,7 +963,7 @@ std::string XLSParser::plainText(const FormattingStyle& formatting) const
 	}
 }
 
-std::string XLSParser::plainText(ThreadSafeOLEStorage& storage, const FormattingStyle& formatting) const
+std::string XLSParser::plainText(ThreadSafeOLEStorage& storage) const
 {
 	docwire_log(debug) << "Using XLS parser.";
 

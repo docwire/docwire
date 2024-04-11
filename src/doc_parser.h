@@ -20,7 +20,6 @@
 
 namespace docwire
 {
-	class FormattingStyle;
 	class Metadata;
 
 class DOCParser : public Parser
@@ -31,7 +30,7 @@ class DOCParser : public Parser
 		friend class TextHandler;
 		friend class SubDocumentHandler;
 		friend class TableHandler;
-		void plainText(const FormattingStyle& formatting) const;
+		void plainText() const;
 
 	public:
 

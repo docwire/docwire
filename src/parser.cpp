@@ -70,14 +70,4 @@ Parser& Parser::withParameters(const ParserParameters &parameters)
     return *this;
 }
 
-FormattingStyle Parser::getFormattingStyle() const
-{
-  auto formatting_style = m_parameters.getParameterValue<FormattingStyle>("formatting_style");
-  if (formatting_style)
-  {
-    return *formatting_style;
-  }
-  return FormattingStyle();
-}
-
 } // namespace docwire

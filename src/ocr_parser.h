@@ -16,7 +16,6 @@
 #include <memory>
 #include <iosfwd>
 
-#include "formatting_style.h"
 #include "language.h"
 #include "parser.h"
 #include "parser_builder.h"
@@ -47,7 +46,7 @@ public:
     void setTessdataPrefix(const std::string& tessdata_prefix);
     bool isOCR() const;
 private:
-    std::string plainText(const FormattingStyle& formatting, const std::vector<Language>& languages) const;
+    std::string plainText(const std::vector<Language>& languages) const;
 };
 
 } // namespace docwire

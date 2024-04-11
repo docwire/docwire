@@ -32,7 +32,6 @@ extern "C"
 
 #include <boost/signals2.hpp>
 
-#include "formatting_style.h"
 #include "log.h"
 #include "misc.h"
 #include "pst_parser.h"

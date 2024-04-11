@@ -21,7 +21,6 @@
 namespace docwire
 {
 
-struct FormattingStyle;
 class Metadata;
 
 class PDFParser : public Parser

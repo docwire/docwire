@@ -14,7 +14,6 @@
 
 #include <iostream>
 
-#include "formatting_style.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include "defines.h"

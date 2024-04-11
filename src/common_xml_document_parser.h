@@ -12,7 +12,6 @@
 #ifndef DOCWIRE_COMMON_XML_PARSER_H
 #define DOCWIRE_COMMON_XML_PARSER_H
 
-#include "formatting_style.h"
 #include "parser.h"
 #include <string>
 #include <vector>
@@ -23,6 +22,8 @@ namespace docwire
 	class ZipReader;
 	class Metadata;
 	class XmlStream;
+
+enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
 
 /**
 	This class is inherited by ODFOOXMLParser and ODFXMLParser. It contains some common
@@ -64,7 +65,7 @@ class CommonXMLDocumentParser
 		typedef std::vector<ODFOOXMLListStyle> ListStyleVector;
 
   typedef std::function<void(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                                 const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                                 const ZipReader* zipfile, std::string& text,
                                  bool& children_processed, std::string& level_suffix, bool first_on_level)> CommandHandler;
 
     void addCallback(const NewNodeCallback &callback);
@@ -79,14 +80,14 @@ class CommonXMLDocumentParser
 
 		///it is executed for each undefined tag (xml tag without associated handler). Can be overwritten
 		virtual void onUnregisteredCommand(XmlStream& xml_stream, XmlParseMode mode,
-										   const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+										   const ZipReader* zipfile, std::string& text,
 										   bool& children_processed, std::string& level_suffix, bool first_on_level);
 
 		///parses xml data for given xml stream. It executes commands for each xml tag
-		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile) const;
+		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile) const;
 
 		///extracts text from xml data. It uses parseXmlData internally. Throws RuntimeError on fail
-		void extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile, std::string& text) const;
+		void extractText(const std::string& xml_contents, XmlParseMode mode, const ZipReader* zipfile, std::string& text) const;
 
 		///usefull since two parsers use this. Throws RuntimeError on fail
 		void parseODFMetadata(const std::string &xml_content, tag::Metadata& metadata) const;
@@ -129,7 +130,7 @@ class CommonXMLDocumentParser
 	public:
 		CommonXMLDocumentParser();
 		virtual ~CommonXMLDocumentParser();
-		virtual std::string plainText(XmlParseMode mode, FormattingStyle& options) const = 0;
+		virtual void plainText(XmlParseMode mode) const = 0;
 		virtual tag::Metadata metaData() const = 0;
 };
 

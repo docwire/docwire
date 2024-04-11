@@ -318,18 +318,15 @@ class TextHandler : public wvWare::TextHandler
 		const DOCParser* m_parent;
 		const wvWare::Parser* m_parser;
 		CurrentState* m_curr_state;
-		FormattingStyle m_formatting;
 		bool m_comments_parsed;
 		std::vector<Comment> m_comments;
 		U32 m_prev_par_fc;
 
 	public:
-		TextHandler(const DOCParser* parent, const wvWare::Parser* parser, CurrentState* curr_state,
-				const FormattingStyle& formatting)
+		TextHandler(const DOCParser* parent, const wvWare::Parser* parser, CurrentState* curr_state)
 			: m_parent(parent), m_parser(parser), m_curr_state(curr_state), m_comments_parsed(false), m_prev_par_fc(0)
 		{
 			m_curr_state = curr_state;
-			m_formatting = formatting;
 		}
 
 		void sectionStart(SharedPtr<const Word97::SEP> sep)
@@ -707,7 +704,7 @@ bool DOCParser::isDOC()
 	return true;
 }
 
-void DOCParser::plainText(const FormattingStyle& formatting) const
+void DOCParser::plainText() const
 {
 	CurrentState curr_state;
 	docwire_log(debug) << "Opening " << impl->m_file_name << " as OLE file to parse all embedded objects in supported formats.";
@@ -744,7 +741,7 @@ void DOCParser::plainText(const FormattingStyle& formatting) const
 						try
 						{
 							XLSParser xls("");
-							obj_text = xls.plainText(*storage, formatting);
+							obj_text = xls.plainText(*storage);
 						}
 						catch (const std::exception& e)
 						{
@@ -782,7 +779,7 @@ void DOCParser::plainText(const FormattingStyle& formatting) const
 			throw EncryptedFileException("File is encrypted");
 		throw RuntimeError("Creating parser failed");
 	}
-	TextHandler text_handler(this, parser, &curr_state, formatting);
+	TextHandler text_handler(this, parser, &curr_state);
 	parser->setTextHandler(&text_handler);
 	TableHandler table_handler(this, curr_state);
 	parser->setTableHandler(&table_handler);
@@ -829,8 +826,7 @@ void
 DOCParser::parse() const
 {
 	docwire_log(debug) << "Using DOC parser.";
-	FormattingStyle formating;
-  plainText(formating);
+	plainText();
 
 	sendTag(metaData());
 }

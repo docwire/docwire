@@ -28,6 +28,10 @@
 #include <iostream>
 #include "charsetdetect.h"
 #include <set>
+#include "tags.h"
+
+namespace docwire
+{
 
 using namespace htmlcxx::HTML;
 
@@ -71,9 +75,6 @@ attributes::Styling html_node_styling(const Node& node)
 }
 
 } // unnamed namespace
-
-namespace docwire
-{
 
 class SaxParser : public ParserSax
 {

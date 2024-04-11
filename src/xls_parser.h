@@ -22,8 +22,6 @@ namespace docwire
 
 class ThreadSafeOLEStorage;
 
-	struct FormattingStyle;
-
 class XLSParser : public Parser
 {
 	private:
@@ -36,13 +34,13 @@ class XLSParser : public Parser
 		~XLSParser();
     static std::vector<std::string> getExtensions() {return {"xls"};}
 		bool isXLS();
-		std::string plainText(const FormattingStyle& formatting) const;
-		std::string plainText(ThreadSafeOLEStorage& storage, const FormattingStyle& formatting) const;
+		std::string plainText() const;
+		std::string plainText(ThreadSafeOLEStorage& storage) const;
 		tag::Metadata metaData() const;
 		
 		void parse() const override
   		{
-			sendTag(tag::Text{.text = plainText(getFormattingStyle())});
+			sendTag(tag::Text{.text = plainText()});
     		sendTag(metaData());
 		}
 };

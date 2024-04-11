@@ -38,7 +38,7 @@ class ODFXMLParser : public Parser,
 		ODFXMLParser(const char* buffer, size_t size);
 		~ODFXMLParser();
 		bool isODFXML();
-		std::string plainText(XmlParseMode mode, FormattingStyle& formatting_style) const;
+		void plainText(XmlParseMode mode) const;
 		tag::Metadata metaData() const;
 };
 

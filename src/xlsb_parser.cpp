@@ -774,7 +774,7 @@ tag::Metadata XLSBParser::metaData() const
 	return metadata;
 }
 
-std::string XLSBParser::plainText(const FormattingStyle& formatting) const
+std::string XLSBParser::plainText() const
 {
 	docwire_log(debug) << "Using XLSB parser.";
 	std::string text;

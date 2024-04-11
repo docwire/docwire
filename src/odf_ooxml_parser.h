@@ -31,7 +31,7 @@ class ODFOOXMLParser : public Parser,
     int lastOOXMLColNum();
     void setLastOOXMLColNum(int c);
   void onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                     const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                     const ZipReader* zipfile, std::string& text,
                      bool& children_processed, std::string& level_suffix, bool first_on_level) const;
 
 	public:
@@ -45,7 +45,7 @@ class ODFOOXMLParser : public Parser,
     ODFOOXMLParser(const char* buffer, size_t size);
     ~ODFOOXMLParser();
     bool isODFOOXML();
-    std::string plainText(XmlParseMode mode, FormattingStyle& options) const;
+    void plainText(XmlParseMode mode) const;
     tag::Metadata metaData() const;
 };
 

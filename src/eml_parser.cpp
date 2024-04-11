@@ -60,7 +60,7 @@ struct EMLParser::Implementation
 		}
 	}
 
-	void extractPlainText(const mime& mime_entity, const FormattingStyle& formatting)
+	void extractPlainText(const mime& mime_entity)
 	{
 		docwire_log(debug) << "Extracting plain text from mime entity";
 		if (mime_entity.content_disposition() != mime::content_disposition_t::ATTACHMENT && mime_entity.content_type().type == mime::media_type_t::TEXT)
@@ -120,18 +120,18 @@ struct EMLParser::Implementation
 			for (const mime& m: mime_entity.parts())
 				if (m.content_type().subtype == "html" || m.content_type().subtype == "xhtml")
 				{
-					extractPlainText(m, formatting);
+					extractPlainText(m);
 					html_found = true;
 				}
 			if (!html_found && mime_entity.parts().size() > 0)
-				extractPlainText(mime_entity.parts()[0], formatting);
+				extractPlainText(mime_entity.parts()[0]);
 		}
 		else
 		{
 			docwire_log(debug) << "Multipart but not alternative";
 			docwire_log(debug) << mime_entity.parts().size() << " mime parts found";
 			for (const mime& m: mime_entity.parts())
-				extractPlainText(m, formatting);
+				extractPlainText(m);
 		}
 	}
 };
@@ -236,7 +236,7 @@ bool EMLParser::isEML() const
 	return has_from && has_date_time;
 }
 
-void EMLParser::plainText(const FormattingStyle& formatting) const
+void EMLParser::plainText() const
 {
 	docwire_log_func();
 	if (!isEML())
@@ -252,7 +252,7 @@ void EMLParser::plainText(const FormattingStyle& formatting) const
 		throw RuntimeError("The stream seek operation failed");
 	}
 	message mime_entity = parse_message(*impl->m_data_stream);
-	impl->extractPlainText(mime_entity, formatting);
+	impl->extractPlainText(mime_entity);
 }
 
 tag::Metadata EMLParser::metaData()
@@ -303,7 +303,7 @@ void
 EMLParser::parse() const
 {
 	docwire_log(debug) << "Using EML parser.";
-  plainText(getFormattingStyle());
+	plainText();
 }
 
 } // namespace docwire

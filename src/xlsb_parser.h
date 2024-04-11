@@ -20,8 +20,6 @@
 namespace docwire
 {
 
-struct FormattingStyle;
-
 class XLSBParser : public Parser
 {
 	private:
@@ -34,12 +32,12 @@ class XLSBParser : public Parser
 		~XLSBParser();
     static std::vector<std::string> getExtensions() {return {"xlsb"};}
 		bool isXLSB();
-		std::string plainText(const FormattingStyle& formatting) const;
+		std::string plainText() const;
 		tag::Metadata metaData() const;
 
 		void parse() const override
 		{
-			sendTag(tag::Text{.text = plainText(getFormattingStyle())});
+			sendTag(tag::Text{.text = plainText()});
 			sendTag(metaData());
 		}
 };

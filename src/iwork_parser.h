@@ -21,7 +21,6 @@
 namespace docwire
 {
 
-struct FormattingStyle;
 class Metadata;
 
 class IWorkParser : public Parser
@@ -36,12 +35,12 @@ class IWorkParser : public Parser
 		~IWorkParser();
     static std::vector<std::string> getExtensions() {return {"pages", "key", "numbers"};}
 		bool isIWork();
-		std::string plainText(const FormattingStyle& formatting) const;
+		std::string plainText() const;
 		tag::Metadata metaData() const;
 
 		void parse() const override
 		{
-			sendTag(tag::Text{.text = plainText(getFormattingStyle())});
+			sendTag(tag::Text{.text = plainText()});
 			sendTag(metaData());
 		}
 

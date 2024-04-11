@@ -2169,7 +2169,7 @@ tag::Metadata IWorkParser::metaData() const
 	}
 }
 
-std::string IWorkParser::plainText(const FormattingStyle& formatting) const
+std::string IWorkParser::plainText() const
 {
 	docwire_log(debug) << "Using iWork parser.";
 	std::string text;

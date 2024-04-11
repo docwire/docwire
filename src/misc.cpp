@@ -21,6 +21,9 @@
 #include <time.h>
 #include "thread_safe_ole_storage.h"
 
+namespace docwire
+{
+
 std::string ustring_to_string(const UString& s)
 {
 	const UChar* src = s.data();
@@ -112,7 +115,7 @@ int prepareList(std::vector<std::string> &p_list)
 	return 1;
 }
 
-std::string formatTable(std::vector<svector>& mcols, const FormattingStyle& options)
+std::string formatTable(std::vector<svector>& mcols)
 {
 	std::string table_out;
 
@@ -123,86 +126,36 @@ std::string formatTable(std::vector<svector>& mcols, const FormattingStyle& opti
 		for(int j = 0 ; j < mcols.at(i).size() ; j ++)
 		{
 			table_out += mcols.at(i).at(j);
-			switch(options.table_style)
+			if(j + 1 == mcols.at(i).size())
 			{
-				case TableStyle::table_look:
-					if(j + 1 == mcols.at(i).size())
-					{
-						table_out += "\n";
-						break;
-					}
-					table_out += "\t";
-					break;
-				case TableStyle::one_row:
-					table_out += " ";
-					break;
-				case TableStyle::one_col:
-					table_out += "\n";
-					break;
-				default:
-					table_out += "\n";
-					break;
+				table_out += "\n";
+				break;
 			}
+			table_out += "\t";
 		}
 	}
 	return table_out;
 }
 
-std::string formatUrl(const std::string& mlink_url, const std::string &mlink_text, const FormattingStyle& options)
+std::string formatUrl(const std::string& mlink_url, const std::string &mlink_text)
 {
 	std::string u_url;
-	switch(options.url_style)
+	if (mlink_url.length() > 0)
 	{
-		case UrlStyle::text_only:
-			u_url = mlink_text;
-			break;
-		case UrlStyle::extended:
-			if (mlink_url.length() > 0)
-			{
-				u_url += "<";
-				u_url += mlink_url;
-				u_url += ">";
-			}
-			u_url += mlink_text;
-			break;
-		case UrlStyle::underscored:
-			if (mlink_text.length() > 0)
-			{
-				u_url += "_";
-				for (size_t i = 0; i < mlink_text.length(); ++i)
-				{
-					if (mlink_text[i] == ' ')
-						u_url += '_';
-					else
-						u_url += mlink_text[i];
-				}
-				u_url += "_";
-			}
-			break;
-		default:
-			if (mlink_url.length() > 0)
-			{
-				u_url += "<";
-				u_url += mlink_url;
-				u_url += ">";
-			}
-			u_url += mlink_text;
-			break;
+		u_url += "<" + mlink_url + ">";
 	}
+	u_url += mlink_text;
 	return u_url;
 }
 
-std::string formatList(std::vector<std::string>& mlist, const FormattingStyle& options)
+std::string formatList(std::vector<std::string>& mlist)
 {
 	std::string list_out;
-	const char* prefix = options.list_style.getPrefix();
 	prepareList(mlist);
 
 	for(int i = 0 ; i < mlist.size() ; i++)
 	{
-		list_out = list_out + prefix;
-		list_out = list_out + mlist.at(i);
-		list_out = list_out + "\n";
+		list_out = list_out + "- " + mlist.at(i) + "\n";
 	}
 	return list_out;
 }
@@ -523,3 +476,5 @@ std::filesystem::path locate_resource(const std::filesystem::path& resource_sub_
 	docwire_log(debug) << "Locating resource " << resource_sub_path;
 	return locate_subpath(std::filesystem::path("..") / "share" / resource_sub_path);
 }
+
+} // namespace docwire

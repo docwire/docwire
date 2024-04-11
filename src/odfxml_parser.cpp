@@ -27,7 +27,7 @@ class ODFXMLParser::CommandHandlersSet
 {
 	public:
 		static void onODFBody(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-							  const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+							  const ZipReader* zipfile, std::string& text,
 							  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			// warning TODO: Unfortunately, in CommonXMLDocumentParser we are not checking full names for xml tags.\
@@ -40,19 +40,19 @@ class ODFXMLParser::CommandHandlersSet
 		}
 
 		static void onODFObject(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+								const ZipReader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "ODF_OBJECT Command";
 			xml_stream.levelDown();
 			parser.disableText(true);
-			text += parser.parseXmlData(xml_stream, mode, options, zipfile);
+			text += parser.parseXmlData(xml_stream, mode, zipfile);
 			parser.disableText(false);
 			xml_stream.levelUp();
 		}
 
 		static void onODFBinaryData(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-									const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+									const ZipReader* zipfile, std::string& text,
 									bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "ODF_BINARY_DATA Command";
@@ -139,9 +139,8 @@ bool ODFXMLParser::isODFXML()
 	return true;
 }
 
-std::string ODFXMLParser::plainText(XmlParseMode mode, FormattingStyle& formatting_style) const
+void ODFXMLParser::plainText(XmlParseMode mode) const
 {
-	std::string text;
 	std::string xml_content;
 	if (extended_impl->m_buffer_size > 0)
 		xml_content = std::string(extended_impl->m_buffer, extended_impl->m_buffer_size);
@@ -160,13 +159,13 @@ std::string ODFXMLParser::plainText(XmlParseMode mode, FormattingStyle& formatti
 	disableText(true);
 	try
 	{
-		extractText(xml_content, mode, formatting_style, NULL, text);
+		std::string text;
+		extractText(xml_content, mode, NULL, text);
 	}
 	catch (const std::exception& e)
 	{
 		throw RuntimeError("Error parsing Flat XML file", e);
 	}
-	return text;
 }
 
 tag::Metadata ODFXMLParser::metaData() const
@@ -222,8 +221,7 @@ void
 ODFXMLParser::parse() const
 {
 	docwire_log(debug) << "Using ODFXML parser.";
-	auto formatting_style = getFormattingStyle();
-  plainText(XmlParseMode::PARSE_XML, formatting_style);
+  plainText(XmlParseMode::PARSE_XML);
   Info info(metaData());
   extended_impl->m_on_new_node_signal(info);
 }

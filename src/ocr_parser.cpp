@@ -184,7 +184,7 @@ namespace
     std::mutex tesseract_libtiff_mutex;
 } // anonymous namespace
 
-std::string OCRParser::plainText(const FormattingStyle& formatting, const std::vector<Language>& languages) const
+std::string OCRParser::plainText(const std::vector<Language>& languages) const
 {
     tessAPIWrapper api{ nullptr, tessAPIDeleter };
     try
@@ -304,7 +304,7 @@ OCRParser::parse() const
 {
   docwire_log(debug) << "Using OCR parser.";
   auto language = m_parameters.getParameterValue<std::vector<Language>>("languages");
-  std::string plain_text = plainText(getFormattingStyle(), language && language->size() > 0 ? *language : std::vector({ Language::eng }));
+  std::string plain_text = plainText(language && language->size() > 0 ? *language : std::vector({ Language::eng }));
   Info info(tag::Text{.text = plain_text});
   impl->m_on_new_node_signal(info);
 }

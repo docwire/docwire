@@ -18,7 +18,6 @@
 #include <functional>
 #include <memory>
 
-#include "formatting_style.h"
 #include "parser_parameters.h"
 #include "tags.h"
 #include "defines.h"
@@ -64,11 +63,6 @@ public:
   virtual Parser &withParameters(const ParserParameters &parameters);
 
 protected:
-  /**
-  * @brief Loads FormattingStyle from ParserParameters.
-  * @return Loaded FormattingStyle if exists, otherwise defualt FormattingStyle .
-  **/
-  FormattingStyle getFormattingStyle() const;
 
   Info sendTag(const Tag& tag) const;
   Info sendTag(const Info &info) const;

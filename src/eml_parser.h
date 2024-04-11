@@ -21,7 +21,6 @@
 namespace docwire
 {
 
-struct FormattingStyle;
 class Metadata;
 class Attachment;
 
@@ -30,7 +29,7 @@ class EMLParser : public Parser
 	private:
 		struct Implementation;
 		Implementation* impl;
-		void plainText(const FormattingStyle& formatting) const;
+		void plainText() const;
 
 	public:
 		EMLParser(const std::string& file_name);

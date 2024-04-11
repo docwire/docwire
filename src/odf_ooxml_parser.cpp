@@ -55,7 +55,7 @@ class ODFOOXMLParser::CommandHandlersSet
 {
 	public:
 		static void onOOXMLAttribute(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-									 const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+									 const ZipReader* zipfile, std::string& text,
 									 bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "OOXML_ATTR command.";
@@ -63,7 +63,7 @@ class ODFOOXMLParser::CommandHandlersSet
 		}
 
     static void onOOXMLRow(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                           const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                           const ZipReader* zipfile, std::string& text,
                            bool& children_processed, std::string& level_suffix, bool first_on_level)
     {
 		ODFOOXMLParser& p = (ODFOOXMLParser&)parser;
@@ -91,26 +91,26 @@ class ODFOOXMLParser::CommandHandlersSet
 		}
       parser.trySendTag(tag::TableRow{});
       xml_stream.levelDown();
-      text += parser.parseXmlData(xml_stream, mode, options, zipfile);
+      text += parser.parseXmlData(xml_stream, mode, zipfile);
       xml_stream.levelUp();
       parser.trySendTag(tag::CloseTableRow{});
     }
 
   static void onOOXMLSheetData(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                         const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                         const ZipReader* zipfile, std::string& text,
                          bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
 	  ODFOOXMLParser& p = (ODFOOXMLParser&)parser;
 	  p.setLastOOXMLRowNum(0);
     parser.trySendTag(tag::Table{});
     xml_stream.levelDown();
-    text += parser.parseXmlData(xml_stream, mode, options, zipfile);
+    text += parser.parseXmlData(xml_stream, mode, zipfile);
     xml_stream.levelUp();
     parser.trySendTag(tag::CloseTable{});
   }
 
 		static void onOOXMLCell(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+								const ZipReader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "OOXML_CELL command.";
@@ -158,7 +158,7 @@ class ODFOOXMLParser::CommandHandlersSet
 			{
 				xml_stream.levelDown();
         parser.activeEmittingSignals(false);
-				int shared_string_index = str_to_int(parser.parseXmlData(xml_stream, mode, options, zipfile));
+				int shared_string_index = str_to_int(parser.parseXmlData(xml_stream, mode, zipfile));
         parser.activeEmittingSignals(true);
 				xml_stream.levelUp();
 				if (shared_string_index < parser.getSharedStrings().size())
@@ -170,7 +170,7 @@ class ODFOOXMLParser::CommandHandlersSet
 			else
 			{
 				xml_stream.levelDown();
-        text += parser.parseXmlData(xml_stream, mode, options, zipfile);
+        text += parser.parseXmlData(xml_stream, mode, zipfile);
 				xml_stream.levelUp();
 			}
 			parser.trySendTag(tag::CloseTableCell{});
@@ -179,7 +179,7 @@ class ODFOOXMLParser::CommandHandlersSet
 		}
 
 		static void onOOXMLHeaderFooter(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-										const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+										const ZipReader* zipfile, std::string& text,
 										bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "OOXML_HEADERFOOTER command.";
@@ -189,7 +189,7 @@ class ODFOOXMLParser::CommandHandlersSet
 		}
 
 		static void onOOXMLCommentReference(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-											const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+											const ZipReader* zipfile, std::string& text,
 											bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "OOXML_COMMENTREFERENCE command.";
@@ -205,7 +205,7 @@ class ODFOOXMLParser::CommandHandlersSet
 		}
 
 		static void onOOXMLInstrtext(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-									 const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+									 const ZipReader* zipfile, std::string& text,
 									 bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "OOXML_INSTRTEXT command.";
@@ -213,7 +213,7 @@ class ODFOOXMLParser::CommandHandlersSet
 		}
 
 		static void onOOXMLTableStyleId(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-									 const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+									 const ZipReader* zipfile, std::string& text,
 									 bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "OOXML_TABLESTYLEID command.";
@@ -234,12 +234,12 @@ struct ODFOOXMLParser::ExtendedImplementation
 
   void
   onOOXMLStyle(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                               const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                               const ZipReader* zipfile, std::string& text,
                                bool& children_processed, std::string& level_suffix, bool first_on_level) const
   {
     xml_stream.levelDown();
     parser.activeEmittingSignals(false);
-    text += parser.parseXmlData(xml_stream, mode, options, zipfile);
+    text += parser.parseXmlData(xml_stream, mode, zipfile);
 		xml_stream.levelUp();
     children_processed = true;
     parser.activeEmittingSignals(true);
@@ -262,7 +262,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 			return is_encrypted_with_ms_offcrypto(m_file_name);
 	}
 
-	bool readOOXMLComments(const ZipReader& zipfile, XmlParseMode mode, FormattingStyle& options)
+	bool readOOXMLComments(const ZipReader& zipfile, XmlParseMode mode)
 	{
 		std::string content;
 		if (!zipfile.read("word/comments.xml", &content))
@@ -291,7 +291,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 					std::string date = xml_stream.attribute("date");
 					xml_stream.levelDown();
 					m_interf->activeEmittingSignals(false);
-					std::string text = m_interf->parseXmlData(xml_stream, mode, options, &zipfile);
+					std::string text = m_interf->parseXmlData(xml_stream, mode, &zipfile);
 					m_interf->activeEmittingSignals(true);
 					xml_stream.levelUp();
 					CommonXMLDocumentParser::Comment c(author, date, text);
@@ -308,7 +308,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 		return true;
 	}
 
-	void readStyles(const ZipReader& zipfile, XmlParseMode mode, FormattingStyle options)
+	void readStyles(const ZipReader& zipfile, XmlParseMode mode)
 	{
 		std::string content;
 		if (!zipfile.read("styles.xml", &content))
@@ -327,7 +327,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 		try
 		{
 			XmlStream xml_stream(xml, m_interf->getXmlOptions());
-			m_interf->parseXmlData(xml_stream, mode, options, &zipfile);
+			m_interf->parseXmlData(xml_stream, mode, &zipfile);
 		}
 		catch (const std::exception& e)
 		{
@@ -353,14 +353,14 @@ ODFOOXMLParser::ODFOOXMLParser(const string& file_name)
     registerODFOOXMLCommandHandler("sheetData", &CommandHandlersSet::onOOXMLSheetData);
 		registerODFOOXMLCommandHandler("headerFooter", &CommandHandlersSet::onOOXMLHeaderFooter);
 		registerODFOOXMLCommandHandler("commentReference", &CommandHandlersSet::onOOXMLCommentReference);
-		registerODFOOXMLCommandHandler("br", std::bind(
-      &ODFOOXMLParser::onOOXMLBreak, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-      std::placeholders::_4,   std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8,
-      std::placeholders::_9));
-    registerODFOOXMLCommandHandler("document-styles", std::bind(
-      &ODFOOXMLParser::ExtendedImplementation::onOOXMLStyle, extended_impl, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-      std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8,
-      std::placeholders::_9));
+		registerODFOOXMLCommandHandler("br", [this](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+		{
+			onOOXMLBreak(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
+    	});
+		registerODFOOXMLCommandHandler("document-styles", [this](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+		{
+			extended_impl->onOOXMLStyle(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
+    	});
 		registerODFOOXMLCommandHandler("instrText", &CommandHandlersSet::onOOXMLInstrtext);
 		registerODFOOXMLCommandHandler("tableStyleId", &CommandHandlersSet::onOOXMLTableStyleId);
 	}
@@ -389,14 +389,14 @@ ODFOOXMLParser::ODFOOXMLParser(const char *buffer, size_t size)
     registerODFOOXMLCommandHandler("sheetData", &CommandHandlersSet::onOOXMLSheetData);
 		registerODFOOXMLCommandHandler("headerFooter", &CommandHandlersSet::onOOXMLHeaderFooter);
 		registerODFOOXMLCommandHandler("commentReference", &CommandHandlersSet::onOOXMLCommentReference);
-		registerODFOOXMLCommandHandler("br", std::bind(
-				&ODFOOXMLParser::onOOXMLBreak, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-				std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8,
-				std::placeholders::_9));
-		registerODFOOXMLCommandHandler("document-styles", std::bind(
-				&ODFOOXMLParser::ExtendedImplementation::onOOXMLStyle, extended_impl, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-				std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8,
-				std::placeholders::_9));
+		registerODFOOXMLCommandHandler("br", [this](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+		{
+			onOOXMLBreak(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
+    	});
+		registerODFOOXMLCommandHandler("document-styles", [this](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+		{
+			extended_impl->onOOXMLStyle(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
+    	});
 		registerODFOOXMLCommandHandler("instrText", &CommandHandlersSet::onOOXMLInstrtext);
 		registerODFOOXMLCommandHandler("tableStyleId", &CommandHandlersSet::onOOXMLTableStyleId);
 	}
@@ -444,7 +444,7 @@ void ODFOOXMLParser::setLastOOXMLColNum(int c)
 
 void
 ODFOOXMLParser::onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                             const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                             const ZipReader* zipfile, std::string& text,
                              bool& children_processed, std::string& level_suffix, bool first_on_level) const
 {
 	docwire_log(debug) << "OOXML_BREAK command.";
@@ -493,7 +493,7 @@ bool ODFOOXMLParser::isODFOOXML()
 	return true;
 }
 
-string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) const
+void ODFOOXMLParser::plainText(XmlParseMode mode) const
 {
 	ZipReader zipfile;
 	if (extended_impl->m_buffer)
@@ -515,12 +515,11 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 		extended_impl->assertODFFileIsNotEncrypted(zipfile);
 		setXmlOptions(XML_PARSE_NOBLANKS);
 	}
-	if (zipfile.exists("word/comments.xml") && !extended_impl->readOOXMLComments(zipfile, mode, options))
+	if (zipfile.exists("word/comments.xml") && !extended_impl->readOOXMLComments(zipfile, mode))
 		docwire_log(error) << "Error parsing comments.";
 	if (zipfile.exists("styles.xml"))
-		extended_impl->readStyles(zipfile, mode, options);
+		extended_impl->readStyles(zipfile, mode);
 	string content;
-	string text;
 	if (main_file_name == "ppt/presentation.xml")
 	{
 		if (!zipfile.loadDirectory())
@@ -530,17 +529,16 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 		}
 		for (int i = 1; zipfile.read("ppt/slides/slide" + int_to_str(i) + ".xml", &content) && i < 2500; i++)
 		{
-			string slide_text;
 			try
 			{
-				extractText(content, mode, options, &zipfile, slide_text);
+				std::string text;
+				extractText(content, mode, &zipfile, text);
 			}
 			catch (const std::exception& e)
 			{
 				zipfile.close();
 				throw RuntimeError("Error while parsing file ppt/slides/slide" + int_to_str(i) + ".xml", e);
 			}
-			text += slide_text;
 		}
 	}
 	else if (main_file_name == "xl/workbook.xml")
@@ -576,7 +574,7 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 						xml_stream.levelDown();
 						SharedString shared_string;
             activeEmittingSignals(false);
-						shared_string.m_text = parseXmlData(xml_stream, mode, options, &zipfile);
+						shared_string.m_text = parseXmlData(xml_stream, mode, &zipfile);
             activeEmittingSignals(true);
 						getSharedStrings().push_back(shared_string);
 						xml_stream.levelUp();
@@ -592,17 +590,16 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 		}
 		for (int i = 1; zipfile.read("xl/worksheets/sheet" + int_to_str(i) + ".xml", &content); i++)
 		{
-			string sheet_text;
 			try
 			{
-				extractText(content, mode, options, &zipfile, sheet_text);
+				std::string text;
+				extractText(content, mode, &zipfile, text);
 			}
 			catch (const std::exception& e)
 			{
 				zipfile.close();
 				throw RuntimeError("Error while parsing file xl/worksheets/sheet" + int_to_str(i) + ".xml", e);
 			}
-			text += sheet_text;
 		}
 	}
 	else
@@ -614,7 +611,8 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 		}
 		try
 		{
-			extractText(content, mode, options, &zipfile, text);
+			std::string text;
+			extractText(content, mode, &zipfile, text);
 		}
 		catch (const std::exception& e)
 		{
@@ -623,7 +621,6 @@ string ODFOOXMLParser::plainText(XmlParseMode mode, FormattingStyle& options) co
 		}
 	}
 	zipfile.close();
-	return text;
 }
 
 tag::Metadata ODFOOXMLParser::metaData() const
@@ -760,8 +757,7 @@ void
 ODFOOXMLParser::parse() const
 {
 	docwire_log(debug) << "Using ODF/OOXML parser.";
-	auto formatting_style = getFormattingStyle();
-	plainText(XmlParseMode::PARSE_XML, formatting_style);
+	plainText(XmlParseMode::PARSE_XML);
 	trySendTag(metaData());
 }
 
