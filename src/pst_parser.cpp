@@ -390,7 +390,6 @@ struct PSTParser::Implementation
   size_t m_size;
   std::istream *m_data_stream;
   boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
-  const unsigned int MAILS_LIMIT = 50;
 
   private:
     void parse_element(const char* buffer, size_t size, const std::string& extension="") const;
@@ -412,10 +411,6 @@ void PSTParser::Implementation::parse_internal(const Folder& root, int deep, uns
 	}
 	for (int i = 0; i < root.getMessageNumber(); ++i)
 	{
-    if (mail_counter >= MAILS_LIMIT)
-    {
-      break;
-    }
 		auto message = root.getMessage(i);
 
     auto html_text = message.getTextAsHtml();
