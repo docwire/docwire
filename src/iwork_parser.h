@@ -31,8 +31,8 @@ class IWorkParser : public Parser
 		Implementation* impl;
 
 	public:
-		IWorkParser(const std::string& file_name, const Importer* inImporter = nullptr);
-		IWorkParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
+		IWorkParser(const std::string& file_name);
+		IWorkParser(const char* buffer, size_t size);
 		~IWorkParser();
     static std::vector<std::string> getExtensions() {return {"pages", "key", "numbers"};}
 		bool isIWork();

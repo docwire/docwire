@@ -20,7 +20,6 @@
 
 namespace docwire
 {
-	class Importer;
 	class Metadata;
 
 class RTFParser : public Parser
@@ -36,8 +35,8 @@ class RTFParser : public Parser
 		Parser& withParameters(const ParserParameters &parameters) override;
     static std::vector <std::string> getExtensions() {return {"rtf"};}
 
-		RTFParser(const std::string& file_name, const Importer* inImporter = nullptr);
-		RTFParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
+		RTFParser(const std::string& file_name);
+		RTFParser(const char* buffer, size_t size);
 		~RTFParser();
 		bool isRTF() const;
 		std::string plainText() const;

@@ -391,30 +391,12 @@ struct PSTParser::Implementation
   size_t m_size;
   std::istream *m_data_stream;
   boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
-  const Importer* m_importer;
   const unsigned int MAILS_LIMIT = 50;
 
   private:
     void parse_element(const char* buffer, size_t size, const std::string& extension="") const;
     void parse_internal(const Folder& root, int deep, unsigned int &mail_counter) const;
 };
-
-void
-PSTParser::Implementation::parse_element(const char* buffer, size_t size, const std::string& extension) const
-{
-  if (m_importer)
-  {
-    auto parser_builder = m_importer->findParserByExtension(extension);
-    if (parser_builder)
-    {
-      parser_builder->withImporter(*m_importer)
-        .withOnNewNodeCallbacks({[this](Info &info){m_owner->sendTag(info.tag);}})
-        .withParameters(m_parameters)
-        .build(buffer, size)
-        ->parse();
-    }
-  }
-}
 
 void PSTParser::Implementation::parse_internal(const Folder& root, int deep, unsigned int &mail_counter) const
 {
@@ -446,7 +428,7 @@ void PSTParser::Implementation::parse_internal(const Folder& root, int deep, uns
         continue;
       }
       m_owner->sendTag(tag::MailBody{});
-      parse_element(html_text->data(), html_text->size(), "html");
+      m_owner->sendTag(tag::File{.source = std::make_shared<std::istringstream>(*html_text), .name = "pst_mail_body.html"});
       ++mail_counter;
       m_owner->sendTag(tag::CloseMailBody{});
     }
@@ -462,7 +444,7 @@ void PSTParser::Implementation::parse_internal(const Folder& root, int deep, uns
       {
         continue;
       }
-      parse_element((const char *) attachment.m_raw_data.get(), attachment.m_size, extension);
+      m_owner->sendTag(tag::File{.source = std::make_shared<std::istringstream>(std::string((const char*)attachment.m_raw_data.get(), attachment.m_size)), .name = attachment.m_name});
       m_owner->sendTag(tag::CloseAttachment{});
     }
 	m_owner->sendTag(tag::CloseMail{});
@@ -547,18 +529,14 @@ PSTParser::withParameters(const ParserParameters &parameters)
   return *this;
 }
 
-PSTParser::PSTParser(const std::string& file_name, const Importer* inImporter)
-: Parser(inImporter)
+PSTParser::PSTParser(const std::string& file_name)
 {
   impl = new Implementation(file_name, this);
-  impl->m_importer = inImporter;
 }
 
-PSTParser::PSTParser(const char* buffer, size_t size, const Importer* inImporter)
-: Parser(inImporter)
+PSTParser::PSTParser(const char* buffer, size_t size)
 {
   impl = new Implementation(buffer, size, this);
-  impl->m_importer = inImporter;
 }
 
 PSTParser::~PSTParser()

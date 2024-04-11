@@ -671,8 +671,7 @@ struct XLSBParser::Implementation
 	}
 };
 
-XLSBParser::XLSBParser(const std::string& file_name, const Importer* inImporter)
-	: Parser(inImporter)
+XLSBParser::XLSBParser(const std::string& file_name)
 {
 	impl = NULL;
 	try
@@ -690,8 +689,7 @@ XLSBParser::XLSBParser(const std::string& file_name, const Importer* inImporter)
 	}
 }
 
-XLSBParser::XLSBParser(const char *buffer, size_t size, const Importer* inImporter)
-	: Parser(inImporter)
+XLSBParser::XLSBParser(const char *buffer, size_t size)
 {
 	impl = NULL;
 	try

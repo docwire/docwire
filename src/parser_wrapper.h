@@ -22,8 +22,6 @@
 namespace docwire
 {
 
-class Importer;
-
 /**
  * @brief Provides the basic mechanism to build any parser.
  * @tparam ParserType type of parser to build
@@ -40,7 +38,7 @@ public:
   std::unique_ptr<Parser>
   build(const std::string &inFileName) const override
   {
-    auto parser = std::make_unique<ParserType>(inFileName, m_importer);
+    auto parser = std::make_unique<ParserType>(inFileName);
     for (auto &callback : m_callbacks)
     {
       parser->addOnNewNodeCallback(callback);
@@ -52,7 +50,7 @@ public:
   std::unique_ptr<Parser>
   build(const char* buffer, size_t size) const override
   {
-    auto parser = std::make_unique<ParserType>(buffer, size, m_importer);
+    auto parser = std::make_unique<ParserType>(buffer, size);
     for (auto &callback : m_callbacks)
     {
       parser->addOnNewNodeCallback(callback);
@@ -67,12 +65,6 @@ public:
     return *this;
   }
 
-  ParserBuilder& withImporter(const Importer& inImporter) override
-  {
-    m_importer = &inImporter;
-    return *this;
-  }
-
   ParserBuilder& withParameters(const ParserParameters &inParameter) override
   {
     m_parameters += inParameter;
@@ -81,7 +73,6 @@ public:
 
 private:
   std::vector<NewNodeCallback> m_callbacks;
-  const Importer* m_importer;
   ParserParameters m_parameters;
 };
 } // namespace docwire

@@ -337,8 +337,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 	}
 };
 
-ODFOOXMLParser::ODFOOXMLParser(const string& file_name, const Importer* inImporter)
-: Parser(inImporter)
+ODFOOXMLParser::ODFOOXMLParser(const string& file_name)
 {
 	extended_impl = NULL;
 	try
@@ -374,8 +373,7 @@ ODFOOXMLParser::ODFOOXMLParser(const string& file_name, const Importer* inImport
 	}
 }
 
-ODFOOXMLParser::ODFOOXMLParser(const char *buffer, size_t size, const Importer* inImporter)
-: Parser(inImporter)
+ODFOOXMLParser::ODFOOXMLParser(const char *buffer, size_t size)
 {
 	extended_impl = NULL;
 	try

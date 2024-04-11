@@ -30,8 +30,8 @@ class PPTParser : public Parser
 		Implementation* impl;
 
 	public:
-		PPTParser(const std::string& file_name, const Importer* inImporter = nullptr);
-		PPTParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
+		PPTParser(const std::string& file_name);
+		PPTParser(const char* buffer, size_t size);
 		~PPTParser();
     static std::vector<std::string> getExtensions() {return {"ppt", "pps"};}
 		bool isPPT();

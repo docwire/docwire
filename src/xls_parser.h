@@ -31,8 +31,8 @@ class XLSParser : public Parser
 		Implementation* impl;
 
 	public:
-		XLSParser(const std::string& file_name, const Importer* inImporter = nullptr);
-		XLSParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
+		XLSParser(const std::string& file_name);
+		XLSParser(const char* buffer, size_t size);
 		~XLSParser();
     static std::vector<std::string> getExtensions() {return {"xls"};}
 		bool isXLS();

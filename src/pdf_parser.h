@@ -22,7 +22,6 @@ namespace docwire
 {
 
 struct FormattingStyle;
-class Importer;
 class Metadata;
 
 class PDFParser : public Parser
@@ -32,8 +31,8 @@ class PDFParser : public Parser
 		Implementation* impl;
 
 	public:
-		PDFParser(const std::string& file_name, const Importer* inImporter = nullptr);
-		PDFParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
+		PDFParser(const std::string& file_name);
+		PDFParser(const char* buffer, size_t size);
 		~PDFParser();
     void parse() const override;
     static std::vector<std::string> getExtensions() {return {"pdf"};}

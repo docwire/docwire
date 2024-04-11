@@ -25,7 +25,6 @@
 
 namespace docwire
 {
-class Importer;
 
 struct DllExport Info
 {
@@ -46,11 +45,7 @@ typedef std::function<void(Info &info)> NewNodeCallback;
 class DllExport Parser
 {
 public:
-  /**
-   *
-   * @param inImporter importer known about all available parsers which could be used recursive
-   */
-  explicit Parser(const Importer* inImporter = nullptr);
+  explicit Parser();
 
   virtual ~Parser() = default;
 
@@ -78,7 +73,6 @@ protected:
   Info sendTag(const Tag& tag) const;
   Info sendTag(const Info &info) const;
 
-  const Importer* m_importer;
   ParserParameters m_parameters;
 
 private:

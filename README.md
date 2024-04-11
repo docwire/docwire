@@ -494,7 +494,7 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
   std::filesystem::path("1.pst") |
-  ParseDetectedFormat<MailParserProvider>()
+  ParseDetectedFormat<MailParserProvider, OfficeFormatsParserProvider>()
     | TransformerFunc([](Info &info) // Create an importer from file name and connect it to transformer
       {
         if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
@@ -526,7 +526,7 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
   std::filesystem::path("1.pst") |
-  ParseDetectedFormat<MailParserProvider>() |
+  ParseDetectedFormat<MailParserProvider, OfficeFormatsParserProvider>() |
     TransformerFunc([](Info &info) // Create an input from file name, importer and connect them to transformer
     {
       if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail

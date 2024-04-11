@@ -35,8 +35,8 @@ class HTMLParser : public Parser
     static std::vector <std::string> getExtensions() {return {"html", "htm"};}
 		Parser& withParameters(const ParserParameters &parameters) override;
 
-		explicit HTMLParser(const std::string& file_name, const Importer* inImporter = nullptr);
-		HTMLParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
+		explicit HTMLParser(const std::string& file_name);
+		HTMLParser(const char* buffer, size_t size);
 		~HTMLParser();
 		bool isHTML();
 		tag::Metadata metaData() const;

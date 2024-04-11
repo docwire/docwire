@@ -275,8 +275,7 @@ struct PPTParser::Implementation
 	}
 };
 
-PPTParser::PPTParser(const std::string& file_name, const Importer* inImporter)
-	: Parser(inImporter)
+PPTParser::PPTParser(const std::string& file_name)
 {
 	impl = NULL;
 	try
@@ -294,8 +293,7 @@ PPTParser::PPTParser(const std::string& file_name, const Importer* inImporter)
 	}
 }
 
-PPTParser::PPTParser(const char *buffer, size_t size, const Importer* inImporter)
-	: Parser(inImporter)
+PPTParser::PPTParser(const char *buffer, size_t size)
 {
 	impl = NULL;
 	try

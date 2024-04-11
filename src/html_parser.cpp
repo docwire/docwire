@@ -667,8 +667,7 @@ struct HTMLParser::Implementation
 	DataStream* m_data_stream{};
 };
 
-HTMLParser::HTMLParser(const std::string& file_name, const Importer* inImporter)
-: Parser(inImporter)
+HTMLParser::HTMLParser(const std::string& file_name)
 {
 	impl = nullptr;
 	try
@@ -691,8 +690,7 @@ HTMLParser::HTMLParser(const std::string& file_name, const Importer* inImporter)
 	}
 }
 
-HTMLParser::HTMLParser(const char *buffer, size_t size, const Importer* inImporter)
-: Parser(inImporter)
+HTMLParser::HTMLParser(const char *buffer, size_t size)
 {
 	impl = nullptr;
 	try

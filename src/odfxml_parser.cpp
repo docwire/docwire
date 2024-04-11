@@ -69,8 +69,7 @@ struct ODFXMLParser::ExtendedImplementation
 	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-ODFXMLParser::ODFXMLParser(const std::string& file_name, const Importer* inImporter)
-  : Parser(inImporter)
+ODFXMLParser::ODFXMLParser(const std::string& file_name)
 {
 	extended_impl = NULL;
 	try
@@ -93,8 +92,7 @@ ODFXMLParser::ODFXMLParser(const std::string& file_name, const Importer* inImpor
 	}
 }
 
-ODFXMLParser::ODFXMLParser(const char *buffer, size_t size, const Importer* inImporter)
-  : Parser(inImporter)
+ODFXMLParser::ODFXMLParser(const char *buffer, size_t size)
 {
 	extended_impl = NULL;
 	try

@@ -23,7 +23,6 @@
 
 namespace docwire
 {
-class Importer;
 
 /**
  * @brief Wraps single function (NewNodeCallback) into ChainElement object

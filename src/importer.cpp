@@ -65,15 +65,18 @@ public:
   }
 
   void
-  process(Info& info)
+  process(Info& info, bool document_envelope = true)
   {
     if (!std::holds_alternative<tag::File>(info.tag))
     {
       m_owner.emit(info);
       return;
     }
-    Info new_doc(tag::Document{});
-    m_owner.emit(new_doc);
+    if (document_envelope)
+    {
+      Info new_doc(tag::Document{});
+      m_owner.emit(new_doc);
+    }
     auto file = std::get<tag::File>(info.tag);
     if (std::holds_alternative<std::filesystem::path>(file.source))
     {
@@ -84,9 +87,8 @@ public:
         throw FileNotReadable("file " + file_path.string() + " is not readable");
       std::unique_ptr<ParserBuilder> builder = m_owner.findParserByExtension(file_path.string());
       if (!builder)
-        throw UnknownFormat("File format was not recognized.");
-      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
-        .withImporter(m_owner)
+        throw UnknownFormat("Format was not recognized by extension for file " + file_path.string());
+      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](Info &info){ process(info, false); }})
         .withParameters(m_parameters);
         try
         {
@@ -106,8 +108,7 @@ public:
           {
             throw ParsingFailed("Error parsing file: " + file_path.string()  + ". Tried different parsers, but file could not be recognized as another format. File may be corrupted or encrypted", ex);
           }
-          second_builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
-                  .withImporter(m_owner)
+          second_builder->withOnNewNodeCallbacks({[this](Info &info){ process(info, false); }})
                   .withParameters(m_parameters)
                   .build(buffer.data(), buffer.size())->parse();
         }
@@ -118,14 +119,16 @@ public:
       std::vector<char> buffer = std::vector<char>((std::istreambuf_iterator<char>(*input_stream)), std::istreambuf_iterator<char>());
       std::unique_ptr<ParserBuilder> builder = m_owner.findParserByData(buffer);
       if (!builder)
-        throw UnknownFormat("File format was not recognized.");
-      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
-        .withImporter(m_owner)
+        throw UnknownFormat("Format of data in buffer was not recognized.");
+      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](Info &info){ process(info, false);}})
         .withParameters(m_parameters);
       builder_ref.build(buffer.data(), buffer.size())->parse();
     }
-    Info end_doc(tag::CloseDocument{});
-    m_owner.emit(end_doc);
+    if (document_envelope)
+    {
+      Info end_doc(tag::CloseDocument{});
+      m_owner.emit(end_doc);
+    }
   }
 
   void

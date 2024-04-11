@@ -8262,8 +8262,7 @@ PDFParser::Implementation::PDFReader::OperatorCodes PDFParser::Implementation::P
 
 std::mutex podofo_mutex;
 
-PDFParser::PDFParser(const std::string& file_name, const Importer* inImporter)
-  : Parser(inImporter)
+PDFParser::PDFParser(const std::string& file_name)
 {
 	impl = NULL;
 	try
@@ -8287,8 +8286,7 @@ PDFParser::PDFParser(const std::string& file_name, const Importer* inImporter)
 	}
 }
 
-PDFParser::PDFParser(const char* buffer, size_t size, const Importer* inImporter)
-  : Parser(inImporter)
+PDFParser::PDFParser(const char* buffer, size_t size)
 {
 	impl = NULL;
 	try

@@ -636,8 +636,7 @@ struct DOCParser::Implementation
 	std::string m_file_name;
 };
 
-DOCParser::DOCParser(const std::string& file_name, const Importer* inImporter)
-: Parser(inImporter)
+DOCParser::DOCParser(const std::string& file_name)
 {
 	impl = NULL;
 	try
@@ -655,8 +654,7 @@ DOCParser::DOCParser(const std::string& file_name, const Importer* inImporter)
 	}
 }
 
-DOCParser::DOCParser(const char *buffer, size_t size, const Importer* inImporter)
-: Parser(inImporter)
+DOCParser::DOCParser(const char *buffer, size_t size)
 {
 	impl = NULL;
 	try

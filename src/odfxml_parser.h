@@ -19,8 +19,6 @@
 namespace docwire
 {
 
-class Importer;
-
 class ODFXMLParser : public Parser,
                      public CommonXMLDocumentParser
 {
@@ -36,8 +34,8 @@ class ODFXMLParser : public Parser,
     static std::vector <std::string> getExtensions() {return {"fodt", "fods", "fodp", "fodg"};}
 		Parser& withParameters(const ParserParameters &parameters) override;
 
-		ODFXMLParser(const std::string &file_name, const Importer* inImporter = nullptr);
-		ODFXMLParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
+		ODFXMLParser(const std::string &file_name);
+		ODFXMLParser(const char* buffer, size_t size);
 		~ODFXMLParser();
 		bool isODFXML();
 		std::string plainText(XmlParseMode mode, FormattingStyle& formatting_style) const;

@@ -82,14 +82,12 @@ OCRParser::OCRParser(const OCRParser& ocr_parser)
   }
 }
 
-OCRParser::OCRParser(const std::string& file_name, const Importer* inImporter)
-: Parser(inImporter)
+OCRParser::OCRParser(const std::string& file_name)
 {
   impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{file_name}, ImplementationDeleter{}};
 }
 
-OCRParser::OCRParser(const char* buffer, size_t size, const Importer* inImporter)
-: Parser(inImporter)
+OCRParser::OCRParser(const char* buffer, size_t size)
 {
   impl = std::unique_ptr<Implementation, ImplementationDeleter> {new Implementation{buffer, size}, ImplementationDeleter{}};
 }

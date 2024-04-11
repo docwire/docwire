@@ -2061,8 +2061,7 @@ struct IWorkParser::Implementation
 	}
 };
 
-IWorkParser::IWorkParser(const std::string& file_name, const Importer* inImporter)
-	: Parser(inImporter)
+IWorkParser::IWorkParser(const std::string& file_name)
 {
 	impl = NULL;
 	try
@@ -2080,8 +2079,7 @@ IWorkParser::IWorkParser(const std::string& file_name, const Importer* inImporte
 	}
 }
 
-IWorkParser::IWorkParser(const char* buffer, size_t size, const Importer* inImporter)
-	: Parser(inImporter)
+IWorkParser::IWorkParser(const char* buffer, size_t size)
 {
 	impl = NULL;
 	try

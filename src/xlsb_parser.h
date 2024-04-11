@@ -29,8 +29,8 @@ class XLSBParser : public Parser
 		Implementation* impl;
 
 	public:
-		XLSBParser(const std::string& file_name, const Importer* inImporter = nullptr);
-		XLSBParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
+		XLSBParser(const std::string& file_name);
+		XLSBParser(const char* buffer, size_t size);
 		~XLSBParser();
     static std::vector<std::string> getExtensions() {return {"xlsb"};}
 		bool isXLSB();
