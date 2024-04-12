@@ -246,6 +246,7 @@ EMLParser::parse() const
 		docwire_log(error) << "The specified file is not a valid EML file";
 		throw RuntimeError("The specified file is not a valid EML file");
 	}
+	sendTag(metaData());
 	docwire_log(debug) << "stream_pos=" << impl->m_data_stream->tellg();
 	impl->m_data_stream->clear();
 	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
@@ -257,7 +258,7 @@ EMLParser::parse() const
 	impl->extractPlainText(mime_entity);
 }
 
-tag::Metadata EMLParser::metaData()
+tag::Metadata EMLParser::metaData() const
 {
 	tag::Metadata metadata;
 	impl->m_data_stream->clear();

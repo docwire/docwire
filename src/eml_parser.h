@@ -29,7 +29,7 @@ class EMLParser : public Parser
 	private:
 		struct Implementation;
 		Implementation* impl;
-		tag::Metadata metaData();
+		tag::Metadata metaData() const;
 
 	public:
 		EMLParser(const std::string& file_name);

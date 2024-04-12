@@ -292,7 +292,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         "1.docx", "2.docx", "3.docx", "4.docx", "5.docx", "6.docx", "7.docx", "8.docx", "9.docx", "10.docx",
         "1.doc", "2.doc", "3.doc", "4.doc", "5.doc", "6.doc", "7.doc", "8.doc", "9.doc",
-        "1.html", "2.html", "3.html", "4.html", "5.html", "6.html", "7.html", "8.html", "9.html"
+        "1.html", "2.html", "3.html", "4.html", "5.html", "6.html", "7.html", "8.html", "9.html",
+        "first.eml"
                       ),
     [](const ::testing::TestParamInfo<HTMLWriterTest::ParamType>& info) {
         std::string file_name = info.param;
