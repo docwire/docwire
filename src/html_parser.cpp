@@ -744,6 +744,7 @@ void
 HTMLParser::parse() const
 {
 	docwire_log(debug) << "Using HTML parser.";
+	sendTag(metaData());
 	if (!impl->m_data_stream->open())
 		throw RuntimeError("Error opening file " + impl->m_file_name);
 	size_t size = impl->m_data_stream->size();
@@ -753,7 +754,6 @@ HTMLParser::parse() const
 	impl->m_data_stream->close();
 	SaxParser parser(content, impl->m_skip_decoding, this);
 	parser.parse(content);
-	sendTag(metaData());
 }
 
 tag::Metadata HTMLParser::metaData() const

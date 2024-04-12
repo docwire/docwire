@@ -346,7 +346,20 @@ int main(int argc, char* argv[])
   std::stringstream out_stream;
 
   std::ifstream("data_processing_definition.docx", std::ios_base::binary) | ParseDetectedFormat<OfficeFormatsParserProvider>() | HtmlExporter() | out_stream;
-  assert(out_stream.str() == "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>DocWire</title>\n</head>\n<body>\n<p>Data processing refers to the activities performed on raw data to convert it into meaningful information. It involves collecting, organizing, analyzing, and interpreting data to extract useful insights and support decision-making. This can include tasks such as sorting, filtering, summarizing, and transforming data through various computational and statistical methods.</p><p>Data processing is essential in various fields, including business, science, and technology, as it enables organizations to derive valuable knowledge from large datasets, make informed decisions, and improve overall efficiency.</p></body>\n</html>\n");
+  assert(out_stream.str() ==
+    "<!DOCTYPE html>\n"
+    "<html>\n"
+    "<head>\n"
+      "<meta charset=\"utf-8\">\n"
+      "<title>DocWire</title>\n"
+      "<meta name=\"author\" content=\"\">\n"
+      "<meta name=\"creation-date\" content=\"2024-01-14 16:22:52\">\n"
+      "<meta name=\"last-modified-by\" content=\"\">\n"
+      "<meta name=\"last-modification-date\" content=\"2024-01-14 16:35:33\">\n"
+    "</head>\n"
+    "<body>\n"
+      "<p>Data processing refers to the activities performed on raw data to convert it into meaningful information. It involves collecting, organizing, analyzing, and interpreting data to extract useful insights and support decision-making. This can include tasks such as sorting, filtering, summarizing, and transforming data through various computational and statistical methods.</p><p>Data processing is essential in various fields, including business, science, and technology, as it enables organizations to derive valuable knowledge from large datasets, make informed decisions, and improve overall efficiency.</p></body>\n"
+    "</html>\n");
 
   return 0;
 }

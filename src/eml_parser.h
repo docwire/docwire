@@ -29,7 +29,7 @@ class EMLParser : public Parser
 	private:
 		struct Implementation;
 		Implementation* impl;
-		void plainText() const;
+		tag::Metadata metaData();
 
 	public:
 		EMLParser(const std::string& file_name);
@@ -39,7 +39,6 @@ class EMLParser : public Parser
 		static std::vector<std::string> getExtensions() {return {"eml"};}
 
 		bool isEML() const;
-		tag::Metadata metaData();
 };
 
 } // namespace docwire

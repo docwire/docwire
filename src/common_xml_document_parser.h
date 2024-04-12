@@ -30,7 +30,7 @@ enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
 	functions for both parsers.
 	How inheritance works:
 	Child classes (ODFOOXMLParser and ODFXMLParser for now) may want to add or change handlers for some xml tags
-	(using registerODFOOXMLCommandHandler). Besides they have to implement two methods: plainText and metaData.
+	(using registerODFOOXMLCommandHandler).
 **/
 class CommonXMLDocumentParser
 {
@@ -130,8 +130,6 @@ class CommonXMLDocumentParser
 	public:
 		CommonXMLDocumentParser();
 		virtual ~CommonXMLDocumentParser();
-		virtual void plainText(XmlParseMode mode) const = 0;
-		virtual tag::Metadata metaData() const = 0;
 };
 
 } // namespace docwire

@@ -493,7 +493,7 @@ bool ODFOOXMLParser::isODFOOXML()
 	return true;
 }
 
-void ODFOOXMLParser::plainText(XmlParseMode mode) const
+void ODFOOXMLParser::parse(XmlParseMode mode) const
 {
 	ZipReader zipfile;
 	if (extended_impl->m_buffer)
@@ -757,8 +757,8 @@ void
 ODFOOXMLParser::parse() const
 {
 	docwire_log(debug) << "Using ODF/OOXML parser.";
-	plainText(XmlParseMode::PARSE_XML);
 	trySendTag(metaData());
+	parse(XmlParseMode::PARSE_XML);
 }
 
 Parser& ODFOOXMLParser::addOnNewNodeCallback(NewNodeCallback callback)

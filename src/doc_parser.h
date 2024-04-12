@@ -30,7 +30,7 @@ class DOCParser : public Parser
 		friend class TextHandler;
 		friend class SubDocumentHandler;
 		friend class TableHandler;
-		void plainText() const;
+		tag::Metadata metaData() const;
 
 	public:
 
@@ -42,7 +42,6 @@ class DOCParser : public Parser
 		DOCParser(const char* buffer, size_t size);
 		~DOCParser();
 		bool isDOC();
-		tag::Metadata metaData() const;
 
 	DOCWIRE_EXCEPTION_DEFINE(ParsingError, RuntimeError);
 };

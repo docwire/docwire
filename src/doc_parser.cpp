@@ -704,8 +704,11 @@ bool DOCParser::isDOC()
 	return true;
 }
 
-void DOCParser::plainText() const
+void DOCParser::parse() const
 {
+	docwire_log(debug) << "Using DOC parser.";
+	sendTag(metaData());
+
 	CurrentState curr_state;
 	docwire_log(debug) << "Opening " << impl->m_file_name << " as OLE file to parse all embedded objects in supported formats.";
 	//Pointer to storage will be passed to parser from wv2 library. This pointer will be deleted, so allocate storage on heap
@@ -820,15 +823,6 @@ Parser& DOCParser::withParameters(const ParserParameters &parameters)
 {
 	Parser::withParameters(parameters);
 	return *this;
-}
-
-void
-DOCParser::parse() const
-{
-	docwire_log(debug) << "Using DOC parser.";
-	plainText();
-
-	sendTag(metaData());
 }
 
 } // namespace docwire

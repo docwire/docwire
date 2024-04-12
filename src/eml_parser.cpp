@@ -236,9 +236,11 @@ bool EMLParser::isEML() const
 	return has_from && has_date_time;
 }
 
-void EMLParser::plainText() const
+void
+EMLParser::parse() const
 {
 	docwire_log_func();
+	docwire_log(debug) << "Using EML parser.";
 	if (!isEML())
 	{
 		docwire_log(error) << "The specified file is not a valid EML file";
@@ -297,13 +299,6 @@ tag::Metadata EMLParser::metaData()
 	if (!sender.empty())
 		metadata.email_attrs->sender = sender;
 	return metadata;
-}
-
-void
-EMLParser::parse() const
-{
-	docwire_log(debug) << "Using EML parser.";
-	plainText();
 }
 
 } // namespace docwire

@@ -33,6 +33,8 @@ class ODFOOXMLParser : public Parser,
   void onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
                      const ZipReader* zipfile, std::string& text,
                      bool& children_processed, std::string& level_suffix, bool first_on_level) const;
+    void parse(XmlParseMode mode) const;
+    tag::Metadata metaData() const;
 
 	public:
 
@@ -45,8 +47,6 @@ class ODFOOXMLParser : public Parser,
     ODFOOXMLParser(const char* buffer, size_t size);
     ~ODFOOXMLParser();
     bool isODFOOXML();
-    void plainText(XmlParseMode mode) const;
-    tag::Metadata metaData() const;
 };
 
 } // namespace docwire
