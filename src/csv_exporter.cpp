@@ -40,7 +40,7 @@ void CsvExporter::process(Info &info) const
 	impl->m_writer.write_to(info.tag, *impl->m_stream);
 	if (std::holds_alternative<tag::CloseDocument>(info.tag))
 	{
-		Info info(tag::File{impl->m_stream, std::string("")});
+		Info info{data_source{seekable_stream_ptr{impl->m_stream}}};
 		emit(info);
 		impl->m_stream.reset();
 	}

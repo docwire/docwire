@@ -355,41 +355,14 @@ class Folder
 
 struct PSTParser::Implementation
 {
-	Implementation(std::string file_name, PSTParser* owner)
-		: m_file_name(std::move(file_name)),
-      m_owner(owner)
+	Implementation(PSTParser* owner)
+		: m_owner(owner)
 	{
-		std::filesystem::path path = m_file_name;
-		m_file_name = path.make_preferred().string();
 	}
 
-  Implementation(const char* buffer, size_t size, PSTParser* owner)
-  : m_buffer(buffer),
-    m_size(size),
-    m_owner(owner)
-  {
-  }
-
-	void parse() const;
-
-  void onNewNode(NewNodeCallback callback)
-  {
-    m_on_new_node_signal.connect(callback);
-  }
-
-  void addParameter(const ParserParameters &parameters)
-  {
-    m_parameters = parameters;
-  }
+	void parse(std::shared_ptr<std::istream>) const;
 
   PSTParser* m_owner;
-  ParserParameters m_parameters;
-  bool m_error;
-  std::string m_file_name;
-  const char* m_buffer;
-  size_t m_size;
-  std::istream *m_data_stream;
-  boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 
   private:
     void parse_element(const char* buffer, size_t size, const std::string& extension="") const;
@@ -422,7 +395,7 @@ void PSTParser::Implementation::parse_internal(const Folder& root, int deep, uns
         continue;
       }
       m_owner->sendTag(tag::MailBody{});
-      m_owner->sendTag(tag::File{.source = std::make_shared<std::istringstream>(*html_text), .name = "pst_mail_body.html"});
+      m_owner->sendTag(data_source{*html_text, file_extension{".html"}});
       ++mail_counter;
       m_owner->sendTag(tag::CloseMailBody{});
     }
@@ -430,22 +403,88 @@ void PSTParser::Implementation::parse_internal(const Folder& root, int deep, uns
 		auto attachments = message.getAttachments();
     for (auto &attachment : attachments)
     {
-      std::string extension = attachment.m_name.substr(attachment.m_name.find_last_of(".") + 1);
-      std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+      file_extension extension { std::filesystem::path{attachment.m_name} };
       auto callback = m_owner->sendTag(
         tag::Attachment{.name = attachment.m_name, .size = attachment.m_size, .extension = extension});
       if(callback.skip)
       {
         continue;
       }
-      m_owner->sendTag(tag::File{.source = std::make_shared<std::istringstream>(std::string((const char*)attachment.m_raw_data.get(), attachment.m_size)), .name = attachment.m_name});
+      m_owner->sendTag(data_source{std::string((const char*)attachment.m_raw_data.get(), attachment.m_size), extension});
       m_owner->sendTag(tag::CloseAttachment{});
     }
 	m_owner->sendTag(tag::CloseMail{});
 	}
 }
 
-void PSTParser::Implementation::parse() const
+namespace
+{
+
+void libbfio_stream_initialize(libbfio_handle_t** handle, std::shared_ptr<std::istream> stream)
+{
+	if (handle == NULL)
+		throw LogicError{"Handle is null"};
+	if (*handle != NULL)
+		throw LogicError{"Handle already initialized"};
+	if (libbfio_handle_initialize(
+		handle,
+		(intptr_t*)stream.get(),
+		[](intptr_t **, libbfio_error_t **)->int { return 1; }, // free
+    	[](intptr_t **, intptr_t *, libbfio_error_t **)->int { return -1; }, // clone
+	    [](intptr_t *, int, libbfio_error_t **)->int { return 1; }, // open
+	    [](intptr_t *, libbfio_error_t **)->int { return 1; }, // close
+	    [](intptr_t* io_handle, uint8_t* buffer, size_t size, libbfio_error_t **)->ssize_t // read
+    	{
+        	std::istream* stream = reinterpret_cast<std::istream*>(io_handle);
+        	stream->read(reinterpret_cast<char*>(buffer), size);
+        	return stream->gcount();
+    	},
+	    [](intptr_t *, const uint8_t *, size_t, libbfio_error_t **)->ssize_t { return -1; }, // write
+	    [](intptr_t* io_handle, off64_t offset, int whence, libbfio_error_t **)->off64_t // seek offset
+    	{
+        	std::istream* stream = reinterpret_cast<std::istream*>(io_handle);
+        	switch (whence)
+        	{
+        		case SEEK_SET:
+            		stream->seekg(offset, std::ios_base::beg);
+            		break;
+            	case SEEK_CUR:
+            		stream->seekg(offset, std::ios_base::cur);
+            		break;
+            	case SEEK_END:
+            		stream->seekg(offset, std::ios_base::end);
+            		break;
+            	default:
+            		throw LogicError{"Invalid whence"};
+        	}
+			return stream->tellg();
+    	},
+		[](intptr_t *, libbfio_error_t **)->int { return 1; }, // exists
+	    [](intptr_t *, libbfio_error_t **)->int { return 1; }, // is open
+	    [](intptr_t* io_handle, size64_t* size, libbfio_error_t **)->int // get size
+    	{
+    		std::istream* stream = reinterpret_cast<std::istream*>(io_handle);
+    		std::streampos pos = stream->tellg();
+			if (pos == std::streampos{-1})
+				throw RuntimeError("Unable to get initial stream position");
+    		if (!stream->seekg(0, std::ios_base::end))
+				throw RuntimeError("Unable to set stream position to the end");
+        	*size = stream->tellg();
+			if (*size == std::streampos(-1))
+				throw RuntimeError("Unable to get stream position after moving to the end");
+        	if (!stream->seekg(pos, std::ios_base::beg))
+				throw RuntimeError("Unable to set stream position back to initial position");
+    		return 1;
+    	},
+	    LIBBFIO_FLAG_IO_HANDLE_MANAGED | LIBBFIO_FLAG_IO_HANDLE_CLONE_BY_FUNCTION, nullptr) != 1 )
+	{
+		throw RuntimeError{"Unable to initialize libbfio handle"};
+	}
+}
+
+} // anonymous namespace
+
+void PSTParser::Implementation::parse(std::shared_ptr<std::istream> stream) const
 {
 	libpff_file_t* file = nullptr;
 	pffError error{nullptr};
@@ -456,43 +495,18 @@ void PSTParser::Implementation::parse() const
 	}
 
   libbfio_handle_t* handle = nullptr;
-  auto time_id = std::to_string(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-  std::string filename{time_id + "_temp.pst"};
-  try
-  {
-    std::filesystem::path temp_file_path{std::filesystem::temp_directory_path().string() + "/" + time_id + "_temp.pst"};
-    filename = temp_file_path.make_preferred().string();
-  }
-  catch (std::filesystem::filesystem_error &error)
-  {
-    docwire_log(severity_level::error) << error.what();
-  }
-
-  if (!m_file_name.empty())
-  {
-    if (libpff_file_open(file, m_file_name.c_str(), LIBPFF_OPEN_READ, &error) != 1)
-    {
-      docwire_log(severity_level::error) << "Unable to open file.";
-      libpff_file_free(&file, NULL);
-      return;
-    }
-  }
-  else
-  {
-    libbfio_error_t* error = nullptr;
-    auto filename_length = filename.size();
-    libbfio_file_initialize(&handle, &error);
-    libbfio_file_set_name(handle, filename.c_str(), filename_length, &error);
-    libbfio_handle_open(handle, LIBBFIO_OPEN_READ_WRITE_TRUNCATE, &error);
-    libbfio_handle_write_buffer(handle, (const uint8_t*)m_buffer, m_size, &error);
+    libbfio_error_t* bfio_error = nullptr;
+    libbfio_stream_initialize(&handle, stream);
+    libbfio_handle_open(handle, LIBBFIO_OPEN_READ_WRITE_TRUNCATE, &bfio_error);
     libpff_file_open_file_io_handle(file, handle, LIBBFIO_OPEN_READ, &error);
-  }
 
 	pffItem root = NULL;
 	libpff_file_get_root_folder(file, &root, &error);
 	Folder root_folder(std::move(root));
   unsigned int mail_counter = 0;
+  m_owner->sendTag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
   parse_internal(root_folder, 0, mail_counter);
+  m_owner->sendTag(tag::CloseDocument{});
 
   if (file)
   {
@@ -501,45 +515,28 @@ void PSTParser::Implementation::parse() const
   }
   if (handle)
   {
-    libbfio_handle_close(handle, &error);
-    libbfio_handle_free(&handle, &error);
-    std::remove(filename.c_str());
+    libbfio_handle_close(handle, &bfio_error);
+    libbfio_handle_free(&handle, &bfio_error);
     handle = nullptr;
   }
 }
 
 void
-PSTParser::parse() const
+PSTParser::parse(const data_source& data) const
 {
 	docwire_log(debug) << "Using PST parser.";
-  impl->parse();
+  std::shared_ptr<std::istream> stream = data.istream();
+  impl->parse(stream);
 }
 
-Parser &
-PSTParser::withParameters(const ParserParameters &parameters)
+PSTParser::PSTParser()
+  : impl{std::make_unique<Implementation>(this)}
 {
-  Parser::withParameters(parameters);
-  impl->addParameter(parameters);
-  return *this;
 }
 
-PSTParser::PSTParser(const std::string& file_name)
-{
-  impl = new Implementation(file_name, this);
-}
+PSTParser::~PSTParser() = default;
 
-PSTParser::PSTParser(const char* buffer, size_t size)
-{
-  impl = new Implementation(buffer, size, this);
-}
-
-PSTParser::~PSTParser()
-{
-	delete impl;
-}
-
-bool
-PSTParser::isPST() const
+bool PSTParser::understands(const data_source& data) const
 {
 	pffError error;
 	libpff_file_t* file = NULL;
@@ -550,23 +547,10 @@ PSTParser::isPST() const
 	}
 
   libbfio_handle_t* handle = nullptr;
-  auto time_id = std::to_string(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-  std::string filename{time_id + "_temp.pst"};
-  try
-  {
-    std::filesystem::path temp_file_path{std::filesystem::temp_directory_path().string() + "/" + time_id + "_temp.pst"};
-    filename = temp_file_path.make_preferred().string();
-  }
-  catch (std::filesystem::filesystem_error &error)
-  {
-    docwire_log(severity_level::error) << error.what();
-  }
-
-  auto filename_length = filename.size();
-  libbfio_file_initialize(&handle, &error);
-  libbfio_file_set_name(handle, filename.c_str(), filename_length, &error);
-  libbfio_handle_open(handle, LIBBFIO_OPEN_READ_WRITE_TRUNCATE, &error);
-  libbfio_handle_write_buffer(handle, (const uint8_t*)impl->m_buffer, impl->m_size, &error);
+  libbfio_error_t* bfio_error = nullptr;
+  std::shared_ptr<std::istream> stream = data.istream();
+  libbfio_stream_initialize(&handle, stream);
+  libbfio_handle_open(handle, LIBBFIO_OPEN_READ_WRITE_TRUNCATE, &bfio_error);
   libpff_file_open_file_io_handle(file, handle, LIBBFIO_OPEN_READ, &error);
 
   pffItem root = NULL;
@@ -575,9 +559,8 @@ PSTParser::isPST() const
   {
     libpff_file_close(file, &error);
     libpff_file_free(&file, &error);
-    libbfio_handle_close(handle, &error);
-    libbfio_handle_free(&handle, &error);
-    std::remove(filename.c_str());
+    libbfio_handle_close(handle, &bfio_error);
+    libbfio_handle_free(&handle, &bfio_error);
     handle = nullptr;
   }
   if (result != 1)

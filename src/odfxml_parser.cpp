@@ -62,96 +62,39 @@ class ODFXMLParser::CommandHandlersSet
 
 struct ODFXMLParser::ExtendedImplementation
 {
-	const char* m_buffer;
-	size_t m_buffer_size;
-	std::string m_file_name;
 	ODFXMLParser* m_interf;
-	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 };
 
-ODFXMLParser::ODFXMLParser(const std::string& file_name)
+ODFXMLParser::ODFXMLParser()
+	: extended_impl{std::make_unique<ExtendedImplementation>()}
 {
-	extended_impl = NULL;
-	try
-	{
-		extended_impl = new ExtendedImplementation();
-		extended_impl->m_file_name = file_name;
-		extended_impl->m_buffer = NULL;
-		extended_impl->m_buffer_size = 0;
 		extended_impl->m_interf = this;
 		registerODFOOXMLCommandHandler("body", &CommandHandlersSet::onODFBody);
 		registerODFOOXMLCommandHandler("object", &CommandHandlersSet::onODFObject);
 		registerODFOOXMLCommandHandler("binary-data", &CommandHandlersSet::onODFBinaryData);
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (extended_impl)
-			delete extended_impl;
-		cleanUp();
-		throw;
-	}
 }
 
-ODFXMLParser::ODFXMLParser(const char *buffer, size_t size)
-{
-	extended_impl = NULL;
-	try
-	{
-		extended_impl = new ExtendedImplementation();
-		extended_impl->m_file_name = "Memory buffer";
-		extended_impl->m_buffer = buffer;
-		extended_impl->m_buffer_size = size;
-		extended_impl->m_interf = this;
-		registerODFOOXMLCommandHandler("body", &CommandHandlersSet::onODFBody);
-		registerODFOOXMLCommandHandler("object", &CommandHandlersSet::onODFObject);
-		registerODFOOXMLCommandHandler("binary-data", &CommandHandlersSet::onODFBinaryData);
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (extended_impl)
-			delete extended_impl;
-		cleanUp();
-		throw;
-	}
-}
+ODFXMLParser::~ODFXMLParser() = default;
 
-ODFXMLParser::~ODFXMLParser()
+bool ODFXMLParser::understands(const data_source& data) const
 {
-	if (extended_impl)
-		delete extended_impl;
-}
-
-bool ODFXMLParser::isODFXML()
-{
-	std::string xml_content;
-	if (extended_impl->m_buffer_size > 0)
-		xml_content = std::string(extended_impl->m_buffer, extended_impl->m_buffer_size);
-	else
-	{
-		std::ifstream file(extended_impl->m_file_name.c_str(), std::ios_base::in|std::ios_base::binary);
-		if (!file.is_open())
-			throw RuntimeError("Error opening file: " + extended_impl->m_file_name);
-		xml_content = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-		file.close();
-	}
+	std::string xml_content = data.string();  // TODO: maybe string lenght to check can be limited
 	if (xml_content.find("office:document") == std::string::npos)
 		return false;
 	return true;
 }
 
-void ODFXMLParser::plainText(XmlParseMode mode) const
+void ODFXMLParser::parse(const data_source& data, XmlParseMode mode) const
 {
-	std::string xml_content;
-	if (extended_impl->m_buffer_size > 0)
-		xml_content = std::string(extended_impl->m_buffer, extended_impl->m_buffer_size);
-	else
-	{
-		std::ifstream file(extended_impl->m_file_name.c_str(), std::ios_base::in|std::ios_base::binary);
-		if (!file.is_open())
-			throw RuntimeError("Error opening file: " + extended_impl->m_file_name);
-		xml_content = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-		file.close();
-	}
+	std::string xml_content = data.string();
+
+	trySendTag(tag::Document
+		{
+			.metadata = [this, &xml_content]()
+			{
+				return metaData(xml_content);
+			}
+		});
 
 	//according to the ODF specification, we must skip blank nodes. Otherwise output from flat xml will be messed up.
 	setXmlOptions(XML_PARSE_NOBLANKS);
@@ -166,24 +109,14 @@ void ODFXMLParser::plainText(XmlParseMode mode) const
 	{
 		throw RuntimeError("Error parsing Flat XML file", e);
 	}
+	trySendTag(tag::CloseDocument{});
 }
 
-tag::Metadata ODFXMLParser::metaData() const
+attributes::Metadata ODFXMLParser::metaData(const std::string& xml_content) const
 {
 	docwire_log(debug) << "Extracting metadata.";
-	tag::Metadata metadata;
+	attributes::Metadata metadata;
 
-	std::string xml_content;
-	if (extended_impl->m_buffer_size > 0)
-		xml_content = std::string(extended_impl->m_buffer, extended_impl->m_buffer_size);
-	else
-	{
-		std::ifstream file(extended_impl->m_file_name.c_str(), std::ios_base::in|std::ios_base::binary);
-		if (!file.is_open())
-			throw RuntimeError("Error opening file: " + extended_impl->m_file_name);
-		xml_content = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-		file.close();
-	}
 	try
 	{
 		parseODFMetadata(xml_content, metadata);
@@ -217,19 +150,16 @@ ODFXMLParser::withParameters(const ParserParameters &parameters)
 	return *this;
 }
 
-void
-ODFXMLParser::parse() const
+void ODFXMLParser::parse(const data_source& data) const
 {
 	docwire_log(debug) << "Using ODFXML parser.";
-  plainText(XmlParseMode::PARSE_XML);
-  Info info(metaData());
-  extended_impl->m_on_new_node_signal(info);
+	parse(data, XmlParseMode::PARSE_XML);
 }
+
 
 Parser&
 ODFXMLParser::addOnNewNodeCallback(NewNodeCallback callback)
 {
-  extended_impl->m_on_new_node_signal.connect(callback);
   CommonXMLDocumentParser::addCallback(callback);
   return *this;
 }

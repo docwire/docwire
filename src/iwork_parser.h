@@ -27,22 +27,19 @@ class IWorkParser : public Parser
 {
 	private:
 		struct Implementation;
-		Implementation* impl;
+		std::unique_ptr<Implementation> impl;
+		attributes::Metadata metaData(std::shared_ptr<std::istream> stream) const;
 
 	public:
-		IWorkParser(const std::string& file_name);
-		IWorkParser(const char* buffer, size_t size);
+		IWorkParser();
 		~IWorkParser();
-    static std::vector<std::string> getExtensions() {return {"pages", "key", "numbers"};}
-		bool isIWork();
-		std::string plainText() const;
-		tag::Metadata metaData() const;
-
-		void parse() const override
+    	static std::vector<file_extension> getExtensions()
 		{
-			sendTag(tag::Text{.text = plainText()});
-			sendTag(metaData());
+			return { file_extension{".pages"}, file_extension{".key"}, file_extension{".numbers"} };
 		}
+		bool understands(const data_source& data) const override;
+
+		void parse(const data_source& data) const override;
 
 	DOCWIRE_EXCEPTION_DEFINE(UnzipError, RuntimeError);
 	DOCWIRE_EXCEPTION_DEFINE(ParsingError, RuntimeError);

@@ -20,27 +20,19 @@
 
 namespace docwire
 {
-	class Metadata;
 
 class RTFParser : public Parser
 {
 	private:
-		struct Implementation;
-		Implementation* impl;
+		attributes::Metadata metaData(const data_source& data) const;
 
 	public:
 
-    void parse() const override;
-		Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
-		Parser& withParameters(const ParserParameters &parameters) override;
-    static std::vector <std::string> getExtensions() {return {"rtf"};}
+    	void parse(const data_source& data) const override;
+    	static std::vector<file_extension> getExtensions() { return { file_extension{".rtf"} }; }
 
-		RTFParser(const std::string& file_name);
-		RTFParser(const char* buffer, size_t size);
-		~RTFParser();
-		bool isRTF() const;
-		std::string plainText() const;
-		tag::Metadata metaData() const;
+		RTFParser();
+		bool understands(const data_source& data) const;
 };
 
 } // namespace docwire

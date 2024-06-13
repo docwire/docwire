@@ -28,15 +28,12 @@ class TXTParser : public Parser
 
 	public:
 
-    void parse() const override;
-    Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
+    void parse(const data_source& data) const override;
+	bool understands(const data_source& data) const override;
 		Parser& withParameters(const ParserParameters &parameters) override;
-		static std::vector <std::string> getExtensions();
+		static std::vector<file_extension> getExtensions();
 
-		TXTParser(const std::string& file_name);
-		TXTParser(const char* buffer, size_t size);
-		~TXTParser();
-		std::string plainText() const;
+		TXTParser();
 };
 
 } // namespace docwire

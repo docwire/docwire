@@ -9,45 +9,58 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OCR_PARSER_H
-#define DOCWIRE_OCR_PARSER_H
+#ifndef DOCWIRE_MEMORY_BUFFER_H
+#define DOCWIRE_MEMORY_BUFFER_H
 
-#include <string>
+#include <cstring>
 #include <memory>
-#include <iosfwd>
+#include <span>
 
-#include "language.h"
-#include "parser.h"
-#include "parser_builder.h"
-
-namespace docwire
-{
-
-class OCRParser : public Parser
+/**
+  * @brief Represents a memory buffer with direct access to its data.
+  * 
+  * This class provides a way to work with a raw memory buffer directly.
+  * 
+  * It is required when direct access to the raw memory is needed without additional features
+  * provided by std::vector like dynamic resizing or automatic memory management.
+  * 
+  * Using std::vector would introduce unnecessary overhead when only raw buffer access is required.
+  * 
+  * It is not straightforward to create a std::vector with uninitialized memory, and prefilling it can have a significant performance overhead due to unnecessary initialization when raw buffer access is the primary requirement.
+  */
+class memory_buffer
 {
 private:
-    struct Implementation;
-    std::unique_ptr<Implementation> impl;
+    std::unique_ptr<std::byte[]> m_buffer;
+    size_t m_size;
 
 public:
-    static std::string get_default_tessdata_prefix();
 
-    OCRParser();
-    ~OCRParser();
+    memory_buffer(size_t size)
+      : m_buffer{std::make_unique_for_overwrite<std::byte[]>(size)}, m_size{size}
+    {}
 
-    void parse(const data_source& data) const override;
-    static std::vector <file_extension> getExtensions()
+    std::byte* data()
     {
-        return { file_extension{".tiff"}, file_extension{".jpeg"}, file_extension{".bmp"}, file_extension{".png"}, file_extension{".pnm"}, file_extension{".jfif"}, file_extension{".jpg"}, file_extension{".webp"} };
+      return m_buffer.get();
     }
-    Parser& withParameters(const ParserParameters &parameters) override;
 
-    void setTessdataPrefix(const std::string& tessdata_prefix);
-    bool understands(const data_source& data) const override;
-private:
-    std::string parse(const data_source& data, const std::vector<Language>& languages) const;
+    size_t size() const
+    {
+        return m_size;
+    }
+
+    void resize(size_t new_size)
+    {
+      std::unique_ptr<std::byte[]> new_buffer = std::make_unique<std::byte[]>(new_size);
+      std::memcpy(new_buffer.get(), m_buffer.get(), std::min(m_size, new_size));
+      m_buffer = std::move(new_buffer);
+      m_size = new_size;
+    }
+
+    std::span<std::byte> span() {
+        return {m_buffer.get(), m_size};
+    }
 };
 
-} // namespace docwire
-
-#endif // DOCWIRE_OCR_PARSER_H
+#endif // DOCWIRE_MEMORY_BUFFER_H

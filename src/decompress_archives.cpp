@@ -201,25 +201,25 @@ private:
 void
 DecompressArchives::process(Info &info) const
 {
-	if (!std::holds_alternative<tag::File>(info.tag))
+	if (!std::holds_alternative<data_source>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	docwire_log(debug) << "tag::File received";
-	const tag::File& file = std::get<tag::File>(info.tag);
-	auto is_supported = [](const std::string& fn)
+	docwire_log(debug) << "data_source received";
+	const data_source& data = std::get<data_source>(info.tag);
+	auto is_supported = [](const file_extension& fe)
 	{
-		std::set<std::string> supported_extensions { ".zip", ".tar", ".rar", ".gz", ".bz2", ".xz" };
-		return supported_extensions.count(std::filesystem::path(fn).extension().string()) > 0;
+		static const std::set<file_extension> supported_extensions { file_extension{".zip"}, file_extension{".tar"}, file_extension{".rar"}, file_extension{".gz"}, file_extension{".bz2"}, file_extension{".xz"} };
+		return supported_extensions.count(fe) > 0;
 	};
-	if (!is_supported(file.access_name()))
+	if (!data.file_extension() || !is_supported(*data.file_extension()))
 	{
 		docwire_log(debug) << "Filename extension shows it is not an supported archive, skipping.";
 		emit(info);
 		return;
 	}
-	std::shared_ptr<std::istream> in_stream = file.access_stream();
+	std::shared_ptr<std::istream> in_stream = data.istream();
 	try
 	{
 		docwire_log(debug) << "Decompressing archive";
@@ -233,7 +233,7 @@ DecompressArchives::process(Info &info) const
 				docwire_log(debug) << "Skipping directory entry";
 				continue;
 			}
-			Info info(tag::File{entry.create_stream(), entry_name});
+			Info info(data_source{unseekable_stream_ptr{entry.create_stream()}, file_extension{std::filesystem::path{entry_name}}});
 			process(info);
 			docwire_log(debug) << "End of processing compressed file " << entry_name;
 		}
@@ -241,10 +241,7 @@ DecompressArchives::process(Info &info) const
 	}
 	catch (const std::exception& e)
 	{
-		docwire_log(error) << e.what();
-		in_stream->clear();
-		in_stream->seekg(std::ios::beg);
-		emit(info);
+		throw RuntimeError("Error decompressing archive", e);
 	}
 }
 

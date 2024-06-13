@@ -26,20 +26,21 @@ class HTMLParser : public Parser
 {
 	private:
 		struct Implementation;
-		Implementation* impl;
+		std::unique_ptr<Implementation> impl;
 		friend class SaxParser;
 
 	public:
 
-    void parse() const override;
-    static std::vector <std::string> getExtensions() {return {"html", "htm"};}
+    void parse(const data_source& data) const override;
+		static std::vector<file_extension> getExtensions()
+		{
+			return { file_extension{".html"}, file_extension{".htm"} };
+		}
 		Parser& withParameters(const ParserParameters &parameters) override;
 
-		explicit HTMLParser(const std::string& file_name);
-		HTMLParser(const char* buffer, size_t size);
+		HTMLParser();
 		~HTMLParser();
-		bool isHTML();
-		tag::Metadata metaData() const;
+		bool understands(const data_source& data) const override;
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).
 		void skipCharsetDecoding();
 };

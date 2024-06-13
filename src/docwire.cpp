@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
 		}
 		if (vm.count("attachment_extension"))
 		{
-			chain = chain | TransformerFunc(StandardFilter::filterByAttachmentType({vm["attachment_extension"].as<std::string>()}));
+			chain = chain | TransformerFunc(StandardFilter::filterByAttachmentType({file_extension{vm["attachment_extension"].as<std::string>()}}));
 		}
 
 		switch (vm["output_type"].as<OutputType>())

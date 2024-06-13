@@ -26,23 +26,15 @@ class XLSParser : public Parser
 {
 	private:
 		struct Implementation;
-		Implementation* impl;
+		std::unique_ptr<Implementation> impl;
 
 	public:
-		XLSParser(const std::string& file_name);
-		XLSParser(const char* buffer, size_t size);
+		XLSParser();
 		~XLSParser();
-    static std::vector<std::string> getExtensions() {return {"xls"};}
-		bool isXLS();
-		std::string plainText() const;
-		std::string plainText(ThreadSafeOLEStorage& storage) const;
-		tag::Metadata metaData() const;
-		
-		void parse() const override
-  		{
-			sendTag(tag::Text{.text = plainText()});
-    		sendTag(metaData());
-		}
+    	static std::vector<file_extension> getExtensions() {return { file_extension{".xls"} };}
+		bool understands(const data_source& data) const override;
+		void parse(const data_source& data) const override;
+		std::string parse(ThreadSafeOLEStorage& storage) const;
 };
 
 } // namespace docwire

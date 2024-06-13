@@ -14,6 +14,7 @@
 #define DOCWIRE_TAGS_H
 
 #include <ctime>
+#include "data_source.h"
 #include "log.h"
 #include "log_ctime.h"
 #include "log_empty_struct.h"
@@ -25,10 +26,6 @@
 
 namespace docwire
 {
-
-template<class... Ts>
-struct overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 namespace attributes
 {
@@ -55,6 +52,21 @@ struct Email
   void log_to_record_stream(log_record_stream& s) const
   {
     s << docwire_log_streamable_obj(*this, from, date, to, subject, reply_to, sender);
+  }
+};
+
+struct Metadata
+{
+  std::optional<std::string> author;
+  std::optional<tm> creation_date;
+  std::optional<std::string> last_modified_by;
+  std::optional<tm> last_modification_date;
+  std::optional<size_t> page_count;
+  std::optional<size_t> word_count;
+  std::optional<attributes::Email> email_attrs;
+  void log_to_record_stream(log_record_stream& s) const
+  {
+    s << docwire_log_streamable_obj(*this, author, creation_date, last_modified_by, last_modification_date, page_count, word_count, email_attrs);
   }
 };
 
@@ -268,10 +280,10 @@ struct Attachment
 {
   std::optional<std::string> name;
   size_t size;
-  std::optional<std::string> extension;
+  std::optional<file_extension> extension;
   void log_to_record_stream(log_record_stream& s) const
   {
-    s << docwire_log_streamable_obj(*this, name, size, extension);
+    s << docwire_log_streamable_obj(*this, name, size);
   }
 };
 
@@ -289,21 +301,6 @@ struct Folder
 
 struct CloseFolder { };
 
-struct Metadata
-{
-  std::optional<std::string> author;
-  std::optional<tm> creation_date;
-  std::optional<std::string> last_modified_by;
-  std::optional<tm> last_modification_date;
-  std::optional<size_t> page_count;
-  std::optional<size_t> word_count;
-  std::optional<attributes::Email> email_attrs;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, author, creation_date, last_modified_by, last_modification_date, page_count, word_count, email_attrs);
-  }
-};
-
 struct Comment
 {
   std::optional<std::string> author;
@@ -318,50 +315,14 @@ struct Comment
 struct Page { };
 struct ClosePage { };
 
-struct File
+struct Document
 {
-  std::variant<std::filesystem::path, std::shared_ptr<std::istream>> source;
-	std::optional<std::string> name;
-
-  std::shared_ptr<std::istream> access_stream() const
-  {
-    return std::visit(
-      overloaded {
-        [](const std::filesystem::path& source) {
-          return std::shared_ptr<std::istream>(new std::ifstream(source, std::ios::binary));
-        },
-        [](std::shared_ptr<std::istream> source) {
-          return source;
-        }
-      },
-	  	source
-    );
-  };
-
-  std::string access_name() const
-  {
-    return std::visit(
-      overloaded {
-        [](const std::filesystem::path& source) {
-          return source.string();
-        },
-        [this](std::shared_ptr<std::istream> source) {
-          return name.value_or("");
-        }
-      },
-      source
-    );
-  }
-
+  std::function<attributes::Metadata()> metadata = []() { return attributes::Metadata{}; };
   void log_to_record_stream(log_record_stream& s) const
   {
-    s << docwire_log_streamable_obj(*this/*, source*/, name);
   }
 };
 
-struct CloseFile { };
-
-struct Document { };
 struct CloseDocument { };
 
 using Variant = std::variant<
@@ -406,12 +367,10 @@ using Variant = std::variant<
   CloseAttachment,
   Folder,
   CloseFolder,
-  Metadata,
   Comment,
   Page,
   ClosePage,
-  File,
-  CloseFile,
+  data_source,
   Document,
   CloseDocument
 >;

@@ -49,9 +49,14 @@ public:
   virtual ~Parser() = default;
 
   /**
+   * @brief Checks if parser can parse specified data
+  */
+  virtual bool understands(const data_source& data) const = 0;
+
+  /**
    * @brief Executes text parsing
    */
-  virtual void parse() const = 0;
+  virtual void parse(const data_source& data) const = 0;
   /**
    * @brief Adds new function to execute when new node will be created. Node is a part of parsed text.
    * Depends on the kind of parser it could be. For example, email from pst file or page from pdf file.

@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_MISC_H
 #define DOCWIRE_MISC_H
 
+#include "data_source.h"
 #include "defines.h"
 #include <filesystem>
 #include <string>
@@ -79,9 +80,7 @@ DllExport std::string int_to_str(int i);
 
 DllExport int str_to_int(const std::string& s);
 
-DllExport bool is_encrypted_with_ms_offcrypto(const std::string& file_name);
-
-DllExport bool is_encrypted_with_ms_offcrypto(const char* buffer, size_t buffer_size);
+DllExport bool is_encrypted_with_ms_offcrypto(const data_source& data);
 
 DllExport tm *thread_safe_gmtime (const time_t *timer, struct tm &time_buffer);
 

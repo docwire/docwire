@@ -134,7 +134,7 @@ static bool read_vt_filetime(ThreadSafeOLEStreamReader* reader, tm& time)
 	return true;
 }
 
-void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, tag::Metadata& meta)
+void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metadata& meta)
 {
 	docwire_log(debug) << "Extracting metadata.";
 	if (!storage.isValid())

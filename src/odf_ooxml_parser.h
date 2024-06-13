@@ -24,7 +24,7 @@ class ODFOOXMLParser : public Parser,
 {
   private:
     struct ExtendedImplementation;
-    ExtendedImplementation* extended_impl;
+    std::unique_ptr<ExtendedImplementation> extended_impl;
     class CommandHandlersSet;
     int lastOOXMLRowNum();
     void setLastOOXMLRowNum(int r);
@@ -33,20 +33,22 @@ class ODFOOXMLParser : public Parser,
   void onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
                      const ZipReader* zipfile, std::string& text,
                      bool& children_processed, std::string& level_suffix, bool first_on_level) const;
-    void parse(XmlParseMode mode) const;
-    tag::Metadata metaData() const;
+    void parse(const data_source& data, XmlParseMode mode) const;
+    attributes::Metadata metaData(ZipReader& zipfile) const;
 
 	public:
 
-    void parse() const override;
+    void parse(const data_source& data) const override;
     Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
-    static std::vector <std::string> getExtensions() {return {"odt", "ods", "odp", "odg", "docx", "xlsx", "pptx", "ppsx"};}
+    static std::vector<file_extension> getExtensions()
+    {
+      return { file_extension{".odt"}, file_extension{".ods"}, file_extension{".odp"}, file_extension{".odg"}, file_extension{".docx"}, file_extension{".xlsx"}, file_extension{".pptx"}, file_extension{".ppsx"}};
+    }
     Parser& withParameters(const ParserParameters &parameters) override;
 
-    ODFOOXMLParser(const std::string &file_name);
-    ODFOOXMLParser(const char* buffer, size_t size);
+    ODFOOXMLParser();
     ~ODFOOXMLParser();
-    bool isODFOOXML();
+    bool understands(const data_source& data) const override;
 };
 
 } // namespace docwire

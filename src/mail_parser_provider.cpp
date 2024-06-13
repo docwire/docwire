@@ -29,7 +29,7 @@ MailParserProvider::MailParserProvider()
 }
 
 std::unique_ptr<ParserBuilder>
-MailParserProvider::findParserByExtension(const std::string &inExtension) const
+MailParserProvider::findParserByExtension(const file_extension& inExtension) const
 {
   if (isExtensionInVector(inExtension, EMLParser::getExtensions()))
   {
@@ -42,50 +42,40 @@ MailParserProvider::findParserByExtension(const std::string &inExtension) const
   return nullptr;
 }
 
-template <typename T, bool(T::*valid_method)() const>
-bool
-is_valid(const char* buffer, size_t size)
+template <typename T>
+bool parser_understands(const data_source& data)
 {
-  T parser(buffer, size);
-  return (parser.*valid_method)();
-}
-
-template <typename T, bool(T::*valid_method)()>
-bool
-is_valid(const char* buffer, size_t size)
-{
-  T parser(buffer, size);
-  return (parser.*valid_method)();
+  docwire_log_func();
+  T parser;
+  return parser.understands(data);
 }
 
 std::unique_ptr<ParserBuilder>
-MailParserProvider::findParserByData(const std::vector<char>& buffer) const
+MailParserProvider::findParserByData(const data_source& data) const
 {
-  if (is_valid<EMLParser, &EMLParser::isEML>(buffer.data(), buffer.size()))
+  docwire_log_func();
+  if (parser_understands<EMLParser>(data))
   {
     return std::make_unique<ParserBuilderWrapper<EMLParser>>();
   }
-  else if (is_valid<PSTParser, &PSTParser::isPST>(buffer.data(), buffer.size()))
+  else if (parser_understands<PSTParser>(data))
   {
     return std::make_unique<ParserBuilderWrapper<PSTParser>>();
   }
   return nullptr;
 }
 
-std::set<std::string>
-MailParserProvider::getAvailableExtensions() const
+std::set<file_extension> MailParserProvider::getAvailableExtensions() const
 {
   return available_extensions;
 }
 
-void
-MailParserProvider::addExtensions(const std::vector<std::string> &inExtensions)
+void MailParserProvider::addExtensions(const std::vector<file_extension> &inExtensions)
 {
   available_extensions.insert(inExtensions.begin(), inExtensions.end());
 }
 
-bool
-MailParserProvider::isExtensionInVector(const std::string &extension, const std::vector<std::string> &extension_list) const
+bool MailParserProvider::isExtensionInVector(const file_extension& extension, const std::vector<file_extension>& extension_list) const
 {
   return std::find(extension_list.begin(), extension_list.end(), extension) != extension_list.end();
 }

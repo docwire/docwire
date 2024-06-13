@@ -35,21 +35,9 @@ public:
   }
 
   std::unique_ptr<Parser>
-  build(const std::string &inFileName) const override
+  build() const override
   {
-    auto parser = std::make_unique<ParserType>(inFileName);
-    for (auto &callback : m_callbacks)
-    {
-      parser->addOnNewNodeCallback(callback);
-    }
-    parser->withParameters(m_parameters);
-    return parser;
-  }
-
-  std::unique_ptr<Parser>
-  build(const char* buffer, size_t size) const override
-  {
-    auto parser = std::make_unique<ParserType>(buffer, size);
+    auto parser = std::make_unique<ParserType>();
     for (auto &callback : m_callbacks)
     {
       parser->addOnNewNodeCallback(callback);

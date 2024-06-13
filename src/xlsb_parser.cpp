@@ -63,9 +63,6 @@ struct XLSBParser::Implementation
 		}
 	};
 
-	const char* m_buffer;
-	size_t m_buffer_size;
-	std::string m_file_name;
 	XLSBContent m_xlsb_content;
 
 	class XLSBReader
@@ -589,7 +586,7 @@ struct XLSBParser::Implementation
 		}
 	}
 
-	void readMetadata(ZipReader& unzip, tag::Metadata& metadata)
+	void readMetadata(const ZipReader& unzip, attributes::Metadata& metadata)
 	{
 		docwire_log(debug) << "Extracting metadata.";
 		std::string data;
@@ -662,103 +659,46 @@ struct XLSBParser::Implementation
 		}
 	}
 
-	bool fileIsEncrypted()
-	{
-		if (m_buffer)
-			return is_encrypted_with_ms_offcrypto(m_buffer, m_buffer_size);
-		else
-			return is_encrypted_with_ms_offcrypto(m_file_name);
-	}
 };
 
-XLSBParser::XLSBParser(const std::string& file_name)
+XLSBParser::XLSBParser()
+	: impl(std::make_unique<Implementation>())
 {
-	impl = NULL;
+}
+
+XLSBParser::~XLSBParser() = default;
+
+bool XLSBParser::understands(const data_source& data) const
+{
+	ZipReader unzip{data};
 	try
 	{
-		impl = new Implementation();
-		impl->m_file_name = file_name;
-		impl->m_buffer = NULL;
-		impl->m_buffer_size = 0;
-	}
-	catch (std::bad_alloc& ba)
+		unzip.open();
+	if (!unzip.exists("xl/workbook.bin"))
 	{
-		if (impl)
-			delete impl;
-		throw;
+		docwire_log(error) << "Cannot find xl/woorkbook.bin.";
+		return false;
 	}
-}
-
-XLSBParser::XLSBParser(const char *buffer, size_t size)
-{
-	impl = NULL;
-	try
-	{
-		impl = new Implementation();
-		impl->m_file_name = "Memory buffer";
-		impl->m_buffer = buffer;
-		impl->m_buffer_size = size;
 	}
-	catch (std::bad_alloc& ba)
+	catch (const std::exception&)
 	{
-		if (impl)
-			delete impl;
-		throw;
-	}
-}
-
-XLSBParser::~XLSBParser()
-{
-	delete impl;
-}
-
-bool XLSBParser::isXLSB()
-{
-	ZipReader unzip;
-	if (impl->m_buffer)
-		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
-	else
-		unzip.setArchiveFile(impl->m_file_name);
-	bool res_open = unzip.open();
-	if (res_open == false)
-	{
-		if (impl->fileIsEncrypted())
+		if (is_encrypted_with_ms_offcrypto(data))
 			throw EncryptedFileException("File is encrypted according to the Microsoft Office Document Cryptography Specification. Exact file format cannot be determined");
 		docwire_log(error) << "Cannot unzip file.";
 		return false;
 	}
-	if (!unzip.exists("xl/workbook.bin"))
-	{
-		unzip.close();
-		docwire_log(error) << "Cannot find xl/woorkbook.bin.";
-		return false;
-	}
-	unzip.close();
 	return true;
 }
 
-tag::Metadata XLSBParser::metaData() const
+attributes::Metadata XLSBParser::metaData(const ZipReader& unzip) const
 {
-	tag::Metadata metadata;
-	ZipReader unzip;
-	if (impl->m_buffer)
-		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
-	else
-		unzip.setArchiveFile(impl->m_file_name);
-	if(!unzip.open())
-	{
-		if (impl->fileIsEncrypted())
-			throw EncryptedFileException("File is encrypted according to the Microsoft Office Document Cryptography Specification. Exact file format cannot be determined");
-		throw RuntimeError("Cannot open " + impl->m_file_name + " as zip file");
-	}
+	attributes::Metadata metadata;
 	if (!unzip.exists("docProps/app.xml"))
 	{
-		unzip.close();
 		throw RuntimeError("Cannot find docProps/app.xml");
 	}
 	if (!unzip.exists("docProps/core.xml"))
 	{
-		unzip.close();
 		throw RuntimeError("Cannot find docProps/core.xml");
 	}
 	try
@@ -767,39 +707,41 @@ tag::Metadata XLSBParser::metaData() const
 	}
 	catch (const std::exception& e)
 	{
-		unzip.close();
 		throw RuntimeError("Error while parsing xml streams", e);
 	}
-	unzip.close();
 	return metadata;
 }
 
-std::string XLSBParser::plainText() const
+void XLSBParser::parse(const data_source& data) const
 {
 	docwire_log(debug) << "Using XLSB parser.";
+	*impl = Implementation{};
 	std::string text;
-	ZipReader unzip;
-	if (impl->m_buffer)
-		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
-	else
-		unzip.setArchiveFile(impl->m_file_name);
-	if (!unzip.open())
+	ZipReader unzip{data};
+	try
 	{
-		if (impl->fileIsEncrypted())
-			throw EncryptedFileException("File is encrypted according to the Microsoft Office Document Cryptography Specification. Exact file format cannot be determined");
-		throw RuntimeError("Cannot open file " + impl->m_file_name + " as zip file");
-	}
+		unzip.open();
+		sendTag(tag::Document
+			{
+				.metadata = [this, &unzip]() { return metaData(unzip); }
+			});
 	try
 	{
 		impl->parseXLSB(unzip, text);
 	}
 	catch (const std::exception& e)
 	{
-		unzip.close();
 		throw RuntimeError("Error parsing XLSB data", e);
 	}
-	unzip.close();
-	return text;
+	sendTag(tag::Text{.text = text});
+	sendTag(tag::CloseDocument{});
+	}
+	catch (const std::exception&)
+	{
+		if (is_encrypted_with_ms_offcrypto(data))
+			throw EncryptedFileException("File is encrypted according to the Microsoft Office Document Cryptography Specification. Exact file format cannot be determined");
+		throw RuntimeError("Cannot open stream as zip archive");
+	}
 }
 
 } // namespace docwire

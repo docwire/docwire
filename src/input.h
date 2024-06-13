@@ -14,9 +14,9 @@
 
 #include <iostream>
 #include "chain_element.h"
+#include "data_source.h"
 #include "parsing_chain.h"
 #include <filesystem>
-#include "tags.h"
 
 namespace docwire
 {
@@ -28,26 +28,26 @@ class DllExport InputChainElement
 {
 public:
   explicit InputChainElement(std::shared_ptr<std::istream> stream)
-  : m_tag{tag::File{.source=stream}}
+  : m_data{seekable_stream_ptr{stream}}
   {}
 
   template<IStreamDerived T>
   explicit InputChainElement(T&& stream)
-    : m_tag{tag::File{.source=std::make_shared<T>(std::move(stream))}}
+    : m_data{seekable_stream_ptr{std::make_shared<T>(std::move(stream))}}
   {}
 
   explicit InputChainElement(const std::filesystem::path& path)
-  : m_tag{tag::File{.source=path}}
+  : m_data{path}
   {}
 
   explicit InputChainElement(std::filesystem::path&& path)
-  : m_tag{tag::File{.source=std::move(path)}}
+  : m_data{std::move(path)}
   {}
 
   void process(ChainElement& chain_element) const;
 
 private:
-  tag::File m_tag;
+  data_source m_data;
 };
 
 inline std::shared_ptr<ParsingChain> operator|(InputChainElement&& input, std::shared_ptr<ParsingChain> parsingChain)

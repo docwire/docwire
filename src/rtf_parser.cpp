@@ -34,81 +34,14 @@ namespace docwire
 
 using namespace wvWare;
 
-struct RTFParser::Implementation
+RTFParser::RTFParser()
 {
-	std::string m_file_name;
-	DataStream* m_data_stream;
-	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
-};
-
-RTFParser::RTFParser(const std::string& file_name)
-{
-	impl = NULL;
-	try
-	{
-		impl = new Implementation();
-		impl->m_file_name = file_name;
-		impl->m_data_stream = NULL;
-		impl->m_data_stream = new FileStream(file_name);
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_data_stream)
-				delete impl->m_data_stream;
-			delete impl;
-		}
-		throw;
-	}
 }
 
-RTFParser::RTFParser(const char* buffer, size_t size)
+bool RTFParser::understands(const data_source& data) const
 {
-	impl = NULL;
-	try
-	{
-		impl = new Implementation();
-		impl->m_file_name = "Memory buffer";
-		impl->m_data_stream = NULL;
-		impl->m_data_stream = new BufferStream(buffer, size);
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_data_stream)
-				delete impl->m_data_stream;
-			delete impl;
-		}
-		throw;
-	}
-}
-
-RTFParser::~RTFParser()
-{
-	if (impl)
-	{
-		if (impl->m_data_stream)
-			delete impl->m_data_stream;
-		delete impl;
-	}
-}
-
-bool RTFParser::isRTF() const
-{
-	if (!impl->m_data_stream->open())
-		throw RuntimeError("Error opening file " + impl->m_file_name);
-	char buf[6];
-	if (!impl->m_data_stream->read(buf, sizeof(char), 5))
-	{
-		impl->m_data_stream->close();
-		docwire_log(error) << "Error reading signature from file " << impl->m_file_name << ".";
-		return false;
-	}
-	impl->m_data_stream->close();
-	buf[5] = '\0';
-	return (strcmp(buf, "{\\rtf") == 0);
+	std::string signature = data.string(length_limit{5});
+	return (signature == "{\\rtf");
 }
 
 #define RTFNAMEMAXLEN 32
@@ -554,24 +487,29 @@ namespace
 	std::mutex converter_mutex;
 } // anonymous namespace
 
-std::string RTFParser::plainText() const
+void RTFParser::parse(const data_source& data) const
 {
+	docwire_log(debug) << "Using RTF parser.";
 	UString text;
+	std::span<const std::byte> span = data.span();
+	auto stream = std::make_unique<BufferStream>(reinterpret_cast<const char*>(span.data()), span.size());
 	TextConverter* converter = NULL;
 	try
 	{
-		if (!isRTF())	//check if this is really rtf file
-			throw RuntimeError("File " + impl->m_file_name + " is not rtf");
-		if (!impl->m_data_stream->open())
-			throw RuntimeError("Error opening file " + impl->m_file_name);
-		int ch;
+		if (!understands(data))	//check if this is really rtf file
+			throw RuntimeError("Data in the stream is not an RTF document");
+		sendTag(tag::Document
+			{
+				.metadata = [this, &data]() { return metaData(data); }
+			});
+		char ch;
 		RTFParserState state;
 		state.groups.push(RTFGroup());
 		state.groups.top().uc = 1;
 		state.groups.top().in_annotation = false;
 		state.last_font_ref_num = 0;
 		int skip = 0;
-		while ((ch = impl->m_data_stream->getc()) != EOF)
+		while ((ch = stream->getc()) != EOF)
 		{
 			switch (ch)
 			{
@@ -579,12 +517,12 @@ std::string RTFParser::plainText() const
 				{
 					RTFCommand cmd;
 					long int arg;
-					if (!parseCommand(*impl->m_data_stream, cmd, arg))
+					if (!parseCommand(*stream, cmd, arg))
 						break;
 					UString fragment_text;
 					{
 						std::lock_guard<std::mutex> converter_mutex_lock(converter_mutex);
-						execCommand(*impl->m_data_stream, fragment_text, skip, state, cmd, arg, converter);
+						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter);
 					}
 					if (state.groups.top().in_annotation)
 						state.annotation_text += fragment_text;
@@ -623,13 +561,13 @@ std::string RTFParser::plainText() const
 					}
 			}
 			if (state.groups.size() == 0)	//it will crash soon if groups.size() returns zero... better to check
-				throw RuntimeError("File " + impl->m_file_name + " is corrupted");
+				throw RuntimeError("RTF file is corrupted");
 		}
-		impl->m_data_stream->close();
 		if (converter != NULL)
 			delete converter;
 		converter = NULL;
-		return ustring_to_string(text);
+		sendTag(tag::Text({.text = ustring_to_string(text)}));
+		sendTag(tag::CloseDocument{});
 	}
 	catch (std::bad_alloc& ba)
 	{
@@ -676,23 +614,11 @@ static bool parse_rtf_time(const std::string& s, tm& time)
 	return true;
 }
 
-tag::Metadata RTFParser::metaData() const
-{
-	if (!isRTF())	//check if this is really rtf file
-		throw RuntimeError("File " + impl->m_file_name + " is not rtf");
-	
-	tag::Metadata meta;
+attributes::Metadata RTFParser::metaData(const data_source& data) const
+{	
+	attributes::Metadata meta;
 	docwire_log(debug) << "Extracting metadata.";
-	if (!impl->m_data_stream->open())
-		throw RuntimeError("Error opening file " + impl->m_file_name);
-	size_t stream_size = impl->m_data_stream->size();
-	std::vector<char> content_buffer(stream_size);
-	if (!impl->m_data_stream->read(&content_buffer[0], 1, stream_size))
-	{
-		impl->m_data_stream->close();
-		throw RuntimeError("Error reading file " + impl->m_file_name);
-	}
-	std::string content(content_buffer.begin(), content_buffer.end());
+	std::string content = data.string();
 	size_t p = content.find("\\author ");
 	if (p != std::string::npos)
 	{
@@ -749,32 +675,7 @@ tag::Metadata RTFParser::metaData() const
 		std::istringstream(s) >> word_count;
 		meta.word_count = word_count;
 	}
-	impl->m_data_stream->close();
 	return meta;
-}
-
-Parser&
-RTFParser::withParameters(const ParserParameters &parameters)
-{
-	Parser::withParameters(parameters);
-	return *this;
-}
-
-void
-RTFParser::parse() const
-{
-	docwire_log(debug) << "Using RTF parser.";
-	Info info(tag::Text{.text = plainText()});
-  impl->m_on_new_node_signal(info);
-
-	Info metadata_info(metaData());
-  impl->m_on_new_node_signal(metadata_info);
-}
-
-Parser& RTFParser::addOnNewNodeCallback(NewNodeCallback callback)
-{
-  impl->m_on_new_node_signal.connect(callback);
-  return *this;
 }
 
 } // namespace docwire

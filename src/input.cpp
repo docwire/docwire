@@ -20,7 +20,7 @@ void
 InputChainElement::process(ChainElement& chain_element) const
 {
   docwire_log_func();
-  docwire_log_var(m_tag);
-  Info info{m_tag};
+  docwire_log_var(m_data);
+  Info info{m_data};
   chain_element.process(info);
 }

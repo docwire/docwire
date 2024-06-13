@@ -455,7 +455,8 @@ struct PlainTextWriter::Implementation
           [this](const tag::Footer& tag){return write_footer(tag);},
           [this](const tag::CloseFooter& tag){return write_close_footer(tag);},
           [this](const tag::Comment& tag){return write_comment(tag);},
-          [this](const tag::CloseDocument& tag){return write_close_document(tag);},
+          [this](const tag::Document& tag) { m_nested_docs_counter++; return std::shared_ptr<TextElement>(); },
+          [this](const tag::CloseDocument& tag) { m_nested_docs_counter--; return m_nested_docs_counter == 0 ? write_close_document(tag) : std::shared_ptr<TextElement>(); },
           [](const auto&) {return std::shared_ptr<TextElement>{};}
         },
 	      tag
@@ -476,6 +477,7 @@ struct PlainTextWriter::Implementation
   std::stringstream footer_stream;
   std::vector<std::vector<Cell>> table;
   std::string footer;
+  int m_nested_docs_counter { 0 };
 };
 
 PlainTextWriter::PlainTextWriter()

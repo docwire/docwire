@@ -607,7 +607,7 @@ class SaxParser : public ParserSax
 class MetaSaxParser : public ParserSax
 {
 	private:
-		tag::Metadata& m_meta;
+		attributes::Metadata& m_meta;
 
 	protected:
 		void foundTag(Node node, bool isEnd) override
@@ -655,7 +655,7 @@ class MetaSaxParser : public ParserSax
 		}
 
 	public:
-		MetaSaxParser(tag::Metadata& meta)
+		MetaSaxParser(attributes::Metadata& meta)
 			: m_meta(meta)
 		{
 		};
@@ -663,63 +663,15 @@ class MetaSaxParser : public ParserSax
 
 struct HTMLParser::Implementation
 {
-	bool m_skip_decoding{};
-	std::string m_file_name;
-	DataStream* m_data_stream{};
+	bool m_skip_decoding = false;
 };
 
-HTMLParser::HTMLParser(const std::string& file_name)
+HTMLParser::HTMLParser()
+	: impl(std::make_unique<Implementation>())
 {
-	impl = nullptr;
-	try
-	{
-		impl = new Implementation();
-		impl->m_skip_decoding = false;
-		impl->m_file_name = file_name;
-		impl->m_data_stream = nullptr;
-		impl->m_data_stream = new FileStream(file_name);
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_data_stream)
-				delete impl->m_data_stream;
-			delete impl;
-		}
-		throw;
-	}
 }
 
-HTMLParser::HTMLParser(const char *buffer, size_t size)
-{
-	impl = nullptr;
-	try
-	{
-		impl = new Implementation();
-		impl->m_skip_decoding = false;
-		impl->m_file_name = "Memory buffer";
-		impl->m_data_stream = nullptr;
-		impl->m_data_stream = new BufferStream(buffer, size);
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_data_stream)
-				delete impl->m_data_stream;
-			delete impl;
-		}
-		throw;
-	}
-}
-
-HTMLParser::~HTMLParser()
-{
-	if (impl->m_data_stream)
-		delete impl->m_data_stream;
-	delete impl;
-}
+HTMLParser::~HTMLParser() = default;
 
 Parser&
 HTMLParser::withParameters(const ParserParameters &parameters)
@@ -728,48 +680,34 @@ HTMLParser::withParameters(const ParserParameters &parameters)
 	return *this;
 }
 
-bool HTMLParser::isHTML()
+bool HTMLParser::understands(const data_source& data) const
 {
-	if (!impl->m_data_stream->open())
-		throw RuntimeError("Error opening file " + impl->m_file_name);
-	size_t size = impl->m_data_stream->size();
-	std::string content(size, 0);
-	if (!impl->m_data_stream->read(&content[0], sizeof(unsigned char), size))
-		throw RuntimeError("Error reading file " + impl->m_file_name);
-	impl->m_data_stream->close();
-	return content.find("<html") != std::string::npos || content.find("<HTML") != std::string::npos;
+	docwire_log_func();
+	std::string initial_xml = data.string(length_limit{1024});
+	if (initial_xml.find("<html") != std::string::npos || initial_xml.find("<HTML") != std::string::npos)
+		return true;
+	return false;
 }
 
 void
-HTMLParser::parse() const
+HTMLParser::parse(const data_source& data) const
 {
 	docwire_log(debug) << "Using HTML parser.";
-	sendTag(metaData());
-	if (!impl->m_data_stream->open())
-		throw RuntimeError("Error opening file " + impl->m_file_name);
-	size_t size = impl->m_data_stream->size();
-	std::string content(size, 0);
-	if (!impl->m_data_stream->read(&content[0], sizeof(unsigned char), size))
-		throw RuntimeError("Error reading file " + impl->m_file_name);
-	impl->m_data_stream->close();
+	std::string content = data.string();
+	sendTag(tag::Document
+		{
+			.metadata = [this, &content]()
+			{
+				docwire_log(debug) << "Extracting metadata.";
+				attributes::Metadata meta;
+				MetaSaxParser parser(meta);
+				parser.parse(content);
+				return meta;				
+			}
+		});
 	SaxParser parser(content, impl->m_skip_decoding, this);
 	parser.parse(content);
-}
-
-tag::Metadata HTMLParser::metaData() const
-{
-	docwire_log(debug) << "Extracting metadata.";
-	tag::Metadata meta;
-	if (!impl->m_data_stream->open())
-		throw RuntimeError("Error opening file " + impl->m_file_name);
-	size_t size = impl->m_data_stream->size();
-	std::string content(size, 0);
-	if (!impl->m_data_stream->read(&content[0], sizeof(unsigned char), size))
-		throw RuntimeError("Error reading file " + impl->m_file_name);
-	impl->m_data_stream->close();
-	MetaSaxParser parser(meta);
-	parser.parse(content);
-	return meta;
+	sendTag(tag::CloseDocument{});
 }
 
 void HTMLParser::skipCharsetDecoding()

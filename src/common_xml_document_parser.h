@@ -36,7 +36,7 @@ class CommonXMLDocumentParser
 {
 	private:
 		struct Implementation;
-		Implementation* impl;
+		std::unique_ptr<Implementation> impl;
 		class CommandHandlersSet;
 
 	//public interface for derived classes (and its components)
@@ -90,7 +90,7 @@ class CommonXMLDocumentParser
 		void extractText(const std::string& xml_contents, XmlParseMode mode, const ZipReader* zipfile, std::string& text) const;
 
 		///usefull since two parsers use this. Throws RuntimeError on fail
-		void parseODFMetadata(const std::string &xml_content, tag::Metadata& metadata) const;
+		void parseODFMetadata(const std::string &xml_content, attributes::Metadata& metadata) const;
 
 		///this is helpful function to format comment
 		const std::string formatComment(const std::string& author, const std::string& time, const std::string& text);
@@ -118,9 +118,6 @@ class CommonXMLDocumentParser
 
 		///sets options for XmlStream objects. (xmlParserOption from libxml2)
 		void setXmlOptions(int options) const;
-
-		///Cleans up associated data. Call this method in constructor of derived class in case of bad_alloc.
-		void cleanUp();
 
 		void activeEmittingSignals(bool flag) const;
 

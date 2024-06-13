@@ -25,23 +25,19 @@ namespace docwire
 class DOCParser : public Parser
 {
 	private:
-		struct Implementation;
-		Implementation* impl;
 		friend class TextHandler;
 		friend class SubDocumentHandler;
 		friend class TableHandler;
-		tag::Metadata metaData() const;
 
 	public:
-
-    void parse() const override;
+    	void parse(const data_source& data) const override;
 		Parser& withParameters(const ParserParameters &parameters) override;
-    static std::vector <std::string> getExtensions() {return {"doc", "dot"};}
+		static std::vector<file_extension> getExtensions()
+		{
+			return { file_extension{".doc"}, file_extension{".dot"} };
+		}
 
-		DOCParser(const std::string& file_name);
-		DOCParser(const char* buffer, size_t size);
-		~DOCParser();
-		bool isDOC();
+		bool understands(const data_source& data) const override;
 
 	DOCWIRE_EXCEPTION_DEFINE(ParsingError, RuntimeError);
 };

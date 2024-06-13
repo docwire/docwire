@@ -59,14 +59,14 @@ Post::~Post()
 void
 Post::process(Info &info) const
 {
-	if (!std::holds_alternative<tag::File>(info.tag))
+	if (!std::holds_alternative<data_source>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	docwire_log(debug) << "tag::File received";
-	const tag::File& file = std::get<tag::File>(info.tag);
-	std::shared_ptr<std::istream> in_stream = file.access_stream();
+	docwire_log(debug) << "data_source received";
+	const data_source& data = std::get<data_source>(info.tag);
+	std::shared_ptr<std::istream> in_stream = data.istream();
 
 	curlpp::Easy request;
 	request.setOpt<curlpp::options::Url>(impl->m_url);
@@ -108,8 +108,8 @@ Post::process(Info &info) const
 				FileName m_file_name;
 				std::shared_ptr<std::string> m_buffer;
 		};
-		std::string name = file.access_name();
-		FileName file_name { name.empty() ? impl->m_default_file_name.v : std::filesystem::path(name).filename() };
+		std::optional<file_extension> extension = data.file_extension();
+		FileName file_name { !extension ? impl->m_default_file_name.v : std::filesystem::path{std::string{"file"} + extension->string()} };
 		parts.push_back(new FileBuffer(impl->m_pipe_field_name, file_name, std::make_shared<std::string>(data_stream.str())));
 		request.setOpt(new curlpp::options::HttpPost(parts));
 	}
@@ -150,7 +150,7 @@ Post::process(Info &info) const
 	{
 		throw RequestFailed("HTTP request failed", e);
 	}
-	Info new_info(tag::File{response_stream, ""});
+	Info new_info(data_source{seekable_stream_ptr{response_stream}});
 	emit(new_info);
 }
 

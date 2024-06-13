@@ -222,10 +222,7 @@ static std::string ParseDuration(std::string& format, long value)
 
 struct IWorkParser::Implementation
 {
-	std::string m_file_name;
 	std::string m_xml_file;
-	const char* m_buffer;
-	size_t m_buffer_size;
 
 	class DataSource
 	{
@@ -1781,7 +1778,7 @@ struct IWorkParser::Implementation
 		typedef void (IWorkMetadataContent::*XmlElementHandler)(void);
 
 		XmlReader* m_xml_reader;
-		tag::Metadata* m_metadata;
+		attributes::Metadata* m_metadata;
 		bool m_in_metadata;
 		bool m_in_authors;
 		bool m_in_publication_info;
@@ -1794,7 +1791,7 @@ struct IWorkParser::Implementation
 		std::string m_creation_date;
 		std::string m_last_modify_date;
 
-		IWorkMetadataContent(XmlReader& xml_reader, tag::Metadata& metadata)
+		IWorkMetadataContent(XmlReader& xml_reader, attributes::Metadata& metadata)
 		{
 			m_xml_reader = &xml_reader;
 			m_metadata = &metadata;
@@ -1977,7 +1974,7 @@ struct IWorkParser::Implementation
 		}
 	};
 
-	void ReadMetadata(ZipReader& zipfile, tag::Metadata& metadata)
+	void ReadMetadata(ZipReader& zipfile, attributes::Metadata& metadata)
 	{
 		DataSource xml_data_source(zipfile, m_xml_file);
 		XmlReader xml_reader(xml_data_source);
@@ -1985,6 +1982,8 @@ struct IWorkParser::Implementation
 
 		if (!zipfile.loadDirectory())
 			throw UnzipError("zip file: Error while loading directory");
+		if (getIWorkType(xml_reader) == IWorkContent::encrypted)
+			throw ParsingError("File is corrupted or encrypted");
 		try
 		{
 			metadata_content.ParseMetaData();
@@ -2061,57 +2060,23 @@ struct IWorkParser::Implementation
 	}
 };
 
-IWorkParser::IWorkParser(const std::string& file_name)
+IWorkParser::IWorkParser()
+	: impl{std::make_unique<Implementation>()}
 {
-	impl = NULL;
+}
+
+IWorkParser::~IWorkParser() = default;
+
+bool IWorkParser::understands(const data_source& data) const
+{
+	ZipReader unzip {data};
 	try
 	{
-		impl = new Implementation();
-		impl->m_file_name = file_name;
-		impl->m_buffer = NULL;
-		impl->m_buffer_size = 0;
+		unzip.open();
 	}
-	catch (std::bad_alloc& ba)
+	catch (const std::exception&)
 	{
-		if (impl)
-			delete impl;
-		throw;
-	}
-}
-
-IWorkParser::IWorkParser(const char* buffer, size_t size)
-{
-	impl = NULL;
-	try
-	{
-		impl = new Implementation();
-		impl->m_file_name = "Memory buffer";
-		impl->m_buffer = buffer;
-		impl->m_buffer_size = size;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-			delete impl;
-		throw;
-	}
-}
-
-IWorkParser::~IWorkParser()
-{
-	delete impl;
-}
-
-bool IWorkParser::isIWork()
-{
-	ZipReader unzip;
-	if (impl->m_buffer)
-		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
-	else
-		unzip.setArchiveFile(impl->m_file_name);
-	if (!unzip.open())
-	{
-		docwire_log(error) << "Cannot unzip file.";
+		docwire_log(error) << "Cannot open stream as zip archive";
 		return false;
 	}
 	if (unzip.exists("index.xml"))
@@ -2122,7 +2087,6 @@ bool IWorkParser::isIWork()
 		impl->m_xml_file = "presentation.apxl";
 	if (impl->m_xml_file.empty())
 	{
-		unzip.close();
 		docwire_log(error) << "None of the following files (index.xml, index.apxl, presentation.apxl) could not be found.";
 		return false;
 	}
@@ -2130,56 +2094,25 @@ bool IWorkParser::isIWork()
 	Implementation::XmlReader xml_reader(xml_data_source);
 	if (impl->getIWorkType(xml_reader) == Implementation::IWorkContent::encrypted)
 	{
-		unzip.close();
 		docwire_log(debug) << "This is not iWork file format or file is encrypted.";
 		return false;
 	}
-	unzip.close();
 	return true;
 }
 
-tag::Metadata IWorkParser::metaData() const
-{
-	tag::Metadata metadata;
-	ZipReader unzip;
-	if (impl->m_buffer)
-		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
-	else
-		unzip.setArchiveFile(impl->m_file_name);
-	if (!unzip.open())
-		throw UnzipError("Cannot open " + impl->m_file_name + " as zip file");
-	try
-	{
-		if (unzip.exists("index.xml"))
-			impl->m_xml_file = "index.xml";
-		if (unzip.exists("index.apxl"))
-			impl->m_xml_file = "index.apxl";
-		if (unzip.exists("presentation.apxl"))
-			impl->m_xml_file = "presentation.apxl";
-		if (impl->m_xml_file.empty())
-			throw ParsingError("File cannot be processed, because none of the following files (index.xml, index.apxl, presentacion.apxl) could not be found");
-		impl->ReadMetadata(unzip, metadata);
-		unzip.close();
-		return metadata;
-	}
-	catch (const std::exception& ex)
-	{
-		unzip.close();
-		throw ParsingError("Reading metadata failed", ex);
-	}
-}
-
-std::string IWorkParser::plainText() const
+void IWorkParser::parse(const data_source& data) const
 {
 	docwire_log(debug) << "Using iWork parser.";
-	std::string text;
-	ZipReader unzip;
-	if (impl->m_buffer)
-		unzip.setBuffer(impl->m_buffer, impl->m_buffer_size);
-	else
-		unzip.setArchiveFile(impl->m_file_name);
-	if (!unzip.open())
-		throw UnzipError("Cannot open " + impl->m_file_name + " as zip file");
+	*impl = Implementation{};
+	ZipReader unzip{data};
+	try
+	{
+		unzip.open();
+	}
+	catch (const std::exception&)
+	{
+		throw UnzipError("Cannot open stream as zip archive");
+	}
 	try
 	{
 		if (unzip.exists("index.xml"))
@@ -2190,14 +2123,23 @@ std::string IWorkParser::plainText() const
 			impl->m_xml_file = "presentation.apxl";
 		if (impl->m_xml_file.empty())
 			throw ParsingError("File cannot be processed, because none of the following files (index.xml, index.apxl, presentacion.apxl) could not be found");
+		sendTag(tag::Document
+			{
+				.metadata=[this, &unzip]()
+				{
+					attributes::Metadata metadata;
+					impl->ReadMetadata(unzip, metadata);
+					return metadata;
+				}
+			});
+		std::string text;
 		impl->parseIWork(unzip, text);
-		unzip.close();
-		return text;
+		sendTag(tag::Text{.text=text});
+		sendTag(tag::CloseDocument{});
 	}
 	catch (const std::exception& ex)
 	{
-		unzip.close();
-		throw ParsingError("Extracting plaintext failed", ex);
+		throw ParsingError("Parsing failed", ex);
 	}
 }
 

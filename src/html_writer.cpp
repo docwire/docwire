@@ -83,15 +83,19 @@ std::shared_ptr<TextElement> tag_with_attributes(const std::string& tag_name, co
 struct HtmlWriter::Implementation
 {
   bool m_header_is_open { false };
+  int m_nested_docs_counter { 0 };
 
   std::shared_ptr<TextElement>
-  write_open_header()
+  write_open_header(const tag::Document& document)
   {
     std::string header = {"<!DOCTYPE html>\n"
            "<html>\n"
            "<head>\n"
            "<meta charset=\"utf-8\">\n"
            "<title>DocWire</title>\n"};
+    std::ostringstream meta_str;
+    write_metadata(document.metadata())->write_to(meta_str);
+    header += meta_str.str();
     m_header_is_open = true;
     return std::make_shared<TextElement>(header);
   }
@@ -146,7 +150,7 @@ struct HtmlWriter::Implementation
         "<style type=\"text/css\">" + style.css_text + "</style>\n"/* : ""*/);
   }
 
-  std::shared_ptr<TextElement> write_metadata(const tag::Metadata& metadata)
+  std::shared_ptr<TextElement> write_metadata(const attributes::Metadata& metadata)
   {
     std::string meta;
     if (metadata.author)
@@ -171,7 +175,7 @@ struct HtmlWriter::Implementation
 
   void write_to(const Tag& tag, std::ostream &stream)
   {
-    if (!std::holds_alternative<tag::Style>(tag) && !std::holds_alternative<tag::Metadata>(tag) && m_header_is_open)
+    if (!std::holds_alternative<tag::Style>(tag) && !std::holds_alternative<tag::Document>(tag) && !std::holds_alternative<tag::CloseDocument>(tag) && m_header_is_open)
       write_close_header_open_body()->write_to(stream);
     std::shared_ptr<TextElement> text_element = std::visit(overloaded {
       [](const tag::Paragraph& tag) { return tag_with_attributes("p", styling_attributes(tag)); },
@@ -205,10 +209,9 @@ struct HtmlWriter::Implementation
       [](const tag::CloseHeader& tag) { return std::make_shared<TextElement>("</header>"); },
       [](const tag::Footer& tag) { return std::make_shared<TextElement>("<footer>"); },
       [](const tag::CloseFooter& tag) { return std::make_shared<TextElement>("</footer>"); },
-      [this](const tag::Document& tag) { return write_open_header(); },
-      [this](const tag::CloseDocument& tag) { return write_footer(); },
+      [this](const tag::Document& tag) { m_nested_docs_counter++; return m_nested_docs_counter == 1 ? write_open_header(tag) : std::shared_ptr<TextElement>(); },
+      [this](const tag::CloseDocument& tag) { m_nested_docs_counter--; return m_nested_docs_counter == 0 ? write_footer() : std::shared_ptr<TextElement>(); },
       [this](const tag::Style& tag) { return write_style(tag); },
-      [this](const tag::Metadata& tag) { return write_metadata(tag); },
       [](const auto&) { return std::shared_ptr<TextElement>(); }
     }, tag);
     if (text_element)

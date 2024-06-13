@@ -30,7 +30,7 @@ NewNodeCallback StandardFilter::filterByFolderName(const std::vector<std::string
   };
 }
 
-NewNodeCallback StandardFilter::filterByAttachmentType(const std::vector<std::string> &types)
+NewNodeCallback StandardFilter::filterByAttachmentType(const std::vector<file_extension>& types)
 {
   return [types](Info &info)
   {
@@ -41,7 +41,7 @@ NewNodeCallback StandardFilter::filterByAttachmentType(const std::vector<std::st
     auto attachment_type = std::get<tag::Attachment>(info.tag).extension;
     if (attachment_type)
     {
-      if (!std::any_of(types.begin(), types.end(), [&attachment_type](const std::string &type){return (*attachment_type) == type;}))
+      if (!std::any_of(types.begin(), types.end(), [&attachment_type](const file_extension& type){ return (*attachment_type) == type; }))
       {
         info.skip = true;
       }

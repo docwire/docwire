@@ -22,6 +22,7 @@ struct HtmlExporter::Implementation
 {
 	std::shared_ptr<std::stringstream> m_stream;
 	HtmlWriter m_writer;
+	int m_nested_docs_level { 0 };
 };
 
 HtmlExporter::HtmlExporter()
@@ -36,13 +37,21 @@ HtmlExporter::HtmlExporter(const HtmlExporter& other)
 void HtmlExporter::process(Info &info) const
 {
 	if (std::holds_alternative<tag::Document>(info.tag) || !impl->m_stream)
-		impl->m_stream = std::make_shared<std::stringstream>();
+	{
+		++impl->m_nested_docs_level;
+		if (impl->m_nested_docs_level == 1)
+			impl->m_stream = std::make_shared<std::stringstream>();
+	}
 	impl->m_writer.write_to(info.tag, *impl->m_stream);
 	if (std::holds_alternative<tag::CloseDocument>(info.tag))
 	{
-		Info info(tag::File{impl->m_stream, std::string("")});
-		emit(info);
-		impl->m_stream.reset();
+		--impl->m_nested_docs_level;
+		if (impl->m_nested_docs_level == 0)
+		{
+			Info info(data_source{seekable_stream_ptr{impl->m_stream}});
+			emit(info);
+			impl->m_stream.reset();
+		}
 	}
 }
 

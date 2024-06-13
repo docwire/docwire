@@ -311,8 +311,9 @@ int str_to_int(const std::string& s)
 	return i;
 }
 
-static bool is_encrypted_with_ms_offcrypto(ThreadSafeOLEStorage& storage)
+bool is_encrypted_with_ms_offcrypto(const data_source& data)
 {
+	ThreadSafeOLEStorage storage(data.span());
 	if (storage.isValid())
 	{
 		std::vector<std::string> dirs;
@@ -326,18 +327,6 @@ static bool is_encrypted_with_ms_offcrypto(ThreadSafeOLEStorage& storage)
 		}
 	}
 	return false;
-}
-
-bool is_encrypted_with_ms_offcrypto(const std::string& file_name)
-{
-	ThreadSafeOLEStorage storage(file_name);
-	return is_encrypted_with_ms_offcrypto(storage);
-}
-
-bool is_encrypted_with_ms_offcrypto(const char* buffer, size_t buffer_size)
-{
-	ThreadSafeOLEStorage storage(buffer, buffer_size);
-	return is_encrypted_with_ms_offcrypto(storage);
 }
 
 tm *thread_safe_gmtime (const time_t *timer, struct tm &time_buffer)

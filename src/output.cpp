@@ -20,9 +20,9 @@ namespace docwire
 void
 OutputChainElement::process(Info &info) const
 {
-	if (!std::holds_alternative<tag::File>(info.tag))
-		throw LogicError("Only tag::File tags are supported by OutputChainElement chain element");
-	std::shared_ptr<std::istream> in_stream = std::get<tag::File>(info.tag).access_stream();
+	if (!std::holds_alternative<data_source>(info.tag))
+		throw LogicError("Only data_source tags are supported by OutputChainElement chain element");
+	std::shared_ptr<std::istream> in_stream = std::get<data_source>(info.tag).istream();
 	*m_out_stream << in_stream->rdbuf();
 }
 

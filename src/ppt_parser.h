@@ -21,27 +21,21 @@ namespace docwire
 {
 
 struct Metadata;
+class ThreadSafeOLEStorage;
 
 class PPTParser : public Parser
 {
 	private:
-		struct Implementation;
-		Implementation* impl;
+		attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage) const;
 
 	public:
-		PPTParser(const std::string& file_name);
-		PPTParser(const char* buffer, size_t size);
-		~PPTParser();
-    static std::vector<std::string> getExtensions() {return {"ppt", "pps"};}
-		bool isPPT();
-		std::string plainText() const;
-		tag::Metadata metaData() const;
-
-		void parse() const override
+		PPTParser();
+		static std::vector<file_extension> getExtensions()
 		{
-			sendTag(tag::Text{.text = plainText()});
-			sendTag(metaData());
+			return { file_extension{".ppt"}, file_extension{".pps"} };
 		}
+		bool understands(const data_source& data) const override;
+		void parse(const data_source& data) const override;
 };
 
 } // namespace docwire

@@ -692,16 +692,12 @@ namespace
 struct PDFParser::Implementation
 {
 	PoDoFo::PdfMemDocument m_pdf_document;
-  PDFParser* m_owner;
+	const PDFParser* m_owner;
 
-  Implementation(PDFParser* owner)
+  Implementation(const PDFParser* owner)
   : m_owner(owner)
   {}
 
-  ~Implementation()
-  {
-
-  }
 	class PredefinedSimpleEncodings : public std::map<std::string, unsigned int*>
 	{
 		public:
@@ -3780,7 +3776,7 @@ struct PDFParser::Implementation
 			};
 
 		private:
-			std::istream* m_data_stream;
+			std::shared_ptr<std::istream> m_data_stream;
 			std::vector<ReferenceInfo> m_references;
 			PDFDictionary m_trailer_dict;
 			bool m_got_root;
@@ -3794,7 +3790,7 @@ struct PDFParser::Implementation
 			PDFStream* m_metadata;
 
 		public:
-			PDFReader(std::istream* data_stream)
+			PDFReader(std::shared_ptr<std::istream> data_stream)
 				: m_data_stream(data_stream), m_root_dictionary(NULL), m_info(NULL), m_metadata(NULL), m_got_info(false), m_got_root(false)
 			{
 				m_root_ref = NULL;
@@ -6997,7 +6993,7 @@ struct PDFParser::Implementation
 		}
 	};
 
-	std::istream* m_data_stream;
+	std::shared_ptr<std::istream> m_data_stream;
 	PDFContent m_pdf_content;
 
   PDFContent::FontsByNames parseFonts(const PoDoFo::PdfPage& page)
@@ -8111,7 +8107,7 @@ struct PDFParser::Implementation
 		}
 	}
 
-	void parseMetadata(PDFReader& pdf_reader, tag::Metadata& metadata)
+	void parseMetadata(PDFReader& pdf_reader, attributes::Metadata& metadata)
 	{
 		//according to PDF specification, we can extract: author, creation date and last modification date.
 		//LastModifyBy is not possible. Other metadata information available in PDF are not supported in Metadata class.
@@ -8223,20 +8219,14 @@ struct PDFParser::Implementation
 		metadata.page_count = m_pdf_document.GetPages().GetCount();
 	}
 
-	void resetDataStream()
-	{
-		if (!m_data_stream->seekg(0))
-			throw RuntimeError("Cannot reset data stream to beginning.");
-	}
-
-	void loadDocument()
+	void loadDocument(const data_source& data)
 	{
 		docwire_log_func();
 		std::lock_guard<std::mutex> load_document_mutex_lock(load_document_mutex);
-		resetDataStream();
+		std::span<const std::byte> span = data.span();
 		try
 		{
-			m_pdf_document.LoadFromDevice(std::make_shared<PoDoFo::StandardStreamDevice>(*m_data_stream));
+			m_pdf_document.LoadFromDevice(std::make_shared<PoDoFo::SpanStreamDevice>(reinterpret_cast<const char*>(span.data()), span.size()));
 		}
 		catch (const PoDoFo::PdfError& e)
 		{
@@ -8262,73 +8252,25 @@ PDFParser::Implementation::PDFReader::OperatorCodes PDFParser::Implementation::P
 
 std::mutex podofo_mutex;
 
-PDFParser::PDFParser(const std::string& file_name)
+PDFParser::PDFParser()
 {
-	impl = NULL;
-	try
-	{
-		{
-			std::lock_guard<std::mutex> podofo_mutex_lock(podofo_mutex);
-			impl = new Implementation(this);
-		}
-		impl->m_data_stream = NULL;
-		impl->m_data_stream = new std::ifstream(file_name, std::ifstream::in | std::ifstream::binary);
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_data_stream)
-				delete impl->m_data_stream;
-			delete impl;
-		}
-		throw;
-	}
-}
-
-PDFParser::PDFParser(const char* buffer, size_t size)
-{
-	impl = NULL;
-	try
-	{
-		impl = new Implementation(this);
-		impl->m_data_stream = NULL;
-		impl->m_data_stream = new std::istrstream(buffer, size);
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_data_stream)
-				delete impl->m_data_stream;
-			delete impl;
-		}
-		throw;
-	}
+	std::lock_guard<std::mutex> podofo_mutex_lock(podofo_mutex);
+	impl = new Implementation(this);
 }
 
 PDFParser::~PDFParser()
 {
 	if (impl)
 	{
-		if (impl->m_data_stream)
-			delete impl->m_data_stream;
 		std::lock_guard<std::mutex> podofo_freetype_mutex_lock(podofo_freetype_mutex);
 		delete impl;
 	}
 }
 
-bool PDFParser::isPDF()
+bool PDFParser::understands(const data_source& data) const
 {
-	char buffer[5];
-	const char pdf[6] = "%PDF-";
-	impl->resetDataStream();
-	if (!impl->m_data_stream->read(buffer, 5))
-	{
-		docwire_log(error) << "Cannot read from data stream.";
-		return false;
-	}
-	if (memcmp(buffer, pdf, 5) != 0)
+	std::string buffer = data.string(length_limit{5});
+	if (buffer != "%PDF-")
 	{
 		docwire_log(warning) << "No PDF header found";
 		return false;
@@ -8336,24 +8278,35 @@ bool PDFParser::isPDF()
 	return true;
 }
 
-tag::Metadata PDFParser::metaData()
+attributes::Metadata PDFParser::metaData(const data_source& data) const
 {
-	tag::Metadata metadata;
-	impl->loadDocument();
+	attributes::Metadata metadata;
+	impl->m_data_stream = data.istream();
+	impl->loadDocument(data);
 	Implementation::PDFReader pdf_reader(impl->m_data_stream);
 	impl->parseMetadata(pdf_reader, metadata);
 	return metadata;
 }
 
 void
-PDFParser::parse() const
+PDFParser::parse(const data_source& data) const
 {
 	docwire_log(debug) << "Using PDF parser.";
-	impl->loadDocument();
+	delete impl;
+	((PDFParser*)this)->impl = new Implementation(this);
+	sendTag(tag::Document
+		{
+			.metadata = [this, &data]()
+			{
+				return metaData(data);
+			}
+		});
+	impl->loadDocument(data);
 	{
 		std::lock_guard<std::mutex> podofo_mutex_lock(podofo_mutex);
 		impl->parseText();
 	}
+	sendTag(tag::CloseDocument{});
 }
 
 } // namespace docwire

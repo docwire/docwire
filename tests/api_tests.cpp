@@ -39,6 +39,7 @@
 #include "transformer_func.h"
 #include "input.h"
 #include "log.h"
+#include "lru_memory_cache.h"
 
 void escape_test_name(std::string& str)
 {
@@ -635,7 +636,7 @@ TEST(Http, Post)
 	value output_val = parse(output_stream.str());
 	output_val.as_object()["headers"].as_object().erase("x-amzn-trace-id");
 	output_val.as_object()["headers"].as_object().erase("user-agent");
-
+    output_val.as_object()["headers"].as_object().erase("x-request-start");
 	EXPECT_EQ(read_test_file("http_post.out.json"), serialize(output_val));
 }
 
@@ -656,6 +657,7 @@ TEST(Http, PostForm)
 	value output_val = parse(output_str);
 	output_val.as_object()["headers"].as_object().erase("x-amzn-trace-id");
 	output_val.as_object()["headers"].as_object().erase("user-agent");
+    output_val.as_object()["headers"].as_object().erase("x-request-start");
 
 	EXPECT_EQ(read_test_file("http_post_form.out.json"), serialize(output_val));
 }
@@ -736,4 +738,84 @@ TEST(Logging, CerrLogRedirection)
 
     std::string log_text = sanitize_log_text(log_stream.str());
     ASSERT_EQ(read_test_file("logging_cerr_log_redirection.out.json"), log_text);
+}
+
+TEST(unique_identifier, generation_uniqueness_copying_and_hashing)
+{
+    std::vector<unique_identifier> identifiers(10);
+    std::vector<unique_identifier> identifiers_copy{ identifiers };
+    for (int i = 0; i < 10; i++)
+        for (int j = 0; j < 10; j++)
+        {
+            if (i == j)
+            {
+                ASSERT_EQ(identifiers[i], identifiers_copy[j]);
+                ASSERT_EQ(std::hash<unique_identifier>()(identifiers[i]), std::hash<unique_identifier>()(identifiers[j]));
+            }
+            else
+            {
+                ASSERT_NE(identifiers[i], identifiers_copy[j]);
+                ASSERT_NE(identifiers[i], identifiers[j]);
+            }
+        }
+}
+
+TEST(lru_cache, storing_and_retrieving_values)
+{
+    lru_memory_cache<std::string, std::string> cache;
+    for (int i = 0; i < 10; i++)
+        cache.get_or_create("key" + std::to_string(i), [](const std::string& key) { return key + " cached value"; });
+    for (int i = 0; i < 10; i++)
+        ASSERT_EQ(cache.get_or_create("key" + std::to_string(i), [](const std::string& key) { return key + " new value"; }), "key" + std::to_string(i) + " cached value");
+}
+
+namespace
+{
+
+std::string create_datasource_test_data_str()
+{
+    std::vector<std::byte> test_data;
+    test_data.reserve(100 * 256);
+    for (int i = 0; i < 100; i++)
+        for (int b = 0; b < 256; b++)
+            test_data.push_back(std::byte{b});
+    std::string test_data_str = std::string(reinterpret_cast<char const*>(&test_data[0]), test_data.size()) + "test";
+    return test_data_str;
+}
+
+} // anonymous namespace
+
+TEST(DataSource, verify_input_data)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    ASSERT_EQ(test_data_str.size(), 100 * 256 + 4);
+    ASSERT_EQ(test_data_str[0], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(test_data_str[255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(test_data_str[99 * 256], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(test_data_str[99 * 256 + 255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(test_data_str[100 * 256], 't');
+}
+
+TEST(DataSource, reading_seekable_stream)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    data_source data{seekable_stream_ptr{std::make_shared<std::istringstream>(test_data_str)}, file_extension{".txt"}};
+    std::string str = data.string();
+    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(str[100 * 256], 't');
+}
+
+TEST(DataSource, reading_unseekable_stream)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    data_source data{unseekable_stream_ptr{std::make_shared<std::istringstream>(test_data_str)}, file_extension{".txt"}};
+    std::string str = data.string();
+    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(str[100 * 256], 't');
 }

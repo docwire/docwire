@@ -20,26 +20,21 @@
 namespace docwire
 {
 
+class ZipReader;
+
 class XLSBParser : public Parser
 {
 	private:
 		struct Implementation;
-		Implementation* impl;
+		std::unique_ptr<Implementation> impl;
+		attributes::Metadata metaData(const ZipReader& unzip) const;
 
 	public:
-		XLSBParser(const std::string& file_name);
-		XLSBParser(const char* buffer, size_t size);
+		XLSBParser();
 		~XLSBParser();
-    static std::vector<std::string> getExtensions() {return {"xlsb"};}
-		bool isXLSB();
-		std::string plainText() const;
-		tag::Metadata metaData() const;
-
-		void parse() const override
-		{
-			sendTag(tag::Text{.text = plainText()});
-			sendTag(metaData());
-		}
+    	static std::vector<file_extension> getExtensions() {return { file_extension{".xlsb"} };}
+		bool understands(const data_source& data) const override;
+		void parse(const data_source& data) const override;
 };
 
 } // namespace docwire

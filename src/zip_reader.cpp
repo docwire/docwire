@@ -11,6 +11,7 @@
 
 #include "zip_reader.h"
 
+#include "exception.h"
 #include <iostream>
 #include "log.h"
 #include <map>
@@ -29,8 +30,7 @@ const int CASESENSITIVITY = 1;
 //data for reading from buffer (insted of file)
 struct ZippedBuffer
 {
-	size_t m_size;
-	const char* m_buffer;
+	std::span<const std::byte> m_span;
 	size_t m_pointer;
 };
 
@@ -44,16 +44,16 @@ static voidpf buffer_open(voidpf opaque, const char* filename, int mode)
 static uLong buffer_read(voidpf opaque, voidpf stream, void* buf, uLong size)
 {
 	ZippedBuffer* buffer = (ZippedBuffer*)opaque;
-	if (buffer->m_size < buffer->m_pointer + size)
+	if (buffer->m_span.size() < buffer->m_pointer + size)
 	{
-		size_t readed = buffer->m_size - buffer->m_pointer;
-		memcpy(buf, buffer->m_buffer + buffer->m_pointer, readed);
-		buffer->m_pointer = buffer->m_size;
+		size_t readed = buffer->m_span.size() - buffer->m_pointer;
+		memcpy(buf, buffer->m_span.data() + buffer->m_pointer, readed);
+		buffer->m_pointer = buffer->m_span.size();
 		return readed;
 	}
 	else
 	{
-		memcpy(buf, buffer->m_buffer + buffer->m_pointer, size);
+		memcpy(buf, buffer->m_span.data() + buffer->m_pointer, size);
 		buffer->m_pointer += size;
 		return size;
 	}
@@ -80,7 +80,7 @@ static long buffer_seek(voidpf opaque, voidpf stream, uLong offset, int origin)
 			position = buffer->m_pointer + offset;
 			break;
 		case ZLIB_FILEFUNC_SEEK_END :
-			position = buffer->m_size - offset;
+			position = buffer->m_span.size() - offset;
 			break;
 		case ZLIB_FILEFUNC_SEEK_SET :
 			position = offset;
@@ -88,8 +88,8 @@ static long buffer_seek(voidpf opaque, voidpf stream, uLong offset, int origin)
 		default:
 			return -1;
 	}
-	if (position > buffer->m_size)
-		position = buffer->m_size;
+	if (position > buffer->m_span.size())
+		position = buffer->m_span.size();
 	buffer->m_pointer = position;
 	return 0;
 }
@@ -106,92 +106,20 @@ static int buffer_error(voidpf opaque, voidpf stream)
 
 struct ZipReader::Implementation
 {
-	std::string ArchiveFileName;
 	unzFile ArchiveFile;
 	std::map<std::string, unz_file_pos> m_directory;
 	bool m_opened_for_chunks;
-	bool m_from_memory_buffer;
-	const char* m_buffer;
-	size_t m_buffer_size;
+	std::span<const std::byte> m_span;
 	ZippedBuffer* m_zipped_buffer;
 };
 
-ZipReader::ZipReader()
+ZipReader::ZipReader(const data_source& data)
+	: Impl{std::make_unique<Implementation>()}
 {
-	Impl = NULL;
-	try
-	{
-		Impl = new Implementation();
 		Impl->m_opened_for_chunks = false;
-		Impl->m_from_memory_buffer = false;
-		Impl->m_buffer = NULL;
-		Impl->m_buffer_size = 0;
+		Impl->m_span = data.span();
 		Impl->ArchiveFile = NULL;
 		Impl->m_zipped_buffer = NULL;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (Impl)
-			delete Impl;
-		throw;
-	}
-}
-
-ZipReader::ZipReader(const std::string& archive_file_name)
-{
-	Impl = NULL;
-	try
-	{
-		Impl = new Implementation();
-		Impl->ArchiveFileName = archive_file_name;
-		Impl->m_opened_for_chunks = false;
-		Impl->m_from_memory_buffer = false;
-		Impl->m_buffer = NULL;
-		Impl->m_buffer_size = 0;
-		Impl->ArchiveFile = NULL;
-		Impl->m_zipped_buffer = NULL;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (Impl)
-			delete Impl;
-		throw;
-	}
-}
-
-ZipReader::ZipReader(const char *buffer, size_t size)
-{
-	Impl = NULL;
-	try
-	{
-		Impl = new Implementation();
-		Impl->ArchiveFileName = "Memory buffer";
-		Impl->m_opened_for_chunks = false;
-		Impl->m_from_memory_buffer = true;
-		Impl->m_buffer = buffer;
-		Impl->m_buffer_size = size;
-		Impl->ArchiveFile = NULL;
-		Impl->m_zipped_buffer = NULL;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (Impl)
-			delete Impl;
-		throw;
-	}
-}
-
-void ZipReader::setArchiveFile(const std::string &archive_file_name)
-{
-	Impl->ArchiveFileName = archive_file_name;
-}
-
-void ZipReader::setBuffer(const char *buffer, size_t size)
-{
-	Impl->m_buffer = buffer;
-	Impl->m_from_memory_buffer = true;
-	Impl->m_buffer_size = size;
-	Impl->ArchiveFileName = "Memory buffer";
 }
 
 ZipReader::~ZipReader()
@@ -200,25 +128,12 @@ ZipReader::~ZipReader()
 		unzClose(Impl->ArchiveFile);
 	if (Impl->m_zipped_buffer != NULL)
 		delete Impl->m_zipped_buffer;
-	delete Impl;
 }
 
-static std::string unzip_command;
-
-void ZipReader::setUnzipCommand(const std::string& command)
+void ZipReader::open()
 {
-	unzip_command = command;
-}
-
-bool ZipReader::open()
-{
-	if (!Impl->m_from_memory_buffer)
-		Impl->ArchiveFile = unzOpen(Impl->ArchiveFileName.c_str());
-	else
-	{
 		Impl->m_zipped_buffer = new ZippedBuffer;
-		Impl->m_zipped_buffer->m_buffer = Impl->m_buffer;
-		Impl->m_zipped_buffer->m_size = Impl->m_buffer_size;
+		Impl->m_zipped_buffer->m_span = Impl->m_span;
 		Impl->m_zipped_buffer->m_pointer = 0;
 		zlib_filefunc_def read_from_buffer_functions;
 		read_from_buffer_functions.zopen_file = &buffer_open;
@@ -230,20 +145,9 @@ bool ZipReader::open()
 		read_from_buffer_functions.zerror_file = &buffer_error;
 		read_from_buffer_functions.opaque = Impl->m_zipped_buffer;
 		//this function allows us to override default behaviour (reading from hard disc)
-		Impl->ArchiveFile = unzOpen2(Impl->ArchiveFileName.c_str(), &read_from_buffer_functions);
-	}
+		Impl->ArchiveFile = unzOpen2("stream", &read_from_buffer_functions);
 	if (Impl->ArchiveFile == NULL)
-		return false;
-	return true;
-}
-
-void ZipReader::close()
-{
-	unzClose(Impl->ArchiveFile);
-	if (Impl->m_zipped_buffer)
-		delete Impl->m_zipped_buffer;
-	Impl->m_zipped_buffer = NULL;
-	Impl->ArchiveFile = NULL;
+		throw RuntimeError("Error opening stream as zip archive");
 }
 
 bool ZipReader::exists(const std::string& file_name) const
@@ -253,97 +157,6 @@ bool ZipReader::exists(const std::string& file_name) const
 
 bool ZipReader::read(const std::string& file_name, std::string* contents, int num_of_chars) const
 {
-	// warning TODO: Add support for unzip command if Impl->m_from_memory_buffer == true
-	if (unzip_command != "" && Impl->m_from_memory_buffer == false)
-	{
-		std::string temp_dir = tempnam(NULL, NULL);
-		std::string cmd = unzip_command;
-		size_t d_pos = cmd.find("%d");
-		if (d_pos == std::string::npos)
-		{
-			docwire_log(error) << "Unzip command must contain %d symbol.";
-			return false;
-		}
-		cmd.replace(d_pos, 2, temp_dir);
-		size_t a_pos = cmd.find("%a");
-		if (a_pos == std::string::npos)
-		{
-			docwire_log(error) << "Unzip command must contain %a symbol.";
-			return false;
-		}
-		cmd.replace(a_pos, 2, Impl->ArchiveFileName);
-		size_t f_pos = cmd.find("%f");
-		if (f_pos == std::string::npos)
-		{
-			docwire_log(error) << "Unzip command must contain %f symbol.";
-			return false;
-		}
-		#ifdef WIN32
-			std::string fn = file_name;
-			size_t b_pos;
-			while ((b_pos = fn.find('/')) != std::string::npos)
-				fn.replace(b_pos, 1, "\\");
-			cmd.replace(f_pos, 2, fn);
-		#else
-			cmd.replace(f_pos, 2, file_name);
-		#endif
-		cmd = cmd + " >&2";
-		#ifdef WIN32
-			const std::string remove_cmd = "rmdir /S /Q " + temp_dir;
-		#else
-			const std::string remove_cmd = "rm -rf " + temp_dir;
-		#endif
-		docwire_log(debug) << "Executing " << cmd;
-		if (system(cmd.c_str()) < 0)
-			return false;
-		FILE* f = fopen((temp_dir + "/" + file_name).c_str(), "r");
-		if (f == NULL)
-		{
-			docwire_log(debug) << "Executing " << remove_cmd;
-			system(remove_cmd.c_str());
-			return false;
-		}
-		try
-		{
-			*contents = "";
-			char buffer[1024 + 1];
-			int res;
-			while((res = fread(buffer, sizeof(char), (num_of_chars > 0 && num_of_chars < 1024) ? num_of_chars : 1024, f)) > 0)
-			{
-				buffer[res] = '\0';
-				*contents += buffer;
-				if (num_of_chars > 0)
-					if (contents->length() >= num_of_chars)
-					{
-						*contents = contents->substr(0, num_of_chars);
-						break;
-					}
-			}
-			if (res < 0)
-			{
-				fclose(f);
-				f = NULL;
-				docwire_log(debug) << "Executing " << remove_cmd;
-				system(remove_cmd.c_str());
-				return false;
-			}
-			fclose(f);
-			f = NULL;
-			docwire_log(debug) << "Executing " << remove_cmd;
-			if (system(remove_cmd.c_str()) != 0)
-				return false;
-		}
-		catch (std::bad_alloc& ba)
-		{
-			if (f)
-				fclose(f);
-			f = NULL;
-			system(remove_cmd.c_str());
-			throw;
-		}
-		return true;
-	}
-
 	int res;
 	if (Impl->m_directory.size() > 0)
 	{

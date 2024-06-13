@@ -27,7 +27,7 @@ OcrParserProvider::OcrParserProvider()
 }
 
 std::unique_ptr<ParserBuilder>
-OcrParserProvider::findParserByExtension(const std::string &inExtension) const
+OcrParserProvider::findParserByExtension(const file_extension& inExtension) const
 {
   if (isExtensionInVector(inExtension, OCRParser::getExtensions()))
   {
@@ -44,38 +44,36 @@ is_valid(const char* buffer, size_t size)
   return (parser.*valid_method)();
 }
 
-template <typename T, bool(T::*valid_method)()>
-bool
-is_valid(const char* buffer, size_t size)
+template <typename T>
+bool parser_understands(const data_source& data)
 {
-  T parser(buffer, size);
-  return (parser.*valid_method)();
+  docwire_log_func();
+  T parser;
+  return parser.understands(data);
 }
 
 std::unique_ptr<ParserBuilder>
-OcrParserProvider::findParserByData(const std::vector<char>& buffer) const
+OcrParserProvider::findParserByData(const data_source& data) const
 {
-  if (is_valid<OCRParser, &OCRParser::isOCR>(buffer.data(), buffer.size()))
+  docwire_log_func();
+  if (parser_understands<OCRParser>(data))
   {
     return std::make_unique<ParserBuilderWrapper<OCRParser>>();
   }
   return nullptr;
 }
 
-std::set<std::string>
-OcrParserProvider::getAvailableExtensions() const
+std::set<file_extension> OcrParserProvider::getAvailableExtensions() const
 {
   return available_extensions;
 }
 
-void
-OcrParserProvider::addExtensions(const std::vector<std::string> &inExtensions)
+void OcrParserProvider::addExtensions(const std::vector<file_extension> &inExtensions)
 {
   available_extensions.insert(inExtensions.begin(), inExtensions.end());
 }
 
-bool
-OcrParserProvider::isExtensionInVector(const std::string &extension, const std::vector<std::string> &extension_list) const
+bool OcrParserProvider::isExtensionInVector(const file_extension& extension, const std::vector<file_extension>& extension_list) const
 {
   return std::find(extension_list.begin(), extension_list.end(), extension) != extension_list.end();
 }

@@ -55,11 +55,8 @@ enum RecordType
 	OFFICE_ART_SP_CONTAINER = 0xF004
 };
 
-struct PPTParser::Implementation
+namespace
 {
-	std::string m_file_name;
-	const char* m_buffer;
-	size_t m_buffer_size;
 
 	U16 getU16LittleEndian(std::vector<unsigned char>::const_iterator buffer)
 	{
@@ -275,94 +272,34 @@ struct PPTParser::Implementation
 	}
 };
 
-PPTParser::PPTParser(const std::string& file_name)
+PPTParser::PPTParser()
 {
-	impl = NULL;
-	try
-	{
-		impl = new Implementation();
-		impl->m_file_name = file_name;
-		impl->m_buffer = NULL;
-		impl->m_buffer_size = 0;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-			delete impl;
-		throw;
-	}
 }
 
-PPTParser::PPTParser(const char *buffer, size_t size)
+bool PPTParser::understands(const data_source& data) const
 {
-	impl = NULL;
-	try
-	{
-		impl = new Implementation();
-		impl->m_file_name = "Memory buffer";
-		impl->m_buffer = buffer;
-		impl->m_buffer_size = size;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-			delete impl;
-		throw;
-	}
+	ThreadSafeOLEStorage storage(data.span());
+	if (!storage.isValid())
+		return false;
+	std::unique_ptr<AbstractOLEStreamReader> reader{storage.createStreamReader("PowerPoint Document")};
+	if (reader == nullptr)
+		return false;
+	return true;
 }
 
-PPTParser::~PPTParser()
-{
-	delete impl;
-}
-
-bool PPTParser::isPPT()
-{
-	ThreadSafeOLEStorage* storage = NULL;
-	AbstractOLEStreamReader* reader = NULL;
-	try
-	{
-		if (impl->m_buffer)
-			storage = new ThreadSafeOLEStorage(impl->m_buffer, impl->m_buffer_size);
-		else
-			storage = new ThreadSafeOLEStorage(impl->m_file_name);
-		if (!storage->isValid())
-		{
-			delete storage;
-			return false;
-		}
-		reader = storage->createStreamReader("PowerPoint Document");
-		if (reader == NULL)
-		{
-			delete storage;
-			return false;
-		}
-		delete reader;
-		delete storage;
-		return true;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (reader)
-			delete reader;
-		if (storage)
-			delete storage;
-		throw;
-	}
-}
-
-std::string PPTParser::plainText() const
+void PPTParser::parse(const data_source& data) const
 {	
 	docwire_log(debug) << "Using PPT parser.";
-
 	try
 	{
-		std::unique_ptr<ThreadSafeOLEStorage> storage = impl->m_buffer ?
-			std::make_unique<ThreadSafeOLEStorage>(impl->m_buffer, impl->m_buffer_size) :
-			std::make_unique<ThreadSafeOLEStorage>(impl->m_file_name);
+		std::unique_ptr<ThreadSafeOLEStorage> storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
 		if (!storage->isValid())
-			throw RuntimeError("Error opening " + impl->m_file_name + " as OLE file");
-		impl->assertFileIsNotEncrypted(*storage);
+			throw RuntimeError("Error opening stream as OLE container");
+		assertFileIsNotEncrypted(*storage);
+		sendTag(tag::Document
+			{
+				.metadata = [this, &storage]() { return metaData(storage); }
+			});
 		std::string text;
 		std::vector<std::string> dirs;
 		if (storage->getStreamsAndStoragesList(dirs))
@@ -380,33 +317,29 @@ std::string PPTParser::plainText() const
 					std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("Text_Content") };
 					if (reader == NULL)
 						throw RuntimeError("Stream Text_Content has been found in the list, but it could not be open: " + storage->getLastError());
-					impl->parseOldPPT(*storage, *reader, text);
-					return text;
+					parseOldPPT(*storage, *reader, text);
+					sendTag(tag::Text{.text = text});
+					return;
 				}
 			}
 		}
 		std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("PowerPoint Document") };
 		if (reader == NULL)
-			throw RuntimeError("PowerPoint Document stream was not found inside " + impl->m_file_name);
-		impl->parsePPT(*reader, text);
-		return text;
+			throw RuntimeError("PowerPoint Document stream was not found inside OLE container");
+		parsePPT(*reader, text);
+		sendTag(tag::Text{.text = text});
+		sendTag(tag::CloseDocument{});
+		return;
 	}
 	catch (const std::exception& e)
 	{
-		throw RuntimeError("Error while parsing " + impl->m_file_name, e);
+		throw RuntimeError("Error parsing PPT file", e);
 	}
 }
 
-tag::Metadata PPTParser::metaData() const
+attributes::Metadata PPTParser::metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage) const
 {
-	tag::Metadata meta;
-	ThreadSafeOLEStorage* storage = NULL;
-	try
-	{
-		if (impl->m_buffer)
-			storage = new ThreadSafeOLEStorage(impl->m_buffer, impl->m_buffer_size);
-		else
-			storage = new ThreadSafeOLEStorage(impl->m_file_name);
+	attributes::Metadata meta;
 		parse_oshared_summary_info(*storage, meta);
 		// If page count not found use slide count as page count
 		if (!meta.page_count)
@@ -424,17 +357,7 @@ tag::Metadata PPTParser::metaData() const
 				docwire_log(error) << e.what();
 			}
 		}
-		delete storage;
-		storage = NULL;
 		return meta;
-	}
-	catch (const std::exception& e)
-	{
-		if (storage)
-			delete storage;
-		storage = NULL;
-		throw;
-	}
 }
 
 } // namespace docwire

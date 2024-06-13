@@ -38,9 +38,6 @@ namespace
 struct EMLParser::Implementation
 {
   EMLParser* m_owner;
-	bool m_error;
-	std::string m_file_name;
-	std::istream* m_data_stream;
 
 	Implementation(EMLParser* owner)
     : m_owner(owner)
@@ -79,7 +76,7 @@ struct EMLParser::Implementation
 			if (mime_entity.content_type().subtype == "html" || mime_entity.content_type().subtype == "xhtml")
 			{
 				docwire_log(debug) << "HTML content subtype detected";
-				m_owner->sendTag(tag::File{.source = std::make_shared<std::istringstream>(plain), .name = "eml_body.html"});
+				m_owner->sendTag(data_source{plain, file_extension{".html"}});
 			}
 			else
 			{
@@ -91,7 +88,7 @@ struct EMLParser::Implementation
 				else
 				{
 					docwire_log(debug) << "Charset is not specified";
-					m_owner->sendTag(tag::File{.source = std::make_shared<std::istringstream>(plain), .name = "eml_body.txt"});
+					m_owner->sendTag(data_source{plain, file_extension{".txt"}});
 				}
 			}
 			m_owner->sendTag(tag::Text{.text = "\n\n"});
@@ -103,13 +100,12 @@ struct EMLParser::Implementation
 			std::string plain = mime_entity.content();
 			std::string file_name = mime_entity.name();
 			docwire_log(debug) << "File name: " << file_name;
-			std::string extension = file_name.substr(file_name.find_last_of(".") + 1);
-			std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+			file_extension extension { std::filesystem::path{file_name} };
 			auto info = m_owner->sendTag(
 				tag::Attachment{.name = file_name, .size = plain.length(), .extension = extension});
 			if(!info.skip)
 			{
-				m_owner->sendTag(tag::File{.source = std::make_shared<std::istringstream>(plain), .name = file_name});
+				m_owner->sendTag(data_source{plain, extension});
 			}
 			m_owner->sendTag(tag::CloseAttachment{});
 		}
@@ -136,57 +132,12 @@ struct EMLParser::Implementation
 	}
 };
 
-EMLParser::EMLParser(const std::string& file_name)
+EMLParser::EMLParser()
+	: impl(new Implementation(this))
 {
-	impl = NULL;
-	try
-	{
-		impl = new Implementation(this);
-		impl->m_data_stream = NULL;
-		impl->m_data_stream = new std::ifstream(file_name.c_str());
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_data_stream)
-				delete impl->m_data_stream;
-			delete impl;
-		}
-		throw;
-	}
 }
 
-EMLParser::EMLParser(const char* buffer, size_t size)
-{
-	impl = NULL;
-	try
-	{
-		impl = new Implementation(this);
-		impl->m_data_stream = NULL;
-		impl->m_data_stream = new std::stringstream(std::string(buffer, size));
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_data_stream)
-				delete impl->m_data_stream;
-			delete impl;
-		}
-		throw;
-	}
-}
-
-EMLParser::~EMLParser()
-{
-	if (impl)
-	{
-		if (impl->m_data_stream)
-			delete impl->m_data_stream;
-		delete impl;
-	}
-}
+EMLParser::~EMLParser() = default;
 
 namespace
 {
@@ -198,13 +149,14 @@ void normalize_line(std::string& line)
 		line.pop_back();
 }
 
-message parse_message(std::istream& stream)
+message parse_message(const data_source& data)
 {
+	std::shared_ptr<std::istream> stream = data.istream();
 	message mime_entity;
 	mime_entity.line_policy(codec::line_len_policy_t::RECOMMENDED, codec::line_len_policy_t::NONE);
 	try {
 		std::string line;
-		while (getline(stream, line))
+		while (getline(*stream, line))
 		{
 			normalize_line(line);
 			docwire_log_var(line);
@@ -220,15 +172,10 @@ message parse_message(std::istream& stream)
 
 } // anonymous namespace
 
-bool EMLParser::isEML() const
+bool EMLParser::understands(const data_source& data) const
 {
 	docwire_log_func();
-	if (!impl->m_data_stream->good())
-	{
-		docwire_log(error) << "Error opening file " << impl->m_file_name;
-		throw RuntimeError("Error opening file: " + impl->m_file_name);
-	}
-	message mime_entity = parse_message(*impl->m_data_stream);
+	message mime_entity = parse_message(data);
 	std::string from = mime_entity.from_to_string();
 	bool has_from = !from.empty();
 	bool has_date_time = !mime_entity.date_time().is_not_a_date_time();
@@ -236,46 +183,41 @@ bool EMLParser::isEML() const
 	return has_from && has_date_time;
 }
 
+namespace
+{
+
+attributes::Metadata metaData(const message& mime_entity);
+
+} // anonymous namespace
+
 void
-EMLParser::parse() const
+EMLParser::parse(const data_source& data) const
 {
 	docwire_log_func();
 	docwire_log(debug) << "Using EML parser.";
-	if (!isEML())
+	if (!understands(data))
 	{
 		docwire_log(error) << "The specified file is not a valid EML file";
 		throw RuntimeError("The specified file is not a valid EML file");
 	}
-	sendTag(metaData());
-	docwire_log(debug) << "stream_pos=" << impl->m_data_stream->tellg();
-	impl->m_data_stream->clear();
-	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
-	{
-		docwire_log(error) << "The stream seek operation failed";
-		throw RuntimeError("The stream seek operation failed");
-	}
-	message mime_entity = parse_message(*impl->m_data_stream);
+	message mime_entity = parse_message(data);
+	sendTag(tag::Document
+		{
+			.metadata = [&mime_entity]()
+			{
+				return metaData(mime_entity);
+			}
+		});
 	impl->extractPlainText(mime_entity);
+	sendTag(tag::CloseDocument{});
 }
 
-tag::Metadata EMLParser::metaData() const
+namespace
 {
-	tag::Metadata metadata;
-	impl->m_data_stream->clear();
-	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
-	{
-		docwire_log(error) << "The stream seek operation failed";
-		throw RuntimeError("The stream seek operation failed");
-	}
-	if (!isEML())
-		throw RuntimeError("The specified file is not a valid EML file");
-	impl->m_data_stream->clear();
-	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
-	{
-		docwire_log(error) << "The stream seek operation failed";
-		throw RuntimeError("The stream seek operation failed");
-	}
-	message mime_entity = parse_message(*impl->m_data_stream);
+
+attributes::Metadata metaData(const message& mime_entity)
+{
+	attributes::Metadata metadata;
 	metadata.author = mime_entity.from_to_string();
 	metadata.creation_date = to_tm(mime_entity.date_time());
 
@@ -301,5 +243,7 @@ tag::Metadata EMLParser::metaData() const
 		metadata.email_attrs->sender = sender;
 	return metadata;
 }
+
+} // anonymous namespace
 
 } // namespace docwire

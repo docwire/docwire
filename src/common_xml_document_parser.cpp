@@ -651,7 +651,7 @@ void CommonXMLDocumentParser::extractText(const std::string& xml_contents, XmlPa
 	}
 }
 
-void CommonXMLDocumentParser::parseODFMetadata(const std::string &xml_content, tag::Metadata& metadata) const
+void CommonXMLDocumentParser::parseODFMetadata(const std::string &xml_content, attributes::Metadata& metadata) const
 {
 	try
 	{
@@ -750,18 +750,9 @@ void CommonXMLDocumentParser::setXmlOptions(int options) const
 	impl->m_xml_options = options;
 }
 
-void CommonXMLDocumentParser::cleanUp()
-{
-	if (impl)
-		delete impl;
-}
-
 CommonXMLDocumentParser::CommonXMLDocumentParser()
+	: impl{std::make_unique<Implementation>()}
 {
-	impl = NULL;
-	try
-	{
-		impl = new Implementation;
 		impl->m_list_depth = 0;
 		impl->m_disabled_text = false;
 		impl->m_xml_options = 0;
@@ -781,20 +772,9 @@ CommonXMLDocumentParser::CommonXMLDocumentParser()
 		registerODFOOXMLCommandHandler("line-break", &CommandHandlersSet::onODFLineBreak);
 		registerODFOOXMLCommandHandler("h", &CommandHandlersSet::onODFHeading);
 		registerODFOOXMLCommandHandler("object", &CommandHandlersSet::onODFObject);
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-			delete impl;
-		impl = NULL;
-		throw;
-	}
 }
 
-CommonXMLDocumentParser::~CommonXMLDocumentParser()
-{
-	cleanUp();
-}
+CommonXMLDocumentParser::~CommonXMLDocumentParser() = default;
 
 int CommonXMLDocumentParser::getXmlOptions() const
 {

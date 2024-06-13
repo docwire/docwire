@@ -23,63 +23,8 @@
 namespace docwire
 {
 
-struct TXTParser::Implementation
+TXTParser::TXTParser()
 {
-	std::string m_file_name;
-	DataStream* m_data_stream;
-	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
-};
-
-TXTParser::TXTParser(const std::string& file_name)
-{
-	impl = NULL;
-	try
-	{
-		impl = new Implementation;
-		impl->m_data_stream = NULL;
-		impl->m_data_stream = new FileStream(file_name);
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_data_stream)
-				delete impl->m_data_stream;
-			delete impl;
-		}
-		throw;
-	}
-}
-
-TXTParser::TXTParser(const char* buffer, size_t size)
-{
-	impl = NULL;
-	try
-	{
-		impl = new Implementation;
-		impl->m_data_stream = NULL;
-		impl->m_data_stream = new BufferStream(buffer, size);
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_data_stream)
-				delete impl->m_data_stream;
-			delete impl;
-		}
-		throw;
-	}
-}
-
-TXTParser::~TXTParser()
-{
-	if (impl)
-	{
-		if (impl->m_data_stream)
-			delete impl->m_data_stream;
-		delete impl;
-	}
 }
 
 namespace
@@ -120,22 +65,21 @@ std::string sequences_of_printable_characters(const std::string& text, size_t mi
 
 } // anonymous namespace
 
-std::string TXTParser::plainText() const
+bool TXTParser::understands(const data_source& data) const
 {
+	return true;
+}
+
+void TXTParser::parse(const data_source& data) const
+{
+	docwire_log(debug) << "Using TXT parser.";
 	std::string text;
 	csd_t charset_detector = NULL;
 	htmlcxx::CharsetConverter* converter = NULL;
 	try
 	{
 		std::string encoding;
-		if (!impl->m_data_stream->open())
-			throw RuntimeError("Could not open file: " + impl->m_file_name);
-		std::string content;
-		size_t file_size = impl->m_data_stream->size();
-		content.resize(file_size);
-		if (!impl->m_data_stream->read(&content[0], 1, file_size))
-			throw RuntimeError("Could not read from file: " + impl->m_file_name);
-		impl->m_data_stream->close();
+		std::string content = data.string();
 		charset_detector = csd_open();
 		if (charset_detector == (csd_t)-1)
 		{
@@ -186,7 +130,6 @@ std::string TXTParser::plainText() const
 	}
 	catch (const std::exception& e)
 	{
-		impl->m_data_stream->close();
 		if (converter)
 			delete converter;
 		converter = NULL;
@@ -195,8 +138,10 @@ std::string TXTParser::plainText() const
 		charset_detector = NULL;
 		throw RuntimeError("Could not parse text: " + std::string(e.what()));
 	}
+	sendTag(tag::Document{});
 	text.erase(std::remove(text.begin(), text.end(), '\r'), text.end());
-	return text;
+	sendTag(tag::Text{.text = text});
+	sendTag(tag::CloseDocument{});
 }
 
 Parser&
@@ -206,70 +151,54 @@ TXTParser::withParameters(const ParserParameters &parameters)
 	return *this;
 }
 
-void
-TXTParser::parse() const
-{
-	docwire_log(debug) << "Using TXT parser.";
-
-  Info info(tag::Text{.text = plainText()});
-  impl->m_on_new_node_signal(info);
-}
-
-TXTParser::Parser&
-TXTParser::addOnNewNodeCallback(NewNodeCallback callback)
-{
-  impl->m_on_new_node_signal.connect(callback);
-  return *this;
-}
-
-std::vector <std::string> TXTParser::getExtensions()
+std::vector<file_extension> TXTParser::getExtensions()
 {
 	return
 	{
-		"asm", // Assembler source code
-		"asp", // Active Server Page script page
-		"aspx", // Active Server Page Extended ASP.NET script
-		"bas", // Basic source code
-		"bat", // Batch file (script)
-		"c", // C source code
-		"cc", // C++ language source code
-		"cmake", // CMake module or script
-		"cs", // Microsoft Visual Studio Visual C#.NET source code
-		"conf", // Configuration information
-		"cpp", // C++ source code file format
-		"css", // Cascading Style Sheets
-		"csv", // Comma Separated Value file
-		"cxx", // C++ source code file format
-		"d", // D Programming Language source code
-		"f", "fpp", // Fortran source code
-		"fs", // Microsoft Visual F# source code
-		"go", // Google Go programming language source code
-		"h", // C header data
-		"hpp", // C++ header data
-		"htm", "html", // HyperText Markup Language web page
-		"hxx", // C++ header data
-		"java", // Java language source code
-		"js", // JavaScript source code script
-		"json", // JavaScript object notation data interchange format
-		"jsp", // JAVA Server page file
-		"log", // Log
-		"lua", // Lua script
-		"md", // Markdown markup language source code
-		"pas", // Delphi unit source code
-		"php", // PHP script or page
-		"pl", "perl", // Perl script language source code
-		"py", // Python script language source code
-		"r", // R script
-		"rss", // Really Simple Syndication - RSS file format
-		"sh", // Unix Bourne Shell (Bash) script
-		"tcl", // TCL script source code
-		"txt", "text", // Simple text
-		"vb", "vbs", // Visual Basic script
-		"xml", // XML document
-		"xsd", // XML schema description
-		"xsl", // XML eXtensible stylesheet
-		"yml", "yaml", // YAML document
-		"ws" // Microsoft Windows script
+		file_extension{".asm"}, // Assembler source code
+		file_extension{".asp"}, // Active Server Page script page
+		file_extension{".aspx"}, // Active Server Page Extended ASP.NET script
+		file_extension{".bas"}, // Basic source code
+		file_extension{".bat"}, // Batch file (script)
+		file_extension{".c"}, // C source code
+		file_extension{".cc"}, // C++ language source code
+		file_extension{".cmake"}, // CMake module or script
+		file_extension{".cs"}, // Microsoft Visual Studio Visual C#.NET source code
+		file_extension{".conf"}, // Configuration information
+		file_extension{".cpp"}, // C++ source code file format
+		file_extension{".css"}, // Cascading Style Sheets
+		file_extension{".csv"}, // Comma Separated Value file
+		file_extension{".cxx"}, // C++ source code file format
+		file_extension{".d"}, // D Programming Language source code
+		file_extension{".f"}, file_extension{".fpp"}, // Fortran source code
+		file_extension{".fs"}, // Microsoft Visual F# source code
+		file_extension{".go"}, // Google Go programming language source code
+		file_extension{".h"}, // C header data
+		file_extension{".hpp"}, // C++ header data
+		file_extension{".htm"}, file_extension{".html"}, // HyperText Markup Language web page
+		file_extension{".hxx"}, // C++ header data
+		file_extension{".java"}, // Java language source code
+		file_extension{".js"}, // JavaScript source code script
+		file_extension{".json"}, // JavaScript object notation data interchange format
+		file_extension{".jsp"}, // JAVA Server page file
+		file_extension{".log"}, // Log
+		file_extension{".lua"}, // Lua script
+		file_extension{".md"}, // Markdown markup language source code
+		file_extension{".pas"}, // Delphi unit source code
+		file_extension{".php"}, // PHP script or page
+		file_extension{".pl"}, file_extension{".perl"}, // Perl script language source code
+		file_extension{".py"}, // Python script language source code
+		file_extension{".r"}, // R script
+		file_extension{".rss"}, // Really Simple Syndication - RSS file format
+		file_extension{".sh"}, // Unix Bourne Shell (Bash) script
+		file_extension{".tcl"}, // TCL script source code
+		file_extension{".txt"}, file_extension{".text"}, // Simple text
+		file_extension{".vb"}, file_extension{".vbs"}, // Visual Basic script
+		file_extension{".xml"}, // XML document
+		file_extension{".xsd"}, // XML schema description
+		file_extension{".xsl"}, // XML eXtensible stylesheet
+		file_extension{".yml"}, file_extension{".yaml"}, // YAML document
+		file_extension{".ws"} // Microsoft Windows script
 	};
 }
 
