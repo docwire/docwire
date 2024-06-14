@@ -30,7 +30,7 @@ if (ADDRESS_SANITIZER)
 	if (NOT MSVC OR CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "19.34") # 19.34 is Visual Studio 2022 17.4
 		message(STATUS "Address sanitizer enabled")
 		add_compile_options(-fsanitize=address)
-		add_link_options(-fsanitize=address)
+		add_link_options(-fsanitize=address /INFERASANLIBS:NO /wholearchive:clang_rt.asan_dynamic_runtime_thunk-x86_64.lib)
 		message(STATUS "ASAN_OPTIONS environment variable: $ENV{ASAN_OPTIONS}")
 	elseif (MSVC)
 		message(WARNING "Address sanitizer is not enabled in release mode for MSVC version less than 17.4 due to known issues")
