@@ -65,9 +65,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Search for clang_rt.asan files (temporary debug)
-        if: matrix.os == 'windows-2022' && matrix.sanitizer == 'address'
-        run: Get-ChildItem -Path C:\ -Filter "clang_rt.asan*" -Recurse | Select-Object -ExpandProperty FullName
       - name: Setup MSVC dev command prompt # https://github.com/actions/runner-images/issues/8891
         if: matrix.os == 'windows-2022' && matrix.sanitizer == 'address'
         uses: TheMrMilchmann/setup-msvc-dev@v3
