@@ -66,7 +66,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup MSVC dev command prompt # https://github.com/actions/runner-images/issues/8891
-        if: matrix.sanitizer == 'address'
+        if: matrix.os == 'windows-2022' && matrix.sanitizer == 'address'
         uses: TheMrMilchmann/setup-msvc-dev@v3
         with:
           arch: x64
