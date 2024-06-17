@@ -47,6 +47,8 @@ jobs:
             triplet: x64-windows
           - os: flyci-macos-large-latest-m1
             triplet: x64-osx-dynamic
+          - os: windows-2022
+            sanitizer: address # probably temporarily: https://github.com/actions/runner-images/issues/8891
         include:
           - os: ubuntu-22.04
             triplet: x64-linux-dynamic

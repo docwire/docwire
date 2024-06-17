@@ -1,15 +1,32 @@
+## Version 2024.06.17
+
+The recent changes include updates to the libbfio library, adjustments in test files, and fixes related to address sanitizer CI tests. Overall, these modifications improve compatibility, security, and build robustness.
+
+> In code's quiet night, the rabbit hops,  
+> URLs shift, new versions pop,  
+> Headers dance in JSON's cheer,  
+> And builds grow strong, without a fear.  
+> With sanitizer's careful might,  
+> We perfect our software’s flight. 🌙  
+
+- **Updates**
+	- Updated libbfio library to the latest release.
+- **Bug Fixes**
+	- Fixed headers in HTTP POST request tests.
+	- Fixed address sanitizer tests.
+
 ## Version 2024.04.04
 
 The DocWire SDK is embracing a dynamic development approach with its new "Release Early, Release Often" strategy and date-based versioning. This shift aims to enhance user experience by ensuring rapid releases, allowing users to benefit from the latest advancements with greater transparency and efficiency. While this release focuses on adopting this new versioning strategy and updating documentation, it's important to note that the significant improvements in memory management, thread safety, document processing, and build configurations were introduced in earlier versions. These enhancements are documented in the ChangeLog, highlighting the SDK's ongoing evolution.
 
-> 🐰✨
-> In the world of code, where changes abound,
-> A rabbit hopped in, documentation found.
-> With every leap, a clearer path in sight,
-> Guiding through versions, making the future bright.
-> "Hop along," it cheered, with a joyful sound,
-> For in the realm of DocWire, clarity is crowned.
-> 🌟📚
+> 🐰✨  
+> In the world of code, where changes abound,  
+> A rabbit hopped in, documentation found.  
+> With every leap, a clearer path in sight,  
+> Guiding through versions, making the future bright.  
+> "Hop along," it cheered, with a joyful sound,  
+> For in the realm of DocWire, clarity is crowned.  
+> 🌟📚  
 
 - **Documentation**
 	- Introduced a "Release Early, Release Often" strategy with date-based versioning for the DocWire SDK, enhancing transparency and ease of tracking updates.

@@ -1,7 +1,7 @@
 vcpkg_download_distfile(ARCHIVE
-	URLS "https://github.com/libyal/libbfio/releases/download/20221025/libbfio-alpha-20221025.tar.gz"
-	FILENAME "libbfio-alpha-20221025.tar.gz"
-	SHA512 ab4be7faae7172b74f117e422f3b72a0705fbfe91f3bf7fb8b5796fae8428ca7d242487eb61b3cf08867209c64949c544a4ed21bf7feb6908fd187e3e4fadd50
+	URLS "https://github.com/libyal/libbfio/releases/download/20240414/libbfio-alpha-20240414.tar.gz"
+	FILENAME "libbfio-alpha-20240414.tar.gz"
+	SHA512 56c7caa77f0f8b81ea54bdc5579c2fe4fe1cb1660701f0c5bf6d95817cd7dd3992f3451fe2fbd49b7aa29a59f6023af053f612c749b0519dd4b7e61d2d7059bc
 )
 
 vcpkg_extract_source_archive_ex(
