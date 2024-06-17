@@ -640,7 +640,7 @@ TEST(Http, Post)
 	value output_val = parse(output_stream.str());
 	output_val.as_object()["headers"].as_object().erase("x-amzn-trace-id");
 	output_val.as_object()["headers"].as_object().erase("user-agent");
-
+    output_val.as_object()["headers"].as_object().erase("x-request-start");
 	EXPECT_EQ(read_test_file("http_post.out.json"), serialize(output_val));
 }
 
@@ -661,6 +661,7 @@ TEST(Http, PostForm)
 	value output_val = parse(output_str);
 	output_val.as_object()["headers"].as_object().erase("x-amzn-trace-id");
 	output_val.as_object()["headers"].as_object().erase("user-agent");
+    output_val.as_object()["headers"].as_object().erase("x-request-start");
 
 	EXPECT_EQ(read_test_file("http_post_form.out.json"), serialize(output_val));
 }
