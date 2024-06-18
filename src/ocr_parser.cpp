@@ -147,7 +147,7 @@ namespace
 
 std::shared_ptr<PIX> load_pix(const data_source& data)
 {
-    static lru_memory_cache<unique_identifier, std::shared_ptr<PIX>> pix_cache;
+    static thread_local lru_memory_cache<unique_identifier, std::shared_ptr<PIX>> pix_cache;
     
     return pix_cache.get_or_create(data.id(),
         [data](const unique_identifier& key)

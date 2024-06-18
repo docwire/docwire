@@ -8293,7 +8293,10 @@ PDFParser::parse(const data_source& data) const
 {
 	docwire_log(debug) << "Using PDF parser.";
 	delete impl;
-	((PDFParser*)this)->impl = new Implementation(this);
+	{
+		std::lock_guard<std::mutex> podofo_mutex_lock(podofo_mutex);
+		((PDFParser*)this)->impl = new Implementation(this);
+	}
 	sendTag(tag::Document
 		{
 			.metadata = [this, &data]()
