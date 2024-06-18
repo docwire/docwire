@@ -157,7 +157,7 @@ std::shared_ptr<PIX> load_pix(const data_source& data)
             if (path)
             {
                 return std::shared_ptr<PIX>{
-                    pixRead(path->c_str()),
+                    pixRead(path->string().c_str()),
                     [](PIX* pix) { pixDestroy(&pix); }
                 };
             }
