@@ -40,7 +40,7 @@ public:
 #ifdef __cpp_lib_smart_ptr_for_overwrite
       : m_buffer{std::make_unique_for_overwrite<std::byte[]>(size)},
 #else
-      : std::unique_ptr<std::byte[]>(new std::byte[size]),
+      : m_buffer{std::unique_ptr<std::byte[]>(new std::byte[size])},
 #endif
       m_size{size}
     {}
