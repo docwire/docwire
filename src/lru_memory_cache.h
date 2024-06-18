@@ -12,6 +12,11 @@
 #ifndef DOCWIRE_LRU_MEMORY_CACHE_H
 #define DOCWIRE_LRU_MEMORY_CACHE_H
 
+#include <functional>
+#include <limits>
+#include <list>
+#include <unordered_map>
+
 namespace docwire
 {
 
