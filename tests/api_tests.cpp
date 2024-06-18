@@ -778,7 +778,7 @@ std::string create_datasource_test_data_str()
     test_data.reserve(100 * 256);
     for (int i = 0; i < 100; i++)
         for (int b = 0; b < 256; b++)
-            test_data.push_back(std::byte{b});
+            test_data.push_back(std::byte{static_cast<unsigned char>(b)});
     std::string test_data_str = std::string(reinterpret_cast<char const*>(&test_data[0]), test_data.size()) + "test";
     return test_data_str;
 }
