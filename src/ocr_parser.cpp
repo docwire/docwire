@@ -30,6 +30,7 @@
 #include <magic_enum_iostream.hpp>
 #include "exception.h"
 #include "log.h"
+#include "lru_memory_cache.h"
 #include "misc.h"
 #include <mutex>
 #include <numeric>
@@ -39,59 +40,30 @@ namespace docwire
 
 struct OCRParser::Implementation
 {
-    explicit Implementation(const std::string& file_name)
-    : m_file_name{ file_name }, m_buffer{nullptr}, m_buffer_size{0}
-    { 
-    }
-
-  Implementation(const char* buffer, size_t size)
-    : m_buffer{buffer}, m_buffer_size{size}
-  {
-  }
-
-    ~Implementation() = default;
-
-    std::string m_file_name{};
-    const char* m_buffer;
-    size_t m_buffer_size;
+    OCRParser* m_owner;
     std::string m_tessdata_prefix;
-    boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
-};  
 
-void OCRParser::ImplementationDeleter::operator() (Implementation* impl)
-{
-    delete impl;
-}
+    Implementation(OCRParser* owner)
+        : m_owner(owner)
+    {}
+
+    static bool cancel (void* data, int words)
+    {
+        auto impl = reinterpret_cast<OCRParser::Implementation*>(data);
+        Info info{tag::PleaseWait{}};
+        impl->m_owner->sendTag(info);
+        return info.cancel;
+    }
+};  
 
 std::string OCRParser::get_default_tessdata_prefix()
 {
     return "./tessdata/";
 }
 
-OCRParser::OCRParser(const OCRParser& ocr_parser)
+OCRParser::OCRParser()
+    : impl(std::make_unique<Implementation>(this))
 {
-  if (!ocr_parser.impl->m_file_name.empty())
-  {
-    impl = std::unique_ptr<Implementation, ImplementationDeleter>
-      {new Implementation{ ocr_parser.impl->m_file_name }, ImplementationDeleter{}};
-  }
-  else
-  {
-    impl = std::unique_ptr<Implementation, ImplementationDeleter>
-      {new Implementation{ocr_parser.impl->m_buffer, ocr_parser.impl->m_buffer_size}, ImplementationDeleter{}};
-  }
-}
-
-OCRParser::OCRParser(const std::string& file_name, const Importer* inImporter)
-: Parser(inImporter)
-{
-  impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{file_name}, ImplementationDeleter{}};
-}
-
-OCRParser::OCRParser(const char* buffer, size_t size, const Importer* inImporter)
-: Parser(inImporter)
-{
-  impl = std::unique_ptr<Implementation, ImplementationDeleter> {new Implementation{buffer, size}, ImplementationDeleter{}};
 }
 
 OCRParser::~OCRParser() = default;
@@ -163,20 +135,6 @@ namespace
         delete tessAPI;
     };
     using tessAPIWrapper = std::unique_ptr<TessBaseAPI, decltype(tessAPIDeleter)>;
-
-    auto pixDeleter = [](Pix* pix)
-    {
-        pixDestroy(&pix);
-    };
-    using PixWrapper = std::unique_ptr<Pix, decltype(pixDeleter)>;
-}
-
-bool cancel (void* data, int words)
-{
-  auto* signal = reinterpret_cast<boost::signals2::signal<void(Info &info)>*>(data);
-  Info info{tag::PleaseWait{}};
-  (*signal)(info);
-  return info.cancel;
 }
 
 using magic_enum::ostream_operators::operator<<;
@@ -184,9 +142,39 @@ using magic_enum::ostream_operators::operator<<;
 namespace
 {
     std::mutex tesseract_libtiff_mutex;
+
+    using pix_unique_ptr = std::unique_ptr<PIX, decltype([](PIX* pix) { pixDestroy(&pix); })>;
+
+std::shared_ptr<PIX> load_pix(const data_source& data)
+{
+    static thread_local lru_memory_cache<unique_identifier, std::shared_ptr<PIX>> pix_cache;
+    
+    return pix_cache.get_or_create(data.id(),
+        [data](const unique_identifier& key)
+        {
+            std::lock_guard<std::mutex> lock { tesseract_libtiff_mutex };
+            std::optional<std::filesystem::path> path = data.path();
+            if (path)
+            {
+                return std::shared_ptr<PIX>{
+                    pixRead(path->string().c_str()),
+                    [](PIX* pix) { pixDestroy(&pix); }
+                };
+            }
+            else
+            {
+                std::span<const std::byte> pic_data = data.span();
+                return std::shared_ptr<PIX>{
+                    pixReadMem((const unsigned char*)(pic_data.data()), pic_data.size()),
+                    [](PIX* pix) { pixDestroy(&pix); }
+                };
+            }
+        });
+}
+
 } // anonymous namespace
 
-std::string OCRParser::plainText(const FormattingStyle& formatting, const std::vector<Language>& languages) const
+std::string OCRParser::parse(const data_source& data, const std::vector<Language>& languages) const
 {
     tessAPIWrapper api{ nullptr, tessAPIDeleter };
     try
@@ -223,14 +211,13 @@ std::string OCRParser::plainText(const FormattingStyle& formatting, const std::v
     }
 
     // Read the image and convert to a gray-scale image
-    PixWrapper gray{ nullptr, pixDeleter };
+    pix_unique_ptr gray{ nullptr };
 
-    tesseract_libtiff_mutex.lock();
-    PixWrapper image(impl->m_file_name.empty() ? pixReadMem((const unsigned char*)(impl->m_buffer), impl->m_buffer_size)
-                     : pixRead(impl->m_file_name.c_str()), pixDeleter);
-    tesseract_libtiff_mutex.unlock();
+    std::shared_ptr<PIX> image = load_pix(data);
+    if (image == nullptr)
+        throw RuntimeError{ "Could not load image." };
 
-    PixWrapper inverted{ nullptr, pixDeleter };
+    pix_unique_ptr inverted{ nullptr };
     try
     {
         gray.reset(pixToGrayscale(image.get()));
@@ -268,8 +255,8 @@ std::string OCRParser::plainText(const FormattingStyle& formatting, const std::v
     {
         monitor.set_deadline_msecs(*ocr_timeout);
     }
-    monitor.cancel = &cancel;
-    monitor.cancel_this = &(impl->m_on_new_node_signal);
+    monitor.cancel = &Implementation::cancel;
+    monitor.cancel_this = reinterpret_cast<void*>(impl.get());
     api->Recognize(&monitor);
     auto txt = api->GetUTF8Text();
     std::string output{ txt };
@@ -282,16 +269,9 @@ void OCRParser::setTessdataPrefix(const std::string& tessdata_prefix)
     impl->m_tessdata_prefix = tessdata_prefix;
 }
 
-bool OCRParser::isOCR() const
+bool OCRParser::understands(const data_source& data) const
 {
-    if(impl == nullptr) return false;
-    std::unique_ptr<PIX, decltype([](PIX* pix) { pixDestroy(&pix); })> image
-    {
-        impl->m_file_name.empty() ?
-            pixReadMem((const unsigned char*)(impl->m_buffer), impl->m_buffer_size) :
-            pixRead(impl->m_file_name.c_str())
-    };
-    return image != nullptr;
+    return load_pix(data) != nullptr;
 }
 
 Parser&
@@ -301,20 +281,14 @@ OCRParser::withParameters(const ParserParameters &parameters)
     return *this;
 }
 
-void
-OCRParser::parse() const
+void OCRParser::parse(const data_source& data) const
 {
   docwire_log(debug) << "Using OCR parser.";
   auto language = m_parameters.getParameterValue<std::vector<Language>>("languages");
-  std::string plain_text = plainText(getFormattingStyle(), language && language->size() > 0 ? *language : std::vector({ Language::eng }));
-  Info info(tag::Text{.text = plain_text});
-  impl->m_on_new_node_signal(info);
-}
-
-Parser& OCRParser::addOnNewNodeCallback(NewNodeCallback callback)
-{
-  impl->m_on_new_node_signal.connect(callback);
-  return *this;
+  sendTag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
+  std::string plain_text = parse(data, language && language->size() > 0 ? *language : std::vector({ Language::eng }));
+  sendTag(tag::Text{.text = plain_text});
+  sendTag(tag::CloseDocument{});
 }
 
 } // namespace docwire

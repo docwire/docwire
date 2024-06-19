@@ -20,8 +20,6 @@
 namespace docwire
 {
 
-class Importer;
-
 class TXTParser : public Parser
 {
 	private:
@@ -30,15 +28,12 @@ class TXTParser : public Parser
 
 	public:
 
-    void parse() const override;
-    Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
+    void parse(const data_source& data) const override;
+	bool understands(const data_source& data) const override;
 		Parser& withParameters(const ParserParameters &parameters) override;
-		static std::vector <std::string> getExtensions();
+		static std::vector<file_extension> getExtensions();
 
-		TXTParser(const std::string& file_name, const Importer* inImporter = nullptr);
-		TXTParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
-		~TXTParser();
-		std::string plainText() const;
+		TXTParser();
 };
 
 } // namespace docwire

@@ -30,24 +30,24 @@ class DllExport ParserProvider
 public:
   /**
    * @brief Returns parser builder for given extension type or nullopt if no parser is found.
-   * @param inExtension file extension (e.g. ".txt", ".docx", etc.)
+   * @param extension file extension (e.g. ".txt", ".docx", etc.)
    * @return unique_ptr to specific parser builder or null unique_ptr if no parser is found
    */
-  virtual std::unique_ptr<ParserBuilder> findParserByExtension(const std::string &extension) const = 0;
+  virtual std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension) const = 0;
 
   /**
    * @brief Returns parser builder for given raw data or nullopt if no parser is found.
-   * @param buffer buffer of raw data
+   * @param data_source raw data
    * @return unique_ptr to specific parser builder or null unique_ptr if no parser is found
    */
-  virtual std::unique_ptr<ParserBuilder> findParserByData(const std::vector<char>& buffer) const = 0;
+  virtual std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const = 0;
 
 
   /**
    * @brief Returns all available parsers.
    * @return sets of all available parsers
    */
-  virtual std::set<std::string> getAvailableExtensions() const = 0;
+  virtual std::set<file_extension> getAvailableExtensions() const = 0;
 
   virtual ~ParserProvider() = default;
 };

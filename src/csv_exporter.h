@@ -26,11 +26,6 @@ public:
 	CsvExporter();
 	CsvExporter(const CsvExporter& other);
 
-  CsvExporter* clone() const override
-  {
-    return new CsvExporter(*this);
-  }
-
   void process(Info& info) const override;
 
 	bool is_leaf() const override

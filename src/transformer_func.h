@@ -23,7 +23,6 @@
 
 namespace docwire
 {
-class Importer;
 
 /**
  * @brief Wraps single function (NewNodeCallback) into ChainElement object
@@ -58,12 +57,6 @@ public:
   {
     return false;
   }
-
-  /**
-   * @brief Creates clone of the TransformerFunc
-   * @return new TransformerFunc
-   */
-  TransformerFunc* clone() const override;
 
 private:
   class Implementation;

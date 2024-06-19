@@ -149,10 +149,10 @@ std::string parse_response(const std::string& response)
 	}
 }
 
-bool has_txt_extension(const std::string& fn)
+bool has_txt_extension(const file_extension& extension)
 {
-	docwire_log_func_with_args(fn);
-	return std::filesystem::path(fn).extension().string() == ".txt";
+	docwire_log_func_with_args(extension);
+	return extension == file_extension{".txt"};
 }
 
 } // anonymous namespace
@@ -160,42 +160,33 @@ bool has_txt_extension(const std::string& fn)
 void Chat::process(Info &info) const
 {
 	docwire_log_func();
-	if (!std::holds_alternative<tag::File>(info.tag))
+	if (!std::holds_alternative<data_source>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	docwire_log(debug) << "tag::File received";
-	const tag::File& file = std::get<tag::File>(info.tag);
-	std::shared_ptr<std::istream> in_stream = file.access_stream();
+	docwire_log(debug) << "data_source received";
+	const data_source& data = std::get<data_source>(info.tag);
 	UserMsgType user_msg_type;
-	std::stringstream data_stream;
-	if (has_txt_extension(file.access_name()))
+	std::string data_str;
+	if (data.file_extension() && has_txt_extension(*data.file_extension()))
 	{
 		docwire_log(debug) << "Filename extension shows it is a text file.";
 		user_msg_type = UserMsgType::text;
-		data_stream << in_stream->rdbuf();
+		data_str = data.string();
 	}
 	else
 	{
 		docwire_log(debug) << "Filename extension shows it is not a text file. Let's assume it is an image.";
 		user_msg_type = UserMsgType::image_url;
-		std::vector<uint8_t> inputData(
-			std::istreambuf_iterator<char>{*in_stream},
-			std::istreambuf_iterator<char>{}
-		);
-		std::string base64Encoded = Botan::base64_encode(inputData);
+		std::span<const std::byte> input_data = data.span();
+		std::string base64Encoded = Botan::base64_encode(std::span<const uint8_t>{reinterpret_cast<const uint8_t*>(input_data.data()), input_data.size()});
 		docwire_log_var(base64Encoded);
-		data_stream << "data:image/*;base64," << base64Encoded;
+		data_str = std::string{"data:image/*;base64,"} + base64Encoded;
 	}
-	auto content_stream = std::make_shared<std::stringstream>(parse_response(post_request(prepare_query(impl->m_system_message, user_msg_type, data_stream.str(), impl->m_model, impl->m_temperature, impl->m_image_detail), impl->m_api_key)) + '\n');
-	Info new_info(tag::File{content_stream, ""});
+	std::string content = parse_response(post_request(prepare_query(impl->m_system_message, user_msg_type, data_str, impl->m_model, impl->m_temperature, impl->m_image_detail), impl->m_api_key)) + '\n';
+	Info new_info(data_source{content});
 	emit(new_info);
-}
-
-Chat* Chat::clone() const
-{
-	return new Chat(*this);
 }
 
 } // namespace openai

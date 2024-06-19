@@ -42,8 +42,7 @@ void Parser::ImplementationDeleter::operator()(Parser::Implementation *impl)
   delete impl;
 }
 
-Parser::Parser(const Importer* inImporter)
-    : m_importer(inImporter)
+Parser::Parser()
 {
   base_impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{}, ImplementationDeleter{}};
 }
@@ -69,16 +68,6 @@ Parser& Parser::withParameters(const ParserParameters &parameters)
 {
     m_parameters += parameters;
     return *this;
-}
-
-FormattingStyle Parser::getFormattingStyle() const
-{
-  auto formatting_style = m_parameters.getParameterValue<FormattingStyle>("formatting_style");
-  if (formatting_style)
-  {
-    return *formatting_style;
-  }
-  return FormattingStyle();
 }
 
 } // namespace docwire

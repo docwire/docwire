@@ -25,12 +25,6 @@ public:
 	AnalyzeData(const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
 	AnalyzeData(const AnalyzeData& other);
 	virtual ~AnalyzeData();
-
-	/**
-	* @brief Creates clone of the AnalyzeData
-	* @return new AnalyzeData
-	*/
-	AnalyzeData* clone() const override;
 };
 
 } // namespace openai

@@ -35,10 +35,5 @@ DetectSentiment::~DetectSentiment()
 {
 }
 
-DetectSentiment* DetectSentiment::clone() const
-{
-	return new DetectSentiment(*this);
-}
-
 } // namespace openai
 } // namespace docwire

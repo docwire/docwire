@@ -39,6 +39,7 @@
 #include "transformer_func.h"
 #include "input.h"
 #include "log.h"
+#include "lru_memory_cache.h"
 
 void escape_test_name(std::string& str)
 {
@@ -52,15 +53,12 @@ void escape_test_name(std::string& str)
 
 using namespace docwire;
 
-class DocumentTests :public ::testing::TestWithParam<std::tuple<int, int, const char*, std::optional<FormattingStyle>>> {
+class DocumentTests :public ::testing::TestWithParam<std::tuple<int, int, const char*>> {
 protected:
     ParserParameters parameters{};
 
     void SetUp() override
     {
-        FormattingStyle style{};
-        style.list_style.setPrefix(" * ");
-        parameters += ParserParameters{ "formatting_style", style };
         parameters += ParserParameters("languages", std::vector { Language::pol });
   }
 
@@ -68,7 +66,7 @@ protected:
 
 TEST_P(DocumentTests, ParseFromPathTest)
 {
-    const auto [lower, upper, format, style] = GetParam();
+    const auto [lower, upper, format] = GetParam();
 
     for(int i = lower; i <= upper; ++i)
     {
@@ -98,7 +96,7 @@ TEST_P(DocumentTests, ParseFromPathTest)
 
 TEST_P(DocumentTests, ParseFromStreamTest)
 {
-    const auto [lower, upper, format, style] = GetParam();
+    const auto [lower, upper, format] = GetParam();
 
     for(int i = lower; i <= upper; ++i)
     {
@@ -129,34 +127,34 @@ TEST_P(DocumentTests, ParseFromStreamTest)
 INSTANTIATE_TEST_SUITE_P(
     BasicTests, DocumentTests,
     ::testing::Values(
-        std::make_tuple(1, 9, "odt", std::nullopt),
-        std::make_tuple(1, 9, "fodt", std::nullopt),
-        std::make_tuple(1, 9, "ods", std::nullopt),
-        std::make_tuple(1, 9, "fods", std::nullopt),
-        std::make_tuple(1, 9, "odp", std::nullopt),
-        std::make_tuple(1, 9, "fodp", std::nullopt),
-        std::make_tuple(1, 9, "odg", std::nullopt),
-        std::make_tuple(1, 9, "fodg", std::nullopt),
-        std::make_tuple(1, 9, "rtf", std::nullopt),
-        std::make_tuple(1, 9, "doc", std::nullopt),
-        std::make_tuple(1, 9, "xls", std::nullopt),
-        std::make_tuple(1, 9, "xlsb", std::nullopt),
-        std::make_tuple(1, 9, "pdf", std::nullopt),
-        std::make_tuple(1, 9, "ppt", std::nullopt),
-        std::make_tuple(1, 9, "docx", std::nullopt),
-        std::make_tuple(1, 9, "xlsx", std::nullopt),
-        std::make_tuple(1, 9, "pptx", std::nullopt),
-        std::make_tuple(1, 9, "pages", std::nullopt),
-        std::make_tuple(1, 9, "numbers", std::nullopt),
-        std::make_tuple(1, 9, "key", std::nullopt),
-        std::make_tuple(1, 9, "html", std::nullopt),
-        std::make_tuple(1, 6, "bmp", std::nullopt),
-        std::make_tuple(1, 6, "jpg", std::nullopt),
-        std::make_tuple(1, 6, "jpeg", std::nullopt),
-        std::make_tuple(1, 6, "png", std::nullopt),
-        std::make_tuple(1, 6, "tiff", std::nullopt),
-        std::make_tuple(1, 6, "webp", std::nullopt),
-        std::make_tuple(1, 1, "pst", std::nullopt)
+        std::make_tuple(1, 9, "odt"),
+        std::make_tuple(1, 9, "fodt"),
+        std::make_tuple(1, 9, "ods"),
+        std::make_tuple(1, 9, "fods"),
+        std::make_tuple(1, 9, "odp"),
+        std::make_tuple(1, 9, "fodp"),
+        std::make_tuple(1, 9, "odg"),
+        std::make_tuple(1, 9, "fodg"),
+        std::make_tuple(1, 9, "rtf"),
+        std::make_tuple(1, 9, "doc"),
+        std::make_tuple(1, 9, "xls"),
+        std::make_tuple(1, 9, "xlsb"),
+        std::make_tuple(1, 9, "pdf"),
+        std::make_tuple(1, 9, "ppt"),
+        std::make_tuple(1, 9, "docx"),
+        std::make_tuple(1, 9, "xlsx"),
+        std::make_tuple(1, 9, "pptx"),
+        std::make_tuple(1, 9, "pages"),
+        std::make_tuple(1, 9, "numbers"),
+        std::make_tuple(1, 9, "key"),
+        std::make_tuple(1, 9, "html"),
+        std::make_tuple(1, 6, "bmp"),
+        std::make_tuple(1, 6, "jpg"),
+        std::make_tuple(1, 6, "jpeg"),
+        std::make_tuple(1, 6, "png"),
+        std::make_tuple(1, 6, "tiff"),
+        std::make_tuple(1, 6, "webp"),
+        std::make_tuple(1, 1, "pst")
                       ),
     [](const ::testing::TestParamInfo<DocumentTests::ParamType>& info) {
       std::string name = std::string{ std::get<2>(info.param) } + "_basic_tests";
@@ -221,9 +219,6 @@ protected:
 
     void SetUp() override
     {
-        FormattingStyle style{};
-        style.list_style.setPrefix(" * ");
-        parameters += ParserParameters{ "formatting_style", style };
   }
 };
 
@@ -298,7 +293,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         "1.docx", "2.docx", "3.docx", "4.docx", "5.docx", "6.docx", "7.docx", "8.docx", "9.docx", "10.docx",
         "1.doc", "2.doc", "3.doc", "4.doc", "5.doc", "6.doc", "7.doc", "8.doc", "9.doc",
-        "1.html", "2.html", "3.html", "4.html", "5.html", "6.html", "7.html", "8.html", "9.html"
+        "1.html", "2.html", "3.html", "4.html", "5.html", "6.html", "7.html", "8.html", "9.html",
+        "first.eml"
                       ),
     [](const ::testing::TestParamInfo<HTMLWriterTest::ParamType>& info) {
         std::string file_name = info.param;
@@ -742,4 +738,84 @@ TEST(Logging, CerrLogRedirection)
 
     std::string log_text = sanitize_log_text(log_stream.str());
     ASSERT_EQ(read_test_file("logging_cerr_log_redirection.out.json"), log_text);
+}
+
+TEST(unique_identifier, generation_uniqueness_copying_and_hashing)
+{
+    std::vector<unique_identifier> identifiers(10);
+    std::vector<unique_identifier> identifiers_copy{ identifiers };
+    for (int i = 0; i < 10; i++)
+        for (int j = 0; j < 10; j++)
+        {
+            if (i == j)
+            {
+                ASSERT_EQ(identifiers[i], identifiers_copy[j]);
+                ASSERT_EQ(std::hash<unique_identifier>()(identifiers[i]), std::hash<unique_identifier>()(identifiers[j]));
+            }
+            else
+            {
+                ASSERT_NE(identifiers[i], identifiers_copy[j]);
+                ASSERT_NE(identifiers[i], identifiers[j]);
+            }
+        }
+}
+
+TEST(lru_cache, storing_and_retrieving_values)
+{
+    lru_memory_cache<std::string, std::string> cache;
+    for (int i = 0; i < 10; i++)
+        cache.get_or_create("key" + std::to_string(i), [](const std::string& key) { return key + " cached value"; });
+    for (int i = 0; i < 10; i++)
+        ASSERT_EQ(cache.get_or_create("key" + std::to_string(i), [](const std::string& key) { return key + " new value"; }), "key" + std::to_string(i) + " cached value");
+}
+
+namespace
+{
+
+std::string create_datasource_test_data_str()
+{
+    std::vector<std::byte> test_data;
+    test_data.reserve(100 * 256);
+    for (int i = 0; i < 100; i++)
+        for (int b = 0; b < 256; b++)
+            test_data.push_back(std::byte{static_cast<unsigned char>(b)});
+    std::string test_data_str = std::string(reinterpret_cast<char const*>(&test_data[0]), test_data.size()) + "test";
+    return test_data_str;
+}
+
+} // anonymous namespace
+
+TEST(DataSource, verify_input_data)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    ASSERT_EQ(test_data_str.size(), 100 * 256 + 4);
+    ASSERT_EQ(test_data_str[0], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(test_data_str[255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(test_data_str[99 * 256], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(test_data_str[99 * 256 + 255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(test_data_str[100 * 256], 't');
+}
+
+TEST(DataSource, reading_seekable_stream)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    data_source data{seekable_stream_ptr{std::make_shared<std::istringstream>(test_data_str)}, file_extension{".txt"}};
+    std::string str = data.string();
+    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(str[100 * 256], 't');
+}
+
+TEST(DataSource, reading_unseekable_stream)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    data_source data{unseekable_stream_ptr{std::make_shared<std::istringstream>(test_data_str)}, file_extension{".txt"}};
+    std::string str = data.string();
+    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(str[100 * 256], 't');
 }

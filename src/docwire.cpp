@@ -22,7 +22,6 @@
 #include "extract_entities.h"
 #include "extract_keywords.h"
 #include "find.h"
-#include "formatting_style.h"
 #include "html_exporter.h"
 #include "language.h"
 #include "log.h"
@@ -105,7 +104,6 @@ int main(int argc, char* argv[])
 {
 	bool local_processing;
 	bool use_stream;
-	FormattingStyle formatting_style;
 
 	namespace po = boost::program_options;
 	po::options_description desc("Allowed options");
@@ -141,9 +139,6 @@ int main(int argc, char* argv[])
 		("max_nodes_number", po::value<unsigned int>(), "filter by max number of nodes")
 		("folder_name", po::value<std::string>(), "filter emails by folder name")
 		("attachment_extension", po::value<std::string>(), "filter by attachment type")
-		("table-style", po::value<TableStyle>(&formatting_style.table_style)->default_value(TableStyle::table_look), (enum_names_str<TableStyle>() + " (deprecated)").c_str())
-		("url-style", po::value<UrlStyle>(&formatting_style.url_style)->default_value(UrlStyle::extended), (enum_names_str<UrlStyle>() + " (deprecated)").c_str())
-		("list-style-prefix", po::value<std::string>()->default_value(" * "), "set output list prefix (deprecated)")
 		("log_file", po::value<std::string>(), "set path to log file")
 	;
 
@@ -198,10 +193,7 @@ int main(int argc, char* argv[])
 
 	std::string file_name = vm["input-file"].as<std::string>();
 
-	formatting_style.list_style.setPrefix(vm["list-style-prefix"].as<std::string>());
-
 	ParserParameters parameters;
-	parameters += ParserParameters("formatting_style", formatting_style);
 	if (vm.count("language"))
 	{
 		const std::vector<Language>& languages = vm["language"].as<std::vector<Language>>();
@@ -209,7 +201,7 @@ int main(int argc, char* argv[])
 	}
 
 	docwire_log_vars(use_stream, file_name);
-	ParsingChain chain = use_stream ?
+	auto chain = use_stream ?
 		(std::ifstream{file_name, std::ios_base::binary} | DecompressArchives()) :
 		(std::filesystem::path{file_name} | DecompressArchives());
 
@@ -240,7 +232,7 @@ int main(int argc, char* argv[])
 		}
 		if (vm.count("attachment_extension"))
 		{
-			chain = chain | TransformerFunc(StandardFilter::filterByAttachmentType({vm["attachment_extension"].as<std::string>()}));
+			chain = chain | TransformerFunc(StandardFilter::filterByAttachmentType({file_extension{vm["attachment_extension"].as<std::string>()}}));
 		}
 
 		switch (vm["output_type"].as<OutputType>())
@@ -271,10 +263,10 @@ int main(int argc, char* argv[])
 		std::string api_key = vm["openai-key"].as<std::string>();
 		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::ImageDetail image_detail = vm["openai-image-detail"].as<openai::ImageDetail>();
-		openai::Chat chat = vm.count("openai-temperature") ?
-			openai::Chat(prompt, api_key, model, vm["openai-temperature"].as<float>(), image_detail) :
-			openai::Chat(prompt, api_key, model, 0, image_detail);
-		chain = chain | chat;
+		chain = chain |
+			openai::Chat(prompt, api_key, model,
+				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
+				image_detail);
 	}
 
 	if (vm.count("openai-extract-entities"))
@@ -282,10 +274,10 @@ int main(int argc, char* argv[])
 		std::string api_key = vm["openai-key"].as<std::string>();
 		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::ImageDetail image_detail = vm["openai-image-detail"].as<openai::ImageDetail>();
-		openai::ExtractEntities extract_entities = vm.count("openai-temperature") ?
-			openai::ExtractEntities(api_key, model, vm["openai-temperature"].as<float>(), image_detail) :
-			openai::ExtractEntities(api_key, model, 0, image_detail);
-		chain = chain | extract_entities;
+		chain = chain |
+			openai::ExtractEntities(api_key, model,
+				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
+				image_detail);
 	}
 
 	if (vm.count("openai-extract-keywords"))
@@ -294,10 +286,10 @@ int main(int argc, char* argv[])
 		std::string api_key = vm["openai-key"].as<std::string>();
 		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::ImageDetail image_detail = vm["openai-image-detail"].as<openai::ImageDetail>();
-		openai::ExtractKeywords extract_keywords = vm.count("openai-temperature") ?
-			openai::ExtractKeywords(max_keywords, api_key, model, vm["openai-temperature"].as<float>(), image_detail) :
-			openai::ExtractKeywords(max_keywords, api_key, model, 0, image_detail);
-		chain = chain | extract_keywords;
+		chain = chain |
+			openai::ExtractKeywords(max_keywords, api_key, model,
+				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
+				image_detail);
 	}
 
 	if (vm.count("openai-summarize"))
@@ -305,10 +297,10 @@ int main(int argc, char* argv[])
 		std::string api_key = vm["openai-key"].as<std::string>();
 		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::ImageDetail image_detail = vm["openai-image-detail"].as<openai::ImageDetail>();
-		openai::Summarize summarize = vm.count("openai-temperature") ?
-			openai::Summarize(api_key, model, vm["openai-temperature"].as<float>(), image_detail) :
-			openai::Summarize(api_key, model, 0, image_detail);
-		chain = chain | summarize;
+		chain = chain |
+			openai::Summarize(api_key, model,
+				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
+				image_detail);
 	}
 
 	if (vm.count("openai-detect-sentiment"))
@@ -316,10 +308,10 @@ int main(int argc, char* argv[])
 		std::string api_key = vm["openai-key"].as<std::string>();
 		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::ImageDetail image_detail = vm["openai-image-detail"].as<openai::ImageDetail>();
-		openai::DetectSentiment detect_sentiment = vm.count("openai-temperature") ?
-			openai::DetectSentiment(api_key, model, vm["openai-temperature"].as<float>(), image_detail) :
-			openai::DetectSentiment(api_key, model, 0, image_detail);
-		chain = chain | detect_sentiment;
+		chain = chain |
+			openai::DetectSentiment(api_key, model,
+				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
+				image_detail);
 	}
 
 	if (vm.count("openai-analyze-data"))
@@ -327,10 +319,10 @@ int main(int argc, char* argv[])
 		std::string api_key = vm["openai-key"].as<std::string>();
 		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::ImageDetail image_detail = vm["openai-image-detail"].as<openai::ImageDetail>();
-		openai::AnalyzeData analyze_data = vm.count("openai-temperature") ?
-			openai::AnalyzeData(api_key, model, vm["openai-temperature"].as<float>(), image_detail) :
-			openai::AnalyzeData(api_key, model, 0, image_detail);
-		chain = chain | analyze_data;
+		chain = chain |
+			openai::AnalyzeData(api_key, model,
+				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
+				image_detail);
 	}
 
 	if (vm.count("openai-classify"))
@@ -340,10 +332,10 @@ int main(int argc, char* argv[])
 		std::string api_key = vm["openai-key"].as<std::string>();
 		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::ImageDetail image_detail = vm["openai-image-detail"].as<openai::ImageDetail>();
-		openai::Classify classify = vm.count("openai-temperature") ?
-			openai::Classify(categories_set, api_key, model, vm["openai-temperature"].as<float>(), image_detail) :
-			openai::Classify(categories_set, api_key, model, 0, image_detail);
-		chain = chain | classify;
+		chain = chain |
+			openai::Classify(categories_set, api_key, model,
+				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
+				image_detail);
 	}
 
 	if (vm.count("openai-translate-to"))
@@ -352,10 +344,10 @@ int main(int argc, char* argv[])
 		std::string api_key = vm["openai-key"].as<std::string>();
 		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::ImageDetail image_detail = vm["openai-image-detail"].as<openai::ImageDetail>();
-		openai::TranslateTo translate_to = vm.count("openai-temperature") ?
-			openai::TranslateTo(language, api_key, model, vm["openai-temperature"].as<float>(), image_detail) :
-			openai::TranslateTo(language, api_key, model, 0, image_detail);
-		chain = chain | translate_to;
+		chain = chain |
+			openai::TranslateTo(language, api_key, model,
+				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
+				image_detail);
 	}
 
 	if (vm.count("openai-find"))
@@ -364,10 +356,10 @@ int main(int argc, char* argv[])
 		std::string api_key = vm["openai-key"].as<std::string>();
 		openai::Model model = vm["openai-model"].as<openai::Model>();
 		openai::ImageDetail image_detail = vm["openai-image-detail"].as<openai::ImageDetail>();
-		openai::Find find = vm.count("openai-temperature") ?
-			openai::Find(what, api_key, model, vm["openai-temperature"].as<float>(), image_detail) :
-			openai::Find(what, api_key, model, 0, image_detail);
-		chain = chain | find;
+		chain = chain |
+			openai::Find(what, api_key, model,
+				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
+				image_detail);
 	}
 
 	if (vm.count("openai-text-to-speech"))

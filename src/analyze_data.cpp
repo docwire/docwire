@@ -35,10 +35,5 @@ AnalyzeData::~AnalyzeData()
 {
 }
 
-AnalyzeData* AnalyzeData::clone() const
-{
-	return new AnalyzeData(*this);
-}
-
 } // namespace openai
 } // namespace docwire

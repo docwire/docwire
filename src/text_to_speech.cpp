@@ -120,24 +120,17 @@ std::string post_request(const std::string& query, const std::string& api_key)
 void TextToSpeech::process(Info &info) const
 {
 	docwire_log_func();
-	if (!std::holds_alternative<tag::File>(info.tag))
+	if (!std::holds_alternative<data_source>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	docwire_log(debug) << "tag::File received";
-	const tag::File& file = std::get<tag::File>(info.tag);
-	std::shared_ptr<std::istream> in_stream = file.access_stream();
-	std::stringstream data_stream;
-	data_stream << in_stream->rdbuf();
-	auto content_stream = std::make_shared<std::stringstream>(post_request(prepare_query(data_stream.str(), impl->m_model, impl->m_voice), impl->m_api_key));
-	Info new_info(tag::File{content_stream, ""});
+	docwire_log(debug) << "data_source received";
+	const data_source& data = std::get<data_source>(info.tag);
+	std::string data_str = data.string();
+	std::string content = post_request(prepare_query(data_str, impl->m_model, impl->m_voice), impl->m_api_key);
+	Info new_info(data_source{content});
 	emit(new_info);
-}
-
-TextToSpeech* TextToSpeech::clone() const
-{
-	return new TextToSpeech(*this);
 }
 
 } // namespace openai

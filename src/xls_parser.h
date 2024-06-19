@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_XLS_PARSER_H
 #define DOCWIRE_XLS_PARSER_H
 
+#include "parser.h"
 #include <string>
 #include "tags.h"
 #include <vector>
@@ -21,23 +22,19 @@ namespace docwire
 
 class ThreadSafeOLEStorage;
 
-	struct FormattingStyle;
-
-class XLSParser
+class XLSParser : public Parser
 {
 	private:
 		struct Implementation;
-		Implementation* impl;
+		std::unique_ptr<Implementation> impl;
 
 	public:
-		XLSParser(const std::string& file_name);
-		XLSParser(const char* buffer, size_t size);
+		XLSParser();
 		~XLSParser();
-    static std::vector<std::string> getExtensions() {return {"xls"};}
-		bool isXLS();
-		std::string plainText(const FormattingStyle& formatting);
-		std::string plainText(ThreadSafeOLEStorage& storage, const FormattingStyle& formatting);
-		tag::Metadata metaData();
+    	static std::vector<file_extension> getExtensions() {return { file_extension{".xls"} };}
+		bool understands(const data_source& data) const override;
+		void parse(const data_source& data) const override;
+		std::string parse(ThreadSafeOLEStorage& storage) const;
 };
 
 } // namespace docwire

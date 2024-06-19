@@ -15,7 +15,6 @@ add_library(docwire_core SHARED
         transcribe.cpp
         exception.cpp
         decompress_archives.cpp
-        list_style.cpp
         log.cpp
         misc.cpp
         variant.cpp

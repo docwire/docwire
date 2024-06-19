@@ -33,10 +33,6 @@ public:
    * @param stream output stream
    */
   void write_to(const Tag& tag, std::ostream &stream) override;
-  /**
-   * @brief Creates a new instance of PlainTextWriter.
-   */
-  virtual Writer* clone() const override;
 
   PlainTextWriter& operator=(const PlainTextWriter &plainTextWriter);
 

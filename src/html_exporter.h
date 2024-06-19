@@ -29,11 +29,6 @@ public:
 	HtmlExporter(const HtmlExporter& other);
 	virtual ~HtmlExporter() = default;
 
-  HtmlExporter* clone() const override
-  {
-    return new HtmlExporter(*this);
-  }
-
   void process(Info& info) const override;
 
 	bool is_leaf() const override

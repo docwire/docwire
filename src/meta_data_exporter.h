@@ -26,11 +26,6 @@ public:
   MetaDataExporter();
 	MetaDataExporter(const MetaDataExporter& other);
 
-  MetaDataExporter* clone() const override
-  {
-    return new MetaDataExporter(*this);
-  }
-
   void process(Info& info) const override;
 
 	bool is_leaf() const override

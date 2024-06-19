@@ -18,14 +18,12 @@
 #include <functional>
 #include <memory>
 
-#include "formatting_style.h"
 #include "parser_parameters.h"
 #include "tags.h"
 #include "defines.h"
 
 namespace docwire
 {
-class Importer;
 
 struct DllExport Info
 {
@@ -46,18 +44,19 @@ typedef std::function<void(Info &info)> NewNodeCallback;
 class DllExport Parser
 {
 public:
-  /**
-   *
-   * @param inImporter importer known about all available parsers which could be used recursive
-   */
-  explicit Parser(const Importer* inImporter = nullptr);
+  explicit Parser();
 
   virtual ~Parser() = default;
 
   /**
+   * @brief Checks if parser can parse specified data
+  */
+  virtual bool understands(const data_source& data) const = 0;
+
+  /**
    * @brief Executes text parsing
    */
-  virtual void parse() const = 0;
+  virtual void parse(const data_source& data) const = 0;
   /**
    * @brief Adds new function to execute when new node will be created. Node is a part of parsed text.
    * Depends on the kind of parser it could be. For example, email from pst file or page from pdf file.
@@ -69,16 +68,10 @@ public:
   virtual Parser &withParameters(const ParserParameters &parameters);
 
 protected:
-  /**
-  * @brief Loads FormattingStyle from ParserParameters.
-  * @return Loaded FormattingStyle if exists, otherwise defualt FormattingStyle .
-  **/
-  FormattingStyle getFormattingStyle() const;
 
   Info sendTag(const Tag& tag) const;
   Info sendTag(const Info &info) const;
 
-  const Importer* m_importer;
   ParserParameters m_parameters;
 
 private:

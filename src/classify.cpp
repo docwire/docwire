@@ -37,10 +37,5 @@ Classify::~Classify()
 {
 }
 
-Classify* Classify::clone() const
-{
-	return new Classify(*this);
-}
-
 } // namespace openai
 } // namespace docwire

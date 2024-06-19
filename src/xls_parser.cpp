@@ -68,10 +68,7 @@ enum RecordType
 
 struct XLSParser::Implementation
 {
-	const char* m_buffer;
-	size_t m_buffer_size;
-	std::string m_codepage;
-	std::string m_file_name;
+	std::string m_codepage = "cp1251";
 	enum BiffVersion { BIFF2, BIFF3, BIFF4, BIFF5, BIFF8 };
 	BiffVersion m_biff_version;
 	struct XFRecord
@@ -854,170 +851,77 @@ struct XLSParser::Implementation
 	}
 };
 
-XLSParser::XLSParser(const std::string& file_name)
+XLSParser::XLSParser()
+	: impl(std::make_unique<Implementation>())
 {
-	impl = NULL;
-	try
-	{
-		impl = new Implementation();
-		impl->m_codepage = "cp1251";
-		impl->m_file_name = file_name;
-		impl->m_buffer = NULL;
-		impl->m_buffer_size = 0;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-			delete impl;
-		impl = NULL;
-		throw;
-	}
 }
 
-XLSParser::XLSParser(const char *buffer, size_t size)
+XLSParser::~XLSParser() = default;
+
+bool XLSParser::understands(const data_source& data) const
 {
-	impl = NULL;
-	try
-	{
-		impl = new Implementation();
-		impl->m_codepage = "cp1251";
-		impl->m_file_name = "Memory buffer";
-		impl->m_buffer = buffer;
-		impl->m_buffer_size = size;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-			delete impl;
-		impl = NULL;
-		throw;
-	}
+	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
+	if (!storage->isValid())
+		return false;
+	std::unique_ptr<AbstractOLEStreamReader> reader{storage->createStreamReader("Workbook")};
+	if (reader == nullptr)
+		reader = std::unique_ptr<AbstractOLEStreamReader>{storage->createStreamReader("Book")};
+	return reader != nullptr;
 }
 
-XLSParser::~XLSParser()
+void XLSParser::parse(const data_source& data) const
 {
-	delete impl;
-}
-
-bool XLSParser::isXLS()
-{
-	ThreadSafeOLEStorage* storage = NULL;
-	AbstractOLEStreamReader* reader = NULL;
-	try
-	{
-		if (impl->m_buffer)
-			storage = new ThreadSafeOLEStorage(impl->m_buffer, impl->m_buffer_size);
-		else
-			storage = new ThreadSafeOLEStorage(impl->m_file_name);
-		if (!storage->isValid())
+	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
+	if (!storage->isValid())
+		throw RuntimeError("Error opening stream as OLE file. OLE Storage error: " + storage->getLastError());
+	sendTag(tag::Document
 		{
-			delete storage;
-			return false;
-		}
-		reader = storage->createStreamReader("Workbook");
-		if (reader == NULL)
-			reader = storage->createStreamReader("Book");
-		if (reader == NULL)
-		{
-			delete storage;
-			return false;
-		}
-		delete reader;
-		delete storage;
-		return true;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (reader)
-			delete reader;
-		reader = NULL;
-		if (storage)
-			delete storage;
-		storage = NULL;
-		throw;
-	}
+			.metadata = [this, &storage]()
+			{
+				try
+				{
+					attributes::Metadata meta;
+					parse_oshared_summary_info(*storage, meta);
+					return meta;
+				}
+				catch (const std::exception& e)
+				{
+					throw RuntimeError("Error while parsing metadata", e);
+				}
+			}
+		});
+	sendTag(tag::Text{.text = parse(*storage)});
+	sendTag(tag::CloseDocument{});
 }
 
-std::string XLSParser::plainText(const FormattingStyle& formatting)
+std::string XLSParser::parse(ThreadSafeOLEStorage& storage) const
 {
-	ThreadSafeOLEStorage* storage = NULL;
-	try
-	{
-		if (impl->m_buffer)
-			storage = new ThreadSafeOLEStorage(impl->m_buffer, impl->m_buffer_size);
-		else
-			storage = new ThreadSafeOLEStorage(impl->m_file_name);
-		if (!storage->isValid())
-			throw RuntimeError("Error opening " + impl->m_file_name + " as OLE file. OLE Storage error: " + storage->getLastError());
-		std::string text = plainText(*storage, formatting);
-		delete storage;
-		storage = NULL;
-		return text;
-	}
-	catch (const std::exception& e)
-	{
-		if (storage)
-			delete storage;
-		storage = NULL;
-		throw;
-	}
-}
-
-std::string XLSParser::plainText(ThreadSafeOLEStorage& storage, const FormattingStyle& formatting)
-{
+	*impl = Implementation{};
 	docwire_log(debug) << "Using XLS parser.";
 
-	ThreadSafeOLEStreamReader* reader = NULL;
 	try
 	{
 		std::lock_guard<std::mutex> parser_mutex_lock(parser_mutex);
-		reader = (ThreadSafeOLEStreamReader*)storage.createStreamReader("Workbook");
-		if (reader == NULL)
-		{
-			std::string ole_storage_error = "Workbook: " + storage.getLastError() + "\n";
-			reader = (ThreadSafeOLEStreamReader*)storage.createStreamReader("Book");
-			if (reader == NULL)
-			{
-				ole_storage_error = "Book: " + storage.getLastError() + "\n";
-				throw RuntimeError("Cannot open Book or Workbook stream:\n" + ole_storage_error);
-			}
-		}
+		std::unique_ptr<ThreadSafeOLEStreamReader> workbook_reader { static_cast<ThreadSafeOLEStreamReader*>(storage.createStreamReader("Workbook")) };
 		std::string text;
-		impl->parseXLS(*reader, text);
-		delete reader;
-		reader = NULL;
+		if (workbook_reader != nullptr)
+		{
+			impl->parseXLS(*workbook_reader, text);
+		}
+		else
+		{
+			std::unique_ptr<ThreadSafeOLEStreamReader> book_reader { static_cast<ThreadSafeOLEStreamReader*>(storage.createStreamReader("Book")) };
+			if (book_reader == nullptr)
+			{
+				throw RuntimeError("Cannot open Book or Workbook stream");
+			}
+			impl->parseXLS(*book_reader, text);
+		}		
 		return text;
 	}
 	catch (const std::exception& e)
 	{
-		if (reader)
-			delete reader;
-		reader = NULL;
 		throw RuntimeError("Error while parsing XLS file", e);
-	}
-}
-
-tag::Metadata XLSParser::metaData()
-{
-	ThreadSafeOLEStorage* storage = NULL;
-	tag::Metadata meta;
-	try
-	{
-		if (impl->m_buffer)
-			storage = new ThreadSafeOLEStorage(impl->m_buffer, impl->m_buffer_size);
-		else
-			storage = new ThreadSafeOLEStorage(impl->m_file_name);
-		parse_oshared_summary_info(*storage, meta);
-		delete storage;
-		storage = NULL;
-		return meta;
-	}
-	catch (const std::exception& e)
-	{
-		if (storage)
-			delete storage;
-		storage = NULL;
-		throw RuntimeError("Error while parsing metadata", e);
 	}
 }
 

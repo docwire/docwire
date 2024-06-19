@@ -46,21 +46,11 @@ public:
 
   ChainElement& operator=(const ChainElement &chain_element);
 
-  ParsingChain operator|(ChainElement& chainElement);
-
-  ParsingChain operator|(ChainElement&& chainElement);
-
   /**
    * @brief Start processing
    * @param info
    */
   virtual void process(Info &info) const = 0;
-
-  /**
-   * @brief Creates clone
-   * @return new ChainElement
-   */
-  virtual ChainElement* clone() const = 0;
 
   /**
    * @brief Set parent (previous element)

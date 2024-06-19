@@ -12,7 +12,8 @@
 #ifndef DOCWIRE_MISC_H
 #define DOCWIRE_MISC_H
 
-#include "formatting_style.h"
+#include "data_source.h"
+#include "defines.h"
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -21,14 +22,16 @@
 
 struct tm;
 
-using namespace docwire;
+namespace docwire
+{
+
 using namespace wvWare;
 
 typedef std::vector<std::string> svector;
 
-DllExport std::string formatTable(std::vector<svector>& mcols, const FormattingStyle& options);
-DllExport std::string formatUrl(const std::string& mlink_url, const std::string& mlink_text, const FormattingStyle& options);
-DllExport std::string formatList(std::vector<std::string>& mlist, const FormattingStyle& options);
+DllExport std::string formatTable(std::vector<svector>& mcols);
+DllExport std::string formatUrl(const std::string& mlink_url, const std::string& mlink_text);
+DllExport std::string formatList(std::vector<std::string>& mlist);
 DllExport std::string formatNumberedList(std::vector<std::string>& mlist);
 
 DllExport std::string ustring_to_string(const UString& s);
@@ -77,14 +80,14 @@ DllExport std::string int_to_str(int i);
 
 DllExport int str_to_int(const std::string& s);
 
-DllExport bool is_encrypted_with_ms_offcrypto(const std::string& file_name);
-
-DllExport bool is_encrypted_with_ms_offcrypto(const char* buffer, size_t buffer_size);
+DllExport bool is_encrypted_with_ms_offcrypto(const data_source& data);
 
 DllExport tm *thread_safe_gmtime (const time_t *timer, struct tm &time_buffer);
 
 DllExport std::filesystem::path locate_subpath(const std::filesystem::path& sub_path);
 
 DllExport std::filesystem::path locate_resource(const std::filesystem::path& resource_rel_path);
+
+} // namespace docwire
 
 #endif

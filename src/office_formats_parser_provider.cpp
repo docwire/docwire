@@ -31,7 +31,7 @@ namespace docwire
 {
 
 void
-OfficeFormatsParserProvider::addExtensions(const std::vector<std::string> &extensions)
+OfficeFormatsParserProvider::addExtensions(const std::vector<file_extension> &extensions)
 {
   available_extensions.insert(extensions.begin(), extensions.end());
 }
@@ -52,57 +52,57 @@ OfficeFormatsParserProvider::OfficeFormatsParserProvider()
 }
 
 bool
-OfficeFormatsParserProvider::isExtensionInVector(const std::string &extension, const std::vector<std::string> &extension_list) const
+OfficeFormatsParserProvider::isExtensionInVector(const file_extension& extension, const std::vector<file_extension>& extension_list) const
 {
   return std::find(extension_list.begin(), extension_list.end(), extension) != extension_list.end();
 }
 
 std::unique_ptr<ParserBuilder>
-OfficeFormatsParserProvider::findParserByExtension(const std::string &inExtension) const
+OfficeFormatsParserProvider::findParserByExtension(const file_extension& inExtension) const
 {
   if (isExtensionInVector(inExtension, HTMLParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<HTMLParser>>>();
+    return std::make_unique<ParserBuilderWrapper<HTMLParser>>();
   }
   else if (isExtensionInVector(inExtension, DOCParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<DOCParser>>>();
+    return std::make_unique<ParserBuilderWrapper<DOCParser>>();
   }
   else if (isExtensionInVector(inExtension, PDFParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<PDFParser>>>();
+    return std::make_unique<ParserBuilderWrapper<PDFParser>>();
   }
   else if (isExtensionInVector(inExtension, XLSParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<wrapper_parser_creator<XLSParser>>>();
+    return std::make_unique<ParserBuilderWrapper<XLSParser>>();
   }
   else if (isExtensionInVector(inExtension, XLSBParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<wrapper_parser_creator<XLSBParser>>>();
+    return std::make_unique<ParserBuilderWrapper<XLSBParser>>();
   }
   else if (isExtensionInVector(inExtension, IWorkParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<wrapper_parser_creator<IWorkParser>>>();
+    return std::make_unique<ParserBuilderWrapper<IWorkParser>>();
   }
   else if (isExtensionInVector(inExtension, PPTParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<wrapper_parser_creator<PPTParser>>>();
+    return std::make_unique<ParserBuilderWrapper<PPTParser>>();
   }
   else if (isExtensionInVector(inExtension, RTFParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<RTFParser>>>();
+    return std::make_unique<ParserBuilderWrapper<RTFParser>>();
   }
   else if (isExtensionInVector(inExtension, ODFXMLParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<ODFXMLParser>>>();
+    return std::make_unique<ParserBuilderWrapper<ODFXMLParser>>();
   }
   else if (isExtensionInVector(inExtension, ODFOOXMLParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<ODFOOXMLParser>>>();
+    return std::make_unique<ParserBuilderWrapper<ODFOOXMLParser>>();
   }
   else if (isExtensionInVector(inExtension, TXTParser::getExtensions()))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<TXTParser>>>();
+    return std::make_unique<ParserBuilderWrapper<TXTParser>>();
   }
   return nullptr;
 }
@@ -115,62 +115,62 @@ is_valid(const char* buffer, size_t size)
   return (parser.*valid_method)();
 }
 
-template <typename T, bool(T::*valid_method)()>
-bool
-is_valid(const char* buffer, size_t size)
+template <typename T>
+bool parser_understands(const data_source& data)
 {
-  T parser(buffer, size);
-  return (parser.*valid_method)();
+  docwire_log_func();
+  T parser;
+  return parser.understands(data);
 }
 
 std::unique_ptr<ParserBuilder>
-OfficeFormatsParserProvider::findParserByData(const std::vector<char>& buffer) const
+OfficeFormatsParserProvider::findParserByData(const data_source& data) const
 {
-  if (is_valid<HTMLParser, &HTMLParser::isHTML>(buffer.data(), buffer.size()))
+  docwire_log_func();
+  if (parser_understands<HTMLParser>(data))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<HTMLParser>>>();
+    return std::make_unique<ParserBuilderWrapper<HTMLParser>>();
   }
-  else if (is_valid<DOCParser, &DOCParser::isDOC>(buffer.data(), buffer.size()))
+  else if (parser_understands<DOCParser>(data))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<DOCParser>>>();
+    return std::make_unique<ParserBuilderWrapper<DOCParser>>();
   }
-  else if (is_valid<PDFParser, &PDFParser::isPDF>(buffer.data(), buffer.size()))
+  else if (parser_understands<PDFParser>(data))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<PDFParser>>>();
+    return std::make_unique<ParserBuilderWrapper<PDFParser>>();
   }
-  else if (is_valid<XLSParser, &XLSParser::isXLS>(buffer.data(), buffer.size()))
+  else if (parser_understands<XLSParser>(data))
   {
-    return std::make_unique<ParserBuilderWrapper<wrapper_parser_creator<XLSParser>>>();
+    return std::make_unique<ParserBuilderWrapper<XLSParser>>();
   }
-  else if (is_valid<XLSBParser, &XLSBParser::isXLSB>(buffer.data(), buffer.size()))
+  else if (parser_understands<XLSBParser>(data))
   {
-    return std::make_unique<ParserBuilderWrapper<wrapper_parser_creator<XLSBParser>>>();
+    return std::make_unique<ParserBuilderWrapper<XLSBParser>>();
   }
-  else if (is_valid<IWorkParser, &IWorkParser::isIWork>(buffer.data(), buffer.size()))
+  else if (parser_understands<IWorkParser>(data))
   {
-    return std::make_unique<ParserBuilderWrapper<wrapper_parser_creator<IWorkParser>>>();
+    return std::make_unique<ParserBuilderWrapper<IWorkParser>>();
   }
-  else if (is_valid<PPTParser, &PPTParser::isPPT>(buffer.data(), buffer.size()))
+  else if (parser_understands<PPTParser>(data))
   {
-    return std::make_unique<ParserBuilderWrapper<wrapper_parser_creator<PPTParser>>>();
+    return std::make_unique<ParserBuilderWrapper<PPTParser>>();
   }
-  else if (is_valid<RTFParser, &RTFParser::isRTF>(buffer.data(), buffer.size()))
+  else if (parser_understands<RTFParser>(data))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<RTFParser>>>();
+    return std::make_unique<ParserBuilderWrapper<RTFParser>>();
   }
-  else if (is_valid<ODFOOXMLParser, &ODFOOXMLParser::isODFOOXML>(buffer.data(), buffer.size()))
+  else if (parser_understands<ODFOOXMLParser>(data))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<ODFOOXMLParser>>>();
+    return std::make_unique<ParserBuilderWrapper<ODFOOXMLParser>>();
   }
-  else if (is_valid<ODFXMLParser, &ODFXMLParser::isODFXML>(buffer.data(), buffer.size()))
+  else if (parser_understands<ODFXMLParser>(data))
   {
-    return std::make_unique<ParserBuilderWrapper<parser_creator<ODFXMLParser>>>();
+    return std::make_unique<ParserBuilderWrapper<ODFXMLParser>>();
   }
   return nullptr;
 }
 
-std::set<std::string>
-OfficeFormatsParserProvider::getAvailableExtensions() const
+std::set<file_extension> OfficeFormatsParserProvider::getAvailableExtensions() const
 {
   return available_extensions;
 }

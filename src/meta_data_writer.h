@@ -31,10 +31,6 @@ public:
    * @param stream output stream
    */
   void write_to(const Tag& tag, std::ostream &stream) override;
-  /**
-   * @brief creates a new instance of MetaDataWriter
-   */
-  virtual Writer* clone() const override;
 };
 } // namespace docwire
 

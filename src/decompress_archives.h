@@ -35,12 +35,6 @@ public:
 	{
 		return false;
 	}
-
-	/**
-	* @brief Creates clone of the DecompressArchives
-	* @return new DecompressArchives
-	*/
-	DecompressArchives* clone() const override;
 };
 
 } // namespace docwire

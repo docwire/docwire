@@ -23,17 +23,12 @@ namespace docwire
 {
 /**
  * @brief Stores list of parsers parameters. Every parser can query ParserParameter for a specific parameter.
- * For example OCRParser queries ParserParameters for a language. Every parser contains ParserParameters and
- * recursively passes it to another parser.
+ * For example OCRParser queries ParserParameters for a language.
  *
  * Example:
  * @code
  * ParserParameters parameters("languages", std::vector<Language>(Language::eng));
- * parameters += ParserParameters("TESSDATA_PREFIX", "tessdata"); // Adds second parameter
- *
- * Importer importer("img.jpg");
- * importer.add_parameters(parameters)
- *
+ * std::filesystem::path{"img.jpg"} | ParseDetectedFormat<OCRParserProvider>(parameters) | PlainTextExporter() | std::cout;
  * @endcode
  */
 class DllExport ParserParameters

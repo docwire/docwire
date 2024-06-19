@@ -69,7 +69,7 @@ struct ThreadSafeOLEStorage::Implementation
 	std::vector<std::shared_ptr<DirectoryEntry>> m_child_directories;
 	std::vector<std::shared_ptr<DirectoryEntry>> m_inside_directories;
 	bool m_child_directories_loaded;
-
+	
 	explicit Implementation(const std::string &file_name)
 	{
 		m_file_name = file_name;
@@ -89,12 +89,12 @@ struct ThreadSafeOLEStorage::Implementation
 		getStoragesAndStreams();
 	}
 
-	Implementation(const char* buffer, size_t size)
+	void init_from_buffer(std::span<const std::byte> buffer)
 	{
 		m_file_name = "Memory buffer";
 		m_is_valid_ole = true;
 		m_data_stream = nullptr;
-		m_data_stream = new BufferStream(buffer, size);
+		m_data_stream = new BufferStream(reinterpret_cast<const char*>(buffer.data()), buffer.size());
 		if (!m_data_stream->open())
 		{
 			m_is_valid_ole = false;
@@ -106,6 +106,11 @@ struct ThreadSafeOLEStorage::Implementation
 		getFatSectorChain();
 		getMiniFatSectorChain();
 		getStoragesAndStreams();
+	}
+
+	Implementation(std::span<const std::byte> buffer)
+	{
+		init_from_buffer(buffer);
 	}
 
 	~Implementation()
@@ -548,12 +553,12 @@ ThreadSafeOLEStorage::ThreadSafeOLEStorage(const std::string &file_name)
 	}
 }
 
-ThreadSafeOLEStorage::ThreadSafeOLEStorage(const char *buffer, size_t len)
+ThreadSafeOLEStorage::ThreadSafeOLEStorage(std::span<const std::byte> buffer)
 {
 	impl = nullptr;
 	try
 	{
-		impl = new Implementation(buffer, len);
+		impl = new Implementation(buffer);
 	}
 	catch (std::bad_alloc& ba)
 	{

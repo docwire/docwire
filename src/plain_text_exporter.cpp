@@ -22,6 +22,7 @@ struct PlainTextExporter::Implementation
 {
 	std::shared_ptr<std::stringstream> m_stream;
 	PlainTextWriter m_writer;
+	int m_nested_docs_level { 0 };
 };
 
 PlainTextExporter::PlainTextExporter()
@@ -36,13 +37,21 @@ PlainTextExporter::PlainTextExporter(const PlainTextExporter& other)
 void PlainTextExporter::process(Info &info) const
 {
 	if (std::holds_alternative<tag::Document>(info.tag) || !impl->m_stream)
-		impl->m_stream = std::make_shared<std::stringstream>();
+	{
+		++impl->m_nested_docs_level;
+		if (impl->m_nested_docs_level == 1)
+			impl->m_stream = std::make_shared<std::stringstream>();
+	}
 	impl->m_writer.write_to(info.tag, *impl->m_stream);
 	if (std::holds_alternative<tag::CloseDocument>(info.tag))
 	{
-		Info info(tag::File{impl->m_stream, std::string("plain_text_export.txt")});
-		emit(info);
-		impl->m_stream.reset();
+		--impl->m_nested_docs_level;
+		if (impl->m_nested_docs_level == 0)
+		{
+			Info info{data_source{seekable_stream_ptr{impl->m_stream}, file_extension{".txt"}}};
+			emit(info);
+			impl->m_stream.reset();
+		}
 	}
 }
 

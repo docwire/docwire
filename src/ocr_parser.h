@@ -16,7 +16,6 @@
 #include <memory>
 #include <iosfwd>
 
-#include "formatting_style.h"
 #include "language.h"
 #include "parser.h"
 #include "parser_builder.h"
@@ -28,26 +27,25 @@ class OCRParser : public Parser
 {
 private:
     struct Implementation;
-    struct ImplementationDeleter { void operator() (Implementation*); };
-    std::unique_ptr<Implementation, ImplementationDeleter> impl;
+    std::unique_ptr<Implementation> impl;
 
 public:
     static std::string get_default_tessdata_prefix();
 
-    OCRParser(const OCRParser& ocr_parser);
-    OCRParser(const std::string& file_name, const Importer* inImporter = nullptr);
-    OCRParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
+    OCRParser();
     ~OCRParser();
 
-    void parse() const override;
-    Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
-    static std::vector <std::string> getExtensions() {return {"tiff", "jpeg", "bmp", "png", "pnm", "jfif", "jpg", "webp"};}
+    void parse(const data_source& data) const override;
+    static std::vector <file_extension> getExtensions()
+    {
+        return { file_extension{".tiff"}, file_extension{".jpeg"}, file_extension{".bmp"}, file_extension{".png"}, file_extension{".pnm"}, file_extension{".jfif"}, file_extension{".jpg"}, file_extension{".webp"} };
+    }
     Parser& withParameters(const ParserParameters &parameters) override;
 
     void setTessdataPrefix(const std::string& tessdata_prefix);
-    bool isOCR() const;
+    bool understands(const data_source& data) const override;
 private:
-    std::string plainText(const FormattingStyle& formatting, const std::vector<Language>& languages) const;
+    std::string parse(const data_source& data, const std::vector<Language>& languages) const;
 };
 
 } // namespace docwire

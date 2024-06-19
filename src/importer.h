@@ -60,8 +60,8 @@ public:
    */
   void add_parameters(const ParserParameters &parameters);
 
-  virtual std::unique_ptr<ParserBuilder> findParserByExtension(const std::string &file_name) const = 0;
-  virtual std::unique_ptr<ParserBuilder> findParserByData(const std::vector<char>& buffer) const = 0;
+  virtual std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension) const = 0;
+  virtual std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const = 0;
 
   DOCWIRE_EXCEPTION_DEFINE(FileNotReadable, RuntimeError);
   DOCWIRE_EXCEPTION_DEFINE(FileNotFound, RuntimeError);

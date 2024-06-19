@@ -18,7 +18,7 @@
 namespace docwire
 {
 std::shared_ptr<TextElement>
-write_meta_data(const tag::Metadata& metadata)
+write_meta_data(const attributes::Metadata& metadata)
 {
   std::string text = "";
   auto author = metadata.author;
@@ -76,16 +76,10 @@ write_meta_data(const tag::Metadata& metadata)
 void
 MetaDataWriter::write_to(const Tag& tag, std::ostream &file)
 {
-  if (std::holds_alternative<tag::Metadata>(tag))
+  if (std::holds_alternative<tag::Document>(tag))
   {
-    write_meta_data(std::get<tag::Metadata>(tag))->write_to(file);
+    write_meta_data(std::get<tag::Document>(tag).metadata())->write_to(file);
   }
-}
-
-Writer*
-MetaDataWriter::clone() const
-{
-  return new MetaDataWriter(*this);
 }
 
 } // namespace docwire

@@ -26,11 +26,6 @@ public:
   PlainTextExporter();
 	PlainTextExporter(const PlainTextExporter& other);
 
-  PlainTextExporter* clone() const override
-  {
-    return new PlainTextExporter(*this);
-  }
-
   void process(Info& info) const override;
 
 	bool is_leaf() const override

@@ -318,18 +318,15 @@ class TextHandler : public wvWare::TextHandler
 		const DOCParser* m_parent;
 		const wvWare::Parser* m_parser;
 		CurrentState* m_curr_state;
-		FormattingStyle m_formatting;
 		bool m_comments_parsed;
 		std::vector<Comment> m_comments;
 		U32 m_prev_par_fc;
 
 	public:
-		TextHandler(const DOCParser* parent, const wvWare::Parser* parser, CurrentState* curr_state,
-				const FormattingStyle& formatting)
+		TextHandler(const DOCParser* parent, const wvWare::Parser* parser, CurrentState* curr_state)
 			: m_parent(parent), m_parser(parser), m_curr_state(curr_state), m_comments_parsed(false), m_prev_par_fc(0)
 		{
 			m_curr_state = curr_state;
-			m_formatting = formatting;
 		}
 
 		void sectionStart(SharedPtr<const Word97::SEP> sep)
@@ -629,76 +626,14 @@ class SubDocumentHandler : public wvWare::SubDocumentHandler
 		}
 };
 
-struct DOCParser::Implementation
+bool DOCParser::understands(const data_source& data) const
 {
-	const char* m_buffer;
-	size_t m_buffer_size;
-	std::string m_file_name;
-};
-
-DOCParser::DOCParser(const std::string& file_name, const Importer* inImporter)
-: Parser(inImporter)
-{
-	impl = NULL;
-	try
-	{
-		impl = new Implementation();
-		impl->m_file_name = file_name;
-		impl->m_buffer = NULL;
-		impl->m_buffer_size = 0;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-			delete impl;
-		throw;
-	}
-}
-
-DOCParser::DOCParser(const char *buffer, size_t size, const Importer* inImporter)
-: Parser(inImporter)
-{
-	impl = NULL;
-	try
-	{
-		impl = new Implementation();
-		impl->m_file_name = "Memory buffer";
-		impl->m_buffer = buffer;
-		impl->m_buffer_size = size;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-			delete impl;
-		throw;
-	}
-}
-
-DOCParser::~DOCParser()
-{
-	delete impl;
-}
-
-bool DOCParser::isDOC()
-{
-	FILE* f = NULL;
-	if (!impl->m_buffer)
-		f = fopen(impl->m_file_name.c_str(), "r");
-	if (f == NULL && !impl->m_buffer)
-		throw RuntimeError("Error opening file " + impl->m_file_name);
-	if (f)
-		fclose(f);
 	cerr_log_redirection cerr_redirection(docwire_current_source_location());
-	ThreadSafeOLEStorage* storage = NULL;
-	//storage will be deleted inside parser from wv2 library
-	if (impl->m_buffer)
-		storage = new ThreadSafeOLEStorage(impl->m_buffer, impl->m_buffer_size);
-	else
-		storage = new ThreadSafeOLEStorage(impl->m_file_name);
+	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
 	SharedPtr<wvWare::Parser> parser;
 	{
 		std::lock_guard<std::mutex> parser_factory_mutex_1_lock(parser_factory_mutex_1);
-		parser = ParserFactory::createParser(storage);
+		parser = ParserFactory::createParser(storage.release()); //storage will be deleted inside parser from wv2 library
 	}
 	cerr_redirection.restore();
 	if (!parser || !parser->isOk())
@@ -709,73 +644,70 @@ bool DOCParser::isDOC()
 	return true;
 }
 
-void DOCParser::plainText(const FormattingStyle& formatting) const
+void DOCParser::parse(const data_source& data) const
 {
+	docwire_log(debug) << "Using DOC parser.";
+
 	CurrentState curr_state;
-	docwire_log(debug) << "Opening " << impl->m_file_name << " as OLE file to parse all embedded objects in supported formats.";
-	//Pointer to storage will be passed to parser from wv2 library. This pointer will be deleted, so allocate storage on heap
-	ThreadSafeOLEStorage* storage = NULL;
-	try
-	{
-		if (impl->m_buffer)
-			storage = new ThreadSafeOLEStorage(impl->m_buffer, impl->m_buffer_size);
-		else
-			storage = new ThreadSafeOLEStorage(impl->m_file_name);
-		if (!storage->isValid())
-			throw RuntimeError("Error opening " + impl->m_file_name + " as OLE file");
-		if (storage->enterDirectory("ObjectPool"))
+	docwire_log(debug) << "Opening stream as OLE storage to parse all embedded objects in supported formats.";
+	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
+	if (!storage->isValid())
+		throw RuntimeError("Error opening stream as OLE storage");
+	sendTag(tag::Document
 		{
-			docwire_log(debug) << "ObjectPool found, embedded OLE objects probably exist.";
-			std::vector<std::string> obj_list;
-			if (!storage->getStreamsAndStoragesList(obj_list))
-				throw RuntimeError("Error while loading list of streams and storages in ObjectPool directory. OLE Storage has reported an error: " + storage->getLastError());
-			for (size_t i = 0; i < obj_list.size(); ++i)
+			.metadata = [this, &storage]()
 			{
-				docwire_log(debug) << "OLE object entry found: " << obj_list[i];
-				std::string obj_text;
-				std::string currect_dir = obj_list[i];
-				if (storage->enterDirectory(obj_list[i]))
-				{
-					std::vector<std::string> obj_list;
-					if (!storage->getStreamsAndStoragesList(obj_list))
-						throw RuntimeError("Error while loading list of streams and storages in " + currect_dir + " directory. OLE Storage has reported an error: " + storage->getLastError());
-					if (find(obj_list.begin(), obj_list.end(), "Workbook") != obj_list.end())
-					{
-						docwire_log(debug) << "Embedded MS Excel workbook detected.";
-						docwire_log(debug) << "Using XLS parser.";
-						try
-						{
-							XLSParser xls("");
-							obj_text = xls.plainText(*storage, formatting);
-						}
-						catch (const std::exception& e)
-						{
-							docwire_log(error) << "Error while parsing embedded MS Excel workbook:\n" << e.what();
-						}
-					}
-					storage->leaveDirectory();
-				}
-				curr_state.obj_texts.push_back(obj_text);
+				attributes::Metadata meta;
+				parse_oshared_summary_info(*storage, meta);
+				return meta;
 			}
-		}
-		else
-		{
-			docwire_log(debug) << "No ObjectPool found, embedded OLE objects probably do not exist.";
-		}
-		storage->leaveDirectory();
-		curr_state.obj_texts_iter = curr_state.obj_texts.begin();
-	}
-	catch (const std::exception& e)
+		});
+	if (storage->enterDirectory("ObjectPool"))
 	{
-		if (storage)
-			delete storage;
-		throw;
+		docwire_log(debug) << "ObjectPool found, embedded OLE objects probably exist.";
+		std::vector<std::string> obj_list;
+		if (!storage->getStreamsAndStoragesList(obj_list))
+			throw RuntimeError("Error while loading list of streams and storages in ObjectPool directory. OLE Storage has reported an error: " + storage->getLastError());
+		for (size_t i = 0; i < obj_list.size(); ++i)
+		{
+			docwire_log(debug) << "OLE object entry found: " << obj_list[i];
+			std::string obj_text;
+			std::string currect_dir = obj_list[i];
+			if (storage->enterDirectory(obj_list[i]))
+			{
+				std::vector<std::string> obj_list;
+				if (!storage->getStreamsAndStoragesList(obj_list))
+					throw RuntimeError("Error while loading list of streams and storages in " + currect_dir + " directory. OLE Storage has reported an error: " + storage->getLastError());
+				if (find(obj_list.begin(), obj_list.end(), "Workbook") != obj_list.end())
+				{
+					docwire_log(debug) << "Embedded MS Excel workbook detected.";
+					docwire_log(debug) << "Using XLS parser.";
+					try
+					{
+						XLSParser xls{};
+						obj_text = xls.parse(*storage);
+					}
+					catch (const std::exception& e)
+					{
+						docwire_log(error) << "Error while parsing embedded MS Excel workbook:\n" << e.what();
+					}
+				}
+				storage->leaveDirectory();
+			}
+			curr_state.obj_texts.push_back(obj_text);
+		}
 	}
+	else
+	{
+		docwire_log(debug) << "No ObjectPool found, embedded OLE objects probably do not exist.";
+	}
+	storage->leaveDirectory();
+	curr_state.obj_texts_iter = curr_state.obj_texts.begin();
 	cerr_log_redirection cerr_redirection(docwire_current_source_location());
 	SharedPtr<wvWare::Parser> parser;
 	{
 		std::lock_guard<std::mutex> parser_factory_mutex_2_lock(parser_factory_mutex_2);
-		parser = ParserFactory::createParser(storage);
+		parser = ParserFactory::createParser(storage.release()); //storage will be deleted inside parser from wv2 library
 	}
 	cerr_redirection.restore();
 	if (!parser || !parser->isOk())
@@ -784,7 +716,7 @@ void DOCParser::plainText(const FormattingStyle& formatting) const
 			throw EncryptedFileException("File is encrypted");
 		throw RuntimeError("Creating parser failed");
 	}
-	TextHandler text_handler(this, parser, &curr_state, formatting);
+	TextHandler text_handler(this, parser, &curr_state);
 	parser->setTextHandler(&text_handler);
 	TableHandler table_handler(this, curr_state);
 	parser->setTableHandler(&table_handler);
@@ -796,45 +728,13 @@ void DOCParser::plainText(const FormattingStyle& formatting) const
 	if (!res)
 		throw RuntimeError("Parsing document failed");
 	text_handler.endOfDocument();
-}
-
-tag::Metadata DOCParser::metaData() const
-{
-	tag::Metadata meta;
-	ThreadSafeOLEStorage* storage = NULL;
-	try
-	{
-		if (impl->m_buffer)
-			storage = new ThreadSafeOLEStorage(impl->m_buffer, impl->m_buffer_size);
-		else
-			storage = new ThreadSafeOLEStorage(impl->m_file_name);
-		parse_oshared_summary_info(*storage, meta);
-		delete storage;
-		storage = NULL;
-		return meta;
-	}
-	catch (const std::exception& e)
-	{
-		if (storage)
-			delete storage;
-		throw;
-	}
+	sendTag(tag::CloseDocument{});
 }
 
 Parser& DOCParser::withParameters(const ParserParameters &parameters)
 {
 	Parser::withParameters(parameters);
 	return *this;
-}
-
-void
-DOCParser::parse() const
-{
-	docwire_log(debug) << "Using DOC parser.";
-	FormattingStyle formating;
-  plainText(formating);
-
-	sendTag(metaData());
 }
 
 } // namespace docwire

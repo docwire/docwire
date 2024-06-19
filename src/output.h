@@ -27,7 +27,7 @@ concept OStreamDerived = std::derived_from<T, std::ostream>;
 /**
  *  @brief OutputChainElement class is responsible for saving data from parsing chain to an output stream.
  *  @code
- *  std::ifstream("file.pdf", std::ios_base::in|std::ios_base::binary) | Importer() | PlainTextExporter() | std::cout; // Imports file.pdf and saves it to std::cout as plain text
+ *  std::ifstream("file.pdf", std::ios_base::in|std::ios_base::binary) | ParseDetectedFormat<OfficeFormatsParserProvider>(parameters) | PlainTextExporter() | std::cout; // Imports file.pdf and saves it to std::cout as plain text
  *  @endcode
  */
 class DllExport OutputChainElement : public ChainElement
@@ -62,11 +62,6 @@ public:
 
   virtual ~OutputChainElement() = default;
 
-  OutputChainElement* clone() const override
-  {
-    return new OutputChainElement(*this);
-  }
-
   bool is_leaf() const override
   {
     return true;
@@ -79,38 +74,37 @@ private:
 };
 
 template<ParsingChainOrChainElement E, OStreamDerived S>
-ParsingChain operator|(E& element_or_chain, std::shared_ptr<S> stream)
+std::shared_ptr<ParsingChain> operator|(std::shared_ptr<E> element_or_chain, std::shared_ptr<S> stream)
 {
   return element_or_chain | OutputChainElement(stream);
 }
 
 template<ParsingChainOrChainElement E, OStreamDerived S>
-ParsingChain operator|(E&& element_or_chain, std::shared_ptr<S> stream)
+std::shared_ptr<ParsingChain> operator|(E&& element_or_chain, std::shared_ptr<S> stream)
 {
   return std::move(element_or_chain) | OutputChainElement(stream);
 }
 
 template<ParsingChainOrChainElement E, OStreamDerived S>
-ParsingChain operator|(E& element_or_chain, S&& stream)
+std::shared_ptr<ParsingChain> operator|(std::shared_ptr<E> element_or_chain, S&& stream)
 {
   return element_or_chain | OutputChainElement(std::move(stream));
 }
 
 template<ParsingChainOrChainElement E, OStreamDerived S>
-ParsingChain operator|(E&& element_or_chain, S&& stream)
+std::shared_ptr<ParsingChain> operator|(E&& element_or_chain, S&& stream)
 {
   return std::move(element_or_chain) | OutputChainElement(std::move(stream));
 }
 
-
 template<ParsingChainOrChainElement E, OStreamDerived S>
-ParsingChain operator|(E& element_or_chain, S& stream)
+std::shared_ptr<ParsingChain> operator|(std::shared_ptr<E> element_or_chain, S& stream)
 {
   return element_or_chain | OutputChainElement(stream);
 }
 
 template<ParsingChainOrChainElement E, OStreamDerived S>
-ParsingChain operator|(E&& element_or_chain, S& stream)
+std::shared_ptr<ParsingChain> operator|(E&& element_or_chain, S& stream)
 {
   return std::move(element_or_chain) | OutputChainElement(stream);
 }

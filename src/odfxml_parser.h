@@ -19,29 +19,29 @@
 namespace docwire
 {
 
-class Importer;
-
 class ODFXMLParser : public Parser,
                      public CommonXMLDocumentParser
 {
 	private:
 		struct ExtendedImplementation;
-		ExtendedImplementation* extended_impl;
+		std::unique_ptr<ExtendedImplementation> extended_impl;
 		class CommandHandlersSet;
+		attributes::Metadata metaData(const std::string& xml_content) const;
+		void parse(const data_source& data, XmlParseMode mode) const;
 
 	public:
 
-    void parse() const override;
-    Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
-    static std::vector <std::string> getExtensions() {return {"fodt", "fods", "fodp", "fodg"};}
+    void parse(const data_source& data) const override;
+	Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
+    	static std::vector<file_extension> getExtensions()
+		{
+			return { file_extension{".fodt"}, file_extension{".fods"}, file_extension{".fodp"}, file_extension{".fodg"} };
+		}
 		Parser& withParameters(const ParserParameters &parameters) override;
 
-		ODFXMLParser(const std::string &file_name, const Importer* inImporter = nullptr);
-		ODFXMLParser(const char* buffer, size_t size, const Importer* inImporter = nullptr);
+		ODFXMLParser();
 		~ODFXMLParser();
-		bool isODFXML();
-		std::string plainText(XmlParseMode mode, FormattingStyle& formatting_style) const;
-		tag::Metadata metaData() const;
+		bool understands(const data_source& data) const override;
 };
 
 } // namespace docwire

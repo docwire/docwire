@@ -12,6 +12,8 @@
 #ifndef DOCWIRE_THREAD_SAFE_OLE_STORAGE_H
 #define DOCWIRE_THREAD_SAFE_OLE_STORAGE_H
 
+#include <memory>
+#include <span>
 #include <string>
 #include <vector>
 #include "wv2/olestorage.h"
@@ -30,7 +32,7 @@ class DllExport ThreadSafeOLEStorage : public AbstractOLEStorage
 		Implementation* impl;
 	public:
 		explicit ThreadSafeOLEStorage(const std::string& file_name);
-		ThreadSafeOLEStorage(const char* buffer, size_t len);
+		ThreadSafeOLEStorage(std::span<const std::byte> buffer);
 		~ThreadSafeOLEStorage() override;
 		bool isValid() const override;
 		bool open(Mode mode) override;

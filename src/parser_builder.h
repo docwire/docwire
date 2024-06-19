@@ -23,8 +23,6 @@
 namespace docwire
 {
 
-class Importer;
-
 /**
  * Abstract class to build parsers. Parser could be built from path to file or from data buffer.
  */
@@ -33,31 +31,15 @@ class DllExport ParserBuilder
 public:
   /**
    * @brief Builds new parser object.
-   * @param inFileName path to file
    * @return pointer to new parser object
    */
-  virtual std::unique_ptr<Parser> build(const std::string &inFileName) const = 0;
-
-  /**
-   *
-   * @brief Builds new parser object.
-   * @param buffer raw data of file to be parsed
-   * @param size file size
-   * @return pointer to new parser object
-   */
-  virtual std::unique_ptr<Parser> build(const char *buffer, size_t size) const = 0;
+  virtual std::unique_ptr<Parser> build() const = 0;
 
   /**
    * @brief Adds callback function.
    * @param callbacks
    */
   virtual ParserBuilder &withOnNewNodeCallbacks(const std::vector<NewNodeCallback> &callbacks) = 0;
-
-  /**
-   * @brief Sets importer.
-   * @param inImporter
-   */
-  virtual ParserBuilder &withImporter(const Importer& inImporter) = 0;
 
   /**
    * @brief Sets parser parameters.

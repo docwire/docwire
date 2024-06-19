@@ -22,14 +22,14 @@ class DllExport OcrParserProvider : public ParserProvider
 {
 public:
   OcrParserProvider();
-  std::unique_ptr<ParserBuilder> findParserByExtension(const std::string &inExtension) const override;
-  std::unique_ptr<ParserBuilder> findParserByData(const std::vector<char>& buffer) const override;
-  std::set<std::string> getAvailableExtensions() const override;
+  std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension) const override;
+  std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const override;
+  std::set<file_extension> getAvailableExtensions() const override;
 
 private:
-  void addExtensions(const std::vector<std::string> &inExtensions);
-  bool isExtensionInVector(const std::string &extension, const std::vector<std::string> &extension_list) const;
-  std::set<std::string> available_extensions;
+  void addExtensions(const std::vector<file_extension> &inExtensions);
+  bool isExtensionInVector(const file_extension& extension, const std::vector<file_extension>& extension_list) const;
+  std::set<file_extension> available_extensions;
 };
 
 } // namespace docwire

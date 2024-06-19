@@ -42,7 +42,7 @@ public:
    * @brief Filters attachments by type. Keeps only attachments with type that exist in the given list.
    * @param types list of types to keep
    */
-  static NewNodeCallback filterByAttachmentType(const std::vector<std::string> &types);
+  static NewNodeCallback filterByAttachmentType(const std::vector<file_extension>& types);
 
   /**
    * @brief Filters mail by creation date. Keeps only mails that are created after the given date.

@@ -110,9 +110,18 @@ static bool read_vt_filetime(ThreadSafeOLEStreamReader* reader, tm& time)
 	{
 		// Sometimes field exists but date is zero.
 		// Last modification time saved by LibreOffice 3.5 when document is created is an example.
+		docwire_log(warning) << "Filetime field value is zero.";
 		return false;
 	}
 	unsigned long long int file_time = ((unsigned long long int)file_time_high << 32) | (unsigned long long int)file_time_low;
+	if (file_time < 864000000000LL)
+	{
+		// Sometimes field exists, date is zero (1601-01-01) but time is not.
+		// Last modification time saved by LibreOffice 3.5 when document is created is an example.
+		docwire_log(error) << "Incorrect filetime value (1601-01-01).";
+		return false;
+	}
+	docwire_log_vars(file_time, file_time_low, file_time_high);
 	time_t t = (time_t)(file_time / 10000000 - 11644473600LL);
   struct tm time_buffer;
   tm* res = thread_safe_gmtime(&t, time_buffer);
@@ -125,7 +134,7 @@ static bool read_vt_filetime(ThreadSafeOLEStreamReader* reader, tm& time)
 	return true;
 }
 
-void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, tag::Metadata& meta)
+void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metadata& meta)
 {
 	docwire_log(debug) << "Extracting metadata.";
 	if (!storage.isValid())

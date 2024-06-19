@@ -38,17 +38,6 @@ public:
       m_owner(owner)
   {}
 
-  bool load_file_to_buffer(const std::string &file_name, std::vector<char> &buffer) const
-  {
-    std::ifstream src(file_name.c_str(), std::ios_base::in|std::ios_base::binary);
-    if (!src.is_open())
-    {
-      return false;
-    }
-    buffer = std::vector<char>(std::istreambuf_iterator<char>(src), std::istreambuf_iterator<char>());
-    return true;
-  }
-
   bool
   isReadable(const std::filesystem::path& p) const
   {
@@ -64,68 +53,63 @@ public:
     return false;
   }
 
+  std::unique_ptr<ParserBuilder> findParser(const data_source& data) const
+  {
+    std::optional<file_extension> extension = data.file_extension();
+    if (!extension)
+    {
+      std::unique_ptr<ParserBuilder> builder = m_owner.findParserByData(data);
+      if (!builder)
+        throw UnknownFormat("Format of data in buffer was not recognized.");
+      return std::move(builder);
+    }
+    else
+    {
+      std::unique_ptr<ParserBuilder> builder = m_owner.findParserByExtension(*extension);
+      if (!builder)
+        throw UnknownFormat("Format was not recognized by extension for extension " + extension->string());
+      return std::move(builder);
+    }
+  }
+
+  std::unique_ptr<docwire::Parser> build_parser(ParserBuilder& builder)
+  {
+    return builder.withOnNewNodeCallbacks({[this](Info &info){ process(info); }})
+        .withParameters(m_parameters)
+        .build();
+  }
+    
   void
   process(Info& info)
   {
-    if (!std::holds_alternative<tag::File>(info.tag))
+    if (!std::holds_alternative<data_source>(info.tag))
     {
       m_owner.emit(info);
       return;
     }
-    Info new_doc(tag::Document{});
-    m_owner.emit(new_doc);
-    auto file = std::get<tag::File>(info.tag);
-    if (std::holds_alternative<std::filesystem::path>(file.source))
+    auto data = std::get<data_source>(info.tag);
+    std::unique_ptr<ParserBuilder> builder = findParser(data);
+    std::unique_ptr<docwire::Parser> parser = build_parser(*builder);
+    try
     {
-      std::filesystem::path file_path = std::get<std::filesystem::path>(file.source);
-      if (!std::filesystem::exists(file_path))
-        throw FileNotFound("file " + file_path.string() + "  doesn't exist");
-      if (!isReadable(file_path))
-        throw FileNotReadable("file " + file_path.string() + " is not readable");
-      std::unique_ptr<ParserBuilder> builder = m_owner.findParserByExtension(file_path.string());
-      if (!builder)
-        throw UnknownFormat("File format was not recognized.");
-      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
-        .withImporter(m_owner)
-        .withParameters(m_parameters);
-        try
-        {
-          builder_ref.build(file_path.string())->parse();
-        }
-        catch (EncryptedFileException &ex)
-        {
-          throw ParsingFailed("Parsing failed, file is encrypted", ex);
-        }
-        catch (const std::exception& ex)
-        {
-          docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
-          std::vector<char> buffer;
-          load_file_to_buffer(file_path.string(), buffer);
-          auto second_builder = m_owner.findParserByData(buffer);
-          if (!second_builder)
-          {
-            throw ParsingFailed("Error parsing file: " + file_path.string()  + ". Tried different parsers, but file could not be recognized as another format. File may be corrupted or encrypted", ex);
-          }
-          second_builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
-                  .withImporter(m_owner)
-                  .withParameters(m_parameters)
-                  .build(buffer.data(), buffer.size())->parse();
-        }
+      parser->parse(data);
     }
-    else if (std::holds_alternative<std::shared_ptr<std::istream>>(file.source))
+    catch (EncryptedFileException &ex)
     {
-      std::shared_ptr<std::istream> input_stream = std::get<std::shared_ptr<std::istream>>(file.source);
-      std::vector<char> buffer = std::vector<char>((std::istreambuf_iterator<char>(*input_stream)), std::istreambuf_iterator<char>());
-      std::unique_ptr<ParserBuilder> builder = m_owner.findParserByData(buffer);
-      if (!builder)
-        throw UnknownFormat("File format was not recognized.");
-      auto &builder_ref = builder->withOnNewNodeCallbacks({[this](Info &info){ m_owner.emit(info);}})
-        .withImporter(m_owner)
-        .withParameters(m_parameters);
-      builder_ref.build(buffer.data(), buffer.size())->parse();
+      throw ParsingFailed("Parsing failed, file is encrypted", ex);
     }
-    Info end_doc(tag::CloseDocument{});
-    m_owner.emit(end_doc);
+    catch (const std::exception& ex)
+    {
+      if (!data.file_extension()) // parser was detected by data
+        throw;
+      docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
+      auto second_builder = m_owner.findParserByData(data);
+      if (!second_builder)
+      {
+        throw;
+      }
+      build_parser(*second_builder)->parse(data);
+    }
   }
 
   void

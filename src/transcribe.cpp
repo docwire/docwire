@@ -48,14 +48,14 @@ Transcribe::~Transcribe()
 void Transcribe::process(Info &info) const
 {
 	docwire_log_func();
-	if (!std::holds_alternative<tag::File>(info.tag))
+	if (!std::holds_alternative<data_source>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	docwire_log(debug) << "tag::File received";
-	const tag::File& file = std::get<tag::File>(info.tag);
-	std::shared_ptr<std::istream> in_stream = file.access_stream();
+	docwire_log(debug) << "data_source received";
+	const data_source& data = std::get<data_source>(info.tag);
+	std::shared_ptr<std::istream> in_stream = data.istream();
 	auto response_stream = std::make_shared<std::ostringstream>();
 	try
 	{
@@ -71,11 +71,6 @@ void Transcribe::process(Info &info) const
 	emit(text_info);
 	Info close_doc_info(tag::CloseDocument{});
 	emit(close_doc_info);
-}
-
-Transcribe* Transcribe::clone() const
-{
-	return new Transcribe(*this);
 }
 
 } // namespace openai

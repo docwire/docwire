@@ -12,7 +12,6 @@
 #ifndef DOCWIRE_COMMON_XML_PARSER_H
 #define DOCWIRE_COMMON_XML_PARSER_H
 
-#include "formatting_style.h"
 #include "parser.h"
 #include <string>
 #include <vector>
@@ -24,18 +23,20 @@ namespace docwire
 	class Metadata;
 	class XmlStream;
 
+enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
+
 /**
 	This class is inherited by ODFOOXMLParser and ODFXMLParser. It contains some common
 	functions for both parsers.
 	How inheritance works:
 	Child classes (ODFOOXMLParser and ODFXMLParser for now) may want to add or change handlers for some xml tags
-	(using registerODFOOXMLCommandHandler). Besides they have to implement two methods: plainText and metaData.
+	(using registerODFOOXMLCommandHandler).
 **/
 class CommonXMLDocumentParser
 {
 	private:
 		struct Implementation;
-		Implementation* impl;
+		std::unique_ptr<Implementation> impl;
 		class CommandHandlersSet;
 
 	//public interface for derived classes (and its components)
@@ -64,7 +65,7 @@ class CommonXMLDocumentParser
 		typedef std::vector<ODFOOXMLListStyle> ListStyleVector;
 
   typedef std::function<void(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                                 const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+                                 const ZipReader* zipfile, std::string& text,
                                  bool& children_processed, std::string& level_suffix, bool first_on_level)> CommandHandler;
 
     void addCallback(const NewNodeCallback &callback);
@@ -79,17 +80,17 @@ class CommonXMLDocumentParser
 
 		///it is executed for each undefined tag (xml tag without associated handler). Can be overwritten
 		virtual void onUnregisteredCommand(XmlStream& xml_stream, XmlParseMode mode,
-										   const FormattingStyle& options, const ZipReader* zipfile, std::string& text,
+										   const ZipReader* zipfile, std::string& text,
 										   bool& children_processed, std::string& level_suffix, bool first_on_level);
 
 		///parses xml data for given xml stream. It executes commands for each xml tag
-		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile) const;
+		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile) const;
 
 		///extracts text from xml data. It uses parseXmlData internally. Throws RuntimeError on fail
-		void extractText(const std::string& xml_contents, XmlParseMode mode, const FormattingStyle& options, const ZipReader* zipfile, std::string& text) const;
+		void extractText(const std::string& xml_contents, XmlParseMode mode, const ZipReader* zipfile, std::string& text) const;
 
 		///usefull since two parsers use this. Throws RuntimeError on fail
-		void parseODFMetadata(const std::string &xml_content, tag::Metadata& metadata) const;
+		void parseODFMetadata(const std::string &xml_content, attributes::Metadata& metadata) const;
 
 		///this is helpful function to format comment
 		const std::string formatComment(const std::string& author, const std::string& time, const std::string& text);
@@ -118,9 +119,6 @@ class CommonXMLDocumentParser
 		///sets options for XmlStream objects. (xmlParserOption from libxml2)
 		void setXmlOptions(int options) const;
 
-		///Cleans up associated data. Call this method in constructor of derived class in case of bad_alloc.
-		void cleanUp();
-
 		void activeEmittingSignals(bool flag) const;
 
 		void trySendTag(const Tag& tag) const;
@@ -129,8 +127,6 @@ class CommonXMLDocumentParser
 	public:
 		CommonXMLDocumentParser();
 		virtual ~CommonXMLDocumentParser();
-		virtual std::string plainText(XmlParseMode mode, FormattingStyle& options) const = 0;
-		virtual tag::Metadata metaData() const = 0;
 };
 
 } // namespace docwire

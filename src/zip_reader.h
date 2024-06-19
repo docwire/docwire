@@ -12,8 +12,10 @@
 #ifndef DOCWIRE_ZIP_READER_H
 #define DOCWIRE_ZIP_READER_H
 
+#include <memory>
 #include <string>
 #include "defines.h"
+#include "tags.h"
 
 namespace docwire
 {
@@ -22,18 +24,12 @@ class ZipReader
 {
 	private:
 		struct Implementation;
-		Implementation* Impl;
+		std::unique_ptr<Implementation> Impl;
 
 	public:
-		ZipReader();
-		ZipReader(const std::string& archive_file_name);
-		ZipReader(const char* buffer, size_t size);
-		void setArchiveFile(const std::string& archive_file_name);
-		void setBuffer(const char* buffer, size_t size);
+		ZipReader(const data_source& data);
 		~ZipReader();
-		DllExport static void setUnzipCommand(const std::string& command);
-		bool open();
-		void close();
+		void open();
 		bool exists(const std::string& file_name) const;
 		bool read(const std::string& file_name, std::string* contents, int num_of_chars = 0) const;
 		bool getFileSize(const std::string& file_name, unsigned long& file_size) const;

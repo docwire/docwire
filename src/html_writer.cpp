@@ -12,6 +12,7 @@
 #include "boost/algorithm/string/predicate.hpp"
 #include <memory>
 #include "html_writer.h"
+#include "misc.h"
 #include <numeric>
 #include "parser.h"
 namespace docwire
@@ -82,15 +83,19 @@ std::shared_ptr<TextElement> tag_with_attributes(const std::string& tag_name, co
 struct HtmlWriter::Implementation
 {
   bool m_header_is_open { false };
+  int m_nested_docs_counter { 0 };
 
   std::shared_ptr<TextElement>
-  write_open_header()
+  write_open_header(const tag::Document& document)
   {
     std::string header = {"<!DOCTYPE html>\n"
            "<html>\n"
            "<head>\n"
            "<meta charset=\"utf-8\">\n"
            "<title>DocWire</title>\n"};
+    std::ostringstream meta_str;
+    write_metadata(document.metadata())->write_to(meta_str);
+    header += meta_str.str();
     m_header_is_open = true;
     return std::make_shared<TextElement>(header);
   }
@@ -145,9 +150,32 @@ struct HtmlWriter::Implementation
         "<style type=\"text/css\">" + style.css_text + "</style>\n"/* : ""*/);
   }
 
+  std::shared_ptr<TextElement> write_metadata(const attributes::Metadata& metadata)
+  {
+    std::string meta;
+    if (metadata.author)
+      meta += "<meta name=\"author\" content=\"" + encoded(*metadata.author) + "\">\n";
+    if (metadata.creation_date)
+      meta += "<meta name=\"creation-date\" content=\"" + date_to_string(*metadata.creation_date) + "\">\n";
+    if (metadata.last_modified_by)
+      meta += "<meta name=\"last-modified-by\" content=\"" + encoded(*metadata.last_modified_by) + "\">\n";
+    if (metadata.last_modification_date)
+      meta += "<meta name=\"last-modification-date\" content=\"" + date_to_string(*metadata.last_modification_date) + "\">\n";
+    if (metadata.email_attrs)
+    {
+      meta += "<meta name=\"from\" content=\"" + encoded(metadata.email_attrs->from) + "\">\n";
+      meta += "<meta name=\"date\" content=\"" + date_to_string(metadata.email_attrs->date) + "\">\n";
+      meta += "<meta name=\"to\" content=\"" + encoded(*metadata.email_attrs->to) + "\">\n";
+      meta += "<meta name=\"subject\" content=\"" + encoded(*metadata.email_attrs->subject) + "\">\n";
+      meta += "<meta name=\"reply-to\" content=\"" + encoded(*metadata.email_attrs->reply_to) + "\">\n";
+      meta += "<meta name=\"sender\" content=\"" + encoded(*metadata.email_attrs->sender) + "\">\n";
+    }
+    return std::make_shared<TextElement>(meta);
+  }
+
   void write_to(const Tag& tag, std::ostream &stream)
   {
-    if (!std::holds_alternative<tag::Style>(tag) && m_header_is_open)
+    if (!std::holds_alternative<tag::Style>(tag) && !std::holds_alternative<tag::Document>(tag) && !std::holds_alternative<tag::CloseDocument>(tag) && m_header_is_open)
       write_close_header_open_body()->write_to(stream);
     std::shared_ptr<TextElement> text_element = std::visit(overloaded {
       [](const tag::Paragraph& tag) { return tag_with_attributes("p", styling_attributes(tag)); },
@@ -181,8 +209,8 @@ struct HtmlWriter::Implementation
       [](const tag::CloseHeader& tag) { return std::make_shared<TextElement>("</header>"); },
       [](const tag::Footer& tag) { return std::make_shared<TextElement>("<footer>"); },
       [](const tag::CloseFooter& tag) { return std::make_shared<TextElement>("</footer>"); },
-      [this](const tag::Document& tag) { return write_open_header(); },
-      [this](const tag::CloseDocument& tag) { return write_footer(); },
+      [this](const tag::Document& tag) { m_nested_docs_counter++; return m_nested_docs_counter == 1 ? write_open_header(tag) : std::shared_ptr<TextElement>(); },
+      [this](const tag::CloseDocument& tag) { m_nested_docs_counter--; return m_nested_docs_counter == 0 ? write_footer() : std::shared_ptr<TextElement>(); },
       [this](const tag::Style& tag) { return write_style(tag); },
       [](const auto&) { return std::shared_ptr<TextElement>(); }
     }, tag);
@@ -208,12 +236,6 @@ HtmlWriter::HtmlWriter(const HtmlWriter& html_writer)
 void HtmlWriter::write_to(const Tag& tag, std::ostream &stream)
 {
 	impl->write_to(tag, stream);
-}
-
-Writer*
-HtmlWriter::clone() const
-{
-return new HtmlWriter(*this);
 }
 
 } // namespace docwire

@@ -25,7 +25,7 @@ namespace docwire
 class ParserProvider;
 
 template<typename... ProviderTypeNames>
-std::unique_ptr<ParserBuilder> findParserByExtension(const std::string& extension)
+std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension)
 {
   std::unique_ptr<ParserProvider> providers[] = {std::unique_ptr<ParserProvider>(new ProviderTypeNames)...};
   for (auto& provider : providers)
@@ -38,12 +38,12 @@ std::unique_ptr<ParserBuilder> findParserByExtension(const std::string& extensio
 }
 
 template<typename... ProviderTypeNames>
-std::unique_ptr<ParserBuilder> findParserByData(const std::vector<char>& buffer)
+std::unique_ptr<ParserBuilder> findParserByData(const data_source& data)
 {
   std::unique_ptr<ParserProvider> providers[] = {std::unique_ptr<ParserProvider>(new ProviderTypeNames)...};
   for (auto& provider : providers)
   {
-    auto builder = provider->findParserByData(buffer);
+    auto builder = provider->findParserByData(data);
     if (builder)
       return builder;
   }
@@ -66,20 +66,13 @@ class ParseDetectedFormat : public Importer
       : Importer(parameters)
     {}
 
-    ParseDetectedFormat<ProviderTypeName, ProviderTypeNames...>* clone() const override
-    {
-      return new ParseDetectedFormat<ProviderTypeName, ProviderTypeNames...>(*this);
-    }
-
   /**
    * @brief Returns parser builder for given extension type or nullopt if no parser is found.
-   * @param file_name file name with extension (e.g. ".txt", ".docx", etc.)
+   * @param extension file extension (e.g. ".txt", ".docx", etc.)
    * @return specific parser builder or null unique_ptr if no parser is found
    */
-  std::unique_ptr<ParserBuilder> findParserByExtension(const std::string &file_name) const override
+  std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension) const override
   {
-    std::string extension = file_name.substr(file_name.find_last_of(".") + 1);
-    std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
     return docwire::findParserByExtension<ProviderTypeName, ProviderTypeNames...>(extension);
   }
 
@@ -88,12 +81,11 @@ class ParseDetectedFormat : public Importer
    * @param buffer buffer of raw data
    * @return specific parser builder or null unique_ptr if no parser is found
    */
-  std::unique_ptr<ParserBuilder> findParserByData(const std::vector<char>& buffer) const override
+  std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const override
   {
-    return docwire::findParserByData<ProviderTypeName, ProviderTypeNames...>(buffer);
+    return docwire::findParserByData<ProviderTypeName, ProviderTypeNames...>(data);
   }
 };
-
 
 } // namespace docwire
 

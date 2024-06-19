@@ -38,14 +38,9 @@ namespace
 struct EMLParser::Implementation
 {
   EMLParser* m_owner;
-	bool m_error;
-	std::string m_file_name;
-	std::istream* m_data_stream;
-	const Importer* m_importer;
 
-	Implementation(const Importer* inImporter, EMLParser* owner)
-    : m_importer(inImporter),
-      m_owner(owner)
+	Implementation(EMLParser* owner)
+    : m_owner(owner)
   {}
 
 	void convertToUtf8(const std::string& charset, std::string& text)
@@ -62,25 +57,7 @@ struct EMLParser::Implementation
 		}
 	}
 
-	std::string parseText(const std::string &text, const std::string &type)
-	{
-		std::string parsed_text;
-		PlainTextWriter writer;
-		std::stringstream stream;
-		auto callback = [&writer, &stream](const Info &info){writer.write_to(info.tag, stream);};
-		auto parser_builder = m_importer->findParserByExtension(type);
-		if (parser_builder)
-		{
-			auto parser = parser_builder->withImporter(*m_importer)
-							.withParameters(m_owner->m_parameters)
-							.build(text.c_str(), text.length());
-			parser->addOnNewNodeCallback(callback);
-			parser->parse();
-		}
-		return stream.str();
-	}
-
-	void extractPlainText(const mime& mime_entity, std::string& output, const FormattingStyle& formatting)
+	void extractPlainText(const mime& mime_entity)
 	{
 		docwire_log(debug) << "Extracting plain text from mime entity";
 		if (mime_entity.content_disposition() != mime::content_disposition_t::ATTACHMENT && mime_entity.content_type().type == mime::media_type_t::TEXT)
@@ -99,69 +76,38 @@ struct EMLParser::Implementation
 			if (mime_entity.content_type().subtype == "html" || mime_entity.content_type().subtype == "xhtml")
 			{
 				docwire_log(debug) << "HTML content subtype detected";
-				try
-				{
-					if (m_importer)
-					{
-						plain = parseText(plain, "html");
-					}
-				}
-				catch (const std::exception& e)
-				{
-					docwire_log(warning) << "Warning: Error while parsing html content";
-				}
+				m_owner->sendTag(data_source{plain, file_extension{".html"}});
 			}
 			else
 			{
-				if (!skip_charset_decoding)
+				if (skip_charset_decoding)
+				{
+					docwire_log(debug) << "Charset is specified and decoding is skipped";
+					m_owner->sendTag(tag::Text{.text = plain});
+				}
+				else
 				{
 					docwire_log(debug) << "Charset is not specified";
-					try
-					{
-						if (m_importer)
-						{
-							plain = parseText(plain, "txt");
-						}
-					}
-					catch (const std::exception& e)
-					{
-						docwire_log(warning) << "Warning: Error while parsing text content";
-					}
+					m_owner->sendTag(data_source{plain, file_extension{".txt"}});
 				}
 			}
-
-			m_owner->sendTag(tag::Text{.text = plain + "\n\n"});
-
-			output += plain;
-			output += "\n\n";
+			m_owner->sendTag(tag::Text{.text = "\n\n"});
 			return;
 		}
 		else if (mime_entity.content_type().type != mime::media_type_t::MULTIPART)
 		{
 			docwire_log(debug) << "It is not a multipart message. It's attachment probably.";
 			std::string plain = mime_entity.content();
-
-			if (m_importer)
-			{
 			std::string file_name = mime_entity.name();
 			docwire_log(debug) << "File name: " << file_name;
-			std::string extension = file_name.substr(file_name.find_last_of(".") + 1);
-			std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+			file_extension extension { std::filesystem::path{file_name} };
 			auto info = m_owner->sendTag(
 				tag::Attachment{.name = file_name, .size = plain.length(), .extension = extension});
 			if(!info.skip)
 			{
-				auto parser_builder = m_importer->findParserByExtension(file_name);
-				if (parser_builder)
-				{
-					auto parser = parser_builder->withImporter(*m_importer)
-						.withOnNewNodeCallbacks({[this](Info &info){m_owner->sendTag(info.tag);}})
-						.build(plain.c_str(), plain.length());
-						parser->parse();
-				}
+				m_owner->sendTag(data_source{plain, extension});
 			}
 			m_owner->sendTag(tag::CloseAttachment{});
-			}
 		}
 		if (mime_entity.content_type().subtype == "alternative")
 		{
@@ -170,75 +116,28 @@ struct EMLParser::Implementation
 			for (const mime& m: mime_entity.parts())
 				if (m.content_type().subtype == "html" || m.content_type().subtype == "xhtml")
 				{
-					extractPlainText(m, output, formatting);
+					extractPlainText(m);
 					html_found = true;
 				}
 			if (!html_found && mime_entity.parts().size() > 0)
-				extractPlainText(mime_entity.parts()[0], output, formatting);
+				extractPlainText(mime_entity.parts()[0]);
 		}
 		else
 		{
 			docwire_log(debug) << "Multipart but not alternative";
 			docwire_log(debug) << mime_entity.parts().size() << " mime parts found";
 			for (const mime& m: mime_entity.parts())
-				extractPlainText(m, output, formatting);
+				extractPlainText(m);
 		}
 	}
 };
 
-EMLParser::EMLParser(const std::string& file_name, const Importer* inImporter)
-  : Parser(inImporter)
+EMLParser::EMLParser()
+	: impl(new Implementation(this))
 {
-	impl = NULL;
-	try
-	{
-		impl = new Implementation(inImporter, this);
-		impl->m_data_stream = NULL;
-		impl->m_data_stream = new std::ifstream(file_name.c_str());
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_data_stream)
-				delete impl->m_data_stream;
-			delete impl;
-		}
-		throw;
-	}
 }
 
-EMLParser::EMLParser(const char* buffer, size_t size, const Importer* inImporter)
-  : Parser(inImporter)
-{
-	impl = NULL;
-	try
-	{
-		impl = new Implementation(inImporter, this);
-		impl->m_data_stream = NULL;
-		impl->m_data_stream = new std::stringstream(std::string(buffer, size));
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (impl)
-		{
-			if (impl->m_data_stream)
-				delete impl->m_data_stream;
-			delete impl;
-		}
-		throw;
-	}
-}
-
-EMLParser::~EMLParser()
-{
-	if (impl)
-	{
-		if (impl->m_data_stream)
-			delete impl->m_data_stream;
-		delete impl;
-	}
-}
+EMLParser::~EMLParser() = default;
 
 namespace
 {
@@ -250,13 +149,14 @@ void normalize_line(std::string& line)
 		line.pop_back();
 }
 
-message parse_message(std::istream& stream)
+message parse_message(const data_source& data)
 {
+	std::shared_ptr<std::istream> stream = data.istream();
 	message mime_entity;
 	mime_entity.line_policy(codec::line_len_policy_t::RECOMMENDED, codec::line_len_policy_t::NONE);
 	try {
 		std::string line;
-		while (getline(stream, line))
+		while (getline(*stream, line))
 		{
 			normalize_line(line);
 			docwire_log_var(line);
@@ -272,15 +172,10 @@ message parse_message(std::istream& stream)
 
 } // anonymous namespace
 
-bool EMLParser::isEML() const
+bool EMLParser::understands(const data_source& data) const
 {
 	docwire_log_func();
-	if (!impl->m_data_stream->good())
-	{
-		docwire_log(error) << "Error opening file " << impl->m_file_name;
-		throw RuntimeError("Error opening file: " + impl->m_file_name);
-	}
-	message mime_entity = parse_message(*impl->m_data_stream);
+	message mime_entity = parse_message(data);
 	std::string from = mime_entity.from_to_string();
 	bool has_from = !from.empty();
 	bool has_date_time = !mime_entity.date_time().is_not_a_date_time();
@@ -288,45 +183,41 @@ bool EMLParser::isEML() const
 	return has_from && has_date_time;
 }
 
-std::string EMLParser::plainText(const FormattingStyle& formatting) const
+namespace
+{
+
+attributes::Metadata metaData(const message& mime_entity);
+
+} // anonymous namespace
+
+void
+EMLParser::parse(const data_source& data) const
 {
 	docwire_log_func();
-	std::string text;
-	if (!isEML())
+	docwire_log(debug) << "Using EML parser.";
+	if (!understands(data))
 	{
 		docwire_log(error) << "The specified file is not a valid EML file";
 		throw RuntimeError("The specified file is not a valid EML file");
 	}
-	docwire_log(debug) << "stream_pos=" << impl->m_data_stream->tellg();
-	impl->m_data_stream->clear();
-	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
-	{
-		docwire_log(error) << "The stream seek operation failed";
-		throw RuntimeError("The stream seek operation failed");
-	}
-	message mime_entity = parse_message(*impl->m_data_stream);
-	impl->extractPlainText(mime_entity, text, formatting);
-	return text;
+	message mime_entity = parse_message(data);
+	sendTag(tag::Document
+		{
+			.metadata = [&mime_entity]()
+			{
+				return metaData(mime_entity);
+			}
+		});
+	impl->extractPlainText(mime_entity);
+	sendTag(tag::CloseDocument{});
 }
 
-tag::Metadata EMLParser::metaData()
+namespace
 {
-	tag::Metadata metadata;
-	impl->m_data_stream->clear();
-	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
-	{
-		docwire_log(error) << "The stream seek operation failed";
-		throw RuntimeError("The stream seek operation failed");
-	}
-	if (!isEML())
-		throw RuntimeError("The specified file is not a valid EML file");
-	impl->m_data_stream->clear();
-	if (!impl->m_data_stream->seekg(0, std::ios_base::beg))
-	{
-		docwire_log(error) << "The stream seek operation failed";
-		throw RuntimeError("The stream seek operation failed");
-	}
-	message mime_entity = parse_message(*impl->m_data_stream);
+
+attributes::Metadata metaData(const message& mime_entity)
+{
+	attributes::Metadata metadata;
 	metadata.author = mime_entity.from_to_string();
 	metadata.creation_date = to_tm(mime_entity.date_time());
 
@@ -353,11 +244,6 @@ tag::Metadata EMLParser::metaData()
 	return metadata;
 }
 
-void
-EMLParser::parse() const
-{
-	docwire_log(debug) << "Using EML parser.";
-  plainText(getFormattingStyle());
-}
+} // anonymous namespace
 
 } // namespace docwire
