@@ -519,6 +519,7 @@ void PSTParser::Implementation::parse(std::shared_ptr<std::istream> stream) cons
     libbfio_handle_free(&handle, &bfio_error);
     handle = nullptr;
   }
+  libbfio_error_free(&bfio_error);
 }
 
 void
@@ -563,6 +564,7 @@ bool PSTParser::understands(const data_source& data) const
     libbfio_handle_free(&handle, &bfio_error);
     handle = nullptr;
   }
+  libbfio_error_free(&bfio_error);
   if (result != 1)
   {
     return false;
