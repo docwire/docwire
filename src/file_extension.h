@@ -94,7 +94,16 @@ public:
 	 */
 	std::strong_ordering operator<=>(const file_extension& other) const
 	{
-		return m_ext <=> other.m_ext;
+		#ifdef __cpp_lib_three_way_comparison
+			return m_ext <=> other.m_ext;
+		#else
+			if (m_ext < other.m_ext)
+				return std::strong_ordering::less;
+			else if (m_ext > other.m_ext)
+				return std::strong_ordering::greater;
+			else
+				return std::strong_ordering::equal;
+		#endif			
 	}
 
 	/**
