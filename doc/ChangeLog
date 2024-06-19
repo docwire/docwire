@@ -1,3 +1,50 @@
+## Version 2024.06.19
+
+This release introduces significant modernizations and optimizations across the codebase. Key changes include the adoption of modern C++ practices such as move semantics and smart pointers, simplification of the code by removing outdated patterns, and structural enhancements that decentralize parsing responsibilities. Performance is notably optimized through new caching mechanisms and memory management strategies. Additionally, several bug fixes and new features enhance the functionality and reliability of data parsing and exporting components.
+
+> In the realm of code, where logic reigns,  
+> A modern touch, the old constrains.  
+> Smart pointers weave, with move semantics,  
+> A tapestry free from old panics.  
+>
+> Locks and guards, a vigilant dance,  
+> Safeguarding flow, they advance.  
+> Gone are wrappers, templates flee,  
+> Simplicity wins, the code is free.  
+>
+> From parsers to import, a journey bold,  
+> A narrative of efficiency told.  
+> Obsolete no more, the styles old cast,  
+> Lambdas in light, shadows they outlast.  
+>
+> Bugs in chains, limits set free,  
+> PST's breath deeper, as it should be.  
+> Metadata whispers in HTML's ear,  
+> EML listens close, clarity near.  
+>
+> A cache of memories, seldom forget,  
+> Performance tunes, on better we bet.  
+> Through tests and logs, comparisons drawn,  
+> A script to tell, which faster, which gone.  
+
+- **Modernization of Parsing Chain Elements**: Initially, the usage of `clone()` methods was replaced with modern C++ design strategies like move semantics and smart pointers. This enhances both the safety and performance of the code by avoiding unnecessary copying and providing better resource management.
+
+- **Enhancements in PDFParser**: The `std::mutex lock()` and `unlock()` methods were replaced with `std::lock_guard`. This change simplifies the code and ensures exception safety by automatically managing the lock's lifecycle.
+
+- **Code Simplification**: The removal of `ParserWrapper`, `wrapper_parser_creator`, and `parser_creator` class templates simplifies the codebase, making it easier to maintain and understand.
+
+- **Structural Changes in Parsing Logic**: Recursive parsing responsibilities were moved from individual parsers to the Importer class. This makes the parsers independent of the Importer class and simplifies the overall parsing architecture.
+
+- **Removal of Obsolete Code**: The obsolete `FormattingStyle` class was removed. Additionally, `std::bind` was replaced with modern C++ lambda expressions, which are more straightforward and performant.
+
+- **Bug Fix in PST Parser**: An incorrectly hardcoded limit on the number of mails processed was removed, potentially preventing data loss and improving the parser's reliability.
+
+- **Enhancements in Exporters**: Support for document metadata was added in the HTML exporter, along with a workaround for incorrect date values in DOC format. Metadata support in the EML parser was also fixed, improving the accuracy and usefulness of the exported data.
+
+- **Performance Optimization and Refactoring**: Introduction of several new classes such as `data_source`, `lru_memory_cache`, `memory_buffer`, `imemorystream`, `unique_identifier`, and `file_extension`. These changes aim to optimize performance, reduce reliance on temporary files, and improve support for nested documents in exporters.
+
+- **Performance Comparison Script**: A new script was added to compare the performance between two versions of the SDK using callgrind logs from automatic tests, aiding in performance evaluation and regression testing.
+
 ## Version 2024.06.17
 
 The recent changes include updates to the libbfio library, adjustments in test files, and fixes related to address sanitizer CI tests. Overall, these modifications improve compatibility, security, and build robustness.
