@@ -381,22 +381,29 @@ struct PlainTextWriter::Implementation
             open_table_tags--;
         }
         while (open_table_tags > 0);
+        if (table.empty())
+          throw LogicError("Table inside table without rows.");
+         if (table.back().empty())
+          throw LogicError("Table inside table row without cells.");
         table.back().back().write(ss.str());
       }
+
       else if (std::holds_alternative<tag::TableRow>(tags[i]))
       {
         table.push_back({});
       }
       else if (std::holds_alternative<tag::TableCell>(tags[i]))
       {
+        if (table.empty())
+          throw LogicError("Cell inside table without rows.");
         table.back().push_back(Cell());
       }
       else if (!std::holds_alternative<tag::CloseTableRow>(tags[i]) && !std::holds_alternative<tag::CloseTableCell>(tags[i]))
       {
         if (table.empty())
-          throw LogicError("Cell content in table without rows.");
+          throw LogicError("Cell content inside table without rows.");
          if (table.back().empty())
-          throw LogicError("Cell content in table row without cells.");
+          throw LogicError("Cell content inside table row without cells.");
         table.back().back().write(tags[i]);
       }
     }

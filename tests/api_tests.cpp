@@ -819,3 +819,83 @@ TEST(DataSource, reading_unseekable_stream)
     ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
     ASSERT_EQ(str[100 * 256], 't');
 }
+
+TEST(PlainTextExporter, table_inside_table_without_rows)
+{
+    try
+    {
+        std::istringstream{"<html><table><table><tr><td>table inside table without cells</td></tr></table></table></html>"} |
+            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            PlainTextExporter{} |
+            std::ostringstream{};
+        FAIL() << "LogicError exception was expected.";
+    }
+    catch (const LogicError& error)
+    {
+        ASSERT_EQ(error.what(), std::string{"Table inside table without rows."});
+    }
+}
+
+TEST(PlainTextExporter, table_inside_table_row_without_cells)
+{
+    try
+    {
+        std::istringstream{"<html><table><tr><table><tr><td>table inside table without cells</td></tr></table></tr></table></html>"} |
+            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            PlainTextExporter{} |
+            std::ostringstream{};
+        FAIL() << "LogicError exception was expected.";
+    }
+    catch (const LogicError& error)
+    {
+        ASSERT_EQ(error.what(), std::string{"Table inside table row without cells."});
+    }
+}
+
+TEST(PlainTextExporter, cell_inside_table_without_rows)
+{
+    try
+    {
+        std::istringstream{"<html><table><thead><td>cell without row</td></thead></table></html>"} |
+            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            PlainTextExporter{} |
+            std::ostringstream{};
+        FAIL() << "LogicError exception was expected.";
+    }
+    catch (const LogicError& error)
+    {
+        ASSERT_EQ(error.what(), std::string{"Cell inside table without rows."});
+    }
+}
+
+TEST(PlainTextExporter, content_inside_table_without_rows)
+{
+    try
+    {
+        std::istringstream{"<html><table>content without rows</table></html>"} |
+            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            PlainTextExporter{} |
+            std::ostringstream{};
+        FAIL() << "LogicError exception was expected.";
+    }
+    catch (const LogicError& error)
+    {
+        ASSERT_EQ(error.what(), std::string{"Cell content inside table without rows."});
+    }
+}
+
+TEST(PlainTextExporter, content_inside_table_row_without_cells)
+{
+    try
+    {
+        std::istringstream{"<html><table><tr>content without cell</tr></table></html>"} |
+            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            PlainTextExporter{} |
+            std::ostringstream{};
+        FAIL() << "LogicError exception was expected.";
+    }
+    catch (const LogicError& error)
+    {
+        ASSERT_EQ(error.what(), std::string{"Cell content inside table row without cells."});
+    }
+}
