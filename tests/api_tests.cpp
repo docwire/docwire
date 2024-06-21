@@ -824,7 +824,7 @@ TEST(PlainTextExporter, table_inside_table_without_rows)
 {
     try
     {
-        std::istringstream{"<html><table><table><tr><td>table inside table without cells</td></tr></table></table></html>"} |
+        std::string{"<html><table><table><tr><td>table inside table without cells</td></tr></table></table></html>"} |
             ParseDetectedFormat<OfficeFormatsParserProvider>{} |
             PlainTextExporter{} |
             std::ostringstream{};
@@ -840,7 +840,7 @@ TEST(PlainTextExporter, table_inside_table_row_without_cells)
 {
     try
     {
-        std::istringstream{"<html><table><tr><table><tr><td>table inside table without cells</td></tr></table></tr></table></html>"} |
+        std::string{"<html><table><tr><table><tr><td>table inside table without cells</td></tr></table></tr></table></html>"} |
             ParseDetectedFormat<OfficeFormatsParserProvider>{} |
             PlainTextExporter{} |
             std::ostringstream{};
@@ -856,7 +856,7 @@ TEST(PlainTextExporter, cell_inside_table_without_rows)
 {
     try
     {
-        std::istringstream{"<html><table><thead><td>cell without row</td></thead></table></html>"} |
+        std::string{"<html><table><thead><td>cell without row</td></thead></table></html>"} |
             ParseDetectedFormat<OfficeFormatsParserProvider>{} |
             PlainTextExporter{} |
             std::ostringstream{};
@@ -872,7 +872,7 @@ TEST(PlainTextExporter, content_inside_table_without_rows)
 {
     try
     {
-        std::istringstream{"<html><table>content without rows</table></html>"} |
+        std::string{"<html><table>content without rows</table></html>"} |
             ParseDetectedFormat<OfficeFormatsParserProvider>{} |
             PlainTextExporter{} |
             std::ostringstream{};
@@ -888,7 +888,7 @@ TEST(PlainTextExporter, content_inside_table_row_without_cells)
 {
     try
     {
-        std::istringstream{"<html><table><tr>content without cell</tr></table></html>"} |
+        std::string{"<html><table><tr>content without cell</tr></table></html>"} |
             ParseDetectedFormat<OfficeFormatsParserProvider>{} |
             PlainTextExporter{} |
             std::ostringstream{};
@@ -898,4 +898,85 @@ TEST(PlainTextExporter, content_inside_table_row_without_cells)
     {
         ASSERT_EQ(error.what(), std::string{"Cell content inside table row without cells."});
     }
+}
+
+TEST(Input, data_source_with_file_ext)
+{
+    std::ostringstream output_stream{};
+    data_source{seekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios::binary)}, file_extension{".doc"}} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, path_ref)
+{
+    std::ostringstream output_stream{};
+    std::filesystem::path path{"1.doc"};
+    path | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, path_temp)
+{
+    std::ostringstream output_stream{};    
+    std::filesystem::path{"1.doc"} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, string_ref)
+{
+    std::ostringstream output_stream{};
+    std::string str = read_test_file("1.doc");
+    str | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, string_temp)
+{
+    std::ostringstream output_stream{};    
+    read_test_file("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, seekable_stream_ptr_ref)
+{
+    std::ostringstream output_stream{};
+    seekable_stream_ptr stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)};
+    stream_ptr | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, seekable_stream_ptr_temp)
+{
+    std::ostringstream output_stream{};
+    seekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, unseekable_stream_ptr_ref)
+{
+    std::ostringstream output_stream{};
+    unseekable_stream_ptr stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)};
+    stream_ptr | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, unseekable_stream_ptr_temp)
+{
+    std::ostringstream output_stream{};
+    unseekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, stream_shared_ptr)
+{
+    std::ostringstream output_stream{};
+    std::make_shared<std::ifstream>("1.doc", std::ios_base::binary) | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, stream_temp)
+{
+    std::ostringstream output_stream{};
+    std::ifstream{"1.doc", std::ios_base::binary} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
