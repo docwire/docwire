@@ -44,6 +44,7 @@ struct length_limit
 template <typename T>
 concept data_source_compatible_type =
 	std::is_same_v<T, std::filesystem::path> ||
+	std::is_same_v<T, std::span<const std::byte>> ||
 	std::is_same_v<T, std::string> ||
 	std::is_same_v<T, seekable_stream_ptr> ||
 	std::is_same_v<T, unseekable_stream_ptr>;
@@ -79,6 +80,10 @@ class data_source
 
 		std::span<const std::byte> span() const
 		{
+			if (std::holds_alternative<std::span<const std::byte>>(m_source))
+			{
+				return std::get<std::span<const std::byte>>(m_source);
+			}
 			if (std::holds_alternative<std::string>(m_source))
 			{
 				const std::string& s = std::get<std::string>(m_source);
@@ -90,7 +95,14 @@ class data_source
 
 		std::string string(std::optional<length_limit> limit = std::nullopt) const
 		{
-			if (std::holds_alternative<std::string>(m_source))
+			if (std::holds_alternative<std::span<const std::byte>>(m_source))
+			{
+				if (limit)
+					return std::string{reinterpret_cast<const char*>(std::get<std::span<const std::byte>>(m_source).data()), std::min(std::get<std::span<const std::byte>>(m_source).size(), limit->v)};
+				else
+					return std::string{reinterpret_cast<const char*>(std::get<std::span<const std::byte>>(m_source).data()), std::get<std::span<const std::byte>>(m_source).size()};
+			}
+			else if (std::holds_alternative<std::string>(m_source))
 			{
 				if (limit)
 					return std::get<std::string>(m_source).substr(0, limit->v);
@@ -138,7 +150,7 @@ class data_source
 		}
 
 	private:
-		std::variant<std::filesystem::path, std::string, seekable_stream_ptr, unseekable_stream_ptr> m_source;
+		std::variant<std::filesystem::path, std::span<const std::byte>, std::string, seekable_stream_ptr, unseekable_stream_ptr> m_source;
 		std::optional<docwire::file_extension> m_file_extension;
 		mutable std::shared_ptr<memory_buffer> m_memory_cache;
 		unique_identifier m_id;
@@ -193,6 +205,10 @@ class data_source
 	        			}
           				m_memory_cache = read_seekable_stream_into_memory(stream);
         			},
+					[this](const std::span<const std::byte>& source)
+					{
+						throw LogicError("std::span cannot be cached in memory");
+					},
         			[this](const std::string& source)
         			{
           				throw LogicError("std::string cannot be cached in memory");

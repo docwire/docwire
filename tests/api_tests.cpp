@@ -922,6 +922,23 @@ TEST(Input, path_temp)
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
+TEST(Input, span_ref)
+{
+    std::ostringstream output_stream{};
+    std::string str = read_test_file("1.doc");
+    std::span<const std::byte> span{reinterpret_cast<const std::byte*>(str.data()), str.size()};
+    span | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, span_temp)
+{
+    std::ostringstream output_stream{};    
+    std::string str = read_test_file("1.doc");
+    std::span<const std::byte>{reinterpret_cast<const std::byte*>(str.data()), str.size()} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
 TEST(Input, string_ref)
 {
     std::ostringstream output_stream{};
