@@ -76,8 +76,18 @@ class data_source
 		{}
 
 		template <data_source_compatible_type T>
+		explicit data_source(T&& source)
+			: m_source{std::move(source)}
+		{}
+
+		template <data_source_compatible_type T>
 		explicit data_source(const T& source, file_extension file_extension)
 			: m_source{source}, m_file_extension{file_extension}
+		{}
+
+		template <data_source_compatible_type T>
+		explicit data_source(T&& source, file_extension file_extension)
+			: m_source{std::move(source)}, m_file_extension{file_extension}
 		{}
 
 		std::span<const std::byte> span() const
