@@ -801,24 +801,14 @@ TEST(DataSource, vector_ref)
     std::string test_data_str = create_datasource_test_data_str();
     std::vector<std::byte> vector{reinterpret_cast<const std::byte*>(test_data_str.data()), reinterpret_cast<const std::byte*>(test_data_str.data()) + test_data_str.size()};
     data_source data{vector, file_extension{".txt"}};
-    std::string str = data.string();
-    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[100 * 256], 't');
+    ASSERT_EQ(data.string(), test_data_str);
 }
 
 TEST(DataSource, vector_temp)
 {
     std::string test_data_str = create_datasource_test_data_str();
     data_source data{std::vector<std::byte>{reinterpret_cast<const std::byte*>(test_data_str.data()), reinterpret_cast<const std::byte*>(test_data_str.data()) + test_data_str.size()}, file_extension{".txt"}};
-    std::string str = data.string();
-    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[100 * 256], 't');
+    ASSERT_EQ(data.string(), test_data_str);
 }
 
 TEST(DataSource, string_view_ref)
@@ -826,24 +816,14 @@ TEST(DataSource, string_view_ref)
     std::string test_data_str = create_datasource_test_data_str();
     std::string_view string_view{test_data_str};
     data_source data{string_view, file_extension{".txt"}};
-    std::string str = data.string();
-    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[100 * 256], 't');
+    ASSERT_EQ(data.string(), test_data_str);
 }
 
 TEST(DataSource, string_view_temp)
 {
     std::string test_data_str = create_datasource_test_data_str();
     data_source data{std::string_view{test_data_str}, file_extension{".txt"}};
-    std::string str = data.string();
-    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[100 * 256], 't');
+    ASSERT_EQ(data.string(), test_data_str);
 }
 
 TEST(DataSource, seekable_stream_ptr_ref)
@@ -851,24 +831,14 @@ TEST(DataSource, seekable_stream_ptr_ref)
     std::string test_data_str = create_datasource_test_data_str();
     seekable_stream_ptr stream_ptr{std::make_shared<std::istringstream>(test_data_str)};
     data_source data{stream_ptr, file_extension{".txt"}};
-    std::string str = data.string();
-    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[100 * 256], 't');
+    ASSERT_EQ(data.string(), test_data_str);
 }
 
 TEST(DataSource, seekable_stream_ptr_temp)
 {
     std::string test_data_str = create_datasource_test_data_str();
     data_source data{seekable_stream_ptr{std::make_shared<std::istringstream>(test_data_str)}, file_extension{".txt"}};
-    std::string str = data.string();
-    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[100 * 256], 't');
+    ASSERT_EQ(data.string(), test_data_str);
 }
 
 TEST(DataSource, unseekable_stream_ptr_ref)
@@ -876,24 +846,14 @@ TEST(DataSource, unseekable_stream_ptr_ref)
     std::string test_data_str = create_datasource_test_data_str();
     unseekable_stream_ptr stream_ptr{std::make_shared<std::istringstream>(test_data_str)};
     data_source data{stream_ptr, file_extension{".txt"}};
-    std::string str = data.string();
-    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[100 * 256], 't');
+    ASSERT_EQ(data.string(), test_data_str);
 }
 
 TEST(DataSource, unseekable_stream_ptr_temp)
 {
     std::string test_data_str = create_datasource_test_data_str();
     data_source data{unseekable_stream_ptr{std::make_shared<std::istringstream>(test_data_str)}, file_extension{".txt"}};
-    std::string str = data.string();
-    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[100 * 256], 't');
+    ASSERT_EQ(data.string(), test_data_str);
 }
 
 TEST(PlainTextExporter, table_inside_table_without_rows)
