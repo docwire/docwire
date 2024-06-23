@@ -796,6 +796,32 @@ TEST(DataSource, verify_input_data)
     ASSERT_EQ(test_data_str[100 * 256], 't');
 }
 
+TEST(DataSource, reading_vector)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    std::vector<std::byte> vector{reinterpret_cast<const std::byte*>(test_data_str.data()), reinterpret_cast<const std::byte*>(test_data_str.data()) + test_data_str.size()};
+    data_source data{vector, file_extension{".txt"}};
+    std::string str = data.string();
+    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(str[100 * 256], 't');
+}
+
+TEST(DataSource, reading_string_view)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    std::string_view string_view{test_data_str};
+    data_source data{string_view, file_extension{".txt"}};
+    std::string str = data.string();
+    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
+    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
+    ASSERT_EQ(str[100 * 256], 't');
+}
+
 TEST(DataSource, reading_seekable_stream)
 {
     std::string test_data_str = create_datasource_test_data_str();
@@ -922,6 +948,24 @@ TEST(Input, path_temp)
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
+TEST(Input, vector_ref)
+{
+    std::ostringstream output_stream{};
+    std::string str = read_test_file("1.doc");
+    std::vector<std::byte> vector{reinterpret_cast<const std::byte*>(str.data()), reinterpret_cast<const std::byte*>(str.data()) + str.size()};
+    vector | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, vector_temp)
+{
+    std::ostringstream output_stream{};    
+    std::string str = read_test_file("1.doc");
+    std::vector<std::byte>{reinterpret_cast<const std::byte*>(str.data()), reinterpret_cast<const std::byte*>(str.data()) + str.size()} |
+        ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
 TEST(Input, span_ref)
 {
     std::ostringstream output_stream{};
@@ -951,6 +995,22 @@ TEST(Input, string_temp)
 {
     std::ostringstream output_stream{};    
     read_test_file("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, string_view_ref)
+{
+    std::ostringstream output_stream{};
+    std::string str = read_test_file("1.doc");
+    std::string_view string_view{str};
+    string_view | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, string_view_temp)
+{
+    std::ostringstream output_stream{};    
+    std::string_view{read_test_file("1.doc")} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 

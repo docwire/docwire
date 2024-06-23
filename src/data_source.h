@@ -44,8 +44,10 @@ struct length_limit
 template <typename T>
 concept data_source_compatible_type =
 	std::is_same_v<T, std::filesystem::path> ||
+	std::is_same_v<T, std::vector<std::byte>> ||
 	std::is_same_v<T, std::span<const std::byte>> ||
 	std::is_same_v<T, std::string> ||
+	std::is_same_v<T, std::string_view> ||
 	std::is_same_v<T, seekable_stream_ptr> ||
 	std::is_same_v<T, unseekable_stream_ptr>;
 
@@ -80,40 +82,73 @@ class data_source
 
 		std::span<const std::byte> span() const
 		{
-			if (std::holds_alternative<std::span<const std::byte>>(m_source))
-			{
-				return std::get<std::span<const std::byte>>(m_source);
-			}
-			if (std::holds_alternative<std::string>(m_source))
-			{
-				const std::string& s = std::get<std::string>(m_source);
-				return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
-			}
-			fill_memory_cache();
-			return m_memory_cache->span();
+			return std::visit(
+    			overloaded {
+					[this](const std::vector<std::byte>& source)
+					{
+						return std::span{source.data(), source.size()};
+					},
+        			[this](const std::span<const std::byte>& source)
+					{
+						return source;
+					},
+					[this](const std::string& source)
+					{
+						return std::span{reinterpret_cast<const std::byte*>(source.data()), source.size()};
+					},
+					[this](const std::string_view& source)
+					{
+						return std::span{reinterpret_cast<const std::byte*>(source.data()), source.size()};
+					},
+					[this](auto source)
+					{
+						fill_memory_cache();
+						return static_cast<std::span<const std::byte>>(m_memory_cache->span());
+					}
+				}, m_source);
 		}
 
 		std::string string(std::optional<length_limit> limit = std::nullopt) const
 		{
-			if (std::holds_alternative<std::span<const std::byte>>(m_source))
-			{
-				if (limit)
-					return std::string{reinterpret_cast<const char*>(std::get<std::span<const std::byte>>(m_source).data()), std::min(std::get<std::span<const std::byte>>(m_source).size(), limit->v)};
-				else
-					return std::string{reinterpret_cast<const char*>(std::get<std::span<const std::byte>>(m_source).data()), std::get<std::span<const std::byte>>(m_source).size()};
-			}
-			else if (std::holds_alternative<std::string>(m_source))
-			{
-				if (limit)
-					return std::get<std::string>(m_source).substr(0, limit->v);
-				else
-					return std::get<std::string>(m_source);					
-			}
-			fill_memory_cache();
-			if (limit)
-				return std::string{reinterpret_cast<const char*>(m_memory_cache->data()), std::min(m_memory_cache->size(), limit->v)};
-			else
-				return std::string{reinterpret_cast<const char*>(m_memory_cache->data()), m_memory_cache->size()}; // TODO: avoid copying			
+			return std::visit(
+    			overloaded {
+					[this, limit](const std::vector<std::byte>& source)
+					{
+						if (limit)
+							return std::string{reinterpret_cast<const char*>(source.data()), std::min(source.size(), limit->v)};
+						else
+							return std::string{reinterpret_cast<const char*>(source.data()), source.size()};
+					},
+					[this, limit](const std::span<const std::byte>& source)
+					{
+						if (limit)
+							return std::string{reinterpret_cast<const char*>(source.data()), std::min(source.size(), limit->v)};
+						else
+							return std::string{reinterpret_cast<const char*>(source.data()), source.size()};
+					},
+					[this, limit](const std::string& source)
+					{
+						if (limit)
+							return source.substr(0, limit->v);
+						else
+							return source;
+					},
+					[this, limit](const std::string_view& source)
+					{
+						if (limit)
+							return std::string{source.substr(0, limit->v)};
+						else
+							return std::string{source};
+					},
+					[this, limit](auto source)
+					{
+						fill_memory_cache();
+						if (limit)
+							return std::string{reinterpret_cast<const char*>(m_memory_cache->data()), std::min(m_memory_cache->size(), limit->v)};
+						else
+							return std::string{reinterpret_cast<const char*>(m_memory_cache->data()), m_memory_cache->size()}; // TODO: avoid copying			
+					}
+				}, m_source);
 		}
 
 		std::shared_ptr<std::istream> istream() const
@@ -150,7 +185,7 @@ class data_source
 		}
 
 	private:
-		std::variant<std::filesystem::path, std::span<const std::byte>, std::string, seekable_stream_ptr, unseekable_stream_ptr> m_source;
+		std::variant<std::filesystem::path, std::vector<std::byte>, std::span<const std::byte>, std::string, std::string_view, seekable_stream_ptr, unseekable_stream_ptr> m_source;
 		std::optional<docwire::file_extension> m_file_extension;
 		mutable std::shared_ptr<memory_buffer> m_memory_cache;
 		unique_identifier m_id;
