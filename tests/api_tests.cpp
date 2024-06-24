@@ -605,7 +605,7 @@ namespace
 	{
 		std::ifstream stream;
 		stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-		stream.open(file_name);
+		stream.open(file_name, std::ios::binary);
 		return std::string{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
 	}
 }
