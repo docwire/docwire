@@ -1,3 +1,29 @@
+## Version 2024.06.24
+
+Recent updates enhance cross-platform compatibility, introduce new input data handling approaches, and refine testing. OS versions added to the CI configuration include macOS 13, macOS 14, and Ubuntu 24.04. The data_source class now better supports various data types (std::vector, std::span, std::string_view), expanding its flexibility. New tests validate data source processing, while refinements prevent table errors.
+
+> In realms of bytes and streams so vast,  
+> Data flows from first to last.  
+> CI matrix now more grand with Mac,  
+> Ubuntu stands, there's no lack.  
+> Tests abound, they check with care,  
+> Ensuring code beyond compare.  
+> A rabbit's cheer for changes new,  
+> With bytes and tests, our world renew!  
+
+- **New Features**
+  - Added support for new OS versions `macos-13` and `macos-14` in workflows.
+  - Enhanced `data_source` class to handle new data types like `std::vector<std::byte>`, `std::span<const std::byte>`, and `std::string_view`.
+
+- **Bug Fixes**
+  - Improved error checks in table structures to prevent invalid nesting in `plain_text_writer`.
+
+- **Tests**
+  - Added comprehensive test cases for various input data sources in `api_tests.cpp`.
+
+- **Chores**
+  - Updated OS configurations in `.github/workflows/build.yml` to include new OS versions and remove outdated ones.
+
 ## Version 2024.06.19
 
 This release introduces significant modernizations and optimizations across the codebase. Key changes include the adoption of modern C++ practices such as move semantics and smart pointers, simplification of the code by removing outdated patterns, and structural enhancements that decentralize parsing responsibilities. Performance is notably optimized through new caching mechanisms and memory management strategies. Additionally, several bug fixes and new features enhance the functionality and reliability of data parsing and exporting components.
