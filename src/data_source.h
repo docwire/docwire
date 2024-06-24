@@ -22,6 +22,7 @@
 #include <optional>
 #include "unique_identifier.h"
 #include <variant>
+#include <vector>
 
 namespace docwire
 {
