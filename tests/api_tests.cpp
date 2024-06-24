@@ -605,6 +605,14 @@ namespace
 	{
 		std::ifstream stream;
 		stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		stream.open(file_name);
+		return std::string{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
+	}
+
+	std::string read_binary_file(const std::string& file_name)
+	{
+		std::ifstream stream;
+		stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 		stream.open(file_name, std::ios::binary);
 		return std::string{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
 	}
@@ -961,7 +969,7 @@ TEST(Input, path_temp)
 TEST(Input, vector_ref)
 {
     std::ostringstream output_stream{};
-    std::string str = read_test_file("1.doc");
+    std::string str = read_binary_file("1.doc");
     std::vector<std::byte> vector{reinterpret_cast<const std::byte*>(str.data()), reinterpret_cast<const std::byte*>(str.data()) + str.size()};
     vector | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
@@ -970,7 +978,7 @@ TEST(Input, vector_ref)
 TEST(Input, vector_temp)
 {
     std::ostringstream output_stream{};    
-    std::string str = read_test_file("1.doc");
+    std::string str = read_binary_file("1.doc");
     std::vector<std::byte>{reinterpret_cast<const std::byte*>(str.data()), reinterpret_cast<const std::byte*>(str.data()) + str.size()} |
         ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
@@ -979,7 +987,7 @@ TEST(Input, vector_temp)
 TEST(Input, span_ref)
 {
     std::ostringstream output_stream{};
-    std::string str = read_test_file("1.doc");
+    std::string str = read_binary_file("1.doc");
     std::span<const std::byte> span{reinterpret_cast<const std::byte*>(str.data()), str.size()};
     span | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
@@ -988,7 +996,7 @@ TEST(Input, span_ref)
 TEST(Input, span_temp)
 {
     std::ostringstream output_stream{};    
-    std::string str = read_test_file("1.doc");
+    std::string str = read_binary_file("1.doc");
     std::span<const std::byte>{reinterpret_cast<const std::byte*>(str.data()), str.size()} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
@@ -996,7 +1004,7 @@ TEST(Input, span_temp)
 TEST(Input, string_ref)
 {
     std::ostringstream output_stream{};
-    std::string str = read_test_file("1.doc");
+    std::string str = read_binary_file("1.doc");
     str | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
@@ -1004,14 +1012,14 @@ TEST(Input, string_ref)
 TEST(Input, string_temp)
 {
     std::ostringstream output_stream{};    
-    read_test_file("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    read_binary_file("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, string_view_ref)
 {
     std::ostringstream output_stream{};
-    std::string str = read_test_file("1.doc");
+    std::string str = read_binary_file("1.doc");
     std::string_view string_view{str};
     string_view | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
@@ -1020,7 +1028,7 @@ TEST(Input, string_view_ref)
 TEST(Input, string_view_temp)
 {
     std::ostringstream output_stream{};    
-    std::string_view{read_test_file("1.doc")} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    std::string_view{read_binary_file("1.doc")} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
