@@ -608,6 +608,14 @@ namespace
 		stream.open(file_name);
 		return std::string{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
 	}
+
+	std::string read_binary_file(const std::string& file_name)
+	{
+		std::ifstream stream;
+		stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		stream.open(file_name, std::ios::binary);
+		return std::string{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
+	}
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -796,26 +804,274 @@ TEST(DataSource, verify_input_data)
     ASSERT_EQ(test_data_str[100 * 256], 't');
 }
 
-TEST(DataSource, reading_seekable_stream)
+TEST(DataSource, vector_ref)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    std::vector<std::byte> vector{reinterpret_cast<const std::byte*>(test_data_str.data()), reinterpret_cast<const std::byte*>(test_data_str.data()) + test_data_str.size()};
+    data_source data{vector, file_extension{".txt"}};
+    ASSERT_EQ(data.string(), test_data_str);
+}
+
+TEST(DataSource, vector_temp)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    data_source data{std::vector<std::byte>{reinterpret_cast<const std::byte*>(test_data_str.data()), reinterpret_cast<const std::byte*>(test_data_str.data()) + test_data_str.size()}, file_extension{".txt"}};
+    ASSERT_EQ(data.string(), test_data_str);
+}
+
+TEST(DataSource, string_view_ref)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    std::string_view string_view{test_data_str};
+    data_source data{string_view, file_extension{".txt"}};
+    ASSERT_EQ(data.string(), test_data_str);
+}
+
+TEST(DataSource, string_view_temp)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    data_source data{std::string_view{test_data_str}, file_extension{".txt"}};
+    ASSERT_EQ(data.string(), test_data_str);
+}
+
+TEST(DataSource, seekable_stream_ptr_ref)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    seekable_stream_ptr stream_ptr{std::make_shared<std::istringstream>(test_data_str)};
+    data_source data{stream_ptr, file_extension{".txt"}};
+    ASSERT_EQ(data.string(), test_data_str);
+}
+
+TEST(DataSource, seekable_stream_ptr_temp)
 {
     std::string test_data_str = create_datasource_test_data_str();
     data_source data{seekable_stream_ptr{std::make_shared<std::istringstream>(test_data_str)}, file_extension{".txt"}};
-    std::string str = data.string();
-    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[100 * 256], 't');
+    ASSERT_EQ(data.string(), test_data_str);
 }
 
-TEST(DataSource, reading_unseekable_stream)
+TEST(DataSource, unseekable_stream_ptr_ref)
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    unseekable_stream_ptr stream_ptr{std::make_shared<std::istringstream>(test_data_str)};
+    data_source data{stream_ptr, file_extension{".txt"}};
+    ASSERT_EQ(data.string(), test_data_str);
+}
+
+TEST(DataSource, unseekable_stream_ptr_temp)
 {
     std::string test_data_str = create_datasource_test_data_str();
     data_source data{unseekable_stream_ptr{std::make_shared<std::istringstream>(test_data_str)}, file_extension{".txt"}};
-    std::string str = data.string();
-    ASSERT_EQ(str[0], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[99 * 256], static_cast<char>(std::byte{0}));
-    ASSERT_EQ(str[99 * 256 + 255], static_cast<char>(std::byte{255}));
-    ASSERT_EQ(str[100 * 256], 't');
+    ASSERT_EQ(data.string(), test_data_str);
+}
+
+TEST(PlainTextExporter, table_inside_table_without_rows)
+{
+    try
+    {
+        std::string{"<html><table><table><tr><td>table inside table without cells</td></tr></table></table></html>"} |
+            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            PlainTextExporter{} |
+            std::ostringstream{};
+        FAIL() << "LogicError exception was expected.";
+    }
+    catch (const LogicError& error)
+    {
+        ASSERT_EQ(error.what(), std::string{"Table inside table without rows."});
+    }
+}
+
+TEST(PlainTextExporter, table_inside_table_row_without_cells)
+{
+    try
+    {
+        std::string{"<html><table><tr><table><tr><td>table inside table without cells</td></tr></table></tr></table></html>"} |
+            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            PlainTextExporter{} |
+            std::ostringstream{};
+        FAIL() << "LogicError exception was expected.";
+    }
+    catch (const LogicError& error)
+    {
+        ASSERT_EQ(error.what(), std::string{"Table inside table row without cells."});
+    }
+}
+
+TEST(PlainTextExporter, cell_inside_table_without_rows)
+{
+    try
+    {
+        std::string{"<html><table><thead><td>cell without row</td></thead></table></html>"} |
+            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            PlainTextExporter{} |
+            std::ostringstream{};
+        FAIL() << "LogicError exception was expected.";
+    }
+    catch (const LogicError& error)
+    {
+        ASSERT_EQ(error.what(), std::string{"Cell inside table without rows."});
+    }
+}
+
+TEST(PlainTextExporter, content_inside_table_without_rows)
+{
+    try
+    {
+        std::string{"<html><table>content without rows</table></html>"} |
+            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            PlainTextExporter{} |
+            std::ostringstream{};
+        FAIL() << "LogicError exception was expected.";
+    }
+    catch (const LogicError& error)
+    {
+        ASSERT_EQ(error.what(), std::string{"Cell content inside table without rows."});
+    }
+}
+
+TEST(PlainTextExporter, content_inside_table_row_without_cells)
+{
+    try
+    {
+        std::string{"<html><table><tr>content without cell</tr></table></html>"} |
+            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            PlainTextExporter{} |
+            std::ostringstream{};
+        FAIL() << "LogicError exception was expected.";
+    }
+    catch (const LogicError& error)
+    {
+        ASSERT_EQ(error.what(), std::string{"Cell content inside table row without cells."});
+    }
+}
+
+TEST(Input, data_source_with_file_ext)
+{
+    std::ostringstream output_stream{};
+    data_source{seekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios::binary)}, file_extension{".doc"}} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, path_ref)
+{
+    std::ostringstream output_stream{};
+    std::filesystem::path path{"1.doc"};
+    path | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, path_temp)
+{
+    std::ostringstream output_stream{};    
+    std::filesystem::path{"1.doc"} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, vector_ref)
+{
+    std::ostringstream output_stream{};
+    std::string str = read_binary_file("1.doc");
+    std::vector<std::byte> vector{reinterpret_cast<const std::byte*>(str.data()), reinterpret_cast<const std::byte*>(str.data()) + str.size()};
+    vector | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, vector_temp)
+{
+    std::ostringstream output_stream{};    
+    std::string str = read_binary_file("1.doc");
+    std::vector<std::byte>{reinterpret_cast<const std::byte*>(str.data()), reinterpret_cast<const std::byte*>(str.data()) + str.size()} |
+        ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, span_ref)
+{
+    std::ostringstream output_stream{};
+    std::string str = read_binary_file("1.doc");
+    std::span<const std::byte> span{reinterpret_cast<const std::byte*>(str.data()), str.size()};
+    span | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, span_temp)
+{
+    std::ostringstream output_stream{};    
+    std::string str = read_binary_file("1.doc");
+    std::span<const std::byte>{reinterpret_cast<const std::byte*>(str.data()), str.size()} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, string_ref)
+{
+    std::ostringstream output_stream{};
+    std::string str = read_binary_file("1.doc");
+    str | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, string_temp)
+{
+    std::ostringstream output_stream{};    
+    read_binary_file("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, string_view_ref)
+{
+    std::ostringstream output_stream{};
+    std::string str = read_binary_file("1.doc");
+    std::string_view string_view{str};
+    string_view | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, string_view_temp)
+{
+    std::ostringstream output_stream{};    
+    std::string_view{read_binary_file("1.doc")} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, seekable_stream_ptr_ref)
+{
+    std::ostringstream output_stream{};
+    seekable_stream_ptr stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)};
+    stream_ptr | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, seekable_stream_ptr_temp)
+{
+    std::ostringstream output_stream{};
+    seekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, unseekable_stream_ptr_ref)
+{
+    std::ostringstream output_stream{};
+    unseekable_stream_ptr stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)};
+    stream_ptr | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, unseekable_stream_ptr_temp)
+{
+    std::ostringstream output_stream{};
+    unseekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, stream_shared_ptr)
+{
+    std::ostringstream output_stream{};
+    std::make_shared<std::ifstream>("1.doc", std::ios_base::binary) | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(Input, stream_temp)
+{
+    std::ostringstream output_stream{};
+    std::ifstream{"1.doc", std::ios_base::binary} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }

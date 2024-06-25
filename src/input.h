@@ -27,6 +27,20 @@ concept IStreamDerived = std::derived_from<T, std::istream>;
 class DllExport InputChainElement
 {
 public:
+  explicit InputChainElement(data_source&& data)
+    : m_data{std::move(data)}
+  {}
+
+	template <data_source_compatible_type T>
+	explicit InputChainElement(const T& v)
+		: m_data{data_source{v}}
+	{}
+
+	template <data_source_compatible_type T>
+	explicit InputChainElement(T&& v)
+		: m_data{data_source{std::move(v)}}
+	{}
+
   explicit InputChainElement(std::shared_ptr<std::istream> stream)
   : m_data{seekable_stream_ptr{stream}}
   {}
@@ -34,14 +48,6 @@ public:
   template<IStreamDerived T>
   explicit InputChainElement(T&& stream)
     : m_data{seekable_stream_ptr{std::make_shared<T>(std::move(stream))}}
-  {}
-
-  explicit InputChainElement(const std::filesystem::path& path)
-  : m_data{path}
-  {}
-
-  explicit InputChainElement(std::filesystem::path&& path)
-  : m_data{std::move(path)}
   {}
 
   void process(ChainElement& chain_element) const;
@@ -68,6 +74,18 @@ std::shared_ptr<ParsingChain> operator|(InputChainElement&& input, T&& chainElem
   return std::make_shared<ParsingChain>(std::make_shared<InputChainElement>(std::move(input)), std::make_shared<T>(std::move(chainElement)));
 }
 
+template<ParsingChainOrChainElement U>
+std::shared_ptr<ParsingChain> operator|(data_source&& data, std::shared_ptr<U> chain_element)
+{
+  return InputChainElement{std::move(data)} | chain_element;
+}
+
+template<ParsingChainOrChainElement U>
+std::shared_ptr<ParsingChain> operator|(data_source&& data, U&& chain_element)
+{
+  return InputChainElement(std::move(data)) | std::move(chain_element);
+}
+
 template<IStreamDerived T, ParsingChainOrChainElement U>
 std::shared_ptr<ParsingChain> operator|(std::shared_ptr<T> stream, std::shared_ptr<U> chain_element)
 {
@@ -92,16 +110,28 @@ std::shared_ptr<ParsingChain> operator|(T&& stream, U&& chain_element)
   return InputChainElement(std::move(stream)) | std::move(chain_element);
 }
 
-template<ParsingChainOrChainElement U>
-inline std::shared_ptr<ParsingChain> operator|(std::filesystem::path&& path, std::shared_ptr<U> chain_element)
+template<data_source_compatible_type T, ParsingChainOrChainElement U>
+inline std::shared_ptr<ParsingChain> operator|(const T& v, std::shared_ptr<U> chain_element)
 {
-  return InputChainElement(std::move(path)) | chain_element;
+  return InputChainElement(v) | chain_element;
 }
 
-template<ParsingChainOrChainElement U>
-inline std::shared_ptr<ParsingChain> operator|(std::filesystem::path&& path, U&& chain_element)
+template<data_source_compatible_type T, ParsingChainOrChainElement U>
+inline std::shared_ptr<ParsingChain> operator|(const T& v, U&& chain_element)
 {
-  return InputChainElement(std::move(path)) | std::move(chain_element);
+  return InputChainElement(v) | std::move(chain_element);
+}
+
+template<data_source_compatible_type T, ParsingChainOrChainElement U>
+inline std::shared_ptr<ParsingChain> operator|(T&& v, std::shared_ptr<U> chain_element)
+{
+  return InputChainElement(std::move(v)) | chain_element;
+}
+
+template<data_source_compatible_type T, ParsingChainOrChainElement U>
+inline std::shared_ptr<ParsingChain> operator|(T&& v, U&& chain_element)
+{
+  return InputChainElement(std::move(v)) | std::move(chain_element);
 }
 
 }
