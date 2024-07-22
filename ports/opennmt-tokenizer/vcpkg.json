@@ -6,6 +6,9 @@
 	"license": "MIT",
 	"dependencies": [
 		{
+			"name": "icu"
+		},
+		{
 			"name": "vcpkg-cmake",
 			"host": true
 		}
