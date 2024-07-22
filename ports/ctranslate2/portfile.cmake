@@ -68,6 +68,9 @@ vcpkg_from_github(
 file(REMOVE_RECURSE ${SOURCE_PATH}/third_party/thrust)
 file(RENAME ${THRUST_SOURCE_PATH} ${SOURCE_PATH}/third_party/thrust)
 
+# Fix issue with bit_cast ambiguity (std::bit_cast since C++20)
+vcpkg_replace_string(${SOURCE_PATH}/include/ctranslate2/bfloat16.h bit_cast< ctranslate2::bit_cast<)
+
 set(OPENMP_RUNTIME "COMP")
 if(VCPKG_TARGET_IS_OSX)
 	set(OPENMP_RUNTIME "NONE")
