@@ -91,7 +91,7 @@ jobs:
           ${{ matrix.os == 'ubuntu-24.04' && 'sudo apt-get install -y mono-complete' || '' }}
           ${{ (matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind') && 'sudo apt-get install -y valgrind' || '' }}
           ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint doxygen autoconf-archive' || '' }}
-          ${{ runner.os == 'macOS' && 'brew install md5sha1sum automake autogen doxygen' || '' }}
+          ${{ runner.os == 'macOS' && 'brew install md5sha1sum automake autogen doxygen autoconf-archive' || '' }}
           ${{ runner.os == 'Windows' && 'choco install archiver doxygen.install graphviz -y' || '' }}
           ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
