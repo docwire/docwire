@@ -68,9 +68,14 @@ vcpkg_from_github(
 file(REMOVE_RECURSE ${SOURCE_PATH}/third_party/thrust)
 file(RENAME ${THRUST_SOURCE_PATH} ${SOURCE_PATH}/third_party/thrust)
 
+set(OPENMP_RUNTIME "COMP")
+if(VCPKG_TARGET_IS_OSX)
+	set(OPENMP_RUNTIME "NONE")
+endif()
+
 vcpkg_cmake_configure(
 	SOURCE_PATH "${SOURCE_PATH}"
-	OPTIONS -DOPENMP_RUNTIME=COMP -DWITH_MKL=OFF -DWITH_DNNL=ON
+	OPTIONS -DOPENMP_RUNTIME=${OPENMP_RUNTIME} -DWITH_MKL=OFF -DWITH_DNNL=ON
 )
 
 vcpkg_cmake_install()
