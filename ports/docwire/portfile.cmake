@@ -81,6 +81,7 @@ function(run_tests build_type)
 endfunction()
 
 function(run_all_tests)
+	file(WRITE "${CURRENT_PACKAGES_DIR}/share/flan-t5-large-ct2-int8.path" "${CURRENT_INSTALLED_DIR}/share/flan-t5-large-ct2-int8")
 	if(NOT DEFINED VCPKG_BUILD_TYPE OR VCPKG_BUILD_TYPE STREQUAL debug)
 		if(VCPKG_TARGET_IS_LINUX)
 			set(BACKUP_LD_LIBRARY_PATH $ENV{LD_LIBRARY_PATH})
@@ -131,6 +132,7 @@ function(run_all_tests)
 			set(ENV{DYLD_FALLBACK_LIBRARY_PATH} "${BACKUP_DYLD_FALLBACK_LIBRARY_PATH}")
 		endif()
 	endif()
+	file(REMOVE "${CURRENT_PACKAGES_DIR}/share/flan-t5-large-ct2-int8.path")
 endfunction()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS_NO_CMAKE

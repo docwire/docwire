@@ -1,0 +1,13 @@
+{
+	"name": "opennmt-tokenizer",
+	"version": "1.37.1",
+	"description": "OpenNMT Tokenizer",
+	"homepage": "https://github.com/OpenNMT/Tokenizer",
+	"license": "MIT",
+	"dependencies": [
+		{
+			"name": "vcpkg-cmake",
+			"host": true
+		}
+	]
+}

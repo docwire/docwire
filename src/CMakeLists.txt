@@ -257,8 +257,13 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
    set_target_properties(docwire_core PROPERTIES PREFIX "")
 endif()
 
+add_library(docwire_local_ai SHARED model_runner.cpp)
+find_package(ctranslate2 CONFIG REQUIRED)
+find_library(opennmt_tokenizer OpenNMTTokenizer REQUIRED)
+target_link_libraries(docwire_local_ai PRIVATE docwire_core Boost::filesystem Boost::json CTranslate2::ctranslate2 ${opennmt_tokenizer})
+
 add_executable(docwire docwire.cpp)
-target_link_libraries(docwire PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr Boost::program_options)
+target_link_libraries(docwire PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_local_ai Boost::program_options)
 
 if (DOCWIRE_TRACE)
    target_sources(docwire_core PRIVATE tracing)
@@ -271,6 +276,7 @@ install(TARGETS docwire_core)
 install(TARGETS docwire_ocr)
 install(TARGETS docwire_mail)
 install(TARGETS docwire_office_formats)
+install(TARGETS docwire_local_ai)
 
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_core> DESTINATION bin CONFIGURATIONS Debug)

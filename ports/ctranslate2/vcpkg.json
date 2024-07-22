@@ -1,0 +1,16 @@
+{
+	"name": "ctranslate2",
+	"version": "4.3.1",
+	"description": "OpenNMT CTranslate2",
+	"homepage": "https://github.com/OpenNMT/CTranslate2",
+	"license": "MIT",
+	"dependencies": [
+		{
+			"name": "onednn"
+		},
+		{
+			"name": "vcpkg-cmake",
+			"host": true
+		}
+	]
+}

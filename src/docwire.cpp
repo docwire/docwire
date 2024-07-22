@@ -28,6 +28,7 @@
 #include <magic_enum_iostream.hpp>
 #include "mail_parser_provider.h"
 #include "meta_data_exporter.h"
+#include "model_chain_element.h"
 #include "ocr_parser_provider.h"
 #include "output.h"
 #include "parse_detected_format.h"
@@ -114,6 +115,8 @@ int main(int argc, char* argv[])
 		("input-file", po::value<std::string>()->required(), "path to file to process")
 		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
 		("http-post", po::value<std::string>(), "url to process data via http post")
+		("local-ai-prompt", po::value<std::string>(), "prompt to process text via local AI model")
+		("local-ai-model", po::value<std::string>(), "path to local AI model data (build-in default model is used if not specified)")
 		("openai-chat", po::value<std::string>(), "prompt to process text and images via OpenAI")
 		("openai-extract-entities", "extract entities from text and images via OpenAI")
 		("openai-extract-keywords", po::value<unsigned int>(), "extract N keywords/key phrases from text and images via OpenAI")
@@ -348,6 +351,26 @@ int main(int argc, char* argv[])
 			openai::TranslateTo(language, api_key, model,
 				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
 				image_detail);
+	}
+
+	if (vm.count("local-ai-prompt"))
+	{
+		try
+		{
+			std::string prompt = vm["local-ai-prompt"].as<std::string>();
+
+			auto model_runner = vm.count("local-ai-model") ?
+				std::make_shared<local_ai::model_runner>(vm["local-ai-model"].as<std::string>()) :
+				std::make_shared<local_ai::model_runner>();
+			
+			chain = chain |
+				local_ai::model_chain_element(prompt, model_runner);
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << "Error: " << e.what() << std::endl;
+			return 1;
+		}
 	}
 
 	if (vm.count("openai-find"))
