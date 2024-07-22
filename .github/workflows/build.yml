@@ -90,7 +90,7 @@ jobs:
           ${{ matrix.os == 'ubuntu-20.04' && 'sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt-get update && sudo apt-get install gcc-11 g++-11 -y && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 && sudo update-alternatives --set gcc /usr/bin/gcc-11' || '' }}
           ${{ matrix.os == 'ubuntu-24.04' && 'sudo apt-get install -y mono-complete' || '' }}
           ${{ (matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind') && 'sudo apt-get install -y valgrind' || '' }}
-          ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint doxygen' || '' }}
+          ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint doxygen autoconf-archive' || '' }}
           ${{ runner.os == 'macOS' && 'brew install md5sha1sum automake autogen doxygen' || '' }}
           ${{ runner.os == 'Windows' && 'choco install archiver doxygen.install graphviz -y' || '' }}
           ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
