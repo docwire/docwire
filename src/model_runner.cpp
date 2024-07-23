@@ -120,7 +120,7 @@ struct model_runner::implementation
 	tokenizer m_tokenizer;
 
     implementation(const std::filesystem::path& model_data_path)
-        : m_translator(ctranslate2::models::ModelLoader{model_data_path}),
+        : m_translator(ctranslate2::models::ModelLoader{model_data_path.string()}),
           m_tokenizer(model_data_path)
     {}
 
