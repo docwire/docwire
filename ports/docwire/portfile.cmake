@@ -56,6 +56,8 @@ function(run_tests build_type)
 	set(triplet_build_type ${TARGET_TRIPLET}-${build_type})
 	message(STATUS "Testing ${triplet_build_type}")
 
+	file(WRITE "${CURRENT_BUILDTREES_DIR}/${triplet_build_type}/share/flan-t5-large-ct2-int8.path" "${CURRENT_INSTALLED_DIR}/share/flan-t5-large-ct2-int8")
+
 	set(valgrind_command "")
 	if(MEMCHECK_ENABLED)
 		set(valgrind_command valgrind --leak-check=full --gen-suppressions=yes --suppressions=${SOURCE_PATH}/tools/valgrind_suppressions.txt)
