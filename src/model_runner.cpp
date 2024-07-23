@@ -119,6 +119,11 @@ struct model_runner::implementation
 	ctranslate2::Translator m_translator;
 	tokenizer m_tokenizer;
 
+    implementation(const std::filesystem::path& model_data_path)
+        : m_translator(ctranslate2::models::ModelLoader{model_data_path}),
+          m_tokenizer(model_data_path)
+    {}
+
     std::vector<std::string> process(const std::vector<std::string>& input_tokens)
     {
         docwire_log_func();
@@ -148,9 +153,7 @@ model_runner::model_runner()
 {}
 
 model_runner::model_runner(const std::filesystem::path& model_data_path)
-    : m_impl{std::make_unique<implementation>(
-        ctranslate2::models::ModelLoader{model_data_path},
-		tokenizer{model_data_path})}
+    : m_impl{std::make_unique<implementation>(model_data_path)}
 {}
 
 model_runner::~model_runner()
