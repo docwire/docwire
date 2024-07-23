@@ -71,14 +71,26 @@ file(RENAME ${THRUST_SOURCE_PATH} ${SOURCE_PATH}/third_party/thrust)
 # Fix issue with bit_cast ambiguity (std::bit_cast since C++20)
 vcpkg_replace_string(${SOURCE_PATH}/include/ctranslate2/bfloat16.h bit_cast< ctranslate2::bit_cast<)
 
-set(OPENMP_RUNTIME "COMP")
 if(VCPKG_TARGET_IS_OSX)
 	set(OPENMP_RUNTIME "NONE")
+	if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+		# oneDNN is not available for this platform, use Apple Accelerate for CPU acceleration
+		set(WITH_DNNL "OFF")
+    	set(WITH_ACCELERATE "ON")
+	else()
+		# oneDNN is available for this platform, use it for CPU acceleration
+		set(WITH_DNNL "ON")
+		set(WITH_ACCELERATE "OFF")
+	endif()
+else()
+	set(OPENMP_RUNTIME "COMP")
+	set(WITH_DNNL "ON") # use oneDNN for CPU acceleration
+	set(WITH_ACCELERATE "OFF") # Apple Accelerate is not available on other platforms
 endif()
 
 vcpkg_cmake_configure(
 	SOURCE_PATH "${SOURCE_PATH}"
-	OPTIONS -DOPENMP_RUNTIME=${OPENMP_RUNTIME} -DWITH_MKL=OFF -DWITH_DNNL=ON
+	OPTIONS -DOPENMP_RUNTIME=${OPENMP_RUNTIME} -DWITH_MKL=OFF -DWITH_DNNL=${WITH_DNNL} -DWITH_ACCELERATE=${WITH_ACCELERATE}
 )
 
 vcpkg_cmake_install()
