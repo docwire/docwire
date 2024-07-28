@@ -73,10 +73,17 @@ function(run_tests build_type)
 		message(STATUS "Using valgrind: ${valgrind_command}")
 	endif()
 
+	set(additional_ctest_args "")
+	if (VCPKG_TARGET_IS_LINUX AND (THREAD_SANITIZER OR HELGRIND_ENABLED))
+		message(STATUS "Skipping tests that use model runner (Thread Sanitizer or Helgrind) on Linux")
+		set(additional_ctest_args --label-exclude uses_model_runner)
+	endif()
+
 	vcpkg_execute_required_process(
 		COMMAND ${valgrind_command} "ctest"
 			-V
 			--no-tests=error
+			${additional_ctest_args}
 		WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}
 		LOGNAME test-${PORT}-${triplet_build_type}
 	)
