@@ -13,6 +13,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include <future>
+#include "fuzzy_match.h"
 #include "gtest/gtest.h"
 #include "../src/exception.h"
 #include <string_view>
@@ -1074,4 +1075,10 @@ TEST(Input, stream_temp)
     std::ostringstream output_stream{};
     std::ifstream{"1.doc", std::ios_base::binary} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
+}
+
+TEST(fuzzy_match, ratio)
+{
+    ASSERT_EQ(docwire::fuzzy_match::ratio("hello", "hello"), 100.0);
+    ASSERT_EQ(docwire::fuzzy_match::ratio("hello", "helll"), 80.0);
 }

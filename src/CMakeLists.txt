@@ -262,6 +262,10 @@ find_package(ctranslate2 CONFIG REQUIRED)
 find_library(opennmt_tokenizer OpenNMTTokenizer REQUIRED)
 target_link_libraries(docwire_local_ai PRIVATE docwire_core Boost::filesystem Boost::json CTranslate2::ctranslate2 ${opennmt_tokenizer})
 
+add_library(docwire_fuzzy_match SHARED fuzzy_match.cpp)
+find_package(rapidfuzz REQUIRED)
+target_link_libraries(docwire_fuzzy_match PRIVATE rapidfuzz::rapidfuzz)
+
 add_executable(docwire docwire.cpp)
 target_link_libraries(docwire PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_local_ai Boost::program_options)
 

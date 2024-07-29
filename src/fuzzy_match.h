@@ -9,30 +9,29 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DOCWIRE_H
-#define DOCWIRE_DOCWIRE_H
+#ifndef DOCWIRE_FUZZY_MATCH_H
+#define DOCWIRE_FUZZY_MATCH_H
 
-#include "office_formats_parser_provider.h"
-#include "classify.h"
-#include "decompress_archives.h"
-#include "detect_sentiment.h"
-#include "find.h"
-#include "fuzzy_match.h"
-#include "input.h"
-#include "log.h"
-#include "output.h"
-#include "mail_parser_provider.h"
-#include "model_chain_element.h"
-#include "ocr_parser_provider.h"
-#include "parse_detected_format.h"
-#include "plain_text_exporter.h"
-#include "plain_text_writer.h"
-#include "html_exporter.h"
-#include "parsing_chain.h"
-#include "summarize.h"
-#include "text_to_speech.h"
-#include "transcribe.h"
-#include "transformer_func.h"
-#include "translate_to.h"
+#include "defines.h"
+#include <string>
 
-#endif
+namespace docwire::fuzzy_match
+{
+
+/**
+ * @brief Calculates a ratio of similarity between two strings.
+ *
+ * This function calculates a ratio of similarity between two strings.
+ * The ratio is a value in the range [0, 100], where 0 represents absolutely no similarity and
+ * 100 represents absolute similarity.
+ *
+ * @param a The first string to compare.
+ * @param b The second string to compare.
+ *
+ * @return The ratio of similarity between the two strings.
+ */
+DllExport double ratio(const std::string& a, const std::string& b);
+
+} // namespace docwire::fuzzy_match
+
+#endif // DOCWIRE_FUZZY_MATCH_H
