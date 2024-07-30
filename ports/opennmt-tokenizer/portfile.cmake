@@ -34,6 +34,8 @@ file(RENAME ${SENTENCEPIECE_SOURCE_PATH} ${SOURCE_PATH}/third_party/sentencepiec
 
 vcpkg_cmake_configure(
 	SOURCE_PATH "${SOURCE_PATH}"
+    OPTIONS
+        -DCMAKE_CXX_FLAGS=-Wno-enum-constexpr-conversion # https://github.com/google/sentencepiece/issues/1028
 )
 
 vcpkg_cmake_install()
