@@ -32,10 +32,17 @@ vcpkg_from_github(
 file(REMOVE_RECURSE ${SOURCE_PATH}/third_party/sentencepiece)
 file(RENAME ${SENTENCEPIECE_SOURCE_PATH} ${SOURCE_PATH}/third_party/sentencepiece)
 
+# https://github.com/google/sentencepiece/issues/1028
+if (VCPKG_TARGET_IS_WINDOWS)
+	set(NO_ENUM_CONSTEXPR_CONVERSION "")
+else()
+	set(NO_ENUM_CONSTEXPR_CONVERSION "-DCMAKE_CXX_FLAGS=-Wno-enum-constexpr-conversion")
+endif()
+
 vcpkg_cmake_configure(
 	SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
-        -DCMAKE_CXX_FLAGS=-Wno-enum-constexpr-conversion # https://github.com/google/sentencepiece/issues/1028
+        ${NO_ENUM_CONSTEXPR_CONVERSION}
 )
 
 vcpkg_cmake_install()
