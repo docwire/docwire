@@ -1,3 +1,24 @@
+## Version 2024.07.31
+
+Recent enhancements to the DocWire SDK significantly boost its natural language processing capabilities by integrating local AI models. Developers can now perform tasks like text classification and sentiment analysis directly within C++ applications, improving performance and safeguarding data privacy. Additionally, refined dependency management and build configurations provide a comprehensive toolkit for developing AI-driven applications. Overall, the updates significantly enhance the SDK's utility for developers working on NLP and AI projects, providing them with powerful tools to process and analyze data effectively while maintaining control over their data privacy.
+
+> 🐰 In the burrow where ideas sprout,  
+> Local models bring cheer, there's no doubt!  
+> Processing swift, with privacy tight,  
+> DocWire now shines, a true delight!  
+> With text and models, we hop and play,  
+> Celebrating changes—hip, hip, hooray! 🌟
+
+- **New Features**
+  - Local AI models execution for text classification, summarization, translation, sentiment analysis, named entity recognition and more directly within applications.
+  - Added command-line options for local AI model processing, enhancing user interaction.
+  - Introduced a build-in powerful flan-t5-large model for various NLP tasks
+  - Added support for fuzzy matching capabilities with a new function for string similarity assessments.
+  - Streamlined integration of third-party libraries, enhancing dependency management.
+
+- **Documentation**
+  - Updated documentation to reflect new local AI capabilities, including detailed usage instructions.
+
 ## Version 2024.06.24
 
 Recent updates enhance cross-platform compatibility, introduce new input data handling approaches, and refine testing. OS versions added to the CI configuration include macOS 13, macOS 14, and Ubuntu 24.04. The data_source class now better supports various data types (std::vector, std::span, std::string_view), expanding its flexibility. New tests validate data source processing, while refinements prevent table errors.

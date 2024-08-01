@@ -9,30 +9,51 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DOCWIRE_H
-#define DOCWIRE_DOCWIRE_H
+#ifndef DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
+#define DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
 
-#include "office_formats_parser_provider.h"
-#include "classify.h"
-#include "decompress_archives.h"
-#include "detect_sentiment.h"
-#include "find.h"
-#include "fuzzy_match.h"
-#include "input.h"
-#include "log.h"
-#include "output.h"
-#include "mail_parser_provider.h"
-#include "model_chain_element.h"
-#include "ocr_parser_provider.h"
-#include "parse_detected_format.h"
-#include "plain_text_exporter.h"
-#include "plain_text_writer.h"
-#include "html_exporter.h"
-#include "parsing_chain.h"
-#include "summarize.h"
-#include "text_to_speech.h"
-#include "transcribe.h"
-#include "transformer_func.h"
-#include "translate_to.h"
+#include "defines.h"
+#include <filesystem>
+#include <memory>
+#include <string>
 
-#endif
+namespace docwire::local_ai
+{
+
+/**
+ * @brief Class representing the AI model loaded to memory.
+ *
+ * Constructor loads model to memory and makes it ready for usage.
+ * Destructor frees memory used by model.
+ * It is important not to duplicate the object because memory consumption can be high.
+ */
+class DllExport model_runner
+{
+public:
+    /// @brief Default constructor. Loads model to memory.
+    model_runner();
+
+    /**
+     * @brief Constructor. Loads model to memory.
+     * @param model_data_path Path to the folder containing model files.
+     */
+    model_runner(const std::filesystem::path& model_data_path);
+
+    /// @brief Destructor. Frees memory used by model.
+    ~model_runner();
+
+    /**
+     * @brief Process input text using the model.
+     * @param input Text to process.
+     * @return Processed text.
+     */
+    std::string process(const std::string& input) const;
+
+private:
+    struct implementation;
+    std::unique_ptr<implementation> m_impl;
+};
+
+} // namespace docwire::local_ai
+
+#endif // DOCWIRE_LOCAL_AI_MODEL_RUNNER_H

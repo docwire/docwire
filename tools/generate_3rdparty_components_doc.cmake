@@ -276,6 +276,8 @@ function(license_description_from_license_id license_id out_var)
 	set(license_desc_bzip2-1.0.6 "bzip2 license is similar to the standard BSD 3-Clause License with some specific wording related to marking altered source versions.")
 	# license description from https://gitlab.com/libtiff/libtiff
 	set(license_desc_libtiff "Silicon Graphics has seen fit to allow us to give this work away. It is free. There is no support or guarantee of any sort as to its operations, correctness, or whatever. If you do anything useful with all or parts of it you need to honor the copyright notices. I would also be interested in knowing about it and, hopefully, be acknowledged.")
+	# license description from https://icu.unicode.org/
+	set(license_desc_ICU "Nonrestrictive open source license that is suitable for use with both commercial software and with other open source or free software.")
 	# reuse description. LGPL-2.1 introduced only updates and clarifications
 	set(license_desc_LGPL-2.0 ${license_desc_LGPL-2.1})
 	if (DEFINED license_desc_${license_id})

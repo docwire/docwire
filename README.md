@@ -40,9 +40,11 @@ In the dynamic landscape of data processing, the selection of a programming lang
 
 ### For Developers: Elevate Your Capabilities
 
-If you've experienced the power of DocToText, brace yourself for a substantial upgrade. Staying ahead with C++20, we integrate advanced features such as ranges and concurrency. DocWire SDK evolves to handle a spectrum of data processing tasks, including robust HTTP capabilities, comprehensive network APIs, and efficient web data extraction.
+If you've experienced the power of DocToText, brace yourself for a substantial upgrade. Staying ahead with C++20, we integrate advanced features such as ranges and concurrency. DocWire SDK evolves to handle a spectrum of data processing tasks, including robust HTTP capabilities, comprehensive network APIs, efficient web data extraction, and running local AI models.
 
-We understand the need for comprehensive solutions in today's development landscape. DocWire SDK seamlessly integrates into C++ applications, providing solutions for text extraction, data conversion, data scraping, and data mining.
+With the addition of local LLM models, DocWire SDK now enables developers to leverage state-of-the-art natural language processing capabilities right in their C++ applications. This feature allows developers to perform tasks such as text classification, sentiment analysis, named entity recognition, and many more, directly on their data without the need for remote API calls.
+
+We understand the need for comprehensive solutions in today's development landscape. DocWire SDK seamlessly integrates into C++ applications, providing solutions for text extraction, data conversion, data scraping, data mining, and more.
 
 ### Optimized for NLP and AI Projects
 
@@ -51,6 +53,10 @@ DocWire SDK is engineered to be the cornerstone of your NLP and AI projects. Wit
 - **Data Cleaning and Preprocessing**: Before feeding data into your NLP models, it's essential to clean and preprocess it. DocWire SDK provides powerful tools to remove noise, correct formatting issues, and standardize data, ensuring that your models are trained on clean and relevant datasets.
 
 - **Content Filtering and Removal**: Unwanted content can skew the results of your NLP models. DocWire SDK allows you to define rules to filter out irrelevant sections, such as boilerplate text, disclaimers, or headers and footers, ensuring that only pertinent content is passed to your models.
+
+- **Local LLM Model**: DocWire SDK integrates support for local LLM models, allowing you to leverage state-of-the-art natural language processing capabilities right in your C++ applications. This feature allows developers to perform tasks such as text classification, sentiment analysis, named entity recognition, and many more, directly on their data without the need for remote API calls.
+
+- **Tokenization and Detokenization**: DocWire SDK provides a convenient interface for tokenizing and detokenizing your data. Tokenization breaks down text into individual words or tokens, which can then be fed into your NLP models. After processing, the SDK's detokenization feature allows you to reconstruct the original text from the tokenized output, ensuring that the integrity and context of the document are preserved.
 
 - **Output Sanitization**: When integrating NLP models into production systems, it's vital to sanitize outputs to prevent the leakage of sensitive information. DocWire SDK offers features to detect and redact personal data, confidential information, and other sensitive content from your outputs.
 
@@ -165,8 +171,9 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
 <a name="features"></a>
 ## Features
 
+- **Secure and privacy-preserving data processing** - all operations can be done locally without sending data to the cloud
 - Able to extract/import and export **text, images, formatting, and metadata along with annotations**
-- **Data can be transformed** between import and export (filtering, aggregating, etc)
+- **Data can be transformed** between import and export (filtering, aggregating, translation, text classification, sentiment analysis, named entity recognition etc).
 
 - **Equipped with multiple importers**:
     - Microsoft Office new Office Open XML (OOXML): DOCX, XLSX, PPTX files
@@ -193,9 +200,15 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
     - CSV: Export data to Comma-Separated Values format.
     - XLSX and more are coming: Additional export formats for diverse use cases.
 
+- **Build-in powerful flan-t5-large model**: This state-of-the-art transformer-based model is designed for a wide range of natural language processing tasks, including text translation, question answering, summarization, text generation, and more. It has been trained on a diverse range of data sources and can handle complex linguistic phenomena such as word order, syntax, and semantics. The model's versatility and ability to perform multiple tasks make it a valuable addition to the DocWire SDK, allowing developers to leverage its capabilities for a variety of NLP tasks within their applications. **The build-in model is optimized to run with descent speed on lower-end desktops and mobile devices without GPU acceleration and consuming less than 1 GB of memory**
+
+- **Support for running locally more powerful AI models using ctranslate2 technology**: This technology is designed to be highly scalable and efficient on CPU and GPU, enabling efficient deployment of language models on resource-constrained devices. Quantization allows maintaining accuracy with smaller model sizes making it suitable for desktop and mobile applications. Parallel and asynchronous execution enables efficient utilization of hardware resources.
+
+- **Equipped with a high-grade, scriptable, and trainable local OCR** that has LSTM neural networks-based character recognition OCR capabilities in more than 100 languages and multiple languages in single picture.
+
 - HTTP::Post transformer: Facilitate **seamless communication with external HTTP APIs or services**, enabling data exchange and integration with external systems.
 
-- **Integration with OpenAI API**, including transformers like:
+- **Integration with OpenAI API for most advanced NLP tasks**, including transformers like:
     - TranslateTo: Translate text or image to different languages.
     - Summarize: Generate summarized content from longer texts or description of images.
     - ExtractEntities: Extract entities and key information from text and image.
@@ -207,9 +220,8 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
     - Chat: Conduct chat-based interactions and conversations with text input and image input.
     - TextToSpeech: Perform written text into spoken words (voice) conversion (TTS).
     - Transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
+   Supports multiple Open AI LLM models: gpt-3.5-turbo, gpt-3.5-turbo-0125, gpt-3.5-turbo-1106, gpt-4, gpt-4-0613, gpt-4-32k, gpt-4-32k-0613, gpt-4-turbo-preview (world events up to December 2023, 128k context window that can fit more than 300 pages of text in a single prompt), gpt-4-0125-preview, gpt-4-1106-preview, gpt-4-vision-preview (with ability to understand images), gpt-4-1106-vision-preview, whisper-1, tts-1. More are coming.
 
-- **Supports multiple LLM models**: gpt-3.5-turbo, gpt-3.5-turbo-0125, gpt-3.5-turbo-1106, gpt-4, gpt-4-0613, gpt-4-32k, gpt-4-32k-0613, gpt-4-turbo-preview (world events up to December 2023, 128k context window that can fit more than 300 pages of text in a single prompt), gpt-4-0125-preview, gpt-4-1106-preview, gpt-4-vision-preview (with ability to understand images), gpt-4-1106-vision-preview, whisper-1, tts-1. More are coming.
-- **Equipped with a high-grade, scriptable, and trainable OCR** that has LSTM neural networks-based character recognition OCR capabilities in more than 100 languages and multiple languages in single picture.
 - **Incremental parsing** returning data as soon as they are available
 
 - **Structured Content Extraction**: DocWire SDK excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
@@ -378,7 +390,26 @@ int main(int argc, char* argv[])
 }
 ```
 
-Classify file in any format (Office, PDF, mail, etc) to any categories:
+Classify file in any format (Office, PDF, mail, etc) to any categories using build-in local AI model:
+
+```cpp
+#include "docwire.h"
+#include <cassert>
+#include <sstream>
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  std::stringstream out_stream;
+
+  std::filesystem::path("document_processing_market_trends.odt") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Classify to one of the following categories and answer with exact category name: agreement, invoice, report, legal, user manual, other:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  assert(out_stream.str() == "report");
+
+  return 0;
+}
+```
+
+Classify file in any format (Office, PDF, mail, etc) to any categories using OpenAI service:
 
 ```cpp
 #include "docwire.h"
@@ -397,7 +428,25 @@ int main(int argc, char* argv[])
 }
 ```
 
-Translate document in any format (Office, PDF, mail, etc) to other language:
+Translate document in any format (Office, PDF, mail, etc) to other language using build-in local AI model:
+
+```cpp
+#include "docwire.h"
+#include <cassert>
+#include <sstream>
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  std::stringstream out_stream;
+
+  std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Translate to spanish:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  assert(fuzzy_match::ratio(out_stream.str(), "La procesación de datos se refiere a las actividades realizadas en el ámbito de los datos en materia de información. Se trata de recoger, organizar, analizar y interpretar los datos para extraer inteligencias y apoyar el procesamiento de decisión. Esto puede incluir tareas como la etiqueta, la filtración, la summarización y la transformación de los datos a través de diversos métodos compuestos y estadounidenses. El procesamiento de datos es esencial en diversos ámbitos, incluyendo el negocio, la ciencia y la tecnologàa, pues permite a las empresas a extraer conocimientos valiosos de grans de datos, hacer decisiones indicadas y mejorar la eficiencia global.") > 80);
+  return 0;
+}
+```
+
+Translate document in any format (Office, PDF, mail, etc) to other language using OpenAI service:
 
 ```cpp
 #include "docwire.h"
@@ -415,6 +464,25 @@ int main(int argc, char* argv[])
 }
 ```
 
+Detect sentiment of document in any format (Office, PDF, mail, etc) using build-in local AI model:
+
+```cpp
+#include "docwire.h"
+#include <cassert>
+#include <sstream>
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  std::stringstream out_stream;
+
+  std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Detect sentiment:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  assert(out_stream.str() == "positive");
+
+  return 0;
+}
+```
+
 Detect sentiment of document in any format (Office, PDF, mail, etc) using newest GPT-4 Turbo model with 128K context:
 
 ```cpp
@@ -426,6 +494,25 @@ int main(int argc, char* argv[])
   using namespace docwire;
 
   std::filesystem::path("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_turbo_preview) | std::cout;
+
+  return 0;
+}
+```
+
+Make a summary of document in any format (Office, PDF, mail, etc) using build-in local AI model:
+
+```cpp
+#include "docwire.h"
+#include <cassert>
+#include <sstream>
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  std::stringstream out_stream;
+
+  std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Write a short summary for this text:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  assert(out_stream.str() == "Data processing is the process of transforming raw data into meaningful information.");
 
   return 0;
 }
@@ -456,6 +543,25 @@ int main(int argc, char* argv[])
   using namespace docwire;
 
   std::filesystem::path("data_processing_definition.mp3") | openai::Transcribe(std::getenv("OPENAI_API_KEY")) | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | std::cout;
+
+  return 0;
+}
+```
+
+Find phrases, objects and events with smart matching in documents in any format (Office, PDF, mail, etc) using build-in local AI model:
+
+```cpp
+#include "docwire.h"
+#include <cassert>
+#include <sstream>
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  std::stringstream out_stream;
+
+  std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Find sentence about \"data convertion\" in the following text:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  assert(out_stream.str() == "Data processing refers to the activities performed on raw data to convert it into meaningful information.");
 
   return 0;
 }
@@ -826,7 +932,14 @@ docwire [options] file_name
 - **&ndash;&ndash;input-file <file_path>**: Specify the path to the file to process (or you can provide filename without --input-file).
 - **&ndash;&ndash;output_type <type>** (default: plain_text): Set the output type. Available types include plain_text, html (preserving document structure), csv (structured data), and metadata (document information).
 
-### OpenAI Integration (New Features!)
+### Local AI Integration
+
+Process data securely using offline AI models with the following options:
+
+- **&ndash;&ndash;local-ai-prompt <prompt>**: prompt to process text via local AI model
+- **&ndash;&ndash;local-ai-model <path>**: path to local AI model data (build-in default model is used if not specified)
+
+### OpenAI Integration
 
 Unlock the power of OpenAI with the following options:
 
@@ -872,6 +985,12 @@ To extract structured content in HTML format, use the following command:
 
 ```bash
 docwire --output_type html document.docx
+```
+
+#### Secure offline AI document analysis
+
+```bash
+docwire --local-ai-prompt "What is the conclusion of the following document?" data_processing_definition.doc
 ```
 
 #### Leveraging OpenAI for Intelligent Document Analysis

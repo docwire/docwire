@@ -1,0 +1,7 @@
+{
+	"name": "flan-t5-large-ct2-int8",
+	"version-date": "2023-06-29",
+	"description": "flan-t5-large-ct2-int8",
+	"homepage": "https://huggingface.co/jncraton/flan-t5-large-ct2-int8",
+	"license": "Apache-2.0"
+}

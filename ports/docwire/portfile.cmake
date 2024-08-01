@@ -56,13 +56,15 @@ function(run_tests build_type)
 	set(triplet_build_type ${TARGET_TRIPLET}-${build_type})
 	message(STATUS "Testing ${triplet_build_type}")
 
+	file(WRITE "${CURRENT_BUILDTREES_DIR}/${triplet_build_type}/share/flan-t5-large-ct2-int8.path" "${CURRENT_INSTALLED_DIR}/share/flan-t5-large-ct2-int8")
+
 	set(valgrind_command "")
 	if(MEMCHECK_ENABLED)
-		set(valgrind_command valgrind --leak-check=full --gen-suppressions=yes --suppressions=${SOURCE_PATH}/tools/valgrind_suppressions.txt)
+		set(valgrind_command valgrind --leak-check=full --gen-suppressions=all --suppressions=${SOURCE_PATH}/tools/valgrind_suppressions.txt)
 	elseif(CALLGRIND_ENABLED)
 		set(valgrind_command valgrind --tool=callgrind)
 	elseif(HELGRIND_ENABLED)
-		set(valgrind_command valgrind --tool=helgrind --gen-suppressions=yes --suppressions=${SOURCE_PATH}/tools/valgrind_suppressions.txt)
+		set(valgrind_command valgrind --tool=helgrind --gen-suppressions=all --suppressions=${SOURCE_PATH}/tools/valgrind_suppressions.txt)
 	endif()
 	if (valgrind_command)
 		set(valgrind_command ${valgrind_command} --trace-children=yes --error-exitcode=1)
@@ -71,16 +73,24 @@ function(run_tests build_type)
 		message(STATUS "Using valgrind: ${valgrind_command}")
 	endif()
 
+	set(additional_ctest_args "")
+	if (VCPKG_TARGET_IS_LINUX AND (THREAD_SANITIZER OR MEMCHECK_ENABLED OR HELGRIND_ENABLED))
+		message(STATUS "Skipping tests that use model runner (Thread Sanitizer or Helgrind) on Linux")
+		set(additional_ctest_args --label-exclude uses_model_runner)
+	endif()
+
 	vcpkg_execute_required_process(
 		COMMAND ${valgrind_command} "ctest"
 			-V
 			--no-tests=error
+			${additional_ctest_args}
 		WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}
 		LOGNAME test-${PORT}-${triplet_build_type}
 	)
 endfunction()
 
 function(run_all_tests)
+	file(WRITE "${CURRENT_PACKAGES_DIR}/share/flan-t5-large-ct2-int8.path" "${CURRENT_INSTALLED_DIR}/share/flan-t5-large-ct2-int8")
 	if(NOT DEFINED VCPKG_BUILD_TYPE OR VCPKG_BUILD_TYPE STREQUAL debug)
 		if(VCPKG_TARGET_IS_LINUX)
 			set(BACKUP_LD_LIBRARY_PATH $ENV{LD_LIBRARY_PATH})
@@ -131,6 +141,7 @@ function(run_all_tests)
 			set(ENV{DYLD_FALLBACK_LIBRARY_PATH} "${BACKUP_DYLD_FALLBACK_LIBRARY_PATH}")
 		endif()
 	endif()
+	file(REMOVE "${CURRENT_PACKAGES_DIR}/share/flan-t5-large-ct2-int8.path")
 endfunction()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS_NO_CMAKE
