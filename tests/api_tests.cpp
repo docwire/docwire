@@ -14,6 +14,7 @@
 #include <boost/json.hpp>
 #include <future>
 #include "fuzzy_match.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "../src/exception.h"
 #include <string_view>
@@ -38,6 +39,7 @@
 #include "post.h"
 #include <regex>
 #include "transformer_func.h"
+#include "txt_parser.h"
 #include "input.h"
 #include "log.h"
 #include "lru_memory_cache.h"
@@ -1081,4 +1083,134 @@ TEST(fuzzy_match, ratio)
 {
     ASSERT_EQ(docwire::fuzzy_match::ratio("hello", "hello"), 100.0);
     ASSERT_EQ(docwire::fuzzy_match::ratio("hello", "helll"), 80.0);
+}
+
+class StoreInVector : public docwire::ChainElement
+{
+public:
+    StoreInVector(std::vector<docwire::Tag>& tags)
+        : m_tags{tags}
+    {}
+
+    bool is_leaf() const override
+    {
+        return true;
+    }
+
+    void process(Info& info) const override
+    {
+        m_tags.push_back(info.tag);
+    }
+
+private:
+    std::vector<docwire::Tag>& m_tags;    
+};
+
+namespace docwire::tag
+{
+
+void PrintTo(const Text& text, std::ostream* os)
+{
+    *os << testing::PrintToString(text.text);
+}
+
+}
+
+TEST(TXTParser, lines)
+{
+    using namespace testing;
+    std::vector<Tag> tags;
+    std::string test_input {"Line ends with LF\nLine ends with CR\rLine ends with CRLF\r\nLine without EOL"};
+    docwire::data_source{test_input, docwire::file_extension{".txt"}} |
+        ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+        StoreInVector{tags};
+    ASSERT_THAT(tags, testing::ElementsAre(
+        VariantWith<tag::Document>(_),
+        VariantWith<tag::Paragraph>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line ends with LF"))),
+        VariantWith<tag::BreakLine>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line ends with CR"))),
+        VariantWith<tag::BreakLine>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line ends with CRLF"))),
+        VariantWith<tag::BreakLine>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line without EOL"))),
+        VariantWith<tag::CloseParagraph>(_),
+        VariantWith<tag::CloseDocument>(_)
+    ));
+    tags.clear();
+    docwire::ParserParameters parameters{"TXTParser::parse_lines", false};
+    docwire::data_source{test_input, docwire::file_extension{".txt"}} |
+        ParseDetectedFormat<OfficeFormatsParserProvider>{parameters} |
+        StoreInVector{tags};
+    ASSERT_THAT(tags, testing::ElementsAre(
+        VariantWith<tag::Document>(_),
+        VariantWith<tag::Paragraph>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line ends with LF"))),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("\n"))),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line ends with CR"))),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("\r"))),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line ends with CRLF"))),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("\r\n"))),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line without EOL"))),
+        VariantWith<tag::CloseParagraph>(_),
+        VariantWith<tag::CloseDocument>(_)
+    ));
+    tags.clear();
+    parameters += docwire::ParserParameters{"TXTParser::parse_paragraphs", false};
+    docwire::data_source{test_input, docwire::file_extension{".txt"}} |
+        ParseDetectedFormat<OfficeFormatsParserProvider>{parameters} |
+        StoreInVector{tags};
+    ASSERT_THAT(tags, testing::ElementsAre(
+        VariantWith<tag::Document>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq(test_input))),
+        VariantWith<tag::CloseDocument>(_)
+    ));
+}
+
+TEST(TXTParser, paragraphs)
+{
+    using namespace testing;
+    std::vector<Tag> tags;
+    docwire::data_source{
+            std::string{"Paragraph 1 Line 1\nParagraph 1 Line 2\n\nParagraph 2 Line 1"},
+            docwire::file_extension{".txt"}} |
+        ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+        StoreInVector{tags};
+    ASSERT_THAT(tags, testing::ElementsAre(
+        VariantWith<tag::Document>(_),
+        VariantWith<tag::Paragraph>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph 1 Line 1"))),
+        VariantWith<tag::BreakLine>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph 1 Line 2"))),
+        VariantWith<tag::CloseParagraph>(_),
+        VariantWith<tag::Paragraph>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph 2 Line 1"))),
+        VariantWith<tag::CloseParagraph>(_),
+        VariantWith<tag::CloseDocument>(_)
+    ));
+    tags.clear();
+    docwire::data_source{std::string{"\nLine\n"}, docwire::file_extension{".txt"}} |
+        ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+        StoreInVector{tags};
+    ASSERT_THAT(tags, testing::ElementsAre(
+        VariantWith<tag::Document>(_),
+        VariantWith<tag::Paragraph>(_),
+        VariantWith<tag::CloseParagraph>(_),
+        VariantWith<tag::Paragraph>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line"))),
+        VariantWith<tag::CloseParagraph>(_),
+        VariantWith<tag::CloseDocument>(_)
+    ));
+    tags.clear();
+    docwire::data_source{std::string{"\nLine\n"}, docwire::file_extension{".txt"}} |
+        ParseDetectedFormat<OfficeFormatsParserProvider>{
+            docwire::ParserParameters{"TXTParser::parse_paragraphs", false}} |
+        StoreInVector{tags};
+    ASSERT_THAT(tags, testing::ElementsAre(
+        VariantWith<tag::Document>(_),
+        VariantWith<tag::BreakLine>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line"))),
+        VariantWith<tag::BreakLine>(_),
+        VariantWith<tag::CloseDocument>(_)
+    ));    
 }

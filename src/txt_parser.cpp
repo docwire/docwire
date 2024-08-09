@@ -138,9 +138,68 @@ void TXTParser::parse(const data_source& data) const
 		charset_detector = NULL;
 		throw RuntimeError("Could not parse text: " + std::string(e.what()));
 	}
+	bool parse_paragraphs = m_parameters.getParameterValue<bool>("TXTParser::parse_paragraphs").value_or(true);
+	bool parse_lines = m_parameters.getParameterValue<bool>("TXTParser::parse_lines").value_or(true);
 	sendTag(tag::Document{});
-	text.erase(std::remove(text.begin(), text.end(), '\r'), text.end());
-	sendTag(tag::Text{.text = text});
+	if (parse_lines || parse_paragraphs)
+	{
+		std::string::size_type curr_pos = 0;
+		enum { outside_paragraph, empty_paragraph, filled_paragraph } paragraph_state = outside_paragraph;
+		std::string last_eol = "";
+		for (;;)
+		{
+			std::string::size_type eol_pos = text.find_first_of("\r\n", curr_pos);
+			std::string eol = (eol_pos == std::string::npos ? std::string{""} : text.substr(eol_pos, 1));
+			if (eol == "\r" && eol_pos + 1 < text.size() && text[eol_pos + 1] == '\n')
+				eol += '\n';
+			std::string line = text.substr(curr_pos, eol_pos - curr_pos);
+			if (parse_paragraphs)
+			{
+				if (paragraph_state == outside_paragraph)
+				{
+					sendTag(tag::Paragraph{});
+					paragraph_state = empty_paragraph;
+				}
+				if (line.empty())
+				{
+					sendTag(tag::CloseParagraph{});
+					paragraph_state = outside_paragraph;
+				}
+				else
+				{
+					if (paragraph_state == filled_paragraph)
+					{
+						if (parse_lines)
+							sendTag(tag::BreakLine{});
+						else
+							sendTag(tag::Text{.text = last_eol});
+					}
+					sendTag(tag::Text{.text = line});
+					paragraph_state = filled_paragraph;
+				}
+			}
+			else
+			{
+				if (!line.empty())
+					sendTag(tag::Text{.text = line});
+				if (!eol.empty())
+				{
+					if (parse_lines)
+						sendTag(tag::BreakLine{});
+					else
+						sendTag(tag::Text{.text = eol});
+				}
+			}
+			if (eol.empty())
+				break;
+			curr_pos = eol_pos + eol.size();
+			last_eol = eol;
+		}
+		if (parse_paragraphs && paragraph_state != outside_paragraph)
+			sendTag(tag::CloseParagraph{});
+	}
+	else
+		sendTag(tag::Text{.text = text});
 	sendTag(tag::CloseDocument{});
 }
 
