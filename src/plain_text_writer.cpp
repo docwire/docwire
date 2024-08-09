@@ -25,8 +25,8 @@ namespace docwire
 class Cell
 {
 public:
-  Cell()
-  : writer()
+  Cell(std::string eol_sequence)
+  : writer(eol_sequence)
   {}
 
   void write(const std::string& s)
@@ -34,11 +34,16 @@ public:
     result += s;
     std::stringstream ss(result);
     lines.clear();
-    std::string line;
-    while (std::getline(ss, line, '\n'))
+    const std::string eol_sequence = writer.eol_sequence();
+    std::string::size_type prev_pos = 0;
+    std::string::size_type pos = 0;
+    while ((pos = result.find(eol_sequence, prev_pos)) != std::string::npos)
     {
-      lines.push_back(line);
+      lines.push_back(result.substr(prev_pos, pos - prev_pos));
+      prev_pos = pos + eol_sequence.length();
     }
+    if (prev_pos < result.length())
+      lines.push_back(result.substr(prev_pos));
   }
 
   void write(const Tag& tag)
@@ -115,7 +120,7 @@ struct PlainTextWriter::Implementation
     }
     if (mail.date)
     {
-      text += " creation time: " + timestampToString(*mail.date) + "\n";
+      text += " creation time: " + timestampToString(*mail.date) + m_eol_sequence;
     }
     return std::make_shared<TextElement>(text);
   }
@@ -123,10 +128,10 @@ struct PlainTextWriter::Implementation
   std::shared_ptr<TextElement>
   write_attachment(const tag::Attachment& attachment)
   {
-    std::string text = "attachment: \n\n";
+    std::string text = "attachment: " + m_eol_sequence + m_eol_sequence;
     if (attachment.name)
     {
-      text += "name: " + *attachment.name + "\n";
+      text += "name: " + *attachment.name + m_eol_sequence;
     }
     return std::make_shared<TextElement>(text);
   }
@@ -142,7 +147,7 @@ struct PlainTextWriter::Implementation
     text += "folder: ";
     if (folder.name)
     {
-      text += *folder.name + "\n";
+      text += *folder.name + m_eol_sequence;
     }
     return std::make_shared<TextElement>(text);
   }
@@ -156,19 +161,19 @@ struct PlainTextWriter::Implementation
   std::shared_ptr<TextElement>
   write_close_mail_body(const tag::CloseMailBody&)
   {
-    return std::make_shared<TextElement>("\n");
+    return std::make_shared<TextElement>(m_eol_sequence);
   }
 
   std::shared_ptr<TextElement>
   write_close_attachment(const tag::CloseAttachment&)
   {
-    return std::make_shared<TextElement>("\n");
+    return std::make_shared<TextElement>(m_eol_sequence);
   }
 
   std::shared_ptr<TextElement>
   write_new_line(const tag::BreakLine&)
   {
-    return std::make_shared<TextElement>("\n");
+    return std::make_shared<TextElement>(m_eol_sequence);
   }
 
   std::shared_ptr<TextElement>
@@ -178,7 +183,7 @@ struct PlainTextWriter::Implementation
     {
       return std::make_shared<TextElement>("");
     }
-    return std::make_shared<TextElement>("\n");
+    return std::make_shared<TextElement>(m_eol_sequence);
   }
 
   std::shared_ptr<TextElement>
@@ -189,7 +194,7 @@ struct PlainTextWriter::Implementation
       return std::make_shared<TextElement>("<" + *link.url + ">");
     }
 
-    return std::make_shared<TextElement>("\n");
+    return std::make_shared<TextElement>(m_eol_sequence);
   }
 
   std::shared_ptr<TextElement>
@@ -220,7 +225,7 @@ struct PlainTextWriter::Implementation
     list_mode = true;
     list_counter = 1;
     list_type = list.type;
-    return std::make_shared<TextElement>("\n");
+    return std::make_shared<TextElement>(m_eol_sequence);
   }
 
   std::shared_ptr<TextElement>
@@ -248,13 +253,13 @@ struct PlainTextWriter::Implementation
   write_close_list_item(const tag::CloseListItem&)
   {
     ++list_counter;
-    return std::make_shared<TextElement>("\n");
+    return std::make_shared<TextElement>(m_eol_sequence);
   }
 
 	std::shared_ptr<TextElement>
 	write_comment(const tag::Comment& comment)
 	{
-		std::string text = "\n[[[";
+		std::string text = m_eol_sequence + "[[[";
 		if (comment.author)
 		{
 			text += "COMMENT BY " + *comment.author;
@@ -263,15 +268,15 @@ struct PlainTextWriter::Implementation
 		{
 			text += " (" + *comment.time + ")";
 		}
-		text += "]]]\n";
+		text += "]]]" + m_eol_sequence;
 		if (comment.comment)
 		{
 			auto comment_text = *comment.comment;
 			text += comment_text;
 			if (comment_text.empty() || *comment_text.rbegin() != '\n')
-				text += "\n";
+				text += m_eol_sequence;
 		}
-		text += "[[[---]]]\n";
+		text += "[[[---]]]" + m_eol_sequence;
 
 		return std::make_shared<TextElement>(text);
 	}
@@ -285,7 +290,7 @@ struct PlainTextWriter::Implementation
 	std::shared_ptr<TextElement> write_close_header(const tag::CloseHeader&)
 	{
 		header_mode = false;
-		return std::make_shared<TextElement>("\n");
+		return std::make_shared<TextElement>(m_eol_sequence);
 	}
 
 	std::shared_ptr<TextElement> write_footer(const tag::Footer&)
@@ -305,11 +310,12 @@ struct PlainTextWriter::Implementation
 	{
 		std::string footer = footer_stream.str();
 		if (!footer.empty())
-			footer +=  '\n';
-		return std::make_shared<TextElement>("\n" + footer);
+			footer += m_eol_sequence;
+		return std::make_shared<TextElement>(m_eol_sequence + footer);
 	}
 
-  Implementation()
+  Implementation(const std::string& eol_sequence)
+    : m_eol_sequence(eol_sequence)
   {
   }
 
@@ -355,7 +361,7 @@ struct PlainTextWriter::Implementation
           int right_margin = j < (row.size() - 1) ? 2 : 0;
           row_result += add_shift(size_diff + right_margin);
         }
-        row_result += "\n";
+        row_result += m_eol_sequence;
       }
       result += row_result;
     }
@@ -369,7 +375,7 @@ struct PlainTextWriter::Implementation
       if (std::holds_alternative<tag::Table>(tags[i]))
       {
         std::stringstream ss;
-        PlainTextWriter writer;
+        PlainTextWriter writer{m_eol_sequence};
         int open_table_tags = 1;
         writer.write_to(tags[i], ss);
         do
@@ -396,7 +402,7 @@ struct PlainTextWriter::Implementation
       {
         if (table.empty())
           throw LogicError("Cell inside table without rows.");
-        table.back().push_back(Cell());
+        table.back().push_back(Cell{m_eol_sequence});
       }
       else if (!std::holds_alternative<tag::CloseTableRow>(tags[i]) && !std::holds_alternative<tag::CloseTableCell>(tags[i]))
       {
@@ -473,6 +479,7 @@ struct PlainTextWriter::Implementation
     }
   }
 
+  std::string m_eol_sequence;
   int level { 0 };
   std::vector<Tag> tags;
   std::string list_type;
@@ -487,14 +494,14 @@ struct PlainTextWriter::Implementation
   int m_nested_docs_counter { 0 };
 };
 
-PlainTextWriter::PlainTextWriter()
+PlainTextWriter::PlainTextWriter(const std::string& eol_sequence)
 {
-  impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{}, ImplementationDeleter{}};
+  impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{eol_sequence}, ImplementationDeleter{}};
 }
 
 PlainTextWriter::PlainTextWriter(const PlainTextWriter &plainTextWriter)
 {
-  impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{}, ImplementationDeleter{}};
+  impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{plainTextWriter.impl->m_eol_sequence}, ImplementationDeleter{}};
   impl->level = plainTextWriter.impl->level;
   impl->tags = plainTextWriter.impl->tags;
   impl->list_counter = plainTextWriter.impl->list_counter;
@@ -530,6 +537,11 @@ void
 PlainTextWriter::write_to(const Tag& tag, std::ostream &stream)
 {
   impl->write_to(tag, stream);
+}
+
+const std::string PlainTextWriter::eol_sequence() const
+{
+  return impl->m_eol_sequence;
 }
 
 } // namespace docwire

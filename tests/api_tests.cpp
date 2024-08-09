@@ -947,6 +947,27 @@ TEST(PlainTextExporter, content_inside_table_row_without_cells)
     }
 }
 
+TEST(PlainTextExporter, eol_sequence_crlf)
+{
+    auto exporter = std::make_shared<PlainTextExporter>(eol_sequence{"\r\n"});
+    std::ostringstream output_stream{};
+    auto parsing_chain = exporter | output_stream;
+    std::vector<Tag> tags
+    {
+        tag::Document{},
+        tag::Text{.text = "Line1"},
+        tag::BreakLine{},
+        tag::Text{.text = "Line2"},
+        tag::CloseDocument{}
+    };
+    for (auto tag: tags)
+    {
+        Info info{tag};
+        exporter->process(info);    
+    }
+    ASSERT_EQ(output_stream.str(), "Line1\r\nLine2\r\n");
+}
+
 TEST(Input, data_source_with_file_ext)
 {
     std::ostringstream output_stream{};

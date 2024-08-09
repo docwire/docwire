@@ -21,10 +21,11 @@
 
 namespace docwire
 {
+
 class DllExport PlainTextWriter : public Writer
 {
 public:
-  PlainTextWriter();
+  PlainTextWriter(const std::string& eol_sequence);
   PlainTextWriter(const PlainTextWriter &plainTextWriter);
 
   /**
@@ -35,6 +36,8 @@ public:
   void write_to(const Tag& tag, std::ostream &stream) override;
 
   PlainTextWriter& operator=(const PlainTextWriter &plainTextWriter);
+
+  const std::string eol_sequence() const;
 
 private:
   struct DllExport Implementation;

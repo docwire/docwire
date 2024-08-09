@@ -17,14 +17,15 @@
 namespace docwire
 {
 
+struct eol_sequence { std::string v; };
+
 /**
  * @brief Exports data to plain text format.
  */
 class DllExport PlainTextExporter: public ChainElement
 {
 public:
-  PlainTextExporter();
-	PlainTextExporter(const PlainTextExporter& other);
+	PlainTextExporter(eol_sequence eol = eol_sequence{"\n"});
 
   void process(Info& info) const override;
 
