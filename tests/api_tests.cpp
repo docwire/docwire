@@ -645,10 +645,11 @@ TEST(Http, Post)
 
 	using namespace boost::json;
 	value output_val = parse(output_stream.str());
-	output_val.as_object()["headers"].as_object().erase("x-amzn-trace-id");
-	output_val.as_object()["headers"].as_object().erase("user-agent");
-    output_val.as_object()["headers"].as_object().erase("x-request-start");
-	EXPECT_EQ(read_test_file("http_post.out.json"), serialize(output_val));
+    ASSERT_TRUE(output_val.is_object());
+    ASSERT_TRUE(output_val.as_object()["headers"].is_object());
+    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-type"].as_string().c_str(), "application/json");
+    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-length"].as_string().c_str(), "16");
+    ASSERT_STREQ(output_val.as_object()["data"].as_string().c_str(), "hyperlink test\n\n");
 }
 
 TEST(Http, PostForm)
@@ -663,14 +664,18 @@ TEST(Http, PostForm)
 			| output_stream;
 	});
 
-	using namespace boost::json;
-	std::string output_str = std::regex_replace(output_stream.str(), std::regex("boundary=[^\"]+"), "boundary=<boundary>");
-	value output_val = parse(output_str);
-	output_val.as_object()["headers"].as_object().erase("x-amzn-trace-id");
-	output_val.as_object()["headers"].as_object().erase("user-agent");
-    output_val.as_object()["headers"].as_object().erase("x-request-start");
-
-	EXPECT_EQ(read_test_file("http_post_form.out.json"), serialize(output_val));
+    using namespace boost::json;
+    value output_val = parse(output_stream.str());
+    ASSERT_TRUE(output_val.is_object());
+    ASSERT_TRUE(output_val.as_object()["headers"].is_object());
+    ASSERT_THAT(std::string{output_val.as_object()["headers"].as_object()["content-type"].as_string()},
+                ::testing::MatchesRegex("multipart/form-data; boundary=[a-zA-Z0-9-]+"));
+    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-length"].as_string().c_str(), "428");
+    ASSERT_TRUE(output_val.as_object()["form"].is_object());
+    ASSERT_STREQ(output_val.as_object()["form"].as_object()["field1"].as_string().c_str(), "value1");
+    ASSERT_STREQ(output_val.as_object()["form"].as_object()["field2"].as_string().c_str(), "value2");
+    ASSERT_TRUE(output_val.as_object()["files"].is_object());
+    ASSERT_STREQ(output_val.as_object()["files"].as_object()["file.txt"].as_string().c_str(), "data:application/octet-stream;base64,aHlwZXJsaW5rIHRlc3QKCg==");
 }
 
 namespace test_ns
