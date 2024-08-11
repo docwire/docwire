@@ -240,14 +240,10 @@ struct CommonXMLDocumentParser::Implementation
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     docwire_log(debug) << "onODFOOXMLTextTag command.";
-    bool space_preserve_prev = space_preserve;
-    if (xml_stream.attribute("space") == "preserve")
-      space_preserve = true;
     xml_stream.levelDown();
     text += parser.parseXmlData(xml_stream, mode, zipfile);
     xml_stream.levelUp();
     children_processed = true;
-    space_preserve = space_preserve_prev;
   }
 
   void onODFOOXMLBold(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
@@ -597,6 +593,15 @@ std::string CommonXMLDocumentParser::parseXmlData(
 
 	while (xml_stream)
 	{
+		bool space_preserve_prev = impl->space_preserve;
+		std::string space_attr = xml_stream.attribute("space");
+		if (!space_attr.empty())
+		{
+			if (space_attr == "preserve")
+    			impl->space_preserve = true;
+			else if (space_attr == "default")
+				impl->space_preserve = false;
+		}
 		bool children_processed;
 		impl->executeCommand(xml_stream.name(), xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
 		if (xml_stream && (!children_processed))
@@ -606,6 +611,7 @@ std::string CommonXMLDocumentParser::parseXmlData(
 				text += parseXmlData(xml_stream, mode, zipfile);
 			xml_stream.levelUp();
 		}
+		impl->space_preserve = space_preserve_prev;
 		xml_stream.next();
 		first_on_level = false;
 	}

@@ -373,6 +373,7 @@ INSTANTIATE_TEST_SUITE_P(
         "whitespaces.odt",
         "whitespaces.doc",
         "whitespaces.docx",
+        "space_attributes_in_non_standard_places.docx",
         "ole.odt",
         "ole.fodt",
         "nested_tables.html",

@@ -1,0 +1,12 @@
+This document has manually modified XML structure to test handling of xml:space attributes placed in different places.
+xml:space=”preserve” are added to text elements usually. We know that some OOXML exporters add it to w:document and there can be more unexpected situations in the future as well.
+
+This document has xml:space=”preserve” added to w:document element.
+
+It should be derived by text (w:t) with single space at the end of this line so the text should be visible: 
+
+The text (w:t) at the end of this line has xml:space=”default” attribute so space should not be visible:
+
+This paragraph (w:p) has xml:space=”default” attribute but the text element (w:t) at the end of this line has xml:space=”preserve” so space at the end of this line should be visible: 
+
+
