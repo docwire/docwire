@@ -1,6 +1,7 @@
 add_library(docwire_core SHARED
     attachment.cpp
     chat.cpp
+    entities.cpp
     extract_entities.cpp
     summarize.cpp
     translate_to.cpp

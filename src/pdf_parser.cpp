@@ -23,6 +23,7 @@
 #include "misc.h"
 #include <mutex>
 #include <new>
+#include <podofo/podofo.h>
 #include <set>
 #include <sstream>
 #include <strstream>
@@ -31,9 +32,6 @@
 #include <vector>
 #include <zlib.h>
 
-#include <boost/signals2.hpp>
-
-#include "podofo/podofo.h"
 #include <stack>
 
 namespace docwire

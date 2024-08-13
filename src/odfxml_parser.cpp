@@ -14,7 +14,6 @@
 #include "exception.h"
 #include <fstream>
 #include <iostream>
-#include <boost/signals2.hpp>
 #include <libxml/xmlreader.h>
 #include "log.h"
 #include "misc.h"
