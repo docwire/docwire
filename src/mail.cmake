@@ -1,4 +1,4 @@
-add_library(docwire_mail SHARED mail_parser_provider.cpp eml_parser.cpp pst_parser.cpp)
+add_library(docwire_mail SHARED eml_parser.cpp pst_parser.cpp)
 
 find_library(bfio bfio REQUIRED)
 find_library(pff pff REQUIRED)

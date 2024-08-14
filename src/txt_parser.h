@@ -34,6 +34,7 @@ class TXTParser : public Parser
 		static std::vector<file_extension> getExtensions();
 
 		TXTParser();
+	static constexpr bool is_universal = true;
 };
 
 } // namespace docwire

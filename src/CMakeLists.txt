@@ -1,5 +1,8 @@
 set(CMAKE_INSTALL_RPATH .)
 
+set(EMPTY_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/empty.cpp)
+file(GENERATE OUTPUT ${EMPTY_SOURCE} CONTENT "")
+
 include(core.cmake)
 include(odf_ooxml.cmake)
 include(ole_office_formats.cmake)

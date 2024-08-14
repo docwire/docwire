@@ -596,7 +596,7 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
 
-  auto chain = ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | std::cout;  // create a chain of steps to parse a file
+  auto chain = ParseDetectedFormat<parser_provider<ODFOOXMLParser>>() | PlainTextExporter() | std::cout;  // create a chain of steps to parse a file
   for (int i = 1; i < 3; ++i)
     std::ifstream(std::to_string(i) + ".docx", std::ios_base::binary) | chain; // set the input file as an input stream
 

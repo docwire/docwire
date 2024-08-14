@@ -1,7 +1,6 @@
-add_library(docwire_office_formats SHARED office_formats_parser_provider.cpp)
+add_library(docwire_office_formats SHARED ${EMPTY_SOURCE})
 
-target_link_libraries(docwire_office_formats PRIVATE
-    docwire_core
+target_link_libraries(docwire_office_formats PUBLIC
     docwire_pdf
     docwire_odf_ooxml
     docwire_ole_office_formats

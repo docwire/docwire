@@ -878,7 +878,7 @@ TEST(PlainTextExporter, table_inside_table_without_rows)
     try
     {
         std::string{"<html><table><table><tr><td>table inside table without cells</td></tr></table></table></html>"} |
-            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
             std::ostringstream{};
         FAIL() << "LogicError exception was expected.";
@@ -894,7 +894,7 @@ TEST(PlainTextExporter, table_inside_table_row_without_cells)
     try
     {
         std::string{"<html><table><tr><table><tr><td>table inside table without cells</td></tr></table></tr></table></html>"} |
-            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
             std::ostringstream{};
         FAIL() << "LogicError exception was expected.";
@@ -910,7 +910,7 @@ TEST(PlainTextExporter, cell_inside_table_without_rows)
     try
     {
         std::string{"<html><table><thead><td>cell without row</td></thead></table></html>"} |
-            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
             std::ostringstream{};
         FAIL() << "LogicError exception was expected.";
@@ -926,7 +926,7 @@ TEST(PlainTextExporter, content_inside_table_without_rows)
     try
     {
         std::string{"<html><table>content without rows</table></html>"} |
-            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
             std::ostringstream{};
         FAIL() << "LogicError exception was expected.";
@@ -942,7 +942,7 @@ TEST(PlainTextExporter, content_inside_table_row_without_cells)
     try
     {
         std::string{"<html><table><tr>content without cell</tr></table></html>"} |
-            ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+            ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
             std::ostringstream{};
         FAIL() << "LogicError exception was expected.";
@@ -985,14 +985,14 @@ TEST(Input, path_ref)
 {
     std::ostringstream output_stream{};
     std::filesystem::path path{"1.doc"};
-    path | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    path | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, path_temp)
 {
     std::ostringstream output_stream{};    
-    std::filesystem::path{"1.doc"} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    std::filesystem::path{"1.doc"} | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1001,7 +1001,7 @@ TEST(Input, vector_ref)
     std::ostringstream output_stream{};
     std::string str = read_binary_file("1.doc");
     std::vector<std::byte> vector{reinterpret_cast<const std::byte*>(str.data()), reinterpret_cast<const std::byte*>(str.data()) + str.size()};
-    vector | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    vector | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1010,7 +1010,7 @@ TEST(Input, vector_temp)
     std::ostringstream output_stream{};    
     std::string str = read_binary_file("1.doc");
     std::vector<std::byte>{reinterpret_cast<const std::byte*>(str.data()), reinterpret_cast<const std::byte*>(str.data()) + str.size()} |
-        ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1019,7 +1019,7 @@ TEST(Input, span_ref)
     std::ostringstream output_stream{};
     std::string str = read_binary_file("1.doc");
     std::span<const std::byte> span{reinterpret_cast<const std::byte*>(str.data()), str.size()};
-    span | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    span | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1035,14 +1035,14 @@ TEST(Input, string_ref)
 {
     std::ostringstream output_stream{};
     std::string str = read_binary_file("1.doc");
-    str | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    str | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, string_temp)
 {
     std::ostringstream output_stream{};    
-    read_binary_file("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    read_binary_file("1.doc") | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1051,14 +1051,14 @@ TEST(Input, string_view_ref)
     std::ostringstream output_stream{};
     std::string str = read_binary_file("1.doc");
     std::string_view string_view{str};
-    string_view | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    string_view | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, string_view_temp)
 {
     std::ostringstream output_stream{};    
-    std::string_view{read_binary_file("1.doc")} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    std::string_view{read_binary_file("1.doc")} | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1066,14 +1066,14 @@ TEST(Input, seekable_stream_ptr_ref)
 {
     std::ostringstream output_stream{};
     seekable_stream_ptr stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)};
-    stream_ptr | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    stream_ptr | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, seekable_stream_ptr_temp)
 {
     std::ostringstream output_stream{};
-    seekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    seekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)} | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1081,28 +1081,28 @@ TEST(Input, unseekable_stream_ptr_ref)
 {
     std::ostringstream output_stream{};
     unseekable_stream_ptr stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)};
-    stream_ptr | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    stream_ptr | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, unseekable_stream_ptr_temp)
 {
     std::ostringstream output_stream{};
-    unseekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    unseekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)} | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, stream_shared_ptr)
 {
     std::ostringstream output_stream{};
-    std::make_shared<std::ifstream>("1.doc", std::ios_base::binary) | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    std::make_shared<std::ifstream>("1.doc", std::ios_base::binary) | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, stream_temp)
 {
     std::ostringstream output_stream{};
-    std::ifstream{"1.doc", std::ios_base::binary} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    std::ifstream{"1.doc", std::ios_base::binary} | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1149,7 +1149,7 @@ TEST(TXTParser, lines)
     std::vector<Tag> tags;
     std::string test_input {"Line ends with LF\nLine ends with CR\rLine ends with CRLF\r\nLine without EOL"};
     docwire::data_source{test_input, docwire::file_extension{".txt"}} |
-        ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+        ParseDetectedFormat<parser_provider<TXTParser>>{} |
         StoreInVector{tags};
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),
@@ -1201,7 +1201,7 @@ TEST(TXTParser, paragraphs)
     docwire::data_source{
             std::string{"Paragraph 1 Line 1\nParagraph 1 Line 2\n\nParagraph 2 Line 1"},
             docwire::file_extension{".txt"}} |
-        ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+        ParseDetectedFormat<parser_provider<TXTParser>>{} |
         StoreInVector{tags};
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),

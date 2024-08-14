@@ -1,4 +1,4 @@
-add_library(docwire_ocr SHARED ocr_parser_provider.cpp ocr_parser.cpp)
+add_library(docwire_ocr SHARED ocr_parser.cpp)
 
 if(MSVC)
     set_property(TARGET docwire_ocr PROPERTY

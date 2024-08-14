@@ -13,25 +13,23 @@
 #ifndef DOCWIRE_OFFICE_FORMATS_PARSER_PROVIDER_H
 #define DOCWIRE_OFFICE_FORMATS_PARSER_PROVIDER_H
 
+#include "doc_parser.h"
+#include "html_parser.h"
+#include "iwork_parser.h"
+#include "odfxml_parser.h"
+#include "pdf_parser.h"
+#include "xls_parser.h"
+#include "xlsb_parser.h"
+#include "odf_ooxml_parser.h"
 #include "parser_provider.h"
-#include "defines.h"
+#include "ppt_parser.h"
+#include "rtf_parser.h"
+#include "txt_parser.h"
 
 namespace docwire
 {
 
-class DllExport OfficeFormatsParserProvider : public ParserProvider
-{
-public:
-  OfficeFormatsParserProvider();
-  std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension) const override;
-  std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const override;
-  std::set<file_extension> getAvailableExtensions() const override;
-
-private:
-  void addExtensions(const std::vector<file_extension>& extensions);
-  bool isExtensionInVector(const file_extension& extension, const std::vector<file_extension>& extension_list) const;
-  std::set<file_extension> available_extensions;
-};
+using OfficeFormatsParserProvider = parser_provider<HTMLParser, DOCParser, PDFParser, XLSParser, XLSBParser, IWorkParser, PPTParser, RTFParser, ODFOOXMLParser, ODFXMLParser, TXTParser>;
 
 } // namespace docwire
 
