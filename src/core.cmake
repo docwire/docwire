@@ -38,6 +38,7 @@ add_library(docwire_core SHARED
     meta_data_writer.cpp
     chain_element.cpp
     parsing_chain.cpp
+    zip_reader.cpp
     input.cpp)
 
 target_compile_features(docwire_core PUBLIC cxx_std_20)
@@ -49,10 +50,13 @@ endif()
 find_library(wv2 wv2 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem system json)
 find_package(magic_enum CONFIG REQUIRED)
+find_library(unzip unzip REQUIRED)
 find_package(LibArchive REQUIRED)
 find_package(unofficial-curlpp CONFIG REQUIRED)
 find_library(botan_lib botan-3 REQUIRED)
-target_link_libraries(docwire_core PRIVATE ${wv2} Boost::filesystem Boost::system Boost::json magic_enum::magic_enum LibArchive::LibArchive unofficial::curlpp::curlpp ${botan_lib})
+target_link_libraries(docwire_core PRIVATE
+    ${wv2} Boost::filesystem Boost::system Boost::json magic_enum::magic_enum ${unzip}
+    LibArchive::LibArchive unofficial::curlpp::curlpp ${botan_lib})
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(docwire_core PRIVATE dl)
 endif()
