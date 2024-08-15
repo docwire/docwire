@@ -23,7 +23,7 @@
 namespace docwire
 {
 
-class OCRParser : public Parser
+class DllExport OCRParser : public Parser
 {
 private:
     struct Implementation;

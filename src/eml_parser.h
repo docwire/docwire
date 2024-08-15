@@ -24,7 +24,7 @@ namespace docwire
 class Metadata;
 class Attachment;
 
-class EMLParser : public Parser
+class DllExport EMLParser : public Parser
 {
 	private:
 		struct Implementation;
