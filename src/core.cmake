@@ -47,7 +47,9 @@ if(MSVC)
     target_compile_options(docwire_core PUBLIC /Zc:__cplusplus /Zc:preprocessor)
 endif()
 
-find_library(wv2 wv2 HINTS lib/static REQUIRED)
+find_path(wv2_incdir wv2/ustring.h)
+
+find_library(wv2 wv2 HINTS ${wv2_incdir}/../lib/static REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem system json)
 find_package(magic_enum CONFIG REQUIRED)
 find_library(unzip unzip REQUIRED)
