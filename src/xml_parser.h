@@ -9,29 +9,22 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#ifndef DOCWIRE_XML_PARSER_H
+#define DOCWIRE_XML_PARSER_H
 
-#ifndef DOCWIRE_OFFICE_FORMATS_PARSER_PROVIDER_H
-#define DOCWIRE_OFFICE_FORMATS_PARSER_PROVIDER_H
-
-#include "doc_parser.h"
-#include "html_parser.h"
-#include "iwork_parser.h"
-#include "odfxml_parser.h"
-#include "pdf_parser.h"
-#include "xls_parser.h"
-#include "xlsb_parser.h"
-#include "odf_ooxml_parser.h"
-#include "parser_provider.h"
-#include "ppt_parser.h"
-#include "rtf_parser.h"
-#include "txt_parser.h"
-#include "xml_parser.h"
+#include "parser.h"
 
 namespace docwire
 {
 
-using OfficeFormatsParserProvider = parser_provider<HTMLParser, DOCParser, PDFParser, XLSParser, XLSBParser, IWorkParser, PPTParser, RTFParser, ODFOOXMLParser, ODFXMLParser, XMLParser, TXTParser>;
+class DllExport XMLParser : public Parser
+{
+public:
+	void parse(const data_source& data) const override;
+    static std::vector<file_extension> getExtensions() { return { file_extension{".xml"} }; }
+	bool understands(const data_source& data) const;
+};
 
 } // namespace docwire
 
-#endif //DOCWIRE_OFFICE_FORMATS_PARSER_PROVIDER_H
+#endif // DOCWIRE_XML_PARSER_H

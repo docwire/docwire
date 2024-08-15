@@ -253,7 +253,6 @@ std::vector<file_extension> TXTParser::getExtensions()
 		file_extension{".tcl"}, // TCL script source code
 		file_extension{".txt"}, file_extension{".text"}, // Simple text
 		file_extension{".vb"}, file_extension{".vbs"}, // Visual Basic script
-		file_extension{".xml"}, // XML document
 		file_extension{".xsd"}, // XML schema description
 		file_extension{".xsl"}, // XML eXtensible stylesheet
 		file_extension{".yml"}, file_extension{".yaml"}, // YAML document

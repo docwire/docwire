@@ -8,6 +8,7 @@ target_link_libraries(docwire_office_formats PUBLIC
     docwire_iwork
     docwire_rtf
     docwire_html
+    docwire_xml
     docwire_plain_text)
 
 install(TARGETS docwire_office_formats)
