@@ -1,7 +1,17 @@
 set(CMAKE_INSTALL_RPATH .)
 
 set(EMPTY_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/empty.cpp)
-file(GENERATE OUTPUT ${EMPTY_SOURCE} CONTENT "")
+file(GENERATE OUTPUT ${EMPTY_SOURCE} CONTENT "
+	#ifdef MSVC_BUILD
+		#define DllExport  __declspec( dllexport )
+	#else
+		#define DllExport
+	#endif
+	namespace docwire
+	{
+		DllExport void dummy() {}
+	}
+")
 
 include(core.cmake)
 include(odf_ooxml.cmake)
