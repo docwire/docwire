@@ -12,13 +12,14 @@
 #ifndef DOCWIRE_XML_STREAM_H
 #define DOCWIRE_XML_STREAM_H
 
+#include "defines.h"
 #include <memory>
 #include <string>
 
 namespace docwire
 {
 
-class XmlStream
+class DllExport XmlStream
 {
 	private:
 		struct Implementation;

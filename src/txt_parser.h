@@ -20,7 +20,7 @@
 namespace docwire
 {
 
-class TXTParser : public Parser
+class DllExport TXTParser : public Parser
 {
 	private:
 		struct Implementation;

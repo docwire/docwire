@@ -20,7 +20,7 @@
 namespace docwire
 {
 
-class ZipReader
+class DllExport ZipReader
 {
 	private:
 		struct Implementation;
