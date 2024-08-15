@@ -20,6 +20,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+namespace docwire
+{
+
 #define UNICODE_MAX 0x10FFFFul
 
 static const char *const NAMED_ENTITIES[][2] =
@@ -397,3 +400,5 @@ size_t decode_html_entities_utf8(char *dest, const char *src)
 
 	return (size_t)(to - dest);
 }
+
+} // namespace docwire
