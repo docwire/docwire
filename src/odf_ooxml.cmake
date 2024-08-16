@@ -1,5 +1,4 @@
 add_library(docwire_odf_ooxml SHARED
-    xml_fixer.cpp
     common_xml_document_parser.cpp
     odf_ooxml_parser.cpp
     odfxml_parser.cpp)

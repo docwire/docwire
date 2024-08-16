@@ -1,4 +1,5 @@
 add_library(docwire_xml SHARED
+    xml_fixer.cpp
     xml_stream.cpp
     xml_parser.cpp)
 
