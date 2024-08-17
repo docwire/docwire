@@ -308,15 +308,6 @@ static void parse_dttm_time(int dttm, tm& tm)
 	tm.tm_year = dttm & 0x000001FF;
 }
 
-static std::string format_comment(const std::string& author, const std::string& time, const std::string& text)
-{
-	std::string comment = "\n[[[COMMENT BY " + author + " (" + time + ")]]]\n" + text;
-	if (text.empty() || *text.rbegin() != '\n')
-		comment += "\n";
-	comment += "[[[---]]]\n";
-	return comment;
-}
-
 static void execCommand(DataStream& data_stream, UString& text, int& skip, RTFParserState& state, RTFCommand cmd, long int arg,
 	TextConverter*& converter)
 {
@@ -540,9 +531,14 @@ void RTFParser::parse(const data_source& data) const
 					bool in_annotation = state.groups.top().in_annotation;
 					state.groups.pop();
 					if (in_annotation && !state.groups.top().in_annotation)
-						text += UString(format_comment(state.author_of_next_annotation, date_to_string(state.annotation_time), ustring_to_string(state.annotation_text)).c_str());
+						sendTag(tag::Comment{.author = state.author_of_next_annotation, .time = date_to_string(state.annotation_time), .comment = ustring_to_string(state.annotation_text)});
 					if (skip > state.groups.size() - 1)
 						skip = 0;
+					if (!text.isEmpty())
+					{
+						sendTag(tag::Text({.text = ustring_to_string(text)}));
+						text = "";
+					}
 					break;
 				}
 
@@ -566,7 +562,6 @@ void RTFParser::parse(const data_source& data) const
 		if (converter != NULL)
 			delete converter;
 		converter = NULL;
-		sendTag(tag::Text({.text = ustring_to_string(text)}));
 		sendTag(tag::CloseDocument{});
 	}
 	catch (std::bad_alloc& ba)
