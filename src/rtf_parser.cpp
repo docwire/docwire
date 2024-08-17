@@ -185,7 +185,7 @@ RTFStringCommand rtf_commands[] =
 	{ "atnauthor", RTF_ATNAUTHOR }
 };
 
-enum class destination_type { text, annotation };
+enum class destination_type { text, annotation, fldinst, fldrslt };
 
 struct RTFGroup
 {
@@ -202,6 +202,8 @@ struct RTFParserState
 	std::string author_of_next_annotation;
 	tm annotation_time;
 	UString annotation_text;
+	UString fldinst_text;
+	UString fldrslt_text;
 };
 
 static RTFCommand commandNameToEnum(char* name)
@@ -391,11 +393,14 @@ static void execCommand(DataStream& data_stream, UString& text, int& skip, RTFPa
 			text += UString("\n");
 			break;
 		case RTF_FLDINST:
-			text += UString("<");
+			state.groups.top().destination = destination_type::fldinst;
+			state.fldinst_text = "";
 			skip = 0;
 			break;
 		case RTF_FLDRSLT:
-			text+=UString(">");
+			state.groups.top().destination = destination_type::fldrslt;
+			state.fldrslt_text = "";
+			skip = 0;
 			break;
 		case RTF_PICT:
 		case RTF_FONTTBL:
@@ -517,16 +522,26 @@ void RTFParser::parse(const data_source& data) const
 						std::lock_guard<std::mutex> converter_mutex_lock(converter_mutex);
 						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter);
 					}
-					if (state.groups.top().destination == destination_type::annotation)
-						state.annotation_text += fragment_text;
-					else
-						text += fragment_text;
+					switch (state.groups.top().destination)
+					{
+						case destination_type::annotation:
+							state.annotation_text += fragment_text;
+							break;
+						case destination_type::fldinst:
+							state.fldinst_text += fragment_text;
+							break;
+						case destination_type::fldrslt:
+							state.fldrslt_text += fragment_text;
+							break;
+						default:
+							text += fragment_text;
+					}
 					break;
 				}
 
 				case '{':
 					state.groups.push(state.groups.top());
-					state.groups.top().destination = destination_type::text;
+					//state.groups.top().destination = destination_type::text;
 					break;
 				case '}':
 				{
@@ -534,6 +549,29 @@ void RTFParser::parse(const data_source& data) const
 					state.groups.pop();
 					if (destination == destination_type::annotation && state.groups.top().destination != destination_type::annotation)
 						sendTag(tag::Comment{.author = state.author_of_next_annotation, .time = date_to_string(state.annotation_time), .comment = ustring_to_string(state.annotation_text)});
+					else if (destination == destination_type::fldinst)
+					{
+					}
+					else if (destination == destination_type::fldrslt && state.groups.top().destination != destination_type::fldrslt)
+					{
+						std::string fldinst_text = ustring_to_string(state.fldinst_text);
+						if (fldinst_text.starts_with("HYPERLINK "))
+						{
+							std::string::size_type space_pos = fldinst_text.find(' ', 10);
+							if (space_pos == std::string::npos)
+								space_pos = fldinst_text.size();
+							std::string url = fldinst_text.substr(10, space_pos - 10);
+							if (url.front() == '"')
+								url = url.substr(1);
+							if (url.back() == ' ')
+								url = url.substr(0, url.size() - 1);
+							if (url.back() == '"')
+								url = url.substr(0, url.size() - 1);
+							sendTag(tag::Link{.url = url});
+							sendTag(tag::Text{.text = ustring_to_string(state.fldrslt_text)});
+							sendTag(tag::CloseLink{});
+						}
+					}
 					if (skip > state.groups.size() - 1)
 						skip = 0;
 					if (!text.isEmpty())
@@ -552,10 +590,20 @@ void RTFParser::parse(const data_source& data) const
 							fragment_text = converter->convert((const char*)&ch, sizeof(ch));
 						else
 							fragment_text = UString((UChar)ch);
-						if (state.groups.top().destination == destination_type::annotation)
-							state.annotation_text += fragment_text;
-						else
-							text += fragment_text;
+						switch (state.groups.top().destination)
+						{
+							case destination_type::annotation:
+								state.annotation_text += fragment_text;
+								break;
+							case destination_type::fldinst:
+								state.fldinst_text += fragment_text;
+								break;
+							case destination_type::fldrslt:
+								state.fldrslt_text += fragment_text;
+								break;
+							default:
+								text += fragment_text;
+						}
 					}
 			}
 			if (state.groups.size() == 0)	//it will crash soon if groups.size() returns zero... better to check

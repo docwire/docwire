@@ -1,4 +1,4 @@
-<HYPERLINK "http://www.example.com/" >hyperlink example
+<http://www.example.com/>hyperlink example
 Some text
 List:
 1.	first
@@ -26,10 +26,10 @@ table:
 43
 44
 Table with hyperlinks:
-<HYPERLINK "http://www.first.com/" >first
-<HYPERLINK "http://www.second.com/" >second
-<HYPERLINK "http://www.third.com/" >third
-<HYPERLINK "http://www.fourth.com/" >fourth
+<http://www.first.com/>first
+<http://www.second.com/>second
+<http://www.third.com/>third
+<http://www.fourth.com/>fourth
 Tabela with lists:
 first
 ●	one
@@ -62,5 +62,5 @@ nineth
 3.	three
 4.	four
 
-<HYPERLINK "mailto:email@example.com" >email example
+<mailto:email@example.com>email example
 
