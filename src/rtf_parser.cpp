@@ -185,11 +185,13 @@ RTFStringCommand rtf_commands[] =
 	{ "atnauthor", RTF_ATNAUTHOR }
 };
 
+enum class destination_type { text, annotation };
+
 struct RTFGroup
 {
 	int uc;
 	//int codepage;
-	bool in_annotation;
+	destination_type destination;
 };
 
 struct RTFParserState
@@ -443,7 +445,7 @@ static void execCommand(DataStream& data_stream, UString& text, int& skip, RTFPa
 			break;
 
 		case RTF_ANNOTATION:
-			state.groups.top().in_annotation = true;
+			state.groups.top().destination = destination_type::annotation;
 			state.annotation_text = "";
 			skip = 0;
 			break;
@@ -497,7 +499,7 @@ void RTFParser::parse(const data_source& data) const
 		RTFParserState state;
 		state.groups.push(RTFGroup());
 		state.groups.top().uc = 1;
-		state.groups.top().in_annotation = false;
+		state.groups.top().destination = destination_type::text;
 		state.last_font_ref_num = 0;
 		int skip = 0;
 		while ((ch = stream->getc()) != EOF)
@@ -515,7 +517,7 @@ void RTFParser::parse(const data_source& data) const
 						std::lock_guard<std::mutex> converter_mutex_lock(converter_mutex);
 						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter);
 					}
-					if (state.groups.top().in_annotation)
+					if (state.groups.top().destination == destination_type::annotation)
 						state.annotation_text += fragment_text;
 					else
 						text += fragment_text;
@@ -524,13 +526,13 @@ void RTFParser::parse(const data_source& data) const
 
 				case '{':
 					state.groups.push(state.groups.top());
-					state.groups.top().in_annotation = false;
+					state.groups.top().destination = destination_type::text;
 					break;
 				case '}':
 				{
-					bool in_annotation = state.groups.top().in_annotation;
+					destination_type destination = state.groups.top().destination;
 					state.groups.pop();
-					if (in_annotation && !state.groups.top().in_annotation)
+					if (destination == destination_type::annotation && state.groups.top().destination != destination_type::annotation)
 						sendTag(tag::Comment{.author = state.author_of_next_annotation, .time = date_to_string(state.annotation_time), .comment = ustring_to_string(state.annotation_text)});
 					if (skip > state.groups.size() - 1)
 						skip = 0;
@@ -543,14 +545,14 @@ void RTFParser::parse(const data_source& data) const
 				}
 
 				default:
-					if (skip == 0 && (ch != '\n' || state.groups.top().in_annotation) && ch != '\r')
+					if (skip == 0 && (ch != '\n' || state.groups.top().destination == destination_type::annotation) && ch != '\r')
 					{
 						UString fragment_text;
 						if (converter != NULL)
 							fragment_text = converter->convert((const char*)&ch, sizeof(ch));
 						else
 							fragment_text = UString((UChar)ch);
-						if (state.groups.top().in_annotation)
+						if (state.groups.top().destination == destination_type::annotation)
 							state.annotation_text += fragment_text;
 						else
 							text += fragment_text;
