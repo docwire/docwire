@@ -204,6 +204,27 @@ class ODFOOXMLParser::CommandHandlersSet
 				docwire_log(warning) << "Comment with id " << comment_id << " not found, skipping.";
 		}
 
+		static void onOOXMLHyperlink(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
+								  const ZipReader* zipfile, std::string& text,
+								  bool& children_processed, std::string& level_suffix, bool first_on_level)
+		{
+			docwire_log(debug) << "OOXML_HYPERLINK command.";
+			std::string rid = xml_stream.attribute("id");
+			if (parser.getRelationships().count(rid))
+			{
+				const Relationship& r = parser.getRelationships()[rid];
+				parser.trySendTag(tag::Link{.url = r.m_target});
+				xml_stream.levelDown();
+				std::string link_text = parser.parseXmlData(xml_stream, mode, zipfile);
+				xml_stream.levelUp();
+				children_processed = true;
+				text += formatUrl(r.m_target, link_text);
+				parser.trySendTag(tag::CloseLink{});
+			}
+			else
+				docwire_log(warning) << "Relationship with id " << rid << " not found, skipping.";
+		}
+
 		static void onOOXMLInstrtext(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
 									 const ZipReader* zipfile, std::string& text,
 									 bool& children_processed, std::string& level_suffix, bool first_on_level)
@@ -301,6 +322,46 @@ struct ODFOOXMLParser::ExtendedImplementation
 		return true;
 	}
 
+	bool readOOXMLRelationships(const ZipReader& zipfile, XmlParseMode mode)
+	{
+		std::string content;
+		if (!zipfile.read("word/_rels/document.xml.rels", &content))
+		{
+			docwire_log(error) << "Error reading word/_rels/document.xml.rels";
+			return false;
+		}
+		std::string xml;
+		if (mode == FIX_XML)
+		{
+			XmlFixer xml_fixer;
+			xml = xml_fixer.fix(content);
+		}
+		else
+			xml = content;
+		try
+		{
+			XmlStream xml_stream(xml, m_interf->getXmlOptions());
+			xml_stream.levelDown();
+			while (xml_stream)
+			{
+				if (xml_stream.name() == "Relationship")
+				{
+					std::string id = xml_stream.attribute("Id");
+					std::string target = xml_stream.attribute("Target");
+					CommonXMLDocumentParser::Relationship r(target);
+					m_interf->getRelationships()[id] = r;
+				}
+				xml_stream.next();
+			}
+		}
+		catch (const std::exception& e)
+		{
+			docwire_log(error) << "Error parsing word/_rels/document.xml.rels. Error message: " << e.what();
+			return false;
+		}
+		return true;
+	}
+
 	void readStyles(const ZipReader& zipfile, XmlParseMode mode)
 	{
 		std::string content;
@@ -339,6 +400,7 @@ ODFOOXMLParser::ODFOOXMLParser()
     registerODFOOXMLCommandHandler("sheetData", &CommandHandlersSet::onOOXMLSheetData);
 		registerODFOOXMLCommandHandler("headerFooter", &CommandHandlersSet::onOOXMLHeaderFooter);
 		registerODFOOXMLCommandHandler("commentReference", &CommandHandlersSet::onOOXMLCommentReference);
+		registerODFOOXMLCommandHandler("hyperlink", &CommandHandlersSet::onOOXMLHyperlink);
 		registerODFOOXMLCommandHandler("br", [this](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			onOOXMLBreak(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
@@ -433,6 +495,8 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 	}
 	if (zipfile.exists("word/comments.xml") && !extended_impl->readOOXMLComments(zipfile, mode))
 		docwire_log(error) << "Error parsing comments.";
+	if (zipfile.exists("word/_rels/document.xml.rels") && !extended_impl->readOOXMLRelationships(zipfile, mode))
+		docwire_log(error) << "Error parsing relationships.";
 	if (zipfile.exists("styles.xml"))
 		extended_impl->readStyles(zipfile, mode);
 	string content;

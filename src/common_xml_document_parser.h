@@ -57,6 +57,11 @@ class CommonXMLDocumentParser
 				: m_author(author), m_time(time), m_text(text) {}
 		};
 
+		struct Relationship
+		{
+			std::string m_target;
+		};
+
 		struct SharedString
 		{
 			std::string m_text;
@@ -103,6 +108,9 @@ class CommonXMLDocumentParser
 
 		///gets comments for reading and writing
 		std::map<int, Comment>& getComments() const;
+
+		///gets relationships for reading and writing
+		std::map<std::string, Relationship>& getRelationships() const;
 
 		///gets vector of shared strings for reading and writing
 		std::vector<SharedString>& getSharedStrings() const;

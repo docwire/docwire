@@ -68,6 +68,7 @@ struct CommonXMLDocumentParser::Implementation
 	size_t m_list_depth;
 	std::map<std::string, ListStyleVector> m_list_styles;
 	std::map<int, Comment> m_comments;
+	std::map<std::string, Relationship> m_relationships;
 	std::vector<SharedString> m_shared_strings;
 	std::map<std::string, CommandHandler> m_command_handlers;
 	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
@@ -330,16 +331,16 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			parser.impl->send_tag(tag::Text{.text = std::string(count, ' ')});
 		}
 
-		static void onODFOOXMLUrl(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
+		static void onODFUrl(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
 								  const ZipReader* zipfile, std::string& text,
 								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			docwire_log(debug) << "ODFOOXML_URL command.";
+			docwire_log(debug) << "ODF_URL command.";
 			std::string mlink = xml_stream.attribute("href");
 			parser.impl->send_tag(tag::Link{.url = mlink});
 			xml_stream.levelDown();
 			std::string text_link = parser.parseXmlData(xml_stream, mode, zipfile);
-			text_link = formatUrl(mlink, text_link);
+			text += formatUrl(mlink, text_link);
 			xml_stream.levelUp();
 			children_processed = true;
 			parser.impl->send_tag(tag::CloseLink{});
@@ -736,6 +737,11 @@ std::map<int, CommonXMLDocumentParser::Comment>& CommonXMLDocumentParser::getCom
 	return impl->m_comments;
 }
 
+std::map<std::string, CommonXMLDocumentParser::Relationship>& CommonXMLDocumentParser::getRelationships() const
+{
+	return impl->m_relationships;
+}
+
 std::vector<CommonXMLDocumentParser::SharedString>& CommonXMLDocumentParser::getSharedStrings() const
 {
 	return impl->m_shared_strings;
@@ -768,7 +774,7 @@ CommonXMLDocumentParser::CommonXMLDocumentParser()
 		registerODFOOXMLCommandHandler("tab", &CommandHandlersSet::onODFOOXMLTab);
 		registerODFOOXMLCommandHandler("space", &CommandHandlersSet::onODFOOXMLSpace);
 		registerODFOOXMLCommandHandler("s", &CommandHandlersSet::onODFOOXMLSpace);
-		registerODFOOXMLCommandHandler("a", &CommandHandlersSet::onODFOOXMLUrl);
+		registerODFOOXMLCommandHandler("a", &CommandHandlersSet::onODFUrl);
 		registerODFOOXMLCommandHandler("list-style", &CommandHandlersSet::onODFOOXMLListStyle);
 		registerODFOOXMLCommandHandler("list", &CommandHandlersSet::onODFOOXMLList);
 		registerODFOOXMLCommandHandler("table", &CommandHandlersSet::onODFOOXMLTable);

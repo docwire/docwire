@@ -649,8 +649,8 @@ TEST(Http, Post)
     ASSERT_TRUE(output_val.is_object());
     ASSERT_TRUE(output_val.as_object()["headers"].is_object());
     ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-type"].as_string().c_str(), "application/json");
-    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-length"].as_string().c_str(), "16");
-    ASSERT_STREQ(output_val.as_object()["data"].as_string().c_str(), "hyperlink test\n\n");
+    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-length"].as_string().c_str(), "46");
+    ASSERT_STREQ(output_val.as_object()["data"].as_string().c_str(), "<http://www.silvercoders.com/>hyperlink test\n\n");
 }
 
 TEST(Http, PostForm)
@@ -671,12 +671,12 @@ TEST(Http, PostForm)
     ASSERT_TRUE(output_val.as_object()["headers"].is_object());
     ASSERT_THAT(std::string{output_val.as_object()["headers"].as_object()["content-type"].as_string()},
                 ::testing::StartsWith("multipart/form-data; boundary="));
-    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-length"].as_string().c_str(), "428");
+    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-length"].as_string().c_str(), "458");
     ASSERT_TRUE(output_val.as_object()["form"].is_object());
     ASSERT_STREQ(output_val.as_object()["form"].as_object()["field1"].as_string().c_str(), "value1");
     ASSERT_STREQ(output_val.as_object()["form"].as_object()["field2"].as_string().c_str(), "value2");
     ASSERT_TRUE(output_val.as_object()["files"].is_object());
-    ASSERT_STREQ(output_val.as_object()["files"].as_object()["file.txt"].as_string().c_str(), "data:application/octet-stream;base64,aHlwZXJsaW5rIHRlc3QKCg==");
+    ASSERT_STREQ(output_val.as_object()["files"].as_object()["file.txt"].as_string().c_str(), "data:application/octet-stream;base64,PGh0dHA6Ly93d3cuc2lsdmVyY29kZXJzLmNvbS8+aHlwZXJsaW5rIHRlc3QKCg==");
 }
 
 namespace test_ns
