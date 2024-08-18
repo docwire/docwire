@@ -974,6 +974,32 @@ TEST(PlainTextExporter, eol_sequence_crlf)
     ASSERT_EQ(output_stream.str(), "Line1\r\nLine2\r\n");
 }
 
+TEST(PlainTextExporter, custom_link_formatting)
+{
+    auto exporter = std::make_shared<PlainTextExporter>(
+        eol_sequence{"\n"},
+        link_formatter{
+            .format_opening = [](const tag::Link& link){ return (link.url ? "(" + *link.url + ")" : "") + "["; },
+            .format_closing = [](const tag::CloseLink& link){ return "]"; }
+        });
+    std::ostringstream output_stream{};
+    auto parsing_chain = exporter | output_stream;
+    std::vector<Tag> tags
+    {
+        tag::Document{},
+        tag::Link{.url = "https://docwire.io"},
+        tag::Text{.text = "DocWire SDK home page"},
+        tag::CloseLink{},
+        tag::CloseDocument{}
+    };
+    for (auto tag: tags)
+    {
+        Info info{tag};
+        exporter->process(info);    
+    }
+    ASSERT_EQ(output_stream.str(), "(https://docwire.io)[DocWire SDK home page]\n");
+}
+
 TEST(Input, data_source_with_file_ext)
 {
     std::ostringstream output_stream{};

@@ -19,13 +19,19 @@ namespace docwire
 
 struct eol_sequence { std::string v; };
 
+struct link_formatter
+{
+	std::function<std::string(const tag::Link&)> format_opening;
+	std::function<std::string(const tag::CloseLink&)> format_closing;
+};
+
 /**
  * @brief Exports data to plain text format.
  */
 class DllExport PlainTextExporter: public ChainElement
 {
 public:
-	PlainTextExporter(eol_sequence eol = eol_sequence{"\n"});
+	PlainTextExporter(eol_sequence eol = eol_sequence{"\n"}, link_formatter formatter = default_link_formatter);
 
   void process(Info& info) const override;
 
@@ -35,6 +41,7 @@ public:
 	}
 
 private:
+	static const link_formatter default_link_formatter;
 	struct Implementation;
 	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
 	std::unique_ptr<Implementation, ImplementationDeleter> impl;

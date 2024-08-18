@@ -25,8 +25,10 @@ namespace docwire
 class Cell
 {
 public:
-  Cell(std::string eol_sequence)
-  : writer(eol_sequence)
+  Cell(std::string eol_sequence,
+    std::function<std::string(const tag::Link&)> format_link_opening,
+    std::function<std::string(const tag::CloseLink&)> format_link_closing)
+  : writer(eol_sequence, format_link_opening, format_link_closing)
   {}
 
   void write(const std::string& s)
@@ -187,17 +189,6 @@ struct PlainTextWriter::Implementation
   }
 
   std::shared_ptr<TextElement>
-  write_link(const tag::Link& link)
-  {
-    if (link.url)
-    {
-      return std::make_shared<TextElement>("<" + *link.url + ">");
-    }
-
-    return std::make_shared<TextElement>(m_eol_sequence);
-  }
-
-  std::shared_ptr<TextElement>
   write_image(const tag::Image& image)
   {
     if (image.alt)
@@ -314,8 +305,12 @@ struct PlainTextWriter::Implementation
 		return std::make_shared<TextElement>(m_eol_sequence + footer);
 	}
 
-  Implementation(const std::string& eol_sequence)
-    : m_eol_sequence(eol_sequence)
+  Implementation(const std::string& eol_sequence,
+      std::function<std::string(const tag::Link&)> format_link_opening,
+      std::function<std::string(const tag::CloseLink&)> format_link_closing)
+    : m_eol_sequence(eol_sequence),
+      m_format_link_opening(format_link_opening),
+      m_format_link_closing(format_link_closing)
   {
   }
 
@@ -375,7 +370,7 @@ struct PlainTextWriter::Implementation
       if (std::holds_alternative<tag::Table>(tags[i]))
       {
         std::stringstream ss;
-        PlainTextWriter writer{m_eol_sequence};
+        PlainTextWriter writer{m_eol_sequence, m_format_link_opening, m_format_link_closing};
         int open_table_tags = 1;
         writer.write_to(tags[i], ss);
         do
@@ -402,7 +397,7 @@ struct PlainTextWriter::Implementation
       {
         if (table.empty())
           throw LogicError("Cell inside table without rows.");
-        table.back().push_back(Cell{m_eol_sequence});
+        table.back().push_back(Cell{m_eol_sequence, m_format_link_opening, m_format_link_closing});
       }
       else if (!std::holds_alternative<tag::CloseTableRow>(tags[i]) && !std::holds_alternative<tag::CloseTableCell>(tags[i]))
       {
@@ -457,7 +452,8 @@ struct PlainTextWriter::Implementation
           [this](const tag::CloseSection& tag){return write_new_paragraph(tag::CloseParagraph());},
           [this](const tag::Table& tag){return turn_on_table_mode(tag);},
           [this](const tag::CloseTable& tag){return turn_off_table_mode(tag);},
-          [this](const tag::Link& tag){return write_link(tag);},
+          [this](const tag::Link& tag){return std::make_shared<TextElement>(m_format_link_opening(tag));},
+          [this](const tag::CloseLink& tag){return std::make_shared<TextElement>(m_format_link_closing(tag));},
           [this](const tag::Image& tag){return write_image(tag);},
           [this](const tag::List& tag){return write_list(tag);},
           [this](const tag::CloseList& tag){return write_close_list(tag);},
@@ -480,6 +476,8 @@ struct PlainTextWriter::Implementation
   }
 
   std::string m_eol_sequence;
+  std::function<std::string(const tag::Link&)> m_format_link_opening;
+  std::function<std::string(const tag::CloseLink&)> m_format_link_closing;
   int level { 0 };
   std::vector<Tag> tags;
   std::string list_type;
@@ -494,37 +492,12 @@ struct PlainTextWriter::Implementation
   int m_nested_docs_counter { 0 };
 };
 
-PlainTextWriter::PlainTextWriter(const std::string& eol_sequence)
+PlainTextWriter::PlainTextWriter(const std::string& eol_sequence,
+  std::function<std::string(const tag::Link&)> format_link_opening,
+  std::function<std::string(const tag::CloseLink&)> format_link_closing)
 {
-  impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{eol_sequence}, ImplementationDeleter{}};
-}
-
-PlainTextWriter::PlainTextWriter(const PlainTextWriter &plainTextWriter)
-{
-  impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{plainTextWriter.impl->m_eol_sequence}, ImplementationDeleter{}};
-  impl->level = plainTextWriter.impl->level;
-  impl->tags = plainTextWriter.impl->tags;
-  impl->list_counter = plainTextWriter.impl->list_counter;
-  impl->first_cell_in_row = plainTextWriter.impl->first_cell_in_row;
-  impl->list_mode = plainTextWriter.impl->list_mode;
-  impl->header_mode = plainTextWriter.impl->header_mode;
-  impl->footer_mode = plainTextWriter.impl->footer_mode;
-  impl->table = plainTextWriter.impl->table;
-}
-
-PlainTextWriter&
-PlainTextWriter::operator=(const PlainTextWriter &plainTextWriter)
-{
-  impl->level = plainTextWriter.impl->level;
-  impl->tags = plainTextWriter.impl->tags;
-  impl->list_counter = plainTextWriter.impl->list_counter;
-  impl->first_cell_in_row = plainTextWriter.impl->first_cell_in_row;
-  impl->list_mode = plainTextWriter.impl->list_mode;
-  impl->header_mode = plainTextWriter.impl->header_mode;
-  impl->footer_mode = plainTextWriter.impl->footer_mode;
-  impl->table = plainTextWriter.impl->table;
-
-  return *this;
+  impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{
+    eol_sequence, format_link_opening, format_link_closing}, ImplementationDeleter{}};
 }
 
 void
