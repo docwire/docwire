@@ -12,8 +12,6 @@ if [[ "$DOWNLOAD_VCPKG" != "0" ]]; then
 	fi
 	git clone https://github.com/microsoft/vcpkg.git
 	cd vcpkg
-	git checkout tags/2024.01.12
-	git apply --verbose ../tools/vcpkg_hotfixes/*.patch
 	./bootstrap-vcpkg.sh
 	cd ..
 fi

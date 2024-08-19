@@ -759,8 +759,6 @@ vcpkg integrate install
 ```
 
 ### Installation in preexisting vcpkg instance
-If you are using preexisting vcpkg instance please note that DocWire is currently compatible with vcpkg tagged as version 2024.01.12.
-
 You need to do the configuration, installation and integration manually. Please follow recommendations in vcpkg documentation and check content of build.sh or build.ps1 script for details.
 
 Required overlays are located in "ports" subdirectory.

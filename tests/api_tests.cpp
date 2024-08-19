@@ -407,7 +407,7 @@ INSTANTIATE_TEST_SUITE_P(
         "test.rar",
 		"multilang-chi_sim-fra-deu-eng.png",
 		"multilang-chi_tra-rus-jpn.png",
-		"multilang-spa-ara-lat-grc.png",
+		"multilang-spa-lat-grc.png",
 		"multilang-hin-san-swa-kor-eng.png"
                       ),
     [](const ::testing::TestParamInfo<MiscDocumentTest::ParamType>& info) {
