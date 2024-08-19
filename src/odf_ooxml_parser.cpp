@@ -348,7 +348,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 				{
 					std::string id = xml_stream.attribute("Id");
 					std::string target = xml_stream.attribute("Target");
-					CommonXMLDocumentParser::Relationship r(target);
+					CommonXMLDocumentParser::Relationship r{target};
 					m_interf->getRelationships()[id] = r;
 				}
 				xml_stream.next();
