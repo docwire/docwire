@@ -64,19 +64,6 @@ else
 
 $VCPKG_TRIPLET="x64-windows"
 
-if ($Env:SANITIZER -eq "address")
-{
-	$FEATURES = "[tests,address-sanitizer]"
-}
-elseif ($Env:SANITIZER -eq "thread")
-{
-	$FEATURES = "[tests,thread-sanitizer]"
-}
-else
-{
-	$FEATURES = "[tests]"
-}
-
 if ($env:DEBUG -eq "1")
 {
     $env:DOCWIRE_LOG_VERBOSITY = "debug"
@@ -94,12 +81,12 @@ if ($Env:OPENAI_API_KEY -ne $null -and $env:OPENAI_API_KEY -ne "") {
     Write-Host "DEBUG: OPENAI_API_KEY does not exist."
 }
 Invoke-ExternalCommand {
-    vcpkg\vcpkg --overlay-ports=ports install ${VCPKG_DEBUG_OPTION} docwire${FEATURES}:${VCPKG_TRIPLET}
+    vcpkg\vcpkg --overlay-ports=ports install ${VCPKG_DEBUG_OPTION}${env:FEATURES}:${VCPKG_TRIPLET}
 }
 
-if ($Env:SANITIZER -ne $null -and $env:SANITIZER -ne "")
+if ($env:FEATURES.Contains("asan") -or $env:FEATURES.Contains("tsan") -or $env:FEATURES.Contains("memcheck") -or $env:FEATURES.Contains("helgrind") -or $env:FEATURES.Contains("callgrind"))
 {
-    Write-Host "Sanitizer $Env:SANITIZER is enabled. Exiting without building archive and running CLI tests."
+    Write-Host "Sanitizer is enabled. Exiting without building archive and running CLI tests."
     Exit 0
 }
 

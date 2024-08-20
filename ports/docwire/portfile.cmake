@@ -10,8 +10,8 @@ endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 	FEATURES
-		address-sanitizer ADDRESS_SANITIZER
-		thread-sanitizer THREAD_SANITIZER
+		asan ADDRESS_SANITIZER
+		tsan THREAD_SANITIZER
 )
 
 vcpkg_cmake_configure(

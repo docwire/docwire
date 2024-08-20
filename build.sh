@@ -46,20 +46,6 @@ else
 	VCPKG_TRIPLET=x64-linux-dynamic
 fi
 
-if [[ "$SANITIZER" == "address" ]]; then
-	FEATURES="[tests,address-sanitizer]"
-elif [[ "$SANITIZER" == "thread" ]]; then
-	FEATURES="[tests,thread-sanitizer]"
-elif [[ "$SANITIZER" == "memcheck" ]]; then
-	FEATURES="[tests,memcheck]"
-elif [[ "$SANITIZER" == "helgrind" ]]; then
-	FEATURES="[tests,helgrind]"
-elif [[ "$SANITIZER" == "callgrind" ]]; then
-	FEATURES="[tests,callgrind]"
-else
-	FEATURES="[tests]"
-fi
-
 if [[ "$DEBUG" == "1" ]]; then
 	export DOCWIRE_LOG_VERBOSITY="debug"
 	VCPKG_DEBUG_OPTION="--debug"
