@@ -60,7 +60,7 @@ jobs:
           - os: macos-14
             triplet: x64-osx-dynamic
           - os: windows-2022
-            sanitizer: address # probably temporarily: https://github.com/actions/runner-images/issues/8891
+            sanitizer: asan # probably temporarily: https://github.com/actions/runner-images/issues/8891
         include:
           - os: ubuntu-24.04
             triplet: x64-linux-dynamic
@@ -101,8 +101,8 @@ jobs:
           BINARY_CACHE_GITHUB_OWNERS: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner != github.event.pull_request.base.repo.owner) && format('{0} {1}', github.event.pull_request.base.repo.owner.login, github.event.pull_request.head.repo.owner.login) || github.repository_owner }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           FEATURES: ${{ matrix.sanitizer != '' && format('[tests,{0}]', matrix.sanitizer) || '[tests]' }}
-          ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
-          TSAN_OPTIONS: ${{ matrix.sanitizer == 'thread' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
+          ASAN_OPTIONS: ${{ matrix.sanitizer == 'asan' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
+          TSAN_OPTIONS: ${{ matrix.sanitizer == 'tsan' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
           DEBUG: ${{ runner.debug }}
       - name: "Upload binaries"
         uses: actions/upload-artifact@v4
