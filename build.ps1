@@ -81,7 +81,7 @@ if ($Env:OPENAI_API_KEY -ne $null -and $env:OPENAI_API_KEY -ne "") {
     Write-Host "DEBUG: OPENAI_API_KEY does not exist."
 }
 Invoke-ExternalCommand {
-    vcpkg\vcpkg --overlay-ports=ports install ${VCPKG_DEBUG_OPTION}${env:FEATURES}:${VCPKG_TRIPLET}
+    vcpkg\vcpkg --overlay-ports=ports install ${VCPKG_DEBUG_OPTION} docwire${env:FEATURES}:${VCPKG_TRIPLET}
 }
 
 if ($env:FEATURES.Contains("asan") -or $env:FEATURES.Contains("tsan") -or $env:FEATURES.Contains("memcheck") -or $env:FEATURES.Contains("helgrind") -or $env:FEATURES.Contains("callgrind"))
