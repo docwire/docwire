@@ -41,7 +41,7 @@ public:
 	}
 
 private:
-	static const link_formatter default_link_formatter;
+	static DllExport const link_formatter default_link_formatter;
 	struct Implementation;
 	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
 	std::unique_ptr<Implementation, ImplementationDeleter> impl;
