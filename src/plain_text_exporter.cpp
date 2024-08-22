@@ -18,7 +18,7 @@
 namespace docwire
 {
 
-const link_formatter PlainTextExporter::default_link_formatter =
+const link_formatter default_link_formatter =
 {
 	.format_opening = [](const tag::Link& link)
 	{
