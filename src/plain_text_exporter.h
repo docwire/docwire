@@ -25,8 +25,6 @@ struct link_formatter
 	std::function<std::string(const tag::CloseLink&)> format_closing;
 };
 
-extern DllExport const link_formatter default_link_formatter;
-
 /**
  * @brief Exports data to plain text format.
  */
@@ -43,6 +41,18 @@ public:
 	}
 
 private:
+	inline static const link_formatter default_link_formatter =
+	{
+		.format_opening = [](const tag::Link& link)
+		{
+			return link.url ? "<" + *link.url + ">" : "";
+		},
+		.format_closing = [](const tag::CloseLink&)
+		{
+			return "";
+		}
+	};
+
 	struct Implementation;
 	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
 	std::unique_ptr<Implementation, ImplementationDeleter> impl;

@@ -18,18 +18,6 @@
 namespace docwire
 {
 
-const link_formatter default_link_formatter =
-{
-	.format_opening = [](const tag::Link& link)
-	{
-		return link.url ? "<" + *link.url + ">" : "";
-	},
-	.format_closing = [](const tag::CloseLink&)
-	{
-		return "";
-	}
-};
-
 struct PlainTextExporter::Implementation
 {
 	Implementation(eol_sequence eol_sequence, link_formatter link_formatter)
