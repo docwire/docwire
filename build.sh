@@ -55,6 +55,11 @@ date > ./ports/docwire/.disable_binary_cache
 SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS=SOURCE_PATH ./vcpkg/vcpkg --overlay-ports=./ports remove docwire:$VCPKG_TRIPLET
 SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS="SOURCE_PATH;DOCWIRE_LOG_VERBOSITY;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS" ./vcpkg/vcpkg --overlay-ports=./ports install $VCPKG_DEBUG_OPTION docwire$FEATURES:$VCPKG_TRIPLET
 
+if [[ "$FEATURES" == *asan* || "$FEATURES" == *tsan* || "$FEATURES" == *memcheck* || "$FEATURES" == *helgrind* || "$FEATURES" == *callgrind* ]]; then
+	echo "Sanitizer is enabled. Exiting without building archive and running CLI tests."
+	exit 0
+fi
+
 if [[ "$EXPORT_VCPKG" != "0" ]]; then
 	version=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/VERSION`
 	./vcpkg/vcpkg --overlay-ports=./ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
