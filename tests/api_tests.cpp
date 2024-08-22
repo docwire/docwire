@@ -9,6 +9,7 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include "base64.h"
 #include "office_formats_parser_provider.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
@@ -1266,4 +1267,12 @@ TEST(TXTParser, paragraphs)
         VariantWith<tag::BreakLine>(_),
         VariantWith<tag::CloseDocument>(_)
     ));    
+}
+
+TEST(base64, encode)
+{
+    const std::string input_str { "test" };
+    const std::span<const std::byte> input_data { reinterpret_cast<const std::byte*>(input_str.c_str()), input_str.size() };
+    std::string encoded = base64::encode(input_data);
+    ASSERT_EQ(encoded, "dGVzdA==");
 }

@@ -113,7 +113,7 @@
 			"name": "rapidfuzz"
 		},
 		{
-			"name": "botan"
+			"name": "aklomp-base64"
 		}
 	]
 }

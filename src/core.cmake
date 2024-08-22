@@ -56,17 +56,15 @@ find_library(unzip unzip REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(LibArchive REQUIRED)
 find_package(unofficial-curlpp CONFIG REQUIRED)
-find_library(botan_lib botan-3 REQUIRED)
 target_link_libraries(docwire_core PRIVATE
     ${wv2} Boost::filesystem Boost::system Boost::json magic_enum::magic_enum ${unzip}
-    ZLIB::ZLIB LibArchive::LibArchive unofficial::curlpp::curlpp ${botan_lib})
+    ZLIB::ZLIB LibArchive::LibArchive unofficial::curlpp::curlpp docwire_base64)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(docwire_core PRIVATE dl)
 endif()
 
 find_path(boost_signals2_inc boost/signals2.hpp HINT ${Boost_INCLUDE_DIRS} REQUIRED)
-find_path(botan_incdir NAMES botan/base64.h)
-target_include_directories(docwire_core PRIVATE ${Boost_INCLUDE_DIRS} ${botan_incdir})
+target_include_directories(docwire_core PRIVATE ${Boost_INCLUDE_DIRS})
 target_include_directories(docwire_core PUBLIC ../) # for version.h
 target_include_directories(docwire_core PUBLIC .) # for other headers
 

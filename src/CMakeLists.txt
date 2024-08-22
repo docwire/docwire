@@ -14,6 +14,7 @@ file(GENERATE OUTPUT ${EMPTY_SOURCE} CONTENT "
 ")
 
 include(core.cmake)
+include(base64.cmake)
 include(odf_ooxml.cmake)
 include(ole_office_formats.cmake)
 include(html.cmake)

@@ -1,7 +1,7 @@
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(api_tests api_tests.cpp)
-target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_fuzzy_match GTest::gtest_main)
+target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_fuzzy_match docwire_base64 GTest::gtest_main)
 
 find_package(Boost REQUIRED COMPONENTS json)
 target_link_libraries(api_tests PRIVATE Boost::json)
