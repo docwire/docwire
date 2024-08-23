@@ -697,12 +697,16 @@ By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, use
 ### Supported Platforms
  DocWire SDK is compatible with a variety of operating systems. Windows, Linux, and macOS are supported officially (Supported triplets are: x64-linux-dynamic, x64-windows, x64-osx-dynamic and arm64-osx-dynamic). but in theory it can be run on other operating systems as well. To ensure compatibility our continuous integration tests run on the following GitHub runners:
 
+- [ubuntu-24.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)
 - [ubuntu-22.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
 - [ubuntu-20.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2004-Readme.md) with gcc upgraded to version 11
 - [windows-2022](https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md)
 - [windows-2019](https://github.com/actions/runner-images/blob/main/images/windows/Windows2019-Readme.md)
+- [macos-14](https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md)
+- [macos-13](https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md)
 - [macos-12](https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md)
-- [flyci-macos-large-latest-m1](https://www.flyci.net/docs/githubrunners/hardware)
+
+As the project evolves, we will continue to expand the list of officially supported platforms to ensure broad compatibility and meet the needs of our users.
 
 ### Required Tools
 Development tools required to install DocWire SDK are similar to those in the [vcpkg "getting started" documentation.](https://github.com/microsoft/vcpkg?tab=readme-ov-file#getting-started)
