@@ -709,11 +709,14 @@ By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, use
 As the project evolves, we will continue to expand the list of officially supported platforms to ensure broad compatibility and meet the needs of our users.
 
 ### Required Tools
-Development tools required to install DocWire SDK are similar to those in the [vcpkg "getting started" documentation.](https://github.com/microsoft/vcpkg?tab=readme-ov-file#getting-started)
+DocWire SDK installation process is based on the VCPKG package manager so all requirements of vcpkg apply:
+- ["Prerequisites" on Microsoft Learn](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started#prerequisites)
+
 In addition to vcpkg requirements, DocWire SDK requires the following tools:
 - GCC 11 or higher on Linux because of C++20 support
 - MSVC 2019 or higher on Windows because of C++20 support
-- Doxygen is required for documentation generation
+- Doxygen with Graphviz is required for documentation generation: ["Installation" on Doxygen website](https://www.doxygen.nl/manual/install.html)
+- Autoconf, Autogen, Automake, Autoconf-archive, Autopoint are required for building some of 3rdparty dependencies on Linux and MacOS (we are working to eliminate this)
 
 ### Installation via build.sh or build.ps1 scripts
 The current preferred installation method is via build.sh or build.ps1 scripts. The script will automatically install vcpkg, select correct triplet, add required overlays and install DocWire SDK with all dependencies from sources.
