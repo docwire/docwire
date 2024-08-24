@@ -741,6 +741,8 @@ cd docwire
 ./build.ps1
 ```
 
+**Important note**: Sometimes installation of dependencies may fail due to various reasons. Some of those reasons are not related to the DocWire SDK itself, but rather to the vcpkg package manager or the specific dependencies being installed. For example, errors may occur while downloading sources or if there are unexpected changes in vcpkg ports or upstream websites. In such cases, it is recommended to [report the issue to the vcpkg](https://github.com/microsoft/vcpkg/issues) or just try running the installation script again. In rare cases, some dependencies may require manual intervention or additional configuration before they can be successfully installed. If you encounter any issues during the installation process, please don't hesitate to reach out to the [DocWire SDK community for support](https://github.com/docwire/docwire/issues).
+
 After building process is completed, binaries will be exported using "vcpkg export" command and available in docwire-`<version>` directory. This directory can be integrated with your development environment.
 
 3. **Integrate with your project or development environment**
