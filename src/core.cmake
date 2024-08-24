@@ -38,6 +38,7 @@ add_library(docwire_core SHARED
     meta_data_writer.cpp
     chain_element.cpp
     parsing_chain.cpp
+    resource_path.cpp
     zip_reader.cpp
     input.cpp)
 

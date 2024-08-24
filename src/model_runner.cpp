@@ -12,13 +12,13 @@
 #include "model_runner.h"
 
 #include "exception.h"
-#include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/json.hpp>
 #include <ctranslate2/translator.h>
 #include "log.h"
 #include "misc.h"
 #include <onmt/Tokenizer.h>
 #include <optional>
+#include "resource_path.h"
 
 namespace docwire::local_ai
 {
@@ -87,31 +87,6 @@ namespace
 	    tokenizer_config m_tokenizer_config;
     };
 
-inline std::filesystem::path this_line_location()
-{
-    return boost::dll::this_line_location().lexically_normal().string();
-}
-
-inline std::filesystem::path resource_path(const std::filesystem::path& resource_rel_path)
-{
-    auto path = this_line_location().parent_path();
-    if (path.parent_path().filename() == "debug") {
-        // If we are in a vcpkg debug build, adjust the path to access resources in the release directory
-        path = path.parent_path().parent_path() / "share" / resource_rel_path;
-    } else {
-        // For release builds, the resources are directly in the ../share directory
-        path = path.parent_path() / "share" / resource_rel_path;
-    }
-    if (std::filesystem::exists(path.string() + ".path"))
-    {
-        // Read path from path file
-        std::ifstream ifs(path.string() + ".path");
-        std::string redirected_path;
-        std::getline(ifs, redirected_path);
-        path = redirected_path;
-    }
-    return path;
-}
 } // anonymous namespace
 
 struct model_runner::implementation
