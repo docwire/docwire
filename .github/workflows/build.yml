@@ -106,7 +106,7 @@ jobs:
           DEBUG: ${{ runner.debug }}
       - name: "Test DocWire CLI"
         if: matrix.sanitizer == ''
-        working-directory: vcpkg/buildtrees/docwire/${{ matrix.triplet }}-rels
+        working-directory: vcpkg/buildtrees/docwire/${{ matrix.triplet }}-rel
         run: ctest --label-regex is_cli_test
       - name: "Upload logs"
         uses: actions/upload-artifact@v4
