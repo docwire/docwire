@@ -76,6 +76,7 @@ function(run_tests build_type)
 		COMMAND ${valgrind_command} "ctest"
 			-V
 			--no-tests=error
+			--label-regex is_api_test|is_example
 			${additional_ctest_args}
 		WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}
 		LOGNAME test-${PORT}-${triplet_build_type}

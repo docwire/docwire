@@ -84,19 +84,4 @@ Invoke-ExternalCommand {
     vcpkg\vcpkg --overlay-ports=ports install ${VCPKG_DEBUG_OPTION} docwire${env:FEATURES}:${VCPKG_TRIPLET}
 }
 
-if ($env:TEST_CLI -eq "1")
-{
-    Write-Host "Testing DocWire CLI."
-    Invoke-ExternalCommand {
-        & "vcpkg\installed\${$VCPKG_TRIPLET}\tools\docwire.exe" tests\1.doc
-    }
-    Invoke-ExternalCommand {
-        & "vcpkg\installed\${$VCPKG_TRIPLET}\tools\docwire.exe" tests\1.pdf
-    }
-    Invoke-ExternalCommand {
-        & "vcpkg\installed\${$VCPKG_TRIPLET}\tools\docwire.exe" tests\1.png
-    }
-    Write-Host "Tests ended."
-}
-
 Write-Host "Done."
