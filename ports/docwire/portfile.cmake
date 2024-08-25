@@ -29,25 +29,17 @@ else()
 	set(script_suffix .sh)
 endif()
 
-file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/tools)
-file(RENAME
-	"${CURRENT_PACKAGES_DIR}/bin/docwire${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
-	"${CURRENT_PACKAGES_DIR}/tools/docwire${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
+vcpkg_copy_tools(
+	TOOL_NAMES docwire
+	SEARCH_DIR ${CURRENT_PACKAGES_DIR}/bin
+	DESTINATION ${CURRENT_PACKAGES_DIR}/tools
 )
-if (EXISTS "${CURRENT_PACKAGES_DIR}/bin/docwire${script_suffix}") # Removed in new release
-	file(RENAME "${CURRENT_PACKAGES_DIR}/bin/docwire${script_suffix}" "${CURRENT_PACKAGES_DIR}/tools/docwire${script_suffix}")
-endif()
-file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/tools)
-file(RENAME
-	"${CURRENT_PACKAGES_DIR}/debug/bin/docwire${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
-	"${CURRENT_PACKAGES_DIR}/debug/tools/docwire${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
+vcpkg_copy_tools(
+	TOOL_NAMES docwire
+	SEARCH_DIR ${CURRENT_PACKAGES_DIR}/debug/bin
+	DESTINATION ${CURRENT_PACKAGES_DIR}/debug/tools
 )
-if (EXISTS "${CURRENT_PACKAGES_DIR}/debug/bin/docwire${script_suffix}") # Removed in new release
-	file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/docwire${script_suffix}" "${CURRENT_PACKAGES_DIR}/debug/tools/docwire${script_suffix}")
-endif()
-if(VCPKG_LIBRARY_LINKAGE STREQUAL "static" OR NOT VCPKG_TARGET_IS_WINDOWS)
-	file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin" "${CURRENT_PACKAGES_DIR}/debug/bin")
-endif()
+vcpkg_clean_executables_in_bin(FILE_NAMES docwire)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
 vcpkg_install_copyright(FILE_LIST ${SOURCE_PATH}/LICENSE ${SOURCE_PATH}/doc/COPYING.GPLv2)
