@@ -87,15 +87,14 @@ Invoke-ExternalCommand {
 if ($env:TEST_CLI -eq "1")
 {
     Write-Host "Testing DocWire CLI."
-    $docwireCLIPath = "vcpkg\installed\$($VCPKG_TRIPLET)\tools\docwire"
     Invoke-ExternalCommand {
-        $docwireCLIPath + " tests\1.doc"
+        "vcpkg\installed\$($VCPKG_TRIPLET)\tools\docwire" tests\1.doc
     }
     Invoke-ExternalCommand {
-        $docwireCLIPath + " tests\1.pdf"
+        "vcpkg\installed\$($VCPKG_TRIPLET)\tools\docwire" tests\1.pdf
     }
     Invoke-ExternalCommand {
-        $docwireCLIPath + " tests\1.png"
+        "vcpkg\installed\$($VCPKG_TRIPLET)\tools\docwire" tests\1.png
     }
     Write-Host "Tests ended."
 }
