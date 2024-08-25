@@ -101,7 +101,7 @@ jobs:
           BINARY_CACHE_GITHUB_OWNERS: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner != github.event.pull_request.base.repo.owner) && format('{0} {1}', github.event.pull_request.base.repo.owner.login, github.event.pull_request.head.repo.owner.login) || github.repository_owner }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           FEATURES: ${{ matrix.sanitizer != '' && format('[tests,{0}]', matrix.sanitizer) || '[tests]' }}
-          TEST_CLI: ${{ matrix.sanitizer != '' && '1' || '0' }}
+          TEST_CLI: ${{ matrix.sanitizer != '' && '0' || '1' }}
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'asan' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
           TSAN_OPTIONS: ${{ matrix.sanitizer == 'tsan' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
           DEBUG: ${{ runner.debug }}
