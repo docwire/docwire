@@ -1,3 +1,43 @@
+## Version 2024.08.25
+
+The changes encompass updates across various components in the project, including parsing improvements, modifications to build configurations, and adjustments to testing mechanisms. Key revisions include  the transition of sanitizer options, simplifications in build scripts, and improvements in resource handling.
+
+> 🐰 In fields of code, a rabbit hops,  
+> With changes fresh, it never stops.  
+> From sanitizers bright to scripts that gleam,  
+> Oh joyful leaps, let coding dream!  
+> With hyperlinks in documents it now plays,  
+> And encodes binary data in clever ways.  
+> Improved tool management, with latest versions in tow,  
+> It's a codebase that's efficient, and in the flow!  
+> Each build a dance, each test a cheer,  
+> In tech we trust, with love sincere! 🌼
+
+- **New Features**
+	- Enhanced installation instructions for the DocWire SDK, emphasizing vcpkg integration.
+	- Added base64 encoding capabilities to public API to allow for encoding of binary data.
+	- Introduced support for additional document formats (specialized XML parser) and parsing strategies.
+	- Implemented a mechanism for handling hyperlinks in RTF and OOXML documents.
+
+- **Documentation**
+	- Updated README with clearer integration and setup instructions, including platform support.
+	- Refactored comments and code snippets to reflect recent changes in the API.
+
+- **Refactor**
+	- Streamlined multiple build scripts and configurations for improved maintainability.
+	- Improved tool management and resource handling.
+	- Replaced several class definitions with type aliases to enhance modularity.
+	- Upgraded 3rdparty components to the latest available versions
+	- Removed vcpkg pinning to single version, now using the "latest" version on every build.
+	- Splitted SDK into more libraries, improving modularity.
+
+- **Chores**
+	- Cleaned up unnecessary conditional logic in build scripts, simplifying the setup process.
+	- Removed obsolete function declarations to enhance code clarity and organization.
+
+- **Style**
+	- Refined workflow configurations to improve clarity and organization of environment settings.
+
 ## Version 2024.07.31
 
 Recent enhancements to the DocWire SDK significantly boost its natural language processing capabilities by integrating local AI models. Developers can now perform tasks like text classification and sentiment analysis directly within C++ applications, improving performance and safeguarding data privacy. Additionally, refined dependency management and build configurations provide a comprehensive toolkit for developing AI-driven applications. Overall, the updates significantly enhance the SDK's utility for developers working on NLP and AI projects, providing them with powerful tools to process and analyze data effectively while maintaining control over their data privacy.
