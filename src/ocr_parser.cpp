@@ -19,7 +19,6 @@
 #include <tesseract/baseapi.h>
 #include <tesseract/ocrclass.h>
 
-#include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/signals2.hpp>
 
@@ -31,9 +30,9 @@
 #include "exception.h"
 #include "log.h"
 #include "lru_memory_cache.h"
-#include "misc.h"
 #include <mutex>
 #include <numeric>
+#include "resource_path.h"
 
 namespace docwire
 {
@@ -193,7 +192,7 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     }
     else
     {
-      impl->m_tessdata_prefix = locate_resource("tessdata-fast").string();
+      impl->m_tessdata_prefix = resource_path("tessdata-fast").string();
     }
 
     std::string langs = std::accumulate(languages.begin(), languages.end(), std::string{},

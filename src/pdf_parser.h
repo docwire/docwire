@@ -23,7 +23,7 @@ namespace docwire
 
 class Metadata;
 
-class PDFParser : public Parser
+class DllExport PDFParser : public Parser
 {
 	private:
 		struct Implementation;

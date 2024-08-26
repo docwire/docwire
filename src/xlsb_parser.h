@@ -22,7 +22,7 @@ namespace docwire
 
 class ZipReader;
 
-class XLSBParser : public Parser
+class DllExport XLSBParser : public Parser
 {
 	private:
 		struct Implementation;

@@ -1,4 +1,23 @@
-<?xml version = "1.0">
-<test>
-	<data>Hello World!</data>
-</test>
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+	<style>
+		<definition id="heading1">
+			<fontsize>24</fontsize>
+			<fontweight>bold</fontweight>
+			<textalign>center</textalign>
+		</definition>
+		<definition id="normal">
+			<fontsize>14</fontsize>
+			<fontweight>normal</fontweight>
+			<textalign>left</textalign>
+		</definition>
+	</style>
+	<content>
+		<paragraph style="heading1">
+			This is a Heading
+		</paragraph>
+		<paragraph style="normal">
+			This is a standard paragraph. It includes detailed information and can span multiple lines or pages, depending on content length.
+		</paragraph>
+	</content>
+</document>

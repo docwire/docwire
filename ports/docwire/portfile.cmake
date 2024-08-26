@@ -10,8 +10,8 @@ endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 	FEATURES
-		address-sanitizer ADDRESS_SANITIZER
-		thread-sanitizer THREAD_SANITIZER
+		asan ADDRESS_SANITIZER
+		tsan THREAD_SANITIZER
 )
 
 vcpkg_cmake_configure(
@@ -29,25 +29,17 @@ else()
 	set(script_suffix .sh)
 endif()
 
-file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/tools)
-file(RENAME
-	"${CURRENT_PACKAGES_DIR}/bin/docwire${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
-	"${CURRENT_PACKAGES_DIR}/tools/docwire${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
+vcpkg_copy_tools(
+	TOOL_NAMES docwire
+	SEARCH_DIR ${CURRENT_PACKAGES_DIR}/bin
+	DESTINATION ${CURRENT_PACKAGES_DIR}/tools
 )
-if (EXISTS "${CURRENT_PACKAGES_DIR}/bin/docwire${script_suffix}") # Removed in new release
-	file(RENAME "${CURRENT_PACKAGES_DIR}/bin/docwire${script_suffix}" "${CURRENT_PACKAGES_DIR}/tools/docwire${script_suffix}")
-endif()
-file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/tools)
-file(RENAME
-	"${CURRENT_PACKAGES_DIR}/debug/bin/docwire${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
-	"${CURRENT_PACKAGES_DIR}/debug/tools/docwire${VCPKG_TARGET_EXECUTABLE_SUFFIX}"
+vcpkg_copy_tools(
+	TOOL_NAMES docwire
+	SEARCH_DIR ${CURRENT_PACKAGES_DIR}/debug/bin
+	DESTINATION ${CURRENT_PACKAGES_DIR}/debug/tools
 )
-if (EXISTS "${CURRENT_PACKAGES_DIR}/debug/bin/docwire${script_suffix}") # Removed in new release
-	file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/docwire${script_suffix}" "${CURRENT_PACKAGES_DIR}/debug/tools/docwire${script_suffix}")
-endif()
-if(VCPKG_LIBRARY_LINKAGE STREQUAL "static" OR NOT VCPKG_TARGET_IS_WINDOWS)
-	file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin" "${CURRENT_PACKAGES_DIR}/debug/bin")
-endif()
+vcpkg_clean_executables_in_bin(FILE_NAMES docwire)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
 vcpkg_install_copyright(FILE_LIST ${SOURCE_PATH}/LICENSE ${SOURCE_PATH}/doc/COPYING.GPLv2)
@@ -57,6 +49,7 @@ function(run_tests build_type)
 	message(STATUS "Testing ${triplet_build_type}")
 
 	file(WRITE "${CURRENT_BUILDTREES_DIR}/${triplet_build_type}/share/flan-t5-large-ct2-int8.path" "${CURRENT_INSTALLED_DIR}/share/flan-t5-large-ct2-int8")
+	file(WRITE "${CURRENT_BUILDTREES_DIR}/${triplet_build_type}/share/tessdata-fast.path" "${CURRENT_INSTALLED_DIR}/share/tessdata-fast")
 
 	set(valgrind_command "")
 	if(MEMCHECK_ENABLED)
@@ -83,6 +76,7 @@ function(run_tests build_type)
 		COMMAND ${valgrind_command} "ctest"
 			-V
 			--no-tests=error
+			--label-regex is_api_test|is_example
 			${additional_ctest_args}
 		WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}
 		LOGNAME test-${PORT}-${triplet_build_type}
@@ -91,6 +85,7 @@ endfunction()
 
 function(run_all_tests)
 	file(WRITE "${CURRENT_PACKAGES_DIR}/share/flan-t5-large-ct2-int8.path" "${CURRENT_INSTALLED_DIR}/share/flan-t5-large-ct2-int8")
+	file(WRITE "${CURRENT_PACKAGES_DIR}/share/tessdata-fast.path" "${CURRENT_INSTALLED_DIR}/share/tessdata-fast")
 	if(NOT DEFINED VCPKG_BUILD_TYPE OR VCPKG_BUILD_TYPE STREQUAL debug)
 		if(VCPKG_TARGET_IS_LINUX)
 			set(BACKUP_LD_LIBRARY_PATH $ENV{LD_LIBRARY_PATH})
@@ -142,6 +137,7 @@ function(run_all_tests)
 		endif()
 	endif()
 	file(REMOVE "${CURRENT_PACKAGES_DIR}/share/flan-t5-large-ct2-int8.path")
+	file(REMOVE "${CURRENT_PACKAGES_DIR}/share/testdata-fast.path")
 endfunction()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS_NO_CMAKE

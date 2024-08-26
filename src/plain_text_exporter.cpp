@@ -20,19 +20,18 @@ namespace docwire
 
 struct PlainTextExporter::Implementation
 {
+	Implementation(eol_sequence eol_sequence, link_formatter link_formatter)
+		: m_writer{eol_sequence.v, link_formatter.format_opening, link_formatter.format_closing}
+	{}
+
 	std::shared_ptr<std::stringstream> m_stream;
 	PlainTextWriter m_writer;
 	int m_nested_docs_level { 0 };
 };
 
-PlainTextExporter::PlainTextExporter()
-	: impl(new Implementation)
+PlainTextExporter::PlainTextExporter(eol_sequence eol_sequence, link_formatter link_formatter)
+	: impl{new Implementation{eol_sequence, link_formatter}}
 {}
-
-PlainTextExporter::PlainTextExporter(const PlainTextExporter& other)
-	: impl(new Implementation(), ImplementationDeleter())
-{
-}
 
 void PlainTextExporter::process(Info &info) const
 {

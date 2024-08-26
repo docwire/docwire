@@ -22,7 +22,7 @@ namespace docwire
 
 class ThreadSafeOLEStorage;
 
-class XLSParser : public Parser
+class DllExport XLSParser : public Parser
 {
 	private:
 		struct Implementation;

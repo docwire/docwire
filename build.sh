@@ -12,8 +12,6 @@ if [[ "$DOWNLOAD_VCPKG" != "0" ]]; then
 	fi
 	git clone https://github.com/microsoft/vcpkg.git
 	cd vcpkg
-	git checkout tags/2024.01.12
-	git apply --verbose ../tools/vcpkg_hotfixes/*.patch
 	./bootstrap-vcpkg.sh
 	cd ..
 fi
@@ -48,20 +46,6 @@ else
 	VCPKG_TRIPLET=x64-linux-dynamic
 fi
 
-if [[ "$SANITIZER" == "address" ]]; then
-	FEATURES="[tests,address-sanitizer]"
-elif [[ "$SANITIZER" == "thread" ]]; then
-	FEATURES="[tests,thread-sanitizer]"
-elif [[ "$SANITIZER" == "memcheck" ]]; then
-	FEATURES="[tests,memcheck]"
-elif [[ "$SANITIZER" == "helgrind" ]]; then
-	FEATURES="[tests,helgrind]"
-elif [[ "$SANITIZER" == "callgrind" ]]; then
-	FEATURES="[tests,callgrind]"
-else
-	FEATURES="[tests]"
-fi
-
 if [[ "$DEBUG" == "1" ]]; then
 	export DOCWIRE_LOG_VERBOSITY="debug"
 	VCPKG_DEBUG_OPTION="--debug"
@@ -70,29 +54,3 @@ fi
 date > ./ports/docwire/.disable_binary_cache
 SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS=SOURCE_PATH ./vcpkg/vcpkg --overlay-ports=./ports remove docwire:$VCPKG_TRIPLET
 SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS="SOURCE_PATH;DOCWIRE_LOG_VERBOSITY;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS" ./vcpkg/vcpkg --overlay-ports=./ports install $VCPKG_DEBUG_OPTION docwire$FEATURES:$VCPKG_TRIPLET
-
-if [[ "$EXPORT_VCPKG" != "0" ]]; then
-	version=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/VERSION`
-	./vcpkg/vcpkg --overlay-ports=./ports export docwire:$VCPKG_TRIPLET --raw --output=docwire-$version --output-dir=.
-
-	cat tools/setup_env.sh | sed "s/vcpkg_triplet=.*/vcpkg_triplet=\"$VCPKG_TRIPLET\"/" > docwire-$version/setup_env.sh
-	chmod u+x docwire-$version/setup_env.sh
-
-	# test run - relative path
-	(
-		. docwire-$version/setup_env.sh
-		docwire tests/1.pdf
-	)
-	# test run - absolute path
-	(
-		. $PWD/docwire-$version/setup_env.sh
-		docwire tests/1.doc
-	)
-
-	if [[ "$CREATE_ARCHIVE" == "1" ]]; then
-		abi_suffix=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/abi-id.txt`
-		full_suffix="$version-$VCPKG_TRIPLET-$abi_suffix"
-		tar -cjvf docwire-$full_suffix.tar.bz2 docwire-$version
-		sha1sum docwire-$full_suffix.tar.bz2 > docwire-$full_suffix.tar.bz2.sha1
-	fi
-fi

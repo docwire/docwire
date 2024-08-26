@@ -1,7 +1,10 @@
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(api_tests api_tests.cpp)
-target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_fuzzy_match GTest::gtest_main)
+if(MSVC)
+    target_compile_options(api_tests PRIVATE /bigobj)
+endif()
+target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_fuzzy_match docwire_base64 GTest::gtest_main)
 
 find_package(Boost REQUIRED COMPONENTS json)
 target_link_libraries(api_tests PRIVATE Boost::json)
@@ -16,6 +19,7 @@ include(GoogleTest)
 gtest_discover_tests(api_tests
         DISCOVERY_MODE PRE_TEST
         DISCOVERY_TIMEOUT 30
+		PROPERTIES LABELS "is_api_test"
 )
 
 file(READ ../README.md content)
@@ -43,8 +47,10 @@ while (TRUE)
 		add_test(NAME example_${n} COMMAND example_${n})
 		string(FIND "${code_block}" "model_runner" model_runner_pos)
 		if (NOT model_runner_pos EQUAL -1)
-		message(STATUS "Labeling test example_${n} as uses_model_runner")
-			set_property(TEST example_${n} PROPERTY LABELS "uses_model_runner")
+			message(STATUS "Labeling test example_${n} as uses_model_runner")
+			set_property(TEST example_${n} PROPERTY LABELS "is_example;uses_model_runner")
+		else()
+			set_property(TEST example_${n} PROPERTY LABELS "is_example")
 		endif()
 	else()
 		message(STATUS "Skipping example_${n} because OPENAI_API_KEY is not set")
@@ -53,3 +59,12 @@ while (TRUE)
 	math(EXPR end_pos "${end_pos} + 3")
 	string(SUBSTRING "${content}" ${end_pos} -1 content)
 endwhile()
+
+foreach(ext IN ITEMS doc pdf png)
+	add_test(
+		NAME cli_${ext}
+		COMMAND ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/docwire tests/1.${ext}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} # ensure CLI is running correctly outside build directory
+	)
+	set_property(TEST cli_${ext} PROPERTY LABELS "is_cli_test")
+endforeach()

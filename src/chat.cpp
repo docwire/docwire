@@ -11,8 +11,8 @@
 
 #include "chat.h"
 
+#include "base64.h"
 #include <boost/json.hpp>
-#include <botan/base64.h>
 #include <fstream>
 #include "input.h"
 #include "log.h"
@@ -180,7 +180,7 @@ void Chat::process(Info &info) const
 		docwire_log(debug) << "Filename extension shows it is not a text file. Let's assume it is an image.";
 		user_msg_type = UserMsgType::image_url;
 		std::span<const std::byte> input_data = data.span();
-		std::string base64Encoded = Botan::base64_encode(std::span<const uint8_t>{reinterpret_cast<const uint8_t*>(input_data.data()), input_data.size()});
+		std::string base64Encoded = base64::encode(input_data);
 		docwire_log_var(base64Encoded);
 		data_str = std::string{"data:image/*;base64,"} + base64Encoded;
 	}

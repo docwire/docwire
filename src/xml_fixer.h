@@ -12,12 +12,13 @@
 #ifndef DOCWIRE_XML_FIXER_H
 #define DOCWIRE_XML_FIXER_H
 
+#include "defines.h"
 #include <string>
 
 namespace docwire
 {
 
-class XmlFixer
+class DllExport XmlFixer
 {
 	private:
 		struct Implementation;

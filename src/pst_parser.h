@@ -24,7 +24,7 @@
 namespace docwire
 {
 
-class PSTParser : public Parser
+class DllExport PSTParser : public Parser
 {
 private:
   struct Implementation;

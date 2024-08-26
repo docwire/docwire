@@ -5,11 +5,11 @@
 	"license": "GPL-2.0-only OR LicenseRef-DocWire-Commercial",
 	"features":
 	{
-		"address-sanitizer":
+		"asan":
 		{
 			"description": "Enable address sanitizer in debug build"
 		},
-		"thread-sanitizer":
+		"tsan":
 		{
 			"description": "Enable thread sanitizer in debug build"
 		},
@@ -113,7 +113,7 @@
 			"name": "rapidfuzz"
 		},
 		{
-			"name": "botan"
+			"name": "aklomp-base64"
 		}
 	]
 }

@@ -22,7 +22,7 @@ namespace docwire
 {
 	class Metadata;
 
-class HTMLParser : public Parser
+class DllExport HTMLParser : public Parser
 {
 	private:
 		struct Implementation;

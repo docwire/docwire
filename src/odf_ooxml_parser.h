@@ -19,7 +19,7 @@
 namespace docwire
 {
 
-class ODFOOXMLParser : public Parser,
+class DllExport ODFOOXMLParser : public Parser,
                        public CommonXMLDocumentParser
 {
   private:

@@ -50,11 +50,6 @@ DllExport UString utf8_to_ustring(const std::string& src);
 DllExport std::string unichar_to_utf8(unsigned int unichar);
 
 /**
- * @return Path for the directory that contains the specified module. The module must have been loaded by the current process.
- */
-DllExport std::filesystem::path get_self_path();
-
-/**
 	UTF16 characters take from 2 to 4 bytes length.
 	Code points from 0x0000 to 0xFFFF require two bytes (so called BMP, most popular characters).
 	But there are rare used characters which use codes between 0x10000 to 0x10FFFF.
@@ -83,10 +78,6 @@ DllExport int str_to_int(const std::string& s);
 DllExport bool is_encrypted_with_ms_offcrypto(const data_source& data);
 
 DllExport tm *thread_safe_gmtime (const time_t *timer, struct tm &time_buffer);
-
-DllExport std::filesystem::path locate_subpath(const std::filesystem::path& sub_path);
-
-DllExport std::filesystem::path locate_resource(const std::filesystem::path& resource_rel_path);
 
 } // namespace docwire
 
