@@ -32,6 +32,7 @@ void parseXmlData(std::function<void(const Tag&)> send_tag, XmlStream& xml_strea
 	while (xml_stream)
 	{
 		std::string tag_name = xml_stream.name();
+		std::string full_tag_name = xml_stream.fullName();
 		if (tag_name == "#text")
 		{
 			char* content = xml_stream.content();
@@ -41,12 +42,18 @@ void parseXmlData(std::function<void(const Tag&)> send_tag, XmlStream& xml_strea
 				send_tag(tag::Text{ text });
 			}
 		}
-		else if (tag_name != "style")
+		else if (tag_name != "style" && full_tag_name != "o:DocumentProperties" && full_tag_name != "o:CustomDocumentProperties")
 		{
+			if (full_tag_name == "w:p")
+				send_tag(tag::Paragraph{});
 			xml_stream.levelDown();
 			if (xml_stream)
 				parseXmlData(send_tag, xml_stream);
 			xml_stream.levelUp();
+			if (full_tag_name == "w:p")
+				send_tag(tag::CloseParagraph{});
+			else if (full_tag_name == "w:tab")
+				send_tag(tag::Text{"\t"});
 		}
 		xml_stream.next();
 	}
