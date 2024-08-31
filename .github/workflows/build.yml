@@ -1,5 +1,10 @@
 name: Build
-on: [pull_request, workflow_dispatch]
+on:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+run-name: ${{ github.event_name == 'pull_request' && github.event.pull_request.title || github.event_name == 'schedule' && 'Daily build' || 'Manual build' }}
 permissions:
   packages: write
 jobs:
