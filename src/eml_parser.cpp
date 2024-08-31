@@ -14,7 +14,6 @@
 
 #include "eml_parser.h"
 
-#include "attachment.h"
 #include "exception.h"
 #include "htmlcxx/html/CharsetConverter.h"
 #include "importer.h"

@@ -22,7 +22,7 @@ namespace docwire
 {
 
 class Metadata;
-class Attachment;
+//class Attachment;
 
 class DllExport EMLParser : public Parser
 {

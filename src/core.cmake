@@ -1,5 +1,4 @@
 add_library(docwire_core SHARED
-    attachment.cpp
     chat.cpp
     entities.cpp
     extract_entities.cpp
@@ -16,7 +15,6 @@ add_library(docwire_core SHARED
     decompress_archives.cpp
     log.cpp
     misc.cpp
-    variant.cpp
     parser_parameters.cpp
     thread_safe_ole_storage.cpp
     thread_safe_ole_stream_reader.cpp
