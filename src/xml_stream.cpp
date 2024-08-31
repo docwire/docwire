@@ -100,13 +100,29 @@ struct XmlStream::Implementation
 	{
 		if (m_reader == NULL)
 			throw RuntimeError("Cannot initialize XmlStream: xmlReaderForMemory has failed");
-		if (xmlTextReaderRead(m_reader.get()) != 1)
+		if (!read_next())
 			throw RuntimeError("Cannot initialize XmlStream: xmlTextReaderRead has failed");
-		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(m_reader.get()) << ", depth=" << xmlTextReaderDepth(m_reader.get()) << ", name=" << (char*)xmlTextReaderConstLocalName(m_reader.get());
 		m_curr_depth = xmlTextReaderDepth(m_reader.get());
 		if (m_curr_depth == -1)
 			throw RuntimeError("Cannot initialize XmlStream: xmlTextReaderDepth has failed");
 		docwire_log(debug) << "Starting curr_depth: " << m_curr_depth;
+	}
+
+	bool should_skip() const
+	{
+		return xmlTextReaderNodeType(m_reader.get()) == XML_READER_TYPE_PROCESSING_INSTRUCTION;
+	}
+
+	bool read_next()
+	{
+		do
+		{
+			if (xmlTextReaderRead(m_reader.get()) != 1)
+				return false;
+			docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(m_reader.get()) << ", depth=" << xmlTextReaderDepth(m_reader.get()) << ", name=" << (char*)xmlTextReaderConstLocalName(m_reader.get());
+		}
+		while (should_skip());
+		return true;
 	}
 };
 
@@ -129,20 +145,21 @@ void XmlStream::next()
 	docwire_log(debug) << "# next(). curr_depth=" << impl->m_curr_depth;
 	do
 	{
-		if (xmlTextReaderRead(impl->m_reader.get()) != 1)
+		if (!impl->read_next())
 		{
 			docwire_log(debug) << "# End of file or error - Null";
 			impl->m_badbit = true;
 			return;
 		}
-		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(impl->m_reader.get()) << ", depth=" << xmlTextReaderDepth(impl->m_reader.get()) << ", name=" << (char*)xmlTextReaderConstLocalName(impl->m_reader.get());
 		if (xmlTextReaderDepth(impl->m_reader.get()) < impl->m_curr_depth)
 		{
 			impl->m_badbit = true;
 			docwire_log(debug) << "# End of level or error - Null";
 			return;
 		}
-	} while (xmlTextReaderNodeType(impl->m_reader.get()) == 15 || xmlTextReaderDepth(impl->m_reader.get()) > impl->m_curr_depth);
+	} while (
+		xmlTextReaderNodeType(impl->m_reader.get()) == XML_READER_TYPE_END_ELEMENT ||
+		xmlTextReaderDepth(impl->m_reader.get()) > impl->m_curr_depth);
 	docwire_log(debug) << (
 		xmlTextReaderConstValue(impl->m_reader.get()) == NULL ?
 			std::string("# null value.") :
@@ -164,20 +181,19 @@ void XmlStream::levelDown()
 	}
 	do
 	{
-		if (xmlTextReaderRead(impl->m_reader.get()) != 1)
+		if (!impl->read_next())
 		{
 			impl->m_badbit = true;
 			docwire_log(debug) << "# End of document - Null";
 			return;
 		}
-		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(impl->m_reader.get()) << ", depth=" << xmlTextReaderDepth(impl->m_reader.get()) << ", name=" << (char*)xmlTextReaderConstLocalName(impl->m_reader.get());
 		if (xmlTextReaderDepth(impl->m_reader.get()) < impl->m_curr_depth)
 		{
 			impl->m_badbit = true;
 			docwire_log(debug) << "# Level empty or error - Null";
 			return;
 		}
-	} while (xmlTextReaderNodeType(impl->m_reader.get()) == 15);
+	} while (xmlTextReaderNodeType(impl->m_reader.get()) == XML_READER_TYPE_END_ELEMENT);
 	docwire_log(debug) << "# name:" << (char*)xmlTextReaderConstLocalName(impl->m_reader.get()) << "\n";
 	docwire_log(debug) << (
 		xmlTextReaderConstValue(impl->m_reader.get()) == NULL ?
@@ -197,14 +213,14 @@ void XmlStream::levelUp()
 	}
 	for(;;)
 	{
-		if (xmlTextReaderRead(impl->m_reader.get()) != 1)
+		if (!impl->read_next())
 		{
 			impl->m_badbit = true;
 			docwire_log(debug) << "# End of document or error - Null";
 			return;
 		}
-		docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(impl->m_reader.get()) << ", depth=" << xmlTextReaderDepth(impl->m_reader.get()) << ", name=" << (char*)xmlTextReaderConstLocalName(impl->m_reader.get());
-		if (xmlTextReaderNodeType(impl->m_reader.get()) == 15 && xmlTextReaderDepth(impl->m_reader.get()) == impl->m_curr_depth)
+		if (xmlTextReaderNodeType(impl->m_reader.get()) == XML_READER_TYPE_END_ELEMENT &&
+			xmlTextReaderDepth(impl->m_reader.get()) == impl->m_curr_depth)
 		{
 			impl->m_badbit = false;
 			break;
