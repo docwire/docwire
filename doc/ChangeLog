@@ -1,3 +1,23 @@
+## Version 2024.08.30
+
+The changes involve enhancements to the XML parsing and reading logic. The parseXmlData function in xml_parser.cpp now includes improved handling for specific XML tags, while xml_stream.cpp has been refactored to encapsulate XML reading logic within a new method. Additionally, a new processing instruction has been added to the test XML document, enriching its structure.
+
+> In the meadow, I hop with glee,  
+> New tags and methods, oh what a spree!  
+> Parsing XML, so swift and bright,  
+> With each little change, the code feels just right.  
+> A dance of data, a joyful tune,  
+> Hooray for the updates, we’ll celebrate soon! 🐇✨
+
+- **New Features**
+  - Enhanced XML parsing capabilities with specific handling for `w:p` and `w:tab` tags.
+
+- **Refactor**
+  - Streamlined XML reading logic by encapsulating it in a new method, improving code readability and maintainability.
+
+- **Bug Fixes**
+  - Adjusted logic for handling XML node reading to ensure accurate processing of "processing instructions" elements.
+
 ## Version 2024.08.25
 
 The changes encompass updates across various components in the project, including parsing improvements, modifications to build configurations, and adjustments to testing mechanisms. Key revisions include  the transition of sanitizer options, simplifications in build scripts, and improvements in resource handling.
