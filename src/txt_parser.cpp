@@ -203,13 +203,6 @@ void TXTParser::parse(const data_source& data) const
 	sendTag(tag::CloseDocument{});
 }
 
-Parser&
-TXTParser::withParameters(const ParserParameters &parameters)
-{
-	Parser::withParameters(parameters);
-	return *this;
-}
-
 std::vector<file_extension> TXTParser::getExtensions()
 {
 	return

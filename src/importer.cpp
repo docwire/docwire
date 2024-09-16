@@ -74,7 +74,7 @@ public:
 
   std::unique_ptr<docwire::Parser> build_parser(ParserBuilder& builder)
   {
-    return builder.withOnNewNodeCallbacks({[this](Info &info){ process(info); }})
+    return builder
         .withParameters(m_parameters)
         .build();
   }
@@ -90,9 +90,20 @@ public:
     auto data = std::get<data_source>(info.tag);
     std::unique_ptr<ParserBuilder> builder = findParser(data);
     std::unique_ptr<docwire::Parser> parser = build_parser(*builder);
+    auto parser_callback = [this](const Tag& tag)
+    {
+      Info info{tag};
+      process(info);
+      if (info.cancel)
+        return Parser::parsing_continuation::stop;
+      else if (info.skip)
+        return Parser::parsing_continuation::skip;
+      else
+        return Parser::parsing_continuation::proceed;
+    }; 
     try
     {
-      parser->parse(data);
+      (*parser)(data, parser_callback);
     }
     catch (EncryptedFileException &ex)
     {
@@ -108,7 +119,7 @@ public:
       {
         throw;
       }
-      build_parser(*second_builder)->parse(data);
+      (*build_parser(*second_builder))(data, parser_callback);
     }
   }
 

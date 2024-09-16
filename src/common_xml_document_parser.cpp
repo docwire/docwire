@@ -20,7 +20,6 @@
 #include "misc.h"
 #include "xml_stream.h"
 #include "xml_fixer.h"
-#include <boost/signals2.hpp>
 
 namespace docwire
 {
@@ -71,7 +70,6 @@ struct CommonXMLDocumentParser::Implementation
 	std::map<std::string, Relationship> m_relationships;
 	std::vector<SharedString> m_shared_strings;
 	std::map<std::string, CommandHandler> m_command_handlers;
-	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 
 	bool m_disabled_text;
 	int m_xml_options;
@@ -81,8 +79,7 @@ struct CommonXMLDocumentParser::Implementation
 	{
 		if (!stop_emmit_signals)
 		{
-			Info info(tag);
-			m_on_new_node_signal(info);
+			m_parser->sendTag(tag);
 		}
 	}
 
@@ -577,12 +574,6 @@ void CommonXMLDocumentParser::onUnregisteredCommand(XmlStream& xml_stream, XmlPa
 			text += content;
 		children_processed = true;
 	}
-}
-
-void
-CommonXMLDocumentParser::addCallback(const NewNodeCallback &callback)
-{
-  impl->m_on_new_node_signal.connect(callback);
 }
 
 std::string CommonXMLDocumentParser::parseXmlData(

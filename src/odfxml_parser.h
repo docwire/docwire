@@ -13,14 +13,12 @@
 #define DOCWIRE_ODFXML_PARSER_H
 
 #include "common_xml_document_parser.h"
-#include "parser.h"
 #include "parser_builder.h"
 
 namespace docwire
 {
 
-class DllExport ODFXMLParser : public Parser,
-                     public CommonXMLDocumentParser
+class DllExport ODFXMLParser : public CommonXMLDocumentParser
 {
 	private:
 		struct ExtendedImplementation;
@@ -32,7 +30,7 @@ class DllExport ODFXMLParser : public Parser,
 	public:
 
     void parse(const data_source& data) const override;
-	Parser& addOnNewNodeCallback(NewNodeCallback callback) override;
+
     	static std::vector<file_extension> getExtensions()
 		{
 			return { file_extension{".fodt"}, file_extension{".fods"}, file_extension{".fodp"}, file_extension{".fodg"} };

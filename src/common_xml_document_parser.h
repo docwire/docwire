@@ -32,7 +32,7 @@ enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
 	Child classes (ODFOOXMLParser and ODFXMLParser for now) may want to add or change handlers for some xml tags
 	(using registerODFOOXMLCommandHandler).
 **/
-class CommonXMLDocumentParser
+class CommonXMLDocumentParser: public Parser
 {
 	private:
 		struct Implementation;
@@ -72,8 +72,6 @@ class CommonXMLDocumentParser
   typedef std::function<void(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
                                  const ZipReader* zipfile, std::string& text,
                                  bool& children_processed, std::string& level_suffix, bool first_on_level)> CommandHandler;
-
-    void addCallback(const NewNodeCallback &callback);
 
 		/**
 			Each xml tag can have associated handler, which is a single function of CommandHandler type.

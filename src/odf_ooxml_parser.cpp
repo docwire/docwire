@@ -715,10 +715,4 @@ ODFOOXMLParser::parse(const data_source& data) const
 	parse(data, XmlParseMode::PARSE_XML);
 }
 
-Parser& ODFOOXMLParser::addOnNewNodeCallback(NewNodeCallback callback)
-{
-	CommonXMLDocumentParser::addCallback(callback);
-	return *this;
-}
-
 } // namespace docwire
