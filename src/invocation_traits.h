@@ -60,7 +60,7 @@ struct args
     requires requires { typename F::invocation_args_t; }
   struct args_impl<F>
   {
-    using type = F::invocation_args_t;
+    using type = typename F::invocation_args_t;
   };
 
   /** \publicsection */
@@ -71,7 +71,7 @@ struct args
    * This type is equal to boost::callable_traits::args_t<T> unless T has a nested type invocation_args_t,
    * in which case we use that type instead of relying on boost::callable_traits.
    */
-  using type = args_impl<T>::type;
+  using type = typename args_impl<T>::type;
 };
 
 /**
@@ -127,7 +127,7 @@ struct result
     requires requires { typename F::invocation_result_t; }
   struct result_impl<F>
   {
-    using type = F::invocation_result_t;
+    using type = typename F::invocation_result_t;
   };
 
   /** \publicsection */
@@ -138,7 +138,7 @@ struct result
      * This type is equal to boost::callable_traits::return_type_t<T> unless T has a nested type invocation_result_t,
      * in which case we use that type instead of relying on boost::callable_traits.
      */
-    using type = result_impl<T>::type;
+    using type = typename result_impl<T>::type;
 };
 
 /**

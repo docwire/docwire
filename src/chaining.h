@@ -231,7 +231,8 @@ struct function_to_pushable_binding
     return function.get()(std::forward<decltype(args)>(args)..., [this](auto&& arg)->callback_ret_type
     {
       container.get().push_back(arg);
-      return callback_ret_type{};
+      if constexpr (!std::is_void_v<callback_ret_type>)
+        return callback_ret_type{};
     });
   }
 
