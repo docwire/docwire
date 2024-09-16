@@ -13,6 +13,7 @@
 #include "office_formats_parser_provider.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
+#include "chaining.h"
 #include <future>
 #include "fuzzy_match.h"
 #include "gmock/gmock.h"
@@ -1334,4 +1335,98 @@ TEST(tuple_utils, last_element)
         tuple_utils::last_element(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4})),
         char{4}
     );
+}
+
+TEST(chaining, val_temp_to_func_ref_one_arg_no_result)
+{
+    using namespace chaining;
+    int result = 0;
+    auto f = [&result](int value)->void { result = value + 2; };
+    int{1} | f;
+    ASSERT_EQ(result, 3);
+}
+
+TEST(chaining, val_ref_to_func_temp_two_args_with_result)
+{
+    using namespace chaining;
+    int v = 2;
+    auto binding = v | [](int value1, int value2)->int { return value1 + value2; };
+    ASSERT_EQ(binding(1), 3);
+}
+
+TEST(chaining, func_temp_no_args_no_result_callback_no_result_to_func_ref_one_arg_no_result)
+{
+    using namespace chaining;
+    int result = 0;
+    auto f = [&result](int value) { result = value + 2; };
+    [](std::function<void(int)> callback) { callback(1); } | f;
+    ASSERT_EQ(result, 3);
+}
+
+TEST(chaining, func_temp_no_args_with_result_callback_with_result_to_func_temp_one_arg_with_result)
+{
+    using namespace chaining;
+    auto binding =
+        [](int value, std::function<int(int)> callback) { return callback(value); } |
+        [](int value) { return value + 2; };
+    ASSERT_EQ(binding(1), 3);
+}
+
+TEST(chaining, func_temp_no_args_no_result_callback_no_result_to_pushable_ref)
+{
+    using namespace chaining;
+    std::vector<int> container;
+    [](std::function<void(int)> callback) { callback(1); } | container;
+    ASSERT_THAT(container, testing::ElementsAre(1));
+}
+
+TEST(chaining, func_ref_one_arg_with_result_callback_with_result_to_pushable_ref)
+{
+    using namespace chaining;
+    std::vector<int> container;
+    auto binding = [](int value, std::function<std::optional<int>(int)> callback) { return callback(value + 2); } | container;
+    std::optional<int> result = binding(1);
+    ASSERT_EQ(result, std::optional<int>{});
+    ASSERT_THAT(container, testing::ElementsAre(3));
+}
+
+TEST(chaining, val_const_temp_to_func_one_arg_no_result_callback_no_result_to_pushable_ref)
+{
+    using namespace chaining;
+    std::vector<int> container;
+    1 | [](int value, std::function<void(int)> callback) { callback(value + 2); } | container;
+    ASSERT_THAT(container, testing::ElementsAre(3));
+}
+
+TEST(chaining, func_temp_no_args_no_result_callback_no_result_to_func_one_arg_no_result_callback_no_result_to_pushable_ref)
+{
+    using namespace chaining;
+    std::vector<int> container;
+    [](std::function<void(int)> callback) { callback(1); } |
+        [](int value, std::function<void(int)> callback) { callback(value + 2); } |
+        container;
+    ASSERT_THAT(container, testing::ElementsAre(3));
+}
+
+struct NonCopyableFunctor
+{
+    NonCopyableFunctor() = default;
+    NonCopyableFunctor(const NonCopyableFunctor&) = delete;
+    NonCopyableFunctor(NonCopyableFunctor&&) = default;
+    int operator()(int value) const { return value + 2; }
+};
+
+TEST(chaining, func_temp_no_args_with_result_callback_with_result_to_non_copyable_functor_temp)
+{
+    using namespace chaining;
+    int result = [](std::function<int(int)> callback) { return callback(1); } | NonCopyableFunctor{};
+    ASSERT_EQ(result, 3);
+}
+
+TEST(chaining, func_temp_no_args_with_result_callback_with_result_to_non_copyable_functor_ref)
+{
+    using namespace chaining;
+    NonCopyableFunctor ncf{};
+    int result = [](const std::function<int(int)>& callback) { return callback(1); } | ncf;
+    ASSERT_EQ(result, 3);
 }
