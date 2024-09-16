@@ -1276,3 +1276,62 @@ TEST(base64, encode)
     std::string encoded = base64::encode(input_data);
     ASSERT_EQ(encoded, "dGVzdA==");
 }
+
+TEST(tuple_utils, subrange)
+{
+    static_assert(std::is_same_v<
+        tuple_utils::subrange_t<1, 3, std::tuple<int, float, double, std::string, char>>,
+        std::tuple<float, double, std::string>
+    >);
+    ASSERT_EQ(
+        (tuple_utils::subrange<1, 3>(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4}))),
+        std::make_tuple(float{1}, double{2}, std::string{"3"}));
+}
+
+TEST(tuple_utils, remove_first)
+{
+    static_assert(std::is_same_v<
+        tuple_utils::remove_first_t<std::tuple<int, float, double, std::string, char>>,
+        std::tuple<float, double, std::string, char>
+    >);
+    ASSERT_EQ(
+        tuple_utils::remove_first(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4})),
+        std::make_tuple(float{1}, double{2}, std::string{"3"}, char{4})
+    );
+}
+
+TEST(tuple_utils, remove_last)
+{
+    static_assert(std::is_same_v<
+        tuple_utils::remove_last_t<std::tuple<int, float, double, std::string, char>>,
+        std::tuple<int, float, double, std::string>
+    >);
+    ASSERT_EQ(
+        tuple_utils::remove_last(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4})),
+        std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"})
+    );
+}
+
+TEST(tuple_utils, first_element)
+{
+    static_assert(std::is_same_v<
+        tuple_utils::first_element_t<std::tuple<int, float, double, std::string, char>>,
+        int
+    >);
+    ASSERT_EQ(
+        tuple_utils::first_element(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4})),
+        int{0}
+    );
+}
+
+TEST(tuple_utils, last_element)
+{
+    static_assert(std::is_same_v<
+        tuple_utils::last_element_t<std::tuple<int, float, double, std::string, char>>,
+        char
+    >);
+    ASSERT_EQ(
+        tuple_utils::last_element(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4})),
+        char{4}
+    );
+}
