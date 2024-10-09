@@ -14,7 +14,6 @@
 
 #include "eml_parser.h"
 
-#include "exception.h"
 #include "htmlcxx/html/CharsetConverter.h"
 #include "importer.h"
 #include <iostream>
@@ -194,11 +193,7 @@ EMLParser::parse(const data_source& data) const
 {
 	docwire_log_func();
 	docwire_log(debug) << "Using EML parser.";
-	if (!understands(data))
-	{
-		docwire_log(error) << "The specified file is not a valid EML file";
-		throw RuntimeError("The specified file is not a valid EML file");
-	}
+	throw_if (!understands(data));
 	message mime_entity = parse_message(data);
 	sendTag(tag::Document
 		{

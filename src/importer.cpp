@@ -9,13 +9,15 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include "error_tags.h"
 #include <fstream>
 #include <filesystem>
 #include <boost/signals2.hpp>
 
-#include "exception.h"
+#include "exception_utils.h"
 #include "importer.h"
 #include "log.h"
+#include "throw_if.h"
 
 namespace docwire
 {
@@ -59,15 +61,13 @@ public:
     if (!extension)
     {
       std::unique_ptr<ParserBuilder> builder = m_owner.findParserByData(data);
-      if (!builder)
-        throw UnknownFormat("Format of data in buffer was not recognized.");
+      throw_if (!builder, "findParserByData() failed");
       return std::move(builder);
     }
     else
     {
       std::unique_ptr<ParserBuilder> builder = m_owner.findParserByExtension(*extension);
-      if (!builder)
-        throw UnknownFormat("Format was not recognized by extension for extension " + extension->string());
+      throw_if (!builder, "findParserByExtension() failed", extension->string());
       return std::move(builder);
     }
   }
@@ -105,12 +105,10 @@ public:
     {
       (*parser)(data, parser_callback);
     }
-    catch (EncryptedFileException &ex)
-    {
-      throw ParsingFailed("Parsing failed, file is encrypted", ex);
-    }
     catch (const std::exception& ex)
     {
+      if (errors::contains_type<errors::file_is_encrypted>(ex))
+        std::throw_with_nested(make_error(errors::backtrace_entry{}));
       if (!data.file_extension()) // parser was detected by data
         throw;
       docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";

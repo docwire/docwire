@@ -13,7 +13,6 @@
 #define DOCWIRE_OUTPUT_H
 
 #include "chain_element.h"
-#include "exception.h"
 #include "parsing_chain.h"
 
 namespace docwire

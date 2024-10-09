@@ -12,7 +12,6 @@
 #ifndef DOCWIRE_IWORK_PARSER_H
 #define DOCWIRE_IWORK_PARSER_H
 
-#include "exception.h"
 #include "parser.h"
 #include <string>
 #include "tags.h"
@@ -40,9 +39,6 @@ class DllExport IWorkParser : public Parser
 		bool understands(const data_source& data) const override;
 
 		void parse(const data_source& data) const override;
-
-	DOCWIRE_EXCEPTION_DEFINE(UnzipError, RuntimeError);
-	DOCWIRE_EXCEPTION_DEFINE(ParsingError, RuntimeError);
 };
 
 } // namespace docwire

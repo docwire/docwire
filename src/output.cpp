@@ -11,7 +11,6 @@
 
 #include "output.h"
 
-#include "exception.h"
 #include <fstream>
 
 namespace docwire
@@ -20,8 +19,7 @@ namespace docwire
 void
 OutputChainElement::process(Info &info) const
 {
-	if (!std::holds_alternative<data_source>(info.tag))
-		throw LogicError("Only data_source tags are supported by OutputChainElement chain element");
+	throw_if (!std::holds_alternative<data_source>(info.tag), "Only data_source tags are supported");
 	std::shared_ptr<std::istream> in_stream = std::get<data_source>(info.tag).istream();
 	*m_out_stream << in_stream->rdbuf();
 }

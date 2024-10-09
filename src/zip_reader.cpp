@@ -11,7 +11,6 @@
 
 #include "zip_reader.h"
 
-#include "exception.h"
 #include <iostream>
 #include "log.h"
 #include <map>
@@ -146,8 +145,7 @@ void ZipReader::open()
 		read_from_buffer_functions.opaque = Impl->m_zipped_buffer;
 		//this function allows us to override default behaviour (reading from hard disc)
 		Impl->ArchiveFile = unzOpen2("stream", &read_from_buffer_functions);
-	if (Impl->ArchiveFile == NULL)
-		throw RuntimeError("Error opening stream as zip archive");
+	throw_if (Impl->ArchiveFile == NULL, "Could not open zip archive");
 }
 
 bool ZipReader::exists(const std::string& file_name) const

@@ -16,7 +16,6 @@
 #include <memory>
 
 #include "chain_element.h"
-#include "exception.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include "parser_parameters.h"
@@ -62,11 +61,6 @@ public:
 
   virtual std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension) const = 0;
   virtual std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const = 0;
-
-  DOCWIRE_EXCEPTION_DEFINE(FileNotReadable, RuntimeError);
-  DOCWIRE_EXCEPTION_DEFINE(FileNotFound, RuntimeError);
-  DOCWIRE_EXCEPTION_DEFINE(ParsingFailed, RuntimeError);
-  DOCWIRE_EXCEPTION_DEFINE(UnknownFormat, RuntimeError);
 
 protected:
   /**

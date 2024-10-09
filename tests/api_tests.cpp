@@ -14,11 +14,13 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include "chaining.h"
+#include "error_tags.h"
+#include "exception_utils.h"
+#include <exception>
 #include <future>
 #include "fuzzy_match.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "../src/exception.h"
 #include <string_view>
 #include <tuple>
 #include "decompress_archives.h"
@@ -38,8 +40,10 @@
 #include "output.h"
 #include "parse_detected_format.h"
 #include "plain_text_exporter.h"
+#include "plain_text_writer.h"
 #include "post.h"
 #include <regex>
+#include "throw_if.h"
 #include "transformer_func.h"
 #include "txt_parser.h"
 #include "input.h"
@@ -450,12 +454,8 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     }
     catch (const std::exception& ex)
     {
-        std::string test_text {
-            "Error processing file " + file_name + ".\n" + ex.what()
-        };
-        std::replace(test_text.begin(), test_text.end(), '\\', '/');
-        
-        EXPECT_EQ(test_text, expected_text);
+        std::cerr << errors::diagnostic_message(ex);
+        ASSERT_TRUE(errors::contains_type<errors::file_is_encrypted>(ex));
     }   
 }
 
@@ -681,16 +681,106 @@ TEST(Http, PostForm)
     ASSERT_STREQ(output_val.as_object()["files"].as_object()["file.txt"].as_string().c_str(), "data:application/octet-stream;base64,PGh0dHA6Ly93d3cuc2lsdmVyY29kZXJzLmNvbS8+aHlwZXJsaW5rIHRlc3QKCg==");
 }
 
-namespace test_ns
+TEST (errors, throwing)
 {
-DOCWIRE_EXCEPTION_DEFINE(TestError1, RuntimeError);
-DOCWIRE_EXCEPTION_DEFINE(TestError2, LogicError);
+    ASSERT_NO_THROW(throw_if(2 > 3, "test"));
+    try
+    {
+        throw make_error("test");
+    }
+    catch (const errors::base& e)
+    {
+        ASSERT_EQ(e.context_type(), typeid(const char*));
+        ASSERT_EQ(e.context_string(), "test");
+    }
+    try
+    {
+        std::string s { "test" };
+        throw make_error(s);
+    }
+    catch (const errors::base& e)
+    {
+        ASSERT_EQ(e.context_type(), typeid(std::pair<std::string, std::string>));
+        ASSERT_EQ(e.context_string(), "s: test");
+    }
+    try
+    {
+        throw make_error(errors::network_error{});
+    }
+    catch (const errors::base& e)
+    {
+        ASSERT_EQ(e.context_type(), typeid(errors::network_error));
+        ASSERT_EQ(e.context_string(), "network error");
+    }
+    try
+    {
+        throw_if("2 < 3", errors::file_is_encrypted{}, errors::backtrace_entry{});
+    }
+    catch (const errors::base& e)
+    {
+        ASSERT_EQ(e.context_type(), typeid(errors::backtrace_entry));
+        ASSERT_EQ(e.context_string(), "backtrace entry");
+        try
+        {
+            std::rethrow_if_nested(e);
+            FAIL() << "Expected nested exception";
+        }
+        catch (const errors::base& e)
+        {
+            ASSERT_EQ(e.context_type(), typeid(errors::file_is_encrypted));
+            ASSERT_EQ(e.context_string(), "file is encrypted");
+            try
+            {
+                std::rethrow_if_nested(e);
+                FAIL() << "Expected nested exception";
+            }
+            catch (const errors::base& e)
+            {
+                ASSERT_EQ(e.context_type(), typeid(std::pair<std::string, const char*>));
+                ASSERT_EQ(e.context_string(), "triggering_condition: \"2 < 3\"");
+            }
+        }
+    }
 }
 
-TEST(Exceptions, DefiningCreatingAndNested)
+TEST(errors, diagnostic_message)
 {
-	std::string what_msg = test_ns::TestError1("msg1", test_ns::TestError2("msg2")).what();
-	EXPECT_EQ(what_msg, "msg1 with nested test_ns::TestError2 msg2");
+    std::string message;
+    std::source_location err2_loc, err3_loc;
+    try
+    {
+        try
+        {
+            try
+            {
+                throw std::runtime_error{"level 1 exception"};
+            }
+            catch (const std::exception& e)
+            {
+                err2_loc = std::source_location::current();
+                std::throw_with_nested(make_error("level 2 exception"));
+            }
+        }
+        catch (const std::exception& e)
+        {
+            err3_loc = std::source_location::current();
+            std::throw_with_nested(make_error("level 3 exception"));
+        }
+    }
+    catch (const std::exception& e)
+    {
+        message = errors::diagnostic_message(e);
+    }
+	ASSERT_EQ(message,
+        std::string{"Error \"level 1 exception\"\n"} +
+        "No location information available\n"
+        "with context \"level 2 exception\"\n"
+        "in " + err2_loc.function_name() + "\n"
+        "at " + err2_loc.file_name() + ":" + std::to_string(err2_loc.line() + 1) + "\n"
+        "with context \"level 3 exception\"\n"
+        "in " + err3_loc.function_name() + "\n"
+        "at " + + err3_loc.file_name() + ":" + std::to_string(err3_loc.line() + 1) + "\n"
+    );
 }
 
 std::string sanitize_log_text(const std::string& orig_log_text)
@@ -877,82 +967,52 @@ TEST(DataSource, unseekable_stream_ptr_temp)
 
 TEST(PlainTextExporter, table_inside_table_without_rows)
 {
-    try
-    {
+    ASSERT_ANY_THROW(
         std::string{"<html><table><table><tr><td>table inside table without cells</td></tr></table></table></html>"} |
             ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
-            std::ostringstream{};
-        FAIL() << "LogicError exception was expected.";
-    }
-    catch (const LogicError& error)
-    {
-        ASSERT_EQ(error.what(), std::string{"Table inside table without rows."});
-    }
+            std::ostringstream{}
+    );
 }
 
 TEST(PlainTextExporter, table_inside_table_row_without_cells)
 {
-    try
-    {
+    ASSERT_ANY_THROW(
         std::string{"<html><table><tr><table><tr><td>table inside table without cells</td></tr></table></tr></table></html>"} |
             ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
-            std::ostringstream{};
-        FAIL() << "LogicError exception was expected.";
-    }
-    catch (const LogicError& error)
-    {
-        ASSERT_EQ(error.what(), std::string{"Table inside table row without cells."});
-    }
+            std::ostringstream{}
+    );
 }
 
 TEST(PlainTextExporter, cell_inside_table_without_rows)
 {
-    try
-    {
+    ASSERT_ANY_THROW(
         std::string{"<html><table><thead><td>cell without row</td></thead></table></html>"} |
             ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
-            std::ostringstream{};
-        FAIL() << "LogicError exception was expected.";
-    }
-    catch (const LogicError& error)
-    {
-        ASSERT_EQ(error.what(), std::string{"Cell inside table without rows."});
-    }
+            std::ostringstream{}
+    );
 }
 
 TEST(PlainTextExporter, content_inside_table_without_rows)
 {
-    try
-    {
+    ASSERT_ANY_THROW(
         std::string{"<html><table>content without rows</table></html>"} |
             ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
-            std::ostringstream{};
-        FAIL() << "LogicError exception was expected.";
-    }
-    catch (const LogicError& error)
-    {
-        ASSERT_EQ(error.what(), std::string{"Cell content inside table without rows."});
-    }
+            std::ostringstream{}
+    );
 }
 
 TEST(PlainTextExporter, content_inside_table_row_without_cells)
 {
-    try
-    {
+    ASSERT_ANY_THROW(
         std::string{"<html><table><tr>content without cell</tr></table></html>"} |
             ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
-            std::ostringstream{};
-        FAIL() << "LogicError exception was expected.";
-    }
-    catch (const LogicError& error)
-    {
-        ASSERT_EQ(error.what(), std::string{"Cell content inside table row without cells."});
-    }
+            std::ostringstream{}
+    );
 }
 
 TEST(PlainTextExporter, eol_sequence_crlf)

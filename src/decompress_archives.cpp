@@ -13,12 +13,13 @@
 
 #include <archive.h>
 #include <archive_entry.h>
-#include "exception.h"
+#include "error_tags.h"
 #include <filesystem>
 #include <fstream>
 #include "log.h"
 #include "parser.h"
 #include <set>
+#include "throw_if.h"
 
 namespace docwire
 {
@@ -51,8 +52,7 @@ public:
 			docwire_log(debug) << "Archive reader buffer underflow";
 			la_ssize_t bytes_read = archive_read_data(m_archive, m_buffer, m_buf_size);
 			docwire_log(debug) << bytes_read << " bytes read";
-			if (bytes_read < 0)
-				throw RuntimeError(archive_error_string(m_archive));
+			throw_if (bytes_read < 0, "archive_read_date() failed", archive_error_string(m_archive));
 			if (bytes_read == 0)
 				return traits_type::eof();
 			setg(m_buffer, m_buffer, m_buffer + bytes_read);
@@ -116,8 +116,7 @@ public:
 		archive_read_support_filter_all(m_archive);
 		archive_read_support_format_all(m_archive);
 		int r = archive_read_open(m_archive, &data, nullptr, archive_read_callback, archive_close_callback);
-		if (r != ARCHIVE_OK)
-			throw RuntimeError(archive_error_string(m_archive));
+		throw_if (r != ARCHIVE_OK, "archive_read_open() failed", archive_error_string(m_archive));
 	}
 
 	~ArchiveReader()
@@ -141,11 +140,7 @@ public:
 			docwire_log(debug) << "End of archive";
 			return Entry(m_archive, nullptr);
 		}
-		if (r != ARCHIVE_OK)
-		{
-			docwire_log(error) << "archive_read_next_header() error: " << archive_error_string(m_archive);
-			throw RuntimeError(archive_error_string(m_archive));
-		}
+		throw_if (r != ARCHIVE_OK, "archive_read_next_header() failed", archive_error_string(m_archive));
 		return Entry(m_archive, entry);
 	}
 
@@ -241,7 +236,7 @@ DecompressArchives::process(Info &info) const
 	}
 	catch (const std::exception& e)
 	{
-		throw RuntimeError("Error decompressing archive", e);
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 }
 

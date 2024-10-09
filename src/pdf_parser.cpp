@@ -14,12 +14,13 @@
 #include <algorithm>
 #include <codecvt>
 #include "data_stream.h"
-#include "exception.h"
+#include "error_tags.h"
 #include <fstream>
 #include <iostream>
 #include <list>
 #include "log.h"
 #include <map>
+#include "make_error.h"
 #include "misc.h"
 #include <mutex>
 #include <new>
@@ -29,6 +30,7 @@
 #include <strstream>
 #include <stdlib.h>
 #include <string.h>
+#include "throw_if.h"
 #include <vector>
 #include <zlib.h>
 
@@ -1837,7 +1839,7 @@ struct PDFParser::Implementation
 								}
 								catch (const std::exception& e)
 								{
-									throw RuntimeError("Error while creating predictor handler for decoding", e);
+									std::throw_with_nested(make_error(errors::backtrace_entry{}));
 								}
 
 								if (m_predictor >= 10)
@@ -1886,7 +1888,7 @@ struct PDFParser::Implementation
 													m_previos[m_current_row_index++] = ch + tmp;
 													break;
 												}
-												throw RuntimeError("Predictor cannot decode data, unsupported bpc value: " + m_bpc);
+												throw_if (m_bpc != 8);
 											}
 											case 10:
 											{
@@ -1916,7 +1918,7 @@ struct PDFParser::Implementation
 											}
 											case 14:
 											case 15:
-												throw RuntimeError("Predictor cannot decode data, unsupported predictor value: " + uint_to_string(m_current_predictor));
+												throw_if (m_current_predictor == 14 || m_current_predictor == 15);
 										}
 									}
 
@@ -1966,17 +1968,18 @@ struct PDFParser::Implementation
 							}
 
 							void seek(size_t offset)
+							try
 							{
 								Pointer* ptr = &m_pointers_stack[m_depth];
-								if (offset > ptr->m_buffer_size)
-								{
-									throw RuntimeError(std::string("PDF Stream iterator: Cant seek. Offset: ") + uint_to_string(offset) +
-													std::string(", size of buffer: ") + uint_to_string(ptr->m_buffer_size));
-								}
+								throw_if (offset > ptr->m_buffer_size);
 								ptr->m_buffer_size -= offset;
 								ptr->m_element_size = 0;
 								ptr->m_type = null;
 								ptr->m_buffer += offset;
+							}
+							catch (const std::exception&)
+							{
+								std::throw_with_nested(make_error(errors::backtrace_entry{}, offset));
 							}
 
 							void backToRoot()
@@ -1995,8 +1998,7 @@ struct PDFParser::Implementation
 
 							void levelDown()
 							{
-								if (!canDown())
-									throw RuntimeError("PDF Stream iterator: cant go down. Type of object is not dictionary nor array");
+								throw_if (!canDown(), "Can't go level down, it's not an array or dictionary", m_pointers_stack[m_depth].m_type);
 								Pointer* prev_ptr = &m_pointers_stack[m_depth];
 								++m_depth;
 								Pointer ptr;
@@ -2237,8 +2239,7 @@ struct PDFParser::Implementation
 
 							void levelUp()
 							{
-								if (!canUp())
-									throw RuntimeError("PDF Stream iterator: cant go up. Already in root element");
+								throw_if (!canUp(), "Can't go level up, the current level is 0", m_depth);
 								--m_depth;
 								m_pointers_stack.pop_back();
 							}
@@ -2274,8 +2275,7 @@ struct PDFParser::Implementation
 							{
 								val.clear();
 								Pointer* ptr = &m_pointers_stack[m_depth];
-								if (ptr->m_type != string)
-									throw RuntimeError("PDF Stream iterator: Cannot convert to hex string. Type of object: " + ptr->m_type);
+								throw_if (ptr->m_type != string, "not a string");
 								if (ptr->m_element_size == 0)
 								{
 									val = "00";
@@ -2386,16 +2386,14 @@ struct PDFParser::Implementation
 							double toDouble()
 							{
 								Pointer* ptr = &m_pointers_stack[m_depth];
-								if (ptr->m_type != int_numeric && ptr->m_type != float_numeric)
-									throw RuntimeError("PDF Stream iterator: Error while converting to double. Current type is: " + ptr->m_type);
+								throw_if (ptr->m_type != int_numeric && ptr->m_type != float_numeric, "not a numeric or float");
 								return strtod(ptr->m_buffer, NULL);
 							}
 
 							long toLong()
 							{
 								Pointer* ptr = &m_pointers_stack[m_depth];
-								if (ptr->m_type != int_numeric)
-									throw RuntimeError("PDF Stream iterator: Error while converting to long. Current type is: " + ptr->m_type);
+								throw_if (ptr->m_type != int_numeric, "not a long integer");
 								return strtol(ptr->m_buffer, NULL, 10);
 							}
 
@@ -2517,7 +2515,7 @@ struct PDFParser::Implementation
 										}
 									}
 								}
-								throw RuntimeError("PDF Stream iterator: invalid dictionary, could not found '>>'");
+								throw make_error(errors::backtrace_entry{});
 							}
 
 							void readHexString(Pointer& ptr)
@@ -2534,7 +2532,7 @@ struct PDFParser::Implementation
 										ch -= ('a' - 'A');
 									}
 								}
-								throw RuntimeError("PDF Stream iterator: invalid hex string, could not found '>' character");
+								throw make_error(errors::backtrace_entry{});
 							}
 
 							void readLiteralString(Pointer& ptr)
@@ -2572,7 +2570,7 @@ struct PDFParser::Implementation
 										}
 									}
 								}
-								throw RuntimeError("PDF Stream iterator: invalid literal string, could not found ')' character");
+								throw make_error(errors::backtrace_entry{});
 							}
 
 							void readNumeric(Pointer& ptr)
@@ -2615,7 +2613,7 @@ struct PDFParser::Implementation
 									if (ptr.m_buffer[ptr.m_element_size++] == 'R')
 										return;
 								}
-								throw RuntimeError("PDF Stream iterator: invalid referece, could not found 'R' character");
+								throw make_error(errors::backtrace_entry{});
 							}
 
 							void readArray(Pointer& ptr)
@@ -2681,7 +2679,7 @@ struct PDFParser::Implementation
 										}
 									}
 								}
-								throw RuntimeError("PDF Stream iterator: invalid array");
+								throw make_error(errors::backtrace_entry{});
 							}
 					};
 
@@ -2738,16 +2736,13 @@ struct PDFParser::Implementation
 						try
 						{
 							load();
-							if (!m_is_obj_stream)
-								throw RuntimeError("Stream does not contain any compressed objects");
+							throw_if (!m_is_obj_stream);
 							if (!m_loaded_compressed_objects)
 							{
 								PDFNumericInteger* num_obj_count = m_dictionary->getObjAsNumericInteger("N");
-								if (!num_obj_count)
-									throw RuntimeError("Object stream must contain \"N\" entry in its dictionary");
+								throw_if (!num_obj_count, "\"N\" entry not found in stream dictionary.");
 								PDFNumericInteger* offset_for_first_obj = m_dictionary->getObjAsNumericInteger("First");
-								if (!offset_for_first_obj)
-									throw RuntimeError("Object stream must contain \"First\" entry in its dictionary");
+								throw_if (!offset_for_first_obj, "\"First\" entry not found in stream dictionary.");
 								size_t first_offset = (*offset_for_first_obj)();
 								size_t compressed_objects_count = (*num_obj_count)();
 								m_stream_iterator.backToRoot();
@@ -2765,21 +2760,13 @@ struct PDFParser::Implementation
 							}
 							m_stream_iterator.backToRoot();
 							m_stream_iterator.levelDown();
-							if (index >= m_compressed_objects.size())
-								throw RuntimeError("Specified compressed object does not exist in the stream");
-							try
-							{
-								m_stream_iterator.seek(m_compressed_objects[index].m_offset);
-							}
-							catch (const std::exception& e)
-							{
-								throw RuntimeError("Cant seek to the compressed object, offset: " + uint_to_string(m_compressed_objects[index].m_offset));
-							}
+							throw_if (index >= m_compressed_objects.size(), "Compressed object not found", index, m_compressed_objects.size() - 1);
+							m_stream_iterator.seek(m_compressed_objects[index].m_offset);
 							return createNewObjectFromStream();
 						}
 						catch (const std::exception& e)
 						{
-							throw RuntimeError("Error while reading compressed object number " + uint_to_string(index) + " in the stream", e);
+							std::throw_with_nested(make_error(errors::backtrace_entry{}, index));
 						}
 					}
 
@@ -2807,16 +2794,14 @@ struct PDFParser::Implementation
 								switch (ch)
 								{
 									case 'z':
-										if (count != 0)
-											throw RuntimeError("Count parameter is not equal to zero");
+										throw_if (count != 0, "Unexpected count parameter", count);
 										dest.push_back(0);
 										dest.push_back(0);
 										dest.push_back(0);
 										dest.push_back(0);
 										break;
 									case '~':
-										if(index_read < len && src[index_read] != '>')
-											throw RuntimeError("Invalid end of compressed stream");
+										throw_if (index_read < len && src[index_read] != '>');
 										return;
 									case '\n':
 									case '\r':
@@ -2828,8 +2813,7 @@ struct PDFParser::Implementation
 									case 0177:
 										break;
 									default:
-										if (ch < '!' || ch > 'u')
-											throw RuntimeError("Invalid character");
+										throw_if (ch < '!' || ch > 'u');
 										tuple += (ch - '!') * powers_85[count++];
 										if (count == 5)
 										{
@@ -2859,7 +2843,7 @@ struct PDFParser::Implementation
 						}
 						catch (const std::exception& e)
 						{
-							throw RuntimeError("Error while decoding a stream using ascii-85 algorithm", e);
+							std::throw_with_nested(make_error(errors::backtrace_entry{}));
 						}
 					}
 
@@ -2874,11 +2858,11 @@ struct PDFParser::Implementation
 						unsigned int code = 0;
 						unsigned int buffer = 0;
 						unsigned int read_index = 0;
-						Predictior* predictor = NULL;
+						std::unique_ptr<Predictior> predictor = nullptr;
 						try
 						{
 							if (decode_params)
-								predictor = new Predictior(*decode_params);
+								predictor = std::make_unique<Predictior>(*decode_params);
 							size_t len = src.size();
 							dest.clear();
 							dest.reserve(len);
@@ -2925,22 +2909,13 @@ struct PDFParser::Implementation
 									}
 									else if (code == 0x0101)
 									{
-										if (predictor)
-											delete predictor;
-										predictor = NULL;
 										return;
 									}
 									else
 									{
 										if (code >= items_table.size())
 										{
-											if (old >= items_table.size())
-											{
-												if (predictor)
-													delete predictor;
-												predictor = NULL;
-												throw RuntimeError("Index of old and current code are bigger the size of table");
-											}
+											throw_if (old >= items_table.size(), "Index of old and current code are bigger than size of table", old, items_table.size());
 											data = items_table[old];
 											data.push_back(ch);
 										}
@@ -2954,9 +2929,7 @@ struct PDFParser::Implementation
 											}
 											catch (const std::exception& e)
 											{
-												delete predictor;
-												predictor = NULL;
-												throw RuntimeError("Error while decoding data by predictor", e);
+												std::throw_with_nested(make_error("Predictor::decode() failed"));
 											}
 										}
 										else
@@ -2982,23 +2955,10 @@ struct PDFParser::Implementation
 									}
 								}
 							}
-							if (predictor)
-								delete predictor;
-							predictor = NULL;
-						}
-						catch (std::bad_alloc& ba)
-						{
-							if (predictor)
-								delete predictor;
-							predictor = NULL;
-							throw;
 						}
 						catch (const std::exception& e)
 						{
-							if (predictor)
-								delete predictor;
-							predictor = NULL;
-							throw RuntimeError("Error while decoding a stream using lzw algorithm", e);
+							std::throw_with_nested(make_error(errors::backtrace_entry{}));
 						}
 					}
 
@@ -3033,7 +2993,7 @@ struct PDFParser::Implementation
 						}
 						catch (const std::exception& e)
 						{
-							throw RuntimeError("Error while decoding a stream using ascii-hex algorithm", e);
+							std::throw_with_nested(make_error(errors::backtrace_entry{}));
 						}
 					}
 
@@ -3055,7 +3015,7 @@ struct PDFParser::Implementation
 								if (predictor)
 									delete predictor;
 								predictor = NULL;
-								throw RuntimeError("inflateInit has failed");
+								std::throw_with_nested(make_error("inflateInit() failed"));
 							}
 							int err;
 							int written;
@@ -3090,7 +3050,7 @@ struct PDFParser::Implementation
 									{
 										delete predictor;
 										predictor = NULL;
-										throw RuntimeError("Error while decoding data by predictor", e);
+										std::throw_with_nested(make_error("Predictor::decode() failed"));
 									}
 								}
 								else
@@ -3116,7 +3076,7 @@ struct PDFParser::Implementation
 							if (predictor)
 								delete predictor;
 							predictor = NULL;
-							throw RuntimeError("Error while decoding a stream using flat algorithm", e);
+							std::throw_with_nested(make_error(errors::backtrace_entry{}));
 						}
 					}
 
@@ -3150,7 +3110,7 @@ struct PDFParser::Implementation
 						}
 						catch (const std::exception& e)
 						{
-							throw RuntimeError("Error while decoding a stream using RLE algorithm", e);
+							std::throw_with_nested(make_error(errors::backtrace_entry{}));
 						}
 					}
 
@@ -3158,12 +3118,11 @@ struct PDFParser::Implementation
 					{
 						if (m_is_decoded)
 							return;
-						if (m_is_in_external_file)
-							throw RuntimeError("Cannot read stream data: data is inside external file, which is not supported yet");
+						throw_if (m_is_in_external_file, "Stream data inside external file is not supported");
 
 						std::vector<PDFName*> filters;
 						std::vector<PDFDictionary*> filter_options;
-						try
+						auto load_filter_and_decode_params = [&]()
 						{
 							PDFObject* filter_entry = (*m_dictionary)["Filter"];
 							PDFObject* decode_params_entry = (*m_dictionary)["DecodeParms"];
@@ -3189,28 +3148,30 @@ struct PDFParser::Implementation
 							}
 							else
 								filters.push_back(filter_entry->getName());
+						};
+						try
+						{
+							load_filter_and_decode_params();
 						}
 						catch (const std::exception& e)
 						{
-							throw RuntimeError("Cannot decode stream: Cant load Filter and DecodeParms", e);
+							std::throw_with_nested(make_error("load_filter_and_decode_params() failed"));
 						}
 
-						if (filters.size() != filter_options.size())
-							throw RuntimeError("Cannot decode stream: number of filters does not match the number of decoding parameters");
+						throw_if (filters.size() != filter_options.size());
 
 						std::vector<unsigned char> stream_first_content(m_size);
 						std::vector<unsigned char> stream_second_content;
 						stream_second_content.reserve(m_size);
 						size_t current_pos = m_reader->tell();
-						if (!m_reader->seek(m_position, std::ios_base::beg))
-							throw RuntimeError("Cannot decode stream: cant seek to the position of the stream");
-						if (!m_reader->read((char*)&stream_first_content[0], m_size))
-							throw RuntimeError("Cannot decode stream: cant read encoded data");
+						throw_if (!m_reader->seek(m_position, std::ios_base::beg), "PDFReader seek error", m_position);
+						throw_if (!m_reader->read((char*)&stream_first_content[0], m_size), "PDFReader read error", m_size);
 						try
 						{
 							for (size_t i = 0; i < filters.size(); ++i)
 							{
-								switch (PDFReader::getCompressionCode((*filters[i])()))
+								CompressionTypes compression_type = PDFReader::getCompressionCode((*filters[i])());
+								switch (compression_type)
 								{
 									case ascii_85:
 									{
@@ -3254,12 +3215,12 @@ struct PDFParser::Implementation
 									}
 									case crypt:
 									{
-										throw EncryptedFileException("File is encrypted");
+										throw make_error(errors::file_is_encrypted{});
 										break;
 									}
 									default:
 									{
-										throw RuntimeError("Cannot decode stream: Filter " + (*filters[i])() + " is not supported");
+										throw make_error("Unsupported compression type", compression_type);
 									}
 								}
 							}
@@ -3281,13 +3242,12 @@ struct PDFParser::Implementation
 								m_stream_data_buffer[m_stream_data_buffer_len - 1] = ']';
 								m_stream_iterator.init(m_stream_data_buffer, m_stream_data_buffer_len);
 							}
-							if (!m_reader->seek(current_pos, std::ios_base::beg))
-								throw RuntimeError("Cannot decode stream: Cannot go back to the previous location of the file, which is " + uint_to_string(current_pos));
+							throw_if (!m_reader->seek(current_pos, std::ios_base::beg), "PDFReader seek error", current_pos);
 							m_is_decoded = true;
 						}
 						catch (const std::exception& e)
 						{
-							throw RuntimeError("Error while decoding stream", e);
+							std::throw_with_nested(make_error(errors::backtrace_entry{}));
 						}
 					}
 
@@ -3297,8 +3257,7 @@ struct PDFParser::Implementation
 						{
 							if (m_stream_data_buffer)
 								return;
-							if (m_is_in_external_file)
-								throw RuntimeError("Cannot read stream data: data is inside external file, which is not supported yet");
+							throw_if (m_is_in_external_file, "Stream data inside external file is not supported");
 							if (!m_is_decoded)
 								decode();
 							else
@@ -3307,19 +3266,16 @@ struct PDFParser::Implementation
 								m_stream_data_buffer[0] = '[';					//make array
 								m_stream_data_buffer_len = m_size + 2;
 								size_t current_pos = m_reader->tell();
-								if (!m_reader->seek(m_position, std::ios_base::beg))
-									throw RuntimeError("Cannot load stream data: cant seek to the beggining of the stream, position: " + uint_to_string(m_position));
-								if (!m_reader->read(m_stream_data_buffer + 1, m_size))
-									throw RuntimeError("Cannot read stream data, size to read: " + uint_to_string(m_size) + " from position " + uint_to_string(m_position));
+								throw_if (!m_reader->seek(m_position, std::ios_base::beg), "PDFReader seek error", m_position);
+								throw_if (!m_reader->read(m_stream_data_buffer + 1, m_size), m_size);
 								m_stream_data_buffer[m_stream_data_buffer_len - 1] = ']';
-								if (!m_reader->seek(current_pos, std::ios_base::beg))
-									throw RuntimeError("Cannot go back to the previous position after loading stream data. Previous location: " + uint_to_string(current_pos));
+								throw_if (!m_reader->seek(current_pos, std::ios_base::beg), "PDFReader seek error", current_pos);
 								m_stream_iterator.init(m_stream_data_buffer, m_stream_data_buffer_len);
 							}
 						}
 						catch (const std::exception& e)
 						{
-							throw RuntimeError("Error while loading stream data at offset " + uint_to_string(m_position) + " and size " + uint_to_string(m_size), e);
+							std::throw_with_nested(make_error(errors::backtrace_entry{}, m_position, m_size));
 						}
 					}
 
@@ -3356,8 +3312,7 @@ struct PDFParser::Implementation
 									while (m_stream_iterator.hasNext())
 									{
 										m_stream_iterator.getNextElement();
-										if (m_stream_iterator.getType() != name)
-											throw RuntimeError("Error while reading dictionary in stream: key is not a name");
+										throw_if (m_stream_iterator.getType() != name);
 										std::string name = std::string(m_stream_iterator.getData() + 1, m_stream_iterator.getDataLength() - 1);
 										((PDFDictionary*)obj)->m_objects[name] = createNewObjectFromStream();
 									}
@@ -3412,7 +3367,7 @@ struct PDFParser::Implementation
 								}
 								default:
 								{
-									throw RuntimeError("Cannot create object from stream: Unsupported type " + uint_to_string(m_stream_iterator.getType()) + ", value: " + m_stream_iterator.toPlainText());
+									throw make_error("Unsupported object type", m_stream_iterator.getType());
 								}
 							}
 						}
@@ -3421,7 +3376,7 @@ struct PDFParser::Implementation
 							if (obj)
 								delete obj;
 							obj = NULL;
-							throw RuntimeError("Error while creating object from stream", e);
+							std::throw_with_nested(make_error(errors::backtrace_entry{}));
 						}
 					}
 			};
@@ -3460,8 +3415,7 @@ struct PDFParser::Implementation
 							}
 							catch (const std::exception& e)
 							{
-								throw RuntimeError("Indirect object: Error while loading object with index " + uint_to_string(m_index)
-											   + " and generation number " + uint_to_string(m_generation), e);
+								std::throw_with_nested(make_error(errors::backtrace_entry{}, m_index, m_generation));
 							}
 						}
 					}
@@ -3602,8 +3556,7 @@ struct PDFParser::Implementation
 							}
 							catch (const std::exception& e)
 							{
-								throw RuntimeError("Call to reference: Error while loading object with index " + uint_to_string(m_index)
-											   + " and generation number " + uint_to_string(m_generation), e);
+								std::throw_with_nested(make_error(errors::backtrace_entry{}, m_index, m_generation));
 							}
 						}
 					}
@@ -3802,8 +3755,7 @@ struct PDFParser::Implementation
 						m_info = m_info_ref->getDictionary();
 					if (m_got_root)
 						m_root_dictionary = m_root_ref->getDictionary();
-					if (!m_root_dictionary)
-						throw RuntimeError("Root dictionary is missing!");
+					throw_if (!m_root_dictionary);
 					m_metadata = m_root_dictionary->getObjAsStream("Metadata");
 				}
 				catch (std::bad_alloc& ba)
@@ -3853,7 +3805,7 @@ struct PDFParser::Implementation
 						}
 						case EOF:
 						{
-							throw RuntimeError("PDF Reader: Cant read line, current content: " + line);
+							throw make_error("Unexpected EOF");
 						}
 						default:
 						{
@@ -3884,7 +3836,7 @@ struct PDFParser::Implementation
 						}
 						case EOF:
 						{
-							throw RuntimeError("PDF Reader: Error while skipping comment: EOF");
+							throw make_error("Unexpected EOF");
 						}
 					}
 				}
@@ -3898,7 +3850,7 @@ struct PDFParser::Implementation
 				{
 					int ch = m_data_stream->get();
 					if (ch == EOF)
-						throw RuntimeError("Unexpected end of buffer during skipping keyword: " + keyword);
+						throw make_error("Unexpected EOF");
 					if (keyword[found] == ch)
 					{
 						++found;
@@ -3916,8 +3868,7 @@ struct PDFParser::Implementation
 				//go to the name. Character (/) marks beggining of the name
 				while (true)
 				{
-					if (!m_data_stream->read(&ch, 1))
-						throw RuntimeError("PDF Reader: Unexpected end of buffer during reading PDF name");
+					throw_if (!m_data_stream->read(&ch, 1), "Unexpected EOF");
 					if (ch == '/')
 						break;
 				}
@@ -3925,8 +3876,7 @@ struct PDFParser::Implementation
 				while (true)
 				{
 					ch = m_data_stream->get();
-					if (ch == EOF)
-						throw RuntimeError("PDF Reader: Unexpected end of buffer during reading PDF name. Current content: " + name());
+					throw_if (ch == EOF, "Unexpected EOF");
 					switch (ch)
 					{
 						case 0:
@@ -3953,8 +3903,7 @@ struct PDFParser::Implementation
 						case '#':
 						{
 							char hex_char[2];
-							if (!m_data_stream->read(hex_char, 2))
-								throw RuntimeError("PDF Reader: Unexpected end of buffer during reading PDF name. Current content: " + name());
+							throw_if (!m_data_stream->read(hex_char, 2), "Unexpected EOF");
 							name.m_value += hex_char_to_single_char(hex_char);
 							break;
 						}
@@ -3974,8 +3923,7 @@ struct PDFParser::Implementation
 				//search for string content
 				while (true)
 				{
-					if (!m_data_stream->read(&ch, 1))
-						throw RuntimeError("PDF Reader: Unexpected end of buffer during reading PDF string");
+					throw_if (!m_data_stream->read(&ch, 1), "Unexpected EOF");
 					if (ch == '(')	//literal
 						break;
 					if (ch == '<')	//hex
@@ -3990,8 +3938,7 @@ struct PDFParser::Implementation
 					unsigned int got = 0;
 					while (true)
 					{
-						if (!m_data_stream->read(&ch, 1))
-							throw RuntimeError("PDF Reader: Unexpected end of buffer during reading PDF hex string. Current value: " + string.m_value);
+						throw_if (!m_data_stream->read(&ch, 1), "Unexpected EOF");
 						if (ch == '>')
 						{
 							if (got == 1)
@@ -4017,14 +3964,12 @@ struct PDFParser::Implementation
 					int parentheses_depth = 0;
 					while (true)
 					{
-						if (!m_data_stream->read(&ch, 1))
-							throw RuntimeError("PDF Reader: Unexpected end of buffer during reading PDF literal string. Current value: " + string.m_value);
+						throw_if (!m_data_stream->read(&ch, 1), "Unexpected EOF");
 						switch (ch)
 						{
 							case '\\':
 							{
-								if (!m_data_stream->read(&ch, 1))
-									throw RuntimeError("PDF Reader: Unexpected end of buffer during reading PDF literal string. Current value: " + string.m_value);
+								throw_if (!m_data_stream->read(&ch, 1), "Unexpected EOF");
 								switch (ch)
 								{
 									case 10:
@@ -4066,8 +4011,7 @@ struct PDFParser::Implementation
 									case 13:
 									{
 										ch = m_data_stream->get();
-										if (ch == EOF)
-											throw RuntimeError("PDF Reader: Unexpected end of buffer during reading PDF literal string. Current value: " + string.m_value);
+										throw_if (ch == EOF, "Unexpected EOF");
 										if (ch != 10)
 											m_data_stream->unget();
 										break;
@@ -4085,8 +4029,7 @@ struct PDFParser::Implementation
 									{
 										char octal[3];
 										octal[0] = ch;
-										if (!m_data_stream->read(octal + 1, 2))
-											throw RuntimeError("PDF Reader: Unexpected end of buffer during reading PDF literal string (octal number). Current value: " + string.m_value);
+										throw_if (!m_data_stream->read(octal + 1, 2), "Unexpected EOF");
 										char res = ((octal[0] - '0') << 6);
 										res = res | ((octal[1] - '0') << 3);
 										res = res | (octal[2] - '0');
@@ -4109,8 +4052,7 @@ struct PDFParser::Implementation
 							case 13:
 							{
 								ch = m_data_stream->get();
-								if (ch == EOF)
-									throw RuntimeError("PDF Reader: Unexpected end of buffer during reading PDF literal string. Current value: " + string.m_value);
+								throw_if (ch == EOF, "Unexpected EOF");
 								if (ch != 10)
 									m_data_stream->unget();
 								string.m_value += '\n';
@@ -4143,21 +4085,18 @@ struct PDFParser::Implementation
 			{
 				char buffer[4];
 				char ch = m_data_stream->get();
-				if (ch == EOF)
-					throw RuntimeError("PDF Reader: Unexpected end of buffer during reading a boolean");
+				throw_if (ch == EOF, "Unexpected EOF");
 				if (ch == 't')
 				{
 					boolean.m_value = true;
 					//read rest of the string (true)
-					if (!m_data_stream->read(buffer, 3))
-						throw RuntimeError("PDF Reader: Unexpected end of buffer during reading a boolean");
+					throw_if (!m_data_stream->read(buffer, 3), "Unexpected EOF");
 				}
 				else	//false
 				{
 					boolean.m_value = false;
 					//read rest of the string (false)
-					if (!m_data_stream->read(buffer, 4))
-						throw RuntimeError("PDF Reader: Unexpected end of buffer during reading a boolean");
+					throw_if (!m_data_stream->read(buffer, 4), "Unexpected EOF");
 				}
 			}
 
@@ -4166,16 +4105,14 @@ struct PDFParser::Implementation
 				char ch;
 				while (true)
 				{
-					if (!m_data_stream->read(&ch, 1))
-						throw RuntimeError("PDF Reader: Unexpected end of buffer during reading an array");
+					throw_if (!m_data_stream->read(&ch, 1), "Unexpected EOF");
 					if (ch == '[')
 						break;
 				}
 				while (true)
 				{
 					ch = m_data_stream->get();
-					if (ch == EOF)
-						throw RuntimeError("PDF Reader: Unexpected end of buffer during reading an array");
+					throw_if (ch == EOF, "Unexpected EOF");
 					if (ch == ']')
 						return;
 					PDFObject* value_object = NULL;
@@ -4194,8 +4131,7 @@ struct PDFParser::Implementation
 							case '<':	//value is a hexadecimal string or dictionary
 							{
 								ch = m_data_stream->get();
-								if (ch == EOF)
-									throw RuntimeError("PDF Reader: Unexpected end of buffer during reading an array");
+								throw_if (ch == EOF, "Unexpected EOF");
 								if (ch == '<')	//dictionary
 								{
 									value_object = new PDFDictionary;
@@ -4281,8 +4217,7 @@ struct PDFParser::Implementation
 									//indirect reference: two numbers and 'R' character with spaces
 									ch = m_data_stream->get();
 									++to_seek_backward;
-									if (ch == EOF)
-										throw RuntimeError("PDF Reader: Unexpected end of buffer during reading an array");
+									throw_if (ch == EOF, "Unexpected EOF");
 									if (ch == ' ')
 									{
 										++spaces;
@@ -4299,8 +4234,7 @@ struct PDFParser::Implementation
 										break;
 									}
 								}
-								if (!m_data_stream->seekg(-to_seek_backward, std::ios_base::cur))
-									throw RuntimeError("PDF Reader: Cant rewind cursor during reading an array");
+								throw_if (!m_data_stream->seekg(-to_seek_backward, std::ios_base::cur), "std::istream::seekg() failed", -to_seek_backward);
 								if (is_reference)
 								{
 									value_object = new PDFReferenceCall(*this);
@@ -4325,7 +4259,7 @@ struct PDFParser::Implementation
 						if (value_object)
 							delete value_object;
 						value_object = NULL;
-						throw RuntimeError("PDF Reader: Error reading an array", e);
+						std::throw_with_nested(make_error(errors::backtrace_entry{}));
 					}
 				}
 			}
@@ -4342,7 +4276,7 @@ struct PDFParser::Implementation
 					{
 						case EOF:
 						{
-							throw RuntimeError("PDF Reader: Unexpected end of buffer during reading a numeric value");
+							throw make_error("Unexpected EOF");
 						}
 						case '-':
 						{
@@ -4385,8 +4319,7 @@ struct PDFParser::Implementation
 							if (is_float)
 							{
 								double value = strtod(begin, &end);
-								if (value == 0.0 && begin == end)
-									throw RuntimeError("Error while converting number " + number_str + " to double");
+								throw_if (value == 0.0 && begin == end, "Conversion to double failed", number_str);
 								if (negative)
 									value = -value;
 								object = new PDFNumericFloat;
@@ -4395,8 +4328,7 @@ struct PDFParser::Implementation
 							else
 							{
 								long value = strtol(begin, &end, 10);
-								if (value == 0 && begin == end)
-									throw RuntimeError("Error while converting number " + number_str + " to long");
+								throw_if (value == 0 && begin == end, "Conversion to long int failed", number_str);
 								if (negative)
 									value = -value;
 								object = new PDFNumericInteger;
@@ -4411,8 +4343,15 @@ struct PDFParser::Implementation
 			void readNull(PDFNull& null)
 			{
 				char buffor[4];
-				if (!m_data_stream->read(buffor, 4) || memcmp(buffor, "null", 4) != 0)
-					throw RuntimeError("PDF Reader: Invalid null value");
+				try
+				{
+					throw_if (!m_data_stream->read(buffor, 4));
+					throw_if (memcmp(buffor, "null", 4) != 0);
+				}
+				catch (std::exception&)
+				{
+					std::throw_with_nested(make_error(errors::backtrace_entry{}));
+				}
 			}
 
 			void readStream(PDFStream& stream)
@@ -4422,8 +4361,7 @@ struct PDFParser::Implementation
 					char ch;
 					PDFDictionary* stream_dict = stream.m_dictionary;
 					PDFNumericInteger* len = stream_dict->getObjAsNumericInteger("Length");
-					if (!len)
-						throw RuntimeError("PDF Reader: Error while reading a stream: missing \"Length\" entry");
+					throw_if (!len, "\"Length\" object not found in stream dictionary");
 					stream.m_size = (*len)();
 					//check if stream is encoded.
 					if (stream_dict->getObjAsName("Filter") || stream_dict->getObjAsArray("Filter"))
@@ -4436,8 +4374,7 @@ struct PDFParser::Implementation
 					ch = m_data_stream->get();
 					if (ch == 13)
 						ch = m_data_stream->get();
-					if (ch != 10)
-						throw RuntimeError("PDF Reader: Error while reading a stream: invalid beggining of the stream");
+					throw_if (ch != 10, ch);
 					stream.m_position = m_data_stream->tellg();
 					//Stream data can be included in external file.
 					if ((*stream_dict)["F"])
@@ -4447,14 +4384,13 @@ struct PDFParser::Implementation
 					}
 					else
 					{
-						if (!m_data_stream->seekg(stream.m_size, std::ios_base::cur))
-							throw RuntimeError("PDF Reader: Error while reading a stream: cant skip stream data");
+						throw_if (!m_data_stream->seekg(stream.m_size, std::ios_base::cur), "std::istream::seekg failed", stream.m_size);
 					}
 					skipKeyword("endstream");
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("PDF Reader: Error while reading stream", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}));
 				}
 			}
 
@@ -4468,8 +4404,7 @@ struct PDFParser::Implementation
 				int stage = 0;	//0 = reading reference index, 1 = reading reference generation, 2 = reading 'R' character
 				while (true)
 				{
-					if (!m_data_stream->read(&ch, 1))
-						throw RuntimeError("PDF Reader: Unexpected end of buffer during reading a call to reference");
+					throw_if (!m_data_stream->read(&ch, 1), "Unexpected EOF");
 					switch (ch)
 					{
 						case '0':
@@ -4500,16 +4435,14 @@ struct PDFParser::Implementation
 							if (stage == 0 && text.length() > 0)
 							{
 								reference.m_index = strtol(begin, &end, 10);
-								if (reference.m_index == 0 || end == begin)
-									throw RuntimeError("PDF Reader: Error while reading \"" + text + "\" as indirect reference.");
+								throw_if (reference.m_index == 0 || end == begin, "Conversion to long int failed", text);
 								text.clear();
 								++stage;
 							}
 							else if (stage == 1 && text.length() > 0)
 							{
 								reference.m_generation = strtol(begin, &end, 10);
-								if (reference.m_index == 0 || end == begin)
-									throw RuntimeError("PDF Reader: Error while reading \"" + text + "\" as indirect reference.");
+								throw_if (reference.m_index == 0 || end == begin, "Conversion to long int failed", text);
 								text.clear();
 								++stage;
 							}
@@ -4529,8 +4462,7 @@ struct PDFParser::Implementation
 				{
 					prev_ch = ch;
 					ch = m_data_stream->get();
-					if (ch == EOF)
-						throw RuntimeError("PDF Reader: Unexpected end of buffer during reading a dictionary");
+					throw_if (ch == EOF, "Unexpected EOF");
 					if (prev_ch == '<' && ch == '<')
 					{
 						reading_key = true;
@@ -4541,8 +4473,7 @@ struct PDFParser::Implementation
 				{
 					prev_ch = ch;
 					ch = m_data_stream->get();
-					if (ch == EOF)
-						throw RuntimeError("PDF Reader: Unexpected end of buffer during reading a dictionary");
+					throw_if (ch == EOF, "Unexpected EOF");
 					if (ch == '>' && prev_ch == '>')
 						return;
 					if (ch == '%')
@@ -4560,7 +4491,7 @@ struct PDFParser::Implementation
 						}
 						catch (const std::exception& e)
 						{
-							throw RuntimeError("Error while reading dictionary name", e);
+							std::throw_with_nested(make_error("readName() failed"));
 						}
 						reading_value = true;
 						reading_key = false;
@@ -4585,8 +4516,7 @@ struct PDFParser::Implementation
 								case '<':	//value is a hexadecimal string or dictionary
 								{
 									ch = m_data_stream->get();
-									if (ch == EOF)
-										throw RuntimeError("PDF Reader: Unexpected end of buffer during reading a dictionary");
+									throw_if (ch == EOF, "Unexpected EOF");
 									if (ch == '<')	//dictionary
 									{
 										value_object = new PDFDictionary;
@@ -4681,8 +4611,7 @@ struct PDFParser::Implementation
 										//indirect reference: two integers and 'R' character with spaces
 										ch = m_data_stream->get();
 										++seek_backward;
-										if (ch == EOF)
-											throw RuntimeError("PDF Reader: Unexpected end of buffer during reading a dictionary");
+										throw_if (ch == EOF, "Unexpected EOF");
 										if (ch == ' ')
 										{
 											++spaces;
@@ -4699,8 +4628,7 @@ struct PDFParser::Implementation
 											break;
 										}
 									}
-									if (!m_data_stream->seekg(-seek_backward, std::ios_base::cur))
-										throw RuntimeError("PDF Reader: Cant rewind cursor after reading a dictionary");
+									throw_if (!m_data_stream->seekg(-seek_backward, std::ios_base::cur), "std::istream::seekg() failed", -seek_backward);
 									if (is_reference)
 									{
 										value_object = new PDFReferenceCall(*this);
@@ -4727,7 +4655,7 @@ struct PDFParser::Implementation
 							if (value_object)
 								delete value_object;
 							value_object = NULL;
-							throw RuntimeError("PDF Reader: Cant read dictionary, error while reading entry: " + key_name(), e);
+							std::throw_with_nested(make_error(key_name.m_value));
 						}
 					}
 				}
@@ -4735,12 +4663,10 @@ struct PDFParser::Implementation
 
 			PDFObject* readIndirectObject(size_t index)
 			{
-				if (index >= m_references.size())
-					throw RuntimeError("PDF Reader: Cannot read indirect object. Size of the table: " + uint_to_string(m_references.size())
-									+ ", index: " + uint_to_string(index));
-				ReferenceInfo* reference_info = &m_references[index];
 				try
 				{
+					throw_if (index >= m_references.size(), index, m_references.size() - 1);
+					ReferenceInfo* reference_info = &m_references[index];
 					if (reference_info->m_object)
 					{
 						if (reference_info->m_object->m_object)
@@ -4762,10 +4688,7 @@ struct PDFParser::Implementation
 						case ReferenceInfo::compressed:	//in use, but compressed
 						{
 							//object is compressed in another stream, m_offset is an index here.
-							if (reference_info->m_offset >= m_references.size())
-								throw RuntimeError("PDF Reader: Cannot read compressed object. Size of the table: "
-												+ uint_to_string(m_references.size()) + ", index: "
-												+ uint_to_string(reference_info->m_offset));
+							throw_if (reference_info->m_offset >= m_references.size(), reference_info->m_offset, m_references.size() - 1);
 							ReferenceInfo* object_stream_reference = &m_references[reference_info->m_offset];
 							if (!object_stream_reference->m_object)
 							{
@@ -4774,42 +4697,36 @@ struct PDFParser::Implementation
 								object_stream_reference->m_object->m_generation = object_stream_reference->m_generation;
 							}
 							PDFStream* object_stream = NULL;
-							try
+							auto get_compressed_objects_stream = [&]()
 							{
 								if (!object_stream_reference->m_object->m_object)
 									object_stream_reference->m_object->m_object = readIndirectObject(object_stream_reference->m_object->m_index);
 								object_stream = object_stream_reference->m_object->getStream();
-								if (!object_stream)
-									throw RuntimeError("Object stream does not exist");
-							}
-							catch (const std::exception& e)
-							{
-								throw RuntimeError("PDF Reader: Cannot read stream with compressed objects", e);
-							}
-							//generation is an index in compressed object.
+								throw_if (!object_stream, "PDFObject::getStream() failed");
+							};
 							try
 							{
-								reference_info->m_object->m_object = object_stream->getCompressedObject(reference_info->m_generation);
+								get_compressed_objects_stream();
 							}
 							catch (const std::exception& e)
 							{
-								throw RuntimeError("PDF Reader: Cant load object from object stream with index " + uint_to_string(reference_info->m_offset), e);
+								std::throw_with_nested(make_error("get_compressed_objects_stream() failed"));
 							}
+							//generation is an index in compressed object.
+							reference_info->m_object->m_object = object_stream->getCompressedObject(reference_info->m_generation);
 							return reference_info->m_object->m_object;
 						}
 						case ReferenceInfo::in_use:
 						{
 							size_t current_position = m_data_stream->tellg();
-							if (!seek(reference_info->m_offset, std::ios_base::beg))
-								throw RuntimeError("PDF Reader: Cant seek to the begginig of the indirect object, position: "
-												+ uint_to_string(reference_info->m_offset));
+							throw_if (!seek(reference_info->m_offset, std::ios_base::beg), "PDFReader::seek() failed", reference_info->m_offset);
 							try
 							{
 								skipKeyword("obj");
 							}
 							catch (const std::exception& e)
 							{
-								throw RuntimeError("PDF Reader: Cant find \"obj\" keyword during reading indirect object", e);
+								std::throw_with_nested(make_error("skipKeyword() failed", std::make_pair("keyword", "obj")));
 							}
 							PDFObject* value_object = NULL;
 							try
@@ -4817,29 +4734,24 @@ struct PDFParser::Implementation
 								while (true)
 								{
 									char ch = m_data_stream->get();
-									if (ch == EOF)
-										throw RuntimeError("PDF Reader: Unexpected end of buffer during reading indirect object");
+									throw_if (ch == EOF, "Unexpected EOF");
 									switch (ch)
 									{
 										case 'e':	//endobj
 										{
 											char buffer[5];
-											if (!m_data_stream->read(buffer, 5))
-												throw RuntimeError("PDF Reader: Unexpected end of buffer during reading indirect object, error while reading endobj keyword");
-											if (memcmp(buffer, "ndobj", 5) != 0)
-												throw RuntimeError("PDF Reader: Invalid keyword for end of the object");
+											throw_if (!m_data_stream->read(buffer, 5), "Unexpected EOF");
+											throw_if (memcmp(buffer, "ndobj", 5) != 0);
 											if (!reference_info->m_object->m_object)
 												reference_info->m_object->m_object = new PDFNull;
-											if (!m_data_stream->seekg(current_position, std::ios_base::beg))
-												throw RuntimeError("Cant seek to the prevoius positon after reading an object");
+											throw_if (!m_data_stream->seekg(current_position, std::ios_base::beg), "std::istream::seekg", current_position);
 											return reference_info->m_object->m_object;
 										}
 										case 's':	//stream
 										{
 											value_object = reference_info->m_object->m_object;
 											reference_info->m_object->m_object = NULL;
-											if (!value_object || !value_object->isDictionary())
-												throw RuntimeError("PDF Reader: Error while reading indirect object: Stream cannot exist without dictionary");
+											throw_if (!value_object || !value_object->isDictionary());
 											reference_info->m_object->m_object = new PDFStream(*this, *value_object->getDictionary());
 											value_object = NULL;
 											m_data_stream->unget();
@@ -4848,8 +4760,7 @@ struct PDFParser::Implementation
 										}
 										case '/':	//name
 										{
-											if (reference_info->m_object->m_object)
-												throw RuntimeError("PDF Reader: Indirect object can contain only one object inside");
+											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
 											value_object = new PDFName;
 											m_data_stream->unget();
 											readName(*(PDFName*)value_object);
@@ -4859,11 +4770,9 @@ struct PDFParser::Implementation
 										}
 										case '<':	//hexadecimal string or dictionary
 										{
-											if (reference_info->m_object->m_object)
-												throw RuntimeError("PDF Reader: Indirect object can contain only one object inside");
+											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
 											ch = m_data_stream->get();
-											if (ch == EOF)
-												throw RuntimeError("PDF Reader: Unexpected end of buffer during reading indirect object");
+											throw_if (ch == EOF, "Unexpected EOF");
 											if (ch == '<')	//dictionary
 											{
 												value_object = new PDFDictionary;
@@ -4886,8 +4795,7 @@ struct PDFParser::Implementation
 										}
 										case '(':	//value is a literal string
 										{
-											if (reference_info->m_object->m_object)
-												throw RuntimeError("PDF Reader: Indirect object can contain only one object inside");
+											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
 											value_object = new PDFString;
 											m_data_stream->unget();
 											readString(*(PDFString*)value_object);
@@ -4898,8 +4806,7 @@ struct PDFParser::Implementation
 										case 'f':
 										case 't':	//value is a boolean
 										{
-											if (reference_info->m_object->m_object)
-												throw RuntimeError("PDF Reader: Indirect object can contain only one object inside");
+											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
 											value_object = new PDFBoolean;
 											m_data_stream->unget();
 											readBoolean(*(PDFBoolean*)value_object);
@@ -4909,8 +4816,7 @@ struct PDFParser::Implementation
 										}
 										case '[':	//value is an array
 										{
-											if (reference_info->m_object->m_object)
-												throw RuntimeError("PDF Reader: Indirect object can contain only one object inside");
+											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
 											value_object = new PDFArray;
 											m_data_stream->unget();
 											readArray(*(PDFArray*)value_object);
@@ -4920,8 +4826,7 @@ struct PDFParser::Implementation
 										}
 										case 'n':	//value is a null
 										{
-											if (reference_info->m_object->m_object)
-												throw RuntimeError("PDF Reader: Indirect object can contain only one object inside");
+											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
 											value_object = new PDFNull;
 											m_data_stream->unget();
 											readNull(*(PDFNull*)value_object);
@@ -4948,8 +4853,7 @@ struct PDFParser::Implementation
 										case '8':
 										case '9':	//value is a numeric
 										{
-											if (reference_info->m_object->m_object)
-												throw RuntimeError("PDF Reader: Indirect object can contain only one object inside");
+											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
 											m_data_stream->unget();
 											value_object = readNumeric();
 											reference_info->m_object->m_object = value_object;
@@ -4971,18 +4875,18 @@ struct PDFParser::Implementation
 								if (value_object)
 									delete value_object;
 								value_object = NULL;
-								throw RuntimeError("PDF Reader: Cant read indirect object.", e);
+								throw;
 							}
 						}
 						default:
 						{
-							throw RuntimeError("PDF Reader: invalid reference type: " + reference_info->m_type);
+							throw make_error("Unexpected reference type", reference_info->m_type);
 						}
 					}
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("PDF Reader: Error while reading indirect object", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}, index));
 				}
 			}
 
@@ -5008,16 +4912,13 @@ struct PDFParser::Implementation
 				{
 					char start_xref_buffer[25];
 					size_t xref_data_position;
-					if (!m_data_stream->seekg(-25, std::ios_base::end))
-						throw RuntimeError("PDF Reader: Cant read xref data: Cant seek to the position of startxref");
-					if (!m_data_stream->read(start_xref_buffer, 25))
-						throw RuntimeError("PDF Reader: Cant read xref data: Cant read the position of startxref");
+					throw_if (!m_data_stream->seekg(-25, std::ios_base::end), "Error seeking to start xref position");
+					throw_if (!m_data_stream->read(start_xref_buffer, 25), "Can't read start xref position");
 					int index = 0;
 					while (start_xref_buffer[index] > '9' || start_xref_buffer[index] < '0')
 					{
 						++index;
-						if (index == 25)
-							throw RuntimeError("PDF Reader: Cant read xref data: Cant read the position of startxref");
+						throw_if (index == 25);
 					}
 					bool backward_compatibility = false;
 					std::set<size_t> start_xref_positions;
@@ -5025,23 +4926,19 @@ struct PDFParser::Implementation
 					start_xref_positions.insert(xref_data_position);
 					while (true)
 					{
-						if (!m_data_stream->seekg(xref_data_position, std::ios_base::beg))
-							throw RuntimeError("PDF Reader: Cant seek to the cross reference data");
+						throw_if (!m_data_stream->seekg(xref_data_position, std::ios_base::beg), "Error seeking to xref position");
 						char ch = m_data_stream->get();
-						if (ch == EOF)
-							throw RuntimeError("PDF Reader: Unexpected end of buffer");
+						throw_if (ch == EOF, "Unexpected EOF");
 						if (ch == 'x')	//xref line
 						{
 							//xref table
 							std::string line;
 							readLine(line);
-							if (line.length() < 3 || line.substr(0, 3) != "ref")
-								throw RuntimeError("PDF Reader: Invalid xref keyword");
+							throw_if (line.length() < 3 || line.substr(0, 3) != "ref");
 							readXrefTable();
 							m_trailer_dict.clearDictionary();
 							readDictionary(m_trailer_dict);
-							if (m_trailer_dict.getObjAsReferenceCall("Encrypt"))
-								throw EncryptedFileException("File is encrypted");
+							throw_if (m_trailer_dict.getObjAsReferenceCall("Encrypt"), errors::file_is_encrypted{});
 							if (!m_got_root && m_trailer_dict.getObjAsReferenceCall("Root"))
 							{
 								m_got_root = true;
@@ -5075,8 +4972,7 @@ struct PDFParser::Implementation
 							//xref stream
 							m_data_stream->unget();
 							PDFNumericInteger* num_index = readNumeric()->getNumericInteger();
-							if (!num_index)
-								throw RuntimeError("PDF Reader: Invalid XRef stream");
+							throw_if (!num_index, "Error getting XRef stream index");
 							size_t index = (*num_index)();
 							delete num_index;
 							//initialize obj:
@@ -5086,11 +4982,9 @@ struct PDFParser::Implementation
 							m_references[index].m_offset = xref_data_position;
 							m_references[index].m_read = true;
 							PDFStream* xref_stream = readIndirectObject(index)->getStream();
-							if (!xref_stream)
-								throw RuntimeError("PDF Reader: Invalid XRef stream");
+							throw_if (!xref_stream, "Error getting XRef stream");
 							readXRefStream(*xref_stream);
-							if (xref_stream->m_dictionary->getObjAsReferenceCall("Encrypt"))
-								throw EncryptedFileException("File is encrypted");
+							throw_if (xref_stream->m_dictionary->getObjAsReferenceCall("Encrypt"), errors::file_is_encrypted{});
 							if (!m_got_root && xref_stream->m_dictionary->getObjAsReferenceCall("Root"))
 							{
 								m_got_root = true;
@@ -5118,7 +5012,7 @@ struct PDFParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("PDF Reader: Error while reading reference data", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}));
 				}
 			}
 
@@ -5139,32 +5033,27 @@ struct PDFParser::Implementation
 						if (ptr_start[0] != 't')	//trailer
 						{
 							size_t start = strtol(ptr_start, &ptr_end, 10);
-							if (start == 0 && ptr_start == ptr_end)
-								throw RuntimeError("PDF Reader: Error while coverting \"" + line + "\" to reference info");
+							throw_if (start == 0 && ptr_start == ptr_end, "Conversion to long int failed", line);
 							ptr_start = ptr_end;
 							size_t count = strtol(ptr_start, &ptr_end, 10);
-							if (count == 0 && ptr_start == ptr_end)
-								throw RuntimeError("PDF Reader: Error while coverting \"" + line + "\" to reference info");
+							throw_if (count == 0 && ptr_start == ptr_end, "Conversion to long int failed", line);
 							if (start + count > m_references.size())
 								m_references.resize(start + count);
 							for (size_t i = 0; i < count; ++i)
 							{
 								readLine(line);
-								if (line.length() < 18)
-									throw RuntimeError("PDF Reader: Line in cross reference table is too short: " + line);
+								throw_if (line.length() < 18, line.length());
 								reference = &m_references[start + i];
 								if (!reference->m_read)
 								{
 									ptr_start = (char*)line.c_str();
 									ptr_end = ptr_start;
 									reference->m_offset = strtol(ptr_start, &ptr_end, 10);
-									if (reference->m_offset == 0 && ptr_start == ptr_end)
-										throw RuntimeError("PDF Reader: Error while coverting \"" + line + "\" to reference info");
+									throw_if (reference->m_offset == 0 && ptr_start == ptr_end, "Conversion to long int failed", line);
 									ptr_start = (char*)line.c_str() + 11;
 									ptr_end = ptr_start;
 									reference->m_generation = strtol(ptr_start, &ptr_end, 10);
-									if (reference->m_generation == 0 && ptr_start == ptr_end)
-										throw RuntimeError("PDF Reader: Error while coverting \"" + line + "\" to reference info");
+									throw_if (reference->m_generation == 0 && ptr_start == ptr_end, "Conversion to long int failed", line);
 									if (line[17] == 'f')
 										reference->m_type = ReferenceInfo::free;
 									else
@@ -5178,7 +5067,7 @@ struct PDFParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("PDF Reader: Error while reading XRef table", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}));
 				}
 			}
 
@@ -5191,8 +5080,7 @@ struct PDFParser::Implementation
 					std::vector<int> sizes;
 					size_t w_sizes[3];
 					PDFNumericInteger* num_size = stream.m_dictionary->getObjAsNumericInteger("Size");
-					if (!num_size)
-						throw RuntimeError("PDF Reader: No Size entry in XRef stream");
+					throw_if (!num_size, "\"Size\" object not found in XRef stream dictionary");
 					size_t size = (*num_size)();
 					PDFArray* index_array = stream.m_dictionary->getObjAsArray("Index");
 					if (index_array)
@@ -5219,16 +5107,13 @@ struct PDFParser::Implementation
 						start_positions.push_back(0);
 						sizes.push_back(size);
 					}
-					if (sizes.size() != start_positions.size())
-						throw RuntimeError("PDF Reader: \"Index\" entry in cross reference stream is invalid");
+					throw_if (sizes.size() != start_positions.size());
 					PDFArray* w_array = stream.m_dictionary->getObjAsArray("W");
-					if (!w_array || w_array->Size() != 3)
-						throw RuntimeError("PDF Reader: Reference stream hasnt got \"W\" entry or this entry is invalid");
+					throw_if (!w_array || w_array->Size() != 3);
 					for (int i = 0; i < 3; ++i)
 					{
 						PDFNumericInteger* element = w_array->getObjAsNumericInteger(i);
-						if (!element)
-							throw RuntimeError("PDF Reader: \"W\" entry is invalid");
+						throw_if (!element);
 						w_sizes[i] = (*element)();
 					}
 					ReferenceInfo* reference;
@@ -5236,8 +5121,7 @@ struct PDFParser::Implementation
 					iterator.backToRoot();
 					const unsigned char* data = (const unsigned char*)iterator.getData() + 1;	//skip '[' character
 					size_t record_size = w_sizes[0] + w_sizes[1] + w_sizes[2];
-					if (iterator.getDataLength() - 2 < record_size * entries_count)
-						throw RuntimeError("PDF Reader: XRef stream is too short, does not contain all declared entries");
+					throw_if (iterator.getDataLength() - 2 < record_size * entries_count, iterator.getDataLength() - 2, record_size * entries_count);
 					size_t read_index = 0;
 					for (size_t i = 0; i < sizes.size(); ++i)
 					{
@@ -5283,7 +5167,7 @@ struct PDFParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("PDF Reader: Error while reading XRef stream", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}));
 				}
 			}
 	};
@@ -6689,11 +6573,7 @@ struct PDFParser::Implementation
 			charWidth(const std::u32string& u32_str, const PoDoFo::PdfFont &font, double curFontSize, unsigned int idx)
 			{
 				docwire_log_func_with_args(u32_str, font, curFontSize, idx);
-				if (idx > u32_str.size())
-				{
-					docwire_log(error) << "Internal error: idx > u32_str.size()" << docwire_log_streamable_vars(idx, u32_str.size());
-					throw LogicError("Internal error: idx > u32_str.size()");
-				}
+				throw_if (idx > u32_str.size(), idx, u32_str.size());
 				char32_t ch = u32_str[idx];
 				std::string ch_s = utf32_to_utf8(ch);
 				docwire_log_vars(ch, ch_s);
@@ -7387,8 +7267,7 @@ struct PDFParser::Implementation
 					return;
 				}
 				std::vector<char> buffer(file_stream.size() + 2);
-				if (!file_stream.read(&buffer[1], 1, buffer.size() - 2))
-					throw RuntimeError("Cannot read from file: " + cmap_to_cid_file_name);
+				throw_if (!file_stream.read(&buffer[1], 1, buffer.size() - 2), buffer.size() - 2);
 				file_stream.close();
 
 				std::string last_name;
@@ -7538,8 +7417,7 @@ struct PDFParser::Implementation
 				return;
 			}
 			std::vector<char> buffer(file_stream.size() + 2);
-			if (!file_stream.read(&buffer[1], 1, buffer.size() - 2))
-				throw RuntimeError("Cannot read from file: " + cmap_to_cid_file_name);
+			throw_if (!file_stream.read(&buffer[1], 1, buffer.size() - 2), cid_to_unicode_cmap, buffer.size() - 2);
 			file_stream.close();
 			buffer[0] = '[';
 			buffer[buffer.size() - 1] = ']';
@@ -7548,7 +7426,7 @@ struct PDFParser::Implementation
 		}
 		catch (const std::exception& e)
 		{
-			throw RuntimeError("Error while parsing predefined CMap: " + font.m_font_encoding, e);
+			std::throw_with_nested(make_error(errors::backtrace_entry{}, font.m_font_encoding));
 		}
 	}
 
@@ -8099,7 +7977,7 @@ struct PDFParser::Implementation
 			}
 			catch (const std::exception& e)
 			{
-				throw RuntimeError("Error while parsing page number: " + uint_to_string(page_num), e);
+				std::throw_with_nested(make_error(page_num));
 			}
 			docwire_log(debug) << "Page processed" << docwire_log_streamable_var(page_num);
 		}
@@ -8229,13 +8107,13 @@ struct PDFParser::Implementation
 		catch (const PoDoFo::PdfError& e)
 		{
 			docwire_log(error) << e;
-			if (e.GetCode() == PoDoFo::PdfErrorCode::NotCompiled || e.GetCode() == PoDoFo::PdfErrorCode::InternalLogic)
+			if (e.GetCode() == PoDoFo::PdfErrorCode::InvalidPassword)
 			{
-				throw EncryptedFileException("File is encrypted", e);
+				std::throw_with_nested(make_error(errors::file_is_encrypted{}));
 			}
 			else
 			{
-				throw RuntimeError("Pdf parsing failed", e);
+				std::throw_with_nested(make_error("LoadFromDevice() failed"));
 			}
 		}
 	}

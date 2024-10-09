@@ -11,7 +11,7 @@
 
 #include "xls_parser.h"
 
-#include "exception.h"
+#include "error_tags.h"
 #include <iostream>
 #include "log.h"
 #include <map>
@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "throw_if.h"
 #include <wv2/ustring.h>
 #include "wv2/textconverter.h"
 #include "wv2/utilities.h"
@@ -469,18 +470,18 @@ struct XLSParser::Implementation
 				{
 					U16 encryption_type = getU16LittleEndian(rec.begin());
 					if (encryption_type == 0x0000)
-						throw EncryptedFileException("XLS file is encrypted: XOR obfuscation encryption type detected");
+						throw make_error(errors::file_is_encrypted{}, "XOR obfuscation encryption");
 					else if (encryption_type == 0x0001 && rec.size() >= 4)
 					{
 						U16 header_type = getU16LittleEndian(rec.begin() + 2);
 						if (header_type == 0x0001)
-							throw EncryptedFileException("XLS file is encrypted: RC4 encryption type detected, RC4 encryption header found");
+							throw make_error(errors::file_is_encrypted{}, "RC4 encryption");
 						else if (header_type == 0x0002 || header_type == 0x0003)
-							throw EncryptedFileException("XLS file is encrypted: RC4 encryption type detected, RC4 CryptoAPI encryption header found");
-						throw EncryptedFileException("XLS file is encrypted: RC4 encryption type detected, unknown RC4 encryption header");
+							throw make_error(errors::file_is_encrypted{}, "RC4 CryptoAPI encryption");
+						throw make_error(errors::file_is_encrypted{}, "unknown RC4 encryption");
 					}
 				}
-				throw EncryptedFileException("XLS file is encrypted: Unknown encryption type");
+				throw make_error(errors::file_is_encrypted{});
 			}
 			case XLS_FORMAT:
 			{
@@ -703,11 +704,9 @@ struct XLSParser::Implementation
 		bool read_status = true;
 		while (read_status)
 		{
-			if (oleEof(reader))
-				throw RuntimeError("Error while parsing XLS: No BOF record found");
+			throw_if (oleEof(reader), "BOF record not found");
 			U16 rec_type, rec_len;
-			if (!reader.readU16(rec_type) || !reader.readU16(rec_len))
-				throw RuntimeError("Error while parsing XLS, OLE Reader has reported an error: " + reader.getLastError());
+			throw_if (!reader.readU16(rec_type) || !reader.readU16(rec_len), reader.getLastError());
 			enum BofRecordTypes
 			{
 				BOF_BIFF_2 = 0x009,
@@ -726,8 +725,7 @@ struct XLSParser::Implementation
 						case BOF_BIFF_5_AND_8:
 						{
 							U16 biff_ver, data_type;
-							if (!reader.readU16(biff_ver) || !reader.readU16(data_type))
-								throw RuntimeError("Error while parsing XLS, OLE Reader has reported an error: " + reader.getLastError());
+							throw_if (!reader.readU16(biff_ver) || !reader.readU16(data_type), reader.getLastError());
 							//On microsoft site there is documentation only for "BIFF8". Documentation from OpenOffice is better:
 							/*
 								BIFF5:
@@ -793,25 +791,22 @@ struct XLSParser::Implementation
 					break;
 				}
 				else
-					throw RuntimeError("Error while parsing XLS: Invalid BOF record, size of this record should have 8 or 16 bytes length");
+					throw_if (rec_len != 8 && rec_len != 16, "Invalid BOF record size", rec_len);
 			}
 			else
 			{
 				rec.resize(126);
-				if (!reader.read(&*rec.begin(), 126))
-					throw RuntimeError("OLE Reader has reported an error: " + reader.getLastError());
+				throw_if (!reader.read(&*rec.begin(), 126), reader.getLastError());
 			}
 		}
-		if (oleEof(reader))
-			throw RuntimeError("Error while parsing XLS: No BOF record found");
+		throw_if (oleEof(reader), "BOF record not found");
 		bool eof_rec_found = false;
 		while (read_status)
 		{
 			U16 rec_type;
 			if (!reader.readU16(rec_type))
 			{
-				if (text.length() == 0)
-					throw RuntimeError("Error while parsing XLS, type of record could not be read. OLE Reader has reported an error: " + reader.getLastError());
+				throw_if (text.length() == 0, reader.getLastError());
 				docwire_log(error) << "Error while parsing XLS, type of record could not be read. OLE Reader has reported an error: " << reader.getLastError();
 				break;
 			}
@@ -823,8 +818,7 @@ struct XLSParser::Implementation
 			U16 rec_len;
 			if (!reader.readU16(rec_len))
 			{
-				if (text.length() == 0)
-					throw RuntimeError("Error while parsing XLS, length of record could not be read. OLE Reader has reported an error: " + reader.getLastError());
+				throw_if (text.length() == 0, reader.getLastError());
 				docwire_log(error) << "Error while parsing XLS, length of record could not be read. OLE Reader has reported an error: " << reader.getLastError();
 				break;
 			}
@@ -872,8 +866,7 @@ bool XLSParser::understands(const data_source& data) const
 void XLSParser::parse(const data_source& data) const
 {
 	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
-	if (!storage->isValid())
-		throw RuntimeError("Error opening stream as OLE file. OLE Storage error: " + storage->getLastError());
+	throw_if (!storage->isValid(), storage->getLastError());
 	sendTag(tag::Document
 		{
 			.metadata = [this, &storage]()
@@ -886,7 +879,7 @@ void XLSParser::parse(const data_source& data) const
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing metadata", e);
+					std::throw_with_nested(make_error("parser_oshared_summary_info() failed"));
 				}
 			}
 		});
@@ -911,17 +904,14 @@ std::string XLSParser::parse(ThreadSafeOLEStorage& storage) const
 		else
 		{
 			std::unique_ptr<ThreadSafeOLEStreamReader> book_reader { static_cast<ThreadSafeOLEStreamReader*>(storage.createStreamReader("Book")) };
-			if (book_reader == nullptr)
-			{
-				throw RuntimeError("Cannot open Book or Workbook stream");
-			}
+			throw_if (book_reader == nullptr, storage.getLastError());
 			impl->parseXLS(*book_reader, text);
 		}		
 		return text;
 	}
 	catch (const std::exception& e)
 	{
-		throw RuntimeError("Error while parsing XLS file", e);
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 }
 

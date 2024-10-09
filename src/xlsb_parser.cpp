@@ -12,14 +12,15 @@
 #include "xlsb_parser.h"
 
 #include <algorithm>
+#include "error_tags.h"
 #include "zip_reader.h"
-#include "exception.h"
 #include <iostream>
 #include "log.h"
 #include <map>
 #include "misc.h"
 #include <sstream>
 #include <stdint.h>
+#include "throw_if.h"
 #include <vector>
 #include "thread_safe_ole_storage.h"
 #include "thread_safe_ole_stream_reader.h"
@@ -129,8 +130,7 @@ struct XLSBParser::Implementation
 			void readNum(uint32_t& value, int bytes)
 			{
 				value = 0;
-				if (m_chunk_len - m_pointer < bytes)
-					throw RuntimeError("readNum: Unexpected end of buffer");
+				throw_if (m_chunk_len - m_pointer < bytes, "Unexpected EOF");
 				for (int i = 0; i < bytes; ++i)
 					value += (m_chunk[m_pointer++] << (i * 8));
 			}
@@ -153,16 +153,13 @@ struct XLSBParser::Implementation
 			void readXnum(double& value)
 			{
 				uint8_t* val_ptr = (uint8_t*)&value;
-				if (m_chunk_len - m_pointer < 8)
-					throw RuntimeError("readXnum: Unexpected end of buffer");
+				throw_if (m_chunk_len - m_pointer < 8, "Unexpected EOF");
 				for (int i = 0; i < 8; ++i)
 					val_ptr[8 - i] = m_chunk[m_pointer++];
 			}
 
 			void readRkNumber(double& value, bool& is_int)
 			{
-				try
-				{
 					value = 0;
 					uint32_t uvalue;
 					readNum(uvalue, 4);
@@ -187,21 +184,13 @@ struct XLSBParser::Implementation
 						if (fx100)
 							value /= 100.0;
 					}
-				}
-				catch (const std::exception& e)
-				{
-					throw RuntimeError("Error while reading Rk Number", e);
-				}
 			}
 
 			void readXlWideString(std::string& str)
 			{
 				uint32_t str_size;
-				try
-				{
 					readNum(str_size, 4);
-					if (str_size * 2 > m_chunk_len - m_pointer)
-						throw RuntimeError("XLWideString is bigger than size of the record");
+					throw_if (str_size * 2 > m_chunk_len - m_pointer, "XLSB: xlWideString size is larger than chunk size");
 					str.reserve(2 * str_size);
 					for (int i = 0; i < str_size; ++i)
 					{
@@ -211,35 +200,21 @@ struct XLSBParser::Implementation
 						{
 							if (utf16_unichar_has_4_bytes(uc))
 							{
-								if (++i >= str_size)
-									throw RuntimeError("Unexpected end of buffer");
+								throw_if (++i >= str_size, "Unexpected EOF");
 								uc = (uc << 16) | *((unsigned short*)&m_chunk[m_pointer]);
 								m_pointer += 2;
 							}
 							str += unichar_to_utf8(uc);
 						}
 					}
-				}
-				catch (const std::exception& e)
-				{
-					throw RuntimeError("Error while reading XlWideString", e);
-				}
 			}
 
 			void readRichStr(std::string& str)
 			{
-				try
-				{
 					//skip first byte
-					if (m_chunk_len == m_pointer)
-						throw RuntimeError("Unexpected end of buffer");
+					throw_if (m_chunk_len == m_pointer, "Unexpected EOF");
 					++m_pointer;
 					readXlWideString(str);
-				}
-				catch (const std::exception& e)
-				{
-					throw RuntimeError("Error while parsing richStr", e);
-				}
 			}
 
 			void readRecord(Record& record)
@@ -277,11 +252,9 @@ struct XLSBParser::Implementation
 				if (len == 0)
 					return;
 				m_chunk.resize(len + 1);
-				if (!m_zipfile->readChunk(m_file_name, (char*)&m_chunk[0], len, m_chunk_len))
-					throw RuntimeError("Error while reading file: " + m_file_name);
+				throw_if (!m_zipfile->readChunk(m_file_name, (char*)&m_chunk[0], len, m_chunk_len), "Error reading chunk from zip file", m_file_name);
 				m_readed += m_chunk_len;
-				if (m_chunk_len != len)
-					throw RuntimeError("Read past EOF during reading " + m_file_name);
+				throw_if (m_chunk_len != len, "Error reading chunk from zip file", m_file_name);
 				m_pointer = 0;
 			}
 	};
@@ -301,7 +274,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing record of type BRT_BEGIN_SST", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
 				}
 				break;
 			}
@@ -315,7 +288,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing record of type BRT_SS_ITEM", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
 				}
 				break;
 			}
@@ -349,7 +322,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing record of type BRT_CELL_BLANK", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
 				}
 				break;
 			}
@@ -365,7 +338,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing record of type BRT_CELL_ERROR or BRT_FMLA_ERROR", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
 				}
 				break;
 			}
@@ -384,7 +357,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing record of type BRT_FMLA_BOOL or BRT_CELL_BOOL", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
 				}
 				break;
 			}
@@ -402,7 +375,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing record of type BRT_FMLA_NUM or BRT_CELL_REAL", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
 				}
 				break;
 			}
@@ -416,7 +389,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing record of type BRT_FMLA_STRING or BRT_CELL_ST", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
 				}
 				break;
 			}
@@ -431,7 +404,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing record of type BRT_WS_DIM", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
 				}
 				break;
 			}
@@ -448,7 +421,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing record of type BRT_ROW_HDR", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
 				}
 				break;
 			}
@@ -469,7 +442,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing record of type BRT_CELL_RK", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
 				}
 				break;
 			}
@@ -487,7 +460,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing record of type BRT_CELL_ISST", e);
+					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
 				}
 				break;
 			}
@@ -513,7 +486,7 @@ struct XLSBParser::Implementation
 			}
 			catch (const std::exception& e)
 			{
-				throw RuntimeError("Error while reading next record in xl/sharedStrings.bin", e);
+				std::throw_with_nested(errors::impl{std::make_pair("file_name", "xl/sharedStrings.bin")});
 			}
 			try
 			{
@@ -521,7 +494,7 @@ struct XLSBParser::Implementation
 			}
 			catch (const std::exception& e)
 			{
-				throw RuntimeError("Error while parsing record of number " + uint_to_string(record.m_type) +  " in xl/sharedStrings.bin", e);
+				std::throw_with_nested(errors::impl{std::make_pair("file_name", "xl/sharedStrings.bin")});
 			}
 		}
 		unzip.closeReadingFileForChunks();
@@ -543,7 +516,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while reading next record in " + sheet_file_name, e);
+					std::throw_with_nested(make_error(sheet_file_name));
 				}
 				try
 				{
@@ -551,7 +524,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					throw RuntimeError("Error while parsing record of number " + uint_to_string(record.m_type) +  " in " + sheet_file_name, e);
+					std::throw_with_nested(make_error(sheet_file_name));
 				}
 			}
 			unzip.closeReadingFileForChunks();
@@ -566,15 +539,14 @@ struct XLSBParser::Implementation
 	void parseXLSB(ZipReader& unzip, std::string& text)
 	{
 		text.reserve(1024 * 1024);
-		if (!unzip.loadDirectory())
-			throw RuntimeError("Cant load zip directory");
+		throw_if (!unzip.loadDirectory(), "Error loading zip directory");
 		try
 		{
 			parseSharedStrings(unzip);
 		}
 		catch (const std::exception& e)
 		{
-			throw RuntimeError("Error while parsing shared strings", e);
+			std::throw_with_nested(make_error("parseSharedStrings() failed"));
 		}
 		try
 		{
@@ -582,7 +554,7 @@ struct XLSBParser::Implementation
 		}
 		catch (const std::exception& e)
 		{
-			throw RuntimeError("Error while parsing worksheets", e);
+			std::throw_with_nested(make_error("parseWorksheets() failed"));
 		}
 	}
 
@@ -590,8 +562,7 @@ struct XLSBParser::Implementation
 	{
 		docwire_log(debug) << "Extracting metadata.";
 		std::string data;
-		if (!unzip.read("docProps/app.xml", &data))
-			throw RuntimeError("Error while parsing docProps/app.xml");
+		throw_if (!unzip.read("docProps/app.xml", &data), "Error reading docProps/app.xml");
 		if (data.find("<TitlesOfParts>") != std::string::npos && data.find("</TitlesOfParts>") != std::string::npos)
 		{
 			data.erase(data.find("</TitlesOfParts>"));
@@ -601,8 +572,7 @@ struct XLSBParser::Implementation
 				metadata.page_count = strtol(data.c_str() + pages_count_start + 17, NULL, 10);
 		}
 		data.clear();
-		if (!unzip.read("docProps/core.xml", &data))
-			throw RuntimeError("Error while parsing docProps/core.xml");
+		throw_if (!unzip.read("docProps/core.xml", &data), "Error reading docProps/core.xml");
 		bool author_exist = data.find("<dc:creator/>") == std::string::npos && data.find("<dc:creator") != std::string::npos;
 		if (author_exist)
 		{
@@ -682,8 +652,7 @@ bool XLSBParser::understands(const data_source& data) const
 	}
 	catch (const std::exception&)
 	{
-		if (is_encrypted_with_ms_offcrypto(data))
-			throw EncryptedFileException("File is encrypted according to the Microsoft Office Document Cryptography Specification. Exact file format cannot be determined");
+		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_is_encrypted{}, "Microsoft Office Document Cryptography");
 		docwire_log(error) << "Cannot unzip file.";
 		return false;
 	}
@@ -693,21 +662,13 @@ bool XLSBParser::understands(const data_source& data) const
 attributes::Metadata XLSBParser::metaData(const ZipReader& unzip) const
 {
 	attributes::Metadata metadata;
-	if (!unzip.exists("docProps/app.xml"))
-	{
-		throw RuntimeError("Cannot find docProps/app.xml");
-	}
-	if (!unzip.exists("docProps/core.xml"))
-	{
-		throw RuntimeError("Cannot find docProps/core.xml");
-	}
 	try
 	{
 		impl->readMetadata(unzip, metadata);
 	}
 	catch (const std::exception& e)
 	{
-		throw RuntimeError("Error while parsing xml streams", e);
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 	return metadata;
 }
@@ -725,23 +686,23 @@ void XLSBParser::parse(const data_source& data) const
 			{
 				.metadata = [this, &unzip]() { return metaData(unzip); }
 			});
+	}
+	catch (const std::exception&)
+	{
+		if (is_encrypted_with_ms_offcrypto(data))
+			std::throw_with_nested(make_error(errors::file_is_encrypted{}, "Microsoft Office Document Cryptography"));
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+	}
 	try
 	{
 		impl->parseXLSB(unzip, text);
 	}
 	catch (const std::exception& e)
 	{
-		throw RuntimeError("Error parsing XLSB data", e);
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 	sendTag(tag::Text{.text = text});
 	sendTag(tag::CloseDocument{});
-	}
-	catch (const std::exception&)
-	{
-		if (is_encrypted_with_ms_offcrypto(data))
-			throw EncryptedFileException("File is encrypted according to the Microsoft Office Document Cryptography Specification. Exact file format cannot be determined");
-		throw RuntimeError("Cannot open stream as zip archive");
-	}
 }
 
 } // namespace docwire

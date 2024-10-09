@@ -11,7 +11,6 @@ add_library(docwire_core SHARED
     find.cpp
     text_to_speech.cpp
     transcribe.cpp
-    exception.cpp
     decompress_archives.cpp
     log.cpp
     misc.cpp
@@ -63,7 +62,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif()
 
 find_path(boost_signals2_inc boost/signals2.hpp HINT ${Boost_INCLUDE_DIRS} REQUIRED)
-target_include_directories(docwire_core PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories(docwire_core PUBLIC ${Boost_INCLUDE_DIRS})
 target_include_directories(docwire_core PUBLIC ../) # for version.h
 target_include_directories(docwire_core PUBLIC .) # for other headers
 

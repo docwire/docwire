@@ -11,7 +11,6 @@
 
 #include "model_runner.h"
 
-#include "exception.h"
 #include <boost/json.hpp>
 #include <ctranslate2/translator.h>
 #include "log.h"
@@ -41,7 +40,7 @@ namespace
             }
             catch (const std::exception& e)
             {
-                throw RuntimeError{"Failed to load and parse tokenizer_config.json: " + std::string{e.what()}};
+                std::throw_with_nested(make_error(model_data_path));
             }
         }
         std::string tokenizer_class;
@@ -78,8 +77,9 @@ namespace
     private:
         onmt::Tokenizer create_tokenizer(const tokenizer_config& tokenizer_config)
         {
-		    if (tokenizer_config.tokenizer_class != "T5Tokenizer")
-                throw std::runtime_error("Unsupported tokenizer class: " + tokenizer_config.tokenizer_class);
+            throw_if(tokenizer_config.tokenizer_class != "T5Tokenizer",
+                "Unsupported tokenizer class",
+                tokenizer_config.tokenizer_class);
             return onmt::Tokenizer(onmt::Tokenizer::Mode::None, onmt::Tokenizer::Flags::SentencePieceModel, tokenizer_config.tokenizer_model_path.string());
         }
 
@@ -113,11 +113,9 @@ struct model_runner::implementation
 			return false;
 		};
 		auto results = m_translator.translate_batch_async({ input_tokens }, options);
-        if (results.size() != 1)
-            throw LogicError("Unexpected number of results");
+        throw_if (results.size() != 1, "Unexpected number of results", results.size());
         auto result = results[0].get();
-        if (result.hypotheses.size() != 1)
-            throw LogicError("Unexpected number of hypotheses");
+        throw_if (result.hypotheses.size() != 1, "Unexpected number of hypotheses", result.hypotheses.size());
         auto hypothesis = result.hypotheses[0];
         return hypothesis;
     }

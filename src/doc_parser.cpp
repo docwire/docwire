@@ -10,9 +10,11 @@
 /*********************************************************************************************************************************************/
 
 #include "doc_parser.h"
+#include "error_tags.h"
 #include <iostream>
 #include "log.h"
 #include "misc.h"
+#include "throw_if.h"
 
 //Dirty hack, be we now what we are doing and this is internal library.
 #define protected public
@@ -22,7 +24,6 @@
 #undef protected
 #undef private
 
-#include "exception.h"
 #include "wv2/fields.h"
 #include "wv2/handlers.h"
 #include <mutex>
@@ -536,8 +537,7 @@ class TableHandler : public wvWare::TableHandler
 				m_parent->sendTag(tag::Table{});
 				m_current_state.table_state.push(TableState::in_table);
 			}
-			if (m_current_state.table_state.top() != TableState::in_table)
-				throw DOCParser::ParsingError("Unexpected start of table row");
+			throw_if (m_current_state.table_state.top() != TableState::in_table);
 			m_parent->sendTag(tag::TableRow{});
 			m_current_state.table_state.push(TableState::in_row);
 		}
@@ -545,15 +545,13 @@ class TableHandler : public wvWare::TableHandler
 		void tableRowEnd()
 		{
 			docwire_log_func();
-			if (m_current_state.table_state.empty())
-				throw DOCParser::ParsingError("Unexpected end of table row");
+			throw_if (m_current_state.table_state.empty());
 			if (m_current_state.table_state.top() == TableState::in_cell)
 			{
 				m_parent->sendTag(tag::CloseTableCell{});
 				m_current_state.table_state.pop();
 			}
-			if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row)
-				throw DOCParser::ParsingError("Unexpected end of table row");
+			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row);
 			m_parent->sendTag(tag::CloseTableRow{});
 			m_current_state.table_state.pop();
 		}
@@ -561,8 +559,7 @@ class TableHandler : public wvWare::TableHandler
 		void tableCellStart()
 		{
 			docwire_log_func();
-			if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row)
-				throw DOCParser::ParsingError("Unexpected start of table cell");
+			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row);
 			m_parent->sendTag(tag::TableCell{});
 			m_current_state.table_state.push(TableState::in_cell);
 		}
@@ -575,8 +572,7 @@ class TableHandler : public wvWare::TableHandler
 				m_parent->sendTag(tag::CloseTable{});
 				m_current_state.table_state.pop();
 			}
-			if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_cell)
-				throw DOCParser::ParsingError("Unexpected end of table cell");
+			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_cell);
 			m_parent->sendTag(tag::CloseTableCell{});
 			m_current_state.table_state.pop();
 		}
@@ -651,8 +647,7 @@ void DOCParser::parse(const data_source& data) const
 	CurrentState curr_state;
 	docwire_log(debug) << "Opening stream as OLE storage to parse all embedded objects in supported formats.";
 	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
-	if (!storage->isValid())
-		throw RuntimeError("Error opening stream as OLE storage");
+	throw_if (!storage->isValid(), storage->getLastError());
 	sendTag(tag::Document
 		{
 			.metadata = [this, &storage]()
@@ -666,18 +661,16 @@ void DOCParser::parse(const data_source& data) const
 	{
 		docwire_log(debug) << "ObjectPool found, embedded OLE objects probably exist.";
 		std::vector<std::string> obj_list;
-		if (!storage->getStreamsAndStoragesList(obj_list))
-			throw RuntimeError("Error while loading list of streams and storages in ObjectPool directory. OLE Storage has reported an error: " + storage->getLastError());
+		throw_if (!storage->getStreamsAndStoragesList(obj_list), storage->getLastError());
 		for (size_t i = 0; i < obj_list.size(); ++i)
 		{
 			docwire_log(debug) << "OLE object entry found: " << obj_list[i];
 			std::string obj_text;
-			std::string currect_dir = obj_list[i];
+			std::string current_dir = obj_list[i];
 			if (storage->enterDirectory(obj_list[i]))
 			{
 				std::vector<std::string> obj_list;
-				if (!storage->getStreamsAndStoragesList(obj_list))
-					throw RuntimeError("Error while loading list of streams and storages in " + currect_dir + " directory. OLE Storage has reported an error: " + storage->getLastError());
+				throw_if (!storage->getStreamsAndStoragesList(obj_list), storage->getLastError(), current_dir);
 				if (find(obj_list.begin(), obj_list.end(), "Workbook") != obj_list.end())
 				{
 					docwire_log(debug) << "Embedded MS Excel workbook detected.";
@@ -710,12 +703,9 @@ void DOCParser::parse(const data_source& data) const
 		parser = ParserFactory::createParser(storage.release()); //storage will be deleted inside parser from wv2 library
 	}
 	cerr_redirection.restore();
-	if (!parser || !parser->isOk())
-	{
-		if (parser && parser->fib().fEncrypted)
-			throw EncryptedFileException("File is encrypted");
-		throw RuntimeError("Creating parser failed");
-	}
+	throw_if (!parser, "Error while creating parser");
+	throw_if (!parser->isOk() && parser->fib().fEncrypted, errors::file_is_encrypted{});
+	throw_if (!parser->isOk(), "Error while creating parser");
 	TextHandler text_handler(this, parser, &curr_state);
 	parser->setTextHandler(&text_handler);
 	TableHandler table_handler(this, curr_state);
@@ -725,8 +715,7 @@ void DOCParser::parse(const data_source& data) const
 	cerr_redirection.redirect();
 	bool res = parser->parse();
 	cerr_redirection.restore();
-	if (!res)
-		throw RuntimeError("Parsing document failed");
+	throw_if (!res, "parse() failed");
 	text_handler.endOfDocument();
 	sendTag(tag::CloseDocument{});
 }

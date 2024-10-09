@@ -12,7 +12,6 @@
 #include "rtf_parser.h"
 
 #include "data_stream.h"
-#include "exception.h"
 #include <fstream>
 #include <iostream>
 #include "log.h"
@@ -494,8 +493,7 @@ void RTFParser::parse(const data_source& data) const
 	TextConverter* converter = NULL;
 	try
 	{
-		if (!understands(data))	//check if this is really rtf file
-			throw RuntimeError("Data in the stream is not an RTF document");
+		throw_if (!understands(data), "Not a RTF file"); //check if this is really rtf file
 		sendTag(tag::Document
 			{
 				.metadata = [this, &data]() { return metaData(data); }
@@ -606,8 +604,7 @@ void RTFParser::parse(const data_source& data) const
 						}
 					}
 			}
-			if (state.groups.size() == 0)	//it will crash soon if groups.size() returns zero... better to check
-				throw RuntimeError("RTF file is corrupted");
+			throw_if (state.groups.size() == 0, "File is corrupted"); //it will crash soon if groups.size() returns zero... better to check
 		}
 		if (converter != NULL)
 			delete converter;

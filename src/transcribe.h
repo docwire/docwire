@@ -13,7 +13,6 @@
 #define DOCWIRE_TRANSCRIBE_H
 
 #include "chain_element.h"
-#include "exception.h"
 
 namespace docwire
 {
@@ -38,8 +37,6 @@ public:
 	{
 		return false;
 	}
-
-	DOCWIRE_EXCEPTION_DEFINE(HttpError, RuntimeError);
 
 private:
 	struct Implementation;

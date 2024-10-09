@@ -16,7 +16,6 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include "data_stream.h"
-#include "exception.h"
 #include "entities.h"
 #include "htmlcxx/html/Node.h"
 #include "htmlcxx/html/ParserSax.h"

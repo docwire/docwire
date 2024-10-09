@@ -13,7 +13,7 @@
 
 #include "charsetdetect.h"
 #include "data_stream.h"
-#include "exception.h"
+#include "error_tags.h"
 #include "htmlcxx/html/CharsetConverter.h"
 #include <boost/signals2.hpp>
 #include <iostream>
@@ -136,7 +136,7 @@ void TXTParser::parse(const data_source& data) const
 		if (charset_detector)
 			csd_close(charset_detector);
 		charset_detector = NULL;
-		throw RuntimeError("Could not parse text: " + std::string(e.what()));
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 	bool parse_paragraphs = m_parameters.getParameterValue<bool>("TXTParser::parse_paragraphs").value_or(true);
 	bool parse_lines = m_parameters.getParameterValue<bool>("TXTParser::parse_lines").value_or(true);

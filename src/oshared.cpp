@@ -11,7 +11,7 @@
 
 #include "oshared.h"
 
-#include "exception.h"
+#include "error_tags.h"
 #include "misc.h"
 #include <iostream>
 #include "log.h"
@@ -137,31 +137,26 @@ static bool read_vt_filetime(ThreadSafeOLEStreamReader* reader, tm& time)
 void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metadata& meta)
 {
 	docwire_log(debug) << "Extracting metadata.";
-	if (!storage.isValid())
-		throw RuntimeError("Error opening " + storage.name() + " as OLE file");
+	throw_if (!storage.isValid(), storage.getLastError(), storage.name());
 	ThreadSafeOLEStreamReader* reader = NULL;
 	reader = (ThreadSafeOLEStreamReader*)storage.createStreamReader("\005SummaryInformation");
-	if (reader == NULL)
-		throw RuntimeError("Error opening SummaryInformation stream");
+	throw_if (reader == NULL, storage.getLastError());
 	try
 	{
 		size_t field_set_stream_start = reader->tell();
 		U16 byte_order;
-		if (!reader->readU16(byte_order) || byte_order != 0xFFFE)
-			throw RuntimeError("Incorrect ByteOrder value");
+		throw_if (!reader->readU16(byte_order) || byte_order != 0xFFFE);
 		U16 version;
-		if (!reader->readU16(version) || version != 0x00)
-			throw RuntimeError("Incorrect Version value");
+		throw_if (!reader->readU16(version) || version != 0x0000);
 		reader->seek(4, SEEK_CUR); //system indentifier
 		for (int i = 0; i < 4; i++)
 		{
 			U32 clsid_part;
-			if (!reader->readU32(clsid_part) || clsid_part != 0x00)
-				throw RuntimeError("Incorrect CLSID value");
+			throw_if (!reader->readU32(clsid_part) || clsid_part != 0x00);
 		}
 		U32 num_property_sets;
-		if (!reader->readU32(num_property_sets) || (num_property_sets != 0x01 && num_property_sets != 0x02))
-			throw RuntimeError("Incorrect number of property sets");
+		throw_if (!reader->readU32(num_property_sets), "Error reading number of property sets");
+		throw_if (num_property_sets != 0x01 && num_property_sets != 0x02, "Unexpected number of property sets", num_property_sets);
 		reader->seek(16, SEEK_CUR);	// fmtid0_part
 		U32 offset;
 		reader->readU32(offset);
@@ -240,26 +235,17 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metad
 				}
 			}
 			reader->seek(p, SEEK_SET);
-			if (!reader->isValid())
-				throw RuntimeError("OLE Reader error message: " + reader->getLastError());
+			throw_if (!reader->isValid(), "Error reading property set", p, reader->getLastError());
 		}
-		if (!reader->isValid())
-			throw RuntimeError("OLE Reader error message: " + reader->getLastError());
+		throw_if (!reader->isValid());
 		delete reader;
-	}
-	catch (std::bad_alloc& ba)
-	{
-		if (reader)
-			delete reader;
-		reader = NULL;
-		throw;
 	}
 	catch (const std::exception& e)
 	{
 		if (reader)
 			delete reader;
 		reader = NULL;
-		throw RuntimeError("Error while parsing SummaryInformation stream", e);
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 }
 
@@ -269,28 +255,22 @@ static ThreadSafeOLEStreamReader* open_oshared_document_summary_info(ThreadSafeO
 	try
 	{
 		reader = (ThreadSafeOLEStreamReader*)storage.createStreamReader("\005DocumentSummaryInformation");
-		if (reader == NULL)
-			throw RuntimeError("Error opening DocumentSummaryInformation stream");
+		throw_if (reader == NULL, storage.getLastError(), std::make_pair("stream_path", "\005DocumentSummaryInformation"));
 		field_set_stream_start = reader->tell();
 		U16 byte_order;
-		if (!reader->readU16(byte_order) || byte_order != 0xFFFE)
-			throw RuntimeError("Incorrect ByteOrder value");
+		throw_if (!reader->readU16(byte_order) || byte_order != 0xFFFE);
 		U16 version;
-		if (!reader->readU16(version) || version != 0x00)
-			throw RuntimeError("Incorrect Version value");
+		throw_if (!reader->readU16(version) || version != 0x0000);
 		reader->seek(4, SEEK_CUR);	// system indentifier
 		for (int i = 0; i < 4; i++)
 		{
 			U32 clsid_part;;
-			if (!reader->readU32(clsid_part) || clsid_part != 0x00)
-				throw RuntimeError("Incorrect CLSID value");
+			throw_if (!reader->readU32(clsid_part) || clsid_part != 0x00);
 		}
 		U32 num_property_sets;
-		if (!reader->readU32(num_property_sets) || (num_property_sets != 0x01 && num_property_sets != 0x02))
-			throw RuntimeError("Incorrect number of property sets");
+		throw_if (!reader->readU32(num_property_sets) || (num_property_sets != 0x01 && num_property_sets != 0x02));
 		reader->seek(16, SEEK_CUR);	//fmtid0_part
-		if (!reader->isValid())
-			throw RuntimeError("OLE Reader error message: " + reader->getLastError());
+		throw_if (!reader->isValid(), "Error skipping fmtid0", reader->getLastError());
 		return reader;
 	}
 	catch (const std::exception& e)
@@ -298,7 +278,7 @@ static ThreadSafeOLEStreamReader* open_oshared_document_summary_info(ThreadSafeO
 		if (reader)
 			delete reader;
 		reader = NULL;
-		throw RuntimeError("Error while opening DocumentSummaryInformation stream", e);
+		throw;
 	}
 }
 
@@ -371,8 +351,6 @@ void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& sli
 {
 	docwire_log(debug) << "Extracting additional metadata.";
 	size_t field_set_stream_start;
-	if (!storage.isValid())
-		throw RuntimeError("Error opening " + storage.name() + " as OLE file");
 	ThreadSafeOLEStreamReader* reader = NULL;
 	try
 	{
@@ -400,13 +378,11 @@ void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& sli
 					break;
 			}
 			reader->seek(p, SEEK_SET);
-			if (!reader->isValid())
-				throw RuntimeError("OLE reader error message: " + reader->getLastError());
+			throw_if (!reader->isValid(), "Error seeking to property", p, reader->getLastError());
 		}
 		if (!slide_count_found)
 			slide_count = -1;
-		if (!reader->isValid())
-			throw RuntimeError("OLE reader error message: " + reader->getLastError());
+		throw_if (!reader->isValid());
 		delete reader;
 		reader = NULL;
 	}
@@ -415,7 +391,7 @@ void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& sli
 		if (reader)
 			delete reader;
 		reader = NULL;
-		throw RuntimeError("Error while parsing DocumentSummaryInformation stream", e);
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 }
 

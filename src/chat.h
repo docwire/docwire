@@ -13,7 +13,6 @@
 #define DOCWIRE_OPENAI_CHAT_H
 
 #include "chain_element.h"
-#include "exception.h"
 
 namespace docwire
 {
@@ -52,10 +51,6 @@ public:
 	{
 		return false;
 	}
-
-	DOCWIRE_EXCEPTION_DEFINE(HttpError, RuntimeError);
-	DOCWIRE_EXCEPTION_DEFINE(ParseResponseError, RuntimeError);
-	DOCWIRE_EXCEPTION_DEFINE(IncorrectArgumentValue, LogicError);
 
 private:
 	struct Implementation;

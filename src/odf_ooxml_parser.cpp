@@ -13,7 +13,7 @@
 
 #include "xml_fixer.h"
 #include "zip_reader.h"
-#include "exception.h"
+#include "error_tags.h"
 #include <fstream>
 #include <iostream>
 #include <libxml2/libxml/xmlreader.h>
@@ -29,6 +29,7 @@
 #include "xml_stream.h"
 #include "thread_safe_ole_storage.h"
 #include "thread_safe_ole_stream_reader.h"
+#include "throw_if.h"
 
 namespace docwire
 {
@@ -270,10 +271,10 @@ struct ODFOOXMLParser::ExtendedImplementation
 	void assertODFFileIsNotEncrypted(const ZipReader& zipfile)
 	{
 		std::string content;
-		if (zipfile.exists("META-INF/manifest.xml")
+		throw_if (zipfile.exists("META-INF/manifest.xml")
 			&& zipfile.read("META-INF/manifest.xml", &content)
-			&& content.find("manifest:encryption-data") != std::string::npos)
-			throw EncryptedFileException("Specified ODF file is encrypted");
+			&& content.find("manifest:encryption-data") != std::string::npos,
+			errors::file_is_encrypted{});
 	}
 
 	bool readOOXMLComments(const ZipReader& zipfile, XmlParseMode mode)
@@ -468,10 +469,7 @@ bool ODFOOXMLParser::understands(const data_source& data) const
 	}
 	catch (const std::exception&)
 	{
-		if (is_encrypted_with_ms_offcrypto(data))
-		{
-			throw EncryptedFileException("File is encrypted according to the Microsoft Office Document Cryptography Specification. Exact file format cannot be determined");
-		}
+		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_is_encrypted{}, "Microsoft Office Document Cryptography");
 		return false;
 	}
 	return true;
@@ -484,8 +482,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 	{
 		zipfile.open();
 	string main_file_name = locate_main_file(zipfile);
-	if (main_file_name == "")
-		throw RuntimeError("Could not locate main file inside zip archive");
+	throw_if (main_file_name == "", "Invalid file structure");
 		trySendTag(tag::Document{.metadata=[this, &zipfile](){ return metaData(zipfile);}});
 	//according to the ODF specification, we must skip blank nodes. Otherwise output may be messed up.
 	if (main_file_name == "content.xml")
@@ -502,8 +499,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 	string content;
 	if (main_file_name == "ppt/presentation.xml")
 	{
-		if (!zipfile.loadDirectory())
-			throw RuntimeError("Error loading zip directory from zip archive");
+		throw_if (!zipfile.loadDirectory());
 		for (int i = 1; zipfile.read("ppt/slides/slide" + int_to_str(i) + ".xml", &content) && i < 2500; i++)
 		{
 			try
@@ -513,7 +509,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 			}
 			catch (const std::exception& e)
 			{
-				throw RuntimeError("Error while parsing file ppt/slides/slide" + int_to_str(i) + ".xml", e);
+				std::throw_with_nested(errors::impl{std::make_pair("file_name", "ppt/slides/slide" + int_to_str(i) + ".xml")});
 			}
 		}
 	}
@@ -535,7 +531,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 			else if (mode == PARSE_XML)
 				xml = content;
 			else
-				throw RuntimeError("XML stripping not possible for xlsx format");
+				throw_if(mode == STRIP_XML, "Stripping XML is not possible for xlsx files");
 			try
 			{
 				XmlStream xml_stream(xml, getXmlOptions());
@@ -557,7 +553,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 			}
 			catch (const std::exception& e)
 			{
-				throw RuntimeError("Error parsing xl/sharedStrings.xml", e);
+				std::throw_with_nested(errors::impl{std::make_pair("file_name", "xl/sharedStrings.xml")});
 			}
 		}
 		for (int i = 1; zipfile.read("xl/worksheets/sheet" + int_to_str(i) + ".xml", &content); i++)
@@ -569,14 +565,13 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 			}
 			catch (const std::exception& e)
 			{
-				throw RuntimeError("Error while parsing file xl/worksheets/sheet" + int_to_str(i) + ".xml", e);
+				std::throw_with_nested(errors::impl{make_pair("file_name", "xl/worksheets/sheet" + int_to_str(i) + ".xml")});
 			}
 		}
 	}
 	else
 	{
-		if (!zipfile.read(main_file_name, &content))
-			throw RuntimeError("Error reading xml contents of " + main_file_name);
+		throw_if(!zipfile.read(main_file_name, &content), "Error reading XML file from ZIP file", main_file_name);
 		try
 		{
 			std::string text;
@@ -584,15 +579,14 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 		}
 		catch (const std::exception& e)
 		{
-			throw RuntimeError("Error parsing xml contents of " + main_file_name, e);
+			std::throw_with_nested(make_error(main_file_name));
 		}
 	}
 	trySendTag(tag::CloseDocument{});
 	}
 	catch (const std::exception& e)
 	{
-		if (is_encrypted_with_ms_offcrypto(data))
-			throw EncryptedFileException("File is encrypted according to the Microsoft Office Document Cryptography Specification. Exact file format cannot be determined");
+		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_is_encrypted{}, "Microsoft Office Document Cryptography");
 		throw;
 	}
 }
@@ -605,26 +599,20 @@ attributes::Metadata ODFOOXMLParser::metaData(ZipReader& zipfile) const
 	{
 		extended_impl->assertODFFileIsNotEncrypted(zipfile);
 		std::string meta_xml;
-		if (!zipfile.read("meta.xml", &meta_xml))
-		{
-			throw RuntimeError("Error reading meta.xml");
-		}
+		throw_if (!zipfile.read("meta.xml", &meta_xml), "Error reading XML file from ZIP file", std::make_pair("file_name", "meta.xml" ));
 		try
 		{
 			parseODFMetadata(meta_xml, meta);
 		}
 		catch (const std::exception& e)
 		{
-			throw RuntimeError("Error parsing meta.xml", e);
+			std::throw_with_nested(errors::impl{std::make_pair("file_name", "meta.xml")});
 		}
 	}
 	else if (zipfile.exists("docProps/core.xml"))
 	{
 		std::string core_xml;
-		if (!zipfile.read("docProps/core.xml", &core_xml))
-		{
-			throw RuntimeError("Error reading docProps/core.xml");
-		}
+		throw_if (!zipfile.read("docProps/core.xml", &core_xml), "Error reading XML file from ZIP file", std::make_pair("file_name", "docProps/core.xml"));
 		try
 		{
 			XmlStream xml_stream(core_xml, getXmlOptions());
@@ -652,12 +640,11 @@ attributes::Metadata ODFOOXMLParser::metaData(ZipReader& zipfile) const
 		}
 		catch (const std::exception& e)
 		{
-			throw RuntimeError("Error parsing docProps/core.xml", e);
+			std::throw_with_nested(errors::impl{std::make_pair("file_name", "docProps/core.xml")});
 		}
 
 		std::string app_xml;
-		if (!zipfile.read("docProps/app.xml", &app_xml))
-			throw RuntimeError("Error reading docProps/app.xml");
+		throw_if (!zipfile.read("docProps/app.xml", &app_xml), "Error reading XML file from ZIP file", std::make_pair("file_name", "docProps/app.xml"));
 		try
 		{
 			XmlStream app_stream(app_xml, getXmlOptions());
@@ -673,7 +660,7 @@ attributes::Metadata ODFOOXMLParser::metaData(ZipReader& zipfile) const
 		}
 		catch (const std::exception& e)
 		{
-			throw RuntimeError("Error parsing docProps/app.xml", e);
+			std::throw_with_nested(errors::impl{std::make_pair("file_name", "docProps/app.xml")});
 		}
 	}
 	if (!meta.page_count)

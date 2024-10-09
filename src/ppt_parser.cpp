@@ -11,7 +11,7 @@
 
 #include "ppt_parser.h"
 
-#include "exception.h"
+#include "error_tags.h"
 #include <iostream>
 #include "log.h"
 #include <map>
@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "throw_if.h"
 #include <wv2/ustring.h>
 #include "wv2/textconverter.h"
 #include "wv2/utilities.h"
@@ -188,8 +189,7 @@ namespace
 				}
 				reader.seek(len, SEEK_CUR);
 		}
-		if (!reader.isValid())
-			throw RuntimeError("OLE Reader has reported an error while parsing PPT file: " + reader.getLastError());
+		throw_if (!reader.isValid(), reader.getLastError());
 	}
 
 	bool oleEof(ThreadSafeOLEStreamReader& reader)
@@ -200,8 +200,7 @@ namespace
 	void parseOldPPT(ThreadSafeOLEStorage& storage, ThreadSafeOLEStreamReader& reader, std::string& text)
 	{
 		std::vector<unsigned char> content(reader.size());
-		if (!reader.read(&*content.begin(), reader.size()))	//this stream should only contain text
-			throw RuntimeError("Error reading Text_Content stream");
+		throw_if (!reader.read(&*content.begin(), reader.size()));	//this stream should only contain text
 		text = std::string(content.begin(), content.end());
 		std::string codepage;
 		if (get_codepage_from_document_summary_info(storage, codepage))
@@ -249,7 +248,7 @@ namespace
 			}
 			catch (const std::exception& e)
 			{
-				throw RuntimeError("Error while reading following record: type=" + int_to_str(rec_type) + ", begin=" + int_to_str(pos) + ", end=" + int_to_str(pos + rec_len - 1), e);
+				std::throw_with_nested(make_error(rec_type, rec_len));
 			}
 		}
 	}
@@ -265,7 +264,7 @@ namespace
 				{
 					//this is very easy way to detect if file is encrypted: just to check if EncryptedSummary stream exist.
 					//This stream is obligatory in encrypted files and prohibited in non-encrypted files.
-					throw EncryptedFileException("This file is encrypted and cannot be processed");
+					throw make_error(errors::file_is_encrypted{});
 				}
 			}
 		}
@@ -293,8 +292,7 @@ void PPTParser::parse(const data_source& data) const
 	try
 	{
 		std::unique_ptr<ThreadSafeOLEStorage> storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
-		if (!storage->isValid())
-			throw RuntimeError("Error opening stream as OLE container");
+		throw_if (!storage->isValid(), "Error opening stream as OLE container");
 		assertFileIsNotEncrypted(*storage);
 		sendTag(tag::Document
 			{
@@ -315,8 +313,7 @@ void PPTParser::parse(const data_source& data) const
 				if (dirs[i] == "Text_Content")
 				{
 					std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("Text_Content") };
-					if (reader == NULL)
-						throw RuntimeError("Stream Text_Content has been found in the list, but it could not be open: " + storage->getLastError());
+					throw_if (reader == NULL, storage->getLastError(), std::make_pair("stream_path", "Text_Content"));
 					parseOldPPT(*storage, *reader, text);
 					sendTag(tag::Text{.text = text});
 					return;
@@ -324,8 +321,7 @@ void PPTParser::parse(const data_source& data) const
 			}
 		}
 		std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("PowerPoint Document") };
-		if (reader == NULL)
-			throw RuntimeError("PowerPoint Document stream was not found inside OLE container");
+		throw_if (reader == NULL, storage->getLastError(), std::make_pair("stream_path", "PowerPoint Document"));
 		parsePPT(*reader, text);
 		sendTag(tag::Text{.text = text});
 		sendTag(tag::CloseDocument{});
@@ -333,7 +329,7 @@ void PPTParser::parse(const data_source& data) const
 	}
 	catch (const std::exception& e)
 	{
-		throw RuntimeError("Error parsing PPT file", e);
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 }
 

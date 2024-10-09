@@ -422,11 +422,9 @@ namespace
 
 void libbfio_stream_initialize(libbfio_handle_t** handle, std::shared_ptr<std::istream> stream)
 {
-	if (handle == NULL)
-		throw LogicError{"Handle is null"};
-	if (*handle != NULL)
-		throw LogicError{"Handle already initialized"};
-	if (libbfio_handle_initialize(
+	throw_if (handle == NULL, "Invalid handle");
+	throw_if (*handle != NULL, "Handle already initialized");
+	auto libbfio_handle_initialize_result = libbfio_handle_initialize(
 		handle,
 		(intptr_t*)stream.get(),
 		[](intptr_t **, libbfio_error_t **)->int { return 1; }, // free
@@ -455,7 +453,7 @@ void libbfio_stream_initialize(libbfio_handle_t** handle, std::shared_ptr<std::i
             		stream->seekg(offset, std::ios_base::end);
             		break;
             	default:
-            		throw LogicError{"Invalid whence"};
+					throw make_error("Invalid whence argument value", whence);
         	}
 			return stream->tellg();
     	},
@@ -465,21 +463,15 @@ void libbfio_stream_initialize(libbfio_handle_t** handle, std::shared_ptr<std::i
     	{
     		std::istream* stream = reinterpret_cast<std::istream*>(io_handle);
     		std::streampos pos = stream->tellg();
-			if (pos == std::streampos{-1})
-				throw RuntimeError("Unable to get initial stream position");
-    		if (!stream->seekg(0, std::ios_base::end))
-				throw RuntimeError("Unable to set stream position to the end");
+			throw_if (pos == std::streampos{-1}, "Failed to get stream position");
+    		throw_if (!stream->seekg(0, std::ios_base::end), "Failed to seek to the end of the stream");
         	*size = stream->tellg();
-			if (*size == std::streampos(-1))
-				throw RuntimeError("Unable to get stream position after moving to the end");
-        	if (!stream->seekg(pos, std::ios_base::beg))
-				throw RuntimeError("Unable to set stream position back to initial position");
+			throw_if (*size == std::streampos(-1), "Failed to get stream position");
+        	throw_if (!stream->seekg(pos, std::ios_base::beg), "Failed to seek to the original position");
     		return 1;
     	},
-	    LIBBFIO_FLAG_IO_HANDLE_MANAGED | LIBBFIO_FLAG_IO_HANDLE_CLONE_BY_FUNCTION, nullptr) != 1 )
-	{
-		throw RuntimeError{"Unable to initialize libbfio handle"};
-	}
+	    LIBBFIO_FLAG_IO_HANDLE_MANAGED | LIBBFIO_FLAG_IO_HANDLE_CLONE_BY_FUNCTION, nullptr);
+	throw_if (libbfio_handle_initialize_result != 1, "libbfio_handle_initialize failed", libbfio_handle_initialize_result);
 }
 
 } // anonymous namespace

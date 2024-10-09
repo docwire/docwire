@@ -338,7 +338,15 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | out_stream;
+  try
+  {
+    std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | out_stream;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
   assert(out_stream.str() == "Data processing refers to the activities performed on raw data to convert it into meaningful information. It involves collecting, organizing, analyzing, and interpreting data to extract useful insights and support decision-making. This can include tasks such as sorting, filtering, summarizing, and transforming data through various computational and statistical methods. Data processing is essential in various fields, including business, science, and technology, as it enables organizations to derive valuable knowledge from large datasets, make informed decisions, and improve overall efficiency.\n\n");
 
   return 0;
@@ -357,7 +365,15 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  std::ifstream("data_processing_definition.docx", std::ios_base::binary) | ParseDetectedFormat<OfficeFormatsParserProvider>() | HtmlExporter() | out_stream;
+  try
+  {
+    std::ifstream("data_processing_definition.docx", std::ios_base::binary) | ParseDetectedFormat<OfficeFormatsParserProvider>() | HtmlExporter() | out_stream;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
   assert(out_stream.str() ==
     "<!DOCTYPE html>\n"
     "<html>\n"
@@ -385,7 +401,15 @@ Parse all files in any format inside archives (ZIP, TAR, RAR, GZ, BZ2, XZ) recur
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  std::filesystem::path("test.zip") | DecompressArchives() | ParseDetectedFormat<OfficeFormatsParserProvider, OcrParserProvider>() | PlainTextExporter() | std::cout;
+  try
+  {
+    std::filesystem::path("test.zip") | DecompressArchives() | ParseDetectedFormat<OfficeFormatsParserProvider, OcrParserProvider>() | PlainTextExporter() | std::cout;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
   return 0;
 }
 ```
@@ -402,7 +426,15 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  std::filesystem::path("document_processing_market_trends.odt") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Classify to one of the following categories and answer with exact category name: agreement, invoice, report, legal, user manual, other:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  try
+  {
+    std::filesystem::path("document_processing_market_trends.odt") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Classify to one of the following categories and answer with exact category name: agreement, invoice, report, legal, user manual, other:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
   assert(out_stream.str() == "report");
 
   return 0;
@@ -421,7 +453,15 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  std::filesystem::path("document_processing_market_trends.odt") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::Classify({ "agreement", "invoice", "report", "legal", "other"}, std::getenv("OPENAI_API_KEY")) | out_stream;
+  try
+  {
+    std::filesystem::path("document_processing_market_trends.odt") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::Classify({ "agreement", "invoice", "report", "legal", "other"}, std::getenv("OPENAI_API_KEY")) | out_stream;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
   assert(out_stream.str() == "report\n");
 
   return 0;
@@ -440,7 +480,15 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Translate to spanish:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  try
+  {
+    std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Translate to spanish:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
   assert(fuzzy_match::ratio(out_stream.str(), "La procesación de datos se refiere a las actividades realizadas en el ámbito de los datos en materia de información. Se trata de recoger, organizar, analizar y interpretar los datos para extraer inteligencias y apoyar el procesamiento de decisión. Esto puede incluir tareas como la etiqueta, la filtración, la summarización y la transformación de los datos a través de diversos métodos compuestos y estadounidenses. El procesamiento de datos es esencial en diversos ámbitos, incluyendo el negocio, la ciencia y la tecnologàa, pues permite a las empresas a extraer conocimientos valiosos de grans de datos, hacer decisiones indicadas y mejorar la eficiencia global.") > 80);
   return 0;
 }
@@ -458,7 +506,15 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::TranslateTo("spanish", std::getenv("OPENAI_API_KEY")) | out_stream;
+  try
+  {
+    std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::TranslateTo("spanish", std::getenv("OPENAI_API_KEY")) | out_stream;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
   assert(out_stream.str() == "El procesamiento de datos se refiere a las actividades realizadas en datos crudos para convertirlos en información significativa. Implica recolectar, organizar, analizar e interpretar datos para extraer ideas útiles y apoyar la toma de decisiones. Esto puede incluir tareas como ordenar, filtrar, resumir y transformar datos a través de varios métodos computacionales y estadísticos. El procesamiento de datos es esencial en varios campos, incluyendo negocios, ciencia y tecnología, ya que permite a las organizaciones obtener conocimientos valiosos de grandes conjuntos de datos, tomar decisiones informadas y mejorar la eficiencia general.\n");
   return 0;
 }
@@ -476,7 +532,15 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Detect sentiment:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  try
+  {
+    std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Detect sentiment:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
   assert(out_stream.str() == "positive");
 
   return 0;
@@ -493,7 +557,15 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
 
-  std::filesystem::path("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_turbo_preview) | std::cout;
+  try
+  {
+    std::filesystem::path("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_turbo_preview) | std::cout;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
 
   return 0;
 }
@@ -511,7 +583,15 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Write a short summary for this text:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  try
+  {
+    std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Write a short summary for this text:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
   assert(out_stream.str() == "Data processing is the process of transforming raw data into meaningful information.");
 
   return 0;
@@ -526,7 +606,15 @@ Make a voice summary of document in any format (Office, PDF, mail, etc) in two s
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  std::filesystem::path("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | openai::TextToSpeech(std::getenv("OPENAI_API_KEY")) | std::ofstream("summary.mp3");
+  try
+  {
+    std::filesystem::path("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | openai::TextToSpeech(std::getenv("OPENAI_API_KEY")) | std::ofstream("summary.mp3");
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
 
   return 0;
 }
@@ -542,7 +630,15 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
 
-  std::filesystem::path("data_processing_definition.mp3") | openai::Transcribe(std::getenv("OPENAI_API_KEY")) | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | std::cout;
+  try
+  {
+    std::filesystem::path("data_processing_definition.mp3") | openai::Transcribe(std::getenv("OPENAI_API_KEY")) | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | std::cout;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
 
   return 0;
 }
@@ -560,7 +656,15 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Find sentence about \"data convertion\" in the following text:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  try
+  {
+    std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Find sentence about \"data convertion\" in the following text:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
   assert(out_stream.str() == "Data processing refers to the activities performed on raw data to convert it into meaningful information.");
 
   return 0;
@@ -578,9 +682,17 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::stringstream out_stream;
 
-  std::filesystem::path("scene_1.png") | openai::Find("car", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | out_stream;
-  std::filesystem::path("scene_1.png") | openai::Find("person", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | out_stream;
-  std::filesystem::path("scene_1.png") | openai::Find("running", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | out_stream;
+  try
+  {
+    std::filesystem::path("scene_1.png") | openai::Find("car", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | out_stream;
+    std::filesystem::path("scene_1.png") | openai::Find("person", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | out_stream;
+    std::filesystem::path("scene_1.png") | openai::Find("running", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | out_stream;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
 
   return 0;
 }
@@ -596,9 +708,17 @@ int main(int argc, char* argv[])
 {
   using namespace docwire;
 
-  auto chain = ParseDetectedFormat<parser_provider<ODFOOXMLParser>>() | PlainTextExporter() | std::cout;  // create a chain of steps to parse a file
-  for (int i = 1; i < 3; ++i)
-    std::ifstream(std::to_string(i) + ".docx", std::ios_base::binary) | chain; // set the input file as an input stream
+  try
+  {
+    auto chain = ParseDetectedFormat<parser_provider<ODFOOXMLParser>>() | PlainTextExporter() | std::cout;  // create a chain of steps to parse a file
+    for (int i = 1; i < 3; ++i)
+      std::ifstream(std::to_string(i) + ".docx", std::ios_base::binary) | chain; // set the input file as an input stream
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
 
   return 0;
 }

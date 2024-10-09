@@ -18,7 +18,7 @@
 #include "csv_exporter.h"
 #include "decompress_archives.h"
 #include "detect_sentiment.h"
-#include "exception.h"
+#include "exception_utils.h"
 #include "extract_entities.h"
 #include "extract_keywords.h"
 #include "find.h"
@@ -368,7 +368,7 @@ int main(int argc, char* argv[])
 		}
 		catch(const std::exception& e)
 		{
-			std::cerr << "Error: " << e.what() << std::endl;
+			std::cerr << "Error: " << errors::diagnostic_message(e) << std::endl;
 			return 1;
 		}
 	}
@@ -399,7 +399,7 @@ int main(int argc, char* argv[])
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << "Error processing file " + file_name + ".\n" + e.what() << std::endl;
+		std::cerr << "Error processing file " + file_name + ".\n" + errors::diagnostic_message(e) << std::endl;
 		return 2;
 	}
   catch (...)

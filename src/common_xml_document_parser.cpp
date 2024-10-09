@@ -12,11 +12,12 @@
 #include "common_xml_document_parser.h"
 
 #include "zip_reader.h"
-#include "exception.h"
+#include "error_tags.h"
 #include <iostream>
 #include <libxml/xmlreader.h>
 #include <functional>
 #include "log.h"
+#include "make_error.h"
 #include "misc.h"
 #include "xml_stream.h"
 #include "xml_fixer.h"
@@ -645,7 +646,7 @@ void CommonXMLDocumentParser::extractText(const std::string& xml_contents, XmlPa
 	}
 	catch (const std::exception& e)
 	{
-		throw RuntimeError("Error parsing XML contents", e);
+		std::throw_with_nested(make_error("Parsing XML failed"));
 	}
 }
 
@@ -700,7 +701,7 @@ void CommonXMLDocumentParser::parseODFMetadata(const std::string &xml_content, a
 	}
 	catch (const std::exception& e)
 	{
-		throw RuntimeError("Error while parsing ODF metadata", e);
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 }
 

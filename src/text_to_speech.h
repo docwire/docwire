@@ -13,7 +13,6 @@
 #define DOCWIRE_OPENAI_TEXT_TO_SPEECH_H
 
 #include "chain_element.h"
-#include "exception.h"
 
 namespace docwire
 {
@@ -48,9 +47,6 @@ public:
 	{
 		return false;
 	}
-
-	DOCWIRE_EXCEPTION_DEFINE(HttpError, RuntimeError);
-	DOCWIRE_EXCEPTION_DEFINE(ParseResponseError, RuntimeError);
 
 private:
 	struct Implementation;
