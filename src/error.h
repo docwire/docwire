@@ -14,7 +14,11 @@
 
 #include <exception>
 #include <string>
-#include <source_location>
+#if __cpp_lib_source_location
+	#include <source_location>
+#else
+	#include <boost/assert/source_location.hpp>
+#endif
 #include <sstream>
 #include <utility>
 
@@ -30,6 +34,14 @@ std::ostream& operator<<(std::ostream& s, const std::pair<T1, T2>& p)
 	s << p.first << ": " << p.second;
 	return s;
 }
+
+#if __cpp_lib_source_location
+	using source_location = std::source_location;
+	#define current_location() source_location::current()
+#else
+	using source_location = boost::source_location;
+	#define current_location() BOOST_CURRENT_LOCATION
+#endif
 
 /**
  * @brief Base class for all exceptions in the SDK.
@@ -72,14 +84,14 @@ struct base : public std::exception
 	/**
 	 * @brief The source location where the exception was thrown.
 	 */
-	std::source_location source_location;
+	errors::source_location source_location;
 
 	/**
 	 * @brief Constructs a base object with the current source location.
 	 *
 	 * @param location The source location of the exception (initialized by current location by default).
 	 */
-	base(const std::source_location& location) : source_location(location) {}
+	base(const errors::source_location& location) : source_location(location) {}
 
 	/**
 	 * @brief Get the type information of the context.
@@ -147,7 +159,7 @@ struct impl : public base
 	 * @param context The context to be stored.
 	 * @param location The source location of the exception (initialized by current location by default).
 	 */
-	impl(const T& context, const std::source_location& location = std::source_location::current())
+	impl(const T& context, const errors::source_location& location = current_location())
 		: base(location), context(context)
 	{
 	}
@@ -200,6 +212,8 @@ const char* convert_to_context(const std::string& name, const char (&v)[N])
 {
 	return v;
 }
+
+#undef current_location
 
 } // namespace docwire::errors
 
