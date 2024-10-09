@@ -14,7 +14,7 @@
 
 #include <exception>
 #include <string>
-#if __cpp_lib_source_location
+#if __has_include(<source_location>) && (!defined(__clang__) || __clang_major__ >= 16) // https://github.com/llvm/llvm-project/issues/56379
 	#include <source_location>
 #else
 	#include <boost/assert/source_location.hpp>
@@ -35,7 +35,7 @@ std::ostream& operator<<(std::ostream& s, const std::pair<T1, T2>& p)
 	return s;
 }
 
-#if __cpp_lib_source_location
+#if __has_include(<source_location>)
 	using source_location = std::source_location;
 	#define current_location() source_location::current()
 #else
