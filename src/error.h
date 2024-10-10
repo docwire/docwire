@@ -15,6 +15,11 @@
 #include <exception>
 #include <string>
 #if __has_include(<source_location>) && (!defined(__clang__) || __clang_major__ >= 16) // https://github.com/llvm/llvm-project/issues/56379
+	#define USE_STD_SOURCE_LOCATION 1
+#else
+	#define USE_STD_SOURCE_LOCATION 0
+#endif
+#if USE_STD_SOURCE_LOCATION
 	#include <source_location>
 #else
 	#include <boost/assert/source_location.hpp>
@@ -35,7 +40,7 @@ std::ostream& operator<<(std::ostream& s, const std::pair<T1, T2>& p)
 	return s;
 }
 
-#if __has_include(<source_location>)
+#if USE_STD_SOURCE_LOCATION
 	using source_location = std::source_location;
 	#define DOCWIRE_CURRENT_LOCATION() std::source_location::current()
 #else
