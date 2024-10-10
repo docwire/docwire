@@ -746,7 +746,7 @@ TEST (errors, throwing)
 TEST(errors, diagnostic_message)
 {
     std::string message;
-    std::source_location err2_loc, err3_loc;
+    errors::source_location err2_loc, err3_loc;
     try
     {
         try
@@ -757,13 +757,13 @@ TEST(errors, diagnostic_message)
             }
             catch (const std::exception& e)
             {
-                err2_loc = std::source_location::current();
+                err2_loc = current_location();
                 std::throw_with_nested(make_error("level 2 exception"));
             }
         }
         catch (const std::exception& e)
         {
-            err3_loc = std::source_location::current();
+            err3_loc = current_location();
             std::throw_with_nested(make_error("level 3 exception"));
         }
     }

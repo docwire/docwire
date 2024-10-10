@@ -37,10 +37,13 @@ std::ostream& operator<<(std::ostream& s, const std::pair<T1, T2>& p)
 
 #if __has_include(<source_location>)
 	using source_location = std::source_location;
-	#define current_location() source_location::current()
+	#define DOCWIRE_CURRENT_LOCATION() std::source_location::current()
 #else
 	using source_location = boost::source_location;
-	#define current_location() BOOST_CURRENT_LOCATION
+	#define DOCWIRE_CURRENT_LOCATION() BOOST_CURRENT_LOCATION
+#endif
+#ifdef DOCWIRE_ENABLE_SHORT_MACRO_NAMES
+	#define current_location DOCWIRE_CURRENT_LOCATION
 #endif
 
 /**
@@ -212,8 +215,6 @@ const char* convert_to_context(const std::string& name, const char (&v)[N])
 {
 	return v;
 }
-
-#undef current_location
 
 } // namespace docwire::errors
 
