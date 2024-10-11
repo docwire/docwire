@@ -46,7 +46,10 @@ std::ostream& operator<<(std::ostream& s, const std::pair<T1, T2>& p)
 	#define DOCWIRE_CURRENT_LOCATION() std::source_location::current()
 #else
 	using source_location = boost::source_location;
-	#define DOCWIRE_CURRENT_LOCATION() BOOST_CURRENT_LOCATION
+	#if !defined(__clang__) // https://github.com/llvm/llvm-project/issues/56379
+		#define DOCWIRE_CURRENT_LOCATION() BOOST_CURRENT_LOCATION
+	#else
+		#define DOCWIRE_CURRENT_LOCATION() boost::source_location(__builtin_FILE(), __builtin_LINE(), __builtin_FUNCTION(), __builtin_COLUMN())
 #endif
 #ifdef DOCWIRE_ENABLE_SHORT_MACRO_NAMES
 	#define current_location DOCWIRE_CURRENT_LOCATION
