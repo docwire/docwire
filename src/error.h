@@ -17,6 +17,7 @@
 #if __has_include(<source_location>) && (!defined(__clang__) || __clang_major__ >= 16) // https://github.com/llvm/llvm-project/issues/56379
 	#define USE_STD_SOURCE_LOCATION 1
 #else
+	#warning "Cannot use std::source_location"
 	#define USE_STD_SOURCE_LOCATION 0
 #endif
 #if USE_STD_SOURCE_LOCATION
