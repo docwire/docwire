@@ -35,6 +35,11 @@ MetaDataExporter::MetaDataExporter(const MetaDataExporter& other)
 
 void MetaDataExporter::process(Info &info) const
 {
+	if (std::holds_alternative<std::exception_ptr>(info.tag))
+	{
+		emit(info);
+		return;
+	}
 	if (std::holds_alternative<tag::Document>(info.tag) || !impl->m_stream)
 		impl->m_stream = std::make_shared<std::stringstream>();
 	impl->m_writer.write_to(info.tag, *impl->m_stream);
