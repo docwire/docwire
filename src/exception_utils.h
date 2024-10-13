@@ -55,6 +55,26 @@ inline std::string diagnostic_message(const std::exception& e)
 }
 
 /**
+ * @brief Generates a diagnostic message for the given nested exceptions chain.
+ *
+ * This function recursively traverses the nested exceptions chain and returns a string representation of the entire chain.
+ *
+ * @param eptr Pointer to the root exception of the nested exceptions chain.
+ * @return A string representation of the nested exceptions chain.
+ */
+inline std::string diagnostic_message(std::exception_ptr eptr)
+{
+	try
+	{
+		std::rethrow_exception(eptr);
+	}
+	catch(const std::exception& e)
+	{
+		return diagnostic_message(e);
+	}
+}
+
+/**
  * @brief Checks if the given nested exceptions chain contains a specific type of context.
  *
  * This function recursively traverses the nested exceptions chain and returns true if
