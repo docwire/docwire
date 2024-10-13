@@ -116,6 +116,30 @@ auto make_nested(Inner inner, Outer outer, Rest... rest)
 	return make_nested(make_nested(inner, outer), rest...);
 }
 
+/**
+ * @brief Creates a pointer to a nested exception from an inner exception and an outer exception.
+ *
+ * This function creates a pointer to a nested exception by recursively calling `make_nested_ptr` with the inner exception and the outer exceptions.
+ *
+ * @tparam Inner The type of the inner exception.
+ * @tparam Outer The type of the outer exception.
+ * @tparam Rest The types of additional outer exceptions (additional layers of nesting).
+ *
+ * @param inner The inner exception to be nested.
+ * @param outer The outer exception to wrap the inner exception.
+ * @param rest Additional outer exceptions to add additional layers of nesting.
+ *
+ * @return A pointer to a nested exception object containing whole layers of nested exceptions.
+ *
+ * @see nested
+ * @see std::nested_exception
+ */
+template <typename Inner, typename Outer, typename... Rest>
+std::exception_ptr make_nested_ptr(Inner inner, Outer outer, Rest... rest)
+{
+	return std::make_exception_ptr(make_nested(inner, outer, rest...));
+}
+
 } // namespace docwire::errors
 
 #endif

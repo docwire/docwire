@@ -126,7 +126,7 @@ class SaxParser : public ParserSax
 				}
 				catch (htmlcxx::CharsetConverter::Exception& ex)
 				{
-					docwire_log(warning) << "Warning: Cant convert text to UTF-8 from " + m_charset;
+					m_parser->sendTag(errors::make_nested_ptr(ex, make_error("Cannot create charset to UTF-8 converter", m_charset)));
           delete m_converter;
 					m_converter = nullptr;
 				}
@@ -435,7 +435,7 @@ class SaxParser : public ParserSax
 					csd_t charset_detector = csd_open();
 					if (charset_detector == (csd_t)-1)
 					{
-						docwire_log(warning) << "Warning: Could not create charset detector";
+						m_parser->sendTag(make_error_ptr("Could not create charset detector"));
 					}
 					else
 					{

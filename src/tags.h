@@ -372,7 +372,8 @@ using Variant = std::variant<
   ClosePage,
   data_source,
   Document,
-  CloseDocument
+  CloseDocument,
+  std::exception_ptr
 >;
 
 }

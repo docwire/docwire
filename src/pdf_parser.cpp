@@ -7263,7 +7263,7 @@ struct PDFParser::Implementation
 				FileStream file_stream(cmap_to_cid_file_name);
 				if (!file_stream.open())
 				{
-					docwire_log(warning) << "Cannot open file: " << cmap_to_cid_file_name;
+					m_owner->sendTag(make_error_ptr("Cannot open file", cmap_to_cid_file_name));
 					return;
 				}
 				std::vector<char> buffer(file_stream.size() + 2);
@@ -7413,7 +7413,7 @@ struct PDFParser::Implementation
 			#endif
 			if (!file_stream.open())
 			{
-				docwire_log(warning) << "Cannot open file: " << cid_to_unicode_cmap;
+				m_owner->sendTag(make_error_ptr("Cannot open file", cid_to_unicode_cmap));
 				return;
 			}
 			std::vector<char> buffer(file_stream.size() + 2);
@@ -7607,8 +7607,7 @@ struct PDFParser::Implementation
 		}
 		catch (std::exception& e)
 		{
-			docwire_log(error) << "Exception in TryScanEncodedString()" << docwire_log_streamable_var(e);
-			return "";
+			std::throw_with_nested(make_error("Error in TryScanEncodedString()"));
 		}
 		return decoded;
 	}
@@ -7718,7 +7717,12 @@ struct PDFParser::Implementation
 											tj_array[tj_array.size() - 1].m_is_number = false;
 											if (pCurFont)
 											{
-												tj_array[tj_array.size() - 1].m_utf_text = encode_to_utf8(a[j].GetString(), *pCurFont);
+												try
+												{
+													tj_array[tj_array.size() - 1].m_utf_text = encode_to_utf8(a[j].GetString(), *pCurFont);
+												}
+												catch (const std::exception&)
+												{}
 												if (a[j].GetString().IsHex())
 												{
 													tj_array[tj_array.size() - 1].m_text = pdfstring_to_hex(a[j].GetString());
@@ -7778,7 +7782,12 @@ struct PDFParser::Implementation
 								if (pCurFont)
 								{
 									auto text = content.Stack[0].GetString();
-									tj_array[tj_array.size() - 1].m_utf_text = encode_to_utf8(text, *pCurFont);
+									try
+									{
+										tj_array[tj_array.size() - 1].m_utf_text = encode_to_utf8(text, *pCurFont);
+									}
+									catch (const std::exception&)
+									{}
 									tj_array[tj_array.size() - 1].m_pdf_string = text;
 									if (text.IsHex())
 									{
@@ -7907,7 +7916,7 @@ struct PDFParser::Implementation
 								}
 								else
 								{
-								 	docwire_log(warning) << "Unknown font";
+									m_owner->sendTag(make_error_ptr("Unknown font"));
 								}
 
 								break;
@@ -8106,7 +8115,6 @@ struct PDFParser::Implementation
 		}
 		catch (const PoDoFo::PdfError& e)
 		{
-			docwire_log(error) << e;
 			if (e.GetCode() == PoDoFo::PdfErrorCode::InvalidPassword)
 			{
 				std::throw_with_nested(make_error(errors::file_is_encrypted{}));
@@ -8148,7 +8156,6 @@ bool PDFParser::understands(const data_source& data) const
 	std::string buffer = data.string(length_limit{5});
 	if (buffer != "%PDF-")
 	{
-		docwire_log(warning) << "No PDF header found";
 		return false;
 	}
 	return true;

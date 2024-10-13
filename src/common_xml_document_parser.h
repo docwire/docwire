@@ -128,6 +128,7 @@ class CommonXMLDocumentParser: public Parser
 		void activeEmittingSignals(bool flag) const;
 
 		void trySendTag(const Tag& tag) const;
+		void send_error(const std::exception_ptr e) const;
 
 	//public interface
 	public:

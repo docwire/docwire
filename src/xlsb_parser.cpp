@@ -64,7 +64,12 @@ struct XLSBParser::Implementation
 		}
 	};
 
+	const XLSBParser* m_parser;
 	XLSBContent m_xlsb_content;
+
+	Implementation(const XLSBParser* parser)
+		: m_parser(parser)
+	{}
 
 	class XLSBReader
 	{
@@ -454,7 +459,7 @@ struct XLSBParser::Implementation
 					uint32_t str_index;
 					xlsb_reader.readUint32(str_index);
 					if (str_index >= m_xlsb_content.m_shared_strings.size())
-						docwire_log(warning) << "Warning: Detected reference to string that does not exist";
+						m_parser->sendTag(make_error_ptr("Detected reference to string that does not exist", str_index, m_xlsb_content.m_shared_strings.size()));
 					else
 						text += m_xlsb_content.m_shared_strings[str_index];
 				}
@@ -632,7 +637,7 @@ struct XLSBParser::Implementation
 };
 
 XLSBParser::XLSBParser()
-	: impl(std::make_unique<Implementation>())
+	: impl(std::make_unique<Implementation>(this))
 {
 }
 
@@ -645,15 +650,11 @@ bool XLSBParser::understands(const data_source& data) const
 	{
 		unzip.open();
 	if (!unzip.exists("xl/workbook.bin"))
-	{
-		docwire_log(error) << "Cannot find xl/woorkbook.bin.";
 		return false;
-	}
 	}
 	catch (const std::exception&)
 	{
 		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_is_encrypted{}, "Microsoft Office Document Cryptography");
-		docwire_log(error) << "Cannot unzip file.";
 		return false;
 	}
 	return true;
@@ -676,7 +677,7 @@ attributes::Metadata XLSBParser::metaData(const ZipReader& unzip) const
 void XLSBParser::parse(const data_source& data) const
 {
 	docwire_log(debug) << "Using XLSB parser.";
-	*impl = Implementation{};
+	*impl = Implementation{this};
 	std::string text;
 	ZipReader unzip{data};
 	try

@@ -84,7 +84,7 @@ void TXTParser::parse(const data_source& data) const
 		if (charset_detector == (csd_t)-1)
 		{
 			charset_detector = NULL;
-			docwire_log(warning) << "Warning: Could not create charset detector";
+			sendTag(make_error_ptr("Could not create charset detector"));
 			encoding = "UTF-8";
 		}
 		else
@@ -113,7 +113,7 @@ void TXTParser::parse(const data_source& data) const
 			}
 			catch (htmlcxx::CharsetConverter::Exception& ex)
 			{
-				docwire_log(warning) << "Warning: Cant convert text to UTF-8 from " + encoding;
+				sendTag(make_nested_ptr(ex, make_error("Cannot convert text to UTF-8", encoding)));
 				if (converter)
 					delete converter;
 				converter = NULL;

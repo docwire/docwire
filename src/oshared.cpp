@@ -25,18 +25,14 @@ namespace docwire
 
 using namespace wvWare;
 
-static bool read_vt_string(ThreadSafeOLEStreamReader* reader, std::string& s)
+static std::string read_vt_string(ThreadSafeOLEStreamReader* reader)
 {
 	U16 string_type;
-	if (!reader->readU16(string_type) || string_type != 0x1E)
-	{
-		docwire_log(error) << "Incorrect string type.";
-		return false;
-	}
+	throw_if (!reader->readU16(string_type) || string_type != 0x1E, "Incorrect string type.");
 	reader->seek(2, SEEK_CUR); //padding
 	U32 len;
 	reader->readU32(len);
-	s = "";
+	std::string s;
 	for (int j = 0; j < len - 1; j++)
 	{
 		S8 ch;
@@ -45,96 +41,57 @@ static bool read_vt_string(ThreadSafeOLEStreamReader* reader, std::string& s)
 			break;
 		s += ch;
 	}
-	if (!reader->isValid())
-	{
-		docwire_log(error) << "OLE Reader error message: " << reader->getLastError();
-		return false;
-	}
-	return true;
+	throw_if (!reader->isValid(), "OLE Reader error", reader->getLastError());
+	return s;
 }
 
-static bool read_vt_i4(ThreadSafeOLEStreamReader* reader, S32& i)
+static S32 read_vt_i4(ThreadSafeOLEStreamReader* reader)
 {
 	U16 string_type;
-	if (!reader->readU16(string_type) || string_type != 0x0003)
-	{
-		docwire_log(error) << "Incorrect value type.";
-		return false;
-	}
+	throw_if (!reader->readU16(string_type) || string_type != 0x0003, "Incorrect value type.");
 	reader->seek(2, SEEK_CUR); //padding
+	S32 i;
 	reader->readS32(i);
-	if (!reader->isValid())
-	{
-		docwire_log(error) << reader->getLastError();
-		return false;
-	}
-	return true;
+	throw_if (!reader->isValid(), reader->getLastError());
+	return i;
 }
 
-static bool read_vt_i2(ThreadSafeOLEStreamReader* reader, S16& i)
+static S16 read_vt_i2(ThreadSafeOLEStreamReader* reader)
 {
 	U16 string_type;
-	if (!reader->readU16(string_type) || string_type != 0x0002)
-	{
-		docwire_log(error) << "Incorrect value type.";
-		return false;
-	}
+	throw_if (!reader->readU16(string_type) || string_type != 0x0002, "Incorrect value type.");
 	reader->seek(2, SEEK_CUR); //padding
+	S16 i;
 	reader->readS16(i);
-	if (!reader->isValid())
-	{
-		docwire_log(error) << "OLE Reader error message: " << reader->getLastError();
-		return false;
-	}
-	return true;
+	throw_if (!reader->isValid(), "OLE Reader error", reader->getLastError());
+	return i;
 }
 
-static bool read_vt_filetime(ThreadSafeOLEStreamReader* reader, tm& time)
+static tm read_vt_filetime(ThreadSafeOLEStreamReader* reader)
 {
 	U16 type;
-	if (!reader->readU16(type) || type != 0x0040)
-	{
-		docwire_log(error) << "Incorrect variable type.";
-		return false;
-	}
+	throw_if (!reader->readU16(type) || type != 0x0040, "Incorrect variable type.");
 	reader->seek(2, SEEK_CUR); //padding
 	U32 file_time_low, file_time_high;
 	reader->readU32(file_time_low);
 	reader->readU32(file_time_high);
-	if (!reader->isValid())
-	{
-		docwire_log(error) << "OLE Reader error message: " << reader->getLastError();
-		return false;
-	}
-	if (file_time_low == 0 && file_time_high == 0)
-	{
-		// Sometimes field exists but date is zero.
-		// Last modification time saved by LibreOffice 3.5 when document is created is an example.
-		docwire_log(warning) << "Filetime field value is zero.";
-		return false;
-	}
+	throw_if (!reader->isValid(), "OLE Reader error", reader->getLastError());
+	// Sometimes field exists but date is zero.
+	// Last modification time saved by LibreOffice 3.5 when document is created is an example.
+	throw_if (file_time_low == 0 && file_time_high == 0, "Filetime field value is zero.");
 	unsigned long long int file_time = ((unsigned long long int)file_time_high << 32) | (unsigned long long int)file_time_low;
-	if (file_time < 864000000000LL)
-	{
-		// Sometimes field exists, date is zero (1601-01-01) but time is not.
-		// Last modification time saved by LibreOffice 3.5 when document is created is an example.
-		docwire_log(error) << "Incorrect filetime value (1601-01-01).";
-		return false;
-	}
+	// Sometimes field exists, date is zero (1601-01-01) but time is not.
+	// Last modification time saved by LibreOffice 3.5 when document is created is an example.
+	throw_if (file_time < 864000000000LL, "Incorrect filetime value (1601-01-01).");
 	docwire_log_vars(file_time, file_time_low, file_time_high);
 	time_t t = (time_t)(file_time / 10000000 - 11644473600LL);
   struct tm time_buffer;
   tm* res = thread_safe_gmtime(&t, time_buffer);
-	if (res == NULL)
-	{
-		docwire_log(error) << "Incorrect time value.";
-		return false;
-	}
-	time = *res;
-	return true;
+	throw_if (res == NULL, "Incorrect time value.");
+	return *res;
 }
 
-void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metadata& meta)
+void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metadata& meta, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 {
 	docwire_log(debug) << "Extracting metadata.";
 	throw_if (!storage.isValid(), storage.getLastError(), storage.name());
@@ -176,60 +133,78 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metad
 				case 0x00000004:
 				{
 					reader->seek(property_set_pos + offset, SEEK_SET);
-					std::string author;
-					if (read_vt_string(reader, author))
+					try
 					{
-						meta.author = author;
+						meta.author = read_vt_string(reader);
+					}
+					catch (const std::exception& e)
+					{
+						non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error reading author.")));
 					}
 					break;
 				}
 				case 0x00000008:
 				{
 					reader->seek(property_set_pos + offset, SEEK_SET);
-					std::string last_modified_by;
-					if (read_vt_string(reader, last_modified_by))
+					try
 					{
-						meta.last_modified_by = last_modified_by;
+						meta.last_modified_by = read_vt_string(reader);
+					}
+					catch (const std::exception& e)
+					{
+						non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error reading last modified by.")));
 					}
 					break;
 				}
 				case 0x0000000C:
 				{
 					reader->seek(property_set_pos + offset, SEEK_SET);
-					tm creation_date;
-					if (read_vt_filetime(reader, creation_date))
+					try
 					{
-						meta.creation_date = creation_date;
+						meta.creation_date = read_vt_filetime(reader);
+					}
+					catch (const std::exception& e)
+					{
+						non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error reading creation date.")));
 					}
 					break;
 				}
 				case 0x0000000D:
 				{
 					reader->seek(property_set_pos + offset, SEEK_SET);
-					tm last_modification_date;
-					if (read_vt_filetime(reader, last_modification_date))
+					try
 					{
-						meta.last_modification_date = last_modification_date;
+						meta.last_modification_date = read_vt_filetime(reader);
+					}
+					catch (const std::exception& e)
+					{
+						non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error reading last modification date.")));
 					}
 					break;
 				}
 				case 0x0000000E:
 				{
 					reader->seek(property_set_pos + offset, SEEK_SET);
-					S32 page_count;
-					if (read_vt_i4(reader, page_count))
+					try
 					{
-						meta.page_count = page_count;
+						meta.page_count = read_vt_i4(reader);
+					}
+					catch (const std::exception& e)
+					{
+						non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error reading page count.")));
 					}
 					break;
 				}
 				case 0x0000000F:
 				{
 					reader->seek(property_set_pos + offset, SEEK_SET);
-					S32 word_count;
-					if (read_vt_i4(reader, word_count))
+					try
 					{
-						meta.word_count = word_count;
+						meta.word_count = read_vt_i4(reader);
+					}
+					catch (const std::exception& e)
+					{
+						non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error reading word count.")));
 					}
 					break;
 				}
@@ -282,15 +257,13 @@ static ThreadSafeOLEStreamReader* open_oshared_document_summary_info(ThreadSafeO
 	}
 }
 
-bool get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storage, std::string& codepage)
+std::string get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storage)
 {
 	size_t field_set_stream_start;
-	if (!storage.isValid())
-		docwire_log(error) << "Error opening " << storage.name() << " as OLE file.";
-	ThreadSafeOLEStreamReader* reader = NULL;
+	throw_if (!storage.isValid(), "Error opening storage as OLE file.", storage.name());
 	try
 	{
-		reader = open_oshared_document_summary_info(storage, field_set_stream_start);
+		std::unique_ptr<ThreadSafeOLEStreamReader> reader { open_oshared_document_summary_info(storage, field_set_stream_start) };
 		U32 offset;
 		reader->readU32(offset);
 		int property_set_pos = field_set_stream_start + offset;
@@ -309,42 +282,26 @@ bool get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storage, std:
 				case 0x00000001:
 					reader->seek(property_set_pos + offset, SEEK_SET);
 					S16 icodepage;
-					if (!read_vt_i2(reader, icodepage))
+					try
 					{
-						docwire_log(error) << "Error while reading codepage: invalid value.";
-						delete reader;
-						return false;
+						icodepage = read_vt_i2(reader.get());
 					}
-					codepage = "cp" + int2string(icodepage);
-					delete reader;
-					return true;
+					catch (const std::exception& e)
+					{
+						std::throw_with_nested(make_error("Error while reading codepage: invalid value."));
+					}
+					return "cp" + int2string(icodepage);
 			}
 			reader->seek(p, SEEK_SET);
-			if (!reader->isValid())
-			{
-				docwire_log(error) << "OLE Reader error message: " << reader->getLastError();
-				delete reader;
-				return false;
-			}
+			throw_if (!reader->isValid(), "OLE Reader error", reader->getLastError());
 		}
-		if (!reader->isValid())
-		{
-			docwire_log(error) << "OLE Reader error message: " << reader->getLastError();
-			delete reader;
-			return false;
-		}
+		throw_if (!reader->isValid(), "OLE Reader error", reader->getLastError());
 	}
 	catch (const std::exception& e)
 	{
-		if (reader)
-			delete reader;
-		reader = NULL;
-		docwire_log(error) << "Error while getting codepage info. Error message:" << e.what();
-		return false;
+		std::throw_with_nested(make_error("Error while getting codepage info."));
 	}
-	delete reader;
-	docwire_log(warning) << "Information about codepage is missing.";
-	return false;
+	throw make_error("Information about codepage is missing.");
 }
 
 void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& slide_count)
@@ -373,8 +330,13 @@ void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& sli
 			{
 				case 0x00000007:
 					reader->seek(property_set_pos + offset, SEEK_SET);
-					if (read_vt_i4(reader, slide_count))
+					try
+					{
+						slide_count = read_vt_i4(reader);
 						slide_count_found = true;
+					}
+					catch (const std::exception& e)
+					{}
 					break;
 			}
 			reader->seek(p, SEEK_SET);

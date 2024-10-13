@@ -312,7 +312,7 @@ static void parse_dttm_time(int dttm, tm& tm)
 }
 
 static void execCommand(DataStream& data_stream, UString& text, int& skip, RTFParserState& state, RTFCommand cmd, long int arg,
-	TextConverter*& converter)
+	TextConverter*& converter, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 {
 	switch (cmd)
 	{
@@ -428,7 +428,7 @@ static void execCommand(DataStream& data_stream, UString& text, int& skip, RTFPa
 			}
 			else
 			{
-				docwire_log(error) << "Converter initialization ERROR!";
+				non_fatal_error_handler(make_error_ptr("Converter initialization error"));
 				delete converter;
 				converter = NULL;
 			}
@@ -518,7 +518,7 @@ void RTFParser::parse(const data_source& data) const
 					UString fragment_text;
 					{
 						std::lock_guard<std::mutex> converter_mutex_lock(converter_mutex);
-						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter);
+						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter, [this](std::exception_ptr e) { sendTag(e); });
 					}
 					switch (state.groups.top().destination)
 					{

@@ -69,7 +69,7 @@ namespace
 		return (unsigned long)(*buffer) | ((unsigned long)(*(buffer +1 )) << 8L) | ((unsigned long)(*(buffer + 2)) << 16L) | ((unsigned long)(*(buffer + 3)) << 24L);
 	}
 
-	void parseRecord(int rec_type, unsigned long rec_len, ThreadSafeOLEStreamReader& reader, std::string& text)
+	void parseRecord(int rec_type, unsigned long rec_len, ThreadSafeOLEStreamReader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 	{
 		switch(rec_type)
 		{
@@ -82,7 +82,7 @@ namespace
 				if (text_len * 2 > reader.size() - reader.tell())
 				{
 					text_len = (reader.size() - reader.tell()) / 2;
-					docwire_log(warning) << "Warning: Read past EOF";
+					non_fatal_error_handler(make_error_ptr("Read past EOF"));
 				}
 				for (int i = 0; i < text_len; i++)
 				{
@@ -115,7 +115,7 @@ namespace
 				unsigned long len = rec_len;
 				if (reader.tell() + len > reader.size())
 				{
-					docwire_log(warning) << "Warning: Read past EOF";
+					non_fatal_error_handler(make_error_ptr("Read past EOF"));
 					len = reader.size() - reader.tell();
 				}
 				reader.seek(len, SEEK_CUR);
@@ -131,7 +131,7 @@ namespace
 				unsigned long len = rec_len;
 				if (reader.tell() + len > reader.size())
 				{
-					docwire_log(warning) << "Warning: Read past EOF";
+					non_fatal_error_handler(make_error_ptr("Read past EOF"));
 					len = reader.size() - reader.tell();
 				}
 				reader.seek(len, SEEK_CUR);
@@ -154,7 +154,7 @@ namespace
 				if (text_len > reader.size() - reader.tell())
 				{
 					text_len = reader.size() - reader.tell();
-					docwire_log(warning) << "Warning: Read past EOF";
+					non_fatal_error_handler(make_error_ptr("Read past EOF"));
 				}
 				for (int i = 0; i < text_len; i++)
 				{
@@ -184,7 +184,7 @@ namespace
 				unsigned long len = rec_len;
 				if (reader.tell() + len > reader.size())
 				{
-					docwire_log(warning) << "Warning: Read past EOF";
+					non_fatal_error_handler(make_error_ptr("Read past EOF"));
 					len = reader.size() - reader.tell();
 				}
 				reader.seek(len, SEEK_CUR);
@@ -197,16 +197,20 @@ namespace
 		return reader.tell() == reader.size();
 	}
 
-	void parseOldPPT(ThreadSafeOLEStorage& storage, ThreadSafeOLEStreamReader& reader, std::string& text)
+	void parseOldPPT(ThreadSafeOLEStorage& storage, ThreadSafeOLEStreamReader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 	{
 		std::vector<unsigned char> content(reader.size());
 		throw_if (!reader.read(&*content.begin(), reader.size()));	//this stream should only contain text
 		text = std::string(content.begin(), content.end());
-		std::string codepage;
-		if (get_codepage_from_document_summary_info(storage, codepage))
+		try
 		{
+			std::string codepage = get_codepage_from_document_summary_info(storage);
 			TextConverter tc(codepage);
 			text = ustring_to_string(tc.convert(text));
+		}
+		catch (const std::exception& e)
+		{
+			non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error converting text")));
 		}
 		//new lines problem?
 		for (size_t i = 0; i < text.length(); ++i)
@@ -214,7 +218,7 @@ namespace
 				text[i] = 13;
 	}
 
-	void parsePPT(ThreadSafeOLEStreamReader& reader, std::string& text)
+	void parsePPT(ThreadSafeOLEStreamReader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 	{
 		std::vector<unsigned char> rec(8);
 		bool read_status = true;
@@ -227,7 +231,7 @@ namespace
 				break;
 			if (oleEof(reader))
 			{
-				parseRecord(RT_END_DOCUMENT_ATOM, 0, reader, text);
+				parseRecord(RT_END_DOCUMENT_ATOM, 0, reader, text, non_fatal_error_handler);
 				return;
 			}
 			int rec_type = getU16LittleEndian(rec.begin() + 2);
@@ -244,7 +248,7 @@ namespace
 			}
 			try
 			{
-				parseRecord(rec_type, rec_len, reader, text);
+				parseRecord(rec_type, rec_len, reader, text, non_fatal_error_handler);
 			}
 			catch (const std::exception& e)
 			{
@@ -314,7 +318,7 @@ void PPTParser::parse(const data_source& data) const
 				{
 					std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("Text_Content") };
 					throw_if (reader == NULL, storage->getLastError(), std::make_pair("stream_path", "Text_Content"));
-					parseOldPPT(*storage, *reader, text);
+					parseOldPPT(*storage, *reader, text, [this](std::exception_ptr e) { sendTag(e); });
 					sendTag(tag::Text{.text = text});
 					return;
 				}
@@ -322,7 +326,7 @@ void PPTParser::parse(const data_source& data) const
 		}
 		std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("PowerPoint Document") };
 		throw_if (reader == NULL, storage->getLastError(), std::make_pair("stream_path", "PowerPoint Document"));
-		parsePPT(*reader, text);
+		parsePPT(*reader, text, [&](std::exception_ptr e) { sendTag(e); });
 		sendTag(tag::Text{.text = text});
 		sendTag(tag::CloseDocument{});
 		return;
@@ -336,7 +340,7 @@ void PPTParser::parse(const data_source& data) const
 attributes::Metadata PPTParser::metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage) const
 {
 	attributes::Metadata meta;
-		parse_oshared_summary_info(*storage, meta);
+		parse_oshared_summary_info(*storage, meta, [this](std::exception_ptr e) { sendTag(e); });
 		// If page count not found use slide count as page count
 		if (!meta.page_count)
 		{
@@ -350,7 +354,7 @@ attributes::Metadata PPTParser::metaData(const std::unique_ptr<ThreadSafeOLEStor
 			}
 			catch (const std::exception& e)
 			{
-				docwire_log(error) << e.what();
+				sendTag(std::current_exception());
 			}
 		}
 		return meta;

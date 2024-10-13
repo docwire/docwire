@@ -285,6 +285,11 @@ CommonXMLDocumentParser::trySendTag(const Tag& tag) const
   impl->send_tag(tag);
 }
 
+void CommonXMLDocumentParser::send_error(std::exception_ptr e) const
+{
+	sendTag(e);
+}
+
 void
 CommonXMLDocumentParser::activeEmittingSignals(bool flag) const
 {
@@ -543,7 +548,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			std::string content;
 			if (!zipfile->read(content_fn, &content))
 			{
-				docwire_log(error) << "Error reading " << content_fn;
+				parser.impl->send_tag(make_error_ptr("Error reading file", content_fn));
 				return;
 			}
 			std::string object_text;
@@ -553,7 +558,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			}
 			catch (const std::exception& e)
 			{
-				docwire_log(error) << "Error parsing file." << content_fn << e;
+				parser.impl->send_tag(make_nested_ptr(e, make_error("Error parsing file", content_fn)));
 			}
 			text += object_text;
 		}

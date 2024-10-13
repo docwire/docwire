@@ -221,6 +221,17 @@ static std::string ParseDuration(std::string& format, long value)
 	return os.str();
 }
 
+static std::string find_main_xml_file(const ZipReader& unzip)
+{
+	if (unzip.exists("index.xml"))
+		return "index.xml";
+	if (unzip.exists("index.apxl"))
+		return "index.apxl";
+	if (unzip.exists("presentation.apxl"))
+		return "presentation.apxl";
+	throw make_error("None of the following files (index.xml, index.apxl, presentation.apxl) could not be found.");
+}
+
 struct IWorkParser::Implementation
 {
 	std::string m_xml_file;
@@ -1808,7 +1819,7 @@ struct IWorkParser::Implementation
 			RegisterHandlers();
 		}
 
-		void ParseMetaData()
+		void ParseMetaData(const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 		{
 			docwire_log(debug) << "Extracting metadata.";
 			while (true)
@@ -1833,7 +1844,7 @@ struct IWorkParser::Implementation
 						if (string_to_date(m_creation_date, creation_date))
 							m_metadata->creation_date = creation_date;
 						else
-							docwire_log(error) << "Error occured during parsing date: " << m_creation_date << ".";
+							non_fatal_error_handler(make_error_ptr("Error occured during parsing date", m_creation_date));
 					}
 					if (m_last_modify_date.length() > 0)
 					{
@@ -1841,7 +1852,7 @@ struct IWorkParser::Implementation
 						if (string_to_date(m_last_modify_date, last_modification_date))
 							m_metadata->last_modification_date = last_modification_date;
 						else
-							docwire_log(error) << "Error occured during parsing date: " << m_last_modify_date << ".";
+							non_fatal_error_handler(make_error_ptr("Error occured during parsing date", m_last_modify_date));
 					}
 					return;
 				}
@@ -1978,7 +1989,7 @@ struct IWorkParser::Implementation
 		}
 	};
 
-	void ReadMetadata(ZipReader& zipfile, attributes::Metadata& metadata)
+	void ReadMetadata(ZipReader& zipfile, attributes::Metadata& metadata, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 	{
 		DataSource xml_data_source(zipfile, m_xml_file);
 		XmlReader xml_reader(xml_data_source);
@@ -1988,7 +1999,7 @@ struct IWorkParser::Implementation
 		throw_if (getIWorkType(xml_reader) == IWorkContent::encrypted, errors::file_is_encrypted{});
 		try
 		{
-			metadata_content.ParseMetaData();
+			metadata_content.ParseMetaData(non_fatal_error_handler);
 		}
 		catch (const std::exception& ex)
 		{
@@ -2076,18 +2087,14 @@ bool IWorkParser::understands(const data_source& data) const
 	}
 	catch (const std::exception&)
 	{
-		docwire_log(error) << "Cannot open stream as zip archive";
 		return false;
 	}
-	if (unzip.exists("index.xml"))
-		impl->m_xml_file = "index.xml";
-	if (unzip.exists("index.apxl"))
-		impl->m_xml_file = "index.apxl";
-	if (unzip.exists("presentation.apxl"))
-		impl->m_xml_file = "presentation.apxl";
-	if (impl->m_xml_file.empty())
+	try
 	{
-		docwire_log(error) << "None of the following files (index.xml, index.apxl, presentation.apxl) could not be found.";
+		impl->m_xml_file = find_main_xml_file(unzip);
+	}
+	catch (const std::exception& e)
+	{
 		return false;
 	}
 	Implementation::DataSource xml_data_source(unzip, impl->m_xml_file);
@@ -2115,19 +2122,13 @@ void IWorkParser::parse(const data_source& data) const
 	}
 	try
 	{
-		if (unzip.exists("index.xml"))
-			impl->m_xml_file = "index.xml";
-		if (unzip.exists("index.apxl"))
-			impl->m_xml_file = "index.apxl";
-		if (unzip.exists("presentation.apxl"))
-			impl->m_xml_file = "presentation.apxl";
-		throw_if (impl->m_xml_file.empty());
+		impl->m_xml_file = find_main_xml_file(unzip);
 		sendTag(tag::Document
 			{
 				.metadata=[this, &unzip]()
 				{
 					attributes::Metadata metadata;
-					impl->ReadMetadata(unzip, metadata);
+					impl->ReadMetadata(unzip, metadata, [this](std::exception_ptr e) { sendTag(e); });
 					return metadata;
 				}
 			});

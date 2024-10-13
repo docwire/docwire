@@ -51,7 +51,7 @@ struct EMLParser::Implementation
 		}
 		catch (htmlcxx::CharsetConverter::Exception& ex)
 		{
-			docwire_log(warning) << "Warning: Cant convert text to UTF-8 from " + charset;
+			m_owner->sendTag(errors::make_nested_ptr(ex, make_error("Cannot convert text to UTF-8", charset)));
 		}
 	}
 
@@ -147,7 +147,7 @@ void normalize_line(std::string& line)
 		line.pop_back();
 }
 
-message parse_message(const data_source& data)
+message parse_message(const data_source& data, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 {
 	std::shared_ptr<std::istream> stream = data.istream();
 	message mime_entity;
@@ -163,7 +163,7 @@ message parse_message(const data_source& data)
 		mime_entity.parse_by_line("\r\n");
 	} catch (std::exception& e)
 	{
-		docwire_log(error) << e.what();
+		non_fatal_error_handler(std::current_exception());
 	}
 	return mime_entity;
 }
@@ -173,7 +173,7 @@ message parse_message(const data_source& data)
 bool EMLParser::understands(const data_source& data) const
 {
 	docwire_log_func();
-	message mime_entity = parse_message(data);
+	message mime_entity = parse_message(data, [](std::exception_ptr) {});
 	std::string from = mime_entity.from_to_string();
 	bool has_from = !from.empty();
 	bool has_date_time = !mime_entity.date_time().is_not_a_date_time();
@@ -194,7 +194,7 @@ EMLParser::parse(const data_source& data) const
 	docwire_log_func();
 	docwire_log(debug) << "Using EML parser.";
 	throw_if (!understands(data));
-	message mime_entity = parse_message(data);
+	message mime_entity = parse_message(data, [this](std::exception_ptr e) { sendTag(e); });
 	sendTag(tag::Document
 		{
 			.metadata = [&mime_entity]()

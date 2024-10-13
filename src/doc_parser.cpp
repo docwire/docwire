@@ -14,6 +14,7 @@
 #include <iostream>
 #include "log.h"
 #include "misc.h"
+#include "nested_exception.h"
 #include "throw_if.h"
 
 //Dirty hack, be we now what we are doing and this is internal library.
@@ -106,21 +107,13 @@ struct Comment
 	std::string author;
 };
 
-static bool cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& stream_offset, bool* unicode_detected = NULL)
+static void cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& stream_offset, bool* unicode_detected = NULL)
 {
 	const Parser9x* parser9 = dynamic_cast<const Parser9x*>(parser);
-	if (parser9 == NULL)
-	{
-		docwire_log(warning) << "This is not a 9x parser.";
-		return false;
-	}
+	throw_if (parser9 == NULL, "This is not a 9x parser.");
 	U32 piece = 0;
 	U32 offset = cp;
-	if (parser9->m_plcfpcd == NULL)
-	{
-		docwire_log(warning) << "No pieces table found.";
-		return false;
-	}
+	throw_if (parser9->m_plcfpcd == NULL, "No pieces table found.");
 	// Copied from wv2 code.
 	PLCFIterator<Word97::PCD> it( *parser9->m_plcfpcd );
 	for ( ; it.current(); ++it, ++piece ) {
@@ -130,11 +123,7 @@ static bool cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& strea
 	}
 	docwire_log(debug) << "Piece: " << piece << ", offset: " << offset;
 	PLCFIterator<Word97::PCD> it2(parser9->m_plcfpcd->at( piece ) );
-	if (!it2.current())
-	{
-		docwire_log(warning) << "Specified piece not found.";
-		return false;
-	}
+	throw_if (!it2.current(), "Specified piece not found.");
 	U32 fc = it2.current()->fc;   // Start FC of this piece
 	docwire_log(debug) << "Piece start at FC " << fc << ".";
         bool unicode;
@@ -146,37 +135,25 @@ static bool cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& strea
 	stream_offset = fc;
 	if (unicode_detected != NULL)
 		*unicode_detected = unicode;
-	return true;
 }
 
-static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& comments)
+static void parse_comments(const wvWare::Parser* parser, std::vector<Comment>& comments, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 {
-	AbstractOLEStreamReader* reader = NULL;
-	AbstractOLEStreamReader* table_reader = NULL;
 	try
 	{
 		if (parser->fib().lcbPlcfandTxt == 0)
 		{
 			docwire_log(debug) << "No annotations.";
-			return true;
+			return;
 		}
 
 		U32 atn_part_cp = parser->fib().ccpText + parser->fib().ccpFtn + parser->fib().ccpHdd + parser->fib().ccpMcr;
 		docwire_log(debug) << "Annotations part at CP " << atn_part_cp << ".";
-		reader = parser->m_storage->createStreamReader("WordDocument");
-		if (!reader)
-		{
-			docwire_log(error) << "Error opening WordDocument stream.";
-			return false;
-		}
+		std::unique_ptr<AbstractOLEStreamReader> reader { parser->m_storage->createStreamReader("WordDocument") };
+		throw_if (!reader, "Error opening WordDocument stream.");
 		const Parser9x* parser9 = dynamic_cast<const Parser9x*>(parser);
-		table_reader = parser->m_storage->createStreamReader(parser9->tableStream());
-		if (!table_reader)
-		{
-			docwire_log(error) << "Error opening table stream.";
-			delete reader;
-			return false;
-		}
+		std::unique_ptr<AbstractOLEStreamReader> table_reader { parser->m_storage->createStreamReader(parser9->tableStream()) };
+		throw_if (!table_reader, "Error opening table stream.");
 
 		U32 annotation_txts_offset = parser->fib().fcPlcfandTxt;
 		docwire_log(debug) << "Annotation texts table at offset " << annotation_txts_offset << ".";
@@ -189,31 +166,27 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 			docwire_log(debug) << "Annotation text position (CP) from " << annotation_begin_cp << " to " << annotation_end_cp << ".";
 			U32 stream_begin_offset;
 			bool unicode;
-			if (!cp_to_stream_offset(parser, atn_part_cp + annotation_begin_cp, stream_begin_offset, &unicode))
+			try
 			{
-				docwire_log(error) << "Converting annotation start position to stream offset failed.";
-				delete reader;
-				delete table_reader;
-				return false;
+				cp_to_stream_offset(parser, atn_part_cp + annotation_begin_cp, stream_begin_offset, &unicode);
+			}
+			catch (const std::exception&)
+			{
+				std::throw_with_nested(make_error("Converting annotation start position to stream offset failed."));
 			}
 			U32 stream_end_offset;
-			if (!cp_to_stream_offset(parser, atn_part_cp + annotation_end_cp, stream_end_offset))
+			try
 			{
-				docwire_log(error) << "Converting annotation end position to stream offset failed.";
-				delete reader;
-				delete table_reader;
-				return false;
+				cp_to_stream_offset(parser, atn_part_cp + annotation_end_cp, stream_end_offset);
+			}
+			catch (const std::exception&)
+			{
+				std::throw_with_nested(make_error("Converting annotation end position to stream offset failed."));
 			}
 			docwire_log(debug) << "Annotation text stream position from " << stream_begin_offset << " to " << stream_end_offset << ".";
 			reader->seek(stream_begin_offset);
 			U8 annotation_mark = reader->readU8();
-			if (!annotation_mark == 0x05)
-			{
-				docwire_log(error) << "Incorrect annotation mark.";
-				delete reader;
-				delete table_reader;
-				return false;
-			}
+			throw_if (!annotation_mark == 0x05, "Incorrect annotation mark.");
 			std::string annotation;
 			while (reader->tell() < stream_end_offset - 1)
 			{
@@ -249,7 +222,7 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 			std::string owner;
 			if (len * 2 + total_len > annotation_owners_len)
 			{
-				docwire_log(warning) << "Something is wrong with XST table. Authors of comments could not be parsed.";
+				non_fatal_error_handler(make_error_ptr("Something is wrong with XST table. Authors of comments could not be parsed."));
 				owners.clear();
 				break;
 			}
@@ -273,12 +246,13 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 				break;
 			docwire_log(debug) << "Annotation " << i << " references text at CP " << annotation_ref_cp << ".";
 			U32 stream_offset;
-			if (!cp_to_stream_offset(parser, annotation_ref_cp, stream_offset))
+			try
 			{
-				docwire_log(error) << "Converting annotation reference position to stream offset failed.";
-				delete reader;
-				delete table_reader;
-				return false;
+				cp_to_stream_offset(parser, annotation_ref_cp, stream_offset);
+			}
+			catch (const std::exception&)
+			{
+				std::throw_with_nested(make_error("Converting annotation reference position to stream offset failed."));
 			}
 			if (i < annotations.size())
 			{
@@ -292,23 +266,16 @@ static bool parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 		table_reader->seek(annotation_refs_offset + 4 * (comments.size() + 1));
 		for (int i = 0; i < comments.size(); i++)
 		{
-			Word97::ATRD atrd(table_reader);
+			Word97::ATRD atrd(table_reader.get());
 			if (atrd.ibst < owners.size())
 			{
 				docwire_log(debug) << "Annotation owner is \"" << owners[atrd.ibst] << "\", index " << atrd.ibst << ".";
 				comments[i].author = owners[atrd.ibst];
 			}
 		}
-		delete table_reader;
-		delete reader;
-		return true;
 	}
 	catch (std::bad_alloc& ba)
 	{
-		if (table_reader)
-			delete table_reader;
-		if (reader)
-			delete reader;
 		throw;
 	}
 }
@@ -374,9 +341,13 @@ class TextHandler : public wvWare::TextHandler
 				}
 				else
 				{
-					if (!parse_comments(m_parser, m_comments))
+					try
 					{
-						docwire_log(error) << "Parsing comments failed.";
+						parse_comments(m_parser, m_comments, [&](std::exception_ptr e) { m_parent->sendTag(e); });
+					}
+					catch (std::exception& error)
+					{
+						m_parent->sendTag(errors::make_nested_ptr(error, make_error("Parsing comments failed.")));
 						m_comments.clear();
 					}
 					m_comments_parsed = true;
@@ -435,7 +406,7 @@ class TextHandler : public wvWare::TextHandler
 				case FLT_EMBED:
 					docwire_log(debug) << "Embedded OLE object reference found.";
 					if (m_curr_state->obj_texts_iter == m_curr_state->obj_texts.end())
-						docwire_log(warning) << "Unexpected OLE object reference.";
+						m_parent->sendTag(make_error_ptr("Unexpected OLE object reference."));
 					else
 					{
 						std::string obj_text = *m_curr_state->obj_texts_iter;
@@ -634,7 +605,6 @@ bool DOCParser::understands(const data_source& data) const
 	cerr_redirection.restore();
 	if (!parser || !parser->isOk())
 	{
-		docwire_log(error) << "Creating parser failed.";
 		return false;
 	}
 	return true;
@@ -653,7 +623,7 @@ void DOCParser::parse(const data_source& data) const
 			.metadata = [this, &storage]()
 			{
 				attributes::Metadata meta;
-				parse_oshared_summary_info(*storage, meta);
+				parse_oshared_summary_info(*storage, meta, [&](std::exception_ptr e) { sendTag(e); });
 				return meta;
 			}
 		});
@@ -682,7 +652,7 @@ void DOCParser::parse(const data_source& data) const
 					}
 					catch (const std::exception& e)
 					{
-						docwire_log(error) << "Error while parsing embedded MS Excel workbook:\n" << e.what();
+						sendTag(errors::make_nested_ptr(e, make_error("Error while parsing embedded MS Excel workbook.")));
 					}
 				}
 				storage->leaveDirectory();

@@ -109,8 +109,8 @@ public:
 		const Entry& operator*() const { return m_entry; }
 	};
 
-	ArchiveReader(std::istream& stream)
-		: data(stream)
+	ArchiveReader(std::istream& stream, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+		: data(stream), m_non_fatal_error_handler(non_fatal_error_handler)
 	{
 		m_archive = archive_read_new();
 		archive_read_support_filter_all(m_archive);
@@ -123,7 +123,7 @@ public:
 	{
 		int r = archive_read_free(m_archive);
 		if (r != ARCHIVE_OK)
-			docwire_log(error) << "archive_read_free() error: " << archive_error_string(m_archive);
+			m_non_fatal_error_handler(make_error_ptr("archive_read_free() error", archive_error_string(m_archive)));
 	}
 
 	archive* get_archive()
@@ -168,6 +168,7 @@ private:
 
 	archive* m_archive;
 	CallbackClientData data;
+	std::function<void(std::exception_ptr)> m_non_fatal_error_handler;
 
 	static la_ssize_t archive_read_callback(archive* archive, void* client_data, const void** buf)
 	{
@@ -218,7 +219,7 @@ DecompressArchives::process(Info &info) const
 	try
 	{
 		docwire_log(debug) << "Decompressing archive";
-		ArchiveReader reader(*in_stream);
+		ArchiveReader reader(*in_stream, [this](std::exception_ptr e) { Info info{e}; emit(info); });
 		for (ArchiveReader::Entry entry: reader)
 		{
 			std::string entry_name = entry.get_name();
