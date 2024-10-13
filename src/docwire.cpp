@@ -393,18 +393,28 @@ int main(int argc, char* argv[])
 		chain = chain | openai::TextToSpeech(api_key, model, voice);
 	}
 
+	chain = chain | TransformerFunc([](Info& info)
+	{
+		if (!std::holds_alternative<std::exception_ptr>(info.tag))
+			return;
+		std::clog << "[WARNING] " <<
+			errors::diagnostic_message(std::get<std::exception_ptr>(info.tag)) << std::endl;
+	});
+
 	try
 	{
 		chain | std::cout;
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << "Error processing file " + file_name + ".\n" + errors::diagnostic_message(e) << std::endl;
+		std::cerr << "[ERROR] " <<
+			errors::diagnostic_message(e) <<
+			"processing file " + file_name << std::endl;
 		return 2;
 	}
   catch (...)
   {
-		std::cerr << "Error processing file " + file_name + ". Unknown error.\n";
+		std::cerr << "[ERROR] Unknown error\nprocessing file " + file_name << std::endl;
 		return 2;
   }
 
