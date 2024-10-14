@@ -42,7 +42,8 @@ void parseXmlData(std::function<void(const Tag&)> send_tag, XmlStream& xml_strea
 				send_tag(tag::Text{ text });
 			}
 		}
-		else if (tag_name != "style" && full_tag_name != "o:DocumentProperties" && full_tag_name != "o:CustomDocumentProperties")
+		else if (tag_name != "style" && full_tag_name != "o:DocumentProperties" &&
+			full_tag_name != "o:CustomDocumentProperties" && full_tag_name != "w:binData")
 		{
 			if (full_tag_name == "w:p")
 				send_tag(tag::Paragraph{});
