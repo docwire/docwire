@@ -1,3 +1,26 @@
+## Version 2024.10.15
+
+The release introduces several significant changes across various files, enhancing configuration, documentation, and functionality. Key updates include improved error handling in various components, providing clearer context for exceptions, and the introduction of new functionality for chaining function calls in C++20, enabling more flexible and composable operations. Other notable changes include modifications to the .gitignore to ignore the .cache directory and updates to the CMake configuration to enhance build process integration with tools like VSCode.
+
+> 🐇 "In the code where changes abound,  
+> A rabbit hops with joy profound.  
+> New features bloom, errors refined,  
+> Documentation clear, knowledge aligned.  
+> With CMake's might and README's grace,  
+> Our project thrives, a joyful space!" 🐇
+
+- **New Features**
+	- Enhanced error handling in various components, improving security, clarity and context for exceptions.
+	- Introduced new functionality for chaining function calls in C++20, allowing for more flexible and composable operations.
+	- Improved handling of w:binData tag in XML parser
+
+- **Documentation**
+	- Updated README.md to clarify error handling, enhancing user-friendliness.
+
+- **Chores**
+	- Updated `.gitignore` to include `.cache` directory.
+	- Modified CMake configuration to enhance build process integration with tools like VSCode.
+
 ## Version 2024.08.30
 
 The changes involve enhancements to the XML parsing and reading logic. The parseXmlData function in xml_parser.cpp now includes improved handling for specific XML tags, while xml_stream.cpp has been refactored to encapsulate XML reading logic within a new method. Additionally, a new processing instruction has been added to the test XML document, enriching its structure.
