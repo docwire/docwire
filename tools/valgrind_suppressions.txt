@@ -10,7 +10,28 @@
    fun:(below main)
 }
 {
-   get stack on throw
+   unwind stack on raise exception 1
+   Helgrind:Race
    fun:_Unwind_RaiseException
-   fun:__cxa_throw
+}
+{
+   unwind stack on raise exception 2
+   Helgrind:Race
+   obj:/usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+   fun:_Unwind_RaiseException
+}
+{
+   unwind stack on raise exception 3
+   Helgrind:Race
+   obj:/usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+   obj:/usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+   fun:_Unwind_RaiseException
+}
+{
+   unwind stack on raise exception 4
+   Helgrind:Race
+   fun:_Unwind_SetGR
+   fun:__gxx_personality_v0
+   obj:/usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+   fun:_Unwind_RaiseException
 }
