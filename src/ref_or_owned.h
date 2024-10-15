@@ -29,6 +29,8 @@ namespace docwire
 template <typename T>
 class ref_or_owned
 {
+  static_assert(!std::is_reference<T>::value, "ref_or_owned<T> cannot be instantiated with a reference type");
+  static_assert(!std::is_void<T>::value, "ref_or_owned<T> cannot be instantiated with void type");
 
 public:
 

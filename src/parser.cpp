@@ -27,7 +27,7 @@ struct Parser::Implementation
     return info;
   }
 
-  std::function<parsing_continuation(const Tag&)> m_callback;
+  mutable std::function<parsing_continuation(const Tag&)> m_callback;
 };
 
 void Parser::ImplementationDeleter::operator()(Parser::Implementation *impl)

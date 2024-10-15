@@ -9,3 +9,8 @@
    fun:exit
    fun:(below main)
 }
+{
+   get stack on throw
+   fun:_Unwind_RaiseException
+   fun:__cxa_throw
+}

@@ -80,13 +80,13 @@ public:
  * @see std::nested_exception
  */
 template <typename Inner, typename Outer>
-auto make_nested(Inner inner, Outer outer)
+auto make_nested(const Inner& inner, const Outer& outer)
 {
 	try
 	{
 		throw inner;
 	}
-	catch(const std::exception&)
+	catch(...)
 	{
 		return nested<Outer>(outer);
 	}

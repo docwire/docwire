@@ -127,7 +127,6 @@ class SaxParser : public ParserSax
 				catch (htmlcxx::CharsetConverter::Exception& ex)
 				{
 					m_parser->sendTag(errors::make_nested_ptr(ex, make_error("Cannot create charset to UTF-8 converter", m_charset)));
-          delete m_converter;
 					m_converter = nullptr;
 				}
 			}

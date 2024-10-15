@@ -62,6 +62,7 @@ using subrange_t = decltype(subrange<Start, Length>(std::declval<T>()));
  */
 template <typename T>
 auto remove_first(T&& tuple) {
+  static_assert(std::tuple_size_v<T> > 0, "Cannot remove the first element of an empty tuple.");
   return subrange<1, std::tuple_size_v<T> - 1>(tuple);
 }
 
@@ -85,6 +86,7 @@ using remove_first_t = decltype(remove_first(std::declval<T>()));
  */
 template <typename T>
 auto remove_last(T&& tuple) {
+  static_assert(std::tuple_size_v<T> > 0, "Cannot remove the last element of an empty tuple.");
   return subrange<0, std::tuple_size_v<T> - 1>(tuple);
 }
 
@@ -105,6 +107,7 @@ using remove_last_t = decltype(remove_last(std::declval<T>()));
  */
 template <typename T>
 auto first_element(T&& tuple) {
+  static_assert(std::tuple_size_v<T> > 0, "Cannot get the first element of an empty tuple.");
   return std::get<0>(tuple);
 }
 
@@ -125,6 +128,7 @@ using first_element_t = decltype(first_element(std::declval<T>()));
  */
 template <typename T>
 auto last_element(T&& tuple) {
+  static_assert(std::tuple_size_v<T> > 0, "Cannot get the last element of an empty tuple.");
   return std::get<std::tuple_size_v<T> - 1>(tuple);
 }
 

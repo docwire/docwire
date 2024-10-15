@@ -245,11 +245,11 @@ class data_source
         			},
 					[this](const std::span<const std::byte>& source)
 					{
-						throw_if (std::holds_alternative<std::span<const std::byte>>(m_source));
+						throw make_error("std::span cannot be cached in memory");
 					},
         			[this](const std::string& source)
         			{
-						throw_if (std::holds_alternative<std::string>(m_source));
+						throw make_error("std::string cannot be cached in memory");
         			},
         			[this](seekable_stream_ptr source)
 					{

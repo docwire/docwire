@@ -52,7 +52,7 @@ public:
 			docwire_log(debug) << "Archive reader buffer underflow";
 			la_ssize_t bytes_read = archive_read_data(m_archive, m_buffer, m_buf_size);
 			docwire_log(debug) << bytes_read << " bytes read";
-			throw_if (bytes_read < 0, "archive_read_date() failed", archive_error_string(m_archive));
+			throw_if (bytes_read < 0, "archive_read_data() failed", archive_error_string(m_archive));
 			if (bytes_read == 0)
 				return traits_type::eof();
 			setg(m_buffer, m_buffer, m_buffer + bytes_read);

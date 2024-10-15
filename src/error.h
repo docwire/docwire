@@ -172,7 +172,7 @@ struct impl : public base
 	 * @param context The context to be stored.
 	 * @param location The source location of the exception (initialized by current location by default).
 	 */
-	impl(const T& context, const errors::source_location& location = current_location())
+	impl(const T& context, const errors::source_location& location = DOCWIRE_CURRENT_LOCATION())
 		: base(location), context(context)
 	{
 	}

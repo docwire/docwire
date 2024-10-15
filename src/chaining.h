@@ -59,9 +59,10 @@ struct value_to_function_binding
    * @param args The additional arguments.
    * @return The result of the function call.
    */
-  auto operator()(auto&&... args) const
+  template <typename... Args>
+  auto operator()(Args&&... args) const
   {
-    return function.get()(value.get(), std::forward<decltype(args)>(args)...);
+    return function.get()(value.get(), std::forward<Args>(args)...);
   }
 
   /**
@@ -92,7 +93,7 @@ auto operator|(V&& value, F&& function)
 {
   value_to_function_binding<std::decay_t<V>, std::decay_t<F>> binding
     { std::forward<V>(value), std::forward<F>(function) };
-  if constexpr (std::tuple_size_v<invocation_traits::args_t<decltype(binding)>> == 0)
+  if constexpr (invocation_traits::arity_v<decltype(binding)> == 0)
     return binding();
   else
     return binding;
@@ -134,13 +135,14 @@ struct function_to_function_binding
    * @param args The arguments.
    * @return The result of the function call.
    */
-  auto operator()(auto&&... args) const
+  template <typename... Args>
+  auto operator()(Args&&... args) const
   {
     constexpr auto f1_arg_count = invocation_traits::arity_v<F1> - 1; // exclude callback
     constexpr auto f2_arg_count = invocation_traits::arity_v<F2> - 1; // exclude callback argument;
     static_assert(f1_arg_count + f2_arg_count == sizeof...(args));
 
-    auto args_tuple = std::make_tuple(std::forward<decltype(args)>(args)...);
+    auto args_tuple = std::make_tuple(std::forward<Args>(args)...);
 
     auto f2_args = tuple_utils::subrange<f1_arg_count, f2_arg_count>(args_tuple);
     auto callback = [this, f2_args](auto&& arg) {
@@ -184,7 +186,7 @@ auto operator|(F1&& function1, F2&& function2)
 {
   function_to_function_binding<std::decay_t<F1>, std::decay_t<F2>> binding
     { std::forward<F1>(function1), std::forward<F2>(function2) };
-  if constexpr (std::tuple_size_v<invocation_traits::args_t<decltype(binding)>> == 0)
+  if constexpr (invocation_traits::arity_v<decltype(binding)> == 0)
     return binding();
   else
     return binding;
@@ -222,13 +224,14 @@ struct function_to_pushable_binding
    * @param args The arguments.
    * @return The result of the function call.
    */
-  auto operator()(auto&&... args)
+  template <typename... Args>
+  auto operator()(Args&&... args)
   {
     using F_args_t = invocation_traits::args_t<F>;
     static_assert(std::tuple_size_v<F_args_t> > 0);
     using F_last_arg_t = tuple_utils::last_element_t<F_args_t>;
     using callback_ret_type = invocation_traits::result_t<F_last_arg_t>;
-    return function.get()(std::forward<decltype(args)>(args)..., [this](auto&& arg)->callback_ret_type
+    return function.get()(std::forward<Args>(args)..., [this](auto&& arg)->callback_ret_type
     {
       container.get().push_back(arg);
       if constexpr (!std::is_void_v<callback_ret_type>)
@@ -264,7 +267,7 @@ auto operator|(F&& function, C&& container)
 {
   function_to_pushable_binding<std::decay_t<F>, std::decay_t<C>> binding
     { std::forward<F>(function), std::forward<C>(container) };
-  if constexpr (std::tuple_size_v<invocation_traits::args_t<decltype(binding)>> == 0)
+  if constexpr (invocation_traits::arity_v<decltype(binding)> == 0)
     return binding();
   else
     return binding;

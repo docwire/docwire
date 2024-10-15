@@ -37,6 +37,10 @@ inline std::string diagnostic_message(const std::exception& e)
 	{
 		message = diagnostic_message(nested_ex);
 	}
+	catch (...)
+	{
+		message = "Unknown error\n";
+	}
 	message += std::string{message.empty() ? "Error" : "with context"} + " \"";
 	try
 	{
@@ -72,6 +76,10 @@ inline std::string diagnostic_message(std::exception_ptr eptr)
 	{
 		return diagnostic_message(e);
 	}
+	catch (...)
+	{
+		return "Unknown error\n";
+	}
 }
 
 /**
@@ -104,6 +112,10 @@ bool contains_type(const std::exception& e)
 	catch (const std::exception& nested_ex)
 	{
 		return contains_type<T>(nested_ex);
+	}
+	catch (...)
+	{
+		return false;
 	}
 	return false;
 }

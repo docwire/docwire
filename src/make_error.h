@@ -39,7 +39,7 @@
 	)
 
 #define DOCWIRE_MAKE_ERROR_PTR(...) \
-	std::make_exception_ptr(make_error(__VA_ARGS__))
+	std::make_exception_ptr(DOCWIRE_MAKE_ERROR(__VA_ARGS__))
 
 #ifdef DOCWIRE_ENABLE_SHORT_MACRO_NAMES
 #define make_error DOCWIRE_MAKE_ERROR

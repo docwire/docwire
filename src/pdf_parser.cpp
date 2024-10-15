@@ -4719,6 +4719,7 @@ struct PDFParser::Implementation
 						case ReferenceInfo::in_use:
 						{
 							size_t current_position = m_data_stream->tellg();
+							throw_if (current_position == std::streampos{-1}, "Failed to get stream position");
 							throw_if (!seek(reference_info->m_offset, std::ios_base::beg), "PDFReader::seek() failed", reference_info->m_offset);
 							try
 							{

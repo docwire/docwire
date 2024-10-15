@@ -36,7 +36,7 @@ namespace docwire::invocation_traits
  * 
  * This is necessary because boost::callable_traits doesn't support all types of callable objects,
  * like callables with auto arguments or functors with templated operator().
- * In this kind of situation functor class can provide public invocation_args_t type definiton with
+ * In this kind of situation functor class can provide public invocation_args_t type definition with
  * default operator() signature for other classes to use.
  * 
  * Using this template is better than using boost::callable_traits directly because it provides a fallback mechanism

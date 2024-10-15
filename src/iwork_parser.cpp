@@ -229,7 +229,7 @@ static std::string find_main_xml_file(const ZipReader& unzip)
 		return "index.apxl";
 	if (unzip.exists("presentation.apxl"))
 		return "presentation.apxl";
-	throw make_error("None of the following files (index.xml, index.apxl, presentation.apxl) could not be found.");
+	throw make_error("None of the following files (index.xml, index.apxl, presentation.apxl) could be found.");
 }
 
 struct IWorkParser::Implementation

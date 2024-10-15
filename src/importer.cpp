@@ -62,13 +62,13 @@ public:
     {
       std::unique_ptr<ParserBuilder> builder = m_owner.findParserByData(data);
       throw_if (!builder, "findParserByData() failed");
-      return std::move(builder);
+      return builder;
     }
     else
     {
       std::unique_ptr<ParserBuilder> builder = m_owner.findParserByExtension(*extension);
       throw_if (!builder, "findParserByExtension() failed", extension->string());
-      return std::move(builder);
+      return builder;
     }
   }
 
