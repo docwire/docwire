@@ -9,13 +9,15 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include "error_tags.h"
 #include <fstream>
 #include <filesystem>
 #include <boost/signals2.hpp>
 
-#include "exception.h"
+#include "exception_utils.h"
 #include "importer.h"
 #include "log.h"
+#include "throw_if.h"
 
 namespace docwire
 {
@@ -59,22 +61,20 @@ public:
     if (!extension)
     {
       std::unique_ptr<ParserBuilder> builder = m_owner.findParserByData(data);
-      if (!builder)
-        throw UnknownFormat("Format of data in buffer was not recognized.");
-      return std::move(builder);
+      throw_if (!builder, "findParserByData() failed");
+      return builder;
     }
     else
     {
       std::unique_ptr<ParserBuilder> builder = m_owner.findParserByExtension(*extension);
-      if (!builder)
-        throw UnknownFormat("Format was not recognized by extension for extension " + extension->string());
-      return std::move(builder);
+      throw_if (!builder, "findParserByExtension() failed", extension->string());
+      return builder;
     }
   }
 
   std::unique_ptr<docwire::Parser> build_parser(ParserBuilder& builder)
   {
-    return builder.withOnNewNodeCallbacks({[this](Info &info){ process(info); }})
+    return builder
         .withParameters(m_parameters)
         .build();
   }
@@ -90,16 +90,25 @@ public:
     auto data = std::get<data_source>(info.tag);
     std::unique_ptr<ParserBuilder> builder = findParser(data);
     std::unique_ptr<docwire::Parser> parser = build_parser(*builder);
+    auto parser_callback = [this](const Tag& tag)
+    {
+      Info info{tag};
+      process(info);
+      if (info.cancel)
+        return Parser::parsing_continuation::stop;
+      else if (info.skip)
+        return Parser::parsing_continuation::skip;
+      else
+        return Parser::parsing_continuation::proceed;
+    }; 
     try
     {
-      parser->parse(data);
-    }
-    catch (EncryptedFileException &ex)
-    {
-      throw ParsingFailed("Parsing failed, file is encrypted", ex);
+      (*parser)(data, parser_callback);
     }
     catch (const std::exception& ex)
     {
+      if (errors::contains_type<errors::file_is_encrypted>(ex))
+        std::throw_with_nested(make_error(errors::backtrace_entry{}));
       if (!data.file_extension()) // parser was detected by data
         throw;
       docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
@@ -108,7 +117,7 @@ public:
       {
         throw;
       }
-      build_parser(*second_builder)->parse(data);
+      (*build_parser(*second_builder))(data, parser_callback);
     }
   }
 

@@ -12,6 +12,7 @@
 #include "transcribe.h"
 
 #include <boost/json.hpp>
+#include "error_tags.h"
 #include <fstream>
 #include "input.h"
 #include "log.h"
@@ -61,9 +62,9 @@ void Transcribe::process(Info &info) const
 	{
 		in_stream | http::Post("https://api.openai.com/v1/audio/transcriptions", {{"model", "whisper-1"}, {"response_format", "text"}}, "file", DefaultFileName("audio.mp3"), impl->m_api_key) | response_stream;
 	}
-	catch (const http::Post::RequestFailed& e)
+	catch (const std::exception& e)
 	{
-		throw Transcribe::HttpError("Http POST failed", e);
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 	Info doc_info(tag::Document{});
 	emit(doc_info);

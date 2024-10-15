@@ -38,18 +38,8 @@ public:
   build() const override
   {
     auto parser = std::make_unique<ParserType>();
-    for (auto &callback : m_callbacks)
-    {
-      parser->addOnNewNodeCallback(callback);
-    }
     parser->withParameters(m_parameters);
     return parser;
-  }
-
-  ParserBuilder& withOnNewNodeCallbacks(const std::vector<NewNodeCallback> &callbacks) override
-  {
-    m_callbacks = callbacks;
-    return *this;
   }
 
   ParserBuilder& withParameters(const ParserParameters &inParameter) override
@@ -59,7 +49,6 @@ public:
   }
 
 private:
-  std::vector<NewNodeCallback> m_callbacks;
   ParserParameters m_parameters;
 };
 } // namespace docwire

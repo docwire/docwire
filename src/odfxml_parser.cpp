@@ -11,7 +11,6 @@
 
 #include "odfxml_parser.h"
 
-#include "exception.h"
 #include <fstream>
 #include <iostream>
 #include <libxml/xmlreader.h>
@@ -106,7 +105,7 @@ void ODFXMLParser::parse(const data_source& data, XmlParseMode mode) const
 	}
 	catch (const std::exception& e)
 	{
-		throw RuntimeError("Error parsing Flat XML file", e);
+		std::throw_with_nested(make_error("Extracting text failed"));
 	}
 	trySendTag(tag::CloseDocument{});
 }
@@ -116,14 +115,7 @@ attributes::Metadata ODFXMLParser::metaData(const std::string& xml_content) cons
 	docwire_log(debug) << "Extracting metadata.";
 	attributes::Metadata metadata;
 
-	try
-	{
-		parseODFMetadata(xml_content, metadata);
-	}
-	catch (const std::exception& e)
-	{
-		throw RuntimeError("Error parsing metadata in Flat XML file", e);
-	}
+	parseODFMetadata(xml_content, metadata);
 	if (!metadata.page_count)
 	{
 		// If we are processing ODP use slide count as page count
@@ -153,14 +145,6 @@ void ODFXMLParser::parse(const data_source& data) const
 {
 	docwire_log(debug) << "Using ODFXML parser.";
 	parse(data, XmlParseMode::PARSE_XML);
-}
-
-
-Parser&
-ODFXMLParser::addOnNewNodeCallback(NewNodeCallback callback)
-{
-  CommonXMLDocumentParser::addCallback(callback);
-  return *this;
 }
 
 } // namespace docwire

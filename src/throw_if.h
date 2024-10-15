@@ -9,44 +9,22 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "exception.h"
+#ifndef DOCWIRE_THROW_IF_H
+#define DOCWIRE_THROW_IF_H
 
-#include <boost/algorithm/string.hpp>
-#include <boost/core/demangle.hpp>
-#include <list>
-#include "misc.h"
+#include "make_error.h"
 
-namespace docwire
-{
+#define DOCWIRE_THROW_IF(triggering_expression, ...) \
+	do { \
+		if (triggering_expression) \
+		{ \
+			constexpr const char* triggering_condition = #triggering_expression; \
+			throw DOCWIRE_MAKE_ERROR(triggering_condition __VA_OPT__(,) __VA_ARGS__); \
+		} \
+	} while(0)
 
-namespace
-{
+#ifdef DOCWIRE_ENABLE_SHORT_MACRO_NAMES
+	#define throw_if DOCWIRE_THROW_IF
+#endif
 
-std::string complex_message(const std::string& message, const std::exception& nested)
-{
-	return message + " with nested " +
-		boost::algorithm::erase_all_copy(
-			boost::core::demangle(typeid(nested).name()),
-			"class ") + // class prefix is added on MSVC
-		" " + nested.what();
-}
-
-} // anonymous namespace
-
-LogicError::LogicError(const std::string& message)
-	: std::logic_error(message)
-{}
-
-LogicError::LogicError(const std::string& message, const std::exception& nested)
-	: std::logic_error(complex_message(message, nested))
-{}
-
-RuntimeError::RuntimeError(const std::string& message)
-	: std::runtime_error(message)
-{}
-
-RuntimeError::RuntimeError(const std::string& message, const std::exception& nested)
-	: std::runtime_error(complex_message(message, nested))
-{}
-
-} // namespace docwire
+#endif

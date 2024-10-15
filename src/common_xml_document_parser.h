@@ -32,7 +32,7 @@ enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
 	Child classes (ODFOOXMLParser and ODFXMLParser for now) may want to add or change handlers for some xml tags
 	(using registerODFOOXMLCommandHandler).
 **/
-class CommonXMLDocumentParser
+class CommonXMLDocumentParser: public Parser
 {
 	private:
 		struct Implementation;
@@ -73,8 +73,6 @@ class CommonXMLDocumentParser
                                  const ZipReader* zipfile, std::string& text,
                                  bool& children_processed, std::string& level_suffix, bool first_on_level)> CommandHandler;
 
-    void addCallback(const NewNodeCallback &callback);
-
 		/**
 			Each xml tag can have associated handler, which is a single function of CommandHandler type.
 			CommonXMLDocumentParser has already a set of functions for some basic tags.
@@ -91,10 +89,10 @@ class CommonXMLDocumentParser
 		///parses xml data for given xml stream. It executes commands for each xml tag
 		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile) const;
 
-		///extracts text from xml data. It uses parseXmlData internally. Throws RuntimeError on fail
+		///extracts text from xml data. It uses parseXmlData internally.
 		void extractText(const std::string& xml_contents, XmlParseMode mode, const ZipReader* zipfile, std::string& text) const;
 
-		///usefull since two parsers use this. Throws RuntimeError on fail
+		///usefull since two parsers use this.
 		void parseODFMetadata(const std::string &xml_content, attributes::Metadata& metadata) const;
 
 		///this is helpful function to format comment
@@ -130,6 +128,7 @@ class CommonXMLDocumentParser
 		void activeEmittingSignals(bool flag) const;
 
 		void trySendTag(const Tag& tag) const;
+		void send_error(const std::exception_ptr e) const;
 
 	//public interface
 	public:

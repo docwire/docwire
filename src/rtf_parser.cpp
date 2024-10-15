@@ -12,7 +12,6 @@
 #include "rtf_parser.h"
 
 #include "data_stream.h"
-#include "exception.h"
 #include <fstream>
 #include <iostream>
 #include "log.h"
@@ -313,7 +312,7 @@ static void parse_dttm_time(int dttm, tm& tm)
 }
 
 static void execCommand(DataStream& data_stream, UString& text, int& skip, RTFParserState& state, RTFCommand cmd, long int arg,
-	TextConverter*& converter)
+	TextConverter*& converter, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 {
 	switch (cmd)
 	{
@@ -429,7 +428,7 @@ static void execCommand(DataStream& data_stream, UString& text, int& skip, RTFPa
 			}
 			else
 			{
-				docwire_log(error) << "Converter initialization ERROR!";
+				non_fatal_error_handler(make_error_ptr("Converter initialization error"));
 				delete converter;
 				converter = NULL;
 			}
@@ -494,8 +493,7 @@ void RTFParser::parse(const data_source& data) const
 	TextConverter* converter = NULL;
 	try
 	{
-		if (!understands(data))	//check if this is really rtf file
-			throw RuntimeError("Data in the stream is not an RTF document");
+		throw_if (!understands(data), "Not a RTF file"); //check if this is really rtf file
 		sendTag(tag::Document
 			{
 				.metadata = [this, &data]() { return metaData(data); }
@@ -520,7 +518,7 @@ void RTFParser::parse(const data_source& data) const
 					UString fragment_text;
 					{
 						std::lock_guard<std::mutex> converter_mutex_lock(converter_mutex);
-						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter);
+						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter, [this](std::exception_ptr e) { sendTag(e); });
 					}
 					switch (state.groups.top().destination)
 					{
@@ -606,8 +604,7 @@ void RTFParser::parse(const data_source& data) const
 						}
 					}
 			}
-			if (state.groups.size() == 0)	//it will crash soon if groups.size() returns zero... better to check
-				throw RuntimeError("RTF file is corrupted");
+			throw_if (state.groups.size() == 0, "File is corrupted"); //it will crash soon if groups.size() returns zero... better to check
 		}
 		if (converter != NULL)
 			delete converter;

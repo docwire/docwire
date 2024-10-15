@@ -36,6 +36,11 @@ HtmlExporter::HtmlExporter(const HtmlExporter& other)
 
 void HtmlExporter::process(Info &info) const
 {
+	if (std::holds_alternative<std::exception_ptr>(info.tag))
+	{
+		emit(info);
+		return;
+	}
 	if (std::holds_alternative<tag::Document>(info.tag) || !impl->m_stream)
 	{
 		++impl->m_nested_docs_level;

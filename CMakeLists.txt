@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for VSCode CLangd extension
+
+add_compile_definitions(DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
+
 # Get version from ChangeLog and store it in DOCWIRE_VERSION and SIMPLE_DOCWIRE_VERSION
 function(extract_version)
 	file(READ "${CMAKE_CURRENT_SOURCE_DIR}/doc/ChangeLog" changelog_text)

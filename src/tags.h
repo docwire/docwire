@@ -18,6 +18,7 @@
 #include "log.h"
 #include "log_ctime.h"
 #include "log_empty_struct.h"
+#include "log_exception.h"
 #include "log_variant.h"
 #include <fstream>
 #include <optional>
@@ -372,7 +373,8 @@ using Variant = std::variant<
   ClosePage,
   data_source,
   Document,
-  CloseDocument
+  CloseDocument,
+  std::exception_ptr
 >;
 
 }

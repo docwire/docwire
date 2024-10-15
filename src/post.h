@@ -13,7 +13,6 @@
 #define DOCWIRE_HTTP_POST_H
 
 #include "chain_element.h"
-#include "exception.h"
 #include <filesystem>
 
 namespace docwire
@@ -48,10 +47,6 @@ public:
 	{
 		return false;
 	}
-
-	DOCWIRE_EXCEPTION_DEFINE(RequestFailed, RuntimeError);
-	DOCWIRE_EXCEPTION_DEFINE(RequestIncorrect, LogicError);
-	DOCWIRE_EXCEPTION_DEFINE(FileTagIncorrect, LogicError);
 
 private:
 	struct Implementation;

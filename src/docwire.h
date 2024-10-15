@@ -16,6 +16,7 @@
 #include "classify.h"
 #include "decompress_archives.h"
 #include "detect_sentiment.h"
+#include "exception_utils.h"
 #include "find.h"
 #include "fuzzy_match.h"
 #include "input.h"

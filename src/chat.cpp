@@ -16,6 +16,8 @@
 #include <fstream>
 #include "input.h"
 #include "log.h"
+#include "magic_enum_iostream.hpp"
+#include "make_error.h"
 #include "output.h"
 #include "post.h"
 #include <sstream>
@@ -50,6 +52,8 @@ Chat::~Chat()
 {
 }
 
+using magic_enum::ostream_operators::operator<<;
+
 namespace
 {
 
@@ -80,7 +84,7 @@ std::string image_detail_to_string(ImageDetail image_detail)
 		case ImageDetail::low: return "low";
 		case ImageDetail::high: return "high";
 		case ImageDetail::automatic: return "auto";
-		default: throw Chat::IncorrectArgumentValue("Incorrect image detail value");
+		default: throw make_error("Unexpected image detail value", image_detail);
 	}
 }
 
@@ -128,9 +132,9 @@ std::string post_request(const std::string& query, const std::string& api_key)
 	{
 		std::stringstream { query } | http::Post("https://api.openai.com/v1/chat/completions", api_key) | response_stream;
 	}
-	catch (const http::Post::RequestFailed& e)
+	catch (const std::exception& e)
 	{
-		throw Chat::HttpError("Http POST failed: " + query, e);
+		std::throw_with_nested(make_error(query));
 	}
 	return response_stream.str();
 }
@@ -145,7 +149,7 @@ std::string parse_response(const std::string& response)
 	}
 	catch (const std::exception& e)
 	{
-		throw Chat::ParseResponseError("Error parsing response: " + response, e);
+		std::throw_with_nested(make_error(response));
 	}
 }
 

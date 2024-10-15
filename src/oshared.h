@@ -21,9 +21,9 @@ namespace docwire
 class Metadata;
 class ThreadSafeOLEStorage;
 
-void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metadata& meta);
+void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metadata& meta, const std::function<void(std::exception_ptr)>& non_fatal_error_handler);
 void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& slide_count);
-bool get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storage, std::string& codepage);
+std::string get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storage);
 
 } // namespace docwire
 

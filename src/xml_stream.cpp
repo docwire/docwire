@@ -11,11 +11,11 @@
 
 #include "xml_stream.h"
 
-#include "exception.h"
 #include <iostream>
 #include <libxml/xmlreader.h>
 #include "log.h"
 #include <mutex>
+#include "throw_if.h"
 
 namespace docwire
 {
@@ -98,13 +98,10 @@ struct XmlStream::Implementation
 	Implementation(const std::string& xml, int xml_parse_options)
 		: m_reader(make_xml_text_reader_safely(xml, xml_parse_options))
 	{
-		if (m_reader == NULL)
-			throw RuntimeError("Cannot initialize XmlStream: xmlReaderForMemory has failed");
-		if (!read_next())
-			throw RuntimeError("Cannot initialize XmlStream: xmlTextReaderRead has failed");
+		throw_if (m_reader == NULL, "Cannot initialize xmlTextReader");
+		throw_if (!read_next(), "Cannot initialize xmlTextReader");
 		m_curr_depth = xmlTextReaderDepth(m_reader.get());
-		if (m_curr_depth == -1)
-			throw RuntimeError("Cannot initialize XmlStream: xmlTextReaderDepth has failed");
+		throw_if (m_curr_depth == -1, "Cannot initialize xmlTextReader");
 		docwire_log(debug) << "Starting curr_depth: " << m_curr_depth;
 	}
 

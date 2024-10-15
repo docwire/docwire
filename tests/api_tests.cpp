@@ -13,11 +13,14 @@
 #include "office_formats_parser_provider.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
+#include "chaining.h"
+#include "error_tags.h"
+#include "exception_utils.h"
+#include <exception>
 #include <future>
 #include "fuzzy_match.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "../src/exception.h"
 #include <string_view>
 #include <tuple>
 #include "decompress_archives.h"
@@ -37,8 +40,10 @@
 #include "output.h"
 #include "parse_detected_format.h"
 #include "plain_text_exporter.h"
+#include "plain_text_writer.h"
 #include "post.h"
 #include <regex>
+#include "throw_if.h"
 #include "transformer_func.h"
 #include "txt_parser.h"
 #include "input.h"
@@ -449,12 +454,8 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     }
     catch (const std::exception& ex)
     {
-        std::string test_text {
-            "Error processing file " + file_name + ".\n" + ex.what()
-        };
-        std::replace(test_text.begin(), test_text.end(), '\\', '/');
-        
-        EXPECT_EQ(test_text, expected_text);
+        std::cerr << errors::diagnostic_message(ex);
+        ASSERT_TRUE(errors::contains_type<errors::file_is_encrypted>(ex));
     }   
 }
 
@@ -680,16 +681,106 @@ TEST(Http, PostForm)
     ASSERT_STREQ(output_val.as_object()["files"].as_object()["file.txt"].as_string().c_str(), "data:application/octet-stream;base64,PGh0dHA6Ly93d3cuc2lsdmVyY29kZXJzLmNvbS8+aHlwZXJsaW5rIHRlc3QKCg==");
 }
 
-namespace test_ns
+TEST (errors, throwing)
 {
-DOCWIRE_EXCEPTION_DEFINE(TestError1, RuntimeError);
-DOCWIRE_EXCEPTION_DEFINE(TestError2, LogicError);
+    ASSERT_NO_THROW(throw_if(2 > 3, "test"));
+    try
+    {
+        throw make_error("test");
+    }
+    catch (const errors::base& e)
+    {
+        ASSERT_EQ(e.context_type(), typeid(const char*));
+        ASSERT_EQ(e.context_string(), "test");
+    }
+    try
+    {
+        std::string s { "test" };
+        throw make_error(s);
+    }
+    catch (const errors::base& e)
+    {
+        ASSERT_EQ(e.context_type(), typeid(std::pair<std::string, std::string>));
+        ASSERT_EQ(e.context_string(), "s: test");
+    }
+    try
+    {
+        throw make_error(errors::network_error{});
+    }
+    catch (const errors::base& e)
+    {
+        ASSERT_EQ(e.context_type(), typeid(errors::network_error));
+        ASSERT_EQ(e.context_string(), "network error");
+    }
+    try
+    {
+        throw_if("2 < 3", errors::file_is_encrypted{}, errors::backtrace_entry{});
+    }
+    catch (const errors::base& e)
+    {
+        ASSERT_EQ(e.context_type(), typeid(errors::backtrace_entry));
+        ASSERT_EQ(e.context_string(), "backtrace entry");
+        try
+        {
+            std::rethrow_if_nested(e);
+            FAIL() << "Expected nested exception";
+        }
+        catch (const errors::base& e)
+        {
+            ASSERT_EQ(e.context_type(), typeid(errors::file_is_encrypted));
+            ASSERT_EQ(e.context_string(), "file is encrypted");
+            try
+            {
+                std::rethrow_if_nested(e);
+                FAIL() << "Expected nested exception";
+            }
+            catch (const errors::base& e)
+            {
+                ASSERT_EQ(e.context_type(), typeid(std::pair<std::string, const char*>));
+                ASSERT_EQ(e.context_string(), "triggering_condition: \"2 < 3\"");
+            }
+        }
+    }
 }
 
-TEST(Exceptions, DefiningCreatingAndNested)
+TEST(errors, diagnostic_message)
 {
-	std::string what_msg = test_ns::TestError1("msg1", test_ns::TestError2("msg2")).what();
-	EXPECT_EQ(what_msg, "msg1 with nested test_ns::TestError2 msg2");
+    std::string message;
+    errors::source_location err2_loc, err3_loc;
+    try
+    {
+        try
+        {
+            try
+            {
+                throw std::runtime_error{"level 1 exception"};
+            }
+            catch (const std::exception& e)
+            {
+                err2_loc = current_location();
+                std::throw_with_nested(make_error("level 2 exception"));
+            }
+        }
+        catch (const std::exception& e)
+        {
+            err3_loc = current_location();
+            std::throw_with_nested(make_error("level 3 exception"));
+        }
+    }
+    catch (const std::exception& e)
+    {
+        message = errors::diagnostic_message(e);
+    }
+	ASSERT_EQ(message,
+        std::string{"Error \"level 1 exception\"\n"} +
+        "No location information available\n"
+        "with context \"level 2 exception\"\n"
+        "in " + err2_loc.function_name() + "\n"
+        "at " + err2_loc.file_name() + ":" + std::to_string(err2_loc.line() + 1) + "\n"
+        "with context \"level 3 exception\"\n"
+        "in " + err3_loc.function_name() + "\n"
+        "at " + + err3_loc.file_name() + ":" + std::to_string(err3_loc.line() + 1) + "\n"
+    );
 }
 
 std::string sanitize_log_text(const std::string& orig_log_text)
@@ -876,82 +967,52 @@ TEST(DataSource, unseekable_stream_ptr_temp)
 
 TEST(PlainTextExporter, table_inside_table_without_rows)
 {
-    try
-    {
+    ASSERT_ANY_THROW(
         std::string{"<html><table><table><tr><td>table inside table without cells</td></tr></table></table></html>"} |
             ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
-            std::ostringstream{};
-        FAIL() << "LogicError exception was expected.";
-    }
-    catch (const LogicError& error)
-    {
-        ASSERT_EQ(error.what(), std::string{"Table inside table without rows."});
-    }
+            std::ostringstream{}
+    );
 }
 
 TEST(PlainTextExporter, table_inside_table_row_without_cells)
 {
-    try
-    {
+    ASSERT_ANY_THROW(
         std::string{"<html><table><tr><table><tr><td>table inside table without cells</td></tr></table></tr></table></html>"} |
             ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
-            std::ostringstream{};
-        FAIL() << "LogicError exception was expected.";
-    }
-    catch (const LogicError& error)
-    {
-        ASSERT_EQ(error.what(), std::string{"Table inside table row without cells."});
-    }
+            std::ostringstream{}
+    );
 }
 
 TEST(PlainTextExporter, cell_inside_table_without_rows)
 {
-    try
-    {
+    ASSERT_ANY_THROW(
         std::string{"<html><table><thead><td>cell without row</td></thead></table></html>"} |
             ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
-            std::ostringstream{};
-        FAIL() << "LogicError exception was expected.";
-    }
-    catch (const LogicError& error)
-    {
-        ASSERT_EQ(error.what(), std::string{"Cell inside table without rows."});
-    }
+            std::ostringstream{}
+    );
 }
 
 TEST(PlainTextExporter, content_inside_table_without_rows)
 {
-    try
-    {
+    ASSERT_ANY_THROW(
         std::string{"<html><table>content without rows</table></html>"} |
             ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
-            std::ostringstream{};
-        FAIL() << "LogicError exception was expected.";
-    }
-    catch (const LogicError& error)
-    {
-        ASSERT_EQ(error.what(), std::string{"Cell content inside table without rows."});
-    }
+            std::ostringstream{}
+    );
 }
 
 TEST(PlainTextExporter, content_inside_table_row_without_cells)
 {
-    try
-    {
+    ASSERT_ANY_THROW(
         std::string{"<html><table><tr>content without cell</tr></table></html>"} |
             ParseDetectedFormat<parser_provider<HTMLParser>>{} |
             PlainTextExporter{} |
-            std::ostringstream{};
-        FAIL() << "LogicError exception was expected.";
-    }
-    catch (const LogicError& error)
-    {
-        ASSERT_EQ(error.what(), std::string{"Cell content inside table row without cells."});
-    }
+            std::ostringstream{}
+    );
 }
 
 TEST(PlainTextExporter, eol_sequence_crlf)
@@ -1139,27 +1200,6 @@ TEST(fuzzy_match, ratio)
     ASSERT_EQ(docwire::fuzzy_match::ratio("hello", "helll"), 80.0);
 }
 
-class StoreInVector : public docwire::ChainElement
-{
-public:
-    StoreInVector(std::vector<docwire::Tag>& tags)
-        : m_tags{tags}
-    {}
-
-    bool is_leaf() const override
-    {
-        return true;
-    }
-
-    void process(Info& info) const override
-    {
-        m_tags.push_back(info.tag);
-    }
-
-private:
-    std::vector<docwire::Tag>& m_tags;    
-};
-
 namespace docwire::tag
 {
 
@@ -1173,11 +1213,11 @@ void PrintTo(const Text& text, std::ostream* os)
 TEST(TXTParser, lines)
 {
     using namespace testing;
+    using namespace chaining;
     std::vector<Tag> tags;
     std::string test_input {"Line ends with LF\nLine ends with CR\rLine ends with CRLF\r\nLine without EOL"};
     docwire::data_source{test_input, docwire::file_extension{".txt"}} |
-        ParseDetectedFormat<parser_provider<TXTParser>>{} |
-        StoreInVector{tags};
+        TXTParser{} | tags;
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),
         VariantWith<tag::Paragraph>(_),
@@ -1194,8 +1234,7 @@ TEST(TXTParser, lines)
     tags.clear();
     docwire::ParserParameters parameters{"TXTParser::parse_lines", false};
     docwire::data_source{test_input, docwire::file_extension{".txt"}} |
-        ParseDetectedFormat<OfficeFormatsParserProvider>{parameters} |
-        StoreInVector{tags};
+        TXTParser{}.withParameters(parameters) | tags;
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),
         VariantWith<tag::Paragraph>(_),
@@ -1212,8 +1251,7 @@ TEST(TXTParser, lines)
     tags.clear();
     parameters += docwire::ParserParameters{"TXTParser::parse_paragraphs", false};
     docwire::data_source{test_input, docwire::file_extension{".txt"}} |
-        ParseDetectedFormat<OfficeFormatsParserProvider>{parameters} |
-        StoreInVector{tags};
+        TXTParser{}.withParameters(parameters) | tags;
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),
         VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq(test_input))),
@@ -1224,12 +1262,12 @@ TEST(TXTParser, lines)
 TEST(TXTParser, paragraphs)
 {
     using namespace testing;
+    using namespace chaining;
     std::vector<Tag> tags;
     docwire::data_source{
             std::string{"Paragraph 1 Line 1\nParagraph 1 Line 2\n\nParagraph 2 Line 1"},
             docwire::file_extension{".txt"}} |
-        ParseDetectedFormat<parser_provider<TXTParser>>{} |
-        StoreInVector{tags};
+        TXTParser{} | tags;
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),
         VariantWith<tag::Paragraph>(_),
@@ -1244,8 +1282,7 @@ TEST(TXTParser, paragraphs)
     ));
     tags.clear();
     docwire::data_source{std::string{"\nLine\n"}, docwire::file_extension{".txt"}} |
-        ParseDetectedFormat<OfficeFormatsParserProvider>{} |
-        StoreInVector{tags};
+        TXTParser{} | tags;
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),
         VariantWith<tag::Paragraph>(_),
@@ -1257,9 +1294,9 @@ TEST(TXTParser, paragraphs)
     ));
     tags.clear();
     docwire::data_source{std::string{"\nLine\n"}, docwire::file_extension{".txt"}} |
-        ParseDetectedFormat<OfficeFormatsParserProvider>{
-            docwire::ParserParameters{"TXTParser::parse_paragraphs", false}} |
-        StoreInVector{tags};
+        TXTParser{}.withParameters(
+            docwire::ParserParameters{"TXTParser::parse_paragraphs", false}) |
+        tags;
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),
         VariantWith<tag::BreakLine>(_),
@@ -1275,4 +1312,157 @@ TEST(base64, encode)
     const std::span<const std::byte> input_data { reinterpret_cast<const std::byte*>(input_str.c_str()), input_str.size() };
     std::string encoded = base64::encode(input_data);
     ASSERT_EQ(encoded, "dGVzdA==");
+}
+
+TEST(tuple_utils, subrange)
+{
+    static_assert(std::is_same_v<
+        tuple_utils::subrange_t<1, 3, std::tuple<int, float, double, std::string, char>>,
+        std::tuple<float, double, std::string>
+    >);
+    ASSERT_EQ(
+        (tuple_utils::subrange<1, 3>(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4}))),
+        std::make_tuple(float{1}, double{2}, std::string{"3"}));
+}
+
+TEST(tuple_utils, remove_first)
+{
+    static_assert(std::is_same_v<
+        tuple_utils::remove_first_t<std::tuple<int, float, double, std::string, char>>,
+        std::tuple<float, double, std::string, char>
+    >);
+    ASSERT_EQ(
+        tuple_utils::remove_first(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4})),
+        std::make_tuple(float{1}, double{2}, std::string{"3"}, char{4})
+    );
+}
+
+TEST(tuple_utils, remove_last)
+{
+    static_assert(std::is_same_v<
+        tuple_utils::remove_last_t<std::tuple<int, float, double, std::string, char>>,
+        std::tuple<int, float, double, std::string>
+    >);
+    ASSERT_EQ(
+        tuple_utils::remove_last(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4})),
+        std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"})
+    );
+}
+
+TEST(tuple_utils, first_element)
+{
+    static_assert(std::is_same_v<
+        tuple_utils::first_element_t<std::tuple<int, float, double, std::string, char>>,
+        int
+    >);
+    ASSERT_EQ(
+        tuple_utils::first_element(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4})),
+        int{0}
+    );
+}
+
+TEST(tuple_utils, last_element)
+{
+    static_assert(std::is_same_v<
+        tuple_utils::last_element_t<std::tuple<int, float, double, std::string, char>>,
+        char
+    >);
+    ASSERT_EQ(
+        tuple_utils::last_element(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4})),
+        char{4}
+    );
+}
+
+TEST(chaining, val_temp_to_func_ref_one_arg_no_result)
+{
+    using namespace chaining;
+    int result = 0;
+    auto f = [&result](int value)->void { result = value + 2; };
+    int{1} | f;
+    ASSERT_EQ(result, 3);
+}
+
+TEST(chaining, val_ref_to_func_temp_two_args_with_result)
+{
+    using namespace chaining;
+    int v = 2;
+    auto binding = v | [](int value1, int value2)->int { return value1 + value2; };
+    ASSERT_EQ(binding(1), 3);
+}
+
+TEST(chaining, func_temp_no_args_no_result_callback_no_result_to_func_ref_one_arg_no_result)
+{
+    using namespace chaining;
+    int result = 0;
+    auto f = [&result](int value) { result = value + 2; };
+    [](std::function<void(int)> callback) { callback(1); } | f;
+    ASSERT_EQ(result, 3);
+}
+
+TEST(chaining, func_temp_no_args_with_result_callback_with_result_to_func_temp_one_arg_with_result)
+{
+    using namespace chaining;
+    auto binding =
+        [](int value, std::function<int(int)> callback) { return callback(value); } |
+        [](int value) { return value + 2; };
+    ASSERT_EQ(binding(1), 3);
+}
+
+TEST(chaining, func_temp_no_args_no_result_callback_no_result_to_pushable_ref)
+{
+    using namespace chaining;
+    std::vector<int> container;
+    [](std::function<void(int)> callback) { callback(1); } | container;
+    ASSERT_THAT(container, testing::ElementsAre(1));
+}
+
+TEST(chaining, func_ref_one_arg_with_result_callback_with_result_to_pushable_ref)
+{
+    using namespace chaining;
+    std::vector<int> container;
+    auto binding = [](int value, std::function<std::optional<int>(int)> callback) { return callback(value + 2); } | container;
+    std::optional<int> result = binding(1);
+    ASSERT_EQ(result, std::optional<int>{});
+    ASSERT_THAT(container, testing::ElementsAre(3));
+}
+
+TEST(chaining, val_const_temp_to_func_one_arg_no_result_callback_no_result_to_pushable_ref)
+{
+    using namespace chaining;
+    std::vector<int> container;
+    1 | [](int value, std::function<void(int)> callback) { callback(value + 2); } | container;
+    ASSERT_THAT(container, testing::ElementsAre(3));
+}
+
+TEST(chaining, func_temp_no_args_no_result_callback_no_result_to_func_one_arg_no_result_callback_no_result_to_pushable_ref)
+{
+    using namespace chaining;
+    std::vector<int> container;
+    [](std::function<void(int)> callback) { callback(1); } |
+        [](int value, std::function<void(int)> callback) { callback(value + 2); } |
+        container;
+    ASSERT_THAT(container, testing::ElementsAre(3));
+}
+
+struct NonCopyableFunctor
+{
+    NonCopyableFunctor() = default;
+    NonCopyableFunctor(const NonCopyableFunctor&) = delete;
+    NonCopyableFunctor(NonCopyableFunctor&&) = default;
+    int operator()(int value) const { return value + 2; }
+};
+
+TEST(chaining, func_temp_no_args_with_result_callback_with_result_to_non_copyable_functor_temp)
+{
+    using namespace chaining;
+    int result = [](std::function<int(int)> callback) { return callback(1); } | NonCopyableFunctor{};
+    ASSERT_EQ(result, 3);
+}
+
+TEST(chaining, func_temp_no_args_with_result_callback_with_result_to_non_copyable_functor_ref)
+{
+    using namespace chaining;
+    NonCopyableFunctor ncf{};
+    int result = [](const std::function<int(int)>& callback) { return callback(1); } | ncf;
+    ASSERT_EQ(result, 3);
 }

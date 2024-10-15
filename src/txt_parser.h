@@ -30,7 +30,6 @@ class DllExport TXTParser : public Parser
 
     void parse(const data_source& data) const override;
 	bool understands(const data_source& data) const override;
-		Parser& withParameters(const ParserParameters &parameters) override;
 		static std::vector<file_extension> getExtensions();
 
 		TXTParser();

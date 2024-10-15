@@ -12,7 +12,6 @@
 #ifndef DOCWIRE_DATA_SOURCE_H
 #define DOCWIRE_DATA_SOURCE_H
 
-#include "exception.h"
 #include "file_extension.h"
 #include <filesystem>
 #include <fstream>
@@ -20,6 +19,8 @@
 #include "memory_buffer.h"
 #include "memorystream.h"
 #include <optional>
+#include <string_view>
+#include "throw_if.h"
 #include "unique_identifier.h"
 #include <variant>
 #include <vector>
@@ -209,9 +210,7 @@ class data_source
 			for (;;)
 			{
 				buffer->resize(size + chunk_size);
-				if (!stream->read(reinterpret_cast<char*>(buffer->data() + size), chunk_size))
-				if (!stream->eof())
-					throw RuntimeError("Failed to read from stream using unseekable method: read() failed");
+				throw_if (!stream->read(reinterpret_cast<char*>(buffer->data() + size), chunk_size) && !stream->eof());
 				size_t bytes_read = stream->gcount();
 				size += bytes_read;
 				if (bytes_read < chunk_size)
@@ -225,13 +224,10 @@ class data_source
 
 		std::shared_ptr<memory_buffer> read_seekable_stream_into_memory(std::shared_ptr<std::istream> stream) const
 		{	
-			if (!stream->seekg(0, std::ios::end))
-				throw RuntimeError("Failed to read from stream using seekable method: seekg() failed");
+			throw_if (!stream->seekg(0, std::ios::end));
 			auto buffer = std::make_shared<memory_buffer>(stream->tellg());
-			if (!stream->seekg(0, std::ios::beg))
-				throw RuntimeError("Failed to read from stream using seekable method: seekg() failed");
-			if (!stream->read(reinterpret_cast<char*>(buffer->data()), buffer->size()))
-				throw RuntimeError("Failed to read from stream using seekable method: read() failed");
+			throw_if (!stream->seekg(0, std::ios::beg));
+			throw_if (!stream->read(reinterpret_cast<char*>(buffer->data()), buffer->size()));
 			return buffer;
 		}
 
@@ -244,20 +240,16 @@ class data_source
         			[this](const std::filesystem::path& source)
 					{
           				auto stream = std::make_shared<std::ifstream>(source, std::ios::binary);
-          				if (!stream->good())
-	        			{
-		        			docwire_log(error) << "Error opening file: " << source;
-		        			throw RuntimeError("Error opening file: " + source.string());
-	        			}
+          				throw_if (!stream->good());
           				m_memory_cache = read_seekable_stream_into_memory(stream);
         			},
 					[this](const std::span<const std::byte>& source)
 					{
-						throw LogicError("std::span cannot be cached in memory");
+						throw make_error("std::span cannot be cached in memory");
 					},
         			[this](const std::string& source)
         			{
-          				throw LogicError("std::string cannot be cached in memory");
+						throw make_error("std::string cannot be cached in memory");
         			},
         			[this](seekable_stream_ptr source)
 					{

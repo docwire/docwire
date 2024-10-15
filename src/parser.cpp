@@ -9,8 +9,6 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include <boost/signals2.hpp>
-
 #include "parser.h"
 
 #include "log.h"
@@ -22,19 +20,14 @@ struct Parser::Implementation
 {
   Info sendTag(const Tag& tag) const
   {
+    parsing_continuation continuation = m_callback(tag);
     Info info(tag);
-    m_on_new_node_signal(info);
+    info.skip = continuation == parsing_continuation::skip;
+    info.cancel = continuation == parsing_continuation::stop;
     return info;
   }
 
-  void
-  onNewNode(NewNodeCallback callback)
-  {
-    m_on_new_node_signal.connect(callback);
-  }
-
-private:
-  boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
+  mutable std::function<parsing_continuation(const Tag&)> m_callback;
 };
 
 void Parser::ImplementationDeleter::operator()(Parser::Implementation *impl)
@@ -58,10 +51,10 @@ Info Parser::sendTag(const Info &info) const
   return base_impl->sendTag(info.tag);
 }
 
-Parser& Parser::addOnNewNodeCallback(NewNodeCallback callback)
+void Parser::operator()(const data_source& data, std::function<parsing_continuation(const Tag&)> callback) const
 {
-  base_impl->onNewNode(callback);
-  return *this;
+  base_impl->m_callback = callback;
+  parse(data);
 }
 
 Parser& Parser::withParameters(const ParserParameters &parameters)

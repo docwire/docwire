@@ -15,10 +15,11 @@
 #include <curlpp/Easy.hpp>
 #include <curlpp/Infos.hpp>
 #include <curlpp/Options.hpp>
-#include "exception.h"
+#include "error_tags.h"
 #include <fstream>
 #include "log.h"
 #include "parser.h"
+#include "throw_if.h"
 #include <sstream>
 #include "version.h"
 
@@ -58,6 +59,7 @@ Post::~Post()
 
 void
 Post::process(Info &info) const
+try
 {
 	if (!std::holds_alternative<data_source>(info.tag))
 	{
@@ -139,19 +141,22 @@ Post::process(Info &info) const
 	{
 		request.perform();
 		auto response_code = curlpp::infos::ResponseCode::get(request);
-		if (response_code < 200 || response_code > 299)
-			throw RequestFailed("HTTP response code is " + std::to_string(response_code) + " with response " + response_stream->str());
+		throw_if (response_code < 200 || response_code > 299, "Server returned an error status code", response_code, response_stream->str());
 	}
 	catch (curlpp::LogicError &e)
 	{
-		throw RequestIncorrect("Incorrect HTTP request", e);
+		std::throw_with_nested(make_error("HTTP request is invalid"));
     }
 	catch (curlpp::RuntimeError &e)
 	{
-		throw RequestFailed("HTTP request failed", e);
+		std::throw_with_nested(make_error(errors::network_error{}));
 	}
 	Info new_info(data_source{seekable_stream_ptr{response_stream}});
 	emit(new_info);
+}
+catch (const std::exception&)
+{
+	std::throw_with_nested(make_error(errors::backtrace_entry{}, impl->m_url));
 }
 
 } // namespace http

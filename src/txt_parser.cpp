@@ -13,7 +13,7 @@
 
 #include "charsetdetect.h"
 #include "data_stream.h"
-#include "exception.h"
+#include "error_tags.h"
 #include "htmlcxx/html/CharsetConverter.h"
 #include <boost/signals2.hpp>
 #include <iostream>
@@ -84,7 +84,7 @@ void TXTParser::parse(const data_source& data) const
 		if (charset_detector == (csd_t)-1)
 		{
 			charset_detector = NULL;
-			docwire_log(warning) << "Warning: Could not create charset detector";
+			sendTag(make_error_ptr("Could not create charset detector"));
 			encoding = "UTF-8";
 		}
 		else
@@ -113,7 +113,7 @@ void TXTParser::parse(const data_source& data) const
 			}
 			catch (htmlcxx::CharsetConverter::Exception& ex)
 			{
-				docwire_log(warning) << "Warning: Cant convert text to UTF-8 from " + encoding;
+				sendTag(make_nested_ptr(ex, make_error("Cannot convert text to UTF-8", encoding)));
 				if (converter)
 					delete converter;
 				converter = NULL;
@@ -136,7 +136,7 @@ void TXTParser::parse(const data_source& data) const
 		if (charset_detector)
 			csd_close(charset_detector);
 		charset_detector = NULL;
-		throw RuntimeError("Could not parse text: " + std::string(e.what()));
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 	bool parse_paragraphs = m_parameters.getParameterValue<bool>("TXTParser::parse_paragraphs").value_or(true);
 	bool parse_lines = m_parameters.getParameterValue<bool>("TXTParser::parse_lines").value_or(true);
@@ -201,13 +201,6 @@ void TXTParser::parse(const data_source& data) const
 	else
 		sendTag(tag::Text{.text = text});
 	sendTag(tag::CloseDocument{});
-}
-
-Parser&
-TXTParser::withParameters(const ParserParameters &parameters)
-{
-	Parser::withParameters(parameters);
-	return *this;
 }
 
 std::vector<file_extension> TXTParser::getExtensions()

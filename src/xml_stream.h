@@ -26,7 +26,6 @@ class DllExport XmlStream
 		std::unique_ptr<Implementation> impl;
 
 	public:
-		///Throws RuntimeError if initialization has failed.
 		XmlStream(const std::string& xml, int xml_parse_options = 0);
 		~XmlStream();
 		operator bool();

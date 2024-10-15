@@ -12,15 +12,15 @@
 #include "common_xml_document_parser.h"
 
 #include "zip_reader.h"
-#include "exception.h"
+#include "error_tags.h"
 #include <iostream>
 #include <libxml/xmlreader.h>
 #include <functional>
 #include "log.h"
+#include "make_error.h"
 #include "misc.h"
 #include "xml_stream.h"
 #include "xml_fixer.h"
-#include <boost/signals2.hpp>
 
 namespace docwire
 {
@@ -71,7 +71,6 @@ struct CommonXMLDocumentParser::Implementation
 	std::map<std::string, Relationship> m_relationships;
 	std::vector<SharedString> m_shared_strings;
 	std::map<std::string, CommandHandler> m_command_handlers;
-	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 
 	bool m_disabled_text;
 	int m_xml_options;
@@ -81,8 +80,7 @@ struct CommonXMLDocumentParser::Implementation
 	{
 		if (!stop_emmit_signals)
 		{
-			Info info(tag);
-			m_on_new_node_signal(info);
+			m_parser->sendTag(tag);
 		}
 	}
 
@@ -285,6 +283,11 @@ void
 CommonXMLDocumentParser::trySendTag(const Tag& tag) const
 {
   impl->send_tag(tag);
+}
+
+void CommonXMLDocumentParser::send_error(std::exception_ptr e) const
+{
+	sendTag(e);
 }
 
 void
@@ -545,7 +548,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			std::string content;
 			if (!zipfile->read(content_fn, &content))
 			{
-				docwire_log(error) << "Error reading " << content_fn;
+				parser.impl->send_tag(make_error_ptr("Error reading file", content_fn));
 				return;
 			}
 			std::string object_text;
@@ -555,7 +558,7 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			}
 			catch (const std::exception& e)
 			{
-				docwire_log(error) << "Error parsing file." << content_fn << e;
+				parser.impl->send_tag(make_nested_ptr(e, make_error("Error parsing file", content_fn)));
 			}
 			text += object_text;
 		}
@@ -577,12 +580,6 @@ void CommonXMLDocumentParser::onUnregisteredCommand(XmlStream& xml_stream, XmlPa
 			text += content;
 		children_processed = true;
 	}
-}
-
-void
-CommonXMLDocumentParser::addCallback(const NewNodeCallback &callback)
-{
-  impl->m_on_new_node_signal.connect(callback);
 }
 
 std::string CommonXMLDocumentParser::parseXmlData(
@@ -654,7 +651,7 @@ void CommonXMLDocumentParser::extractText(const std::string& xml_contents, XmlPa
 	}
 	catch (const std::exception& e)
 	{
-		throw RuntimeError("Error parsing XML contents", e);
+		std::throw_with_nested(make_error("Parsing XML failed"));
 	}
 }
 
@@ -709,7 +706,7 @@ void CommonXMLDocumentParser::parseODFMetadata(const std::string &xml_content, a
 	}
 	catch (const std::exception& e)
 	{
-		throw RuntimeError("Error while parsing ODF metadata", e);
+		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 }
 

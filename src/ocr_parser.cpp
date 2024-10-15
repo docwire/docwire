@@ -27,7 +27,6 @@
 #include <cstdlib>
 #include <algorithm>
 #include <magic_enum_iostream.hpp>
-#include "exception.h"
 #include "log.h"
 #include "lru_memory_cache.h"
 #include <mutex>
@@ -90,7 +89,7 @@ Pix* pixToGrayscale(Pix* pix)
             break;	
         }
     default:
-        throw std::runtime_error{ "Format not supported: bpp" + pix->d };
+        throw make_error("Format not supported", pix->d);
     }
     return output;
 }
@@ -204,17 +203,14 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
 
     {
         std::lock_guard<std::mutex> tesseract_libtiff_mutex_lock{ tesseract_libtiff_mutex };
-        if (api->Init(impl->m_tessdata_prefix.c_str(), langs.c_str())) {
-            throw RuntimeError{ "Could not initialize Tesseract." };
-        }
+        throw_if (api->Init(impl->m_tessdata_prefix.c_str(), langs.c_str()) != 0, "Could not initialize tesseract", impl->m_tessdata_prefix, langs);
     }
 
     // Read the image and convert to a gray-scale image
     pix_unique_ptr gray{ nullptr };
 
     std::shared_ptr<PIX> image = load_pix(data);
-    if (image == nullptr)
-        throw RuntimeError{ "Could not load image." };
+    throw_if (image == nullptr, "Could not load image");
 
     pix_unique_ptr inverted{ nullptr };
     try

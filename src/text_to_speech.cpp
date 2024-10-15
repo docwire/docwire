@@ -12,6 +12,7 @@
 #include "text_to_speech.h"
 
 #include <boost/json.hpp>
+#include "error_tags.h"
 #include <fstream>
 #include "input.h"
 #include "log.h"
@@ -94,26 +95,12 @@ std::string post_request(const std::string& query, const std::string& api_key)
 	{
 		std::stringstream{ query } | http::Post("https://api.openai.com/v1/audio/speech", api_key) | response_stream;
 	}
-	catch (const http::Post::RequestFailed& e)
+	catch (const std::exception& e)
 	{
-		throw TextToSpeech::HttpError("Http POST failed: " + query, e);
+		std::throw_with_nested(make_error(errors::backtrace_entry{}, query));
 	}
 	return response_stream.str();
 }
-
-/*std::string parse_response(const std::string& response)
-{
-	docwire_log_func_with_args(response);
-	try
-	{
-		boost::json::value response_val = boost::json::parse(response);
-		return response_val.as_object()["choices"].as_array()[0].as_object()["message"].as_object()["content"].as_string().c_str();
-	}
-	catch (const std::exception& e)
-	{
-		throw Chat::ParseResponseError("Error parsing response: " + response, e);
-	}
-}*/
 
 } // anonymous namespace
 

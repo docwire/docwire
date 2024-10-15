@@ -64,8 +64,7 @@ public:
 		}
 
 		const data_source& data = std::get<data_source>(info.tag);
-		if (data.file_extension() && *data.file_extension() != file_extension{".txt"})
-			throw LogicError{"Filename extension shows it is not a text file."};
+		throw_if (data.file_extension() && *data.file_extension() != file_extension{".txt"});
 		std::string input = m_prompt + "\n" + data.string();
 		std::string output = m_model_runner->process(input);
 

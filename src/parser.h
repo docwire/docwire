@@ -45,29 +45,31 @@ class DllExport Parser
 {
 public:
   explicit Parser();
-
+  Parser(Parser &&) = default;
   virtual ~Parser() = default;
+
+  enum class parsing_continuation { proceed, skip, stop };
+
+  /**
+   * @brief Start parsing process.
+   * @param data data to parse
+   * @param callback function to execute for every document node. Nodes depends on the kind of parser.
+   * It can be email for pst file, page or paragraph for pdf file etc.
+   */
+  void operator()(const data_source& data, std::function<parsing_continuation(const Tag&)> callback) const;
 
   /**
    * @brief Checks if parser can parse specified data
   */
   virtual bool understands(const data_source& data) const = 0;
 
+  virtual Parser &withParameters(const ParserParameters &parameters);
+
+protected:
   /**
    * @brief Executes text parsing
    */
   virtual void parse(const data_source& data) const = 0;
-  /**
-   * @brief Adds new function to execute when new node will be created. Node is a part of parsed text.
-   * Depends on the kind of parser it could be. For example, email from pst file or page from pdf file.
-   * @param callback function to execute
-   * @return reference to self
-   */
-  virtual Parser &addOnNewNodeCallback(NewNodeCallback callback);
-
-  virtual Parser &withParameters(const ParserParameters &parameters);
-
-protected:
 
   Info sendTag(const Tag& tag) const;
   Info sendTag(const Info &info) const;

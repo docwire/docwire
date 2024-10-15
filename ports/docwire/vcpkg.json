@@ -42,6 +42,9 @@
 			"name": "wv2"
 		},
 		{
+			"name": "boost-callable-traits"
+		},
+		{
 			"name": "boost-filesystem"
 		},
 		{

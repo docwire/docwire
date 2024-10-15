@@ -9,56 +9,27 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_ATTACHMENT_H
-#define DOCWIRE_ATTACHMENT_H
+#ifndef DOCWIRE_LOG_EXCEPTION_H
+#define DOCWIRE_LOG_EXCEPTION_H
 
-#include <map>
-#include <string>
-#include "variant.h"
-#include "defines.h"
+#include "log.h"
+#include "exception_utils.h"
 
 namespace docwire
 {
-	/**
-		Structure of the attachment in parsed file.
-		If parsed file has an attachments, PlainTextExtractor will try to get them.
-		Attachment is usually another file. Another thing worth mentioning is that attachments may hold
-		metadada.
-	**/
-	class DllExport Attachment
-	{
-		private:
-			struct Implementation;
-			Implementation* impl;
 
-		public:
-			Attachment();
-			Attachment(const std::string& file_name);
-			Attachment(const Attachment& attachment);
-			Attachment& operator = (const Attachment& attachment);
-			~Attachment();
-			void setFileName(const std::string& file_name);
-			void setBinaryContent(const std::string& binary_content);
-			void addField(const std::string& field_name, const Variant& field_value);
+inline log_record_stream& operator<<(log_record_stream& log_stream, const std::exception_ptr eptr)
+{
+	if (eptr)
+		log_stream << begin_complex() <<
+            docwire_log_streamable_type_of(eptr) <<
+            std::make_pair("diagnostic_message", errors::diagnostic_message(eptr)) <<
+            end_complex();
+	else
+		log_stream << nullptr;
+	return log_stream;
+}
 
-			///Gets attachment file name
-			const char* filename() const;
-
-			///Gets binary content of the attachment
-			const char* binaryContent() const;
-
-			///Returns size of the binary content
-			size_t binaryContentSize() const;
-
-			///Checks if metadata for given key exist (for example "Content-Type")
-			bool hasField(const std::string& field_name) const;
-
-			///Returns value for given key (metadata)
-			const Variant& getField(const std::string& field_name) const;
-
-			///Returns map with all keys and values
-			const std::map<std::string, Variant>& getFields() const;
-	};
 } // namespace docwire
 
-#endif
+#endif // DOCWIRE_LOG_EXCEPTION_H

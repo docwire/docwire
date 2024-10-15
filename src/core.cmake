@@ -1,5 +1,4 @@
 add_library(docwire_core SHARED
-    attachment.cpp
     chat.cpp
     entities.cpp
     extract_entities.cpp
@@ -12,11 +11,9 @@ add_library(docwire_core SHARED
     find.cpp
     text_to_speech.cpp
     transcribe.cpp
-    exception.cpp
     decompress_archives.cpp
     log.cpp
     misc.cpp
-    variant.cpp
     parser_parameters.cpp
     thread_safe_ole_storage.cpp
     thread_safe_ole_stream_reader.cpp
@@ -65,7 +62,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif()
 
 find_path(boost_signals2_inc boost/signals2.hpp HINT ${Boost_INCLUDE_DIRS} REQUIRED)
-target_include_directories(docwire_core PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories(docwire_core PUBLIC ${Boost_INCLUDE_DIRS})
 target_include_directories(docwire_core PUBLIC ../) # for version.h
 target_include_directories(docwire_core PUBLIC .) # for other headers
 

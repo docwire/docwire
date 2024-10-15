@@ -13,7 +13,6 @@
 #define DOCWIRE_OPENAI_TRANSLATE_TO_H
 
 #include "chat.h"
-#include "exception.h"
 
 namespace docwire
 {

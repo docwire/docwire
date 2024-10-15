@@ -36,12 +36,6 @@ public:
   virtual std::unique_ptr<Parser> build() const = 0;
 
   /**
-   * @brief Adds callback function.
-   * @param callbacks
-   */
-  virtual ParserBuilder &withOnNewNodeCallbacks(const std::vector<NewNodeCallback> &callbacks) = 0;
-
-  /**
    * @brief Sets parser parameters.
    * @param inParameters
    */

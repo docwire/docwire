@@ -12,7 +12,6 @@
 #ifndef DOCWIRE_DOC_PARSER_H
 #define DOCWIRE_DOC_PARSER_H
 
-#include "exception.h"
 #include "parser.h"
 #include "parser_builder.h"
 #include <string>
@@ -38,8 +37,6 @@ class DllExport DOCParser : public Parser
 		}
 
 		bool understands(const data_source& data) const override;
-
-	DOCWIRE_EXCEPTION_DEFINE(ParsingError, RuntimeError);
 };
 
 } // namespace docwire
