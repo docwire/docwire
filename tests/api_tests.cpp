@@ -14,6 +14,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include "chaining.h"
+#include "detect_by_signature.h"
 #include "error_tags.h"
 #include "exception_utils.h"
 #include <exception>
@@ -1465,4 +1466,17 @@ TEST(chaining, func_temp_no_args_with_result_callback_with_result_to_non_copyabl
     NonCopyableFunctor ncf{};
     int result = [](const std::function<int(int)>& callback) { return callback(1); } | ncf;
     ASSERT_EQ(result, 3);
+}
+
+TEST(detect, by_signature)
+{
+    data_source data { seekable_stream_ptr { std::make_shared<std::ifstream>("1.doc", std::ios_base::binary) }};
+    try {
+        detect::by_signature(data);
+    }
+    catch (const std::exception& e) {
+        FAIL() << errors::diagnostic_message(e);
+    }
+    mime_type content_type = *data.content_type;
+    ASSERT_EQ(content_type.v, "application/msword");
 }

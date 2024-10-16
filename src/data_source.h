@@ -43,6 +43,11 @@ struct length_limit
 	size_t v;
 };
 
+struct mime_type
+{
+	std::string v;
+};
+
 template <typename T>
 concept data_source_compatible_type =
 	std::is_same_v<T, std::filesystem::path> ||
@@ -195,6 +200,8 @@ class data_source
 		{
 			s << docwire_log_streamable_obj(*this, m_file_extension);
 		}
+
+		std::optional<mime_type> content_type;
 
 	private:
 		std::variant<std::filesystem::path, std::vector<std::byte>, std::span<const std::byte>, std::string, std::string_view, seekable_stream_ptr, unseekable_stream_ptr> m_source;

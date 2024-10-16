@@ -4,7 +4,8 @@ add_executable(api_tests api_tests.cpp)
 if(MSVC)
     target_compile_options(api_tests PRIVATE /bigobj)
 endif()
-target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_fuzzy_match docwire_base64 GTest::gtest_main)
+target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr
+	docwire_fuzzy_match docwire_base64 docwire_detect GTest::gtest_main)
 
 find_package(Boost REQUIRED COMPONENTS json)
 target_link_libraries(api_tests PRIVATE Boost::json)

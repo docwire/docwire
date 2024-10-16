@@ -117,6 +117,9 @@
 		},
 		{
 			"name": "aklomp-base64"
+		},
+		{
+			"name": "libmagic"
 		}
 	]
 }
