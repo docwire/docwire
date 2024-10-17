@@ -139,8 +139,8 @@ function(run_all_tests)
 		endif()
 	endif()
 	file(REMOVE "${CURRENT_PACKAGES_DIR}/share/flan-t5-large-ct2-int8.path")
-	file(REMOVE "${CURRENT_PACKAGES_DIR}/share/testdata-fast.path")
-	file(REMOVE "${CURRENT_PACKAGES_DIR}/share/libmagic/misc/magic.mgc.path")
+	file(REMOVE "${CURRENT_PACKAGES_DIR}/share/tessdata-fast.path")
+	file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/share/libmagic")
 endfunction()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS_NO_CMAKE
