@@ -1,4 +1,4 @@
-add_library(docwire_detect SHARED detect_by_signature.cpp)
+add_library(docwire_detect SHARED detect_by_file_extension.cpp detect_by_signature.cpp)
 
 find_package(unofficial-libmagic REQUIRED)
 target_link_libraries(docwire_detect PRIVATE unofficial::libmagic::libmagic docwire_core)

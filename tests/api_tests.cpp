@@ -14,6 +14,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include "chaining.h"
+#include "detect_by_file_extension.h"
 #include "detect_by_signature.h"
 #include "error_tags.h"
 #include "exception_utils.h"
@@ -1466,6 +1467,20 @@ TEST(chaining, func_temp_no_args_with_result_callback_with_result_to_non_copyabl
     NonCopyableFunctor ncf{};
     int result = [](const std::function<int(int)>& callback) { return callback(1); } | ncf;
     ASSERT_EQ(result, 3);
+}
+
+TEST(detect, by_file_extension)
+{
+    data_source data { std::filesystem::path{"1.docx"} };
+    try {
+        detect::by_file_extension(data);
+    }
+    catch (const std::exception& e) {
+        FAIL() << errors::diagnostic_message(e);
+    }
+    ASSERT_TRUE(data.content_type.has_value());
+    mime_type content_type = *data.content_type;
+    ASSERT_EQ(content_type.v, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 }
 
 TEST(detect, by_signature)
