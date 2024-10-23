@@ -25,7 +25,7 @@ void by_signature(data_source& data)
     std::span<const std::byte> span = data.span();
     const char *file_type = magic_buffer(magic_cookie, span.data(), span.size());
     throw_if (file_type == NULL, magic_error(magic_cookie));
-    data.content_type = mime_type { file_type };
+    data.mime_types = { mime_type { file_type } };
     magic_close(magic_cookie);
 }
 

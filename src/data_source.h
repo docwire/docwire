@@ -201,7 +201,7 @@ class data_source
 			s << docwire_log_streamable_obj(*this, m_file_extension);
 		}
 
-		std::optional<mime_type> content_type;
+		std::vector<mime_type> mime_types;
 
 	private:
 		std::variant<std::filesystem::path, std::vector<std::byte>, std::span<const std::byte>, std::string, std::string_view, seekable_stream_ptr, unseekable_stream_ptr> m_source;

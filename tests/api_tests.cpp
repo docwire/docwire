@@ -1478,8 +1478,8 @@ TEST(detect, by_file_extension)
     catch (const std::exception& e) {
         FAIL() << errors::diagnostic_message(e);
     }
-    ASSERT_TRUE(data.content_type.has_value());
-    mime_type content_type = *data.content_type;
+    ASSERT_EQ(data.mime_types.size(), 1);
+    mime_type content_type = data.mime_types.front();
     ASSERT_EQ(content_type.v, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 }
 
@@ -1492,6 +1492,6 @@ TEST(detect, by_signature)
     catch (const std::exception& e) {
         FAIL() << errors::diagnostic_message(e);
     }
-    mime_type content_type = *data.content_type;
+    mime_type content_type = data.mime_types.front();
     ASSERT_EQ(content_type.v, "application/msword");
 }

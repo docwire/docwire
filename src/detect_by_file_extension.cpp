@@ -1287,9 +1287,12 @@ const std::unordered_multimap<std::string, std::string> file_extension_to_mime_t
 void by_file_extension(data_source& data)
 {
 	throw_if (!data.file_extension());
-    if (file_extension_to_mime_type.count(data.file_extension()->string()) != 1)
-        return;
-    data.content_type = mime_type { file_extension_to_mime_type.find(data.file_extension()->string())->second };
+	data.mime_types.clear();
+	auto range = file_extension_to_mime_type.equal_range(data.file_extension()->string());
+	for (auto it = range.first; it != range.second; ++it)
+	{
+		data.mime_types.push_back(mime_type { it->second });
+	}
 }
 
 } // namespace docwire::detect
