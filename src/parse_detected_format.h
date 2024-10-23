@@ -25,12 +25,12 @@ namespace docwire
 class ParserProvider;
 
 template<typename... ProviderTypeNames>
-std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension)
+std::unique_ptr<ParserBuilder> find_parser_by_mime_type(const mime_type& mime)
 {
   std::unique_ptr<ParserProvider> providers[] = {std::unique_ptr<ParserProvider>(new ProviderTypeNames)...};
   for (auto& provider : providers)
   {
-    auto builder = provider->findParserByExtension(extension);
+    auto builder = provider->find_parser_by_mime_type(mime);
     if (builder)
       return builder;
   }
@@ -67,13 +67,13 @@ class ParseDetectedFormat : public Importer
     {}
 
   /**
-   * @brief Returns parser builder for given extension type or nullopt if no parser is found.
-   * @param extension file extension (e.g. ".txt", ".docx", etc.)
+   * @brief Returns parser builder for given mime type or nullopt if no parser is found.
+   * @param mime mime type (e.g. "text/plain", "application/pdf", etc.)
    * @return specific parser builder or null unique_ptr if no parser is found
    */
-  std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension) const override
+  std::unique_ptr<ParserBuilder> find_parser_by_mime_type(const mime_type& mime) const override
   {
-    return docwire::findParserByExtension<ProviderTypeName, ProviderTypeNames...>(extension);
+    return docwire::find_parser_by_mime_type<ProviderTypeName, ProviderTypeNames...>(mime);
   }
 
   /**

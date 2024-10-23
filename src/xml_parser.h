@@ -21,7 +21,11 @@ class DllExport XMLParser : public Parser
 {
 public:
 	void parse(const data_source& data) const override;
-    static std::vector<file_extension> getExtensions() { return { file_extension{".xml"} }; }
+	inline static const std::vector<mime_type> supported_mime_types =
+	{
+		mime_type{"application/xml"},
+		mime_type{"text/xml"}
+	};
 	bool understands(const data_source& data) const;
 };
 

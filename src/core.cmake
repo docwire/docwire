@@ -56,7 +56,7 @@ find_package(LibArchive REQUIRED)
 find_package(unofficial-curlpp CONFIG REQUIRED)
 target_link_libraries(docwire_core PRIVATE
     ${wv2} Boost::filesystem Boost::system Boost::json magic_enum::magic_enum ${unzip}
-    ZLIB::ZLIB LibArchive::LibArchive unofficial::curlpp::curlpp docwire_base64)
+    ZLIB::ZLIB LibArchive::LibArchive unofficial::curlpp::curlpp docwire_base64 docwire_detect)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(docwire_core PRIVATE dl)
 endif()

@@ -34,7 +34,7 @@ class DllExport PDFParser : public Parser
 		PDFParser();
 		~PDFParser();
 		void parse(const data_source& data) const override;
-    	static std::vector<file_extension> getExtensions() { return { file_extension{".pdf"} }; }
+		inline static const std::vector<mime_type> supported_mime_types = { mime_type{"application/pdf"} };
 
 		bool understands(const data_source& data) const;
 };

@@ -38,10 +38,26 @@ class DllExport ODFOOXMLParser : public CommonXMLDocumentParser
 
     void parse(const data_source& data) const override;
 
-    static std::vector<file_extension> getExtensions()
+    inline static const std::vector<mime_type> supported_mime_types =
     {
-      return { file_extension{".odt"}, file_extension{".ods"}, file_extension{".odp"}, file_extension{".odg"}, file_extension{".docx"}, file_extension{".xlsx"}, file_extension{".pptx"}, file_extension{".ppsx"}};
-    }
+      mime_type{"application/vnd.oasis.opendocument.text"},
+      mime_type{"application/vnd.oasis.opendocument.spreadsheet"},
+      mime_type{"application/vnd.oasis.opendocument.presentation"},
+      mime_type{"application/vnd.oasis.opendocument.graphics"},
+      mime_type{"application/vnd.oasis.opendocument.text-template"},
+      mime_type{"application/vnd.oasis.opendocument.spreadsheet-template"},
+      mime_type{"application/vnd.oasis.opendocument.presentation-template"},
+      mime_type{"application/vnd.oasis.opendocument.graphics-template"},
+      mime_type{"application/vnd.oasis.opendocument.text-web"},
+      mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
+      mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+      mime_type{"application/vnd.openxmlformats-officedocument.presentationml.presentation"},
+      mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.template"},
+      mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.template"},
+      mime_type{"application/vnd.openxmlformats-officedocument.presentationml.template"},
+      mime_type{"application/vnd.openxmlformats-officedocument.presentationml.slideshow"},
+    };
+
     Parser& withParameters(const ParserParameters &parameters) override;
 
     ODFOOXMLParser();

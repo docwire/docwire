@@ -9,6 +9,7 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include "detect_by_file_extension.h"
 #include "error_tags.h"
 #include <fstream>
 #include <filesystem>
@@ -55,7 +56,7 @@ public:
     return false;
   }
 
-  std::unique_ptr<ParserBuilder> findParser(const data_source& data) const
+  std::unique_ptr<ParserBuilder> findParser(data_source& data) const
   {
     std::optional<file_extension> extension = data.file_extension();
     if (!extension)
@@ -66,8 +67,10 @@ public:
     }
     else
     {
-      std::unique_ptr<ParserBuilder> builder = m_owner.findParserByExtension(*extension);
-      throw_if (!builder, "findParserByExtension() failed", extension->string());
+      detect::by_file_extension(data);
+      throw_if(data.mime_types.empty(), "No mime type found for file extension", extension->string());
+      std::unique_ptr<ParserBuilder> builder = m_owner.find_parser_by_mime_type(data.mime_types.front());
+      throw_if (!builder, "find_parser_by_mime_type() failed", data.mime_types.front().v);
       return builder;
     }
   }

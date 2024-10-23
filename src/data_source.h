@@ -46,6 +46,7 @@ struct length_limit
 struct mime_type
 {
 	std::string v;
+	bool operator==(const mime_type& rhs) const = default;
 };
 
 template <typename T>

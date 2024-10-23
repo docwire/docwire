@@ -30,11 +30,11 @@ class DllExport ParserProvider
 {
 public:
   /**
-   * @brief Returns parser builder for given extension type or nullopt if no parser is found.
-   * @param extension file extension (e.g. ".txt", ".docx", etc.)
+   * @brief Returns parser builder for given mime type or nullopt if no parser is found.
+   * @param mime mime type (e.g. "text/plain", "application/pdf", etc.)
    * @return unique_ptr to specific parser builder or null unique_ptr if no parser is found
    */
-  virtual std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension) const = 0;
+  virtual std::unique_ptr<ParserBuilder> find_parser_by_mime_type(const mime_type& mime) const = 0;
 
   /**
    * @brief Returns parser builder for given raw data or nullopt if no parser is found.
@@ -58,9 +58,9 @@ public:
   {
   }
 
-  std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension) const override
+  std::unique_ptr<ParserBuilder> find_parser_by_mime_type(const mime_type& mime) const override
   {
-    return findParserByExtension<ParserTypes...>(extension);
+    return find_parser_by_mime_type<ParserTypes...>(mime);
   }
 
   std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const override
@@ -70,15 +70,15 @@ public:
 
 private:
 
-  bool isExtensionInVector(const file_extension& extension, const std::vector<file_extension>& extension_list) const
+  bool is_mime_type_in_vector(const mime_type& mime, const std::vector<mime_type>& mime_type_list) const
   {
-    return std::find(extension_list.begin(), extension_list.end(), extension) != extension_list.end();
+    return std::find(mime_type_list.begin(), mime_type_list.end(), mime) != mime_type_list.end();
   }
 
   template<typename T>
-  bool parser_handle_extension(const file_extension& extension) const
+  bool parser_handle_mime_type(const mime_type& mime) const
   {
-    return isExtensionInVector(extension, T::getExtensions());
+    return is_mime_type_in_vector(mime, T::supported_mime_types);
   }
 
   template <universal_parser_type T>
@@ -95,12 +95,12 @@ private:
   }
 
   template<typename T, typename... Ts>
-  std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension) const
+  std::unique_ptr<ParserBuilder> find_parser_by_mime_type(const mime_type& mime) const
   {
-    if (parser_handle_extension<T>(extension))
+    if (parser_handle_mime_type<T>(mime))
       return std::make_unique<ParserBuilderWrapper<T>>();
     if constexpr (sizeof...(Ts) > 0)
-      return findParserByExtension<Ts...>(extension);
+      return find_parser_by_mime_type<Ts...>(mime);
     return nullptr;
   }
 

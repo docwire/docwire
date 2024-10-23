@@ -32,10 +32,13 @@ class DllExport HTMLParser : public Parser
 	public:
 
     void parse(const data_source& data) const override;
-		static std::vector<file_extension> getExtensions()
+
+		inline static const std::vector<mime_type> supported_mime_types =
 		{
-			return { file_extension{".html"}, file_extension{".htm"} };
-		}
+			mime_type{"text/html"},
+			mime_type{"application/xhtml+xml"},
+			mime_type{"application/vnd.pwg-xhtml-print+xml"}
+		};
 		Parser& withParameters(const ParserParameters &parameters) override;
 
 		HTMLParser();

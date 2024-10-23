@@ -36,10 +36,16 @@ public:
     ~OCRParser();
 
     void parse(const data_source& data) const override;
-    static std::vector <file_extension> getExtensions()
+    inline static const std::vector<mime_type> supported_mime_types =
     {
-        return { file_extension{".tiff"}, file_extension{".jpeg"}, file_extension{".bmp"}, file_extension{".png"}, file_extension{".pnm"}, file_extension{".jfif"}, file_extension{".jpg"}, file_extension{".webp"} };
-    }
+        mime_type{"image/tiff"},
+        mime_type{"image/jpeg"},
+        mime_type{"image/bmp"},
+        mime_type{"image/x-ms-bmp"},
+        mime_type{"image/png"},
+        mime_type{"image/x-portable-anymap"},
+        mime_type{"image/webp"}
+    };
     Parser& withParameters(const ParserParameters &parameters) override;
 
     void setTessdataPrefix(const std::string& tessdata_prefix);

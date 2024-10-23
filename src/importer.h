@@ -59,7 +59,7 @@ public:
    */
   void add_parameters(const ParserParameters &parameters);
 
-  virtual std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension) const = 0;
+  virtual std::unique_ptr<ParserBuilder> find_parser_by_mime_type(const mime_type& mime) const = 0;
   virtual std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const = 0;
 
 protected:

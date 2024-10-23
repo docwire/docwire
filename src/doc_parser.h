@@ -31,10 +31,8 @@ class DllExport DOCParser : public Parser
 	public:
     	void parse(const data_source& data) const override;
 		Parser& withParameters(const ParserParameters &parameters) override;
-		static std::vector<file_extension> getExtensions()
-		{
-			return { file_extension{".doc"}, file_extension{".dot"} };
-		}
+
+		inline static const std::vector<mime_type> supported_mime_types = { mime_type{"application/msword"} };
 
 		bool understands(const data_source& data) const override;
 };
