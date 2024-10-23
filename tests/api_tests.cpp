@@ -95,10 +95,17 @@ TEST_P(DocumentTests, ParseFromPathTest)
         // WHEN
         std::ostringstream output_stream{};
 
-        std::filesystem::path(file_name) |
-          ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
-          PlainTextExporter() |
-          output_stream;
+        try
+        {
+            std::filesystem::path(file_name) |
+                ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
+                PlainTextExporter() |
+                output_stream;
+        }
+        catch (const std::exception& e)
+        {
+            FAIL() << errors::diagnostic_message(e);
+        }
 
         // THEN
         EXPECT_EQ(expected_text, output_stream.str());
@@ -352,11 +359,18 @@ TEST_P(MiscDocumentTest, ParseFromPathTest)
 
     std::ostringstream output_stream{};
 
-    std::filesystem::path{file_name} |
-        DecompressArchives() |
-        ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
-        PlainTextExporter() |
-        output_stream;
+    try
+    {
+        std::filesystem::path{file_name} |
+            DecompressArchives() |
+            ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
+            PlainTextExporter() |
+            output_stream;
+    }
+    catch (const std::exception& e)
+    {
+        FAIL() << errors::diagnostic_message(e);
+    }
         
     // THEN
     EXPECT_EQ(expected_text, output_stream.str());
