@@ -170,17 +170,6 @@ message parse_message(const data_source& data, const std::function<void(std::exc
 
 } // anonymous namespace
 
-bool EMLParser::understands(const data_source& data) const
-{
-	docwire_log_func();
-	message mime_entity = parse_message(data, [](std::exception_ptr) {});
-	std::string from = mime_entity.from_to_string();
-	bool has_from = !from.empty();
-	bool has_date_time = !mime_entity.date_time().is_not_a_date_time();
-	docwire_log_vars(from, has_from, has_date_time);
-	return has_from && has_date_time;
-}
-
 namespace
 {
 
@@ -193,7 +182,6 @@ EMLParser::parse(const data_source& data) const
 {
 	docwire_log_func();
 	docwire_log(debug) << "Using EML parser.";
-	throw_if (!understands(data));
 	message mime_entity = parse_message(data, [this](std::exception_ptr e) { sendTag(e); });
 	sendTag(tag::Document
 		{

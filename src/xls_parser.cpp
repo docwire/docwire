@@ -869,17 +869,6 @@ XLSParser::XLSParser()
 
 XLSParser::~XLSParser() = default;
 
-bool XLSParser::understands(const data_source& data) const
-{
-	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
-	if (!storage->isValid())
-		return false;
-	std::unique_ptr<AbstractOLEStreamReader> reader{storage->createStreamReader("Workbook")};
-	if (reader == nullptr)
-		reader = std::unique_ptr<AbstractOLEStreamReader>{storage->createStreamReader("Book")};
-	return reader != nullptr;
-}
-
 void XLSParser::parse(const data_source& data) const
 {
 	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());

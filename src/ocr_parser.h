@@ -49,7 +49,7 @@ public:
     Parser& withParameters(const ParserParameters &parameters) override;
 
     void setTessdataPrefix(const std::string& tessdata_prefix);
-    bool understands(const data_source& data) const override;
+
 private:
     std::string parse(const data_source& data, const std::vector<Language>& languages) const;
 };

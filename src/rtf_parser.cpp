@@ -37,12 +37,6 @@ RTFParser::RTFParser()
 {
 }
 
-bool RTFParser::understands(const data_source& data) const
-{
-	std::string signature = data.string(length_limit{5});
-	return (signature == "{\\rtf");
-}
-
 #define RTFNAMEMAXLEN 32
 #define RTFARGSMAXLEN 64
 
@@ -493,7 +487,6 @@ void RTFParser::parse(const data_source& data) const
 	TextConverter* converter = NULL;
 	try
 	{
-		throw_if (!understands(data), "Not a RTF file"); //check if this is really rtf file
 		sendTag(tag::Document
 			{
 				.metadata = [this, &data]() { return metaData(data); }

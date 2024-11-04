@@ -1313,13 +1313,15 @@ const std::unordered_multimap<std::string, std::string> file_extension_to_mime_t
 
 void by_file_extension(data_source& data)
 {
-	throw_if (!data.file_extension());
-	data.mime_types.clear();
+	if (!data.file_extension() || data.highest_mime_type_confidence() >= confidence { 95 })
+		return;
 	auto range = file_extension_to_mime_type.equal_range(data.file_extension()->string());
 	for (auto it = range.first; it != range.second; ++it)
-	{
-		data.mime_types.push_back(mime_type { it->second });
-	}
+		data.add_mime_type(
+			mime_type { it->second },
+			it->second == "application/msword" || it->second == "application/vnd.ms-excel" ?
+				confidence { 75 } :
+				confidence { 95 });
 }
 
 } // namespace docwire::detect

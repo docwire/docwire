@@ -8152,16 +8152,6 @@ PDFParser::~PDFParser()
 	}
 }
 
-bool PDFParser::understands(const data_source& data) const
-{
-	std::string buffer = data.string(length_limit{5});
-	if (buffer != "%PDF-")
-	{
-		return false;
-	}
-	return true;
-}
-
 attributes::Metadata PDFParser::metaData(const data_source& data) const
 {
 	attributes::Metadata metadata;

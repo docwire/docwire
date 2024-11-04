@@ -37,7 +37,6 @@ class DllExport XLSParser : public Parser
 			mime_type{"application/vnd.ms-excel.sheet.macroenabled.12"},
 			mime_type{"application/vnd.ms-excel.template.macroenabled.12"}
 		};
-		bool understands(const data_source& data) const override;
 		void parse(const data_source& data) const override;
 		std::string parse(ThreadSafeOLEStorage& storage) const;
 };

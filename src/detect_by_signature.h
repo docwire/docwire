@@ -18,7 +18,12 @@
 namespace docwire::detect
 {
 
-DllExport void by_signature(data_source& data);
+struct allow_multiple
+{
+    bool v;
+};
+
+DllExport void by_signature(data_source& data, allow_multiple allow_multiple = {false});
 
 } // namespace docwire::detect
 

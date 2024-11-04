@@ -678,15 +678,6 @@ HTMLParser::withParameters(const ParserParameters &parameters)
 	return *this;
 }
 
-bool HTMLParser::understands(const data_source& data) const
-{
-	docwire_log_func();
-	std::string initial_xml = data.string(length_limit{1024});
-	if (initial_xml.find("<html") != std::string::npos || initial_xml.find("<HTML") != std::string::npos)
-		return true;
-	return false;
-}
-
 void
 HTMLParser::parse(const data_source& data) const
 {

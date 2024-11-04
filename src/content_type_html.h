@@ -9,69 +9,17 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_IMPORTER_H
-#define DOCWIRE_IMPORTER_H
+#ifndef DOCWIRE_CONTENT_TYPE_HTML_H
+#define DOCWIRE_CONTENT_TYPE_HTML_H
 
-#include <algorithm>
-#include <memory>
-
-#include "chain_element.h"
-#include "parser.h"
-#include "parser_builder.h"
-#include "parser_parameters.h"
+#include "data_source.h"
 #include "defines.h"
 
-namespace docwire
+namespace docwire::content_type::html
 {
 
-class DllExport Importer : public ChainElement
-{
-public:
-  /**
-   * @param parameters parser parameters
-   */
-  explicit Importer(const ParserParameters &parameters = ParserParameters());
+DllExport void detect(data_source& data);
 
-  Importer(const Importer &other);
+} // namespace docwire::content_type::html
 
-  Importer(const Importer &&other);
-
-  Importer& operator=(const Importer &other);
-
-  Importer& operator=(const Importer &&other);
-
-  virtual ~Importer();
-
-  bool is_leaf() const override
-  {
-    return false;
-  }
-
-  /**
-   * @brief Sets new input stream to parse
-   * @param input_stream new input stream to parse
-   */
-  void set_input_stream(std::istream &input_stream);
-
-  /**
-   * @brief Adds parser parameters.
-   * @param parameters parser parameters
-   */
-  void add_parameters(const ParserParameters &parameters);
-
-  virtual std::unique_ptr<ParserBuilder> find_parser_by_mime_type(const mime_type& mime) const = 0;
-
-protected:
-  /**
-   * @brief Starts parsing process.
-   */
-  void process(Info& info) const override;
-
-private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
-};
-
-} // namespace docwire
-
-#endif //DOCWIRE_IMPORTER_H
+#endif // DOCWIRE_CONTENT_TYPE_HTML

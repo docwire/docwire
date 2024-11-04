@@ -65,11 +65,6 @@ std::string sequences_of_printable_characters(const std::string& text, size_t mi
 
 } // anonymous namespace
 
-bool TXTParser::understands(const data_source& data) const
-{
-	return true;
-}
-
 void TXTParser::parse(const data_source& data) const
 {
 	docwire_log(debug) << "Using TXT parser.";

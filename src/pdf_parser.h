@@ -35,8 +35,6 @@ class DllExport PDFParser : public Parser
 		~PDFParser();
 		void parse(const data_source& data) const override;
 		inline static const std::vector<mime_type> supported_mime_types = { mime_type{"application/pdf"} };
-
-		bool understands(const data_source& data) const;
 };
 
 } // namespace docwire

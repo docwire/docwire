@@ -33,8 +33,6 @@ class DllExport DOCParser : public Parser
 		Parser& withParameters(const ParserParameters &parameters) override;
 
 		inline static const std::vector<mime_type> supported_mime_types = { mime_type{"application/msword"} };
-
-		bool understands(const data_source& data) const override;
 };
 
 } // namespace docwire

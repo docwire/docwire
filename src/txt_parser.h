@@ -29,7 +29,6 @@ class DllExport TXTParser : public Parser
 	public:
 
     void parse(const data_source& data) const override;
-	bool understands(const data_source& data) const override;
 
 		inline static const std::vector<mime_type> supported_mime_types =
 		{
@@ -50,6 +49,7 @@ class DllExport TXTParser : public Parser
 			mime_type{"text/x-c++hdr"},
 			mime_type{"text/html"},
 			mime_type{"text/x-java-source"},
+			mime_type{"application/javascript"},
 			mime_type{"text/javascript"},
 			mime_type{"application/json"},
 			mime_type{"text/x-jsp"},
@@ -71,7 +71,6 @@ class DllExport TXTParser : public Parser
 		};
 
 		TXTParser();
-	static constexpr bool is_universal = true;
 };
 
 } // namespace docwire

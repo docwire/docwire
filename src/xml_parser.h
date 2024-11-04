@@ -26,7 +26,6 @@ public:
 		mime_type{"application/xml"},
 		mime_type{"text/xml"}
 	};
-	bool understands(const data_source& data) const;
 };
 
 } // namespace docwire

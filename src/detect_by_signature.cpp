@@ -11,21 +11,35 @@
 
 #include "detect_by_signature.h"
 
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/compare.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <magic.h>
 #include "resource_path.h"
 
 namespace docwire::detect
 {
 
-void by_signature(data_source& data)
+void by_signature(data_source& data, allow_multiple allow_multiple)
 {
-    magic_t magic_cookie = magic_open(MAGIC_MIME_TYPE);
+    if (data.highest_mime_type_confidence() >= confidence { 90 })
+		return;
+    magic_t magic_cookie = magic_open(allow_multiple.v ? MAGIC_MIME_TYPE | MAGIC_CONTINUE : MAGIC_MIME_TYPE);
     throw_if (magic_cookie == NULL);
     throw_if (magic_load(magic_cookie, resource_path("libmagic/misc/magic.mgc").string().c_str()) != 0, magic_error(magic_cookie));
     std::span<const std::byte> span = data.span();
-    const char *file_type = magic_buffer(magic_cookie, span.data(), span.size());
-    throw_if (file_type == NULL, magic_error(magic_cookie));
-    data.mime_types = { mime_type { file_type } };
+    const char* file_types = magic_buffer(magic_cookie, span.data(), span.size());
+    throw_if (file_types == NULL, magic_error(magic_cookie));
+    std::string file_types_str { file_types };
+    auto splitIt = boost::make_split_iterator(file_types_str, boost::first_finder(","));
+    while (splitIt != boost::split_iterator<std::string::iterator>()) 
+    {
+        data.add_mime_type(
+            mime_type { std::string{splitIt->begin(), splitIt->end()} },
+            confidence { 98 }
+        );
+        ++splitIt;
+    }
     magic_close(magic_cookie);
 }
 

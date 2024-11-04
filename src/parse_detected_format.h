@@ -37,19 +37,6 @@ std::unique_ptr<ParserBuilder> find_parser_by_mime_type(const mime_type& mime)
   return nullptr;
 }
 
-template<typename... ProviderTypeNames>
-std::unique_ptr<ParserBuilder> findParserByData(const data_source& data)
-{
-  std::unique_ptr<ParserProvider> providers[] = {std::unique_ptr<ParserProvider>(new ProviderTypeNames)...};
-  for (auto& provider : providers)
-  {
-    auto builder = provider->findParserByData(data);
-    if (builder)
-      return builder;
-  }
-  return nullptr;
-}
-
 /**
  * @brief This class template is used to import a file and parse it using available parsers.
  * @code
@@ -74,16 +61,6 @@ class ParseDetectedFormat : public Importer
   std::unique_ptr<ParserBuilder> find_parser_by_mime_type(const mime_type& mime) const override
   {
     return docwire::find_parser_by_mime_type<ProviderTypeName, ProviderTypeNames...>(mime);
-  }
-
-  /**
-   * @brief Returns parser builder for given raw data or nullopt if no parser is found.
-   * @param buffer buffer of raw data
-   * @return specific parser builder or null unique_ptr if no parser is found
-   */
-  std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const override
-  {
-    return docwire::findParserByData<ProviderTypeName, ProviderTypeNames...>(data);
   }
 };
 

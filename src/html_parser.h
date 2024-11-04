@@ -43,7 +43,6 @@ class DllExport HTMLParser : public Parser
 
 		HTMLParser();
 		~HTMLParser();
-		bool understands(const data_source& data) const override;
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).
 		void skipCharsetDecoding();
 };

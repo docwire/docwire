@@ -36,7 +36,6 @@ class DllExport XLSBParser : public Parser
 		{
 			mime_type{"application/vnd.ms-excel.sheet.binary.macroenabled.12"}
 		};
-		bool understands(const data_source& data) const override;
 		void parse(const data_source& data) const override;
 };
 

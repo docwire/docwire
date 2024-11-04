@@ -9,69 +9,29 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_IMPORTER_H
-#define DOCWIRE_IMPORTER_H
+#include "content_type_odf_flat.h"
 
-#include <algorithm>
-#include <memory>
-
-#include "chain_element.h"
-#include "parser.h"
-#include "parser_builder.h"
-#include "parser_parameters.h"
-#include "defines.h"
-
-namespace docwire
+namespace docwire::content_type::odf_flat
 {
 
-class DllExport Importer : public ChainElement
+void detect(data_source& data)
 {
-public:
-  /**
-   * @param parameters parser parameters
-   */
-  explicit Importer(const ParserParameters &parameters = ParserParameters());
+    if (data.mime_type_confidence(mime_type { "text/xml" }) < confidence { 90 })
+        return;
+    if (data.highest_mime_type_confidence() >= confidence { 99 })
+		return;
+    std::string initial_xml = data.string(length_limit{1024});
+    if (initial_xml.find("office:document") != std::string::npos)
+    {
+        if (initial_xml.find("application/vnd.oasis.opendocument.text"))
+            data.add_mime_type(mime_type { "application/vnd.oasis.opendocument.text-flat-xml" }, confidence { 99 });
+        else if (initial_xml.find("application/vnd.oasis.opendocument.spreadsheet"))
+            data.add_mime_type(mime_type { "application/vnd.oasis.opendocument.spreadsheet-flat-xml" }, confidence { 99 });
+        else if (initial_xml.find("application/vnd.oasis.opendocument.presentation"))
+            data.add_mime_type(mime_type { "application/vnd.oasis.opendocument.presentation-flat-xml" }, confidence { 99 });
+        else if (initial_xml.find("application/vnd.oasis.opendocument.graphics"))
+            data.add_mime_type(mime_type { "application/vnd.oasis.opendocument.graphics-flat-xml" }, confidence { 99 });
+    }
+}
 
-  Importer(const Importer &other);
-
-  Importer(const Importer &&other);
-
-  Importer& operator=(const Importer &other);
-
-  Importer& operator=(const Importer &&other);
-
-  virtual ~Importer();
-
-  bool is_leaf() const override
-  {
-    return false;
-  }
-
-  /**
-   * @brief Sets new input stream to parse
-   * @param input_stream new input stream to parse
-   */
-  void set_input_stream(std::istream &input_stream);
-
-  /**
-   * @brief Adds parser parameters.
-   * @param parameters parser parameters
-   */
-  void add_parameters(const ParserParameters &parameters);
-
-  virtual std::unique_ptr<ParserBuilder> find_parser_by_mime_type(const mime_type& mime) const = 0;
-
-protected:
-  /**
-   * @brief Starts parsing process.
-   */
-  void process(Info& info) const override;
-
-private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
-};
-
-} // namespace docwire
-
-#endif //DOCWIRE_IMPORTER_H
+} // namespace docwire::content_type::odf_flat

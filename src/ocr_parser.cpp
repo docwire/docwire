@@ -264,11 +264,6 @@ void OCRParser::setTessdataPrefix(const std::string& tessdata_prefix)
     impl->m_tessdata_prefix = tessdata_prefix;
 }
 
-bool OCRParser::understands(const data_source& data) const
-{
-    return load_pix(data) != nullptr;
-}
-
 Parser&
 OCRParser::withParameters(const ParserParameters &parameters)
 {

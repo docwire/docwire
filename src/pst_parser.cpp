@@ -529,39 +529,4 @@ PSTParser::PSTParser()
 
 PSTParser::~PSTParser() = default;
 
-bool PSTParser::understands(const data_source& data) const
-{
-	pffError error;
-	libpff_file_t* file = NULL;
-
-	if (libpff_file_initialize(&file, &error) != 1)
-	{
-		return false;
-	}
-
-  libbfio_handle_t* handle = nullptr;
-  libbfio_error_t* bfio_error = nullptr;
-  std::shared_ptr<std::istream> stream = data.istream();
-  libbfio_stream_initialize(&handle, stream);
-  libbfio_handle_open(handle, LIBBFIO_OPEN_READ_WRITE_TRUNCATE, &bfio_error);
-  libpff_file_open_file_io_handle(file, handle, LIBBFIO_OPEN_READ, &error);
-
-  pffItem root = NULL;
-  int result = libpff_file_get_root_folder(file, &root, &error);
-  if (handle)
-  {
-    libpff_file_close(file, &error);
-    libpff_file_free(&file, &error);
-    libbfio_handle_close(handle, &bfio_error);
-    libbfio_handle_free(&handle, &bfio_error);
-    handle = nullptr;
-  }
-  libbfio_error_free(&bfio_error);
-  if (result != 1)
-  {
-    return false;
-  }
-  return true;
-}
-
 } // namespace docwire

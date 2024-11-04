@@ -1,4 +1,11 @@
-add_library(docwire_detect SHARED detect_by_file_extension.cpp detect_by_signature.cpp)
+add_library(docwire_detect SHARED
+    content_type_html.cpp
+    content_type_iwork.cpp
+    content_type_odf_flat.cpp
+    content_type_outlook.cpp
+    content_type_xlsb.cpp
+    detect_by_file_extension.cpp
+    detect_by_signature.cpp)
 
 target_compile_features(docwire_detect PUBLIC cxx_std_20)
 if(MSVC)

@@ -436,33 +436,6 @@ ODFOOXMLParser::onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_str
 	parser.trySendTag(tag::BreakLine{});
 }
 
-bool ODFOOXMLParser::understands(const data_source& data) const
-{
-	try
-	{
-		ZipReader zipfile{data};
-		zipfile.open();
-		string main_file_name;
-		try
-		{
-			main_file_name = locate_main_file(zipfile);
-		}
-		catch (const std::exception&)
-		{
-			return false;
-		}
-		string contents;
-		if (!zipfile.read(main_file_name, &contents, 1))
-			return false;
-	}
-	catch (const std::exception&)
-	{
-		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_is_encrypted{}, "Microsoft Office Document Cryptography");
-		return false;
-	}
-	return true;
-}
-
 void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 {
 	ZipReader zipfile{data};

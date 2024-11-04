@@ -2078,35 +2078,6 @@ IWorkParser::IWorkParser()
 
 IWorkParser::~IWorkParser() = default;
 
-bool IWorkParser::understands(const data_source& data) const
-{
-	ZipReader unzip {data};
-	try
-	{
-		unzip.open();
-	}
-	catch (const std::exception&)
-	{
-		return false;
-	}
-	try
-	{
-		impl->m_xml_file = find_main_xml_file(unzip);
-	}
-	catch (const std::exception& e)
-	{
-		return false;
-	}
-	Implementation::DataSource xml_data_source(unzip, impl->m_xml_file);
-	Implementation::XmlReader xml_reader(xml_data_source);
-	if (impl->getIWorkType(xml_reader) == Implementation::IWorkContent::encrypted)
-	{
-		docwire_log(debug) << "This is not iWork file format or file is encrypted.";
-		return false;
-	}
-	return true;
-}
-
 void IWorkParser::parse(const data_source& data) const
 {
 	docwire_log(debug) << "Using iWork parser.";

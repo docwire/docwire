@@ -74,14 +74,6 @@ ODFXMLParser::ODFXMLParser()
 
 ODFXMLParser::~ODFXMLParser() = default;
 
-bool ODFXMLParser::understands(const data_source& data) const
-{
-	std::string xml_content = data.string();  // TODO: maybe string lenght to check can be limited
-	if (xml_content.find("office:document") == std::string::npos)
-		return false;
-	return true;
-}
-
 void ODFXMLParser::parse(const data_source& data, XmlParseMode mode) const
 {
 	std::string xml_content = data.string();

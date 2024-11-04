@@ -9,7 +9,13 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include "content_type_html.h"
+#include "content_type_iwork.h"
+#include "content_type_odf_flat.h"
+#include "content_type_outlook.h"
+#include "content_type_xlsb.h"
 #include "detect_by_file_extension.h"
+#include "detect_by_signature.h"
 #include "error_tags.h"
 #include <fstream>
 #include <filesystem>
@@ -58,21 +64,19 @@ public:
 
   std::unique_ptr<ParserBuilder> findParser(data_source& data) const
   {
-    std::optional<file_extension> extension = data.file_extension();
-    if (!extension)
-    {
-      std::unique_ptr<ParserBuilder> builder = m_owner.findParserByData(data);
-      throw_if (!builder, "findParserByData() failed");
-      return builder;
-    }
-    else
-    {
-      detect::by_file_extension(data);
-      throw_if(data.mime_types.empty(), "No mime type found for file extension", extension->string());
-      std::unique_ptr<ParserBuilder> builder = m_owner.find_parser_by_mime_type(data.mime_types.front());
-      throw_if (!builder, "find_parser_by_mime_type() failed", data.mime_types.front().v);
-      return builder;
-    }
+    detect::by_file_extension(data);
+    detect::by_signature(data);
+    content_type::html::detect(data);
+    content_type::iwork::detect(data);
+    content_type::xlsb::detect(data);
+    content_type::odf_flat::detect(data);
+    content_type::outlook::detect(data);
+    std::optional<mime_type> mt = data.highest_confidence_mime_type();
+    throw_if(!mt, "MIME type detection failed for the data source");
+    throw_if(data.mime_type_confidence(mime_type { "application/encrypted" }) >= confidence { 50 }, errors::file_is_encrypted{});
+    std::unique_ptr<ParserBuilder> builder = m_owner.find_parser_by_mime_type(*mt);
+    throw_if (!builder, "find_parser_by_mime_type() failed", mt->v);
+    return builder;
   }
 
   std::unique_ptr<docwire::Parser> build_parser(ParserBuilder& builder)
@@ -112,15 +116,8 @@ public:
     {
       if (errors::contains_type<errors::file_is_encrypted>(ex))
         std::throw_with_nested(make_error(errors::backtrace_entry{}));
-      if (!data.file_extension()) // parser was detected by data
+      else
         throw;
-      docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
-      auto second_builder = m_owner.findParserByData(data);
-      if (!second_builder)
-      {
-        throw;
-      }
-      (*build_parser(*second_builder))(data, parser_callback);
     }
   }
 

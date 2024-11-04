@@ -36,18 +36,8 @@ public:
    */
   virtual std::unique_ptr<ParserBuilder> find_parser_by_mime_type(const mime_type& mime) const = 0;
 
-  /**
-   * @brief Returns parser builder for given raw data or nullopt if no parser is found.
-   * @param data_source raw data
-   * @return unique_ptr to specific parser builder or null unique_ptr if no parser is found
-   */
-  virtual std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const = 0;
-
   virtual ~ParserProvider() = default;
 };
-
-template<typename T>
-concept universal_parser_type = requires { { T::is_universal } -> std::convertible_to<bool>; } && T::is_universal;
 
 template<typename... ParserTypes>
 class parser_provider : public ParserProvider
@@ -63,11 +53,6 @@ public:
     return find_parser_by_mime_type<ParserTypes...>(mime);
   }
 
-  std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const override
-  {
-    return findParserByData<ParserTypes...>(data);
-  }
-
 private:
 
   bool is_mime_type_in_vector(const mime_type& mime, const std::vector<mime_type>& mime_type_list) const
@@ -81,19 +66,6 @@ private:
     return is_mime_type_in_vector(mime, T::supported_mime_types);
   }
 
-  template <universal_parser_type T>
-  bool parser_understands(const data_source& data) const
-  {
-    return false;
-  }
-
-  template <typename T>
-  bool parser_understands(const data_source& data) const
-  {
-    T parser;
-    return parser.understands(data);
-  }
-
   template<typename T, typename... Ts>
   std::unique_ptr<ParserBuilder> find_parser_by_mime_type(const mime_type& mime) const
   {
@@ -101,16 +73,6 @@ private:
       return std::make_unique<ParserBuilderWrapper<T>>();
     if constexpr (sizeof...(Ts) > 0)
       return find_parser_by_mime_type<Ts...>(mime);
-    return nullptr;
-  }
-
-  template<typename T, typename... Ts>
-  std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const
-  {
-    if (parser_understands<T>(data))
-      return std::make_unique<ParserBuilderWrapper<T>>();
-    if constexpr (sizeof...(Ts) > 0)
-      return findParserByData<Ts...>(data);
     return nullptr;
   }
 };

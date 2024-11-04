@@ -38,7 +38,6 @@ class DllExport RTFParser : public Parser
 		};
 
 		RTFParser();
-		bool understands(const data_source& data) const;
 };
 
 } // namespace docwire

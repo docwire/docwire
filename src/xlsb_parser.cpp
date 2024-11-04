@@ -643,23 +643,6 @@ XLSBParser::XLSBParser()
 
 XLSBParser::~XLSBParser() = default;
 
-bool XLSBParser::understands(const data_source& data) const
-{
-	ZipReader unzip{data};
-	try
-	{
-		unzip.open();
-	if (!unzip.exists("xl/workbook.bin"))
-		return false;
-	}
-	catch (const std::exception&)
-	{
-		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_is_encrypted{}, "Microsoft Office Document Cryptography");
-		return false;
-	}
-	return true;
-}
-
 attributes::Metadata XLSBParser::metaData(const ZipReader& unzip) const
 {
 	attributes::Metadata metadata;

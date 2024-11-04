@@ -43,7 +43,6 @@ class DllExport ODFXMLParser : public CommonXMLDocumentParser
 
 		ODFXMLParser();
 		~ODFXMLParser();
-		bool understands(const data_source& data) const override;
 };
 
 } // namespace docwire

@@ -593,23 +593,6 @@ class SubDocumentHandler : public wvWare::SubDocumentHandler
 		}
 };
 
-bool DOCParser::understands(const data_source& data) const
-{
-	cerr_log_redirection cerr_redirection(docwire_current_source_location());
-	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
-	SharedPtr<wvWare::Parser> parser;
-	{
-		std::lock_guard<std::mutex> parser_factory_mutex_1_lock(parser_factory_mutex_1);
-		parser = ParserFactory::createParser(storage.release()); //storage will be deleted inside parser from wv2 library
-	}
-	cerr_redirection.restore();
-	if (!parser || !parser->isOk())
-	{
-		return false;
-	}
-	return true;
-}
-
 void DOCParser::parse(const data_source& data) const
 {
 	docwire_log(debug) << "Using DOC parser.";

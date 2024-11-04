@@ -42,7 +42,6 @@ public:
 
   PSTParser();
   ~PSTParser();
-  bool understands(const data_source& data) const override;
 };
 
 } // namespace docwire

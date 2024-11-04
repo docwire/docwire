@@ -41,7 +41,6 @@ class DllExport IWorkParser : public Parser
 			mime_type{"application/x-iwork-numbers-sffnumbers"},
 			mime_type{"application/x-iwork-keynote-sffkey"}
 		};
-		bool understands(const data_source& data) const override;
 
 		void parse(const data_source& data) const override;
 };

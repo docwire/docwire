@@ -58,11 +58,6 @@ public:
    */
   void operator()(const data_source& data, std::function<parsing_continuation(const Tag&)> callback) const;
 
-  /**
-   * @brief Checks if parser can parse specified data
-  */
-  virtual bool understands(const data_source& data) const = 0;
-
   virtual Parser &withParameters(const ParserParameters &parameters);
 
 protected:

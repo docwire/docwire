@@ -132,10 +132,17 @@ TEST_P(DocumentTests, ParseFromStreamTest)
         // WHEN
         std::ostringstream output_stream{};
 
-        std::ifstream { file_name, std::ios_base::binary } |
-          ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
-          PlainTextExporter() |
-          output_stream;
+        try
+        {
+            std::ifstream { file_name, std::ios_base::binary } |
+            ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
+            PlainTextExporter() |
+            output_stream;
+        }
+        catch (const std::exception& e)
+        {
+            FAIL() << errors::diagnostic_message(e);
+        }
 
         // THEN
         EXPECT_EQ(expected_text, output_stream.str());
@@ -1492,9 +1499,13 @@ TEST(detect, by_file_extension)
     catch (const std::exception& e) {
         FAIL() << errors::diagnostic_message(e);
     }
-    ASSERT_EQ(data.mime_types.size(), 1);
-    mime_type content_type = data.mime_types.front();
-    ASSERT_EQ(content_type.v, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    using namespace testing;
+    ASSERT_THAT(data.mime_types, testing::ElementsAre(
+        std::pair {
+            mime_type { "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+            confidence { 95 }
+        }
+    ));
 }
 
 TEST(detect, by_signature)
@@ -1506,6 +1517,11 @@ TEST(detect, by_signature)
     catch (const std::exception& e) {
         FAIL() << errors::diagnostic_message(e);
     }
-    mime_type content_type = data.mime_types.front();
-    ASSERT_EQ(content_type.v, "application/msword");
+    using namespace testing;
+    ASSERT_THAT(data.mime_types, testing::ElementsAre(
+        std::pair {
+            mime_type { "application/msword" },
+            confidence { 98 }
+        }
+    ));
 }

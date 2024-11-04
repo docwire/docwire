@@ -49,6 +49,28 @@ struct mime_type
 	bool operator==(const mime_type& rhs) const = default;
 };
 
+}
+
+namespace std {
+template <>
+struct hash<docwire::mime_type>
+{
+	size_t operator()(const docwire::mime_type& mt) const
+	{
+		return hash<std::string>{}(mt.v);
+	}
+};
+} // namespace std
+
+namespace docwire
+{
+
+struct confidence
+{
+	int8_t v;
+	std::strong_ordering operator<=>(const confidence& rhs) const = default;
+};
+
 template <typename T>
 concept data_source_compatible_type =
 	std::is_same_v<T, std::filesystem::path> ||
@@ -202,7 +224,54 @@ class data_source
 			s << docwire_log_streamable_obj(*this, m_file_extension);
 		}
 
-		std::vector<mime_type> mime_types;
+		std::optional<std::pair<mime_type, confidence>> highest_confidence_mime_type_info() const
+		{
+			auto hc_mt_it = std::max_element(mime_types.begin(), mime_types.end(),
+			[](const auto& p1, const auto& p2)
+				{
+					return p1.second < p2.second;
+				});
+			if (hc_mt_it != mime_types.end())
+				return *hc_mt_it;
+			else
+				return std::nullopt;
+		}
+
+		std::optional<mime_type> highest_confidence_mime_type() const
+		{
+			auto hc_mt = highest_confidence_mime_type_info();
+			if (hc_mt)
+				return hc_mt->first;
+			else
+				return std::nullopt;
+		}
+
+		confidence highest_mime_type_confidence() const
+		{
+			auto hc_mt = highest_confidence_mime_type_info();
+			if (hc_mt)
+				return hc_mt->second;
+			else
+				return confidence {0};
+		}
+
+		confidence mime_type_confidence(mime_type mt) const
+		{
+    		auto mt_iter = mime_types.find(mt);
+			if (mt_iter == mime_types.end())
+				return confidence { 0 };
+			else
+				return mt_iter->second;
+		}
+
+		void add_mime_type(mime_type mt, confidence c)
+		{
+			auto [existing_it, inserted] = mime_types.try_emplace(mt, c);
+			if (!inserted && existing_it->second < c)
+				existing_it->second = c;
+		}
+
+		std::unordered_map<mime_type, confidence> mime_types;
 
 	private:
 		std::variant<std::filesystem::path, std::vector<std::byte>, std::span<const std::byte>, std::string, std::string_view, seekable_stream_ptr, unseekable_stream_ptr> m_source;

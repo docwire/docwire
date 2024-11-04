@@ -35,8 +35,6 @@ class DllExport EMLParser : public Parser
 		~EMLParser();
 		void parse(const data_source& data) const override;
 		inline static const std::vector<mime_type> supported_mime_types = { mime_type{"message/rfc822"} };
-
-		bool understands(const data_source& data) const override;
 };
 
 } // namespace docwire
