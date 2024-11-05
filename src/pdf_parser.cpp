@@ -3215,7 +3215,7 @@ struct PDFParser::Implementation
 									}
 									case crypt:
 									{
-										throw make_error(errors::file_is_encrypted{});
+										throw make_error(errors::file_encrypted{});
 										break;
 									}
 									default:
@@ -4939,7 +4939,7 @@ struct PDFParser::Implementation
 							readXrefTable();
 							m_trailer_dict.clearDictionary();
 							readDictionary(m_trailer_dict);
-							throw_if (m_trailer_dict.getObjAsReferenceCall("Encrypt"), errors::file_is_encrypted{});
+							throw_if (m_trailer_dict.getObjAsReferenceCall("Encrypt"), errors::file_encrypted{});
 							if (!m_got_root && m_trailer_dict.getObjAsReferenceCall("Root"))
 							{
 								m_got_root = true;
@@ -4985,7 +4985,7 @@ struct PDFParser::Implementation
 							PDFStream* xref_stream = readIndirectObject(index)->getStream();
 							throw_if (!xref_stream, "Error getting XRef stream");
 							readXRefStream(*xref_stream);
-							throw_if (xref_stream->m_dictionary->getObjAsReferenceCall("Encrypt"), errors::file_is_encrypted{});
+							throw_if (xref_stream->m_dictionary->getObjAsReferenceCall("Encrypt"), errors::file_encrypted{});
 							if (!m_got_root && xref_stream->m_dictionary->getObjAsReferenceCall("Root"))
 							{
 								m_got_root = true;
@@ -8118,7 +8118,7 @@ struct PDFParser::Implementation
 		{
 			if (e.GetCode() == PoDoFo::PdfErrorCode::InvalidPassword)
 			{
-				std::throw_with_nested(make_error(errors::file_is_encrypted{}));
+				std::throw_with_nested(make_error(errors::file_encrypted{}));
 			}
 			else
 			{

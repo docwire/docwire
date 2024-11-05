@@ -674,7 +674,7 @@ void DOCParser::parse(const data_source& data) const
 	}
 	cerr_redirection.restore();
 	throw_if (!parser, "Error while creating parser");
-	throw_if (!parser->isOk() && parser->fib().fEncrypted, errors::file_is_encrypted{});
+	throw_if (!parser->isOk() && parser->fib().fEncrypted, errors::file_encrypted{});
 	throw_if (!parser->isOk(), "Error while creating parser");
 	TextHandler text_handler(this, parser, &curr_state);
 	parser->setTextHandler(&text_handler);

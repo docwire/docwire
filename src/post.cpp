@@ -149,7 +149,7 @@ try
     }
 	catch (curlpp::RuntimeError &e)
 	{
-		std::throw_with_nested(make_error(errors::network_error{}));
+		std::throw_with_nested(make_error(errors::network_failure{}));
 	}
 	Info new_info(data_source{seekable_stream_ptr{response_stream}});
 	emit(new_info);

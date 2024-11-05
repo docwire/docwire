@@ -475,18 +475,18 @@ struct XLSParser::Implementation
 				{
 					U16 encryption_type = getU16LittleEndian(rec.begin());
 					if (encryption_type == 0x0000)
-						throw make_error(errors::file_is_encrypted{}, "XOR obfuscation encryption");
+						throw make_error(errors::file_encrypted{}, "XOR obfuscation encryption");
 					else if (encryption_type == 0x0001 && rec.size() >= 4)
 					{
 						U16 header_type = getU16LittleEndian(rec.begin() + 2);
 						if (header_type == 0x0001)
-							throw make_error(errors::file_is_encrypted{}, "RC4 encryption");
+							throw make_error(errors::file_encrypted{}, "RC4 encryption");
 						else if (header_type == 0x0002 || header_type == 0x0003)
-							throw make_error(errors::file_is_encrypted{}, "RC4 CryptoAPI encryption");
-						throw make_error(errors::file_is_encrypted{}, "unknown RC4 encryption");
+							throw make_error(errors::file_encrypted{}, "RC4 CryptoAPI encryption");
+						throw make_error(errors::file_encrypted{}, "unknown RC4 encryption");
 					}
 				}
-				throw make_error(errors::file_is_encrypted{});
+				throw make_error(errors::file_encrypted{});
 			}
 			case XLS_FORMAT:
 			{

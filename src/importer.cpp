@@ -107,7 +107,7 @@ public:
     }
     catch (const std::exception& ex)
     {
-      if (errors::contains_type<errors::file_is_encrypted>(ex))
+      if (errors::contains_type<errors::file_encrypted>(ex))
         std::throw_with_nested(make_error(errors::backtrace_entry{}));
       if (!data.file_extension()) // parser was detected by data
         throw;

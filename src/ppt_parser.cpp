@@ -268,7 +268,7 @@ namespace
 				{
 					//this is very easy way to detect if file is encrypted: just to check if EncryptedSummary stream exist.
 					//This stream is obligatory in encrypted files and prohibited in non-encrypted files.
-					throw make_error(errors::file_is_encrypted{});
+					throw make_error(errors::file_encrypted{});
 				}
 			}
 		}

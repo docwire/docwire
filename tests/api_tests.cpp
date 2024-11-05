@@ -455,7 +455,7 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     catch (const std::exception& ex)
     {
         std::cerr << errors::diagnostic_message(ex);
-        ASSERT_TRUE(errors::contains_type<errors::file_is_encrypted>(ex));
+        ASSERT_TRUE(errors::contains_type<errors::file_encrypted>(ex));
     }   
 }
 
@@ -705,16 +705,16 @@ TEST (errors, throwing)
     }
     try
     {
-        throw make_error(errors::network_error{});
+        throw make_error(errors::network_failure{});
     }
     catch (const errors::base& e)
     {
-        ASSERT_EQ(e.context_type(), typeid(errors::network_error));
+        ASSERT_EQ(e.context_type(), typeid(errors::network_failure));
         ASSERT_EQ(e.context_string(), "network error");
     }
     try
     {
-        throw_if("2 < 3", errors::file_is_encrypted{}, errors::backtrace_entry{});
+        throw_if("2 < 3", errors::file_encrypted{}, errors::backtrace_entry{});
     }
     catch (const errors::base& e)
     {
@@ -727,7 +727,7 @@ TEST (errors, throwing)
         }
         catch (const errors::base& e)
         {
-            ASSERT_EQ(e.context_type(), typeid(errors::file_is_encrypted));
+            ASSERT_EQ(e.context_type(), typeid(errors::file_encrypted));
             ASSERT_EQ(e.context_string(), "file is encrypted");
             try
             {

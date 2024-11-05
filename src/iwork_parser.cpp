@@ -1996,7 +1996,7 @@ struct IWorkParser::Implementation
 		IWorkMetadataContent metadata_content(xml_reader, metadata);
 
 		throw_if (!zipfile.loadDirectory());
-		throw_if (getIWorkType(xml_reader) == IWorkContent::encrypted, errors::file_is_encrypted{});
+		throw_if (getIWorkType(xml_reader) == IWorkContent::encrypted, errors::file_encrypted{});
 		try
 		{
 			metadata_content.ParseMetaData(non_fatal_error_handler);
@@ -2043,7 +2043,7 @@ struct IWorkParser::Implementation
 
 		throw_if (!zipfile.loadDirectory());
 		IWorkContent::IWorkType iwork_type = getIWorkType(xml_reader);
-		throw_if (iwork_type == IWorkContent::encrypted, errors::file_is_encrypted{});
+		throw_if (iwork_type == IWorkContent::encrypted, errors::file_encrypted{});
 		iwork_content.setType(iwork_type);
 		text.clear();
 		try

@@ -654,7 +654,7 @@ bool XLSBParser::understands(const data_source& data) const
 	}
 	catch (const std::exception&)
 	{
-		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_is_encrypted{}, "Microsoft Office Document Cryptography");
+		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_encrypted{}, "Microsoft Office Document Cryptography");
 		return false;
 	}
 	return true;
@@ -691,7 +691,7 @@ void XLSBParser::parse(const data_source& data) const
 	catch (const std::exception&)
 	{
 		if (is_encrypted_with_ms_offcrypto(data))
-			std::throw_with_nested(make_error(errors::file_is_encrypted{}, "Microsoft Office Document Cryptography"));
+			std::throw_with_nested(make_error(errors::file_encrypted{}, "Microsoft Office Document Cryptography"));
 		std::throw_with_nested(make_error(errors::backtrace_entry{}));
 	}
 	try
