@@ -333,7 +333,7 @@ void PPTParser::parse(const data_source& data) const
 	}
 	catch (const std::exception& e)
 	{
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Error parsing PPT document"));
 	}
 }
 

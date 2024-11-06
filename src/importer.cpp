@@ -108,7 +108,7 @@ public:
     catch (const std::exception& ex)
     {
       if (errors::contains_type<errors::file_encrypted>(ex))
-        std::throw_with_nested(make_error(errors::backtrace_entry{}));
+        throw;
       if (!data.file_extension()) // parser was detected by data
         throw;
       docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";

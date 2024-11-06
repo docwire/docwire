@@ -279,7 +279,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
+					std::throw_with_nested(make_error(record.m_type));
 				}
 				break;
 			}
@@ -293,7 +293,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
+					std::throw_with_nested(make_error(record.m_type));
 				}
 				break;
 			}
@@ -327,7 +327,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
+					std::throw_with_nested(make_error(record.m_type));
 				}
 				break;
 			}
@@ -343,7 +343,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
+					std::throw_with_nested(make_error(record.m_type));
 				}
 				break;
 			}
@@ -362,7 +362,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
+					std::throw_with_nested(make_error(record.m_type));
 				}
 				break;
 			}
@@ -380,7 +380,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
+					std::throw_with_nested(make_error(record.m_type));
 				}
 				break;
 			}
@@ -394,7 +394,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
+					std::throw_with_nested(make_error(record.m_type));
 				}
 				break;
 			}
@@ -409,7 +409,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
+					std::throw_with_nested(make_error(record.m_type));
 				}
 				break;
 			}
@@ -426,7 +426,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
+					std::throw_with_nested(make_error(record.m_type));
 				}
 				break;
 			}
@@ -447,7 +447,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
+					std::throw_with_nested(make_error(record.m_type));
 				}
 				break;
 			}
@@ -465,7 +465,7 @@ struct XLSBParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}, record.m_type));
+					std::throw_with_nested(make_error(record.m_type));
 				}
 				break;
 			}
@@ -669,7 +669,7 @@ attributes::Metadata XLSBParser::metaData(const ZipReader& unzip) const
 	}
 	catch (const std::exception& e)
 	{
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Error reading metadata"));
 	}
 	return metadata;
 }
@@ -692,7 +692,7 @@ void XLSBParser::parse(const data_source& data) const
 	{
 		if (is_encrypted_with_ms_offcrypto(data))
 			std::throw_with_nested(make_error(errors::file_encrypted{}, "Microsoft Office Document Cryptography"));
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Failed to open zip archive"));
 	}
 	try
 	{
@@ -700,7 +700,7 @@ void XLSBParser::parse(const data_source& data) const
 	}
 	catch (const std::exception& e)
 	{
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Error parsing XLSB"));
 	}
 	sendTag(tag::Text{.text = text});
 	sendTag(tag::CloseDocument{});

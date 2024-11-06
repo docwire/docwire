@@ -714,12 +714,13 @@ TEST (errors, throwing)
     }
     try
     {
-        throw_if("2 < 3", errors::file_encrypted{}, errors::backtrace_entry{});
+        std::string s { "test" };
+        throw_if("2 < 3", errors::file_encrypted{}, s);
     }
     catch (const errors::base& e)
     {
-        ASSERT_EQ(e.context_type(), typeid(errors::backtrace_entry));
-        ASSERT_EQ(e.context_string(), "backtrace entry");
+        ASSERT_EQ(e.context_type(), typeid(std::pair<std::string, std::string>));
+        ASSERT_EQ(e.context_string(), "s: test");
         try
         {
             std::rethrow_if_nested(e);

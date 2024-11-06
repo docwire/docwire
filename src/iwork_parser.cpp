@@ -267,7 +267,7 @@ struct IWorkParser::Implementation
 			}
 			catch (const std::exception&)
 			{
-				std::throw_with_nested(make_error(errors::backtrace_entry{}, m_xml_file));
+				std::throw_with_nested(make_error(m_xml_file));
 			}
 	};
 
@@ -2139,7 +2139,7 @@ void IWorkParser::parse(const data_source& data) const
 	}
 	catch (const std::exception& ex)
 	{
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Error parsing iWork main xml file"));
 	}
 }
 

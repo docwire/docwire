@@ -1839,7 +1839,7 @@ struct PDFParser::Implementation
 								}
 								catch (const std::exception& e)
 								{
-									std::throw_with_nested(make_error(errors::backtrace_entry{}));
+									std::throw_with_nested(make_error("Error parsing predictor parameters"));
 								}
 
 								if (m_predictor >= 10)
@@ -1979,7 +1979,7 @@ struct PDFParser::Implementation
 							}
 							catch (const std::exception&)
 							{
-								std::throw_with_nested(make_error(errors::backtrace_entry{}, offset));
+								std::throw_with_nested(make_error(offset));
 							}
 
 							void backToRoot()
@@ -2515,7 +2515,7 @@ struct PDFParser::Implementation
 										}
 									}
 								}
-								throw make_error(errors::backtrace_entry{});
+								throw make_error("Error parsing dictionary");
 							}
 
 							void readHexString(Pointer& ptr)
@@ -2532,7 +2532,7 @@ struct PDFParser::Implementation
 										ch -= ('a' - 'A');
 									}
 								}
-								throw make_error(errors::backtrace_entry{});
+								throw make_error("Error parsing hex string");
 							}
 
 							void readLiteralString(Pointer& ptr)
@@ -2570,7 +2570,7 @@ struct PDFParser::Implementation
 										}
 									}
 								}
-								throw make_error(errors::backtrace_entry{});
+								throw make_error("Error parsing literal string");
 							}
 
 							void readNumeric(Pointer& ptr)
@@ -2613,7 +2613,7 @@ struct PDFParser::Implementation
 									if (ptr.m_buffer[ptr.m_element_size++] == 'R')
 										return;
 								}
-								throw make_error(errors::backtrace_entry{});
+								throw make_error("Error parsing reference call");
 							}
 
 							void readArray(Pointer& ptr)
@@ -2679,7 +2679,7 @@ struct PDFParser::Implementation
 										}
 									}
 								}
-								throw make_error(errors::backtrace_entry{});
+								throw make_error("Error parsing array");
 							}
 					};
 
@@ -2766,7 +2766,7 @@ struct PDFParser::Implementation
 						}
 						catch (const std::exception& e)
 						{
-							std::throw_with_nested(make_error(errors::backtrace_entry{}, index));
+							std::throw_with_nested(make_error(index));
 						}
 					}
 
@@ -2843,7 +2843,7 @@ struct PDFParser::Implementation
 						}
 						catch (const std::exception& e)
 						{
-							std::throw_with_nested(make_error(errors::backtrace_entry{}));
+							std::throw_with_nested(make_error("Error in ascii-85 decoding"));
 						}
 					}
 
@@ -2958,7 +2958,7 @@ struct PDFParser::Implementation
 						}
 						catch (const std::exception& e)
 						{
-							std::throw_with_nested(make_error(errors::backtrace_entry{}));
+							std::throw_with_nested(make_error("Error in lzw decoding"));
 						}
 					}
 
@@ -2993,7 +2993,7 @@ struct PDFParser::Implementation
 						}
 						catch (const std::exception& e)
 						{
-							std::throw_with_nested(make_error(errors::backtrace_entry{}));
+							std::throw_with_nested(make_error("Error in ascii hex decoding"));
 						}
 					}
 
@@ -3076,7 +3076,7 @@ struct PDFParser::Implementation
 							if (predictor)
 								delete predictor;
 							predictor = NULL;
-							std::throw_with_nested(make_error(errors::backtrace_entry{}));
+							std::throw_with_nested(make_error("Error in flat decoding"));
 						}
 					}
 
@@ -3110,7 +3110,7 @@ struct PDFParser::Implementation
 						}
 						catch (const std::exception& e)
 						{
-							std::throw_with_nested(make_error(errors::backtrace_entry{}));
+							std::throw_with_nested(make_error("Error in run length decoding"));
 						}
 					}
 
@@ -3247,7 +3247,7 @@ struct PDFParser::Implementation
 						}
 						catch (const std::exception& e)
 						{
-							std::throw_with_nested(make_error(errors::backtrace_entry{}));
+							std::throw_with_nested(make_error("Decoding failed"));
 						}
 					}
 
@@ -3275,7 +3275,7 @@ struct PDFParser::Implementation
 						}
 						catch (const std::exception& e)
 						{
-							std::throw_with_nested(make_error(errors::backtrace_entry{}, m_position, m_size));
+							std::throw_with_nested(make_error(m_position, m_size));
 						}
 					}
 
@@ -3376,7 +3376,7 @@ struct PDFParser::Implementation
 							if (obj)
 								delete obj;
 							obj = NULL;
-							std::throw_with_nested(make_error(errors::backtrace_entry{}));
+							std::throw_with_nested(make_error("Error creating new object from stream"));
 						}
 					}
 			};
@@ -3415,7 +3415,7 @@ struct PDFParser::Implementation
 							}
 							catch (const std::exception& e)
 							{
-								std::throw_with_nested(make_error(errors::backtrace_entry{}, m_index, m_generation));
+								std::throw_with_nested(make_error(m_index, m_generation));
 							}
 						}
 					}
@@ -3556,7 +3556,7 @@ struct PDFParser::Implementation
 							}
 							catch (const std::exception& e)
 							{
-								std::throw_with_nested(make_error(errors::backtrace_entry{}, m_index, m_generation));
+								std::throw_with_nested(make_error(m_index, m_generation));
 							}
 						}
 					}
@@ -4259,7 +4259,7 @@ struct PDFParser::Implementation
 						if (value_object)
 							delete value_object;
 						value_object = NULL;
-						std::throw_with_nested(make_error(errors::backtrace_entry{}));
+						std::throw_with_nested(make_error("Error reading array"));
 					}
 				}
 			}
@@ -4350,7 +4350,7 @@ struct PDFParser::Implementation
 				}
 				catch (std::exception&)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}));
+					std::throw_with_nested(make_error("Error reading null"));
 				}
 			}
 
@@ -4390,7 +4390,7 @@ struct PDFParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}));
+					std::throw_with_nested(make_error("Error reading stream"));
 				}
 			}
 
@@ -4887,7 +4887,7 @@ struct PDFParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}, index));
+					std::throw_with_nested(make_error(index));
 				}
 			}
 
@@ -5013,7 +5013,7 @@ struct PDFParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}));
+					std::throw_with_nested(make_error("Error reading xref data"));
 				}
 			}
 
@@ -5068,7 +5068,7 @@ struct PDFParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}));
+					std::throw_with_nested(make_error("Error reading xref table"));
 				}
 			}
 
@@ -5168,7 +5168,7 @@ struct PDFParser::Implementation
 				}
 				catch (const std::exception& e)
 				{
-					std::throw_with_nested(make_error(errors::backtrace_entry{}));
+					std::throw_with_nested(make_error("Error reading xref stream"));
 				}
 			}
 	};
@@ -7427,7 +7427,7 @@ struct PDFParser::Implementation
 		}
 		catch (const std::exception& e)
 		{
-			std::throw_with_nested(make_error(errors::backtrace_entry{}, font.m_font_encoding));
+			std::throw_with_nested(make_error(font.m_font_encoding));
 		}
 	}
 

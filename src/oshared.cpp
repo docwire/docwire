@@ -220,7 +220,7 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metad
 		if (reader)
 			delete reader;
 		reader = NULL;
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Error parsing summary information"));
 	}
 }
 
@@ -353,7 +353,7 @@ void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& sli
 		if (reader)
 			delete reader;
 		reader = NULL;
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Error while parsing document summary info"));
 	}
 }
 

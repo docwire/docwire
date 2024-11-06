@@ -58,19 +58,6 @@ struct network_failure {};
  */
 struct file_encrypted {};
 
-/**
- * @brief Backtrace entry tag.
- *
- * This tag is used to add additional layer of nesting just to add information about the next part of the backtrace
- * without any additional context information
- * @code
- * catch (const errors::base& e) {
- * 	std::throw_with_nested(errors::backtrace_entry{});
- * }
- * @endcode
- */
-struct backtrace_entry {};
-
 inline network_failure convert_to_context(const std::string& name, const network_failure& v)
 {
 	return v;
@@ -90,17 +77,6 @@ inline file_encrypted convert_to_context(const std::string& name, const file_enc
 inline std::ostream& operator<<(std::ostream& s, const file_encrypted& e)
 {
 	s << "file is encrypted";
-	return s;
-}
-
-inline backtrace_entry convert_to_context(const std::string& name, const backtrace_entry& v)
-{
-	return v;
-}
-
-inline std::ostream& operator<<(std::ostream& s, const backtrace_entry& e)
-{
-	s << "backtrace entry";
 	return s;
 }
 

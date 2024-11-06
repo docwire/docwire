@@ -156,7 +156,7 @@ try
 }
 catch (const std::exception&)
 {
-	std::throw_with_nested(make_error(errors::backtrace_entry{}, impl->m_url));
+	std::throw_with_nested(make_error(impl->m_url));
 }
 
 } // namespace http
