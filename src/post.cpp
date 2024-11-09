@@ -145,11 +145,11 @@ try
 	}
 	catch (curlpp::LogicError &e)
 	{
-		std::throw_with_nested(make_error("HTTP request is invalid"));
+		std::throw_with_nested(make_error("HTTP request is invalid", errors::program_logic{}));
     }
 	catch (curlpp::RuntimeError &e)
 	{
-		std::throw_with_nested(make_error(errors::network_failure{}));
+		std::throw_with_nested(make_error("HTTP request failed", errors::network_failure{}));
 	}
 	Info new_info(data_source{seekable_stream_ptr{response_stream}});
 	emit(new_info);

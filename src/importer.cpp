@@ -61,13 +61,13 @@ public:
     if (!extension)
     {
       std::unique_ptr<ParserBuilder> builder = m_owner.findParserByData(data);
-      throw_if (!builder, "findParserByData() failed");
+      throw_if (!builder, "findParserByData() failed", errors::uninterpretable_data{});
       return builder;
     }
     else
     {
       std::unique_ptr<ParserBuilder> builder = m_owner.findParserByExtension(*extension);
-      throw_if (!builder, "findParserByExtension() failed", extension->string());
+      throw_if (!builder, "findParserByExtension() failed", extension->string(), errors::uninterpretable_data{});
       return builder;
     }
   }

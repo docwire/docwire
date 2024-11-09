@@ -229,7 +229,7 @@ static std::string find_main_xml_file(const ZipReader& unzip)
 		return "index.apxl";
 	if (unzip.exists("presentation.apxl"))
 		return "presentation.apxl";
-	throw make_error("None of the following files (index.xml, index.apxl, presentation.apxl) could be found.");
+	throw make_error("None of the following files (index.xml, index.apxl, presentation.apxl) could be found.", errors::uninterpretable_data{});
 }
 
 struct IWorkParser::Implementation
@@ -263,7 +263,7 @@ struct IWorkParser::Implementation
 				throw_if (!m_zipfile->readChunk(m_xml_file, chunk, len, readed), m_xml_file, len);
 				if (readed != len)	//we have reached the end
 					m_done = true;
-				throw_if (error_if_no_data && readed == 0, "Unexpected end of file");
+				throw_if (error_if_no_data && readed == 0, "Unexpected end of file", errors::uninterpretable_data{});
 			}
 			catch (const std::exception&)
 			{

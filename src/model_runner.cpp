@@ -13,6 +13,7 @@
 
 #include <boost/json.hpp>
 #include <ctranslate2/translator.h>
+#include "error_tags.h"
 #include "log.h"
 #include "misc.h"
 #include <onmt/Tokenizer.h>
@@ -79,13 +80,21 @@ namespace
         {
             throw_if(tokenizer_config.tokenizer_class != "T5Tokenizer",
                 "Unsupported tokenizer class",
-                tokenizer_config.tokenizer_class);
+                tokenizer_config.tokenizer_class, errors::uninterpretable_data{});
             return onmt::Tokenizer(onmt::Tokenizer::Mode::None, onmt::Tokenizer::Flags::SentencePieceModel, tokenizer_config.tokenizer_model_path.string());
         }
 
         onmt::Tokenizer m_tokenizer;
 	    tokenizer_config m_tokenizer_config;
     };
+
+std::filesystem::path default_model_path()
+{
+    std::filesystem::path def_model_path = resource_path("flan-t5-large-ct2-int8");
+    throw_if (!std::filesystem::exists(def_model_path),
+        "Default model path does not exist", def_model_path, errors::program_corrupted{});
+    return def_model_path;
+}
 
 } // anonymous namespace
 
@@ -113,16 +122,16 @@ struct model_runner::implementation
 			return false;
 		};
 		auto results = m_translator.translate_batch_async({ input_tokens }, options);
-        throw_if (results.size() != 1, "Unexpected number of results", results.size());
+        throw_if (results.size() != 1, "Unexpected number of results", results.size(), errors::program_logic{});
         auto result = results[0].get();
-        throw_if (result.hypotheses.size() != 1, "Unexpected number of hypotheses", result.hypotheses.size());
+        throw_if (result.hypotheses.size() != 1, "Unexpected number of hypotheses", result.hypotheses.size(), errors::program_logic{});
         auto hypothesis = result.hypotheses[0];
         return hypothesis;
     }
 };
 
 model_runner::model_runner()
-    : model_runner(resource_path("flan-t5-large-ct2-int8"))
+    : model_runner(default_model_path())
 {}
 
 model_runner::model_runner(const std::filesystem::path& model_data_path)

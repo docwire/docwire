@@ -13,6 +13,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <iostream>
+#include "error_tags.h"
 #include "log.h"
 #include <stdio.h>
 #include <string.h>
@@ -222,7 +223,7 @@ bool string_to_date(const std::string& s, tm& date)
 
 std::string date_to_string(const tm& date)
 {
-	throw_if (date.tm_year == 0);
+	throw_if (date.tm_year == 0, errors::uninterpretable_data{});
 	char buf[64];
 	strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &date);
 	return buf;

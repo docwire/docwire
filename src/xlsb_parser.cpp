@@ -135,7 +135,7 @@ struct XLSBParser::Implementation
 			void readNum(uint32_t& value, int bytes)
 			{
 				value = 0;
-				throw_if (m_chunk_len - m_pointer < bytes, "Unexpected EOF");
+				throw_if (m_chunk_len - m_pointer < bytes, "Unexpected EOF", errors::uninterpretable_data{});
 				for (int i = 0; i < bytes; ++i)
 					value += (m_chunk[m_pointer++] << (i * 8));
 			}
@@ -158,7 +158,7 @@ struct XLSBParser::Implementation
 			void readXnum(double& value)
 			{
 				uint8_t* val_ptr = (uint8_t*)&value;
-				throw_if (m_chunk_len - m_pointer < 8, "Unexpected EOF");
+				throw_if (m_chunk_len - m_pointer < 8, "Unexpected EOF", errors::uninterpretable_data{});
 				for (int i = 0; i < 8; ++i)
 					val_ptr[8 - i] = m_chunk[m_pointer++];
 			}
@@ -195,7 +195,8 @@ struct XLSBParser::Implementation
 			{
 				uint32_t str_size;
 					readNum(str_size, 4);
-					throw_if (str_size * 2 > m_chunk_len - m_pointer, "XLSB: xlWideString size is larger than chunk size");
+					throw_if (str_size * 2 > m_chunk_len - m_pointer,
+						"XLSB: xlWideString size is larger than chunk size", errors::uninterpretable_data{});
 					str.reserve(2 * str_size);
 					for (int i = 0; i < str_size; ++i)
 					{
@@ -205,7 +206,7 @@ struct XLSBParser::Implementation
 						{
 							if (utf16_unichar_has_4_bytes(uc))
 							{
-								throw_if (++i >= str_size, "Unexpected EOF");
+								throw_if (++i >= str_size, "Unexpected EOF", errors::uninterpretable_data{});
 								uc = (uc << 16) | *((unsigned short*)&m_chunk[m_pointer]);
 								m_pointer += 2;
 							}
@@ -217,7 +218,7 @@ struct XLSBParser::Implementation
 			void readRichStr(std::string& str)
 			{
 					//skip first byte
-					throw_if (m_chunk_len == m_pointer, "Unexpected EOF");
+					throw_if (m_chunk_len == m_pointer, "Unexpected EOF", errors::uninterpretable_data{});
 					++m_pointer;
 					readXlWideString(str);
 			}

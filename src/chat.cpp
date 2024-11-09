@@ -13,6 +13,7 @@
 
 #include "base64.h"
 #include <boost/json.hpp>
+#include "error_tags.h"
 #include <fstream>
 #include "input.h"
 #include "log.h"
@@ -84,7 +85,7 @@ std::string image_detail_to_string(ImageDetail image_detail)
 		case ImageDetail::low: return "low";
 		case ImageDetail::high: return "high";
 		case ImageDetail::automatic: return "auto";
-		default: throw make_error("Unexpected image detail value", image_detail);
+		default: throw make_error("Unexpected image detail value", image_detail, errors::program_logic{});
 	}
 }
 

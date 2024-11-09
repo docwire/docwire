@@ -15,6 +15,7 @@
 #include "misc.h"
 #include <iostream>
 #include "log.h"
+#include "throw_if.h"
 #include "wv2/utilities.h"
 #include <time.h>
 #include "thread_safe_ole_stream_reader.h"
@@ -28,7 +29,8 @@ using namespace wvWare;
 static std::string read_vt_string(ThreadSafeOLEStreamReader* reader)
 {
 	U16 string_type;
-	throw_if (!reader->readU16(string_type) || string_type != 0x1E, "Incorrect string type.");
+	throw_if (!reader->readU16(string_type), reader->getLastError());
+	throw_if (string_type != 0x1E, "Incorrect string type.", errors::uninterpretable_data{});
 	reader->seek(2, SEEK_CUR); //padding
 	U32 len;
 	reader->readU32(len);
@@ -48,7 +50,8 @@ static std::string read_vt_string(ThreadSafeOLEStreamReader* reader)
 static S32 read_vt_i4(ThreadSafeOLEStreamReader* reader)
 {
 	U16 string_type;
-	throw_if (!reader->readU16(string_type) || string_type != 0x0003, "Incorrect value type.");
+	throw_if (!reader->readU16(string_type), reader->getLastError());
+	throw_if (string_type != 0x0003, "Incorrect value type.", errors::uninterpretable_data{});
 	reader->seek(2, SEEK_CUR); //padding
 	S32 i;
 	reader->readS32(i);
@@ -59,7 +62,8 @@ static S32 read_vt_i4(ThreadSafeOLEStreamReader* reader)
 static S16 read_vt_i2(ThreadSafeOLEStreamReader* reader)
 {
 	U16 string_type;
-	throw_if (!reader->readU16(string_type) || string_type != 0x0002, "Incorrect value type.");
+	throw_if (!reader->readU16(string_type));
+	throw_if (string_type != 0x0002, "Incorrect value type.", errors::uninterpretable_data{});
 	reader->seek(2, SEEK_CUR); //padding
 	S16 i;
 	reader->readS16(i);
@@ -70,7 +74,8 @@ static S16 read_vt_i2(ThreadSafeOLEStreamReader* reader)
 static tm read_vt_filetime(ThreadSafeOLEStreamReader* reader)
 {
 	U16 type;
-	throw_if (!reader->readU16(type) || type != 0x0040, "Incorrect variable type.");
+	throw_if (!reader->readU16(type), reader->getLastError());
+	throw_if (type != 0x0040, "Incorrect variable type.", errors::uninterpretable_data{});
 	reader->seek(2, SEEK_CUR); //padding
 	U32 file_time_low, file_time_high;
 	reader->readU32(file_time_low);
@@ -78,16 +83,17 @@ static tm read_vt_filetime(ThreadSafeOLEStreamReader* reader)
 	throw_if (!reader->isValid(), "OLE Reader error", reader->getLastError());
 	// Sometimes field exists but date is zero.
 	// Last modification time saved by LibreOffice 3.5 when document is created is an example.
-	throw_if (file_time_low == 0 && file_time_high == 0, "Filetime field value is zero.");
+	throw_if (file_time_low == 0 && file_time_high == 0,
+		"Filetime field value is zero.", errors::uninterpretable_data{});
 	unsigned long long int file_time = ((unsigned long long int)file_time_high << 32) | (unsigned long long int)file_time_low;
 	// Sometimes field exists, date is zero (1601-01-01) but time is not.
 	// Last modification time saved by LibreOffice 3.5 when document is created is an example.
-	throw_if (file_time < 864000000000LL, "Incorrect filetime value (1601-01-01).");
+	throw_if (file_time < 864000000000LL, "Incorrect filetime value (1601-01-01).", errors::uninterpretable_data{});
 	docwire_log_vars(file_time, file_time_low, file_time_high);
 	time_t t = (time_t)(file_time / 10000000 - 11644473600LL);
   struct tm time_buffer;
   tm* res = thread_safe_gmtime(&t, time_buffer);
-	throw_if (res == NULL, "Incorrect time value.");
+	throw_if (res == NULL, "Incorrect time value.", errors::uninterpretable_data{});
 	return *res;
 }
 
@@ -102,18 +108,22 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metad
 	{
 		size_t field_set_stream_start = reader->tell();
 		U16 byte_order;
-		throw_if (!reader->readU16(byte_order) || byte_order != 0xFFFE);
+		throw_if (!reader->readU16(byte_order), reader->getLastError());
+		throw_if (byte_order != 0xFFFE, "Unexpected byte order.", errors::uninterpretable_data{});
 		U16 version;
-		throw_if (!reader->readU16(version) || version != 0x0000);
+		throw_if (!reader->readU16(version), reader->getLastError());
+		throw_if (version != 0x0000, "Unexpected version.", errors::uninterpretable_data{});
 		reader->seek(4, SEEK_CUR); //system indentifier
 		for (int i = 0; i < 4; i++)
 		{
 			U32 clsid_part;
-			throw_if (!reader->readU32(clsid_part) || clsid_part != 0x00);
+			throw_if (!reader->readU32(clsid_part), reader->getLastError());
+			throw_if (clsid_part != 0x00, "Unexpected clsid part.", errors::uninterpretable_data{});
 		}
 		U32 num_property_sets;
 		throw_if (!reader->readU32(num_property_sets), "Error reading number of property sets");
-		throw_if (num_property_sets != 0x01 && num_property_sets != 0x02, "Unexpected number of property sets", num_property_sets);
+		throw_if (num_property_sets != 0x01 && num_property_sets != 0x02,
+			"Unexpected number of property sets", num_property_sets, errors::uninterpretable_data{});
 		reader->seek(16, SEEK_CUR);	// fmtid0_part
 		U32 offset;
 		reader->readU32(offset);
@@ -233,17 +243,21 @@ static ThreadSafeOLEStreamReader* open_oshared_document_summary_info(ThreadSafeO
 		throw_if (reader == NULL, storage.getLastError(), std::make_pair("stream_path", "\005DocumentSummaryInformation"));
 		field_set_stream_start = reader->tell();
 		U16 byte_order;
-		throw_if (!reader->readU16(byte_order) || byte_order != 0xFFFE);
+		throw_if (!reader->readU16(byte_order), reader->getLastError());
+		throw_if (byte_order != 0xFFFE, "Incorrect byte order.", errors::uninterpretable_data{});
 		U16 version;
-		throw_if (!reader->readU16(version) || version != 0x0000);
+		throw_if (!reader->readU16(version), reader->getLastError());
+		throw_if (version != 0x0000, "Unsupported version.", errors::uninterpretable_data{});
 		reader->seek(4, SEEK_CUR);	// system indentifier
 		for (int i = 0; i < 4; i++)
 		{
 			U32 clsid_part;;
-			throw_if (!reader->readU32(clsid_part) || clsid_part != 0x00);
+			throw_if (!reader->readU32(clsid_part), reader->getLastError());
+			throw_if (clsid_part != 0x00, "Unsupported clsid.", errors::uninterpretable_data{});
 		}
 		U32 num_property_sets;
-		throw_if (!reader->readU32(num_property_sets) || (num_property_sets != 0x01 && num_property_sets != 0x02));
+		throw_if (!reader->readU32(num_property_sets), reader->getLastError());
+		throw_if (num_property_sets != 0x01 && num_property_sets != 0x02, "Unsupported number of property sets.", errors::uninterpretable_data{});
 		reader->seek(16, SEEK_CUR);	//fmtid0_part
 		throw_if (!reader->isValid(), "Error skipping fmtid0", reader->getLastError());
 		return reader;

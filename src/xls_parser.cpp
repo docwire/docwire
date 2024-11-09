@@ -709,7 +709,7 @@ struct XLSParser::Implementation
 		bool read_status = true;
 		while (read_status)
 		{
-			throw_if (oleEof(reader), "BOF record not found");
+			throw_if (oleEof(reader), "BOF record not found", errors::uninterpretable_data{});
 			U16 rec_type, rec_len;
 			throw_if (!reader.readU16(rec_type) || !reader.readU16(rec_len), reader.getLastError());
 			enum BofRecordTypes
@@ -796,7 +796,7 @@ struct XLSParser::Implementation
 					break;
 				}
 				else
-					throw_if (rec_len != 8 && rec_len != 16, "Invalid BOF record size", rec_len);
+					throw_if (rec_len != 8 && rec_len != 16, "Invalid BOF record size", rec_len, errors::uninterpretable_data{});
 			}
 			else
 			{
@@ -804,7 +804,7 @@ struct XLSParser::Implementation
 				throw_if (!reader.read(&*rec.begin(), 126), reader.getLastError());
 			}
 		}
-		throw_if (oleEof(reader), "BOF record not found");
+		throw_if (oleEof(reader), "BOF record not found", errors::uninterpretable_data{});
 		bool eof_rec_found = false;
 		while (read_status)
 		{

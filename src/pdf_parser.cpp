@@ -1888,7 +1888,7 @@ struct PDFParser::Implementation
 													m_previos[m_current_row_index++] = ch + tmp;
 													break;
 												}
-												throw_if (m_bpc != 8);
+												throw_if (m_bpc != 8, "Unsupported predictor parameters", m_bpc, errors::uninterpretable_data{});
 											}
 											case 10:
 											{
@@ -1918,7 +1918,8 @@ struct PDFParser::Implementation
 											}
 											case 14:
 											case 15:
-												throw_if (m_current_predictor == 14 || m_current_predictor == 15);
+												throw_if (m_current_predictor == 14 || m_current_predictor == 15,
+													"Unsupported predictor parameters", m_current_predictor, errors::uninterpretable_data{});
 										}
 									}
 
@@ -1998,7 +1999,8 @@ struct PDFParser::Implementation
 
 							void levelDown()
 							{
-								throw_if (!canDown(), "Can't go level down, it's not an array or dictionary", m_pointers_stack[m_depth].m_type);
+								throw_if (!canDown(), "Can't go level down, it's not an array or dictionary",
+									m_pointers_stack[m_depth].m_type, errors::program_logic{});
 								Pointer* prev_ptr = &m_pointers_stack[m_depth];
 								++m_depth;
 								Pointer ptr;
@@ -2239,7 +2241,8 @@ struct PDFParser::Implementation
 
 							void levelUp()
 							{
-								throw_if (!canUp(), "Can't go level up, the current level is 0", m_depth);
+								throw_if (!canUp(), "Can't go level up, the current level is 0",
+									m_depth, errors::program_logic{});
 								--m_depth;
 								m_pointers_stack.pop_back();
 							}
@@ -2275,7 +2278,7 @@ struct PDFParser::Implementation
 							{
 								val.clear();
 								Pointer* ptr = &m_pointers_stack[m_depth];
-								throw_if (ptr->m_type != string, "not a string");
+								throw_if (ptr->m_type != string, "not a string", ptr->m_type, errors::program_logic{});
 								if (ptr->m_element_size == 0)
 								{
 									val = "00";
@@ -2386,14 +2389,16 @@ struct PDFParser::Implementation
 							double toDouble()
 							{
 								Pointer* ptr = &m_pointers_stack[m_depth];
-								throw_if (ptr->m_type != int_numeric && ptr->m_type != float_numeric, "not a numeric or float");
+								throw_if (ptr->m_type != int_numeric && ptr->m_type != float_numeric,
+									ptr->m_type, "not a numeric or float", errors::program_logic{});
 								return strtod(ptr->m_buffer, NULL);
 							}
 
 							long toLong()
 							{
 								Pointer* ptr = &m_pointers_stack[m_depth];
-								throw_if (ptr->m_type != int_numeric, "not a long integer");
+								throw_if (ptr->m_type != int_numeric,
+									"not a long integer", errors::program_logic{});
 								return strtol(ptr->m_buffer, NULL, 10);
 							}
 
@@ -2515,7 +2520,7 @@ struct PDFParser::Implementation
 										}
 									}
 								}
-								throw make_error("Error parsing dictionary");
+								throw make_error("Error parsing dictionary", errors::uninterpretable_data{});
 							}
 
 							void readHexString(Pointer& ptr)
@@ -2532,7 +2537,7 @@ struct PDFParser::Implementation
 										ch -= ('a' - 'A');
 									}
 								}
-								throw make_error("Error parsing hex string");
+								throw make_error("Error parsing hex string", errors::uninterpretable_data{});
 							}
 
 							void readLiteralString(Pointer& ptr)
@@ -2570,7 +2575,7 @@ struct PDFParser::Implementation
 										}
 									}
 								}
-								throw make_error("Error parsing literal string");
+								throw make_error("Error parsing literal string", errors::uninterpretable_data{});
 							}
 
 							void readNumeric(Pointer& ptr)
@@ -2613,7 +2618,7 @@ struct PDFParser::Implementation
 									if (ptr.m_buffer[ptr.m_element_size++] == 'R')
 										return;
 								}
-								throw make_error("Error parsing reference call");
+								throw make_error("Error parsing reference call", errors::uninterpretable_data{});
 							}
 
 							void readArray(Pointer& ptr)
@@ -2679,7 +2684,7 @@ struct PDFParser::Implementation
 										}
 									}
 								}
-								throw make_error("Error parsing array");
+								throw make_error("Error parsing array", errors::uninterpretable_data{});
 							}
 					};
 
@@ -2736,13 +2741,13 @@ struct PDFParser::Implementation
 						try
 						{
 							load();
-							throw_if (!m_is_obj_stream);
+							throw_if (!m_is_obj_stream, "Stream is not an object stream", errors::program_logic{});
 							if (!m_loaded_compressed_objects)
 							{
 								PDFNumericInteger* num_obj_count = m_dictionary->getObjAsNumericInteger("N");
-								throw_if (!num_obj_count, "\"N\" entry not found in stream dictionary.");
+								throw_if (!num_obj_count, "\"N\" entry not found in stream dictionary.", errors::uninterpretable_data{});
 								PDFNumericInteger* offset_for_first_obj = m_dictionary->getObjAsNumericInteger("First");
-								throw_if (!offset_for_first_obj, "\"First\" entry not found in stream dictionary.");
+								throw_if (!offset_for_first_obj, "\"First\" entry not found in stream dictionary.", errors::uninterpretable_data{});
 								size_t first_offset = (*offset_for_first_obj)();
 								size_t compressed_objects_count = (*num_obj_count)();
 								m_stream_iterator.backToRoot();
@@ -2760,7 +2765,8 @@ struct PDFParser::Implementation
 							}
 							m_stream_iterator.backToRoot();
 							m_stream_iterator.levelDown();
-							throw_if (index >= m_compressed_objects.size(), "Compressed object not found", index, m_compressed_objects.size() - 1);
+							throw_if (index >= m_compressed_objects.size(),
+								"Compressed object not found", index, m_compressed_objects.size() - 1, errors::uninterpretable_data{});
 							m_stream_iterator.seek(m_compressed_objects[index].m_offset);
 							return createNewObjectFromStream();
 						}
@@ -2794,14 +2800,14 @@ struct PDFParser::Implementation
 								switch (ch)
 								{
 									case 'z':
-										throw_if (count != 0, "Unexpected count parameter", count);
+										throw_if (count != 0, "Unexpected count parameter", count, errors::uninterpretable_data{});
 										dest.push_back(0);
 										dest.push_back(0);
 										dest.push_back(0);
 										dest.push_back(0);
 										break;
 									case '~':
-										throw_if (index_read < len && src[index_read] != '>');
+										throw_if (index_read < len && src[index_read] != '>', errors::uninterpretable_data{});
 										return;
 									case '\n':
 									case '\r':
@@ -2813,7 +2819,7 @@ struct PDFParser::Implementation
 									case 0177:
 										break;
 									default:
-										throw_if (ch < '!' || ch > 'u');
+										throw_if (ch < '!' || ch > 'u', errors::uninterpretable_data{});
 										tuple += (ch - '!') * powers_85[count++];
 										if (count == 5)
 										{
@@ -2915,7 +2921,9 @@ struct PDFParser::Implementation
 									{
 										if (code >= items_table.size())
 										{
-											throw_if (old >= items_table.size(), "Index of old and current code are bigger than size of table", old, items_table.size());
+											throw_if (old >= items_table.size(),
+												"Index of old and current code are bigger than size of table",
+												old, items_table.size(), errors::uninterpretable_data{});
 											data = items_table[old];
 											data.push_back(ch);
 										}
@@ -3118,7 +3126,8 @@ struct PDFParser::Implementation
 					{
 						if (m_is_decoded)
 							return;
-						throw_if (m_is_in_external_file, "Stream data inside external file is not supported");
+						throw_if (m_is_in_external_file,
+							"Stream data inside external file is not supported", errors::uninterpretable_data{});
 
 						std::vector<PDFName*> filters;
 						std::vector<PDFDictionary*> filter_options;
@@ -3158,7 +3167,7 @@ struct PDFParser::Implementation
 							std::throw_with_nested(make_error("load_filter_and_decode_params() failed"));
 						}
 
-						throw_if (filters.size() != filter_options.size());
+						throw_if (filters.size() != filter_options.size(), errors::uninterpretable_data{});
 
 						std::vector<unsigned char> stream_first_content(m_size);
 						std::vector<unsigned char> stream_second_content;
@@ -3220,7 +3229,8 @@ struct PDFParser::Implementation
 									}
 									default:
 									{
-										throw make_error("Unsupported compression type", compression_type);
+										throw make_error("Unsupported compression type",
+											compression_type, errors::uninterpretable_data{});
 									}
 								}
 							}
@@ -3257,7 +3267,9 @@ struct PDFParser::Implementation
 						{
 							if (m_stream_data_buffer)
 								return;
-							throw_if (m_is_in_external_file, "Stream data inside external file is not supported");
+							throw_if (m_is_in_external_file,
+								"Stream data inside external file is not supported",
+								errors::uninterpretable_data{});
 							if (!m_is_decoded)
 								decode();
 							else
@@ -3312,7 +3324,7 @@ struct PDFParser::Implementation
 									while (m_stream_iterator.hasNext())
 									{
 										m_stream_iterator.getNextElement();
-										throw_if (m_stream_iterator.getType() != name);
+										throw_if (m_stream_iterator.getType() != name, errors::uninterpretable_data{});
 										std::string name = std::string(m_stream_iterator.getData() + 1, m_stream_iterator.getDataLength() - 1);
 										((PDFDictionary*)obj)->m_objects[name] = createNewObjectFromStream();
 									}
@@ -3367,7 +3379,8 @@ struct PDFParser::Implementation
 								}
 								default:
 								{
-									throw make_error("Unsupported object type", m_stream_iterator.getType());
+									throw make_error("Unsupported object type", m_stream_iterator.getType(),
+										errors::uninterpretable_data{});
 								}
 							}
 						}
@@ -3805,7 +3818,7 @@ struct PDFParser::Implementation
 						}
 						case EOF:
 						{
-							throw make_error("Unexpected EOF");
+							throw make_error("Unexpected EOF", errors::uninterpretable_data{});
 						}
 						default:
 						{
@@ -3836,7 +3849,7 @@ struct PDFParser::Implementation
 						}
 						case EOF:
 						{
-							throw make_error("Unexpected EOF");
+							throw make_error("Unexpected EOF", errors::uninterpretable_data{});
 						}
 					}
 				}
@@ -3850,7 +3863,7 @@ struct PDFParser::Implementation
 				{
 					int ch = m_data_stream->get();
 					if (ch == EOF)
-						throw make_error("Unexpected EOF");
+						throw make_error("Unexpected EOF", errors::uninterpretable_data{});
 					if (keyword[found] == ch)
 					{
 						++found;
@@ -3876,7 +3889,7 @@ struct PDFParser::Implementation
 				while (true)
 				{
 					ch = m_data_stream->get();
-					throw_if (ch == EOF, "Unexpected EOF");
+					throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 					switch (ch)
 					{
 						case 0:
@@ -4011,7 +4024,7 @@ struct PDFParser::Implementation
 									case 13:
 									{
 										ch = m_data_stream->get();
-										throw_if (ch == EOF, "Unexpected EOF");
+										throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 										if (ch != 10)
 											m_data_stream->unget();
 										break;
@@ -4052,7 +4065,7 @@ struct PDFParser::Implementation
 							case 13:
 							{
 								ch = m_data_stream->get();
-								throw_if (ch == EOF, "Unexpected EOF");
+								throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 								if (ch != 10)
 									m_data_stream->unget();
 								string.m_value += '\n';
@@ -4085,7 +4098,7 @@ struct PDFParser::Implementation
 			{
 				char buffer[4];
 				char ch = m_data_stream->get();
-				throw_if (ch == EOF, "Unexpected EOF");
+				throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 				if (ch == 't')
 				{
 					boolean.m_value = true;
@@ -4112,7 +4125,7 @@ struct PDFParser::Implementation
 				while (true)
 				{
 					ch = m_data_stream->get();
-					throw_if (ch == EOF, "Unexpected EOF");
+					throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 					if (ch == ']')
 						return;
 					PDFObject* value_object = NULL;
@@ -4131,7 +4144,7 @@ struct PDFParser::Implementation
 							case '<':	//value is a hexadecimal string or dictionary
 							{
 								ch = m_data_stream->get();
-								throw_if (ch == EOF, "Unexpected EOF");
+								throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 								if (ch == '<')	//dictionary
 								{
 									value_object = new PDFDictionary;
@@ -4217,7 +4230,7 @@ struct PDFParser::Implementation
 									//indirect reference: two numbers and 'R' character with spaces
 									ch = m_data_stream->get();
 									++to_seek_backward;
-									throw_if (ch == EOF, "Unexpected EOF");
+									throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 									if (ch == ' ')
 									{
 										++spaces;
@@ -4276,7 +4289,7 @@ struct PDFParser::Implementation
 					{
 						case EOF:
 						{
-							throw make_error("Unexpected EOF");
+							throw make_error("Unexpected EOF", errors::uninterpretable_data{});
 						}
 						case '-':
 						{
@@ -4319,7 +4332,8 @@ struct PDFParser::Implementation
 							if (is_float)
 							{
 								double value = strtod(begin, &end);
-								throw_if (value == 0.0 && begin == end, "Conversion to double failed", number_str);
+								throw_if (value == 0.0 && begin == end,
+									"Conversion to double failed", number_str, errors::uninterpretable_data{});
 								if (negative)
 									value = -value;
 								object = new PDFNumericFloat;
@@ -4328,7 +4342,8 @@ struct PDFParser::Implementation
 							else
 							{
 								long value = strtol(begin, &end, 10);
-								throw_if (value == 0 && begin == end, "Conversion to long int failed", number_str);
+								throw_if (value == 0 && begin == end,
+									"Conversion to long int failed", number_str, errors::uninterpretable_data{});
 								if (negative)
 									value = -value;
 								object = new PDFNumericInteger;
@@ -4346,7 +4361,7 @@ struct PDFParser::Implementation
 				try
 				{
 					throw_if (!m_data_stream->read(buffor, 4));
-					throw_if (memcmp(buffor, "null", 4) != 0);
+					throw_if (memcmp(buffor, "null", 4) != 0, errors::uninterpretable_data{});
 				}
 				catch (std::exception&)
 				{
@@ -4361,7 +4376,7 @@ struct PDFParser::Implementation
 					char ch;
 					PDFDictionary* stream_dict = stream.m_dictionary;
 					PDFNumericInteger* len = stream_dict->getObjAsNumericInteger("Length");
-					throw_if (!len, "\"Length\" object not found in stream dictionary");
+					throw_if (!len, "\"Length\" object not found in stream dictionary", errors::uninterpretable_data{});
 					stream.m_size = (*len)();
 					//check if stream is encoded.
 					if (stream_dict->getObjAsName("Filter") || stream_dict->getObjAsArray("Filter"))
@@ -4374,7 +4389,7 @@ struct PDFParser::Implementation
 					ch = m_data_stream->get();
 					if (ch == 13)
 						ch = m_data_stream->get();
-					throw_if (ch != 10, ch);
+					throw_if (ch != 10, ch, errors::uninterpretable_data{});
 					stream.m_position = m_data_stream->tellg();
 					//Stream data can be included in external file.
 					if ((*stream_dict)["F"])
@@ -4435,14 +4450,16 @@ struct PDFParser::Implementation
 							if (stage == 0 && text.length() > 0)
 							{
 								reference.m_index = strtol(begin, &end, 10);
-								throw_if (reference.m_index == 0 || end == begin, "Conversion to long int failed", text);
+								throw_if (reference.m_index == 0 || end == begin,
+									"Conversion to long int failed", text, errors::uninterpretable_data{});
 								text.clear();
 								++stage;
 							}
 							else if (stage == 1 && text.length() > 0)
 							{
 								reference.m_generation = strtol(begin, &end, 10);
-								throw_if (reference.m_index == 0 || end == begin, "Conversion to long int failed", text);
+								throw_if (reference.m_index == 0 || end == begin,
+									"Conversion to long int failed", text, errors::uninterpretable_data{});
 								text.clear();
 								++stage;
 							}
@@ -4462,7 +4479,7 @@ struct PDFParser::Implementation
 				{
 					prev_ch = ch;
 					ch = m_data_stream->get();
-					throw_if (ch == EOF, "Unexpected EOF");
+					throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 					if (prev_ch == '<' && ch == '<')
 					{
 						reading_key = true;
@@ -4473,7 +4490,7 @@ struct PDFParser::Implementation
 				{
 					prev_ch = ch;
 					ch = m_data_stream->get();
-					throw_if (ch == EOF, "Unexpected EOF");
+					throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 					if (ch == '>' && prev_ch == '>')
 						return;
 					if (ch == '%')
@@ -4516,7 +4533,7 @@ struct PDFParser::Implementation
 								case '<':	//value is a hexadecimal string or dictionary
 								{
 									ch = m_data_stream->get();
-									throw_if (ch == EOF, "Unexpected EOF");
+									throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 									if (ch == '<')	//dictionary
 									{
 										value_object = new PDFDictionary;
@@ -4611,7 +4628,7 @@ struct PDFParser::Implementation
 										//indirect reference: two integers and 'R' character with spaces
 										ch = m_data_stream->get();
 										++seek_backward;
-										throw_if (ch == EOF, "Unexpected EOF");
+										throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 										if (ch == ' ')
 										{
 											++spaces;
@@ -4665,7 +4682,8 @@ struct PDFParser::Implementation
 			{
 				try
 				{
-					throw_if (index >= m_references.size(), index, m_references.size() - 1);
+					throw_if (index >= m_references.size(), index, m_references.size() - 1,
+						"Indirect object index is out of range", errors::uninterpretable_data{});
 					ReferenceInfo* reference_info = &m_references[index];
 					if (reference_info->m_object)
 					{
@@ -4688,7 +4706,8 @@ struct PDFParser::Implementation
 						case ReferenceInfo::compressed:	//in use, but compressed
 						{
 							//object is compressed in another stream, m_offset is an index here.
-							throw_if (reference_info->m_offset >= m_references.size(), reference_info->m_offset, m_references.size() - 1);
+							throw_if (reference_info->m_offset >= m_references.size(),
+								reference_info->m_offset, m_references.size() - 1, errors::uninterpretable_data{});
 							ReferenceInfo* object_stream_reference = &m_references[reference_info->m_offset];
 							if (!object_stream_reference->m_object)
 							{
@@ -4735,14 +4754,14 @@ struct PDFParser::Implementation
 								while (true)
 								{
 									char ch = m_data_stream->get();
-									throw_if (ch == EOF, "Unexpected EOF");
+									throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 									switch (ch)
 									{
 										case 'e':	//endobj
 										{
 											char buffer[5];
 											throw_if (!m_data_stream->read(buffer, 5), "Unexpected EOF");
-											throw_if (memcmp(buffer, "ndobj", 5) != 0);
+											throw_if (memcmp(buffer, "ndobj", 5) != 0, errors::uninterpretable_data{});
 											if (!reference_info->m_object->m_object)
 												reference_info->m_object->m_object = new PDFNull;
 											throw_if (!m_data_stream->seekg(current_position, std::ios_base::beg), "std::istream::seekg", current_position);
@@ -4752,7 +4771,7 @@ struct PDFParser::Implementation
 										{
 											value_object = reference_info->m_object->m_object;
 											reference_info->m_object->m_object = NULL;
-											throw_if (!value_object || !value_object->isDictionary());
+											throw_if (!value_object || !value_object->isDictionary(), errors::uninterpretable_data{});
 											reference_info->m_object->m_object = new PDFStream(*this, *value_object->getDictionary());
 											value_object = NULL;
 											m_data_stream->unget();
@@ -4761,7 +4780,8 @@ struct PDFParser::Implementation
 										}
 										case '/':	//name
 										{
-											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
+											throw_if (reference_info->m_object->m_object,
+												"Only one object allowed inside indirect object", errors::uninterpretable_data{});
 											value_object = new PDFName;
 											m_data_stream->unget();
 											readName(*(PDFName*)value_object);
@@ -4771,9 +4791,10 @@ struct PDFParser::Implementation
 										}
 										case '<':	//hexadecimal string or dictionary
 										{
-											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
+											throw_if (reference_info->m_object->m_object,
+												"Only one object allowed inside indirect object", errors::uninterpretable_data{});
 											ch = m_data_stream->get();
-											throw_if (ch == EOF, "Unexpected EOF");
+											throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 											if (ch == '<')	//dictionary
 											{
 												value_object = new PDFDictionary;
@@ -4796,7 +4817,8 @@ struct PDFParser::Implementation
 										}
 										case '(':	//value is a literal string
 										{
-											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
+											throw_if (reference_info->m_object->m_object,
+												"Only one object allowed inside indirect object", errors::uninterpretable_data{});
 											value_object = new PDFString;
 											m_data_stream->unget();
 											readString(*(PDFString*)value_object);
@@ -4807,7 +4829,8 @@ struct PDFParser::Implementation
 										case 'f':
 										case 't':	//value is a boolean
 										{
-											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
+											throw_if (reference_info->m_object->m_object,
+												"Only one object allowed inside indirect object", errors::uninterpretable_data{});
 											value_object = new PDFBoolean;
 											m_data_stream->unget();
 											readBoolean(*(PDFBoolean*)value_object);
@@ -4817,7 +4840,8 @@ struct PDFParser::Implementation
 										}
 										case '[':	//value is an array
 										{
-											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
+											throw_if (reference_info->m_object->m_object,
+												"Only one object allowed inside indirect object", errors::uninterpretable_data{});
 											value_object = new PDFArray;
 											m_data_stream->unget();
 											readArray(*(PDFArray*)value_object);
@@ -4827,7 +4851,8 @@ struct PDFParser::Implementation
 										}
 										case 'n':	//value is a null
 										{
-											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
+											throw_if (reference_info->m_object->m_object,
+												"Only one object allowed inside indirect object", errors::uninterpretable_data{});
 											value_object = new PDFNull;
 											m_data_stream->unget();
 											readNull(*(PDFNull*)value_object);
@@ -4854,7 +4879,8 @@ struct PDFParser::Implementation
 										case '8':
 										case '9':	//value is a numeric
 										{
-											throw_if (reference_info->m_object->m_object, "Only one object allowed inside indirect object");
+											throw_if (reference_info->m_object->m_object,
+												"Only one object allowed inside indirect object", errors::uninterpretable_data{});
 											m_data_stream->unget();
 											value_object = readNumeric();
 											reference_info->m_object->m_object = value_object;
@@ -4881,7 +4907,7 @@ struct PDFParser::Implementation
 						}
 						default:
 						{
-							throw make_error("Unexpected reference type", reference_info->m_type);
+							throw make_error("Unexpected reference type", reference_info->m_type, errors::uninterpretable_data{});
 						}
 					}
 				}
@@ -4919,7 +4945,7 @@ struct PDFParser::Implementation
 					while (start_xref_buffer[index] > '9' || start_xref_buffer[index] < '0')
 					{
 						++index;
-						throw_if (index == 25);
+						throw_if (index == 25, errors::uninterpretable_data{});
 					}
 					bool backward_compatibility = false;
 					std::set<size_t> start_xref_positions;
@@ -4929,13 +4955,14 @@ struct PDFParser::Implementation
 					{
 						throw_if (!m_data_stream->seekg(xref_data_position, std::ios_base::beg), "Error seeking to xref position");
 						char ch = m_data_stream->get();
-						throw_if (ch == EOF, "Unexpected EOF");
+						throw_if (ch == EOF, "Unexpected EOF", errors::uninterpretable_data{});
 						if (ch == 'x')	//xref line
 						{
 							//xref table
 							std::string line;
 							readLine(line);
-							throw_if (line.length() < 3 || line.substr(0, 3) != "ref");
+							throw_if (line.length() < 3 || line.substr(0, 3) != "ref",
+								errors::uninterpretable_data{});
 							readXrefTable();
 							m_trailer_dict.clearDictionary();
 							readDictionary(m_trailer_dict);
@@ -5034,27 +5061,31 @@ struct PDFParser::Implementation
 						if (ptr_start[0] != 't')	//trailer
 						{
 							size_t start = strtol(ptr_start, &ptr_end, 10);
-							throw_if (start == 0 && ptr_start == ptr_end, "Conversion to long int failed", line);
+							throw_if (start == 0 && ptr_start == ptr_end,
+								"Conversion to long int failed", line, errors::uninterpretable_data{});
 							ptr_start = ptr_end;
 							size_t count = strtol(ptr_start, &ptr_end, 10);
-							throw_if (count == 0 && ptr_start == ptr_end, "Conversion to long int failed", line);
+							throw_if (count == 0 && ptr_start == ptr_end,
+								"Conversion to long int failed", line, errors::uninterpretable_data{});
 							if (start + count > m_references.size())
 								m_references.resize(start + count);
 							for (size_t i = 0; i < count; ++i)
 							{
 								readLine(line);
-								throw_if (line.length() < 18, line.length());
+								throw_if (line.length() < 18, line.length(), errors::uninterpretable_data{});
 								reference = &m_references[start + i];
 								if (!reference->m_read)
 								{
 									ptr_start = (char*)line.c_str();
 									ptr_end = ptr_start;
 									reference->m_offset = strtol(ptr_start, &ptr_end, 10);
-									throw_if (reference->m_offset == 0 && ptr_start == ptr_end, "Conversion to long int failed", line);
+									throw_if (reference->m_offset == 0 && ptr_start == ptr_end,
+										"Conversion to long int failed", line, errors::uninterpretable_data{});
 									ptr_start = (char*)line.c_str() + 11;
 									ptr_end = ptr_start;
 									reference->m_generation = strtol(ptr_start, &ptr_end, 10);
-									throw_if (reference->m_generation == 0 && ptr_start == ptr_end, "Conversion to long int failed", line);
+									throw_if (reference->m_generation == 0 && ptr_start == ptr_end,
+										"Conversion to long int failed", line, errors::uninterpretable_data{});
 									if (line[17] == 'f')
 										reference->m_type = ReferenceInfo::free;
 									else
@@ -5108,13 +5139,13 @@ struct PDFParser::Implementation
 						start_positions.push_back(0);
 						sizes.push_back(size);
 					}
-					throw_if (sizes.size() != start_positions.size());
+					throw_if (sizes.size() != start_positions.size(), errors::uninterpretable_data{});
 					PDFArray* w_array = stream.m_dictionary->getObjAsArray("W");
-					throw_if (!w_array || w_array->Size() != 3);
+					throw_if (!w_array || w_array->Size() != 3, errors::uninterpretable_data{});
 					for (int i = 0; i < 3; ++i)
 					{
 						PDFNumericInteger* element = w_array->getObjAsNumericInteger(i);
-						throw_if (!element);
+						throw_if (!element, errors::uninterpretable_data{});
 						w_sizes[i] = (*element)();
 					}
 					ReferenceInfo* reference;
@@ -5122,7 +5153,8 @@ struct PDFParser::Implementation
 					iterator.backToRoot();
 					const unsigned char* data = (const unsigned char*)iterator.getData() + 1;	//skip '[' character
 					size_t record_size = w_sizes[0] + w_sizes[1] + w_sizes[2];
-					throw_if (iterator.getDataLength() - 2 < record_size * entries_count, iterator.getDataLength() - 2, record_size * entries_count);
+					throw_if (iterator.getDataLength() - 2 < record_size * entries_count,
+						iterator.getDataLength() - 2, record_size * entries_count, errors::uninterpretable_data{});
 					size_t read_index = 0;
 					for (size_t i = 0; i < sizes.size(); ++i)
 					{
@@ -6574,7 +6606,7 @@ struct PDFParser::Implementation
 			charWidth(const std::u32string& u32_str, const PoDoFo::PdfFont &font, double curFontSize, unsigned int idx)
 			{
 				docwire_log_func_with_args(u32_str, font, curFontSize, idx);
-				throw_if (idx > u32_str.size(), idx, u32_str.size());
+				throw_if (idx > u32_str.size(), idx, u32_str.size(), errors::program_logic{});
 				char32_t ch = u32_str[idx];
 				std::string ch_s = utf32_to_utf8(ch);
 				docwire_log_vars(ch, ch_s);
@@ -7046,9 +7078,8 @@ struct PDFParser::Implementation
 
 	std::vector<char> to_buffer(const PoDoFo::PdfObject* object)
 	{
-		if (object == nullptr)
-			throw std::invalid_argument("object argument is nullptr");
-		else if (object->IsReference())
+		throw_if (object == nullptr, errors::program_logic{});
+		if (object->IsReference())
 			return to_buffer(object->GetDocument()->GetObjects().GetObject(object->GetReference()));
 		else
 		{

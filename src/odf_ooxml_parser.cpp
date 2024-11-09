@@ -48,7 +48,7 @@ static string locate_main_file(const ZipReader& zipfile)
 		return "xl/workbook.xml";
 	if (zipfile.exists("ppt/presentation.xml"))
 		return "ppt/presentation.xml";
-	throw make_error("No content.xml, no word/document.xml and no ppt/presentation.xml");
+	throw make_error("No content.xml, no word/document.xml and no ppt/presentation.xml", errors::uninterpretable_data{});
 }
 
 class ODFOOXMLParser::CommandHandlersSet
@@ -544,7 +544,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 			else if (mode == PARSE_XML)
 				xml = content;
 			else
-				throw_if(mode == STRIP_XML, "Stripping XML is not possible for xlsx files");
+				throw_if(mode == STRIP_XML, "Stripping XML is not possible for xlsx files", errors::program_logic{});
 			try
 			{
 				XmlStream xml_stream(xml, getXmlOptions());

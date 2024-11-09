@@ -710,7 +710,7 @@ TEST (errors, throwing)
     catch (const errors::base& e)
     {
         ASSERT_EQ(e.context_type(), typeid(errors::network_failure));
-        ASSERT_EQ(e.context_string(), "network error");
+        ASSERT_EQ(e.context_string(), "network failure error tag");
     }
     try
     {
@@ -729,7 +729,7 @@ TEST (errors, throwing)
         catch (const errors::base& e)
         {
             ASSERT_EQ(e.context_type(), typeid(errors::file_encrypted));
-            ASSERT_EQ(e.context_string(), "file is encrypted");
+            ASSERT_EQ(e.context_string(), "file encrypted error tag");
             try
             {
                 std::rethrow_if_nested(e);

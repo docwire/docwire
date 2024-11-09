@@ -11,6 +11,7 @@
 
 #include "ocr_parser.h"
 
+#include "error_tags.h"
 #include "parser_parameters.h"
 
 #include <leptonica/allheaders.h>
@@ -89,7 +90,7 @@ Pix* pixToGrayscale(Pix* pix)
             break;	
         }
     default:
-        throw make_error("Format not supported", pix->d);
+        throw make_error("Format not supported", pix->d, errors::uninterpretable_data{});
     }
     return output;
 }
@@ -170,6 +171,14 @@ std::shared_ptr<PIX> load_pix(const data_source& data)
         });
 }
 
+std::filesystem::path default_tessdata_path()
+{
+    std::filesystem::path def_tessdata_path = resource_path("tessdata-fast").string();
+    throw_if (!std::filesystem::exists(def_tessdata_path),
+        "Could not find tessdata in default location", def_tessdata_path, errors::program_corrupted{});
+    return def_tessdata_path;
+}
+
 } // anonymous namespace
 
 std::string OCRParser::parse(const data_source& data, const std::vector<Language>& languages) const
@@ -191,7 +200,7 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     }
     else
     {
-      impl->m_tessdata_prefix = resource_path("tessdata-fast").string();
+      impl->m_tessdata_prefix = default_tessdata_path();
     }
 
     std::string langs = std::accumulate(languages.begin(), languages.end(), std::string{},
@@ -210,7 +219,7 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     pix_unique_ptr gray{ nullptr };
 
     std::shared_ptr<PIX> image = load_pix(data);
-    throw_if (image == nullptr, "Could not load image");
+    throw_if (image == nullptr, "Could not load image", errors::uninterpretable_data{});
 
     pix_unique_ptr inverted{ nullptr };
     try

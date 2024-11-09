@@ -24,7 +24,8 @@ OutputChainElement::process(Info &info) const
 		emit(info);
 		return;
 	}
-	throw_if (!std::holds_alternative<data_source>(info.tag), "Only data_source tags are supported");
+	throw_if (!std::holds_alternative<data_source>(info.tag),
+		"Only data_source tags are supported", errors::program_logic{});
 	std::shared_ptr<std::istream> in_stream = std::get<data_source>(info.tag).istream();
 	*m_out_stream << in_stream->rdbuf();
 }
