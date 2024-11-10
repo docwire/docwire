@@ -97,7 +97,7 @@ std::string post_request(const std::string& query, const std::string& api_key)
 	}
 	catch (const std::exception& e)
 	{
-		std::throw_with_nested(make_error(errors::backtrace_entry{}, query));
+		std::throw_with_nested(make_error(query));
 	}
 	return response_stream.str();
 }

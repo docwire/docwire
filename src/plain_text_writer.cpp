@@ -17,6 +17,7 @@
 #include <sstream>
 
 #include "plain_text_writer.h"
+#include "error_tags.h"
 #include "misc.h"
 
 namespace docwire
@@ -381,8 +382,8 @@ struct PlainTextWriter::Implementation
             open_table_tags--;
         }
         while (open_table_tags > 0);
-        throw_if (table.empty(), "Table inside table without rows");
-        throw_if (table.back().empty(), "Table inside table row without cells");
+        throw_if (table.empty(), "Table inside table without rows", errors::program_logic{});
+        throw_if (table.back().empty(), "Table inside table row without cells", errors::program_logic{});
         table.back().back().write(ss.str());
       }
 
@@ -392,13 +393,13 @@ struct PlainTextWriter::Implementation
       }
       else if (std::holds_alternative<tag::TableCell>(tags[i]))
       {
-        throw_if (table.empty(), "Cell inside table without rows");
+        throw_if (table.empty(), "Cell inside table without rows", errors::program_logic{});
         table.back().push_back(Cell{m_eol_sequence, m_format_link_opening, m_format_link_closing});
       }
       else if (!std::holds_alternative<tag::CloseTableRow>(tags[i]) && !std::holds_alternative<tag::CloseTableCell>(tags[i]))
       {
-        throw_if (table.empty(), "Cell content inside table without rows");
-        throw_if (table.back().empty(), "Cell content inside table row without cells");
+        throw_if (table.empty(), "Cell content inside table without rows", errors::program_logic{});
+        throw_if (table.back().empty(), "Cell content inside table row without cells", errors::program_logic{});
         table.back().back().write(tags[i]);
       }
     }

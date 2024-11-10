@@ -136,7 +136,7 @@ void TXTParser::parse(const data_source& data) const
 		if (charset_detector)
 			csd_close(charset_detector);
 		charset_detector = NULL;
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Error converting text to UTF-8"));
 	}
 	bool parse_paragraphs = m_parameters.getParameterValue<bool>("TXTParser::parse_paragraphs").value_or(true);
 	bool parse_lines = m_parameters.getParameterValue<bool>("TXTParser::parse_lines").value_or(true);

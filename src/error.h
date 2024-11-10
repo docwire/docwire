@@ -145,7 +145,7 @@ struct base : public std::exception
  *
  * @code
  * throw errors::impl{"message"}
- * throw errors::impl{errors::network_error{}}
+ * throw errors::impl{errors::network_failure{}}
  * throw errors::impl{std::pair<"key", "value"}}
  * @endcode
  *

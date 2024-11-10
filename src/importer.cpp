@@ -61,13 +61,13 @@ public:
     if (!extension)
     {
       std::unique_ptr<ParserBuilder> builder = m_owner.findParserByData(data);
-      throw_if (!builder, "findParserByData() failed");
+      throw_if (!builder, "findParserByData() failed", errors::uninterpretable_data{});
       return builder;
     }
     else
     {
       std::unique_ptr<ParserBuilder> builder = m_owner.findParserByExtension(*extension);
-      throw_if (!builder, "findParserByExtension() failed", extension->string());
+      throw_if (!builder, "findParserByExtension() failed", extension->string(), errors::uninterpretable_data{});
       return builder;
     }
   }
@@ -107,8 +107,8 @@ public:
     }
     catch (const std::exception& ex)
     {
-      if (errors::contains_type<errors::file_is_encrypted>(ex))
-        std::throw_with_nested(make_error(errors::backtrace_entry{}));
+      if (errors::contains_type<errors::file_encrypted>(ex))
+        throw;
       if (!data.file_extension()) // parser was detected by data
         throw;
       docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";

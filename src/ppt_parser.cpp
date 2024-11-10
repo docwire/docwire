@@ -268,7 +268,7 @@ namespace
 				{
 					//this is very easy way to detect if file is encrypted: just to check if EncryptedSummary stream exist.
 					//This stream is obligatory in encrypted files and prohibited in non-encrypted files.
-					throw make_error(errors::file_is_encrypted{});
+					throw make_error(errors::file_encrypted{});
 				}
 			}
 		}
@@ -333,7 +333,7 @@ void PPTParser::parse(const data_source& data) const
 	}
 	catch (const std::exception& e)
 	{
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Error parsing PPT document"));
 	}
 }
 

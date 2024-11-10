@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_DATA_SOURCE_H
 #define DOCWIRE_DATA_SOURCE_H
 
+#include "error_tags.h"
 #include "file_extension.h"
 #include <filesystem>
 #include <fstream>
@@ -245,11 +246,11 @@ class data_source
         			},
 					[this](const std::span<const std::byte>& source)
 					{
-						throw make_error("std::span cannot be cached in memory");
+						throw make_error("std::span cannot be cached in memory", errors::program_logic{});
 					},
         			[this](const std::string& source)
         			{
-						throw make_error("std::string cannot be cached in memory");
+						throw make_error("std::string cannot be cached in memory", errors::program_logic{});
         			},
         			[this](seekable_stream_ptr source)
 					{

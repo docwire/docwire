@@ -48,7 +48,7 @@ static string locate_main_file(const ZipReader& zipfile)
 		return "xl/workbook.xml";
 	if (zipfile.exists("ppt/presentation.xml"))
 		return "ppt/presentation.xml";
-	throw make_error("No content.xml, no word/document.xml and no ppt/presentation.xml");
+	throw make_error("No content.xml, no word/document.xml and no ppt/presentation.xml", errors::uninterpretable_data{});
 }
 
 class ODFOOXMLParser::CommandHandlersSet
@@ -273,7 +273,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 		throw_if (zipfile.exists("META-INF/manifest.xml")
 			&& zipfile.read("META-INF/manifest.xml", &content)
 			&& content.find("manifest:encryption-data") != std::string::npos,
-			errors::file_is_encrypted{});
+			errors::file_encrypted{});
 	}
 
 	void readOOXMLComments(const ZipReader& zipfile, XmlParseMode mode)
@@ -457,7 +457,7 @@ bool ODFOOXMLParser::understands(const data_source& data) const
 	}
 	catch (const std::exception&)
 	{
-		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_is_encrypted{}, "Microsoft Office Document Cryptography");
+		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_encrypted{}, "Microsoft Office Document Cryptography");
 		return false;
 	}
 	return true;
@@ -544,7 +544,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 			else if (mode == PARSE_XML)
 				xml = content;
 			else
-				throw_if(mode == STRIP_XML, "Stripping XML is not possible for xlsx files");
+				throw_if(mode == STRIP_XML, "Stripping XML is not possible for xlsx files", errors::program_logic{});
 			try
 			{
 				XmlStream xml_stream(xml, getXmlOptions());
@@ -599,7 +599,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 	}
 	catch (const std::exception& e)
 	{
-		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_is_encrypted{}, "Microsoft Office Document Cryptography");
+		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_encrypted{}, "Microsoft Office Document Cryptography");
 		throw;
 	}
 }

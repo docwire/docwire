@@ -110,10 +110,10 @@ struct Comment
 static void cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& stream_offset, bool* unicode_detected = NULL)
 {
 	const Parser9x* parser9 = dynamic_cast<const Parser9x*>(parser);
-	throw_if (parser9 == NULL, "This is not a 9x parser.");
+	throw_if (parser9 == NULL, "This is not a 9x parser.", errors::program_logic{});
 	U32 piece = 0;
 	U32 offset = cp;
-	throw_if (parser9->m_plcfpcd == NULL, "No pieces table found.");
+	throw_if (parser9->m_plcfpcd == NULL, "No pieces table found.", errors::uninterpretable_data{});
 	// Copied from wv2 code.
 	PLCFIterator<Word97::PCD> it( *parser9->m_plcfpcd );
 	for ( ; it.current(); ++it, ++piece ) {
@@ -123,7 +123,7 @@ static void cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& strea
 	}
 	docwire_log(debug) << "Piece: " << piece << ", offset: " << offset;
 	PLCFIterator<Word97::PCD> it2(parser9->m_plcfpcd->at( piece ) );
-	throw_if (!it2.current(), "Specified piece not found.");
+	throw_if (!it2.current(), "Specified piece not found.", errors::uninterpretable_data{});
 	U32 fc = it2.current()->fc;   // Start FC of this piece
 	docwire_log(debug) << "Piece start at FC " << fc << ".";
         bool unicode;
@@ -150,10 +150,10 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 		U32 atn_part_cp = parser->fib().ccpText + parser->fib().ccpFtn + parser->fib().ccpHdd + parser->fib().ccpMcr;
 		docwire_log(debug) << "Annotations part at CP " << atn_part_cp << ".";
 		std::unique_ptr<AbstractOLEStreamReader> reader { parser->m_storage->createStreamReader("WordDocument") };
-		throw_if (!reader, "Error opening WordDocument stream.");
+		throw_if (!reader, "Error opening WordDocument stream.", errors::uninterpretable_data{});
 		const Parser9x* parser9 = dynamic_cast<const Parser9x*>(parser);
 		std::unique_ptr<AbstractOLEStreamReader> table_reader { parser->m_storage->createStreamReader(parser9->tableStream()) };
-		throw_if (!table_reader, "Error opening table stream.");
+		throw_if (!table_reader, "Error opening table stream.", errors::uninterpretable_data{});
 
 		U32 annotation_txts_offset = parser->fib().fcPlcfandTxt;
 		docwire_log(debug) << "Annotation texts table at offset " << annotation_txts_offset << ".";
@@ -172,7 +172,7 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 			}
 			catch (const std::exception&)
 			{
-				std::throw_with_nested(make_error("Converting annotation start position to stream offset failed."));
+				std::throw_with_nested(make_error("Converting annotation start position to stream offset failed.", errors::uninterpretable_data{}));
 			}
 			U32 stream_end_offset;
 			try
@@ -181,12 +181,12 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 			}
 			catch (const std::exception&)
 			{
-				std::throw_with_nested(make_error("Converting annotation end position to stream offset failed."));
+				std::throw_with_nested(make_error("Converting annotation end position to stream offset failed.", errors::uninterpretable_data{}));
 			}
 			docwire_log(debug) << "Annotation text stream position from " << stream_begin_offset << " to " << stream_end_offset << ".";
 			reader->seek(stream_begin_offset);
 			U8 annotation_mark = reader->readU8();
-			throw_if (!annotation_mark == 0x05, "Incorrect annotation mark.");
+			throw_if (!annotation_mark == 0x05, "Incorrect annotation mark.", errors::uninterpretable_data{});
 			std::string annotation;
 			while (reader->tell() < stream_end_offset - 1)
 			{
@@ -252,7 +252,7 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 			}
 			catch (const std::exception&)
 			{
-				std::throw_with_nested(make_error("Converting annotation reference position to stream offset failed."));
+				std::throw_with_nested(make_error("Converting annotation reference position to stream offset failed.", errors::uninterpretable_data{}));
 			}
 			if (i < annotations.size())
 			{
@@ -508,7 +508,7 @@ class TableHandler : public wvWare::TableHandler
 				m_parent->sendTag(tag::Table{});
 				m_current_state.table_state.push(TableState::in_table);
 			}
-			throw_if (m_current_state.table_state.top() != TableState::in_table);
+			throw_if (m_current_state.table_state.top() != TableState::in_table, errors::uninterpretable_data{});
 			m_parent->sendTag(tag::TableRow{});
 			m_current_state.table_state.push(TableState::in_row);
 		}
@@ -516,13 +516,13 @@ class TableHandler : public wvWare::TableHandler
 		void tableRowEnd()
 		{
 			docwire_log_func();
-			throw_if (m_current_state.table_state.empty());
+			throw_if (m_current_state.table_state.empty(), errors::uninterpretable_data{});
 			if (m_current_state.table_state.top() == TableState::in_cell)
 			{
 				m_parent->sendTag(tag::CloseTableCell{});
 				m_current_state.table_state.pop();
 			}
-			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row);
+			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row, errors::uninterpretable_data{});
 			m_parent->sendTag(tag::CloseTableRow{});
 			m_current_state.table_state.pop();
 		}
@@ -530,7 +530,7 @@ class TableHandler : public wvWare::TableHandler
 		void tableCellStart()
 		{
 			docwire_log_func();
-			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row);
+			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row, errors::uninterpretable_data{});
 			m_parent->sendTag(tag::TableCell{});
 			m_current_state.table_state.push(TableState::in_cell);
 		}
@@ -543,7 +543,7 @@ class TableHandler : public wvWare::TableHandler
 				m_parent->sendTag(tag::CloseTable{});
 				m_current_state.table_state.pop();
 			}
-			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_cell);
+			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_cell, errors::uninterpretable_data{});
 			m_parent->sendTag(tag::CloseTableCell{});
 			m_current_state.table_state.pop();
 		}
@@ -617,7 +617,7 @@ void DOCParser::parse(const data_source& data) const
 	CurrentState curr_state;
 	docwire_log(debug) << "Opening stream as OLE storage to parse all embedded objects in supported formats.";
 	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
-	throw_if (!storage->isValid(), storage->getLastError());
+	throw_if (!storage->isValid(), storage->getLastError(), errors::uninterpretable_data{});
 	sendTag(tag::Document
 		{
 			.metadata = [this, &storage]()
@@ -631,7 +631,7 @@ void DOCParser::parse(const data_source& data) const
 	{
 		docwire_log(debug) << "ObjectPool found, embedded OLE objects probably exist.";
 		std::vector<std::string> obj_list;
-		throw_if (!storage->getStreamsAndStoragesList(obj_list), storage->getLastError());
+		throw_if (!storage->getStreamsAndStoragesList(obj_list), storage->getLastError(), errors::uninterpretable_data{});
 		for (size_t i = 0; i < obj_list.size(); ++i)
 		{
 			docwire_log(debug) << "OLE object entry found: " << obj_list[i];
@@ -640,7 +640,7 @@ void DOCParser::parse(const data_source& data) const
 			if (storage->enterDirectory(obj_list[i]))
 			{
 				std::vector<std::string> obj_list;
-				throw_if (!storage->getStreamsAndStoragesList(obj_list), storage->getLastError(), current_dir);
+				throw_if (!storage->getStreamsAndStoragesList(obj_list), storage->getLastError(), current_dir, errors::uninterpretable_data{});
 				if (find(obj_list.begin(), obj_list.end(), "Workbook") != obj_list.end())
 				{
 					docwire_log(debug) << "Embedded MS Excel workbook detected.";
@@ -674,8 +674,8 @@ void DOCParser::parse(const data_source& data) const
 	}
 	cerr_redirection.restore();
 	throw_if (!parser, "Error while creating parser");
-	throw_if (!parser->isOk() && parser->fib().fEncrypted, errors::file_is_encrypted{});
-	throw_if (!parser->isOk(), "Error while creating parser");
+	throw_if (!parser->isOk() && parser->fib().fEncrypted, errors::file_encrypted{});
+	throw_if (!parser->isOk(), "Error while creating parser", errors::uninterpretable_data{});
 	TextHandler text_handler(this, parser, &curr_state);
 	parser->setTextHandler(&text_handler);
 	TableHandler table_handler(this, curr_state);
@@ -685,7 +685,7 @@ void DOCParser::parse(const data_source& data) const
 	cerr_redirection.redirect();
 	bool res = parser->parse();
 	cerr_redirection.restore();
-	throw_if (!res, "parse() failed");
+	throw_if (!res, "parse() failed", errors::uninterpretable_data{});
 	text_handler.endOfDocument();
 	sendTag(tag::CloseDocument{});
 }

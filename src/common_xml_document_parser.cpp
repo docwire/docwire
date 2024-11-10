@@ -706,7 +706,7 @@ void CommonXMLDocumentParser::parseODFMetadata(const std::string &xml_content, a
 	}
 	catch (const std::exception& e)
 	{
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Error parsing ODF metadata"));
 	}
 }
 

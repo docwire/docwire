@@ -64,7 +64,7 @@ public:
 		}
 
 		const data_source& data = std::get<data_source>(info.tag);
-		throw_if (data.file_extension() && *data.file_extension() != file_extension{".txt"});
+		throw_if (data.file_extension() && *data.file_extension() != file_extension{".txt"}, errors::program_logic{});
 		std::string input = m_prompt + "\n" + data.string();
 		std::string output = m_model_runner->process(input);
 
