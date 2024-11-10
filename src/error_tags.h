@@ -48,7 +48,7 @@ struct program_logic
  * The consistency of an installation should be checked and fixed by administrator or Application developer
  * or it should be reported as an SDK issue if the reason is unknown.
  * @code
- * throw make_error(errors::program_corrupted{}});
+ * throw make_error(errors::program_corrupted{});
  * @endcode
  *
  * Existence of this tag can be checked using errors::contains_type<errors::program_corrupted> function.
