@@ -200,7 +200,7 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     }
     else
     {
-      impl->m_tessdata_prefix = default_tessdata_path();
+      impl->m_tessdata_prefix = default_tessdata_path().string();
     }
 
     std::string langs = std::accumulate(languages.begin(), languages.end(), std::string{},
