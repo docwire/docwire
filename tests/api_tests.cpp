@@ -14,6 +14,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include "chaining.h"
+#include "error_hash.h"
 #include "error_tags.h"
 #include "exception_utils.h"
 #include <exception>
@@ -782,6 +783,27 @@ TEST(errors, diagnostic_message)
         "in " + err3_loc.function_name() + "\n"
         "at " + + err3_loc.file_name() + ":" + std::to_string(err3_loc.line() + 1) + "\n"
     );
+}
+
+TEST(errors, hashing)
+{
+    std::hash<errors::base> hasher;
+    auto e1 = make_error("test");
+    auto e2 = make_error("test");
+    auto e3 = make_error("test");
+    auto n1 = make_nested(e1, e3);
+    auto n2 = make_nested(e2, e3);
+    ASSERT_NE(hasher(e1), hasher(e2));
+    ASSERT_NE(hasher(n1), hasher(n2));
+    ASSERT_NE(hasher(n1), hasher(e1));
+    ASSERT_NE(hasher(n2), hasher(e2));
+    ASSERT_NE(hasher(n1), hasher(e3));
+    ASSERT_NE(hasher(n2), hasher(e3));
+    ASSERT_EQ(hasher(e1), hasher(e1));
+    ASSERT_EQ(hasher(e2), hasher(e2));
+    ASSERT_EQ(hasher(e3), hasher(e3));
+    ASSERT_EQ(hasher(n1), hasher(n1));
+    ASSERT_EQ(hasher(n2), hasher(n2));
 }
 
 std::string sanitize_log_text(const std::string& orig_log_text)
