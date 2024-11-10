@@ -37,9 +37,14 @@ include(../tools/generate_3rdparty_components_doc.cmake)
 
 file(GLOB HEADERS "../src/*.h")
 
+file(READ ../README.md readme_contents)
+string(REPLACE "https://docwire.readthedocs.io/en/latest/" "" readme_contents "${readme_contents}")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/readme.md ${readme_contents})
+
 doxygen_add_docs(
     doxygen
-    ../README.md ${HEADERS}
+    ${CMAKE_CURRENT_BINARY_DIR}/readme.md
+    ${HEADERS}
     ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
     COMMENT "Generate html documentation of DocWire SDK"
     ALL

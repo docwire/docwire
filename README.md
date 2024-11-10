@@ -15,6 +15,7 @@ Explore the latest updates, contribute to the community, and find the most up-to
 - [Installation](#installation)
 - [Versioning](#versioning)
 - [Logging](#logging)
+- [Error handling: robust and secure](#error-handling)
 - [API documentation](#api-documentation)
 - [Console application (CLI)](#console-application)
 - [License](#license)
@@ -1068,6 +1069,71 @@ You might wonder why we chose ReadTheDocs to host our documentation. While some 
 We believe in making the integration of DocWire as smooth as possible, and providing our documentation through ReadTheDocs is just one way we're committed to simplifying your experience.
 
 Explore the documentation, experiment with the library, and feel free to reach out if you have any questions or feedback. We're here to support you on your journey with DocWire.
+
+<a name="error-handling"></a>
+## Error handling: robust and secure
+
+The DocWire SDK provides a comprehensive error handling framework designed to handle errors in a clear and specific way. This framework offers several key features that facilitate error diagnosis and handling.
+
+### Chained exceptions
+
+The framework supports building an exception chain, allowing the creation of a longer error context across different layers of the backtrace. This enables tracking of the sequence of events leading up to an error, making it easier to identify the root cause.
+
+In addition to std::nested_exception and std::exception_ptr and std::throw_with_nested, the framework also includes the [errors::make_nested](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#afde521434d8ac75136d13bc9d42c17a2) and [errors::make_nested_ptr](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#a7380b5b4f036f549a9c284261d9f31ac) function templates and [errors::nested](https://docwire.readthedocs.io/en/latest/classdocwire_1_1errors_1_1nested.html) class template for easy error chaining like: `docwire::errors::make_nested_ptr(error_object_1, error_object_2)`.
+
+### Type-safe context values
+
+Context values are type-safe, meaning any type, including custom types, can be used in the context value. The context is built from original C++ types, and context objects can be accessed during the error handling process.
+
+[errors::impl](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1impl.html) structure template provides an implementation of the context value mechanism, including support for custom types: `throw errors::impl{custom_type_value}`.
+
+[errors::base](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1base.html) structure provides a base class for all error types for easy error handling: `catch (docwire::errors::base& e) { ... }`.
+
+### Embedded context variable names and triggering expressions
+
+Error contexts include stringified context variable names and triggering C++ expressions, providing valuable information for diagnosing and handling errors via make_error and throw_if macros.
+
+For example: `throw_if(x < 0 || y < 0, x, y)` gives, on failure, an exception chain with `std::make_pair("triggering_expression", "x < 0 || y < 0")`, `std::make_pair("x", x)` and `std::make_pair("y", y)`.
+
+### Categorized and tagged errors
+
+Errors can be tagged with a custom type or multiple types like [errors::network_failure](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1network__failure.html) or [errors::file_encrypted](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1file__encrypted.html), providing fine-grained control over error handling. Decisions, such as retrying an operation or asking for password, can be made based on the presence of a specific tag type in error chain: `catch (const docwire::errors::base& e) if (docwire::errors::contains_type<docwire::errors::network_failure>(e)) { retry(); }`.
+
+### Embedded source location
+
+Error objects include embedded source location information, providing essential context for debugging: `catch (const docwire::errors::base& e) { std::cerr << e.source_location.file_name() << ":" << e.source_location.line() << std::endl; }`.
+
+### Secure error messages
+
+To reduce the risk of security breaches, the framework avoids including sensitive information in formatted error messages. There is no implicit stringification of context values, and the standard what() method is secured to return only the exception type name. Sensitive information can be retrieved from the error object on-demand only: `std::cerr << e.content_type() << ": " << e.context_string()` or `if (docwire::errors::contains_type<std::filesystem::path>(e)) { auto fn = dynamic_cast<docwire::errors::impl<std::file_system::path>>(e).context; }`.
+
+### Easy context data retrieval
+
+Functions like [errors::diagnostic_message](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#a2446f6c81b6a5b338dea00cb29c40263) and [errors::contains_type](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#aa2af5b81a3e66772f19506d8e8a93184) allow access to context data in a controlled manner, facilitating effective error handling.
+
+For example `std::cerr << docwire::errors::diagnostic_message(e) << std::endl;` can give the following results:
+```
+[ERROR] Error "file encrypted error tag"
+in void docwire::XLSParser::Implementation::processRecord(int, const std::vector<unsigned char>&, std::string&)
+at /docwire/src/xls_parser.cpp:483
+with context "RC4 encryption"
+in void docwire::XLSParser::Implementation::processRecord(int, const std::vector<unsigned char>&, std::string&)
+at /docwire/src/xls_parser.cpp:483
+with context "Error parsing XLS document"
+in std::string docwire::XLSParser::parse(docwire::ThreadSafeOLEStorage&) const
+at /docwire/src/xls_parser.cpp:931
+processing file tests/password_protected.xls
+```
+
+### Non-fatal errors and warnings
+
+Errors that are not fatal are represented with the same chained error objects, but instead of using C++ throw/catch mechanism, they are pushed to the parsing chain or returned via callbacks like other results.
+
+This assumption gives them similar security and debugging capabilities to fatal errors and allows easy conversion between fatal and non-fatal errors on different backtrace levels (it usually cannot be decided in a point of failure) without breaking of the error chain.
+
+### Modern C++ features used
+
+The framework is designed to take advantage of modern C++ features, such as std::nested_exception and std::exception_ptr, to build an exception chain instead of adding multiple values to a single exception object. This approach ensures alignment with the latest C++ standards and best practices. Although the design shares similarities with Boost Exception, the DocWire SDK's error handling framework is more closely aligned with modern C++ standards.
 
 <a name="console-application"></a>
 ## Console Application (CLI)
