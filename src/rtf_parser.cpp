@@ -14,6 +14,7 @@
 #include "data_stream.h"
 #include <fstream>
 #include <iostream>
+#include "error_tags.h"
 #include "log.h"
 #include <map>
 #include "misc.h"
@@ -597,7 +598,7 @@ void RTFParser::parse(const data_source& data) const
 						}
 					}
 			}
-			throw_if (state.groups.size() == 0, "File is corrupted"); //it will crash soon if groups.size() returns zero... better to check
+			throw_if (state.groups.size() == 0, "File is corrupted", errors::uninterpretable_data{}); //it will crash soon if groups.size() returns zero... better to check
 		}
 		if (converter != NULL)
 			delete converter;

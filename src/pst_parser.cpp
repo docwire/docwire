@@ -422,8 +422,8 @@ namespace
 
 void libbfio_stream_initialize(libbfio_handle_t** handle, std::shared_ptr<std::istream> stream)
 {
-	throw_if (handle == NULL, "Invalid handle");
-	throw_if (*handle != NULL, "Handle already initialized");
+	throw_if (handle == NULL, "Invalid handle", errors::program_logic{});
+	throw_if (*handle != NULL, "Handle already initialized", errors::program_logic{});
 	auto libbfio_handle_initialize_result = libbfio_handle_initialize(
 		handle,
 		(intptr_t*)stream.get(),
@@ -453,7 +453,7 @@ void libbfio_stream_initialize(libbfio_handle_t** handle, std::shared_ptr<std::i
             		stream->seekg(offset, std::ios_base::end);
             		break;
             	default:
-					throw make_error("Invalid whence argument value", whence);
+					throw make_error("Invalid whence argument value", whence, errors::program_logic{});
         	}
 			return stream->tellg();
     	},

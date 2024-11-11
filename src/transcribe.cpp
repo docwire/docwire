@@ -64,7 +64,7 @@ void Transcribe::process(Info &info) const
 	}
 	catch (const std::exception& e)
 	{
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Error during transcription"));
 	}
 	Info doc_info(tag::Document{});
 	emit(doc_info);

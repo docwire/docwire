@@ -16,6 +16,7 @@
 #include "chaining.h"
 #include "detect_by_file_extension.h"
 #include "detect_by_signature.h"
+#include "error_hash.h"
 #include "error_tags.h"
 #include "exception_utils.h"
 #include <exception>
@@ -478,7 +479,7 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     catch (const std::exception& ex)
     {
         std::cerr << errors::diagnostic_message(ex);
-        ASSERT_TRUE(errors::contains_type<errors::file_is_encrypted>(ex));
+        ASSERT_TRUE(errors::contains_type<errors::file_encrypted>(ex));
     }   
 }
 
@@ -728,21 +729,22 @@ TEST (errors, throwing)
     }
     try
     {
-        throw make_error(errors::network_error{});
+        throw make_error(errors::network_failure{});
     }
     catch (const errors::base& e)
     {
-        ASSERT_EQ(e.context_type(), typeid(errors::network_error));
-        ASSERT_EQ(e.context_string(), "network error");
+        ASSERT_EQ(e.context_type(), typeid(errors::network_failure));
+        ASSERT_EQ(e.context_string(), "network failure error tag");
     }
     try
     {
-        throw_if("2 < 3", errors::file_is_encrypted{}, errors::backtrace_entry{});
+        std::string s { "test" };
+        throw_if("2 < 3", errors::file_encrypted{}, s);
     }
     catch (const errors::base& e)
     {
-        ASSERT_EQ(e.context_type(), typeid(errors::backtrace_entry));
-        ASSERT_EQ(e.context_string(), "backtrace entry");
+        ASSERT_EQ(e.context_type(), typeid(std::pair<std::string, std::string>));
+        ASSERT_EQ(e.context_string(), "s: test");
         try
         {
             std::rethrow_if_nested(e);
@@ -750,8 +752,8 @@ TEST (errors, throwing)
         }
         catch (const errors::base& e)
         {
-            ASSERT_EQ(e.context_type(), typeid(errors::file_is_encrypted));
-            ASSERT_EQ(e.context_string(), "file is encrypted");
+            ASSERT_EQ(e.context_type(), typeid(errors::file_encrypted));
+            ASSERT_EQ(e.context_string(), "file encrypted error tag");
             try
             {
                 std::rethrow_if_nested(e);
@@ -804,6 +806,27 @@ TEST(errors, diagnostic_message)
         "in " + err3_loc.function_name() + "\n"
         "at " + + err3_loc.file_name() + ":" + std::to_string(err3_loc.line() + 1) + "\n"
     );
+}
+
+TEST(errors, hashing)
+{
+    std::hash<errors::base> hasher;
+    auto e1 = make_error("test");
+    auto e2 = make_error("test");
+    auto e3 = make_error("test");
+    auto n1 = make_nested(e1, e3);
+    auto n2 = make_nested(e2, e3);
+    ASSERT_NE(hasher(e1), hasher(e2));
+    ASSERT_NE(hasher(n1), hasher(n2));
+    ASSERT_NE(hasher(n1), hasher(e1));
+    ASSERT_NE(hasher(n2), hasher(e2));
+    ASSERT_NE(hasher(n1), hasher(e3));
+    ASSERT_NE(hasher(n2), hasher(e3));
+    ASSERT_EQ(hasher(e1), hasher(e1));
+    ASSERT_EQ(hasher(e2), hasher(e2));
+    ASSERT_EQ(hasher(e3), hasher(e3));
+    ASSERT_EQ(hasher(n1), hasher(n1));
+    ASSERT_EQ(hasher(n2), hasher(n2));
 }
 
 std::string sanitize_log_text(const std::string& orig_log_text)

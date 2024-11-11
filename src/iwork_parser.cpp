@@ -229,7 +229,7 @@ static std::string find_main_xml_file(const ZipReader& unzip)
 		return "index.apxl";
 	if (unzip.exists("presentation.apxl"))
 		return "presentation.apxl";
-	throw make_error("None of the following files (index.xml, index.apxl, presentation.apxl) could be found.");
+	throw make_error("None of the following files (index.xml, index.apxl, presentation.apxl) could be found.", errors::uninterpretable_data{});
 }
 
 struct IWorkParser::Implementation
@@ -263,11 +263,11 @@ struct IWorkParser::Implementation
 				throw_if (!m_zipfile->readChunk(m_xml_file, chunk, len, readed), m_xml_file, len);
 				if (readed != len)	//we have reached the end
 					m_done = true;
-				throw_if (error_if_no_data && readed == 0, "Unexpected end of file");
+				throw_if (error_if_no_data && readed == 0, "Unexpected end of file", errors::uninterpretable_data{});
 			}
 			catch (const std::exception&)
 			{
-				std::throw_with_nested(make_error(errors::backtrace_entry{}, m_xml_file));
+				std::throw_with_nested(make_error(m_xml_file));
 			}
 	};
 
@@ -1996,7 +1996,7 @@ struct IWorkParser::Implementation
 		IWorkMetadataContent metadata_content(xml_reader, metadata);
 
 		throw_if (!zipfile.loadDirectory());
-		throw_if (getIWorkType(xml_reader) == IWorkContent::encrypted, errors::file_is_encrypted{});
+		throw_if (getIWorkType(xml_reader) == IWorkContent::encrypted, errors::file_encrypted{});
 		try
 		{
 			metadata_content.ParseMetaData(non_fatal_error_handler);
@@ -2043,7 +2043,7 @@ struct IWorkParser::Implementation
 
 		throw_if (!zipfile.loadDirectory());
 		IWorkContent::IWorkType iwork_type = getIWorkType(xml_reader);
-		throw_if (iwork_type == IWorkContent::encrypted, errors::file_is_encrypted{});
+		throw_if (iwork_type == IWorkContent::encrypted, errors::file_encrypted{});
 		iwork_content.setType(iwork_type);
 		text.clear();
 		try
@@ -2110,7 +2110,7 @@ void IWorkParser::parse(const data_source& data) const
 	}
 	catch (const std::exception& ex)
 	{
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Error parsing iWork main xml file"));
 	}
 }
 

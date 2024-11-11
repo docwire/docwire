@@ -475,18 +475,18 @@ struct XLSParser::Implementation
 				{
 					U16 encryption_type = getU16LittleEndian(rec.begin());
 					if (encryption_type == 0x0000)
-						throw make_error(errors::file_is_encrypted{}, "XOR obfuscation encryption");
+						throw make_error(errors::file_encrypted{}, "XOR obfuscation encryption");
 					else if (encryption_type == 0x0001 && rec.size() >= 4)
 					{
 						U16 header_type = getU16LittleEndian(rec.begin() + 2);
 						if (header_type == 0x0001)
-							throw make_error(errors::file_is_encrypted{}, "RC4 encryption");
+							throw make_error(errors::file_encrypted{}, "RC4 encryption");
 						else if (header_type == 0x0002 || header_type == 0x0003)
-							throw make_error(errors::file_is_encrypted{}, "RC4 CryptoAPI encryption");
-						throw make_error(errors::file_is_encrypted{}, "unknown RC4 encryption");
+							throw make_error(errors::file_encrypted{}, "RC4 CryptoAPI encryption");
+						throw make_error(errors::file_encrypted{}, "unknown RC4 encryption");
 					}
 				}
-				throw make_error(errors::file_is_encrypted{});
+				throw make_error(errors::file_encrypted{});
 			}
 			case XLS_FORMAT:
 			{
@@ -709,7 +709,7 @@ struct XLSParser::Implementation
 		bool read_status = true;
 		while (read_status)
 		{
-			throw_if (oleEof(reader), "BOF record not found");
+			throw_if (oleEof(reader), "BOF record not found", errors::uninterpretable_data{});
 			U16 rec_type, rec_len;
 			throw_if (!reader.readU16(rec_type) || !reader.readU16(rec_len), reader.getLastError());
 			enum BofRecordTypes
@@ -796,7 +796,7 @@ struct XLSParser::Implementation
 					break;
 				}
 				else
-					throw_if (rec_len != 8 && rec_len != 16, "Invalid BOF record size", rec_len);
+					throw_if (rec_len != 8 && rec_len != 16, "Invalid BOF record size", rec_len, errors::uninterpretable_data{});
 			}
 			else
 			{
@@ -804,7 +804,7 @@ struct XLSParser::Implementation
 				throw_if (!reader.read(&*rec.begin(), 126), reader.getLastError());
 			}
 		}
-		throw_if (oleEof(reader), "BOF record not found");
+		throw_if (oleEof(reader), "BOF record not found", errors::uninterpretable_data{});
 		bool eof_rec_found = false;
 		while (read_status)
 		{
@@ -917,7 +917,7 @@ std::string XLSParser::parse(ThreadSafeOLEStorage& storage) const
 	}
 	catch (const std::exception& e)
 	{
-		std::throw_with_nested(make_error(errors::backtrace_entry{}));
+		std::throw_with_nested(make_error("Error parsing XLS document"));
 	}
 }
 

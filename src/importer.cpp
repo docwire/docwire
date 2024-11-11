@@ -72,10 +72,10 @@ public:
     content_type::odf_flat::detect(data);
     content_type::outlook::detect(data);
     std::optional<mime_type> mt = data.highest_confidence_mime_type();
-    throw_if(!mt, "MIME type detection failed for the data source");
-    throw_if(data.mime_type_confidence(mime_type { "application/encrypted" }) >= confidence { 50 }, errors::file_is_encrypted{});
+    throw_if(!mt, "MIME type detection failed for the data source", errors::uninterpretable_data{});
+    throw_if(data.mime_type_confidence(mime_type { "application/encrypted" }) >= confidence { 50 }, errors::file_encrypted{});
     std::unique_ptr<ParserBuilder> builder = m_owner.find_parser_by_mime_type(*mt);
-    throw_if (!builder, "find_parser_by_mime_type() failed", mt->v);
+    throw_if (!builder, "find_parser_by_mime_type() failed", mt->v, errors::uninterpretable_data{});
     return builder;
   }
 
@@ -114,10 +114,7 @@ public:
     }
     catch (const std::exception& ex)
     {
-      if (errors::contains_type<errors::file_is_encrypted>(ex))
-        std::throw_with_nested(make_error(errors::backtrace_entry{}));
-      else
-        throw;
+      std::throw_with_nested(make_error("Parsing failed")));
     }
   }
 
