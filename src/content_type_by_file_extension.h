@@ -9,17 +9,17 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DETECT_BY_FILE_EXTENSION_H
-#define DOCWIRE_DETECT_BY_FILE_EXTENSION_H
+#ifndef DOCWIRE_CONTENT_TYPE_BY_FILE_EXTENSION_H
+#define DOCWIRE_CONTENT_TYPE_BY_FILE_EXTENSION_H
 
 #include "data_source.h"
 #include "defines.h"
 
-namespace docwire::detect
+namespace docwire::content_type::by_file_extension
 {
 
-DllExport void by_file_extension(data_source& data);
+DllExport void detect(data_source& data);
 
-} // namespace docwire::detect
+} // namespace docwire::content_type::by_file_extension
 
-#endif // DOCWIRE_DETECT_BY_FILE_EXTENSION_H
+#endif // DOCWIRE_CONTENT_TYPE_BY_FILE_EXTENSION_H

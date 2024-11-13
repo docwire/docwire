@@ -14,8 +14,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include "chaining.h"
-#include "detect_by_file_extension.h"
-#include "detect_by_signature.h"
+#include "content_type_by_file_extension.h"
+#include "content_type_by_signature.h"
 #include "error_hash.h"
 #include "error_tags.h"
 #include "exception_utils.h"
@@ -1513,11 +1513,11 @@ TEST(chaining, func_temp_no_args_with_result_callback_with_result_to_non_copyabl
     ASSERT_EQ(result, 3);
 }
 
-TEST(detect, by_file_extension)
+TEST(content_type, by_file_extension)
 {
     data_source data { std::filesystem::path{"1.docx"} };
     try {
-        detect::by_file_extension(data);
+        content_type::by_file_extension::detect(data);
     }
     catch (const std::exception& e) {
         FAIL() << errors::diagnostic_message(e);
@@ -1531,11 +1531,11 @@ TEST(detect, by_file_extension)
     ));
 }
 
-TEST(detect, by_signature)
+TEST(content_type, by_signature)
 {
     data_source data { seekable_stream_ptr { std::make_shared<std::ifstream>("1.doc", std::ios_base::binary) }};
     try {
-        detect::by_signature(data);
+        content_type::by_signature::detect(data);
     }
     catch (const std::exception& e) {
         FAIL() << errors::diagnostic_message(e);

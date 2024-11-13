@@ -14,8 +14,8 @@
 #include "content_type_odf_flat.h"
 #include "content_type_outlook.h"
 #include "content_type_xlsb.h"
-#include "detect_by_file_extension.h"
-#include "detect_by_signature.h"
+#include "content_type_by_file_extension.h"
+#include "content_type_by_signature.h"
 #include "error_tags.h"
 #include <fstream>
 #include <filesystem>
@@ -64,8 +64,8 @@ public:
 
   std::unique_ptr<ParserBuilder> findParser(data_source& data) const
   {
-    detect::by_file_extension(data);
-    detect::by_signature(data);
+    content_type::by_file_extension::detect(data);
+    content_type::by_signature::detect(data);
     content_type::html::detect(data);
     content_type::iwork::detect(data);
     content_type::xlsb::detect(data);

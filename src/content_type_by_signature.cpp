@@ -9,22 +9,38 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DETECT_BY_SIGNATURE_H
-#define DOCWIRE_DETECT_BY_SIGNATURE_H
+#include "content_type_by_signature.h"
 
-#include "data_source.h"
-#include "defines.h"
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/compare.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <magic.h>
+#include "resource_path.h"
 
-namespace docwire::detect
+namespace docwire::content_type::by_signature
 {
 
-struct allow_multiple
+void detect(data_source& data, allow_multiple allow_multiple)
 {
-    bool v;
-};
+    if (data.highest_mime_type_confidence() >= confidence::high)
+		return;
+    magic_t magic_cookie = magic_open(allow_multiple.v ? MAGIC_MIME_TYPE | MAGIC_CONTINUE : MAGIC_MIME_TYPE);
+    throw_if (magic_cookie == NULL);
+    throw_if (magic_load(magic_cookie, resource_path("libmagic/misc/magic.mgc").string().c_str()) != 0, magic_error(magic_cookie));
+    std::span<const std::byte> span = data.span();
+    const char* file_types = magic_buffer(magic_cookie, span.data(), span.size());
+    throw_if (file_types == NULL, magic_error(magic_cookie));
+    std::string file_types_str { file_types };
+    auto splitIt = boost::make_split_iterator(file_types_str, boost::first_finder(","));
+    while (splitIt != boost::split_iterator<std::string::iterator>()) 
+    {
+        data.add_mime_type(
+            mime_type { std::string{splitIt->begin(), splitIt->end()} },
+            confidence::very_high
+        );
+        ++splitIt;
+    }
+    magic_close(magic_cookie);
+}
 
-DllExport void by_signature(data_source& data, allow_multiple allow_multiple = {false});
-
-} // namespace docwire::detect
-
-#endif // DOCWIRE_DETECT_BY_SIGNATURE_H
+} // namespace docwire::content_type::by_signature

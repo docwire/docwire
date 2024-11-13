@@ -11,7 +11,7 @@
 
 #include "content_type_outlook.h"
 
-#include "detect_by_signature.h"
+#include "content_type_by_signature.h"
 
 namespace docwire::content_type::outlook
 {
@@ -22,7 +22,7 @@ void detect(data_source& data)
         return;
 	if (data.highest_mime_type_confidence() >= confidence::highest)
 		return;
-    ::docwire::detect::by_signature(data, ::docwire::detect::allow_multiple { true });
+    docwire::content_type::by_signature::detect(data, docwire::content_type::by_signature::allow_multiple { true });
     if (data.mime_type_confidence(mime_type { "application/x-ms-msg" }) < confidence::medium)
         data.add_mime_type(mime_type { "application/vnd.ms-outlook-pst" }, confidence::very_high);
 }
