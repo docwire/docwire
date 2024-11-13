@@ -19,16 +19,16 @@ namespace docwire::content_type::iwork
 void detect(data_source& data)
 {
     confidence zip_confidence = data.mime_type_confidence(mime_type { "application/zip" });
-    if (zip_confidence < confidence { 90 })
+    if (zip_confidence < confidence::medium)
         return;
-    if (data.highest_mime_type_confidence() >= confidence { 99 })
+    if (data.highest_mime_type_confidence() >= confidence::highest)
 		return;
     ZipReader unzip{data};
     try
     {
         unzip.open();
         if (unzip.exists("presentation.apxl"))
-            data.add_mime_type(mime_type { "application/vnd.apple.keynote" }, confidence { 99 });
+            data.add_mime_type(mime_type { "application/vnd.apple.keynote" }, confidence::highest);
         else if (unzip.exists("index.xml") || unzip.exists("index.apxl"))
         {
             std::string contents;
@@ -37,16 +37,16 @@ void detect(data_source& data)
             else
                 unzip.read("index.apxl", &contents);
             if (contents.find("<sl:document"))
-                data.add_mime_type(mime_type { "application/vnd.apple.pages" }, confidence { 99 });
+                data.add_mime_type(mime_type { "application/vnd.apple.pages" }, confidence::highest);
             else if (contents.find("<ls:document"))
-                data.add_mime_type(mime_type { "application/vnd.apple.numbers" }, confidence { 99 });
+                data.add_mime_type(mime_type { "application/vnd.apple.numbers" }, confidence::highest);
             else if (contents.find("<key:presentation"))
-                data.add_mime_type(mime_type { "application/vnd.apple.keynote" }, confidence { 99 });
+                data.add_mime_type(mime_type { "application/vnd.apple.keynote" }, confidence::highest);
             else
             {
-                data.add_mime_type(mime_type { "application/vnd.apple.pages" }, confidence { 33 });
-                data.add_mime_type(mime_type { "application/vnd.apple.numbers" }, confidence { 33 });
-                data.add_mime_type(mime_type { "application/vnd.apple.keynote" }, confidence { 33 });
+                data.add_mime_type(mime_type { "application/vnd.apple.pages" }, confidence::low);
+                data.add_mime_type(mime_type { "application/vnd.apple.numbers" }, confidence::low);
+                data.add_mime_type(mime_type { "application/vnd.apple.keynote" }, confidence::low);
             }
         }
     }
@@ -54,7 +54,7 @@ void detect(data_source& data)
     {
         data.add_mime_type(
             mime_type { "application/zip" },
-            confidence { static_cast<int8_t>(zip_confidence.v * 0.8) });
+            confidence::low);
     }
 }
 

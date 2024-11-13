@@ -19,22 +19,22 @@ namespace docwire::content_type::xlsb
 void detect(data_source& data)
 {
     confidence xlsx_confidence = data.mime_type_confidence(mime_type { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-    if (xlsx_confidence < confidence { 90 })
+    if (xlsx_confidence < confidence::medium)
         return;
-    if (data.highest_mime_type_confidence() >= confidence { 99 })
+    if (data.highest_mime_type_confidence() >= confidence::highest)
 		return;
     ZipReader unzip{data};
     try
     {
         unzip.open();
         if (unzip.exists("xl/workbook.bin"))
-            data.add_mime_type(mime_type { "application/vnd.ms-excel.sheet.binary.macroenabled.12" }, confidence { 99 });
+            data.add_mime_type(mime_type { "application/vnd.ms-excel.sheet.binary.macroenabled.12" }, confidence::highest);
     }
     catch (const std::exception& e)
     {
         data.add_mime_type(
             mime_type { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
-            confidence { static_cast<int8_t>(xlsx_confidence.v * 0.8) });
+            confidence::low);
     }
 }
 

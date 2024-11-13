@@ -22,7 +22,7 @@ namespace docwire::detect
 
 void by_signature(data_source& data, allow_multiple allow_multiple)
 {
-    if (data.highest_mime_type_confidence() >= confidence { 90 })
+    if (data.highest_mime_type_confidence() >= confidence::high)
 		return;
     magic_t magic_cookie = magic_open(allow_multiple.v ? MAGIC_MIME_TYPE | MAGIC_CONTINUE : MAGIC_MIME_TYPE);
     throw_if (magic_cookie == NULL);
@@ -36,7 +36,7 @@ void by_signature(data_source& data, allow_multiple allow_multiple)
     {
         data.add_mime_type(
             mime_type { std::string{splitIt->begin(), splitIt->end()} },
-            confidence { 98 }
+            confidence::very_high
         );
         ++splitIt;
     }

@@ -66,10 +66,13 @@ struct hash<docwire::mime_type>
 namespace docwire
 {
 
-struct confidence
+enum class confidence
 {
-	int8_t v;
-	std::strong_ordering operator<=>(const confidence& rhs) const = default;
+	low,
+	medium,
+	high,
+	very_high,
+	highest
 };
 
 template <typename T>

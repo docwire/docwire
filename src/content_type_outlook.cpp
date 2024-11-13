@@ -18,13 +18,13 @@ namespace docwire::content_type::outlook
 
 void detect(data_source& data)
 {
-    if (data.mime_type_confidence(mime_type { "application/vnd.ms-outlook" }) < confidence { 90 })
+    if (data.mime_type_confidence(mime_type { "application/vnd.ms-outlook" }) < confidence::medium)
         return;
-	if (data.highest_mime_type_confidence() >= confidence { 99 })
+	if (data.highest_mime_type_confidence() >= confidence::highest)
 		return;
     ::docwire::detect::by_signature(data, ::docwire::detect::allow_multiple { true });
-    if (data.mime_type_confidence(mime_type { "application/x-ms-msg" }) < confidence { 90 })
-        data.add_mime_type(mime_type { "application/vnd.ms-outlook-pst" }, confidence { 98 });
+    if (data.mime_type_confidence(mime_type { "application/x-ms-msg" }) < confidence::medium)
+        data.add_mime_type(mime_type { "application/vnd.ms-outlook-pst" }, confidence::very_high);
 }
 
 } // namespace docwire::content_type::outlook

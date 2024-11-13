@@ -114,7 +114,7 @@ public:
     }
     catch (const std::exception& ex)
     {
-      std::throw_with_nested(make_error("Parsing failed")));
+      std::throw_with_nested(make_error("Parsing failed"));
     }
   }
 

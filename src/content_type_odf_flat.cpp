@@ -16,21 +16,21 @@ namespace docwire::content_type::odf_flat
 
 void detect(data_source& data)
 {
-    if (data.mime_type_confidence(mime_type { "text/xml" }) < confidence { 90 })
+    if (data.mime_type_confidence(mime_type { "text/xml" }) < confidence::medium)
         return;
-    if (data.highest_mime_type_confidence() >= confidence { 99 })
+    if (data.highest_mime_type_confidence() >= confidence::highest)
 		return;
     std::string initial_xml = data.string(length_limit{1024});
     if (initial_xml.find("office:document") != std::string::npos)
     {
         if (initial_xml.find("application/vnd.oasis.opendocument.text"))
-            data.add_mime_type(mime_type { "application/vnd.oasis.opendocument.text-flat-xml" }, confidence { 99 });
+            data.add_mime_type(mime_type { "application/vnd.oasis.opendocument.text-flat-xml" }, confidence::highest);
         else if (initial_xml.find("application/vnd.oasis.opendocument.spreadsheet"))
-            data.add_mime_type(mime_type { "application/vnd.oasis.opendocument.spreadsheet-flat-xml" }, confidence { 99 });
+            data.add_mime_type(mime_type { "application/vnd.oasis.opendocument.spreadsheet-flat-xml" }, confidence::highest);
         else if (initial_xml.find("application/vnd.oasis.opendocument.presentation"))
-            data.add_mime_type(mime_type { "application/vnd.oasis.opendocument.presentation-flat-xml" }, confidence { 99 });
+            data.add_mime_type(mime_type { "application/vnd.oasis.opendocument.presentation-flat-xml" }, confidence::highest);
         else if (initial_xml.find("application/vnd.oasis.opendocument.graphics"))
-            data.add_mime_type(mime_type { "application/vnd.oasis.opendocument.graphics-flat-xml" }, confidence { 99 });
+            data.add_mime_type(mime_type { "application/vnd.oasis.opendocument.graphics-flat-xml" }, confidence::highest);
     }
 }
 

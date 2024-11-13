@@ -1526,7 +1526,7 @@ TEST(detect, by_file_extension)
     ASSERT_THAT(data.mime_types, testing::ElementsAre(
         std::pair {
             mime_type { "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
-            confidence { 95 }
+            confidence::high
         }
     ));
 }
@@ -1544,7 +1544,7 @@ TEST(detect, by_signature)
     ASSERT_THAT(data.mime_types, testing::ElementsAre(
         std::pair {
             mime_type { "application/msword" },
-            confidence { 98 }
+            confidence::very_high
         }
     ));
 }

@@ -16,13 +16,13 @@ namespace docwire::content_type::html
 
 void detect(data_source& data)
 {
-    if (data.mime_type_confidence(mime_type { "text/xml" }) < confidence { 90 })
+    if (data.mime_type_confidence(mime_type { "text/xml" }) < confidence::medium)
         return;
-    if (data.highest_mime_type_confidence() >= confidence { 99 })
+    if (data.highest_mime_type_confidence() >= confidence::highest)
 		return;
     std::string initial_xml = data.string(length_limit{1024});
     if (initial_xml.find("<html") != std::string::npos || initial_xml.find("<HTML") != std::string::npos)
-		data.add_mime_type(mime_type { "text/html" }, confidence { 99 });
+		data.add_mime_type(mime_type { "text/html" }, confidence::highest);
 }
 
 } // namespace docwire::content_type::html
