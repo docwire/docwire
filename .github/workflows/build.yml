@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:
+    inputs:
+      vcpkg_export:
+        description: 'Create vcpkg export archive'
+        type: boolean
+        default: false
 run-name: ${{ github.event_name == 'pull_request' && github.event.pull_request.title || github.event_name == 'schedule' && 'Daily build' || 'Manual build' }}
 permissions:
   packages: write
@@ -121,4 +126,17 @@ jobs:
           path: |
             vcpkg/buildtrees/*/*.log
             ${{ matrix.sanitizer == 'callgrind' && 'vcpkg/buildtrees/**/callgrind.out.*' || '' }}
+          if-no-files-found: error
+      - name: "Export built packages with 'vcpkg export'"
+        if: success() && github.event.input.vcpkg_export == 'true' && matrix.sanitizer == ''
+        run: |
+          ./vcpkg/vcpkg export docwire:${{ matrix.triplet }} --output=docwire-vcpkg-export --raw --output-dir=.
+          ${{ runner.os == 'Windows' && 'zip -r docwire-vcpkg-export.zip docwire-vcpkg-export' || 'tar -cjf docwire-vcpkg-export.tar.bz2 docwire-vcpkg-export' }}
+      - name: "Upload 'vcpkg export' archive"
+        uses: actions/upload-artifact@v4
+        if: success() && github.event.input.vcpkg_export == 'true' && matrix.sanitizer == ''
+        with:
+          name: ${{ matrix.triplet }}-${{ matrix.os }}-binaries
+          path: |
+            ${{ runner.os == 'Windows' && 'docwire-vcpkg-export.zip' || 'docwire-vcpkg-export.tar.bz2' }}
           if-no-files-found: error
