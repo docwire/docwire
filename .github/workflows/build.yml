@@ -130,13 +130,13 @@ jobs:
       - name: "Export built packages with 'vcpkg export'"
         if: success() && github.event.inputs.vcpkg_export == 'true' && matrix.sanitizer == ''
         run: |
-          ./vcpkg/vcpkg export docwire:${{ matrix.triplet }} --output=docwire-vcpkg-export --raw --output-dir=.
-          ${{ runner.os == 'Windows' && 'zip -r docwire-vcpkg-export.zip docwire-vcpkg-export' || 'tar -cjf docwire-vcpkg-export.tar.bz2 docwire-vcpkg-export' }}
+          ./vcpkg/vcpkg export docwire:${{ matrix.triplet }} --output=docwire-vcpkg-export-${{ matrix.triplet }}-${{ matrix.os }}-${{ github.sha }} --raw --output-dir=.
+          cmake -E tar czvf docwire-vcpkg-export-${{ matrix.triplet }}-${{ matrix.os }}-${{ github.sha }}.tar.gz docwire-vcpkg-export
       - name: "Upload 'vcpkg export' archive"
         uses: actions/upload-artifact@v4
         if: success() && github.event.inputs.vcpkg_export == 'true' && matrix.sanitizer == ''
         with:
           name: ${{ matrix.triplet }}-${{ matrix.os }}-binaries
           path: |
-            ${{ runner.os == 'Windows' && 'docwire-vcpkg-export.zip' || 'docwire-vcpkg-export.tar.bz2' }}
+            docwire-vcpkg-export-${{ matrix.triplet }}-${{ matrix.os }}-${{ github.sha }}.tar.gz
           if-no-files-found: error
