@@ -102,6 +102,7 @@ jobs:
           ${{ (matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind') && 'sudo apt-get update && sudo apt-get install -y valgrind' || '' }}
           ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint doxygen autoconf-archive' || '' }}
           ${{ runner.os == 'macOS' && 'brew install md5sha1sum automake autogen doxygen autoconf-archive' || '' }}
+          ${{ matrix.os == 'macos-15' && 'brew install mono' || '' }}
           ${{ runner.os == 'Windows' && 'choco install doxygen.install graphviz -y' || '' }}
           ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
