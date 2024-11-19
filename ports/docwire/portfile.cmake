@@ -73,7 +73,7 @@ function(run_tests build_type)
 	endif()
 
 	vcpkg_execute_required_process(
-		COMMAND ${valgrind_command} "ctest"
+		COMMAND ${valgrind_command} ${CMAKE_CTEST_COMMAND}
 			-V
 			--no-tests=error
 			--label-regex is_api_test|is_example
