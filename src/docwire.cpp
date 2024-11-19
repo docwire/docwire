@@ -25,7 +25,7 @@
 #include "html_exporter.h"
 #include "language.h"
 #include "log.h"
-#include <magic_enum_iostream.hpp>
+#include <magic_enum/magic_enum_iostream.hpp>
 #include "mail_parser_provider.h"
 #include "meta_data_exporter.h"
 #include "model_chain_element.h"

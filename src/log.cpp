@@ -20,7 +20,7 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum_iostream.hpp>
 #include <sstream>
 #include <stack>
 
