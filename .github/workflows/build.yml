@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04, windows-2019, windows-2022, macos-12, macos-13, macos-14]
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04, windows-2019, windows-2022, macos-13, macos-14, macos-15]
         triplet: [x64-linux-dynamic, x64-windows, x64-osx-dynamic, arm64-osx-dynamic]
         sanitizer: ["", "asan", "tsan"]
         exclude:
@@ -51,12 +51,6 @@ jobs:
             triplet: x64-osx-dynamic
           - os: windows-2022
             triplet: arm64-osx-dynamic
-          - os: macos-12
-            triplet: x64-linux-dynamic
-          - os: macos-12
-            triplet: x64-windows
-          - os: macos-12
-            triplet: arm64-osx-dynamic
           - os: macos-13
             triplet: x64-linux-dynamic
           - os: macos-13
@@ -68,6 +62,12 @@ jobs:
           - os: macos-14
             triplet: x64-windows
           - os: macos-14
+            triplet: x64-osx-dynamic
+          - os: macos-15
+            triplet: x64-linux-dynamic
+          - os: macos-15
+            triplet: x64-windows
+          - os: macos-15
             triplet: x64-osx-dynamic
           - os: windows-2022
             sanitizer: asan # probably temporarily: https://github.com/actions/runner-images/issues/8891
