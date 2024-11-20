@@ -1,3 +1,24 @@
+## Version 2024.11.19
+
+This release introduces updates to the build workflow configuration, adding new macOS 15 runner and removing deprecated macOS 12 runner. VCPKG port for the docwire package was modified to fix automatic testing when multiple cmake instances are available. Various source files have been updated to adapt code to the new version of magic_enum library.
+
+> 🐇 In the land of code where the rabbits play,  
+> New paths are forged, come what may.  
+> With macOS 15, our builds take flight,  
+> Testing and logging, all feel just right.  
+> So hop along, let’s celebrate,  
+> With every change, we elevate! 🐇✨
+
+- **New Features**
+	- Added new macOS 15 runner
+
+- **Bug Fixes**
+	- VCPKG port for the docwire package was modified to fix automatic testing when multiple cmake instances are available.
+
+- **Chores**
+	- Updated source files to adapt code for the new version of `magic_enum` library.
+	- Removed deprecated macOS 12 runner.
+
 ## Version 2024.11.10
 
 This release introduces significant enhancements to error handling across various components of the DocWire SDK. A new section in the documentation outlines the comprehensive error handling framework, detailing features such as chained exceptions, type-safe context values, and secure error messages. Additionally, multiple source files have been updated to implement more structured error reporting, including the introduction of specific error types and improved context for exceptions. The changes aim to provide clearer diagnostics and facilitate better debugging practices throughout the SDK.
