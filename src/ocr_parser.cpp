@@ -27,7 +27,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <algorithm>
-#include <magic_enum_iostream.hpp>
+#include <magic_enum/magic_enum_iostream.hpp>
 #include "log.h"
 #include "lru_memory_cache.h"
 #include <mutex>

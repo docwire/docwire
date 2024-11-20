@@ -17,7 +17,7 @@
 #include <fstream>
 #include "input.h"
 #include "log.h"
-#include "magic_enum_iostream.hpp"
+#include <magic_enum/magic_enum_iostream.hpp>
 #include "make_error.h"
 #include "output.h"
 #include "post.h"

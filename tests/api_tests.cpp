@@ -31,7 +31,7 @@
 #include "language.h"
 #include <iterator>
 #include <array>
-#include "magic_enum_iostream.hpp"
+#include <magic_enum/magic_enum_iostream.hpp>
 #include "mail_parser_provider.h"
 #include "meta_data_exporter.h"
 #include "../src/standard_filter.h"
