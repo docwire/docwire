@@ -33,6 +33,7 @@
 #include <mutex>
 #include <numeric>
 #include "resource_path.h"
+#include "throw_if.h"
 
 namespace docwire
 {

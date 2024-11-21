@@ -19,6 +19,7 @@
 #include "plain_text_writer.h"
 #include "error_tags.h"
 #include "misc.h"
+#include "throw_if.h"
 
 namespace docwire
 {

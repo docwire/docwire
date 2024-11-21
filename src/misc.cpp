@@ -20,6 +20,7 @@
 #include <sstream>
 #include <time.h>
 #include "thread_safe_ole_storage.h"
+#include "throw_if.h"
 
 namespace docwire
 {

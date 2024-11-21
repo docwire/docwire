@@ -19,6 +19,7 @@
 #include <onmt/Tokenizer.h>
 #include <optional>
 #include "resource_path.h"
+#include "throw_if.h"
 
 namespace docwire::local_ai
 {

@@ -18,6 +18,7 @@
 #include <boost/signals2.hpp>
 #include <iostream>
 #include "log.h"
+#include "make_error.h"
 #include <string.h>
 
 namespace docwire

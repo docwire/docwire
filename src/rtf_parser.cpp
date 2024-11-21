@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "throw_if.h"
 #include <wv2/textconverter.h>
 #include <wv2/ustring.h>
 #include <boost/signals2.hpp>

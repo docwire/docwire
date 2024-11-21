@@ -13,7 +13,9 @@
 #define DOCWIRE_LOCAL_AI_MODEL_CHAIN_ELEMENT_H
 
 #include "chain_element.h"
+#include "error_tags.h"
 #include "model_runner.h"
+#include "throw_if.h"
 
 namespace docwire::local_ai
 {

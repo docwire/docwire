@@ -21,6 +21,7 @@
 #include "log.h"
 #include "plain_text_writer.h"
 #include <mailio/message.hpp>
+#include "throw_if.h"
 
 namespace docwire
 {

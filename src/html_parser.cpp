@@ -22,6 +22,7 @@
 #include "htmlcxx/html/CharsetConverter.h"
 #include <list>
 #include "log.h"
+#include "make_error.h"
 #include "misc.h"
 #include <mutex>
 #include <iostream>
