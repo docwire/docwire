@@ -15,12 +15,8 @@
 
 #include <ctime>
 #include "data_source.h"
-#include "log.h"
-#include "log_ctime.h"
-#include "log_empty_struct.h"
-#include "log_exception.h"
-#include "log_variant.h"
 #include <fstream>
+#include <functional>
 #include <optional>
 #include <variant>
 #include <vector>
@@ -35,11 +31,7 @@ struct Styling
 {
   std::vector<std::string> classes;
   std::string id;
-  std::string style;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, classes, id, style);
-  }
+  std::string style;  
 };
 
 struct Email
@@ -50,10 +42,6 @@ struct Email
 	std::optional<std::string> subject;
   std::optional<std::string> reply_to;
   std::optional<std::string> sender;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, from, date, to, subject, reply_to, sender);
-  }
 };
 
 struct Metadata
@@ -65,10 +53,6 @@ struct Metadata
   std::optional<size_t> page_count;
   std::optional<size_t> word_count;
   std::optional<attributes::Email> email_attrs;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, author, creation_date, last_modified_by, last_modification_date, page_count, word_count, email_attrs);
-  }
 };
 
 template<class T>
@@ -86,10 +70,6 @@ struct PleaseWait {};
 struct Paragraph
 {
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, styling);
-  }
 };
 
 struct CloseParagraph {};
@@ -97,10 +77,6 @@ struct CloseParagraph {};
 struct Section
 {
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, styling);
-  }
 };
 
 struct CloseSection {};
@@ -108,10 +84,6 @@ struct CloseSection {};
 struct Span
 {
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, styling);
-  }
 };
 
 struct CloseSpan {};
@@ -119,19 +91,11 @@ struct CloseSpan {};
 struct BreakLine
 {
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, styling);
-  }
 };
 
 struct Bold
 {
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, styling);
-  }
 };
 
 struct CloseBold {};
@@ -139,10 +103,6 @@ struct CloseBold {};
 struct Italic
 {
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, styling);
-  }
 };
 
 struct CloseItalic {};
@@ -150,21 +110,14 @@ struct CloseItalic {};
 struct Underline
 {
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, styling);
-  }
 };
 
 struct CloseUnderline {};
 
+
 struct Table
 {
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, styling);
-  }
 };
 
 struct CloseTable {};
@@ -172,10 +125,6 @@ struct CloseTable {};
 struct TableRow
 {
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, styling);
-  }
 };
 
 struct CloseTableRow {};
@@ -183,10 +132,6 @@ struct CloseTableRow {};
 struct TableCell
 {
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, styling);
-  }
 };
 
 struct CloseTableCell {};
@@ -194,20 +139,12 @@ struct CloseTableCell {};
 struct Text
 {
   std::string text;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, text);
-  }
 };
 
 struct Link
 {
   std::optional<std::string> url;
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, url, styling);
-  }
 };
 
 struct CloseLink {};
@@ -217,29 +154,17 @@ struct Image
   std::string src;
   std::optional<std::string> alt;
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, src, alt, styling);
-  }
 };
 
 struct Style
 {
   std::string css_text;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, css_text);
-  }
 };
 
 struct List
 {
   std::string type = "decimal";
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, type, styling);
-  }
 };
 
 struct CloseList {};
@@ -247,10 +172,6 @@ struct CloseList {};
 struct ListItem
 {
   attributes::Styling styling;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, styling);
-  }
 };
 
 struct CloseListItem {};
@@ -266,10 +187,6 @@ struct Mail
   std::optional<std::string> subject;
   std::optional<uint32_t> date;
   std::optional<int> level;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, subject, date, level);
-  }
 };
 
 struct CloseMail {};
@@ -282,10 +199,6 @@ struct Attachment
   std::optional<std::string> name;
   size_t size;
   std::optional<file_extension> extension;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, name, size);
-  }
 };
 
 struct CloseAttachment { };
@@ -294,10 +207,6 @@ struct Folder
 {
   std::optional<std::string> name;
   std::optional<int> level;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, name, level);
-  }
 };
 
 struct CloseFolder { };
@@ -307,10 +216,6 @@ struct Comment
   std::optional<std::string> author;
   std::optional<std::string> time;
   std::optional<std::string> comment;
-  void log_to_record_stream(log_record_stream& s) const
-  {
-    s << docwire_log_streamable_obj(*this, author, time, comment);
-  }
 };
 
 struct Page { };
@@ -319,9 +224,6 @@ struct ClosePage { };
 struct Document
 {
   std::function<attributes::Metadata()> metadata = []() { return attributes::Metadata{}; };
-  void log_to_record_stream(log_record_stream& s) const
-  {
-  }
 };
 
 struct CloseDocument { };

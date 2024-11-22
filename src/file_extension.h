@@ -12,8 +12,8 @@
 #ifndef DOCWIRE_FILE_EXTENSION_H
 #define DOCWIRE_FILE_EXTENSION_H
 
+#include <algorithm>
 #include <filesystem>
-#include "log.h"
 
 namespace docwire
 {
@@ -104,16 +104,6 @@ public:
 			else
 				return std::strong_ordering::equal;
 		#endif			
-	}
-
-	/**
-	 * @brief Logs the file extension to a record stream.
-	 *
-	 * @param s The record stream to log to.
-	 */
-	void log_to_record_stream(log_record_stream& s) const
-	{
-		s << docwire_log_streamable_obj(*this, m_ext);
 	}
 
 private:

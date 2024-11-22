@@ -9,19 +9,22 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "input.h"
+#ifndef DOCWIRE_LOG_DATA_SOURCE_H
+#define DOCWIRE_LOG_DATA_SOURCE_H
 
+#include "data_source.h"
 #include "log.h"
-#include "log_data_source.h"
-#include "parser.h"
+#include "log_file_extension.h"
 
-using namespace docwire;
-
-void
-InputChainElement::process(ChainElement& chain_element) const
+namespace docwire
 {
-  docwire_log_func();
-  docwire_log_var(m_data);
-  Info info{m_data};
-  chain_element.process(info);
+
+inline log_record_stream& operator<<(log_record_stream& log_stream, const data_source& data)
+{
+	log_stream << docwire_log_streamable_obj(data, data.path(), data.file_extension());
+	return log_stream;
 }
+
+} // namespace docwire
+
+#endif // DOCWIRE_LOG_DATA_SOURCE_H

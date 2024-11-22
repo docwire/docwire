@@ -20,7 +20,6 @@
 #include "find.h"
 #include "fuzzy_match.h"
 #include "input.h"
-#include "log.h"
 #include "output.h"
 #include "mail_parser_provider.h"
 #include "model_chain_element.h"

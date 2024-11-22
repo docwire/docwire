@@ -12,9 +12,9 @@
 #ifndef DOCWIRE_DATA_SOURCE_H
 #define DOCWIRE_DATA_SOURCE_H
 
+#include "defines.h"
 #include "file_extension.h"
 #include <filesystem>
-#include "log.h"
 #include "memory_buffer.h"
 #include <optional>
 #include <string_view>
@@ -102,11 +102,6 @@ class DllExport data_source
 		unique_identifier id() const
 		{
 			return m_id;
-		}
-
-		void log_to_record_stream(log_record_stream& s) const
-		{
-			s << docwire_log_streamable_obj(*this, m_file_extension);
 		}
 
 	private:
