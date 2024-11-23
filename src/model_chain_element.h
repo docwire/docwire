@@ -26,7 +26,7 @@ namespace docwire::local_ai
  * passing the text to the model runner. The output of the model runner is
  * then emitted as a new Info object.
  */
-class model_chain_element : public ChainElement
+class DllExport model_chain_element : public ChainElement
 {
 public:
 	/**
