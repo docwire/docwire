@@ -12,8 +12,6 @@
 #ifndef DOCWIRE_PARSER_WRAPPER_H
 #define DOCWIRE_PARSER_WRAPPER_H
 
-#include <iostream>
-
 #include "parser.h"
 #include "parser_builder.h"
 #include "defines.h"

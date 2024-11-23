@@ -15,7 +15,6 @@
 #include <ctranslate2/translator.h>
 #include "error_tags.h"
 #include "log.h"
-#include "misc.h"
 #include <onmt/Tokenizer.h>
 #include <optional>
 #include "resource_path.h"

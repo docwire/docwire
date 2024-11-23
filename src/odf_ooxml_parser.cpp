@@ -14,8 +14,6 @@
 #include "xml_fixer.h"
 #include "zip_reader.h"
 #include "error_tags.h"
-#include <fstream>
-#include <iostream>
 #include <libxml2/libxml/xmlreader.h>
 #include "log.h"
 #include <map>
@@ -24,11 +22,8 @@
 #include <regex>
 #include <stdlib.h>
 #include <string.h>
-#include <sstream>
 #include <boost/signals2.hpp>
 #include "xml_stream.h"
-#include "thread_safe_ole_storage.h"
-#include "thread_safe_ole_stream_reader.h"
 #include "throw_if.h"
 
 namespace docwire

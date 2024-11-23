@@ -12,7 +12,6 @@
 #include "output.h"
 
 #include "error_tags.h"
-#include <fstream>
 #include "throw_if.h"
 
 namespace docwire

@@ -14,7 +14,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include "chaining.h"
-#include "error_hash.h"
+#include "error_hash.h" // IWYU pragma: keep
 #include "error_tags.h"
 #include "exception_utils.h"
 #include <exception>
@@ -27,7 +27,6 @@
 #include "decompress_archives.h"
 #include <fstream>
 #include "html_exporter.h"
-#include "importer.h"
 #include "language.h"
 #include <iterator>
 #include <array>
@@ -41,9 +40,7 @@
 #include "output.h"
 #include "parse_detected_format.h"
 #include "plain_text_exporter.h"
-#include "plain_text_writer.h"
 #include "post.h"
-#include <regex>
 #include "throw_if.h"
 #include "transformer_func.h"
 #include "txt_parser.h"

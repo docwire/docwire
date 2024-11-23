@@ -11,8 +11,6 @@
 
 #include "zip_reader.h"
 
-#include <iostream>
-#include "log.h"
 #include <map>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,7 +18,6 @@
 #include "throw_if.h"
 #include <vector>
 #include "unzip.h"
-#include "zlib.h"
 
 namespace docwire
 {

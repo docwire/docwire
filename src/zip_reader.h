@@ -12,10 +12,10 @@
 #ifndef DOCWIRE_ZIP_READER_H
 #define DOCWIRE_ZIP_READER_H
 
+#include "data_source.h"
 #include <memory>
 #include <string>
 #include "defines.h"
-#include "tags.h"
 
 namespace docwire
 {

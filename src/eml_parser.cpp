@@ -16,10 +16,8 @@
 
 #include "error_tags.h"
 #include "htmlcxx/html/CharsetConverter.h"
-#include "importer.h"
 #include <iostream>
 #include "log.h"
-#include "plain_text_writer.h"
 #include <mailio/message.hpp>
 #include "throw_if.h"
 

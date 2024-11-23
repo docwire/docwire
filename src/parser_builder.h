@@ -13,9 +13,7 @@
 #ifndef DOCWIRE_PARSER_BUILDER_H
 #define DOCWIRE_PARSER_BUILDER_H
 
-#include <vector>
 #include <memory>
-#include <functional>
 #include "parser.h"
 #include "parser_parameters.h"
 #include "defines.h"

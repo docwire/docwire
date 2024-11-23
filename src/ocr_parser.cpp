@@ -24,9 +24,7 @@
 #include <boost/signals2.hpp>
 
 #include <filesystem>
-#include <iostream>
 #include <cstdlib>
-#include <algorithm>
 #include <magic_enum/magic_enum_iostream.hpp>
 #include "log.h"
 #include "lru_memory_cache.h"

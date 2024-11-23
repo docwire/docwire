@@ -13,9 +13,7 @@
 #define DOCWIRE_PLAIN_TEXT_WRITER_H
 
 #include <iostream>
-#include <fstream>
 
-#include "parser.h"
 #include "writer.h"
 #include "defines.h"
 

@@ -15,7 +15,6 @@
 #include <codecvt>
 #include "data_stream.h"
 #include "error_tags.h"
-#include <fstream>
 #include <iostream>
 #include <list>
 #include "log.h"
@@ -26,15 +25,11 @@
 #include <new>
 #include <podofo/podofo.h>
 #include <set>
-#include <sstream>
-#include <strstream>
 #include <stdlib.h>
 #include <string.h>
 #include "throw_if.h"
 #include <vector>
 #include <zlib.h>
-
-#include <stack>
 
 namespace docwire
 {
@@ -1506,7 +1501,7 @@ struct PDFParser::Implementation
 
 					PDFBoolean()
 					{
-						m_value == false;
+						m_value = false;
 					}
 
 					bool& operator ()()
@@ -7021,8 +7016,8 @@ struct PDFParser::Implementation
 			return object->GetName().GetString();
 		else if (object->IsString())
 			return object->GetString().GetString();
-    else
-      return def_val;
+		else
+			return def_val;
 	}
 
 	const PoDoFo::PdfName* to_name(const PoDoFo::PdfObject* object)

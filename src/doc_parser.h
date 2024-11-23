@@ -13,8 +13,6 @@
 #define DOCWIRE_DOC_PARSER_H
 
 #include "parser.h"
-#include "parser_builder.h"
-#include <string>
 #include <vector>
 
 namespace docwire

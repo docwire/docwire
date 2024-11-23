@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_DOCWIRE_H
 #define DOCWIRE_DOCWIRE_H
 
+// IWYU pragma: begin_exports
 #include "office_formats_parser_provider.h"
 #include "classify.h"
 #include "decompress_archives.h"
@@ -34,5 +35,6 @@
 #include "transcribe.h"
 #include "transformer_func.h"
 #include "translate_to.h"
+// IWYU pragma: end_exports
 
 #endif

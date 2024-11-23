@@ -14,7 +14,6 @@
 #include <boost/algorithm/string.hpp>
 #include <iostream>
 #include "error_tags.h"
-#include "log.h"
 #include <stdio.h>
 #include <string.h>
 #include <sstream>

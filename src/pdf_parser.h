@@ -13,8 +13,6 @@
 #define DOCWIRE_PDF_PARSER_H
 
 #include "parser.h"
-#include "parser_builder.h"
-#include <string>
 #include "tags.h"
 #include <vector>
 
@@ -36,7 +34,7 @@ class DllExport PDFParser : public Parser
 		void parse(const data_source& data) const override;
     	static std::vector<file_extension> getExtensions() { return { file_extension{".pdf"} }; }
 
-		bool understands(const data_source& data) const;
+		bool understands(const data_source& data) const override;
 };
 
 } // namespace docwire

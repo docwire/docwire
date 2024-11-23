@@ -12,7 +12,6 @@
 #ifndef DOCWIRE_IMPORTER_H
 #define DOCWIRE_IMPORTER_H
 
-#include <algorithm>
 #include <memory>
 
 #include "chain_element.h"

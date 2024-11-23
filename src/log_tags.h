@@ -13,10 +13,11 @@
 #define DOCWIRE_LOG_TAGS_H
 
 #include "log.h"
-#include "log_ctime.h"
-#include "log_empty_struct.h"
-#include "log_exception.h"
-#include "log_variant.h"
+#include "log_ctime.h" // IWYU pragma: keep
+#include "log_data_source.h" // IWYU pragma: keep
+#include "log_empty_struct.h" // IWYU pragma: keep
+#include "log_exception.h" // IWYU pragma: keep
+#include "log_variant.h" // IWYU pragma: keep
 #include "tags.h"
 
 namespace docwire

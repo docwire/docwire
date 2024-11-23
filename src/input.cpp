@@ -12,7 +12,7 @@
 #include "input.h"
 
 #include "log.h"
-#include "log_data_source.h"
+#include "log_data_source.h" // IWYU pragma: keep
 #include "parser.h"
 
 using namespace docwire;

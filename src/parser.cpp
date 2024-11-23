@@ -12,8 +12,7 @@
 #include "parser.h"
 
 #include "log.h"
-#include "log_data_source.h"
-#include "log_tags.h"
+#include "log_tags.h" // IWYU pragma: keep
 
 namespace docwire
 {

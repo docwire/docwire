@@ -14,7 +14,7 @@
 
 #include "data_source.h"
 #include "log.h"
-#include "log_file_extension.h"
+#include "log_file_extension.h" // IWYU pragma: keep
 
 namespace docwire
 {

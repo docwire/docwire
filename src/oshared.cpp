@@ -13,7 +13,6 @@
 
 #include "error_tags.h"
 #include "misc.h"
-#include <iostream>
 #include "log.h"
 #include "throw_if.h"
 #include "wv2/utilities.h"

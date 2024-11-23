@@ -15,17 +15,14 @@
 #include <regex>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
-#include "data_stream.h"
 #include "entities.h"
 #include "htmlcxx/html/Node.h"
 #include "htmlcxx/html/ParserSax.h"
 #include "htmlcxx/html/CharsetConverter.h"
-#include <list>
 #include "log.h"
 #include "make_error.h"
 #include "misc.h"
 #include <mutex>
-#include <iostream>
 #include "charsetdetect.h"
 #include <set>
 #include "tags.h"

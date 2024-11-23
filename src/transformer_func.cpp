@@ -9,7 +9,6 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "importer.h"
 #include "transformer_func.h"
 
 namespace docwire

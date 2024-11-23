@@ -22,7 +22,7 @@ class DllExport XMLParser : public Parser
 public:
 	void parse(const data_source& data) const override;
     static std::vector<file_extension> getExtensions() { return { file_extension{".xml"} }; }
-	bool understands(const data_source& data) const;
+	bool understands(const data_source& data) const override;
 };
 
 } // namespace docwire

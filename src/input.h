@@ -16,7 +16,6 @@
 #include "chain_element.h"
 #include "data_source.h"
 #include "parsing_chain.h"
-#include <filesystem>
 
 namespace docwire
 {

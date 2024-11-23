@@ -12,8 +12,6 @@
 #include "common_xml_document_parser.h"
 
 #include "zip_reader.h"
-#include "error_tags.h"
-#include <iostream>
 #include <libxml/xmlreader.h>
 #include <functional>
 #include "log.h"
@@ -419,8 +417,10 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			{
 				text += header;
 				if (list_vector.size() > 0)
+				{
 					text += "\n";
 					parser.impl->send_tag(tag::BreakLine{});
+				}
 			}
 			--parser.getListDepth();
 			parser.impl->send_tag(tag::CloseList{});

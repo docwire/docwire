@@ -12,7 +12,6 @@
 #include "transcribe.h"
 
 #include <boost/json.hpp>
-#include <fstream>
 #include "input.h"
 #include "log.h"
 #include "make_error.h"

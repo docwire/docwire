@@ -13,9 +13,7 @@
 
 #include <archive.h>
 #include <archive_entry.h>
-#include "error_tags.h"
 #include <filesystem>
-#include <fstream>
 #include "log.h"
 #include "parser.h"
 #include <set>

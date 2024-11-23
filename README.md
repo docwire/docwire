@@ -359,6 +359,7 @@ Parse file in any format (Office, PDF, mail, etc) having stream, export to HTML 
 ```cpp
 #include "docwire.h"
 #include <cassert>
+#include <fstream>
 #include <sstream>
 
 int main(int argc, char* argv[])
@@ -603,6 +604,7 @@ Make a voice summary of document in any format (Office, PDF, mail, etc) in two s
 
 ```cpp
 #include "docwire.h"
+#include <fstream>
 
 int main(int argc, char* argv[])
 {

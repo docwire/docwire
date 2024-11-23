@@ -12,8 +12,6 @@
 #include "rtf_parser.h"
 
 #include "data_stream.h"
-#include <fstream>
-#include <iostream>
 #include "error_tags.h"
 #include "log.h"
 #include <map>

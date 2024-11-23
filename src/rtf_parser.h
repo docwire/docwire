@@ -13,8 +13,6 @@
 #define DOCWIRE_RTF_PARSER_H
 
 #include "parser.h"
-#include "parser_builder.h"
-#include <string>
 #include "tags.h"
 #include <vector>
 
@@ -32,7 +30,7 @@ class DllExport RTFParser : public Parser
     	static std::vector<file_extension> getExtensions() { return { file_extension{".rtf"} }; }
 
 		RTFParser();
-		bool understands(const data_source& data) const;
+		bool understands(const data_source& data) const override;
 };
 
 } // namespace docwire
