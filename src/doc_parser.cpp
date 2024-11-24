@@ -11,7 +11,6 @@
 
 #include "doc_parser.h"
 #include "error_tags.h"
-#include <iostream>
 #include "log.h"
 #include "misc.h"
 #include "nested_exception.h"
@@ -32,7 +31,6 @@
 #include "wv2/paragraphproperties.h"
 #include "wv2/parserfactory.h"
 #include <stdio.h>
-#include <sstream>
 #include "wv2/ustring.h"
 #include <vector>
 #ifdef WIN32
@@ -41,7 +39,6 @@
 #include <boost/signals2.hpp>
 #include "wv2/word_helper.h"
 #include "wv2/word97_generated.h"
-#include "wv2/wvlog.h"
 #include "xls_parser.h"
 #include "thread_safe_ole_stream_reader.h"
 #include "thread_safe_ole_storage.h"
@@ -118,7 +115,7 @@ static void cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& strea
 	PLCFIterator<Word97::PCD> it( *parser9->m_plcfpcd );
 	for ( ; it.current(); ++it, ++piece ) {
 		if ( it.currentLim() > cp && it.currentStart() <= cp )
-		break;
+			break;
 		offset -= it.currentRun();
 	}
 	docwire_log(debug) << "Piece: " << piece << ", offset: " << offset;
@@ -186,7 +183,7 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 			docwire_log(debug) << "Annotation text stream position from " << stream_begin_offset << " to " << stream_end_offset << ".";
 			reader->seek(stream_begin_offset);
 			U8 annotation_mark = reader->readU8();
-			throw_if (!annotation_mark == 0x05, "Incorrect annotation mark.", errors::uninterpretable_data{});
+			throw_if (annotation_mark != 0x05, "Incorrect annotation mark.", errors::uninterpretable_data{});
 			std::string annotation;
 			while (reader->tell() < stream_end_offset - 1)
 			{

@@ -359,6 +359,7 @@ Parse file in any format (Office, PDF, mail, etc) having stream, export to HTML 
 ```cpp
 #include "docwire.h"
 #include <cassert>
+#include <fstream>
 #include <sstream>
 
 int main(int argc, char* argv[])
@@ -603,6 +604,7 @@ Make a voice summary of document in any format (Office, PDF, mail, etc) in two s
 
 ```cpp
 #include "docwire.h"
+#include <fstream>
 
 int main(int argc, char* argv[])
 {
@@ -859,9 +861,9 @@ By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, use
 - [ubuntu-20.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2004-Readme.md) with gcc upgraded to version 11
 - [windows-2022](https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md)
 - [windows-2019](https://github.com/actions/runner-images/blob/main/images/windows/Windows2019-Readme.md)
+- [macos-15](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md)
 - [macos-14](https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md)
 - [macos-13](https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md)
-- [macos-12](https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md)
 
 As the project evolves, we will continue to expand the list of officially supported platforms to ensure broad compatibility and meet the needs of our users.
 

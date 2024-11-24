@@ -9,22 +9,29 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XML_PARSER_H
-#define DOCWIRE_XML_PARSER_H
+#include "model_chain_element.h"
 
-#include "parser.h"
+#include "error_tags.h"
+#include "throw_if.h"
 
-namespace docwire
+namespace docwire::local_ai
 {
 
-class DllExport XMLParser : public Parser
+void model_chain_element::process(Info &info) const
 {
-public:
-	void parse(const data_source& data) const override;
-    static std::vector<file_extension> getExtensions() { return { file_extension{".xml"} }; }
-	bool understands(const data_source& data) const override;
-};
+	if (!std::holds_alternative<data_source>(info.tag))
+	{
+		emit(info);
+		return;
+	}
 
-} // namespace docwire
+	const data_source& data = std::get<data_source>(info.tag);
+	throw_if (data.file_extension() && *data.file_extension() != file_extension{".txt"}, errors::program_logic{});
+	std::string input = m_prompt + "\n" + data.string();
+	std::string output = m_model_runner->process(input);
 
-#endif // DOCWIRE_XML_PARSER_H
+	Info new_info(data_source{output});
+	emit(new_info);
+}
+
+} // namespace docwire::local_ai

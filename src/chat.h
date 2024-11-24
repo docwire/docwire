@@ -45,7 +45,7 @@ public:
 	* @see docwire::Info
 	* @param info
 	*/
-	void process(Info &info) const;
+	void process(Info &info) const override;
 
 	bool is_leaf() const override
 	{

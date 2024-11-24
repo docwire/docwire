@@ -13,13 +13,9 @@
 #ifndef DOCWIRE_PST_PARSER_H
 #define DOCWIRE_PST_PARSER_H
 
-#include <iostream>
-#include <string>
 #include <vector>
-#include <functional>
 
 #include "parser.h"
-#include "parser_builder.h"
 
 namespace docwire
 {

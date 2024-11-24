@@ -11,11 +11,9 @@
 
 #include "odfxml_parser.h"
 
-#include <fstream>
-#include <iostream>
 #include <libxml/xmlreader.h>
 #include "log.h"
-#include "misc.h"
+#include "make_error.h"
 #include "xml_stream.h"
 
 namespace docwire

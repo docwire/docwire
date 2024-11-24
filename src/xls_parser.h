@@ -14,7 +14,6 @@
 
 #include "parser.h"
 #include <string>
-#include "tags.h"
 #include <vector>
 
 namespace docwire

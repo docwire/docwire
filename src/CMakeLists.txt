@@ -13,6 +13,8 @@ file(GENERATE OUTPUT ${EMPTY_SOURCE} CONTENT "
 	}
 ")
 
+add_compile_definitions(DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
+
 include(core.cmake)
 include(base64.cmake)
 include(odf_ooxml.cmake)

@@ -1,3 +1,18 @@
+## Version 2024.11.23
+
+This release introduces improvements to the DocWire SDK's codebase, focusing on enhancing code organization, modernizing features, and optimizing compilation times.
+
+> Functions moved, headers light,  
+> Logs decoupled, code shines bright.  
+> 'Override' guides, exports renew,  
+> Refactored code, we start anew.  
+
+- **Refactor**
+	- Extracted implementations of data_source methods from data_source.h into data_source.cpp and model_chain_element methods from model_chain_element.h into model_chain_element.cpp, to improve compilation times and code organization.
+	- Separated logging functionalities from various classes and moved them into dedicated files (log_data_source.h, log_file_extension.h, log_tags.h), enhancing modularity and maintainability.
+	- Removed unnecessary include directives from multiple files to reduce dependencies and improve build performance.
+	- Ensured consistent use of modern C++ features like override for better code practices.
+
 ## Version 2024.11.19
 
 This release introduces updates to the build workflow configuration, adding new macOS 15 runner and removing deprecated macOS 12 runner. VCPKG port for the docwire package was modified to fix automatic testing when multiple cmake instances are available. Various source files have been updated to adapt code to the new version of magic_enum library.

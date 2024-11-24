@@ -9,7 +9,6 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include <any>
 #include <optional>
 #include "misc.h"
 

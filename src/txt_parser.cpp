@@ -12,12 +12,10 @@
 #include "txt_parser.h"
 
 #include "charsetdetect.h"
-#include "data_stream.h"
-#include "error_tags.h"
 #include "htmlcxx/html/CharsetConverter.h"
 #include <boost/signals2.hpp>
-#include <iostream>
 #include "log.h"
+#include "make_error.h"
 #include <string.h>
 
 namespace docwire

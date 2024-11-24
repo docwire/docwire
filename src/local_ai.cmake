@@ -1,4 +1,4 @@
-add_library(docwire_local_ai SHARED model_runner.cpp)
+add_library(docwire_local_ai SHARED model_chain_element.cpp model_runner.cpp)
 
 find_package(Boost REQUIRED COMPONENTS filesystem system json)
 find_package(ctranslate2 CONFIG REQUIRED)

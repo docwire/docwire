@@ -12,7 +12,6 @@
 #ifndef DOCWIRE_STANDARD_FILTER_H
 #define DOCWIRE_STANDARD_FILTER_H
 
-#include <algorithm>
 #include "parser.h"
 #include "defines.h"
 #include <vector>

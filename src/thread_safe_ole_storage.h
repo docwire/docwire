@@ -12,7 +12,6 @@
 #ifndef DOCWIRE_THREAD_SAFE_OLE_STORAGE_H
 #define DOCWIRE_THREAD_SAFE_OLE_STORAGE_H
 
-#include <memory>
 #include <span>
 #include <string>
 #include <vector>

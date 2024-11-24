@@ -9,22 +9,26 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XML_PARSER_H
-#define DOCWIRE_XML_PARSER_H
+#ifndef DOCWIRE_LOG_FILE_EXTENSION_H
+#define DOCWIRE_LOG_FILE_EXTENSION_H
 
-#include "parser.h"
+#include "file_extension.h"
+#include "log.h"
 
 namespace docwire
 {
 
-class DllExport XMLParser : public Parser
+/**
+* @brief Logs the file extension to a record stream.
+*
+* @param log_stream The record stream to log to.
+*/
+inline log_record_stream& operator<<(log_record_stream& log_stream, const file_extension& ext)
 {
-public:
-	void parse(const data_source& data) const override;
-    static std::vector<file_extension> getExtensions() { return { file_extension{".xml"} }; }
-	bool understands(const data_source& data) const override;
-};
+	log_stream << docwire_log_streamable_obj(ext, ext.string());
+	return log_stream;
+}
 
 } // namespace docwire
 
-#endif // DOCWIRE_XML_PARSER_H
+#endif // DOCWIRE_LOG_FILE_EXTENSION_H

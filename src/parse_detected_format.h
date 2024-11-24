@@ -12,7 +12,6 @@
 #ifndef DOCWIRE_PARSE_DETECTED_FORMAT_H
 #define DOCWIRE_PARSE_DETECTED_FORMAT_H
 
-#include <algorithm>
 #include <memory>
 
 #include "importer.h"

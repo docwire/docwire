@@ -32,9 +32,11 @@ extern "C"
 
 #include <boost/signals2.hpp>
 
+#include "error_tags.h"
 #include "log.h"
 #include "misc.h"
 #include "pst_parser.h"
+#include "throw_if.h"
 
 namespace docwire
 {

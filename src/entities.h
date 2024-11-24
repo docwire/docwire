@@ -18,7 +18,6 @@
 
 #include "defines.h"
 #include <stddef.h>
-#include <string>
 
 namespace docwire
 {
