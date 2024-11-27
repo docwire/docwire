@@ -14,6 +14,7 @@
 
 #include <exception>
 #include <string>
+#include "stringification.h"
 #if __has_include(<source_location>) && (!defined(__clang__) || __clang_major__ >= 16) // https://github.com/llvm/llvm-project/issues/56379
 	#define USE_STD_SOURCE_LOCATION 1
 #else
@@ -25,21 +26,22 @@
 #else
 	#include <boost/assert/source_location.hpp>
 #endif
-#include <sstream>
 #include <utility>
+
+template <typename T1, typename T2>
+struct docwire::stringifier<std::pair<T1, T2>>
+{
+	std::string operator()(const std::pair<T1, T2>& pair)
+	{
+		return stringify(pair.first) + ": " + stringify(pair.second);
+	}
+};
 
 /**
  * @brief Provides features for reporting and handling errors with context data using nested exceptions.
  */
 namespace docwire::errors
 {
-
-template <typename T1, typename T2>
-std::ostream& operator<<(std::ostream& s, const std::pair<T1, T2>& p)
-{
-	s << p.first << ": " << p.second;
-	return s;
-}
 
 #if USE_STD_SOURCE_LOCATION
 	using source_location = std::source_location;
@@ -201,16 +203,7 @@ struct impl : public base
 	 */
 	std::string context_string() const override
 	{
-		if constexpr (requires { context.string(); })
-			return context.string();
-		else if constexpr (requires { std::to_string(context); })
-			return std::to_string(context);
-		else
-		{
-			std::ostringstream s;
-			s << context;
-			return s.str();
-		}
+		return stringify(context);
 	}
 };
 
