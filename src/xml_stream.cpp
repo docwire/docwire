@@ -11,6 +11,7 @@
 
 #include "xml_stream.h"
 
+#include <boost/algorithm/string/trim.hpp>
 #include <libxml/xmlreader.h>
 #include "log.h"
 #include <mutex>
@@ -18,6 +19,13 @@
 
 namespace docwire
 {
+
+template <>
+std::string stringify(const xmlError& error)
+{
+	return boost::trim_right_copy(std::string{error.message}) +
+		std::string(" (code: ") + std::to_string(error.code) + ")";
+}
 
 static size_t xml_parser_usage_counter = 0;
 
@@ -113,8 +121,11 @@ struct XmlStream::Implementation
 	{
 		do
 		{
-			if (xmlTextReaderRead(m_reader.get()) != 1)
+			int read_status = xmlTextReaderRead(m_reader.get());
+			throw_if (read_status == -1, "xmlTextReaderRead failed", *xmlGetLastError());
+			if (read_status == 0) // eof
 				return false;
+			throw_if (read_status != 1, "Incorrect xmlTextReader status code", read_status);
 			docwire_log(debug) << "# read. type=" << xmlTextReaderNodeType(m_reader.get()) << ", depth=" << xmlTextReaderDepth(m_reader.get()) << ", name=" << (char*)xmlTextReaderConstLocalName(m_reader.get());
 		}
 		while (should_skip());
