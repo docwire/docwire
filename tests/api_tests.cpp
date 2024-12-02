@@ -1326,6 +1326,23 @@ TEST(TXTParser, paragraphs)
     ));    
 }
 
+TEST(OCRParser, leptonica_stderr_capturer)
+{
+    try
+    {
+        using namespace chaining;
+        data_source{std::string{"Incorrect image data"}, docwire::file_extension{".jpg"}} |
+            OCRParser{} | std::vector<Tag>{};
+        FAIL() << "OCRParser should have thrown an exception";
+    }
+    catch (const std::exception& e)
+    {
+        ASSERT_TRUE(errors::contains_type<errors::uninterpretable_data>(e));
+        ASSERT_THAT(errors::diagnostic_message(e), testing::HasSubstr(
+            "with context \"leptonica_stderr_capturer.contents(): Error in pixReadMem: Unknown format: no pix returned\""));
+    }
+}
+
 TEST(base64, encode)
 {
     const std::string input_str { "test" };

@@ -31,6 +31,7 @@ public:
     static std::string get_default_tessdata_prefix();
 
     OCRParser();
+    OCRParser(OCRParser&&);
     ~OCRParser();
 
     void parse(const data_source& data) const override;
