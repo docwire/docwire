@@ -86,7 +86,8 @@ static std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> make_xml_tex
 	// other code that uses libxml2.
 	static LibXml2InitAndCleanup init_and_cleanup{};
 	return std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)>(
-		xmlReaderForMemory(xml.c_str(), xml.length(), NULL, NULL, xml_parse_options),
+		xmlReaderForMemory(xml.c_str(), xml.length(), NULL, NULL,
+			xml_parse_options | XML_PARSE_NOERROR | XML_PARSE_NOWARNING),
 		&xmlFreeTextReader);
 }
 
