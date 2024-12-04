@@ -727,41 +727,9 @@ int main(int argc, char* argv[])
 }
 ```
 
-Use transformer to process non-critical errors (warnings) flowing through the pipeline:
+Handling errors and warnings:
 
-```cpp
-#include "docwire.h"
-#include <cassert>
-#include <sstream>
-
-int main(int argc, char* argv[])
-{
-  using namespace docwire;
-  std::stringstream out_stream;
-
-  try
-  {
-    std::filesystem::path("data_processing_definition.doc") |
-      ParseDetectedFormat<OfficeFormatsParserProvider>() |
-      PlainTextExporter() |
-      TransformerFunc([](Info& info)
-	    {
-	      if (std::holds_alternative<std::exception_ptr>(info.tag))
-		      std::clog << "[WARNING] " <<
-            errors::diagnostic_message(std::get<std::exception_ptr>(info.tag)) <<
-            std::endl;
-	    }) |
-      out_stream;
-  }
-  catch (const std::exception& e)
-  {
-    std::cerr << "[ERROR] " << errors::diagnostic_message(e) << std::endl;
-    return 1;
-  }
-
-  return 0;
-}
-```
+[You can find example of handling errors and warnings here](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 Using transformer to filter out emails (eg. from Outlook PST mailbox) with subject containing "Hello":
 
@@ -1132,6 +1100,8 @@ processing file tests/password_protected.xls
 Errors that are not fatal are represented with the same chained error objects, but instead of using C++ throw/catch mechanism, they are pushed to the parsing chain or returned via callbacks like other results.
 
 This assumption gives them similar security and debugging capabilities to fatal errors and allows easy conversion between fatal and non-fatal errors on different backtrace levels (it usually cannot be decided in a point of failure) without breaking of the error chain.
+
+[You can find example of handling non-fatal errors here](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 ### Modern C++ features used
 

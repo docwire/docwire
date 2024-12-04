@@ -39,6 +39,7 @@ struct docwire::stringifier<std::pair<T1, T2>>
 
 /**
  * @brief Provides features for reporting and handling errors with context data using nested exceptions.
+ * @see @ref handling_errors_and_warnings.cpp "handling errors and warnings example"
  */
 namespace docwire::errors
 {
@@ -93,6 +94,7 @@ namespace docwire::errors
  * @see errors::impl
  * @see errors::make_error
  * @see errors::diagnostic_message
+ * @see @ref handling_errors_and_warnings.cpp "handling errors and warnings example"
  */
 struct base : public std::exception
 {
@@ -162,6 +164,7 @@ struct base : public std::exception
  * @see errors::base
  * @see errors::make_error
  * @see errors::diagnostic_message
+ * @see @ref handling_errors_and_warnings.cpp "handling errors and warnings example"
  */
 template <typename T>
 struct impl : public base
