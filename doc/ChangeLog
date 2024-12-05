@@ -2,12 +2,12 @@
 
 This release introduces significant improvements to error handling and code organization, enhancing the overall stability and usability of our software.
 
-> Errors tamed, code refined,  
-> XmlStream and OCRParser aligned.  
-> Stringification features shine so bright,  
-> Error handling, a wondrous sight.  
-> Documentation fixed, all is well,  
-> With every change, our code does tell.  
+> Errors gracefully caught and tamed,  
+> XmlStream and OCRParser, their handling acclaimed.  
+> Stringification features, now standing alone,  
+> Non-fatal parsing errors, their presence known.  
+> Documentation clearer than before,  
+> Our error handling reaching new shore.  
 
 - **Improvements**
 	- Improved error handling in the XmlStream and OCRParser classes, ensuring more robust and reliable parsing.
