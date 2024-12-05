@@ -1,3 +1,27 @@
+## Version 2024.12.04
+
+This release introduces significant improvements to error handling and code organization, enhancing the overall stability and usability of our software.
+
+> Errors tamed, code refined,  
+> XmlStream and OCRParser aligned.  
+> Stringification features shine so bright,  
+> Error handling, a wondrous sight.  
+> Documentation fixed, all is well,  
+> With every change, our code does tell.  
+
+- **Improvements**
+	- Improved error handling in the XmlStream and OCRParser classes, ensuring more robust and reliable parsing.
+	- Extracted stringification features from error.h into a separate file, stringification.h, and improved them for better code organization and reusability.
+	- Added emitting error from the first round of parsing as non-fatal if second round of parsing starts, allowing for more flexible error handling.
+
+- **Bug Fixes**
+	- Disabled printing of libxml2 errors and warnings to stderr, preventing unnecessary output and improving user experience.
+	- Fixed a small issue with the main page of the API documentation, ensuring accurate and up-to-date information.
+
+- **Documentation**
+	- Extracted example of handling errors and warnings into a separate source file and added a Doxygen documentation page with that example, providing clear guidance for developers.
+	- Linked the example to the docwire::errors namespace, errors::base class, and errors::impl template descriptions, enhancing documentation completeness and usability.
+
 ## Version 2024.11.23
 
 This release introduces improvements to the DocWire SDK's codebase, focusing on enhancing code organization, modernizing features, and optimizing compilation times.
