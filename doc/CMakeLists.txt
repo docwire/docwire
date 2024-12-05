@@ -27,7 +27,7 @@ set(DOXYGEN_SOURCE_BROWSER YES)
 set(DOXYGEN_REFERENCES_LINK_SOURCE YES)
 set(DOXYGEN_IMAGE_PATH images)
 set(DOXYGEN_GENERATE_TREEVIEW YES)
-set(DOXYGEN_USE_MDFILE_AS_MAINPAGE ../README.md)
+set(DOXYGEN_USE_MDFILE_AS_MAINPAGE ${CMAKE_CURRENT_BINARY_DIR}/readme.md)
 
 # -----------------------------------------------------
 # Generate 'doxygen' target
