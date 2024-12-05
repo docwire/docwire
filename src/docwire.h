@@ -37,4 +37,10 @@
 #include "translate_to.h"
 // IWYU pragma: end_exports
 
+/**
+ * @example handling_errors_and_warnings.cpp
+ * This example presents how to catch exceptions to handle critical errors and
+ * how to use transformer to process non-critical errors (warnings) flowing through the pipeline
+*/
+
 #endif

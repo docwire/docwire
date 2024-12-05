@@ -113,7 +113,12 @@ public:
         throw;
       docwire_log(severity_level::info) << "It is possible that wrong parser was selected. Trying different parsers.";
       auto second_builder = m_owner.findParserByData(data);
-      if (!second_builder)
+      if (second_builder)
+      {
+        Info err_info{std::current_exception()};
+        m_owner.emit(err_info);
+      }
+      else
       {
         throw;
       }

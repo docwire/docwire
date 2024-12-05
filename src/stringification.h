@@ -9,44 +9,66 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OCR_PARSER_H
-#define DOCWIRE_OCR_PARSER_H
+#ifndef DOCWIRE_STRINGIFICATION_H
+#define DOCWIRE_STRINGIFICATION_H
 
 #include <string>
-#include <memory>
-
-#include "language.h"
-#include "parser.h"
+#include <sstream>
 
 namespace docwire
 {
 
-class DllExport OCRParser : public Parser
+template <typename T>
+struct stringifier;
+
+template <typename T>
+concept to_string_callable = requires { std::to_string(std::declval<T>()); };
+
+template <to_string_callable T>
+struct stringifier<T>
 {
-private:
-    struct Implementation;
-    std::unique_ptr<Implementation> impl;
+	std::string operator()(const T& value) { return std::to_string(value); }
+};
 
-public:
-    static std::string get_default_tessdata_prefix();
+template <typename T>
+concept string_method_equipped = requires { std::declval<T>().string(); };
 
-    OCRParser();
-    OCRParser(OCRParser&&);
-    ~OCRParser();
+template <string_method_equipped T>
+struct stringifier<T>
+{
+	std::string operator()(const T& value) { return value.string(); }
+};
 
-    void parse(const data_source& data) const override;
-    static std::vector <file_extension> getExtensions()
-    {
-        return { file_extension{".tiff"}, file_extension{".jpeg"}, file_extension{".bmp"}, file_extension{".png"}, file_extension{".pnm"}, file_extension{".jfif"}, file_extension{".jpg"}, file_extension{".webp"} };
-    }
-    Parser& withParameters(const ParserParameters &parameters) override;
+template <typename T>
+concept streamable = requires (std::ostream& os, T value) { os << value; };
 
-    void setTessdataPrefix(const std::string& tessdata_prefix);
-    bool understands(const data_source& data) const override;
-private:
-    std::string parse(const data_source& data, const std::vector<Language>& languages) const;
+template <streamable T>
+requires (!to_string_callable<T> && !string_method_equipped<T>)
+struct stringifier<T>
+{
+	std::string operator()(const T& value)
+	{
+		std::ostringstream s;
+		s << value;
+		return s.str();
+	}
+};
+
+template <typename T>
+std::string stringify(const T& value) { return stringifier<T>()(value); }
+
+template<>
+struct stringifier<const char*>
+{
+	std::string operator()(const char* value) { return value; }
+};
+
+template<>
+struct stringifier<std::string>
+{
+	std::string operator()(const std::string& value) { return value; }
 };
 
 } // namespace docwire
 
-#endif // DOCWIRE_OCR_PARSER_H
+#endif
