@@ -19,6 +19,7 @@
 #include <optional>
 #include <string_view>
 #include "unique_identifier.h"
+#include <unordered_map>
 #include <variant>
 #include <vector>
 

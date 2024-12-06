@@ -16,6 +16,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <magic.h>
 #include "resource_path.h"
+#include "throw_if.h"
 
 namespace docwire::content_type::by_signature
 {

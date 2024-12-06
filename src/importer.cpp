@@ -9,6 +9,8 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include "importer.h"
+
 #include "content_type_html.h"
 #include "content_type_iwork.h"
 #include "content_type_odf_flat.h"
@@ -17,13 +19,7 @@
 #include "content_type_by_file_extension.h"
 #include "content_type_by_signature.h"
 #include "error_tags.h"
-#include <fstream>
 #include <filesystem>
-#include <boost/signals2.hpp>
-
-#include "exception_utils.h"
-#include "importer.h"
-#include "log.h"
 #include "throw_if.h"
 
 namespace docwire
