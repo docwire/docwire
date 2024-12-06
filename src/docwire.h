@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_DOCWIRE_H
 #define DOCWIRE_DOCWIRE_H
 
+// IWYU pragma: begin_exports
 #include "office_formats_parser_provider.h"
 #include "classify.h"
 #include "decompress_archives.h"
@@ -20,7 +21,6 @@
 #include "find.h"
 #include "fuzzy_match.h"
 #include "input.h"
-#include "log.h"
 #include "output.h"
 #include "mail_parser_provider.h"
 #include "model_chain_element.h"
@@ -35,5 +35,12 @@
 #include "transcribe.h"
 #include "transformer_func.h"
 #include "translate_to.h"
+// IWYU pragma: end_exports
+
+/**
+ * @example handling_errors_and_warnings.cpp
+ * This example presents how to catch exceptions to handle critical errors and
+ * how to use transformer to process non-critical errors (warnings) flowing through the pipeline
+*/
 
 #endif

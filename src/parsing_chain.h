@@ -13,7 +13,6 @@
 #define DOCWIRE_PARSING_CHAIN_H
 
 #include <memory>
-#include <iostream>
 #include "defines.h"
 #include <vector>
 

@@ -12,11 +12,9 @@
 #ifndef DOCWIRE_EML_PARSER_H
 #define DOCWIRE_EML_PARSER_H
 
-#include <string>
 #include <vector>
 
 #include "parser.h"
-#include "parser_builder.h"
 
 namespace docwire
 {

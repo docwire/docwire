@@ -13,7 +13,6 @@
 #define DOCWIRE_IWORK_PARSER_H
 
 #include "parser.h"
-#include <string>
 #include "tags.h"
 #include <vector>
 

@@ -12,7 +12,6 @@
 #ifndef DOCWIRE_CHAINING_H
 #define DOCWIRE_CHAINING_H
 
-#include <concepts>
 #include "invocation_concepts.h"
 #include "invocation_traits.h"
 #include "ref_or_owned.h"

@@ -16,7 +16,7 @@
 #include "chaining.h"
 #include "content_type_by_file_extension.h"
 #include "content_type_by_signature.h"
-#include "error_hash.h"
+#include "error_hash.h" // IWYU pragma: keep
 #include "error_tags.h"
 #include "exception_utils.h"
 #include <exception>
@@ -29,11 +29,10 @@
 #include "decompress_archives.h"
 #include <fstream>
 #include "html_exporter.h"
-#include "importer.h"
 #include "language.h"
 #include <iterator>
 #include <array>
-#include "magic_enum_iostream.hpp"
+#include <magic_enum/magic_enum_iostream.hpp>
 #include "mail_parser_provider.h"
 #include "meta_data_exporter.h"
 #include "../src/standard_filter.h"
@@ -43,9 +42,7 @@
 #include "output.h"
 #include "parse_detected_format.h"
 #include "plain_text_exporter.h"
-#include "plain_text_writer.h"
 #include "post.h"
-#include <regex>
 #include "throw_if.h"
 #include "transformer_func.h"
 #include "txt_parser.h"
@@ -1350,6 +1347,23 @@ TEST(TXTParser, paragraphs)
         VariantWith<tag::BreakLine>(_),
         VariantWith<tag::CloseDocument>(_)
     ));    
+}
+
+TEST(OCRParser, leptonica_stderr_capturer)
+{
+    try
+    {
+        using namespace chaining;
+        data_source{std::string{"Incorrect image data"}, docwire::file_extension{".jpg"}} |
+            OCRParser{} | std::vector<Tag>{};
+        FAIL() << "OCRParser should have thrown an exception";
+    }
+    catch (const std::exception& e)
+    {
+        ASSERT_TRUE(errors::contains_type<errors::uninterpretable_data>(e));
+        ASSERT_THAT(errors::diagnostic_message(e), testing::HasSubstr(
+            "with context \"leptonica_stderr_capturer.contents(): Error in pixReadMem: Unknown format: no pix returned\""));
+    }
 }
 
 TEST(base64, encode)

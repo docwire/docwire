@@ -359,6 +359,7 @@ Parse file in any format (Office, PDF, mail, etc) having stream, export to HTML 
 ```cpp
 #include "docwire.h"
 #include <cassert>
+#include <fstream>
 #include <sstream>
 
 int main(int argc, char* argv[])
@@ -603,6 +604,7 @@ Make a voice summary of document in any format (Office, PDF, mail, etc) in two s
 
 ```cpp
 #include "docwire.h"
+#include <fstream>
 
 int main(int argc, char* argv[])
 {
@@ -725,41 +727,9 @@ int main(int argc, char* argv[])
 }
 ```
 
-Use transformer to process non-critical errors (warnings) flowing through the pipeline:
+Handling errors and warnings:
 
-```cpp
-#include "docwire.h"
-#include <cassert>
-#include <sstream>
-
-int main(int argc, char* argv[])
-{
-  using namespace docwire;
-  std::stringstream out_stream;
-
-  try
-  {
-    std::filesystem::path("data_processing_definition.doc") |
-      ParseDetectedFormat<OfficeFormatsParserProvider>() |
-      PlainTextExporter() |
-      TransformerFunc([](Info& info)
-	    {
-	      if (std::holds_alternative<std::exception_ptr>(info.tag))
-		      std::clog << "[WARNING] " <<
-            errors::diagnostic_message(std::get<std::exception_ptr>(info.tag)) <<
-            std::endl;
-	    }) |
-      out_stream;
-  }
-  catch (const std::exception& e)
-  {
-    std::cerr << "[ERROR] " << errors::diagnostic_message(e) << std::endl;
-    return 1;
-  }
-
-  return 0;
-}
-```
+[You can find example of handling errors and warnings here](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 Using transformer to filter out emails (eg. from Outlook PST mailbox) with subject containing "Hello":
 
@@ -859,9 +829,9 @@ By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, use
 - [ubuntu-20.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2004-Readme.md) with gcc upgraded to version 11
 - [windows-2022](https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md)
 - [windows-2019](https://github.com/actions/runner-images/blob/main/images/windows/Windows2019-Readme.md)
+- [macos-15](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md)
 - [macos-14](https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md)
 - [macos-13](https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md)
-- [macos-12](https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md)
 
 As the project evolves, we will continue to expand the list of officially supported platforms to ensure broad compatibility and meet the needs of our users.
 
@@ -1130,6 +1100,8 @@ processing file tests/password_protected.xls
 Errors that are not fatal are represented with the same chained error objects, but instead of using C++ throw/catch mechanism, they are pushed to the parsing chain or returned via callbacks like other results.
 
 This assumption gives them similar security and debugging capabilities to fatal errors and allows easy conversion between fatal and non-fatal errors on different backtrace levels (it usually cannot be decided in a point of failure) without breaking of the error chain.
+
+[You can find example of handling non-fatal errors here](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 ### Modern C++ features used
 

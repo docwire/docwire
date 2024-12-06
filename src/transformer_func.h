@@ -12,13 +12,10 @@
 #ifndef DOCWIRE_TRANSFORMER_FUNC_H
 #define DOCWIRE_TRANSFORMER_FUNC_H
 
-#include <algorithm>
 #include <memory>
 
 #include "chain_element.h"
 #include "parser.h"
-#include "parser_builder.h"
-#include "parser_parameters.h"
 #include "defines.h"
 
 namespace docwire
@@ -51,7 +48,7 @@ public:
    * @see Info
    * @param info
    */
-  void process(Info &info) const;
+  void process(Info &info) const override;
 
   bool is_leaf() const override
   {

@@ -20,22 +20,56 @@
 #include <tesseract/baseapi.h>
 #include <tesseract/ocrclass.h>
 
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/signals2.hpp>
 
 #include <filesystem>
-#include <iostream>
 #include <cstdlib>
-#include <algorithm>
-#include <magic_enum_iostream.hpp>
+#include <magic_enum/magic_enum_iostream.hpp>
 #include "log.h"
 #include "lru_memory_cache.h"
 #include <mutex>
 #include <numeric>
 #include "resource_path.h"
+#include "throw_if.h"
 
 namespace docwire
 {
+
+namespace
+{
+
+class leptonica_stderr_capturer
+{
+public:
+    leptonica_stderr_capturer()
+    {
+        leptSetStderrHandler(stderr_handler);
+    }
+
+    ~leptonica_stderr_capturer()
+    {
+        leptSetStderrHandler(nullptr);
+    }
+
+    std::string contents()
+    {
+        return boost::algorithm::trim_right_copy(m_contents);
+    }
+
+private:
+    static void stderr_handler(const char* msg)
+    {
+        m_contents += msg;
+    }
+
+    static thread_local std::string m_contents;
+};
+
+thread_local std::string leptonica_stderr_capturer::m_contents;
+
+} // anonymous namespace
 
 struct OCRParser::Implementation
 {
@@ -64,6 +98,8 @@ OCRParser::OCRParser()
     : impl(std::make_unique<Implementation>(this))
 {
 }
+
+OCRParser::OCRParser(OCRParser&&) = default;
 
 OCRParser::~OCRParser() = default;
 
@@ -151,23 +187,21 @@ std::shared_ptr<PIX> load_pix(const data_source& data)
     return pix_cache.get_or_create(data.id(),
         [data](const unique_identifier& key)
         {
+            leptonica_stderr_capturer leptonica_stderr_capturer;
             std::lock_guard<std::mutex> lock { tesseract_libtiff_mutex };
             std::optional<std::filesystem::path> path = data.path();
+            PIX* pix;
             if (path)
             {
-                return std::shared_ptr<PIX>{
-                    pixRead(path->string().c_str()),
-                    [](PIX* pix) { pixDestroy(&pix); }
-                };
+                pix = pixRead(path->string().c_str());
             }
             else
             {
                 std::span<const std::byte> pic_data = data.span();
-                return std::shared_ptr<PIX>{
-                    pixReadMem((const unsigned char*)(pic_data.data()), pic_data.size()),
-                    [](PIX* pix) { pixDestroy(&pix); }
-                };
+                pix = pixReadMem((const unsigned char*)(pic_data.data()), pic_data.size());
             }
+            throw_if(!pix, "Could not load image", errors::uninterpretable_data{}, leptonica_stderr_capturer.contents());
+            return std::shared_ptr<PIX>{pix, [](PIX* pix) { pixDestroy(&pix); }};
         });
 }
 
@@ -219,7 +253,6 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     pix_unique_ptr gray{ nullptr };
 
     std::shared_ptr<PIX> image = load_pix(data);
-    throw_if (image == nullptr, "Could not load image", errors::uninterpretable_data{});
 
     pix_unique_ptr inverted{ nullptr };
     try

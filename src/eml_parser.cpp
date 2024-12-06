@@ -16,11 +16,10 @@
 
 #include "error_tags.h"
 #include "htmlcxx/html/CharsetConverter.h"
-#include "importer.h"
 #include <iostream>
 #include "log.h"
-#include "plain_text_writer.h"
 #include <mailio/message.hpp>
+#include "throw_if.h"
 
 namespace docwire
 {
@@ -152,7 +151,7 @@ message parse_message(const data_source& data, const std::function<void(std::exc
 {
 	std::shared_ptr<std::istream> stream = data.istream();
 	message mime_entity;
-	mime_entity.line_policy(codec::line_len_policy_t::RECOMMENDED, codec::line_len_policy_t::NONE);
+	mime_entity.line_policy(codec::line_len_policy_t::NONE);
 	try {
 		std::string line;
 		while (getline(*stream, line))

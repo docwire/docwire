@@ -14,6 +14,7 @@
 
 #include <exception>
 #include <string>
+#include "stringification.h"
 #if __has_include(<source_location>) && (!defined(__clang__) || __clang_major__ >= 16) // https://github.com/llvm/llvm-project/issues/56379
 	#define USE_STD_SOURCE_LOCATION 1
 #else
@@ -25,21 +26,23 @@
 #else
 	#include <boost/assert/source_location.hpp>
 #endif
-#include <sstream>
 #include <utility>
+
+template <typename T1, typename T2>
+struct docwire::stringifier<std::pair<T1, T2>>
+{
+	std::string operator()(const std::pair<T1, T2>& pair)
+	{
+		return stringify(pair.first) + ": " + stringify(pair.second);
+	}
+};
 
 /**
  * @brief Provides features for reporting and handling errors with context data using nested exceptions.
+ * @see @ref handling_errors_and_warnings.cpp "handling errors and warnings example"
  */
 namespace docwire::errors
 {
-
-template <typename T1, typename T2>
-std::ostream& operator<<(std::ostream& s, const std::pair<T1, T2>& p)
-{
-	s << p.first << ": " << p.second;
-	return s;
-}
 
 #if USE_STD_SOURCE_LOCATION
 	using source_location = std::source_location;
@@ -91,6 +94,7 @@ std::ostream& operator<<(std::ostream& s, const std::pair<T1, T2>& p)
  * @see errors::impl
  * @see errors::make_error
  * @see errors::diagnostic_message
+ * @see @ref handling_errors_and_warnings.cpp "handling errors and warnings example"
  */
 struct base : public std::exception
 {
@@ -160,6 +164,7 @@ struct base : public std::exception
  * @see errors::base
  * @see errors::make_error
  * @see errors::diagnostic_message
+ * @see @ref handling_errors_and_warnings.cpp "handling errors and warnings example"
  */
 template <typename T>
 struct impl : public base
@@ -201,16 +206,7 @@ struct impl : public base
 	 */
 	std::string context_string() const override
 	{
-		if constexpr (requires { context.string(); })
-			return context.string();
-		else if constexpr (requires { std::to_string(context); })
-			return std::to_string(context);
-		else
-		{
-			std::ostringstream s;
-			s << context;
-			return s.str();
-		}
+		return stringify(context);
 	}
 };
 

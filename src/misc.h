@@ -14,7 +14,6 @@
 
 #include "data_source.h"
 #include "defines.h"
-#include <filesystem>
 #include <string>
 #include <vector>
 #include <wv2/ustring.h>

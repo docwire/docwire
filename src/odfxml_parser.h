@@ -13,7 +13,6 @@
 #define DOCWIRE_ODFXML_PARSER_H
 
 #include "common_xml_document_parser.h"
-#include "parser_builder.h"
 
 namespace docwire
 {

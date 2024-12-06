@@ -9,37 +9,22 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XLS_PARSER_H
-#define DOCWIRE_XLS_PARSER_H
+#ifndef DOCWIRE_LOG_DATA_SOURCE_H
+#define DOCWIRE_LOG_DATA_SOURCE_H
 
-#include "parser.h"
-#include <string>
-#include <vector>
+#include "data_source.h"
+#include "log.h"
+#include "log_file_extension.h" // IWYU pragma: keep
 
 namespace docwire
 {
 
-class ThreadSafeOLEStorage;
-
-class DllExport XLSParser : public Parser
+inline log_record_stream& operator<<(log_record_stream& log_stream, const data_source& data)
 {
-	private:
-		struct Implementation;
-		std::unique_ptr<Implementation> impl;
-
-	public:
-		XLSParser();
-		~XLSParser();
-		inline static const std::vector<mime_type> supported_mime_types = 
-		{
-			mime_type{"application/vnd.ms-excel"},
-			mime_type{"application/vnd.ms-excel.sheet.macroenabled.12"},
-			mime_type{"application/vnd.ms-excel.template.macroenabled.12"}
-		};
-		void parse(const data_source& data) const override;
-		std::string parse(ThreadSafeOLEStorage& storage) const;
-};
+	log_stream << docwire_log_streamable_obj(data, data.path(), data.file_extension());
+	return log_stream;
+}
 
 } // namespace docwire
 
-#endif
+#endif // DOCWIRE_LOG_DATA_SOURCE_H

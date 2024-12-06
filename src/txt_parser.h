@@ -12,10 +12,7 @@
 #ifndef DOCWIRE_TXT_PARSER_H
 #define DOCWIRE_TXT_PARSER_H
 
-#include <string>
-
 #include "parser.h"
-#include "parser_builder.h"
 
 namespace docwire
 {

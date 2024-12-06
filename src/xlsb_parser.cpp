@@ -11,7 +11,6 @@
 
 #include "xlsb_parser.h"
 
-#include <algorithm>
 #include "error_tags.h"
 #include "zip_reader.h"
 #include <iostream>
@@ -22,8 +21,6 @@
 #include <stdint.h>
 #include "throw_if.h"
 #include <vector>
-#include "thread_safe_ole_storage.h"
-#include "thread_safe_ole_stream_reader.h"
 
 namespace docwire
 {

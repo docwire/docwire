@@ -14,10 +14,10 @@
 #include "base64.h"
 #include <boost/json.hpp>
 #include "error_tags.h"
-#include <fstream>
 #include "input.h"
 #include "log.h"
-#include "magic_enum_iostream.hpp"
+#include "log_file_extension.h" // IWYU pragma: keep
+#include <magic_enum/magic_enum_iostream.hpp>
 #include "make_error.h"
 #include "output.h"
 #include "post.h"

@@ -12,22 +12,17 @@
 #include "ppt_parser.h"
 
 #include "error_tags.h"
-#include <iostream>
 #include "log.h"
-#include <map>
 #include <math.h>
 #include "misc.h"
 #include "oshared.h"
-#include <set>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "throw_if.h"
 #include <wv2/ustring.h>
 #include "wv2/textconverter.h"
-#include "wv2/utilities.h"
 #include <vector>
-#include <list>
 #include <stack>
 #include "thread_safe_ole_stream_reader.h"
 #include "thread_safe_ole_storage.h"

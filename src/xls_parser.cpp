@@ -12,7 +12,6 @@
 #include "xls_parser.h"
 
 #include "error_tags.h"
-#include <iostream>
 #include "log.h"
 #include <map>
 #include <math.h>
@@ -280,7 +279,9 @@ struct XLSParser::Implementation
 			record_pos += 4;
 		}
 		if (after_text_block_len > 0)
+		{
 			docwire_log(debug) << "Additional formatting blocks found, size " << after_text_block_len << " bytes.";
+		}
 		std::string dest;
 		std::vector<unsigned char>::const_iterator s = *src;
 		int char_count = 0;

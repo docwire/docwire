@@ -9,37 +9,29 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XLS_PARSER_H
-#define DOCWIRE_XLS_PARSER_H
+#include "model_chain_element.h"
 
-#include "parser.h"
-#include <string>
-#include <vector>
+#include "error_tags.h"
+#include "throw_if.h"
 
-namespace docwire
+namespace docwire::local_ai
 {
 
-class ThreadSafeOLEStorage;
-
-class DllExport XLSParser : public Parser
+void model_chain_element::process(Info &info) const
 {
-	private:
-		struct Implementation;
-		std::unique_ptr<Implementation> impl;
+	if (!std::holds_alternative<data_source>(info.tag))
+	{
+		emit(info);
+		return;
+	}
 
-	public:
-		XLSParser();
-		~XLSParser();
-		inline static const std::vector<mime_type> supported_mime_types = 
-		{
-			mime_type{"application/vnd.ms-excel"},
-			mime_type{"application/vnd.ms-excel.sheet.macroenabled.12"},
-			mime_type{"application/vnd.ms-excel.template.macroenabled.12"}
-		};
-		void parse(const data_source& data) const override;
-		std::string parse(ThreadSafeOLEStorage& storage) const;
-};
+	const data_source& data = std::get<data_source>(info.tag);
+	throw_if (data.file_extension() && *data.file_extension() != file_extension{".txt"}, errors::program_logic{});
+	std::string input = m_prompt + "\n" + data.string();
+	std::string output = m_model_runner->process(input);
 
-} // namespace docwire
+	Info new_info(data_source{output});
+	emit(new_info);
+}
 
-#endif
+} // namespace docwire::local_ai

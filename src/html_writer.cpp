@@ -9,12 +9,13 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "boost/algorithm/string/predicate.hpp"
 #include <memory>
 #include "html_writer.h"
+#include <map>
 #include "misc.h"
 #include <numeric>
-#include "parser.h"
+#include <sstream>
+
 namespace docwire
 {
 

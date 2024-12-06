@@ -13,8 +13,6 @@
 #define DOCWIRE_PDF_PARSER_H
 
 #include "parser.h"
-#include "parser_builder.h"
-#include <string>
 #include "tags.h"
 #include <vector>
 

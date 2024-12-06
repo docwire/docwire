@@ -16,11 +16,10 @@
 #include <boost/date_time/c_local_time_adjustor.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/json.hpp>
-#include <chrono>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum_iostream.hpp>
 #include <sstream>
 #include <stack>
 

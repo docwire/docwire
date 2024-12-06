@@ -12,8 +12,6 @@
 #include "rtf_parser.h"
 
 #include "data_stream.h"
-#include <fstream>
-#include <iostream>
 #include "error_tags.h"
 #include "log.h"
 #include <map>
@@ -25,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "throw_if.h"
 #include <wv2/textconverter.h>
 #include <wv2/ustring.h>
 #include <boost/signals2.hpp>

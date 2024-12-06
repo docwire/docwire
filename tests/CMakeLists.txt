@@ -6,6 +6,7 @@ if(MSVC)
 endif()
 target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr
 	docwire_fuzzy_match docwire_base64 docwire_content_type GTest::gtest_main)
+target_compile_definitions(api_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 
 find_package(Boost REQUIRED COMPONENTS json)
 target_link_libraries(api_tests PRIVATE Boost::json)
@@ -60,6 +61,12 @@ while (TRUE)
 	math(EXPR end_pos "${end_pos} + 3")
 	string(SUBSTRING "${content}" ${end_pos} -1 content)
 endwhile()
+
+add_executable(handling_errors_and_warnings handling_errors_and_warnings.cpp)
+target_include_directories(handling_errors_and_warnings PUBLIC ../src)
+target_link_libraries(handling_errors_and_warnings PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_local_ai docwire_fuzzy_match)
+add_test(NAME handling_errors_and_warnings COMMAND handling_errors_and_warnings)
+set_property(TEST handling_errors_and_warnings PROPERTY LABELS "is_example")
 
 foreach(ext IN ITEMS doc pdf png)
 	add_test(

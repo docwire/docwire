@@ -14,11 +14,9 @@
 
 #include <string>
 #include <memory>
-#include <iosfwd>
 
 #include "language.h"
 #include "parser.h"
-#include "parser_builder.h"
 
 namespace docwire
 {
@@ -33,6 +31,7 @@ public:
     static std::string get_default_tessdata_prefix();
 
     OCRParser();
+    OCRParser(OCRParser&&);
     ~OCRParser();
 
     void parse(const data_source& data) const override;

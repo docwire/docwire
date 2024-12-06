@@ -9,35 +9,64 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XLS_PARSER_H
-#define DOCWIRE_XLS_PARSER_H
+#ifndef DOCWIRE_STRINGIFICATION_H
+#define DOCWIRE_STRINGIFICATION_H
 
-#include "parser.h"
 #include <string>
-#include <vector>
+#include <sstream>
 
 namespace docwire
 {
 
-class ThreadSafeOLEStorage;
+template <typename T>
+struct stringifier;
 
-class DllExport XLSParser : public Parser
+template <typename T>
+concept to_string_callable = requires { std::to_string(std::declval<T>()); };
+
+template <to_string_callable T>
+struct stringifier<T>
 {
-	private:
-		struct Implementation;
-		std::unique_ptr<Implementation> impl;
+	std::string operator()(const T& value) { return std::to_string(value); }
+};
 
-	public:
-		XLSParser();
-		~XLSParser();
-		inline static const std::vector<mime_type> supported_mime_types = 
-		{
-			mime_type{"application/vnd.ms-excel"},
-			mime_type{"application/vnd.ms-excel.sheet.macroenabled.12"},
-			mime_type{"application/vnd.ms-excel.template.macroenabled.12"}
-		};
-		void parse(const data_source& data) const override;
-		std::string parse(ThreadSafeOLEStorage& storage) const;
+template <typename T>
+concept string_method_equipped = requires { std::declval<T>().string(); };
+
+template <string_method_equipped T>
+struct stringifier<T>
+{
+	std::string operator()(const T& value) { return value.string(); }
+};
+
+template <typename T>
+concept streamable = requires (std::ostream& os, T value) { os << value; };
+
+template <streamable T>
+requires (!to_string_callable<T> && !string_method_equipped<T>)
+struct stringifier<T>
+{
+	std::string operator()(const T& value)
+	{
+		std::ostringstream s;
+		s << value;
+		return s.str();
+	}
+};
+
+template <typename T>
+std::string stringify(const T& value) { return stringifier<T>()(value); }
+
+template<>
+struct stringifier<const char*>
+{
+	std::string operator()(const char* value) { return value; }
+};
+
+template<>
+struct stringifier<std::string>
+{
+	std::string operator()(const std::string& value) { return value; }
 };
 
 } // namespace docwire
