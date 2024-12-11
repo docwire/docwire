@@ -10,6 +10,7 @@ int main(int argc, char* argv[])
   try
   {
     std::filesystem::path("data_processing_definition.doc") |
+      content_type::by_file_extension::detector{} |
       ParseDetectedFormat<OfficeFormatsParserProvider>() |
       PlainTextExporter() |
       TransformerFunc([](Info& info)

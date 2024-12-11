@@ -15,6 +15,7 @@
 // IWYU pragma: begin_exports
 #include "office_formats_parser_provider.h"
 #include "classify.h"
+#include "content_type.h"
 #include "decompress_archives.h"
 #include "detect_sentiment.h"
 #include "exception_utils.h"

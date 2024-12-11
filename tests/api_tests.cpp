@@ -14,8 +14,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/json.hpp>
 #include "chaining.h"
-#include "content_type_by_file_extension.h"
-#include "content_type_by_signature.h"
+#include "content_type.h"
 #include "error_hash.h" // IWYU pragma: keep
 #include "error_tags.h"
 #include "exception_utils.h"
@@ -96,6 +95,7 @@ TEST_P(DocumentTests, ParseFromPathTest)
         try
         {
             std::filesystem::path(file_name) |
+                content_type::by_file_extension::detector{} |
                 ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
                 PlainTextExporter() |
                 output_stream;
@@ -133,6 +133,7 @@ TEST_P(DocumentTests, ParseFromStreamTest)
         try
         {
             std::ifstream { file_name, std::ios_base::binary } |
+            content_type::detector{} |
             ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
             PlainTextExporter() |
             output_stream;
@@ -216,6 +217,7 @@ TEST_P(MetadataTest, ParseFromPathTest)
         std::ostringstream output_stream{};
 
         std::filesystem::path{file_name} |
+            content_type::by_file_extension::detector{} |
           ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
           MetaDataExporter() |
           output_stream;
@@ -266,6 +268,7 @@ TEST_P(CallbackTest, ParseFromPathTest)
     std::ostringstream output_stream{};
 
     std::filesystem::path{file_name} |
+        content_type::by_file_extension::detector{} |
         ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
         TransformerFunc(callback) |
         PlainTextExporter() |
@@ -303,6 +306,7 @@ TEST_P(HTMLWriterTest, ParseFromPathTest)
     std::ostringstream output_stream{};
 
     std::filesystem::path{file_name} |
+        content_type::by_file_extension::detector{} |
         ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
         HtmlExporter() |
         output_stream;
@@ -368,6 +372,7 @@ TEST_P(MiscDocumentTest, ParseFromPathTest)
     {
         std::filesystem::path{file_name} |
             DecompressArchives() |
+            content_type::detector{} |
             ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) |
             PlainTextExporter() |
             output_stream;
@@ -468,6 +473,7 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     try 
     {
         std::filesystem::path{file_name} |
+            content_type::by_file_extension::detector{} |
             ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
             PlainTextExporter() |
             output_stream;
@@ -500,11 +506,13 @@ void thread_func(const std::string& file_name)
     std::ostringstream output_stream{};
 
     std::filesystem::path{file_name} |
+      content_type::by_file_extension::detector{} |
       ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
       PlainTextExporter() |
       output_stream;
 
     std::filesystem::path{file_name} |
+      content_type::by_file_extension::detector{} |
       ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
       MetaDataExporter() |
       output_stream;
@@ -607,6 +615,7 @@ TEST_P(MultiPageFilterTest, ReadFromPathTests)
     std::ostringstream output_stream{};
 
     std::filesystem::path{file_name} |
+        content_type::by_file_extension::detector{} |
         ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
         TransformerFunc([MAX_PAGES, counter = 0](Info &info) mutable
         {
@@ -661,6 +670,7 @@ TEST(Http, Post)
 	ASSERT_NO_THROW(
 	{
 		std::ifstream("1.docx", std::ios_base::binary)
+            | content_type::by_signature::detector{}
 			| ParseDetectedFormat<OfficeFormatsParserProvider>()
 			| PlainTextExporter()
 			| http::Post("https://postman-echo.com/post")
@@ -682,6 +692,7 @@ TEST(Http, PostForm)
 	ASSERT_NO_THROW(
 	{
 		std::ifstream("1.docx", std::ios_base::binary)
+            | content_type::by_signature::detector{}
 			| ParseDetectedFormat<OfficeFormatsParserProvider>()
 			| PlainTextExporter()
 			| http::Post("https://postman-echo.com/post", {{"field1", "value1"}, {"field2", "value2"}}, "file", DefaultFileName("file.docx"))
@@ -1108,7 +1119,10 @@ TEST(PlainTextExporter, custom_link_formatting)
 TEST(Input, data_source_with_file_ext)
 {
     std::ostringstream output_stream{};
-    data_source{seekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios::binary)}, file_extension{".doc"}} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    data_source{seekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios::binary)}, file_extension{".doc"}} |
+        content_type::by_file_extension::detector{} |
+        ParseDetectedFormat<OfficeFormatsParserProvider>{} |
+        PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1116,14 +1130,16 @@ TEST(Input, path_ref)
 {
     std::ostringstream output_stream{};
     std::filesystem::path path{"1.doc"};
-    path | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    path | content_type::by_file_extension::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, path_temp)
 {
     std::ostringstream output_stream{};    
-    std::filesystem::path{"1.doc"} | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    std::filesystem::path{"1.doc"} | content_type::by_file_extension::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1132,7 +1148,8 @@ TEST(Input, vector_ref)
     std::ostringstream output_stream{};
     std::string str = read_binary_file("1.doc");
     std::vector<std::byte> vector{reinterpret_cast<const std::byte*>(str.data()), reinterpret_cast<const std::byte*>(str.data()) + str.size()};
-    vector | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    vector | content_type::by_signature::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1141,6 +1158,7 @@ TEST(Input, vector_temp)
     std::ostringstream output_stream{};    
     std::string str = read_binary_file("1.doc");
     std::vector<std::byte>{reinterpret_cast<const std::byte*>(str.data()), reinterpret_cast<const std::byte*>(str.data()) + str.size()} |
+        content_type::by_signature::detector{} |
         ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
@@ -1150,7 +1168,8 @@ TEST(Input, span_ref)
     std::ostringstream output_stream{};
     std::string str = read_binary_file("1.doc");
     std::span<const std::byte> span{reinterpret_cast<const std::byte*>(str.data()), str.size()};
-    span | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    span | content_type::by_signature::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1158,7 +1177,9 @@ TEST(Input, span_temp)
 {
     std::ostringstream output_stream{};    
     std::string str = read_binary_file("1.doc");
-    std::span<const std::byte>{reinterpret_cast<const std::byte*>(str.data()), str.size()} | ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
+    std::span<const std::byte>{reinterpret_cast<const std::byte*>(str.data()), str.size()} |
+        content_type::by_signature::detector{} |
+        ParseDetectedFormat<OfficeFormatsParserProvider>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1166,14 +1187,16 @@ TEST(Input, string_ref)
 {
     std::ostringstream output_stream{};
     std::string str = read_binary_file("1.doc");
-    str | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    str | content_type::by_signature::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, string_temp)
 {
     std::ostringstream output_stream{};    
-    read_binary_file("1.doc") | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    read_binary_file("1.doc") | content_type::by_signature::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1182,14 +1205,16 @@ TEST(Input, string_view_ref)
     std::ostringstream output_stream{};
     std::string str = read_binary_file("1.doc");
     std::string_view string_view{str};
-    string_view | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    string_view | content_type::by_signature::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, string_view_temp)
 {
     std::ostringstream output_stream{};    
-    std::string_view{read_binary_file("1.doc")} | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    std::string_view{read_binary_file("1.doc")} | content_type::by_signature::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1197,14 +1222,17 @@ TEST(Input, seekable_stream_ptr_ref)
 {
     std::ostringstream output_stream{};
     seekable_stream_ptr stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)};
-    stream_ptr | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    stream_ptr | content_type::by_signature::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, seekable_stream_ptr_temp)
 {
     std::ostringstream output_stream{};
-    seekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)} | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    seekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)} |
+        content_type::by_signature::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
@@ -1212,28 +1240,35 @@ TEST(Input, unseekable_stream_ptr_ref)
 {
     std::ostringstream output_stream{};
     unseekable_stream_ptr stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)};
-    stream_ptr | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    stream_ptr | content_type::by_signature::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, unseekable_stream_ptr_temp)
 {
     std::ostringstream output_stream{};
-    unseekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)} | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    unseekable_stream_ptr{std::make_shared<std::ifstream>("1.doc", std::ios_base::binary)} |
+        content_type::by_signature::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, stream_shared_ptr)
 {
     std::ostringstream output_stream{};
-    std::make_shared<std::ifstream>("1.doc", std::ios_base::binary) | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    std::make_shared<std::ifstream>("1.doc", std::ios_base::binary) |
+        content_type::by_signature::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 
 TEST(Input, stream_temp)
 {
     std::ostringstream output_stream{};
-    std::ifstream{"1.doc", std::ios_base::binary} | ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
+    std::ifstream{"1.doc", std::ios_base::binary} |
+        content_type::by_signature::detector{} |
+        ParseDetectedFormat<parser_provider<DOCParser>>{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }
 

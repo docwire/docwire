@@ -15,6 +15,7 @@
 #include "analyze_data.h"
 #include "office_formats_parser_provider.h"
 #include "classify.h"
+#include "content_type.h"
 #include "csv_exporter.h"
 #include "decompress_archives.h"
 #include "detect_sentiment.h"
@@ -215,7 +216,9 @@ int main(int argc, char* argv[])
 	}
 	else if (local_processing)
 	{
-		chain = chain | ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters);
+		chain = chain |
+			content_type::detector{} |
+			ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters);
 
 		if (vm.count("max_nodes_number"))
 		{

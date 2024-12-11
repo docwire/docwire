@@ -11,13 +11,6 @@
 
 #include "importer.h"
 
-#include "content_type_html.h"
-#include "content_type_iwork.h"
-#include "content_type_odf_flat.h"
-#include "content_type_outlook.h"
-#include "content_type_xlsb.h"
-#include "content_type_by_file_extension.h"
-#include "content_type_by_signature.h"
 #include "error_tags.h"
 #include <filesystem>
 #include "throw_if.h"
@@ -60,15 +53,8 @@ public:
 
   std::unique_ptr<ParserBuilder> findParser(data_source& data) const
   {
-    content_type::by_file_extension::detect(data);
-    content_type::by_signature::detect(data);
-    content_type::html::detect(data);
-    content_type::iwork::detect(data);
-    content_type::xlsb::detect(data);
-    content_type::odf_flat::detect(data);
-    content_type::outlook::detect(data);
     std::optional<mime_type> mt = data.highest_confidence_mime_type();
-    throw_if(!mt, "MIME type detection failed for the data source", errors::uninterpretable_data{});
+    throw_if(!mt, "Data source has no mime type", errors::uninterpretable_data{});
     throw_if(data.mime_type_confidence(mime_type { "application/encrypted" }) >= confidence { 50 }, errors::file_encrypted{});
     std::unique_ptr<ParserBuilder> builder = m_owner.find_parser_by_mime_type(*mt);
     throw_if (!builder, "find_parser_by_mime_type() failed", mt->v, errors::uninterpretable_data{});
@@ -81,7 +67,15 @@ public:
         .withParameters(m_parameters)
         .build();
   }
-    
+
+  ChainElement& get_root_element(ChainElement& elem)
+  {
+    if (elem.get_parent())
+      return get_root_element(*elem.get_parent());
+    else
+      return elem;
+  }
+
   void
   process(Info& info)
   {
@@ -96,7 +90,10 @@ public:
     auto parser_callback = [this](const Tag& tag)
     {
       Info info{tag};
-      process(info);
+      if (std::holds_alternative<data_source>(tag))
+        get_root_element(m_owner).process(info);
+      else
+        m_owner.emit(info);
       if (info.cancel)
         return Parser::parsing_continuation::stop;
       else if (info.skip)

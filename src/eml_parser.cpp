@@ -14,12 +14,13 @@
 
 #include "eml_parser.h"
 
-#include "error_tags.h"
+#include "data_source.h"
 #include "htmlcxx/html/CharsetConverter.h"
 #include <iostream>
 #include "log.h"
 #include <mailio/message.hpp>
-#include "throw_if.h"
+#include <mailio/mime.hpp>
+#include "make_error.h"
 
 namespace docwire
 {
@@ -55,6 +56,19 @@ struct EMLParser::Implementation
 		}
 	}
 
+	mime_type mime_type_from_mime_entity(const mime& mime_entity)
+	{
+		class mime_wrapper : public mailio::mime
+		{
+		public:
+			mime_type get_mime_type() const
+			{
+				return mime_type { mime_type_as_str(content_type().type) + "/" + content_type().subtype };
+			}
+		};
+		return static_cast<const mime_wrapper&>(mime_entity).get_mime_type();
+	}
+
 	void extractPlainText(const mime& mime_entity)
 	{
 		docwire_log(debug) << "Extracting plain text from mime entity";
@@ -74,7 +88,8 @@ struct EMLParser::Implementation
 			if (mime_entity.content_type().subtype == "html" || mime_entity.content_type().subtype == "xhtml")
 			{
 				docwire_log(debug) << "HTML content subtype detected";
-				m_owner->sendTag(data_source{plain, file_extension{".html"}});
+				m_owner->sendTag(data_source {
+					plain, mime_type{"text/html"}, confidence::very_high});
 			}
 			else
 			{
@@ -86,7 +101,8 @@ struct EMLParser::Implementation
 				else
 				{
 					docwire_log(debug) << "Charset is not specified";
-					m_owner->sendTag(data_source{plain, file_extension{".txt"}});
+					m_owner->sendTag(data_source {
+						plain, mime_type{"text/plain"}, confidence::very_high});
 				}
 			}
 			m_owner->sendTag(tag::Text{.text = "\n\n"});
@@ -103,7 +119,8 @@ struct EMLParser::Implementation
 				tag::Attachment{.name = file_name, .size = plain.length(), .extension = extension});
 			if(!info.skip)
 			{
-				m_owner->sendTag(data_source{plain, extension});
+				m_owner->sendTag(data_source {
+					plain, mime_type_from_mime_entity(mime_entity), confidence::very_high});
 			}
 			m_owner->sendTag(tag::CloseAttachment{});
 		}

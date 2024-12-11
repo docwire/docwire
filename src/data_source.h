@@ -121,6 +121,20 @@ class DllExport data_source
 			: m_source{std::move(source)}, m_file_extension{file_extension}
 		{}
 
+		template <data_source_compatible_type T>
+		explicit data_source(const T& source, mime_type mime_type, confidence mime_type_confidence)
+			: m_source{source}
+		{
+			add_mime_type(mime_type, mime_type_confidence);
+		}
+
+		template <data_source_compatible_type T>
+		explicit data_source(T&& source, mime_type mime_type, confidence mime_type_confidence)
+			: m_source{std::move(source)}
+		{
+			add_mime_type(mime_type, mime_type_confidence);
+		}
+
 		std::span<const std::byte> span() const;
 
 		std::string string(std::optional<length_limit> limit = std::nullopt) const;

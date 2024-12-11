@@ -397,7 +397,7 @@ void PSTParser::Implementation::parse_internal(const Folder& root, int deep, uns
         continue;
       }
       m_owner->sendTag(tag::MailBody{});
-      m_owner->sendTag(data_source{*html_text, file_extension{".html"}});
+      m_owner->sendTag(data_source{*html_text, mime_type { "text/html" }, confidence::very_high});
       ++mail_counter;
       m_owner->sendTag(tag::CloseMailBody{});
     }
