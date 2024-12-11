@@ -65,6 +65,7 @@ namespace docwire
 
 enum class confidence
 {
+	none,
 	low,
 	medium,
 	high,
@@ -178,14 +179,14 @@ class DllExport data_source
 			if (hc_mt)
 				return hc_mt->second;
 			else
-				return confidence {0};
+				return confidence::none;
 		}
 
 		confidence mime_type_confidence(mime_type mt) const
 		{
     		auto mt_iter = mime_types.find(mt);
 			if (mt_iter == mime_types.end())
-				return confidence { 0 };
+				return confidence::none;
 			else
 				return mt_iter->second;
 		}
