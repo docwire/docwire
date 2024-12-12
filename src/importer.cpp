@@ -57,7 +57,8 @@ public:
     throw_if(!mt, "Data source has no mime type", errors::uninterpretable_data{});
     throw_if(data.mime_type_confidence(mime_type { "application/encrypted" }) >= confidence::high, errors::file_encrypted{});
     std::unique_ptr<ParserBuilder> builder = m_owner.find_parser_by_mime_type(*mt);
-    throw_if (!builder, "find_parser_by_mime_type() failed", mt->v, errors::uninterpretable_data{});
+    throw_if (!builder, "find_parser_by_mime_type() failed", 
+      mt->v, data.highest_mime_type_confidence(), errors::uninterpretable_data{});
     return builder;
   }
 
