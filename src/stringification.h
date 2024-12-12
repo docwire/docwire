@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_STRINGIFICATION_H
 #define DOCWIRE_STRINGIFICATION_H
 
+#include <magic_enum/magic_enum.hpp>
 #include <string>
 #include <sstream>
 
@@ -40,10 +41,20 @@ struct stringifier<T>
 };
 
 template <typename T>
+concept enum_type = magic_enum::is_scoped_enum<T>::value || magic_enum::is_unscoped_enum<T>::value;
+
+template <enum_type T>
+requires (!to_string_callable<T>)
+struct stringifier<T>
+{
+	std::string operator()(const T& value) { return std::string{magic_enum::enum_name(value)}; }
+};
+
+template <typename T>
 concept streamable = requires (std::ostream& os, T value) { os << value; };
 
 template <streamable T>
-requires (!to_string_callable<T> && !string_method_equipped<T>)
+requires (!to_string_callable<T> && !string_method_equipped<T> && !enum_type<T>)
 struct stringifier<T>
 {
 	std::string operator()(const T& value)

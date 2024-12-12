@@ -1597,3 +1597,8 @@ TEST(content_type, by_signature)
         }
     ));
 }
+
+TEST(stringification, enums)
+{
+    ASSERT_EQ(stringify(confidence::very_high), "very_high");
+}
