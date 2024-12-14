@@ -32,7 +32,7 @@ void detect(data_source& data, allow_multiple allow_multiple)
     const char* file_types = magic_buffer(magic_cookie, span.data(), span.size());
     throw_if (file_types == NULL, magic_error(magic_cookie));
     std::string file_types_str { file_types };
-    auto splitIt = boost::make_split_iterator(file_types_str, boost::first_finder(","));
+    auto splitIt = boost::make_split_iterator(file_types_str, boost::first_finder("\\012- "));
     while (splitIt != boost::split_iterator<std::string::iterator>()) 
     {
         data.add_mime_type(
