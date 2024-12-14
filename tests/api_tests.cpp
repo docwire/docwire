@@ -1288,6 +1288,21 @@ void PrintTo(const Text& text, std::ostream* os)
 
 }
 
+namespace docwire
+{
+
+void PrintTo(const mime_type& mt, std::ostream* os)
+{
+    *os << stringify(mt);
+}
+
+void PrintTo(const confidence& c, std::ostream* os)
+{
+    *os << stringify(c);
+}
+
+} // namespace docwire
+
 TEST(TXTParser, lines)
 {
     using namespace testing;
@@ -1593,6 +1608,32 @@ TEST(content_type, by_signature)
     ASSERT_THAT(data.mime_types, testing::ElementsAre(
         std::pair {
             mime_type { "application/msword" },
+            confidence::very_high
+        }
+    ));
+}
+
+TEST(content_type, outlook)
+{
+    data_source data { seekable_stream_ptr { std::make_shared<std::ifstream>("1.pst", std::ios_base::binary) }};
+    try {
+        content_type::outlook::detect(data);
+    }
+    catch (const std::exception& e) {
+        FAIL() << errors::diagnostic_message(e);
+    }
+    using namespace testing;
+    ASSERT_THAT(data.mime_types, testing::UnorderedElementsAre(
+        std::pair {
+            mime_type { "application/vnd.ms-outlook-pst" },
+            confidence::highest
+        },
+        std::pair {
+            mime_type { "application/vnd.ms-outlook" },
+            confidence::very_high
+        },
+        std::pair {
+            mime_type { "application/octet-stream" },
             confidence::very_high
         }
     ));
