@@ -80,6 +80,15 @@ struct stringifier<std::string>
 	std::string operator()(const std::string& value) { return value; }
 };
 
+template <typename T>
+concept strong_type_alias = requires(T value) { value.v; };
+
+template <strong_type_alias T>
+struct stringifier<T>
+{
+	std::string operator()(const T& value) { return stringify(value.v); }
+};
+
 } // namespace docwire
 
 #endif
