@@ -12,6 +12,7 @@
 #include "xml_stream.h"
 
 #include <boost/algorithm/string/trim.hpp>
+#include "libxml/globals.h"
 #include <libxml/xmlreader.h>
 #include "log.h"
 #include <mutex>
