@@ -18,11 +18,14 @@ namespace docwire::content_type::xlsb
 
 void detect(data_source& data)
 {
-    confidence xlsx_confidence = data.mime_type_confidence(mime_type { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-    if (xlsx_confidence < confidence::medium)
-        return;
     if (data.highest_mime_type_confidence() >= confidence::highest)
 		return;
+    if (!data.mime_types.empty())
+    {
+        confidence xlsx_confidence = data.mime_type_confidence(mime_type { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        if (xlsx_confidence < confidence::medium)
+            return;
+    }
     ZipReader unzip{data};
     try
     {

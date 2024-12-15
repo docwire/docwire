@@ -16,10 +16,8 @@ namespace docwire::content_type::html
 
 void detect(data_source& data)
 {
-    if (data.mime_type_confidence(mime_type { "text/xml" }) < confidence::medium)
-        return;
-    if (data.highest_mime_type_confidence() >= confidence::highest)
-		return;
+    if (!data.mime_types.empty() && data.mime_type_confidence(mime_type { "text/xml" }) < confidence::medium)
+      return;
     std::string initial_xml = data.string(length_limit{1024});
     if (initial_xml.find("<html") != std::string::npos || initial_xml.find("<HTML") != std::string::npos)
 		data.add_mime_type(mime_type { "text/html" }, confidence::highest);

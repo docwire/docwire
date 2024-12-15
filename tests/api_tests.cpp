@@ -1613,6 +1613,60 @@ TEST(content_type, by_signature)
     ));
 }
 
+TEST(content_type, html)
+{
+    data_source data { seekable_stream_ptr { std::make_shared<std::ifstream>("1.html", std::ios_base::binary) }};
+    try {
+        content_type::html::detect(data);
+    }
+    catch (const std::exception& e) {
+        FAIL() << errors::diagnostic_message(e);
+    }
+    using namespace testing;
+    ASSERT_THAT(data.mime_types, testing::ElementsAre(
+        std::pair {
+            mime_type { "text/html" },
+            confidence::highest
+        }
+    ));
+}
+
+TEST(content_type, iwork)
+{
+    data_source data { seekable_stream_ptr { std::make_shared<std::ifstream>("1.key", std::ios_base::binary) }};
+    try {
+        content_type::iwork::detect(data);
+    }
+    catch (const std::exception& e) {
+        FAIL() << errors::diagnostic_message(e);
+    }
+    using namespace testing;
+    ASSERT_THAT(data.mime_types, testing::ElementsAre(
+        std::pair {
+            mime_type { "application/vnd.apple.keynote" },
+            confidence::highest
+        }
+    ));
+}
+
+TEST(content_type, odf_flat)
+{
+    data_source data { seekable_stream_ptr { std::make_shared<std::ifstream>("1.fods", std::ios_base::binary) }};
+    try {
+        content_type::odf_flat::detect(data);
+    }
+    catch (const std::exception& e) {
+        FAIL() << errors::diagnostic_message(e);
+    }
+    using namespace testing;
+    ASSERT_THAT(data.mime_types, testing::ElementsAre(
+        std::pair {
+            mime_type { "application/vnd.oasis.opendocument.spreadsheet-flat-xml" },
+            confidence::highest
+        }
+    ));
+}
+
 TEST(content_type, outlook)
 {
     data_source data { seekable_stream_ptr { std::make_shared<std::ifstream>("1.pst", std::ios_base::binary) }};
@@ -1635,6 +1689,24 @@ TEST(content_type, outlook)
         std::pair {
             mime_type { "application/octet-stream" },
             confidence::very_high
+        }
+    ));
+}
+
+TEST(content_type, xlsb)
+{
+    data_source data { seekable_stream_ptr { std::make_shared<std::ifstream>("1.xlsb", std::ios_base::binary) }};
+    try {
+        content_type::xlsb::detect(data);
+    }
+    catch (const std::exception& e) {
+        FAIL() << errors::diagnostic_message(e);
+    }
+    using namespace testing;
+    ASSERT_THAT(data.mime_types, testing::ElementsAre(
+        std::pair {
+            mime_type { "application/vnd.ms-excel.sheet.binary.macroenabled.12" },
+            confidence::highest
         }
     ));
 }

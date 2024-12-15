@@ -18,11 +18,14 @@ namespace docwire::content_type::iwork
 
 void detect(data_source& data)
 {
-    confidence zip_confidence = data.mime_type_confidence(mime_type { "application/zip" });
-    if (zip_confidence < confidence::medium)
-        return;
     if (data.highest_mime_type_confidence() >= confidence::highest)
 		return;
+    if (!data.mime_types.empty())
+    {
+        confidence zip_confidence = data.mime_type_confidence(mime_type { "application/zip" });
+        if (zip_confidence < confidence::medium)
+            return;
+    }
     ZipReader unzip{data};
     try
     {
@@ -36,11 +39,11 @@ void detect(data_source& data)
                 unzip.read("index.xml", &contents);
             else
                 unzip.read("index.apxl", &contents);
-            if (contents.find("<sl:document"))
+            if (contents.find("<sl:document") != std::string::npos)
                 data.add_mime_type(mime_type { "application/vnd.apple.pages" }, confidence::highest);
-            else if (contents.find("<ls:document"))
+            else if (contents.find("<ls:document") != std::string::npos)
                 data.add_mime_type(mime_type { "application/vnd.apple.numbers" }, confidence::highest);
-            else if (contents.find("<key:presentation"))
+            else if (contents.find("<key:presentation") != std::string::npos)
                 data.add_mime_type(mime_type { "application/vnd.apple.keynote" }, confidence::highest);
             else
             {
