@@ -187,8 +187,8 @@ std::shared_ptr<PIX> load_pix(const data_source& data)
     return pix_cache.get_or_create(data.id(),
         [data](const unique_identifier& key)
         {
-            leptonica_stderr_capturer leptonica_stderr_capturer;
             std::lock_guard<std::mutex> lock { tesseract_libtiff_mutex };
+            leptonica_stderr_capturer leptonica_stderr_capturer;
             std::optional<std::filesystem::path> path = data.path();
             PIX* pix;
             if (path)
