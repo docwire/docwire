@@ -19,30 +19,35 @@
 namespace docwire
 {
 
-std::span<const std::byte> data_source::span() const
+std::span<const std::byte> data_source::span(std::optional<length_limit> limit) const
 {
 	return std::visit(
 		overloaded {
-			[this](const std::vector<std::byte>& source)
+			[this, limit](const std::vector<std::byte>& source)
 			{
-				return std::span{source.data(), source.size()};
+				size_t size = limit ? std::min(source.size(), limit->v) : source.size();
+				return std::span{source.data(), size};
 			},
-			[this](const std::span<const std::byte>& source)
+			[this, limit](const std::span<const std::byte>& source)
 			{
-				return source;
+				size_t size = limit ? std::min(source.size(), limit->v) : source.size();
+				return std::span{source.data(), size};
 			},
-			[this](const std::string& source)
+			[this, limit](const std::string& source)
 			{
-				return std::span{reinterpret_cast<const std::byte*>(source.data()), source.size()};
+				size_t size = limit ? std::min(source.size(), limit->v) : source.size();
+				return std::span{reinterpret_cast<const std::byte*>(source.data()), size};
 			},
-			[this](const std::string_view& source)
+			[this, limit](const std::string_view& source)
 			{
-				return std::span{reinterpret_cast<const std::byte*>(source.data()), source.size()};
+				size_t size = limit ? std::min(source.size(), limit->v) : source.size();
+				return std::span{reinterpret_cast<const std::byte*>(source.data()), size};
 			},
-			[this](auto source)
+			[this, limit](auto source)
 			{
-				fill_memory_cache();
-				return static_cast<std::span<const std::byte>>(m_memory_cache->span());
+				fill_memory_cache(limit);
+				size_t size = limit ? std::min(m_memory_cache->size(), limit->v) : m_memory_cache->size();
+				return std::span<const std::byte>(m_memory_cache->data(), size);
 			}
 		}, m_source);
 }
@@ -81,7 +86,7 @@ std::string data_source::string(std::optional<length_limit> limit) const
 			},
 			[this, limit](auto source)
 			{
-				fill_memory_cache();
+				fill_memory_cache(limit);
 				if (limit)
 					return std::string{reinterpret_cast<const char*>(m_memory_cache->data()), std::min(m_memory_cache->size(), limit->v)};
 				else
@@ -116,48 +121,58 @@ std::optional<docwire::file_extension> data_source::file_extension() const
 namespace
 {
 
-std::shared_ptr<memory_buffer> read_unseekable_stream_into_memory(std::shared_ptr<std::istream> stream)
+void read_unseekable_stream_into_memory(std::shared_ptr<memory_buffer> buffer, std::shared_ptr<std::istream> stream, std::optional<length_limit> limit)
 {
 	constexpr size_t chunk_size = 4096;
-	auto buffer = std::make_shared<memory_buffer>(0);
-	size_t size = 0;
+	size_t size = buffer->size();
 	for (;;)
 	{
-		buffer->resize(size + chunk_size);
-		throw_if (!stream->read(reinterpret_cast<char*>(buffer->data() + size), chunk_size) && !stream->eof());
+		if (limit && size >= limit->v)
+			break;
+		size_t to_read = limit ? std::min(chunk_size, limit->v - size) : chunk_size;
+		buffer->resize(size + to_read);
+		throw_if (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read) && !stream->eof());
 		size_t bytes_read = stream->gcount();
 		size += bytes_read;
-		if (bytes_read < chunk_size)
+		if (bytes_read < to_read)
 		{
 			buffer->resize(size);
 			break;
 		}
 	}
-	return buffer;
 }
 
-std::shared_ptr<memory_buffer> read_seekable_stream_into_memory(std::shared_ptr<std::istream> stream)
-{	
-	throw_if (!stream->seekg(0, std::ios::end));
-	auto buffer = std::make_shared<memory_buffer>(stream->tellg());
-	throw_if (!stream->seekg(0, std::ios::beg));
-	throw_if (!stream->read(reinterpret_cast<char*>(buffer->data()), buffer->size()));
-	return buffer;
+void read_seekable_stream_into_memory(std::shared_ptr<memory_buffer> buffer, std::optional<size_t>& stream_size, std::shared_ptr<std::istream> stream, std::optional<length_limit> limit)
+{
+	if (!stream_size)
+	{
+		throw_if (!stream->seekg(0, std::ios::end));
+		stream_size = stream->tellg();
+		throw_if (!stream->seekg(0, std::ios::beg));
+	}
+	size_t size = buffer->size();
+	if ((limit ? std::min(*stream_size, limit->v) : *stream_size) <= size)
+		return;
+	size_t to_read = (limit ? std::min(*stream_size, limit->v) : *stream_size) - size;
+	buffer->resize(size + to_read);
+	throw_if (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read));
 }
 
 } // anonymous namespace
 
-void data_source::fill_memory_cache() const
+void data_source::fill_memory_cache(std::optional<length_limit> limit) const
 {
-	if (m_memory_cache)
-		return;
 	std::visit(
 		overloaded {
-			[this](const std::filesystem::path& source)
+			[this, limit](const std::filesystem::path& source)
 			{
-				auto stream = std::make_shared<std::ifstream>(source, std::ios::binary);
-				throw_if (!stream->good());
-				m_memory_cache = read_seekable_stream_into_memory(stream);
+				if (!m_memory_cache)
+				{
+					m_path_stream = std::make_shared<std::ifstream>(source, std::ios::binary);
+					throw_if (!m_path_stream->good());
+					m_memory_cache = std::make_shared<memory_buffer>(0);
+				}
+				read_seekable_stream_into_memory(m_memory_cache, m_stream_size, m_path_stream, limit);
 			},
 			[this](const std::span<const std::byte>& source)
 			{
@@ -167,13 +182,17 @@ void data_source::fill_memory_cache() const
 			{
 				throw make_error("std::string cannot be cached in memory", errors::program_logic{});
 			},
-			[this](seekable_stream_ptr source)
+			[this, limit](seekable_stream_ptr source)
 			{
-				m_memory_cache = read_seekable_stream_into_memory(source.v);
+				if (!m_memory_cache)
+					m_memory_cache = std::make_shared<memory_buffer>(0);
+				read_seekable_stream_into_memory(m_memory_cache, m_stream_size, source.v, limit);
 			},
-			[this](unseekable_stream_ptr source)
+			[this, limit](unseekable_stream_ptr source)
 			{
-				m_memory_cache = read_unseekable_stream_into_memory(source.v);
+				if (!m_memory_cache)
+					m_memory_cache = std::make_shared<memory_buffer>(0);
+				read_unseekable_stream_into_memory(m_memory_cache, source.v, limit);
 			}
 		},
 		m_source

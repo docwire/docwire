@@ -136,7 +136,7 @@ class DllExport data_source
 			add_mime_type(mime_type, mime_type_confidence);
 		}
 
-		std::span<const std::byte> span() const;
+		std::span<const std::byte> span(std::optional<length_limit> limit = std::nullopt) const;
 
 		std::string string(std::optional<length_limit> limit = std::nullopt) const;
 
@@ -204,9 +204,11 @@ class DllExport data_source
 		std::variant<std::filesystem::path, std::vector<std::byte>, std::span<const std::byte>, std::string, std::string_view, seekable_stream_ptr, unseekable_stream_ptr> m_source;
 		std::optional<docwire::file_extension> m_file_extension;
 		mutable std::shared_ptr<memory_buffer> m_memory_cache;
+		mutable std::shared_ptr<std::istream> m_path_stream;
+		mutable std::optional<size_t> m_stream_size;
 		unique_identifier m_id;
 
-		void fill_memory_cache() const;
+		void fill_memory_cache(std::optional<length_limit> limit) const;
 };
 
 } // namespace docwire

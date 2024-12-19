@@ -1019,6 +1019,30 @@ TEST(DataSource, unseekable_stream_ptr_temp)
     ASSERT_EQ(data.string(), test_data_str);
 }
 
+template <typename stream_ptr_type>
+void test_data_source_incremental()
+{
+    std::string test_data_str = create_datasource_test_data_str();
+    stream_ptr_type stream_ptr{std::make_shared<std::istringstream>(test_data_str)};
+    data_source data{stream_ptr};
+    for (unsigned int i = 1; i <= 9; i++)
+    {
+        ASSERT_EQ(data.string(length_limit{i * 256}), test_data_str.substr(0, i * 256));
+        ASSERT_EQ(stream_ptr.v->tellg(), i * 256);
+    }
+    ASSERT_EQ(data.string(), test_data_str);
+}
+
+TEST(DataSource, incremental_unseekable_stream_ptr)
+{
+    test_data_source_incremental<unseekable_stream_ptr>();
+}
+
+TEST(DataSource, increamental_seekable_stream_ptr)
+{
+    test_data_source_incremental<seekable_stream_ptr>();
+}
+
 TEST(PlainTextExporter, table_inside_table_without_rows)
 {
     ASSERT_ANY_THROW(
