@@ -28,7 +28,9 @@ void detect(data_source& data, allow_multiple allow_multiple)
     magic_t magic_cookie = magic_open(allow_multiple.v ? MAGIC_MIME_TYPE | MAGIC_CONTINUE : MAGIC_MIME_TYPE);
     throw_if (magic_cookie == NULL);
     throw_if (magic_load(magic_cookie, resource_path("libmagic/misc/magic.mgc").string().c_str()) != 0, magic_error(magic_cookie));
-    std::span<const std::byte> span = data.span();
+    size_t bytes_max;
+    throw_if (magic_getparam(magic_cookie, MAGIC_PARAM_BYTES_MAX, &bytes_max) != 0, magic_error(magic_cookie));
+    std::span<const std::byte> span = data.span(length_limit{bytes_max});
     const char* file_types = magic_buffer(magic_cookie, span.data(), span.size());
     throw_if (file_types == NULL, magic_error(magic_cookie));
     std::string file_types_str { file_types };
