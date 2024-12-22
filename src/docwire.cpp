@@ -33,13 +33,13 @@
 #include "ocr_parser_provider.h"
 #include "output.h"
 #include "parse_detected_format.h"
+#include "parsing_chain_adapters.h"
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "standard_filter.h"
 #include "summarize.h"
 #include "text_to_speech.h"
 #include "transcribe.h"
-#include "transformer_func.h"
 #include "translate_to.h"
 #include "version.h"
 #include "parsing_chain.h"
@@ -222,23 +222,23 @@ int main(int argc, char* argv[])
 
 		if (vm.count("max_nodes_number"))
 		{
-			chain = chain | TransformerFunc(StandardFilter::filterByMaxNodeNumber(vm["max_nodes_number"].as<unsigned int>()));
+			chain = chain | StandardFilter::filterByMaxNodeNumber(vm["max_nodes_number"].as<unsigned int>());
 		}
 		if (vm.count("min_creation_time"))
 		{
-			chain = chain | TransformerFunc(StandardFilter::filterByMailMinCreationTime(vm["min_creation_time"].as<unsigned int>()));
+			chain = chain | StandardFilter::filterByMailMinCreationTime(vm["min_creation_time"].as<unsigned int>());
 		}
 		if (vm.count("max_creation_time"))
 		{
-			chain = chain | TransformerFunc(StandardFilter::filterByMailMaxCreationTime(vm["max_creation_time"].as<unsigned int>()));
+			chain = chain | StandardFilter::filterByMailMaxCreationTime(vm["max_creation_time"].as<unsigned int>());
 		}
 		if (vm.count("folder_name"))
 		{
-			chain = chain | TransformerFunc(StandardFilter::filterByFolderName({vm["folder_name"].as<std::string>()}));
+			chain = chain | StandardFilter::filterByFolderName({vm["folder_name"].as<std::string>()});
 		}
 		if (vm.count("attachment_extension"))
 		{
-			chain = chain | TransformerFunc(StandardFilter::filterByAttachmentType({file_extension{vm["attachment_extension"].as<std::string>()}}));
+			chain = chain | StandardFilter::filterByAttachmentType({file_extension{vm["attachment_extension"].as<std::string>()}});
 		}
 
 		switch (vm["output_type"].as<OutputType>())
@@ -396,13 +396,13 @@ int main(int argc, char* argv[])
 		chain = chain | openai::TextToSpeech(api_key, model, voice);
 	}
 
-	chain = chain | TransformerFunc([](Info& info)
+	chain = chain | [](Info& info)
 	{
 		if (!std::holds_alternative<std::exception_ptr>(info.tag))
 			return;
 		std::clog << "[WARNING] " <<
 			errors::diagnostic_message(std::get<std::exception_ptr>(info.tag)) << std::endl;
-	});
+	};
 
 	try
 	{

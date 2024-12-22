@@ -741,7 +741,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::filesystem::path("1.pst") | content_type::detector{} |
   ParseDetectedFormat<MailParserProvider, OfficeFormatsParserProvider>()
-    | TransformerFunc([](Info &info) // Create an importer from file name and connect it to transformer
+    | [](Info &info) // Create an importer from file name and connect it to transformer
       {
         if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
         {
@@ -754,7 +754,7 @@ int main(int argc, char* argv[])
             }
           }
         }
-      })
+      }
     | PlainTextExporter() // sets exporter to plain text
     | std::cout;
   return 0;
@@ -773,7 +773,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::filesystem::path("1.pst") | content_type::detector{} |
   ParseDetectedFormat<MailParserProvider, OfficeFormatsParserProvider>() |
-    TransformerFunc([](Info &info) // Create an input from file name, importer and connect them to transformer
+    [](Info &info) // Create an input from file name, importer and connect them to transformer
     {
       if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
       {
@@ -786,8 +786,8 @@ int main(int argc, char* argv[])
           }
         }
       }
-    }) |
-    TransformerFunc([counter = 0, max_mails = 1](Info &info) mutable // Create a transformer and connect it to previous transformer
+    } |
+    [counter = 0, max_mails = 1](Info &info) mutable // Create a transformer and connect it to previous transformer
     {
       if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
       {
@@ -796,7 +796,7 @@ int main(int argc, char* argv[])
           info.cancel = true; // cancel the parsing process
         }
       }
-    }) |
+    } |
     PlainTextExporter() | // sets exporter to plain text
     std::cout;
  return 0;

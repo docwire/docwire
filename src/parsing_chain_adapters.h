@@ -9,40 +9,20 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DOCWIRE_H
-#define DOCWIRE_DOCWIRE_H
+#ifndef DOCWIRE_PARSING_CHAIN_ADAPTERS_H
+#define DOCWIRE_PARSING_CHAIN_ADAPTERS_H
 
-// IWYU pragma: begin_exports
-#include "office_formats_parser_provider.h"
-#include "classify.h"
-#include "content_type.h"
-#include "decompress_archives.h"
-#include "detect_sentiment.h"
-#include "exception_utils.h"
-#include "find.h"
-#include "fuzzy_match.h"
-#include "input.h"
-#include "output.h"
-#include "mail_parser_provider.h"
-#include "model_chain_element.h"
-#include "ocr_parser_provider.h"
-#include "parse_detected_format.h"
-#include "parsing_chain_adapters.h"
-#include "plain_text_exporter.h"
-#include "plain_text_writer.h"
-#include "html_exporter.h"
 #include "parsing_chain.h"
-#include "summarize.h"
-#include "text_to_speech.h"
-#include "transcribe.h"
 #include "transformer_func.h"
-#include "translate_to.h"
-// IWYU pragma: end_exports
 
-/**
- * @example handling_errors_and_warnings.cpp
- * This example presents how to catch exceptions to handle critical errors and
- * how to use transformer to process non-critical errors (warnings) flowing through the pipeline
-*/
+namespace docwire
+{
 
-#endif
+inline std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> chain, NewNodeCallback func)
+{
+  return chain | TransformerFunc{func};
+}
+
+} // namespace docwire
+
+#endif //DOCWIRE_PARSING_CHAIN_ADAPTERS_H

@@ -40,10 +40,10 @@
 #include "ocr_parser_provider.h"
 #include "output.h"
 #include "parse_detected_format.h"
+#include "parsing_chain_adapters.h"
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "throw_if.h"
-#include "transformer_func.h"
 #include "txt_parser.h"
 #include "input.h"
 #include "log.h"
@@ -270,7 +270,7 @@ TEST_P(CallbackTest, ParseFromPathTest)
     std::filesystem::path{file_name} |
         content_type::by_file_extension::detector{} |
         ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
-        TransformerFunc(callback) |
+        callback |
         PlainTextExporter() |
         output_stream;
 
@@ -617,7 +617,7 @@ TEST_P(MultiPageFilterTest, ReadFromPathTests)
     std::filesystem::path{file_name} |
         content_type::by_file_extension::detector{} |
         ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>() |
-        TransformerFunc([MAX_PAGES, counter = 0](Info &info) mutable
+        [MAX_PAGES, counter = 0](Info &info) mutable
         {
             if (std::holds_alternative<tag::Page>(info.tag))
             {
@@ -625,7 +625,7 @@ TEST_P(MultiPageFilterTest, ReadFromPathTests)
                 if (counter > MAX_PAGES)
                     info.cancel = true;
             }
-        }) |
+        } |
         PlainTextExporter() |
         output_stream;
 

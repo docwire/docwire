@@ -13,13 +13,13 @@ int main(int argc, char* argv[])
       content_type::by_file_extension::detector{} |
       ParseDetectedFormat<OfficeFormatsParserProvider>() |
       PlainTextExporter() |
-      TransformerFunc([](Info& info)
+      [](Info& info)
 	    {
 	      if (std::holds_alternative<std::exception_ptr>(info.tag))
 		      std::clog << "[WARNING] " <<
             errors::diagnostic_message(std::get<std::exception_ptr>(info.tag)) <<
             std::endl;
-	    }) |
+	    } |
       out_stream;
   }
   catch (const std::exception& e)
