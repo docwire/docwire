@@ -29,7 +29,7 @@ DllExport void detect(data_source& data, allow_multiple allow_multiple = {false}
 class detector : public ChainElement
 {
 public:
-    void process(Info &info) const override
+    void process(Info& info) override
     {
         if (!std::holds_alternative<data_source>(info.tag))
         {

@@ -20,7 +20,7 @@
 #include "resource_path.h"
 #include "throw_if.h"
 
-namespace docwire::local_ai
+namespace docwire
 {
 
 namespace
@@ -98,12 +98,13 @@ std::filesystem::path default_model_path()
 
 } // anonymous namespace
 
-struct model_runner::implementation
+template<>
+struct pimpl_impl<local_ai::model_runner>
 {
 	ctranslate2::Translator m_translator;
 	tokenizer m_tokenizer;
 
-    implementation(const std::filesystem::path& model_data_path)
+    pimpl_impl(const std::filesystem::path& model_data_path)
         : m_translator(ctranslate2::models::ModelLoader{model_data_path.string()}),
           m_tokenizer(model_data_path)
     {}
@@ -130,22 +131,26 @@ struct model_runner::implementation
     }
 };
 
+namespace local_ai
+{
+
 model_runner::model_runner()
     : model_runner(default_model_path())
 {}
 
 model_runner::model_runner(const std::filesystem::path& model_data_path)
-    : m_impl{std::make_unique<implementation>(model_data_path)}
+    : with_pimpl(model_data_path)
 {}
 
 model_runner::~model_runner()
 {}
 
-std::string model_runner::process(const std::string& input) const
+std::string model_runner::process(const std::string& input)
 {
-    std::vector<std::string> input_tokens = m_impl->m_tokenizer.tokenize(input);
-    std::vector<std::string> output_tokens = m_impl->process(input_tokens);
-    return m_impl->m_tokenizer.detokenize(output_tokens);
+    std::vector<std::string> input_tokens = impl().m_tokenizer.tokenize(input);
+    std::vector<std::string> output_tokens = impl().process(input_tokens);
+    return impl().m_tokenizer.detokenize(output_tokens);
 }
 
-} // namespace docwire::local_ai
+} // namespace local_ai
+} // namespace docwire

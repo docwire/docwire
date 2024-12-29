@@ -478,7 +478,7 @@ namespace
 	std::mutex converter_mutex;
 } // anonymous namespace
 
-void RTFParser::parse(const data_source& data) const
+void RTFParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using RTF parser.";
 	UString text;

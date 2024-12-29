@@ -232,7 +232,8 @@ static std::string find_main_xml_file(const ZipReader& unzip)
 	throw make_error("None of the following files (index.xml, index.apxl, presentation.apxl) could be found.", errors::uninterpretable_data{});
 }
 
-struct IWorkParser::Implementation
+template<>
+struct pimpl_impl<IWorkParser>
 {
 	std::string m_xml_file;
 
@@ -2072,16 +2073,17 @@ struct IWorkParser::Implementation
 };
 
 IWorkParser::IWorkParser()
-	: impl{std::make_unique<Implementation>()}
 {
 }
 
+IWorkParser::IWorkParser(IWorkParser&&) = default;
+
 IWorkParser::~IWorkParser() = default;
 
-void IWorkParser::parse(const data_source& data) const
+void IWorkParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using iWork parser.";
-	*impl = Implementation{};
+	renew_impl();
 	ZipReader unzip{data};
 	try
 	{
@@ -2093,18 +2095,18 @@ void IWorkParser::parse(const data_source& data) const
 	}
 	try
 	{
-		impl->m_xml_file = find_main_xml_file(unzip);
+		impl().m_xml_file = find_main_xml_file(unzip);
 		sendTag(tag::Document
 			{
 				.metadata=[this, &unzip]()
 				{
 					attributes::Metadata metadata;
-					impl->ReadMetadata(unzip, metadata, [this](std::exception_ptr e) { sendTag(e); });
+					impl().ReadMetadata(unzip, metadata, [this](std::exception_ptr e) { sendTag(e); });
 					return metadata;
 				}
 			});
 		std::string text;
-		impl->parseIWork(unzip, text);
+		impl().parseIWork(unzip, text);
 		sendTag(tag::Text{.text=text});
 		sendTag(tag::CloseDocument{});
 	}

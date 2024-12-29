@@ -86,7 +86,8 @@ public:
   std::vector<std::string> lines;
 };
 
-struct PlainTextWriter::Implementation
+template<>
+struct pimpl_impl<PlainTextWriter>
 {
   std::string timestampToString(unsigned int timestamp)
   {
@@ -305,7 +306,7 @@ struct PlainTextWriter::Implementation
 		return std::make_shared<TextElement>(m_eol_sequence + footer);
 	}
 
-  Implementation(const std::string& eol_sequence,
+  pimpl_impl(const std::string& eol_sequence,
       std::function<std::string(const tag::Link&)> format_link_opening,
       std::function<std::string(const tag::CloseLink&)> format_link_closing)
     : m_eol_sequence(eol_sequence),
@@ -490,26 +491,23 @@ struct PlainTextWriter::Implementation
 PlainTextWriter::PlainTextWriter(const std::string& eol_sequence,
   std::function<std::string(const tag::Link&)> format_link_opening,
   std::function<std::string(const tag::CloseLink&)> format_link_closing)
+    : with_pimpl<PlainTextWriter>(eol_sequence, format_link_opening, format_link_closing)
 {
-  impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{
-    eol_sequence, format_link_opening, format_link_closing}, ImplementationDeleter{}};
 }
 
-void
-PlainTextWriter::ImplementationDeleter::operator()(Implementation *impl)
-{
-  delete impl;
-}
+PlainTextWriter::PlainTextWriter(PlainTextWriter&&) = default;
+
+PlainTextWriter::~PlainTextWriter() = default;
 
 void
 PlainTextWriter::write_to(const Tag& tag, std::ostream &stream)
 {
-  impl->write_to(tag, stream);
+  impl().write_to(tag, stream);
 }
 
 const std::string PlainTextWriter::eol_sequence() const
 {
-  return impl->m_eol_sequence;
+  return impl().m_eol_sequence;
 }
 
 } // namespace docwire

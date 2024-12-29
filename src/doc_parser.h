@@ -27,7 +27,7 @@ class DllExport DOCParser : public Parser
 		friend class TableHandler;
 
 	public:
-    	void parse(const data_source& data) const override;
+    	void parse(const data_source& data) override;
 		Parser& withParameters(const ParserParameters &parameters) override;
 
 		inline static const std::vector<mime_type> supported_mime_types = { mime_type{"application/msword"} };

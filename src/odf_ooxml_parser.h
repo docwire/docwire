@@ -17,11 +17,10 @@
 namespace docwire
 {
 
-class DllExport ODFOOXMLParser : public CommonXMLDocumentParser
+class DllExport ODFOOXMLParser : public CommonXMLDocumentParser, public with_pimpl<ODFOOXMLParser>
 {
   private:
-    struct ExtendedImplementation;
-    std::unique_ptr<ExtendedImplementation> extended_impl;
+    using with_pimpl<ODFOOXMLParser>::impl;
     class CommandHandlersSet;
     int lastOOXMLRowNum();
     void setLastOOXMLRowNum(int r);
@@ -30,12 +29,12 @@ class DllExport ODFOOXMLParser : public CommonXMLDocumentParser
   void onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
                      const ZipReader* zipfile, std::string& text,
                      bool& children_processed, std::string& level_suffix, bool first_on_level) const;
-    void parse(const data_source& data, XmlParseMode mode) const;
+    void parse(const data_source& data, XmlParseMode mode);
     attributes::Metadata metaData(ZipReader& zipfile) const;
 
 	public:
 
-    void parse(const data_source& data) const override;
+    void parse(const data_source& data) override;
 
     inline static const std::vector<mime_type> supported_mime_types =
     {
@@ -60,6 +59,7 @@ class DllExport ODFOOXMLParser : public CommonXMLDocumentParser
     Parser& withParameters(const ParserParameters &parameters) override;
 
     ODFOOXMLParser();
+    ODFOOXMLParser(ODFOOXMLParser&&);
     ~ODFOOXMLParser();
 };
 

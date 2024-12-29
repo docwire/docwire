@@ -657,15 +657,17 @@ class MetaSaxParser : public ParserSax
 		};
 };
 
-struct HTMLParser::Implementation
+template<>
+struct pimpl_impl<HTMLParser>
 {
 	bool m_skip_decoding = false;
 };
 
 HTMLParser::HTMLParser()
-	: impl(std::make_unique<Implementation>())
 {
 }
+
+HTMLParser::HTMLParser(HTMLParser&&) = default;
 
 HTMLParser::~HTMLParser() = default;
 
@@ -677,7 +679,7 @@ HTMLParser::withParameters(const ParserParameters &parameters)
 }
 
 void
-HTMLParser::parse(const data_source& data) const
+HTMLParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using HTML parser.";
 	std::string content = data.string();
@@ -692,14 +694,14 @@ HTMLParser::parse(const data_source& data) const
 				return meta;				
 			}
 		});
-	SaxParser parser(content, impl->m_skip_decoding, this);
+	SaxParser parser(content, impl().m_skip_decoding, this);
 	parser.parse(content);
 	sendTag(tag::CloseDocument{});
 }
 
 void HTMLParser::skipCharsetDecoding()
 {
-	impl->m_skip_decoding = true;
+	impl().m_skip_decoding = true;
 }
 
 } // namespace docwire

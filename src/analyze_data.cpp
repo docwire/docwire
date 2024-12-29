@@ -25,12 +25,6 @@ AnalyzeData::AnalyzeData(const std::string& api_key, Model model, float temperat
 	docwire_log_func_with_args(temperature);
 }
 
-AnalyzeData::AnalyzeData(const AnalyzeData& other)
-	: Chat(other)
-{
-	docwire_log_func();
-}
-
 AnalyzeData::~AnalyzeData()
 {
 }

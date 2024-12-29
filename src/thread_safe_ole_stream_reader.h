@@ -14,6 +14,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include "pimpl.h"
 #include <string>
 #include <vector>
 #include "wv2/olestream.h"
@@ -26,12 +27,10 @@ class ThreadSafeOLEStorage;
 using namespace wvWare;
 class DataStream;
 
-class DllExport ThreadSafeOLEStreamReader : public wvWare::AbstractOLEStreamReader
+class DllExport ThreadSafeOLEStreamReader : public wvWare::AbstractOLEStreamReader, public with_pimpl<ThreadSafeOLEStreamReader>
 {
 	friend class ThreadSafeOLEStorage;
 	public:
-		struct Implementation;
-		Implementation* impl;
 		struct Stream
 		{
 			uint64_t m_size;

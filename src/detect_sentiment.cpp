@@ -25,12 +25,6 @@ DetectSentiment::DetectSentiment(const std::string& api_key, Model model, float 
 	docwire_log_func_with_args(temperature);
 }
 
-DetectSentiment::DetectSentiment(const DetectSentiment& other)
-	: Chat(other)
-{
-	docwire_log_func();
-}
-
 DetectSentiment::~DetectSentiment()
 {
 }

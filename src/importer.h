@@ -23,7 +23,7 @@
 namespace docwire
 {
 
-class DllExport Importer : public ChainElement
+class DllExport Importer : public ChainElement, public with_pimpl<Importer>
 {
 public:
   /**
@@ -31,11 +31,7 @@ public:
    */
   explicit Importer(const ParserParameters &parameters = ParserParameters());
 
-  Importer(const Importer &other);
-
-  Importer(const Importer &&other);
-
-  Importer& operator=(const Importer &other);
+  Importer(Importer &&other);
 
   Importer& operator=(const Importer &&other);
 
@@ -64,11 +60,10 @@ protected:
   /**
    * @brief Starts parsing process.
    */
-  void process(Info& info) const override;
+  void process(Info& info) override;
 
 private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
+  using with_pimpl<Importer>::impl;
 };
 
 } // namespace docwire

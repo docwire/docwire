@@ -18,9 +18,10 @@
 namespace docwire
 {
 
-struct PlainTextExporter::Implementation
+template<>
+struct pimpl_impl<PlainTextExporter>
 {
-	Implementation(eol_sequence eol_sequence, link_formatter link_formatter)
+	pimpl_impl(eol_sequence eol_sequence, link_formatter link_formatter)
 		: m_writer{eol_sequence.v, link_formatter.format_opening, link_formatter.format_closing}
 	{}
 
@@ -30,38 +31,37 @@ struct PlainTextExporter::Implementation
 };
 
 PlainTextExporter::PlainTextExporter(eol_sequence eol_sequence, link_formatter link_formatter)
-	: impl{new Implementation{eol_sequence, link_formatter}}
+	: with_pimpl<PlainTextExporter>(eol_sequence, link_formatter)
 {}
 
-void PlainTextExporter::process(Info &info) const
+PlainTextExporter::PlainTextExporter(PlainTextExporter&&) = default;
+
+PlainTextExporter::~PlainTextExporter() = default;
+
+void PlainTextExporter::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	if (std::holds_alternative<tag::Document>(info.tag) || !impl->m_stream)
+	if (std::holds_alternative<tag::Document>(info.tag) || !impl().m_stream)
 	{
-		++impl->m_nested_docs_level;
-		if (impl->m_nested_docs_level == 1)
-			impl->m_stream = std::make_shared<std::stringstream>();
+		++impl().m_nested_docs_level;
+		if (impl().m_nested_docs_level == 1)
+			impl().m_stream = std::make_shared<std::stringstream>();
 	}
-	impl->m_writer.write_to(info.tag, *impl->m_stream);
+	impl().m_writer.write_to(info.tag, *impl().m_stream);
 	if (std::holds_alternative<tag::CloseDocument>(info.tag))
 	{
-		--impl->m_nested_docs_level;
-		if (impl->m_nested_docs_level == 0)
+		--impl().m_nested_docs_level;
+		if (impl().m_nested_docs_level == 0)
 		{
-			Info info{data_source{seekable_stream_ptr{impl->m_stream}, file_extension{".txt"}}};
+			Info info{data_source{seekable_stream_ptr{impl().m_stream}, file_extension{".txt"}}};
 			emit(info);
-			impl->m_stream.reset();
+			impl().m_stream.reset();
 		}
 	}
-}
-
-void PlainTextExporter::ImplementationDeleter::operator()(PlainTextExporter::Implementation* impl)
-{
-	delete impl;
 }
 
 } // namespace docwire

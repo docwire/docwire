@@ -13,6 +13,7 @@
 #define DOCWIRE_PDF_PARSER_H
 
 #include "parser.h"
+#include "pimpl.h"
 #include "tags.h"
 #include <vector>
 
@@ -21,17 +22,20 @@ namespace docwire
 
 class Metadata;
 
-class DllExport PDFParser : public Parser
+class DllExport PDFParser : public Parser, public with_pimpl<PDFParser>
 {
 	private:
-		struct Implementation;
-		Implementation* impl;
-		attributes::Metadata metaData(const data_source& data) const;
+		using with_pimpl<PDFParser>::impl;
+		using with_pimpl<PDFParser>::renew_impl;
+		using with_pimpl<PDFParser>::destroy_impl;
+		friend pimpl_impl<PDFParser>;
+		attributes::Metadata metaData(const data_source& data);
 
 	public:
 		PDFParser();
+		PDFParser(PDFParser&&);
 		~PDFParser();
-		void parse(const data_source& data) const override;
+		void parse(const data_source& data) override;
 		inline static const std::vector<mime_type> supported_mime_types = { mime_type{"application/pdf"} };
 };
 

@@ -20,15 +20,13 @@ namespace docwire
 class DllExport ODFXMLParser : public CommonXMLDocumentParser
 {
 	private:
-		struct ExtendedImplementation;
-		std::unique_ptr<ExtendedImplementation> extended_impl;
 		class CommandHandlersSet;
 		attributes::Metadata metaData(const std::string& xml_content) const;
-		void parse(const data_source& data, XmlParseMode mode) const;
+		void parse(const data_source& data, XmlParseMode mode);
 
 	public:
 
-    void parse(const data_source& data) const override;
+    void parse(const data_source& data) override;
 
 		inline static const std::vector<mime_type> supported_mime_types =
 		{
@@ -41,6 +39,7 @@ class DllExport ODFXMLParser : public CommonXMLDocumentParser
 		Parser& withParameters(const ParserParameters &parameters) override;
 
 		ODFXMLParser();
+		ODFXMLParser(ODFXMLParser&&);
 		~ODFXMLParser();
 };
 

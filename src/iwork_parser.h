@@ -21,15 +21,16 @@ namespace docwire
 
 class Metadata;
 
-class DllExport IWorkParser : public Parser
+class DllExport IWorkParser : public Parser, public with_pimpl<IWorkParser>
 {
 	private:
-		struct Implementation;
-		std::unique_ptr<Implementation> impl;
+		using with_pimpl<IWorkParser>::impl;
+		using with_pimpl<IWorkParser>::renew_impl;
 		attributes::Metadata metaData(std::shared_ptr<std::istream> stream) const;
 
 	public:
 		IWorkParser();
+		IWorkParser(IWorkParser&&);
 		~IWorkParser();
 		inline static const std::vector<mime_type> supported_mime_types = 
 		{
@@ -41,7 +42,7 @@ class DllExport IWorkParser : public Parser
 			mime_type{"application/x-iwork-keynote-sffkey"}
 		};
 
-		void parse(const data_source& data) const override;
+		void parse(const data_source& data) override;
 };
 
 } // namespace docwire

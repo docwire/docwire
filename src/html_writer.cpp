@@ -81,7 +81,8 @@ std::shared_ptr<TextElement> tag_with_attributes(const std::string& tag_name, co
 
 } // anonymous namespace
 
-struct HtmlWriter::Implementation
+template<>
+struct pimpl_impl<HtmlWriter>
 {
   bool m_header_is_open { false };
   int m_nested_docs_counter { 0 };
@@ -220,23 +221,17 @@ struct HtmlWriter::Implementation
   }
 };
 
-void HtmlWriter::ImplementationDeleter::operator()(Implementation *impl)
-{
-  delete impl;
-}
-
 HtmlWriter::HtmlWriter()
-  : impl(new Implementation())
 {
 }
 
-HtmlWriter::HtmlWriter(const HtmlWriter& html_writer)
-  : impl(new Implementation(*html_writer.impl))
-{}
+HtmlWriter::~HtmlWriter() = default;
+
+HtmlWriter::HtmlWriter(HtmlWriter&&) = default;
 
 void HtmlWriter::write_to(const Tag& tag, std::ostream &stream)
 {
-	impl->write_to(tag, stream);
+	impl().write_to(tag, stream);
 }
 
 } // namespace docwire

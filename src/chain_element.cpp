@@ -17,17 +17,14 @@
 namespace docwire
 {
 
-struct ChainElement::Implementation
+template<>
+struct pimpl_impl<ChainElement>
 {
-  Implementation()
+  pimpl_impl()
   : m_on_new_node_signal(std::make_shared<boost::signals2::signal<void(Info &info)>>())
   {}
 
-  Implementation(const Implementation& implementation)
-  : m_on_new_node_signal(std::make_shared<boost::signals2::signal<void(Info &info)>>())
-  {}
-
-  void connect(const ChainElement &chain_element)
+  void connect(ChainElement& chain_element)
   {
     m_on_new_node_signal->connect([&chain_element](Info &info){chain_element.process(info);});
   }
@@ -42,26 +39,16 @@ struct ChainElement::Implementation
 
 ChainElement::ChainElement()
 {
-  base_impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{}, ImplementationDeleter{}};
 }
 
-ChainElement::ChainElement(const ChainElement& element)
-: base_impl(new Implementation(*(element.base_impl))),
-  m_parent(element.m_parent)
-{}
+ChainElement::ChainElement(ChainElement&&) = default;
 
-ChainElement&
-ChainElement::operator=(const ChainElement &chain_element)
-{
-  base_impl->m_on_new_node_signal = chain_element.base_impl->m_on_new_node_signal;
-  m_parent = chain_element.m_parent;
-  return *this;
-}
+ChainElement::~ChainElement() = default;
 
 void
-ChainElement::connect(const ChainElement &chain_element)
+ChainElement::connect(ChainElement& chain_element)
 {
-  base_impl->connect(chain_element);
+  impl().connect(chain_element);
 }
 
 void
@@ -79,13 +66,7 @@ ChainElement::get_parent() const
 void
 ChainElement::emit(Info &info) const
 {
-  base_impl->emit(info);
-}
-
-void
-ChainElement::ImplementationDeleter::operator()(ChainElement::Implementation *impl)
-{
-  delete impl;
+  impl().emit(info);
 }
 
 } // namespace docwire

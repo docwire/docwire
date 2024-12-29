@@ -23,7 +23,7 @@ class DllExport TranslateTo : public Chat
 {
 public:
 	TranslateTo(const std::string& language, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
-	TranslateTo(const TranslateTo& other);
+	TranslateTo(TranslateTo&&) = default;
 	virtual ~TranslateTo();
 };
 

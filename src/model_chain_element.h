@@ -39,6 +39,8 @@ public:
 		: m_prompt{prompt}, m_model_runner{model_runner}
 	{}
 
+	model_chain_element(model_chain_element&&) = default;
+
 	/**
 	 * @brief Destroy the model chain element.
 	 */
@@ -55,7 +57,7 @@ public:
 	 *
 	 * @param info The input Info object to process.
 	 */
-	void process(Info &info) const override;
+	void process(Info& info) override;
 
 	/**
 	 * @brief Check if the model chain element is a leaf.

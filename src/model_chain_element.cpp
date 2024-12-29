@@ -17,7 +17,7 @@
 namespace docwire::local_ai
 {
 
-void model_chain_element::process(Info &info) const
+void model_chain_element::process(Info& info)
 {
 	if (!std::holds_alternative<data_source>(info.tag))
 	{

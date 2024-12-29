@@ -13,6 +13,7 @@
 #define DOCWIRE_LOG_H
 
 #include "defines.h"
+#include "pimpl.h"
 #include <filesystem>
 #include <functional>
 #include <memory>
@@ -67,7 +68,7 @@ template <typename T>
 struct is_dereferenceable<T, std::void_t<decltype(*std::declval<T>()),
                                          decltype(bool(!std::declval<T>()))>> : std::true_type {};
 
-class DllExport log_record_stream
+class DllExport log_record_stream : public with_pimpl<log_record_stream>
 {
 public:
 	log_record_stream(severity_level severity, source_location location);
@@ -133,10 +134,6 @@ public:
 			*this << nullptr;
 		return *this;
 	}
-
-private:
-	struct implementation;
-	std::unique_ptr<implementation> m_impl;
 };
 
 typedef std::function<std::unique_ptr<log_record_stream>(severity_level severity, source_location location)> create_log_record_stream_func_t;
@@ -232,7 +229,7 @@ template<typename T> std::pair<std::string, const T&> streamable_var(const std::
 #define docwire_log_func() docwire_log(debug) << "Entering function" << std::make_pair("funtion_name", docwire_current_function)
 #define docwire_log_func_with_args(...) docwire_log_func() << docwire_log_streamable_vars(__VA_ARGS__)
 
-class DllExport cerr_log_redirection
+class DllExport cerr_log_redirection : public with_pimpl<cerr_log_redirection>
 {
 public:
 	cerr_log_redirection(source_location location);
@@ -242,8 +239,6 @@ public:
 
 private:
 	bool m_redirected;
-	struct implementation;
-	std::unique_ptr<implementation> m_impl;
 	std::streambuf* m_cerr_buf_backup;
 	source_location m_location;
 };

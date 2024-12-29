@@ -193,7 +193,7 @@ private:
 };
 
 void
-DecompressArchives::process(Info &info) const
+DecompressArchives::process(Info& info)
 {
 	if (!std::holds_alternative<data_source>(info.tag))
 	{

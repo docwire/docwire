@@ -14,22 +14,11 @@
 namespace docwire
 {
 
-class TransformerFunc::Implementation
+template<>
+struct pimpl_impl<TransformerFunc> : with_pimpl_owner<TransformerFunc>
 {
-public:
-  Implementation(NewNodeCallback transformer_function, TransformerFunc& owner)
-    : m_transformer_function(transformer_function),
-      m_owner(owner)
-  {}
-
-  Implementation(const Implementation &other, TransformerFunc& owner)
-    : m_transformer_function(other.m_transformer_function),
-      m_owner(owner)
-  {}
-
-  Implementation(const Implementation &&other, TransformerFunc& owner)
-    : m_transformer_function(other.m_transformer_function),
-      m_owner(owner)
+  pimpl_impl(NewNodeCallback transformer_function)
+    : m_transformer_function(transformer_function)
   {}
 
   void transform(Info &info) const
@@ -37,32 +26,27 @@ public:
     m_transformer_function(info);
     if (!info.cancel && !info.skip)
     {
-      m_owner.emit(info);
+      owner().emit(info);
     }
   }
 
   NewNodeCallback m_transformer_function;
-  TransformerFunc& m_owner;
 };
 
 TransformerFunc::TransformerFunc(NewNodeCallback transformer_function)
+  : with_pimpl<TransformerFunc>(transformer_function)
 {
-  impl = std::unique_ptr<Implementation>{new Implementation{transformer_function, *this}};
 }
 
-TransformerFunc::TransformerFunc(const TransformerFunc &other)
-: impl(new Implementation{*other.impl, *this})
-{
-  set_parent(other.get_parent());
-}
+TransformerFunc::TransformerFunc(TransformerFunc&&) = default;
 
 TransformerFunc::~TransformerFunc()
 {
 }
 
-void TransformerFunc::process(Info &info) const
+void TransformerFunc::process(Info& info)
 {
-  impl->transform(info);
+  impl().transform(info);
 }
 
 } // namespace docwire

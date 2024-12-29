@@ -14,19 +14,21 @@
 
 #include <iostream>
 
+#include "pimpl.h"
 #include "writer.h"
 #include "defines.h"
 
 namespace docwire
 {
 
-class DllExport HtmlWriter : public Writer
+class DllExport HtmlWriter : public Writer, public with_pimpl<HtmlWriter>
 {
 public:
 
   explicit HtmlWriter();
+  ~HtmlWriter();
 
-  HtmlWriter(const HtmlWriter& html_writer);
+  HtmlWriter(HtmlWriter&& html_writer);
 
   /**
    * @brief Converts text from callback to html format
@@ -36,9 +38,7 @@ public:
   void write_to(const Tag& tag, std::ostream &stream) override;
 
 private:
-  struct DllExport Implementation;
-  struct DllExport ImplementationDeleter { void operator() (Implementation*); };
-  std::unique_ptr<Implementation, ImplementationDeleter> impl;
+  using with_pimpl<HtmlWriter>::impl;
 };
 } // namespace docwire
 

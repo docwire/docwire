@@ -16,19 +16,20 @@
 #include <vector>
 
 #include "parser.h"
+#include "pimpl.h"
 
 namespace docwire
 {
 
-class DllExport PSTParser : public Parser
+class DllExport PSTParser : public Parser, public with_pimpl<PSTParser>
 {
 private:
-  struct Implementation;
-  std::unique_ptr<Implementation> impl;
+  using with_pimpl<PSTParser>::impl;
+  friend pimpl_impl<PSTParser>;
 
 public:
 
-  void parse(const data_source& data) const override;
+  void parse(const data_source& data) override;
 
   inline static const std::vector<mime_type> supported_mime_types =
   {
@@ -37,6 +38,7 @@ public:
   };
 
   PSTParser();
+  PSTParser(PSTParser&&);
   ~PSTParser();
 };
 

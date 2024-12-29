@@ -36,7 +36,7 @@ class ODFXMLParser::CommandHandlersSet
 		}
 
 		static void onODFObject(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								const ZipReader* zipfile, std::string& text,
+								ZipReader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "ODF_OBJECT Command";
@@ -56,23 +56,18 @@ class ODFXMLParser::CommandHandlersSet
 		}
 };
 
-struct ODFXMLParser::ExtendedImplementation
-{
-	ODFXMLParser* m_interf;
-};
-
 ODFXMLParser::ODFXMLParser()
-	: extended_impl{std::make_unique<ExtendedImplementation>()}
 {
-		extended_impl->m_interf = this;
 		registerODFOOXMLCommandHandler("body", &CommandHandlersSet::onODFBody);
 		registerODFOOXMLCommandHandler("object", &CommandHandlersSet::onODFObject);
 		registerODFOOXMLCommandHandler("binary-data", &CommandHandlersSet::onODFBinaryData);
 }
 
+ODFXMLParser::ODFXMLParser(ODFXMLParser&&) = default;
+
 ODFXMLParser::~ODFXMLParser() = default;
 
-void ODFXMLParser::parse(const data_source& data, XmlParseMode mode) const
+void ODFXMLParser::parse(const data_source& data, XmlParseMode mode)
 {
 	std::string xml_content = data.string();
 
@@ -131,7 +126,7 @@ ODFXMLParser::withParameters(const ParserParameters &parameters)
 	return *this;
 }
 
-void ODFXMLParser::parse(const data_source& data) const
+void ODFXMLParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using ODFXML parser.";
 	parse(data, XmlParseMode::PARSE_XML);

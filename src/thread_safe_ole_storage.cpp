@@ -23,7 +23,8 @@
 namespace docwire
 {
 
-struct ThreadSafeOLEStorage::Implementation
+template<>
+struct pimpl_impl<ThreadSafeOLEStorage>
 {
 	bool m_is_valid_ole;
 	std::string m_error;
@@ -70,7 +71,7 @@ struct ThreadSafeOLEStorage::Implementation
 	std::vector<std::shared_ptr<DirectoryEntry>> m_inside_directories;
 	bool m_child_directories_loaded;
 	
-	explicit Implementation(const std::string &file_name)
+	explicit pimpl_impl(const std::string &file_name)
 	{
 		m_file_name = file_name;
 		m_is_valid_ole = true;
@@ -108,12 +109,12 @@ struct ThreadSafeOLEStorage::Implementation
 		getStoragesAndStreams();
 	}
 
-	Implementation(std::span<const std::byte> buffer)
+	pimpl_impl(std::span<const std::byte> buffer)
 	{
 		init_from_buffer(buffer);
 	}
 
-	~Implementation()
+	~pimpl_impl()
 	{
 		delete m_data_stream;
 	}
@@ -189,8 +190,8 @@ struct ThreadSafeOLEStorage::Implementation
 		m_child_directories.push_back(m_directories[m_current_directory->m_child]);
 		int index_start = 0;
 		int index_end = 0;
-		std::shared_ptr<Implementation::DirectoryEntry> current_dir;
-		std::shared_ptr<Implementation::DirectoryEntry> added_dir;
+		std::shared_ptr<DirectoryEntry> current_dir;
+		std::shared_ptr<DirectoryEntry> added_dir;
 		while (index_start != index_end + 1)
 		{
 			current_dir = m_child_directories[index_start];
@@ -540,40 +541,17 @@ struct ThreadSafeOLEStorage::Implementation
 };
 
 ThreadSafeOLEStorage::ThreadSafeOLEStorage(const std::string &file_name)
+	: with_pimpl(file_name)
 {
-	impl = nullptr;
-	try
-	{
-		impl = new Implementation(file_name);
-	}
-	catch (std::bad_alloc& ba)
-	{
-    delete impl;
-		throw;
-	}
 }
 
 ThreadSafeOLEStorage::ThreadSafeOLEStorage(std::span<const std::byte> buffer)
+	: with_pimpl(buffer)
 {
-	impl = nullptr;
-	try
-	{
-		impl = new Implementation(buffer);
-	}
-	catch (std::bad_alloc& ba)
-	{
-			delete impl;
-
-		throw;
-	}
 }
 
 ThreadSafeOLEStorage::~ThreadSafeOLEStorage()
 {
-
-
-		delete impl;
-
 }
 
 bool ThreadSafeOLEStorage::open(Mode mode)
@@ -585,40 +563,35 @@ bool ThreadSafeOLEStorage::open(Mode mode)
 
 bool ThreadSafeOLEStorage::isValid() const
 {
-	return impl->m_is_valid_ole;
+	return impl().m_is_valid_ole;
 }
 
 void ThreadSafeOLEStorage::close()
 {
-	if (impl != nullptr)
-	{
-		delete impl;
-		impl = nullptr;
-	}
 }
 
 std::string ThreadSafeOLEStorage::getLastError()
 {
-	return impl->m_error;
+	return impl().m_error;
 }
 
 std::string ThreadSafeOLEStorage::name() const
 {
-	return impl->m_file_name;
+	return impl().m_file_name;
 }
 
 bool ThreadSafeOLEStorage::getStreamsAndStoragesList(std::vector<std::string>& components)
 {
 	components.clear();
-	if (impl == nullptr || !impl->m_is_valid_ole || impl->m_current_directory == nullptr)
+	if (!impl().m_is_valid_ole || impl().m_current_directory == nullptr)
 		return false;
-	if (!impl->m_child_directories_loaded)
+	if (!impl().m_child_directories_loaded)
 	{
-		if (!impl->getCurrentDirectoryChilds())
+		if (!impl().getCurrentDirectoryChilds())
 			return false;
-		impl->m_child_directories_loaded = true;
+		impl().m_child_directories_loaded = true;
 	}
-	for (auto & m_child_directory : impl->m_child_directories)
+	for (auto & m_child_directory : impl().m_child_directories)
 	{
 		components.push_back(m_child_directory->m_name);
 	}
@@ -627,73 +600,73 @@ bool ThreadSafeOLEStorage::getStreamsAndStoragesList(std::vector<std::string>& c
 
 bool ThreadSafeOLEStorage::enterDirectory(const std::string& directory_path)
 {
-	if (impl == nullptr || !impl->m_is_valid_ole || impl->m_current_directory == nullptr)
+	if (!impl().m_is_valid_ole || impl().m_current_directory == nullptr)
 		return false;
-	if (!impl->m_child_directories_loaded)
+	if (!impl().m_child_directories_loaded)
 	{
-		if (!impl->getCurrentDirectoryChilds())
+		if (!impl().getCurrentDirectoryChilds())
 			return false;
-		impl->m_child_directories_loaded = true;
+		impl().m_child_directories_loaded = true;
 	}
-	for (size_t i = 0; i < impl->m_child_directories.size(); ++i)
+	for (size_t i = 0; i < impl().m_child_directories.size(); ++i)
 	{
-		if (impl->m_child_directories[i]->m_name == directory_path)
+		if (impl().m_child_directories[i]->m_name == directory_path)
 		{
-			if (impl->m_child_directories[i]->m_object_type != Implementation::DirectoryEntry::storage)
+			if (impl().m_child_directories[i]->m_object_type != pimpl_impl<ThreadSafeOLEStorage>::DirectoryEntry::storage)
 			{
-				impl->m_error = "Specified object is not directory";
+				impl().m_error = "Specified object is not directory";
 				return false;
 			}
-			impl->m_inside_directories.push_back(impl->m_current_directory);
-			impl->m_current_directory = impl->m_child_directories[i];
-			impl->m_child_directories_loaded = false;
-			for (auto & m_child_directory : impl->m_child_directories)
+			impl().m_inside_directories.push_back(impl().m_current_directory);
+			impl().m_current_directory = impl().m_child_directories[i];
+			impl().m_child_directories_loaded = false;
+			for (auto & m_child_directory : impl().m_child_directories)
 				m_child_directory->m_added = false;
-			impl->m_child_directories.clear();
+			impl().m_child_directories.clear();
 			return true;
 		}
 	}
-	impl->m_error = "Specified directory does not exist";
+	impl().m_error = "Specified directory does not exist";
 	return false;
 }
 
 bool ThreadSafeOLEStorage::leaveDirectory()
 {
-	if (impl == nullptr || !impl->m_is_valid_ole || impl->m_current_directory == nullptr)
+	if (!impl().m_is_valid_ole || impl().m_current_directory == nullptr)
 		return false;
-	if (impl->m_inside_directories.empty())
+	if (impl().m_inside_directories.empty())
 	{
-		impl->m_error = "Already in root directory";
+		impl().m_error = "Already in root directory";
 		return false;
 	}
-	impl->m_current_directory = impl->m_inside_directories.back();
-	impl->m_inside_directories.pop_back();
-	impl->m_child_directories_loaded = false;
-	for (auto & m_child_directory : impl->m_child_directories)
+	impl().m_current_directory = impl().m_inside_directories.back();
+	impl().m_inside_directories.pop_back();
+	impl().m_child_directories_loaded = false;
+	for (auto & m_child_directory : impl().m_child_directories)
 		m_child_directory->m_added = false;
-	impl->m_child_directories.clear();
+	impl().m_child_directories.clear();
 	return true;
 }
 
 AbstractOLEStreamReader *ThreadSafeOLEStorage::createStreamReader(const std::string& stream_path)
 {
-	if (impl == nullptr || !impl->m_is_valid_ole || impl->m_current_directory == nullptr) {
+	if (!impl().m_is_valid_ole || impl().m_current_directory == nullptr) {
         return nullptr;
     }
-	if (!impl->m_child_directories_loaded)
+	if (!impl().m_child_directories_loaded)
 	{
-		if (!impl->getCurrentDirectoryChilds()) {
+		if (!impl().getCurrentDirectoryChilds()) {
             return nullptr;
         }
-		impl->m_child_directories_loaded = true;
+		impl().m_child_directories_loaded = true;
 	}
-	for (auto & m_child_directory : impl->m_child_directories)
+	for (auto & m_child_directory : impl().m_child_directories)
 	{
 		if (m_child_directory->m_name == stream_path)
 		{
-			if (m_child_directory->m_object_type != Implementation::DirectoryEntry::stream)
+			if (m_child_directory->m_object_type != pimpl_impl<ThreadSafeOLEStorage>::DirectoryEntry::stream)
 			{
-				impl->m_error = "Specified object is not a stream";
+				impl().m_error = "Specified object is not a stream";
 				return nullptr;
 			}
 			ThreadSafeOLEStreamReader::Stream stream;
@@ -701,22 +674,22 @@ AbstractOLEStreamReader *ThreadSafeOLEStorage::createStreamReader(const std::str
 			stream.m_data_stream = nullptr;
 			try
 			{
-				stream.m_data_stream = impl->m_data_stream->clone();
+				stream.m_data_stream = impl().m_data_stream->clone();
 				stream.m_size = m_child_directory->m_stream_size;
-				if (stream.m_size < impl->m_mini_stream_cut_off)
+				if (stream.m_size < impl().m_mini_stream_cut_off)
 				{
-					stream.m_sector_size = impl->m_mini_sector_size;
-					impl->getStreamPositions(stream.m_file_positions, true, m_child_directory);
+					stream.m_sector_size = impl().m_mini_sector_size;
+					impl().getStreamPositions(stream.m_file_positions, true, m_child_directory);
 				}
 				else
 				{
-					stream.m_sector_size = impl->m_sector_size;
-					impl->getStreamPositions(stream.m_file_positions, false, m_child_directory);
+					stream.m_sector_size = impl().m_sector_size;
+					impl().getStreamPositions(stream.m_file_positions, false, m_child_directory);
 				}
 				ole_stream_reader = new ThreadSafeOLEStreamReader(this, stream);
 				if (!ole_stream_reader->isValid())
 				{
-					impl->m_error = ole_stream_reader->getLastError();
+					impl().m_error = ole_stream_reader->getLastError();
 					delete ole_stream_reader;
 					return nullptr;
 				}
@@ -732,30 +705,30 @@ AbstractOLEStreamReader *ThreadSafeOLEStorage::createStreamReader(const std::str
 			}
 		}
 	}
-	impl->m_error = "Specified stream does not exist";
+	impl().m_error = "Specified stream does not exist";
 	return nullptr;
 }
 
 bool ThreadSafeOLEStorage::readDirectFromBuffer(unsigned char* buffer, int size, int offset)
 {
-	if (!impl->m_data_stream->open())
+	if (!impl().m_data_stream->open())
 	{
-		impl->m_error = "Cannot open file " + impl->m_file_name;
+		impl().m_error = "Cannot open file " + impl().m_file_name;
 		return false;
 	}
-	if (!impl->m_data_stream->seek(offset, SEEK_SET))
+	if (!impl().m_data_stream->seek(offset, SEEK_SET))
 	{
-		impl->m_error = "Cant seek to the selected position";
-		impl->m_data_stream->close();
+		impl().m_error = "Cant seek to the selected position";
+		impl().m_data_stream->close();
 		return false;
 	}
-	if (!impl->m_data_stream->read(buffer, sizeof(unsigned char), size))
+	if (!impl().m_data_stream->read(buffer, sizeof(unsigned char), size))
 	{
-		impl->m_error = "Cant read from file";
-		impl->m_data_stream->close();
+		impl().m_error = "Cant read from file";
+		impl().m_data_stream->close();
 		return false;
 	}
-	impl->m_data_stream->close();
+	impl().m_data_stream->close();
 	return true;
 }
 

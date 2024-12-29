@@ -63,7 +63,7 @@ std::string sequences_of_printable_characters(const std::string& text, size_t mi
 
 } // anonymous namespace
 
-void TXTParser::parse(const data_source& data) const
+void TXTParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using TXT parser.";
 	std::string text;

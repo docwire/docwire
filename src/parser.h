@@ -17,6 +17,7 @@
 #include <memory>
 
 #include "parser_parameters.h"
+#include "pimpl.h"
 #include "tags.h"
 #include "defines.h"
 
@@ -39,12 +40,12 @@ typedef std::function<void(Info &info)> NewNodeCallback;
 /**
  * @brief Abstract class for all parsers
  */
-class DllExport Parser
+class DllExport Parser : with_pimpl<Parser>
 {
 public:
   explicit Parser();
-  Parser(Parser &&) = default;
-  virtual ~Parser() = default;
+  Parser(Parser&&);
+  virtual ~Parser();
 
   enum class parsing_continuation { proceed, skip, stop };
 
@@ -54,7 +55,7 @@ public:
    * @param callback function to execute for every document node. Nodes depends on the kind of parser.
    * It can be email for pst file, page or paragraph for pdf file etc.
    */
-  void operator()(const data_source& data, std::function<parsing_continuation(const Tag&)> callback) const;
+  void operator()(const data_source& data, std::function<parsing_continuation(const Tag&)> callback);
 
   virtual Parser &withParameters(const ParserParameters &parameters);
 
@@ -62,17 +63,12 @@ protected:
   /**
    * @brief Executes text parsing
    */
-  virtual void parse(const data_source& data) const = 0;
+  virtual void parse(const data_source& data) = 0;
 
   Info sendTag(const Tag& tag) const;
   Info sendTag(const Info &info) const;
 
   ParserParameters m_parameters;
-
-private:
-  struct DllExport Implementation;
-  struct DllExport ImplementationDeleter { void operator() (Implementation*); };
-  std::unique_ptr<Implementation, ImplementationDeleter> base_impl;
 };
 
 } // namespace docwire

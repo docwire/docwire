@@ -30,7 +30,7 @@ namespace docwire
  * Input("test.pdf") | ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
  * @endcode
  */
-class DllExport TransformerFunc : public ChainElement
+class DllExport TransformerFunc : public ChainElement, public with_pimpl<TransformerFunc>
 {
 public:
   /**
@@ -39,7 +39,7 @@ public:
    */
   TransformerFunc(NewNodeCallback transformer_function);
 
-  TransformerFunc(const TransformerFunc &other);
+  TransformerFunc(TransformerFunc&&);
 
   virtual ~TransformerFunc();
 
@@ -48,7 +48,7 @@ public:
    * @see Info
    * @param info
    */
-  void process(Info &info) const override;
+  void process(Info& info) override;
 
   bool is_leaf() const override
   {
@@ -56,8 +56,7 @@ public:
   }
 
 private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
+  using with_pimpl<TransformerFunc>::impl;
 };
 
 } // namespace docwire

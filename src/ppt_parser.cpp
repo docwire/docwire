@@ -274,7 +274,7 @@ PPTParser::PPTParser()
 {
 }
 
-void PPTParser::parse(const data_source& data) const
+void PPTParser::parse(const data_source& data)
 {	
 	docwire_log(debug) << "Using PPT parser.";
 	try

@@ -71,20 +71,18 @@ thread_local std::string leptonica_stderr_capturer::m_contents;
 
 } // anonymous namespace
 
-struct OCRParser::Implementation
+template<>
+struct pimpl_impl<OCRParser> : with_pimpl_owner<OCRParser>
 {
-    OCRParser* m_owner;
     std::string m_tessdata_prefix;
+    std::vector<Language> m_languages;
 
-    Implementation(OCRParser* owner)
-        : m_owner(owner)
-    {}
 
     static bool cancel (void* data, int words)
     {
-        auto impl = reinterpret_cast<OCRParser::Implementation*>(data);
+        auto impl = reinterpret_cast<pimpl_impl<OCRParser>*>(data);
         Info info{tag::PleaseWait{}};
-        impl->m_owner->sendTag(info);
+        impl->owner().sendTag(info);
         return info.cancel;
     }
 };  
@@ -94,9 +92,9 @@ std::string OCRParser::get_default_tessdata_prefix()
     return "./tessdata/";
 }
 
-OCRParser::OCRParser()
-    : impl(std::make_unique<Implementation>(this))
+OCRParser::OCRParser(const std::vector<Language>& languages)
 {
+    impl().m_languages = languages;
 }
 
 OCRParser::OCRParser(OCRParser&&) = default;
@@ -215,7 +213,7 @@ std::filesystem::path default_tessdata_path()
 
 } // anonymous namespace
 
-std::string OCRParser::parse(const data_source& data, const std::vector<Language>& languages) const
+std::string OCRParser::parse(const data_source& data, const std::vector<Language>& languages)
 {
     tessAPIWrapper api{ nullptr, tessAPIDeleter };
     try
@@ -230,11 +228,11 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     auto tess_data_prefix = m_parameters.getParameterValue<std::string>("TESSDATA_PREFIX");
     if (tess_data_prefix)
     {
-      impl->m_tessdata_prefix = *tess_data_prefix;
+      impl().m_tessdata_prefix = *tess_data_prefix;
     }
     else
     {
-      impl->m_tessdata_prefix = default_tessdata_path().string();
+      impl().m_tessdata_prefix = default_tessdata_path().string();
     }
 
     std::string langs = std::accumulate(languages.begin(), languages.end(), std::string{},
@@ -246,7 +244,7 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
 
     {
         std::lock_guard<std::mutex> tesseract_libtiff_mutex_lock{ tesseract_libtiff_mutex };
-        throw_if (api->Init(impl->m_tessdata_prefix.c_str(), langs.c_str()) != 0, "Could not initialize tesseract", impl->m_tessdata_prefix, langs);
+        throw_if (api->Init(impl().m_tessdata_prefix.c_str(), langs.c_str()) != 0, "Could not initialize tesseract", impl().m_tessdata_prefix, langs);
     }
 
     // Read the image and convert to a gray-scale image
@@ -292,8 +290,8 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     {
         monitor.set_deadline_msecs(*ocr_timeout);
     }
-    monitor.cancel = &Implementation::cancel;
-    monitor.cancel_this = reinterpret_cast<void*>(impl.get());
+    monitor.cancel = &pimpl_impl<OCRParser>::cancel;
+    monitor.cancel_this = reinterpret_cast<void*>(const_cast<pimpl_impl<OCRParser>*>(&(impl())));
     api->Recognize(&monitor);
     auto txt = api->GetUTF8Text();
     std::string output{ txt };
@@ -303,7 +301,7 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
 
 void OCRParser::setTessdataPrefix(const std::string& tessdata_prefix)
 {
-    impl->m_tessdata_prefix = tessdata_prefix;
+    impl().m_tessdata_prefix = tessdata_prefix;
 }
 
 Parser&
@@ -313,10 +311,12 @@ OCRParser::withParameters(const ParserParameters &parameters)
     return *this;
 }
 
-void OCRParser::parse(const data_source& data) const
+void OCRParser::parse(const data_source& data)
 {
   docwire_log(debug) << "Using OCR parser.";
   auto language = m_parameters.getParameterValue<std::vector<Language>>("languages");
+  if (!language)
+    language = impl().m_languages;
   sendTag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
   std::string plain_text = parse(data, language && language->size() > 0 ? *language : std::vector({ Language::eng }));
   sendTag(tag::Text{.text = plain_text});

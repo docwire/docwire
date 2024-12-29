@@ -19,11 +19,11 @@ namespace docwire
 namespace openai
 {
 
-class DllExport Transcribe : public ChainElement
+class DllExport Transcribe : public ChainElement, public with_pimpl<Transcribe>
 {
 public:
 	Transcribe(const std::string& api_key);
-	Transcribe(const Transcribe& other);
+	Transcribe(Transcribe&&);
 	virtual ~Transcribe();
 
 	/**
@@ -31,7 +31,7 @@ public:
 	* @see docwire::Info
 	* @param info
 	*/
-	void process(Info &info) const override;
+	void process(Info& info) override;
 
 	bool is_leaf() const override
 	{
@@ -39,8 +39,7 @@ public:
 	}
 
 private:
-	struct Implementation;
-	std::unique_ptr<Implementation> impl;
+	using with_pimpl<Transcribe>::impl;
 };
 
 } // namespace openai

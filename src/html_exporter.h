@@ -20,16 +20,16 @@ namespace docwire
 /**
  * @brief Exports data to HTML format.
  */
-class DllExport HtmlExporter: public ChainElement
+class DllExport HtmlExporter: public ChainElement, public with_pimpl<HtmlExporter>
 {
 public:
 
   HtmlExporter();
 
-	HtmlExporter(const HtmlExporter& other);
-	virtual ~HtmlExporter() = default;
+	HtmlExporter(HtmlExporter&&);
+	virtual ~HtmlExporter();
 
-  void process(Info& info) const override;
+  void process(Info& info) override;
 
 	bool is_leaf() const override
 	{
@@ -37,9 +37,7 @@ public:
 	}
 
 private:
-	struct Implementation;
-	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
-	std::unique_ptr<Implementation, ImplementationDeleter> impl;
+	using with_pimpl<HtmlExporter>::impl;
 };
 
 } // namespace docwire

@@ -19,7 +19,8 @@ namespace docwire
 
 using namespace wvWare;
 
-struct ThreadSafeOLEStreamReader::Implementation
+template<>
+struct pimpl_impl<ThreadSafeOLEStreamReader>
 {
 	DataStream* m_data_stream{};
 	uint64_t m_size{0};
@@ -35,132 +36,113 @@ struct ThreadSafeOLEStreamReader::Implementation
 ThreadSafeOLEStreamReader::ThreadSafeOLEStreamReader(ThreadSafeOLEStorage *storage, Stream &stream)
 	: AbstractOLEStreamReader((wvWare::AbstractOLEStorage*)storage)
 {
-	impl = nullptr;
-	try
+	impl().m_data_stream = stream.m_data_stream;
+	impl().m_position = 0;
+	impl().m_chunk_position = 0;
+	impl().m_size = stream.m_size;
+	impl().m_sector_positions.assign(stream.m_file_positions.begin(), stream.m_file_positions.end());
+	impl().m_sector_size = stream.m_sector_size;
+	impl().m_valid = true;
+	impl().m_current_sector = 0;
+	if (!impl().m_data_stream->open())
 	{
-		impl = new Implementation;
-		impl->m_data_stream = stream.m_data_stream;
-		impl->m_position = 0;
-		impl->m_chunk_position = 0;
-		impl->m_size = stream.m_size;
-		impl->m_sector_positions.assign(stream.m_file_positions.begin(), stream.m_file_positions.end());
-		impl->m_sector_size = stream.m_sector_size;
-		impl->m_valid = true;
-		impl->m_current_sector = 0;
-		if (!impl->m_data_stream->open())
-		{
-			impl->m_error = "Empty file";
-			impl->m_valid = false;
-			return;
-		}
-		if (impl->m_sector_positions.empty())
-		{
-			impl->m_error = "Stream is empty";
-			impl->m_valid = false;
-			return;
-		}
-		if (!impl->m_data_stream->seek(impl->m_sector_positions[0], SEEK_SET))
-		{
-			impl->m_error = "Cant seek to the first sector";
-			impl->m_valid = false;
-		}
+		impl().m_error = "Empty file";
+		impl().m_valid = false;
+		return;
 	}
-	catch (std::bad_alloc& ba)
+	if (impl().m_sector_positions.empty())
 	{
-		if (impl != nullptr)
-		{
-			delete impl->m_data_stream;
-			delete impl;
-		}
-		stream.m_data_stream = nullptr;
-		throw;
+		impl().m_error = "Stream is empty";
+		impl().m_valid = false;
+		return;
+	}
+	if (!impl().m_data_stream->seek(impl().m_sector_positions[0], SEEK_SET))
+	{
+		impl().m_error = "Cant seek to the first sector";
+		impl().m_valid = false;
 	}
 }
 
 ThreadSafeOLEStreamReader::~ThreadSafeOLEStreamReader()
 {
-	if (impl)
-	{
-		impl->m_data_stream->close();
-		delete impl->m_data_stream;
-		delete impl;
-	}
+	impl().m_data_stream->close();
+	delete impl().m_data_stream;
 }
 
 std::string ThreadSafeOLEStreamReader::getLastError() const
 {
-	return impl->m_error;
+	return impl().m_error;
 }
 
 bool ThreadSafeOLEStreamReader::isValid() const
 {
-	return impl->m_valid;
+	return impl().m_valid;
 }
 
 int ThreadSafeOLEStreamReader::tell() const
 {
-	return impl->m_position;
+	return impl().m_position;
 }
 
 size_t ThreadSafeOLEStreamReader::size() const
 {
-	return impl->m_size;
+	return impl().m_size;
 }
 
 bool ThreadSafeOLEStreamReader::read(U8* buf, size_t length)
 {
-	if (!impl->m_valid)
+	if (!impl().m_valid)
 		return false;
 	uint64_t to_read = length;
 	uint64_t read_pos = 0;
-	if (to_read > impl->m_size - impl->m_position)
+	if (to_read > impl().m_size - impl().m_position)
 	{
-		impl->m_error = "Requested size to read is too big";
-		to_read = impl->m_size - impl->m_position;
+		impl().m_error = "Requested size to read is too big";
+		to_read = impl().m_size - impl().m_position;
 	}
 	while (to_read > 0)
 	{
-		if (to_read <= impl->m_sector_size - impl->m_chunk_position)
+		if (to_read <= impl().m_sector_size - impl().m_chunk_position)
 		{
-			if (!impl->m_data_stream->read(buf + read_pos, sizeof(uint8_t), to_read))
+			if (!impl().m_data_stream->read(buf + read_pos, sizeof(uint8_t), to_read))
 			{
-				impl->m_valid = false;
-				impl->m_error = "Read past EOF";
+				impl().m_valid = false;
+				impl().m_error = "Read past EOF";
 				return false;
 			}
-			impl->m_position += to_read;
-			impl->m_chunk_position += to_read;
+			impl().m_position += to_read;
+			impl().m_chunk_position += to_read;
 			to_read = 0;
 		}
 		else
 		{
-			uint32_t rest = impl->m_sector_size - impl->m_chunk_position;
+			uint32_t rest = impl().m_sector_size - impl().m_chunk_position;
 			if (rest > 0)
 			{
-				if (!impl->m_data_stream->read(buf + read_pos, sizeof(uint8_t), rest))
+				if (!impl().m_data_stream->read(buf + read_pos, sizeof(uint8_t), rest))
 				{
-					impl->m_valid = false;
-					impl->m_error = "Read past EOF";
+					impl().m_valid = false;
+					impl().m_error = "Read past EOF";
 					return false;
 				}
 				read_pos += rest;
-				impl->m_position += rest;
+				impl().m_position += rest;
 				to_read -= rest;
 			}
-			++impl->m_current_sector;
-			if (impl->m_current_sector >= impl->m_sector_positions.size())
+			++impl().m_current_sector;
+			if (impl().m_current_sector >= impl().m_sector_positions.size())
 			{
-				impl->m_valid = false;
-				impl->m_error = "Read past EOF";
+				impl().m_valid = false;
+				impl().m_error = "Read past EOF";
 				return false;
 			}
-			if (!impl->m_data_stream->seek(impl->m_sector_positions[impl->m_current_sector], SEEK_SET))
+			if (!impl().m_data_stream->seek(impl().m_sector_positions[impl().m_current_sector], SEEK_SET))
 			{
-				impl->m_error = "Cant seek to the next sector";
-				impl->m_valid = false;
+				impl().m_error = "Cant seek to the next sector";
+				impl().m_valid = false;
 				return false;
 			}
-			impl->m_chunk_position = 0;
+			impl().m_chunk_position = 0;
 		}
 	}
 	return true;
@@ -169,37 +151,37 @@ bool ThreadSafeOLEStreamReader::read(U8* buf, size_t length)
 bool ThreadSafeOLEStreamReader::seek(int offset, int whence)
 {
 	uint64_t new_position;
-	if (!impl->m_valid)
+	if (!impl().m_valid)
 		return false;
 	if (whence == SEEK_SET)
 		new_position = offset;
 	else if (whence == SEEK_CUR)
-		new_position = impl->m_position + offset;
+		new_position = impl().m_position + offset;
 	else if (whence == SEEK_END)
-		new_position = impl->m_size - offset;
+		new_position = impl().m_size - offset;
 	else
 	{
-		impl->m_error = "Wrong seek type";
+		impl().m_error = "Wrong seek type";
 		return false;
 	}
-	if (new_position > impl->m_size)
+	if (new_position > impl().m_size)
 	{
-		impl->m_error = "New position is beyond stream size";
+		impl().m_error = "New position is beyond stream size";
 		return false;
 	}
-	impl->m_position = new_position;
-	impl->m_current_sector = new_position / impl->m_sector_size;
-	impl->m_chunk_position = new_position - impl->m_current_sector * impl->m_sector_size;
-	if (impl->m_current_sector >= impl->m_sector_positions.size())
+	impl().m_position = new_position;
+	impl().m_current_sector = new_position / impl().m_sector_size;
+	impl().m_chunk_position = new_position - impl().m_current_sector * impl().m_sector_size;
+	if (impl().m_current_sector >= impl().m_sector_positions.size())
 	{
-		impl->m_valid = false;
-		impl->m_error = "Read past EOF";
+		impl().m_valid = false;
+		impl().m_error = "Read past EOF";
 		return false;
 	}
-	if (!impl->m_data_stream->seek(impl->m_sector_positions[impl->m_current_sector] + impl->m_chunk_position, SEEK_SET))
+	if (!impl().m_data_stream->seek(impl().m_sector_positions[impl().m_current_sector] + impl().m_chunk_position, SEEK_SET))
 	{
-		impl->m_error = "Cant seek to the selected position";
-		impl->m_valid = false;
+		impl().m_error = "Cant seek to the selected position";
+		impl().m_valid = false;
 		return false;
 	}
 	return true;

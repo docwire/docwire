@@ -14,18 +14,21 @@
 
 #include <iostream>
 
+#include "pimpl.h"
 #include "writer.h"
 #include "defines.h"
 
 namespace docwire
 {
 
-class DllExport PlainTextWriter : public Writer
+class DllExport PlainTextWriter : public Writer, public with_pimpl<PlainTextWriter>
 {
 public:
   PlainTextWriter(const std::string& eol_sequence,
     std::function<std::string(const tag::Link&)> format_link_opening,
     std::function<std::string(const tag::CloseLink&)> format_link_closing);
+  PlainTextWriter(PlainTextWriter&&);
+  virtual ~PlainTextWriter();
 
   /**
    * @brief Converts text from callback to plain text format.
@@ -35,11 +38,6 @@ public:
   void write_to(const Tag& tag, std::ostream &stream) override;
 
   const std::string eol_sequence() const;
-
-private:
-  struct DllExport Implementation;
-  struct DllExport ImplementationDeleter { void operator() (Implementation*); };
-  std::unique_ptr<Implementation, ImplementationDeleter> impl;
 };
 } // namespace docwire
 

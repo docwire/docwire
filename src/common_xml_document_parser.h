@@ -13,6 +13,7 @@
 #define DOCWIRE_COMMON_XML_PARSER_H
 
 #include "parser.h"
+#include "pimpl.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -32,11 +33,11 @@ enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
 	Child classes (ODFOOXMLParser and ODFXMLParser for now) may want to add or change handlers for some xml tags
 	(using registerODFOOXMLCommandHandler).
 **/
-class CommonXMLDocumentParser: public Parser
+class CommonXMLDocumentParser: public Parser, public with_pimpl<CommonXMLDocumentParser>
 {
 	private:
-		struct Implementation;
-		std::unique_ptr<Implementation> impl;
+		friend pimpl_impl<CommonXMLDocumentParser>;
+		using with_pimpl<CommonXMLDocumentParser>::impl;
 		class CommandHandlersSet;
 
 	//public interface for derived classes (and its components)
@@ -70,7 +71,7 @@ class CommonXMLDocumentParser: public Parser
 		typedef std::vector<ODFOOXMLListStyle> ListStyleVector;
 
   typedef std::function<void(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                                 const ZipReader* zipfile, std::string& text,
+                                 ZipReader* zipfile, std::string& text,
                                  bool& children_processed, std::string& level_suffix, bool first_on_level)> CommandHandler;
 
 		/**
@@ -87,10 +88,10 @@ class CommonXMLDocumentParser: public Parser
 										   bool& children_processed, std::string& level_suffix, bool first_on_level);
 
 		///parses xml data for given xml stream. It executes commands for each xml tag
-		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile) const;
+		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, ZipReader* zipfile);
 
 		///extracts text from xml data. It uses parseXmlData internally.
-		void extractText(const std::string& xml_contents, XmlParseMode mode, const ZipReader* zipfile, std::string& text) const;
+		void extractText(const std::string& xml_contents, XmlParseMode mode, ZipReader* zipfile, std::string& text);
 
 		///usefull since two parsers use this.
 		void parseODFMetadata(const std::string &xml_content, attributes::Metadata& metadata) const;
@@ -99,19 +100,19 @@ class CommonXMLDocumentParser: public Parser
 		const std::string formatComment(const std::string& author, const std::string& time, const std::string& text);
 
 		///Returns information "on how many list objects" we are. Returns 0 if we are not parsing any list actually. Should only be used inside command handlers
-		size_t& getListDepth() const;
+		size_t& getListDepth();
 
 		///gets list styles for reading and writing
-		std::map<std::string, ListStyleVector>& getListStyles() const;
+		std::map<std::string, ListStyleVector>& getListStyles();
 
 		///gets comments for reading and writing
-		std::map<int, Comment>& getComments() const;
+		std::map<int, Comment>& getComments();
 
 		///gets relationships for reading and writing
-		std::map<std::string, Relationship>& getRelationships() const;
+		std::map<std::string, Relationship>& getRelationships();
 
 		///gets vector of shared strings for reading and writing
-		std::vector<SharedString>& getSharedStrings() const;
+		std::vector<SharedString>& getSharedStrings();
 
 		///checks if writing to the text is disabled (only inside onUnregisteredCommand!)
 		bool disabledText() const;
@@ -120,12 +121,12 @@ class CommonXMLDocumentParser: public Parser
 		int getXmlOptions() const;
 
 		///disables modifying text data inside method onUnregisteredCommand
-		void disableText(bool disable) const;
+		void disableText(bool disable);
 
 		///sets options for XmlStream objects. (xmlParserOption from libxml2)
-		void setXmlOptions(int options) const;
+		void setXmlOptions(int options);
 
-		void activeEmittingSignals(bool flag) const;
+		void activeEmittingSignals(bool flag);
 
 		void trySendTag(const Tag& tag) const;
 		void send_error(const std::exception_ptr e) const;
@@ -133,6 +134,7 @@ class CommonXMLDocumentParser: public Parser
 	//public interface
 	public:
 		CommonXMLDocumentParser();
+		CommonXMLDocumentParser(CommonXMLDocumentParser&&);
 		virtual ~CommonXMLDocumentParser();
 };
 

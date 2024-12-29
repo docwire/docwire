@@ -36,7 +36,7 @@ class DllExport PPTParser : public Parser
 			mime_type{"application/vnd.ms-powerpoint.template.macroenabled.12"},
 			mime_type{"application/vnd.ms-powerpoint.slideshow.macroenabled.12"}
 		};
-		void parse(const data_source& data) const override;
+		void parse(const data_source& data) override;
 };
 
 } // namespace docwire

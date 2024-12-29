@@ -18,7 +18,7 @@ namespace docwire
 {
 
 void
-OutputChainElement::process(Info &info) const
+OutputChainElement::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))
 	{

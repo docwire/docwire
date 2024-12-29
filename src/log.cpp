@@ -55,12 +55,13 @@ void set_log_stream(std::ostream* stream)
 	first_log_in_stream = true;
 }
 
-struct log_record_stream::implementation
+template<>
+struct pimpl_impl<log_record_stream>
 {
 	boost::json::value root;
 	std::stack<boost::json::value*> obj_stack;
 	bool hex_numbers = false;
-	implementation()
+	pimpl_impl()
 	{
 		obj_stack.push(&root);
 	}
@@ -98,7 +99,6 @@ namespace
 } // anonymous namespace
 
 log_record_stream::log_record_stream(severity_level severity, source_location location)
-	: m_impl(new implementation())
 {
 	if (first_log_in_stream)
 	{
@@ -133,20 +133,20 @@ log_record_stream::log_record_stream(severity_level severity, source_location lo
 log_record_stream::~log_record_stream()
 {
 	*this << end_pair();
-	*log_stream << boost::json::serialize(m_impl->root);
+	*log_stream << boost::json::serialize(impl().root);
 }
 
 log_record_stream& log_record_stream::operator<<(std::nullptr_t)
 {
 	boost::json::value new_v;
-	m_impl->insert_simple_value(new_v);
+	impl().insert_simple_value(new_v);
 	return *this;
 }
 
 log_record_stream& log_record_stream::operator<<(const char* msg)
 {
 	if (msg)
-		m_impl->insert_simple_value(msg);
+		impl().insert_simple_value(msg);
 	else
 		*this << nullptr;
 	return *this;
@@ -155,7 +155,7 @@ log_record_stream& log_record_stream::operator<<(const char* msg)
 log_record_stream& log_record_stream::operator<<(std::int64_t val)
 {
 	boost::json::value new_v;
-	if (m_impl->hex_numbers)
+	if (impl().hex_numbers)
 	{
 		std::ostringstream s;
 		s << "0x" << std::hex << val;
@@ -163,14 +163,14 @@ log_record_stream& log_record_stream::operator<<(std::int64_t val)
 	}
 	else
 		new_v = val;
-	m_impl->insert_simple_value(new_v);
+	impl().insert_simple_value(new_v);
 	return *this;
 }
 
 log_record_stream& log_record_stream::operator<<(std::uint64_t val)
 {
 	boost::json::value new_v;
-	if (m_impl->hex_numbers)
+	if (impl().hex_numbers)
 	{
 		std::ostringstream s;
 		s << "0x" << std::hex << val;
@@ -178,60 +178,60 @@ log_record_stream& log_record_stream::operator<<(std::uint64_t val)
 	}
 	else
 		new_v = val;
-	m_impl->insert_simple_value(new_v);
+	impl().insert_simple_value(new_v);
 	return *this;
 }
 
 log_record_stream& log_record_stream::operator<<(double val)
 {
-	m_impl->insert_simple_value(val);
+	impl().insert_simple_value(val);
 	return *this;
 }
 
 log_record_stream& log_record_stream::operator<<(bool val)
 {
-	m_impl->insert_simple_value(val);
+	impl().insert_simple_value(val);
 	return *this;
 }
 
 log_record_stream& log_record_stream::operator<<(const std::string& str)
 {
-	m_impl->insert_simple_value(str.c_str());
+	impl().insert_simple_value(str.c_str());
 	return *this;
 }
 
 log_record_stream& log_record_stream::operator<<(const begin_complex&)
 {
 	boost::json::value new_v;
-	boost::json::value& v = *m_impl->obj_stack.top();
+	boost::json::value& v = *impl().obj_stack.top();
 	if (v.is_null())
 	{
 		v = new_v;
-		m_impl->obj_stack.push(m_impl->obj_stack.top());
+		impl().obj_stack.push(impl().obj_stack.top());
 	}
 	else if (v.is_array())
 	{
 		v.as_array().push_back(new_v);
-		m_impl->obj_stack.push(&v.as_array()[v.as_array().size() - 1]);
+		impl().obj_stack.push(&v.as_array()[v.as_array().size() - 1]);
 	}
 	else
 	{
 		v = boost::json::array({ v });
 		v.as_array().push_back(new_v);
-		m_impl->obj_stack.push(&v.as_array()[v.as_array().size() - 1]);
+		impl().obj_stack.push(&v.as_array()[v.as_array().size() - 1]);
 	}
 	return *this;
 }
 
 log_record_stream& log_record_stream::operator<<(const end_complex&)
 {
-	m_impl->obj_stack.pop();
+	impl().obj_stack.pop();
 	return *this;
 }
 
 log_record_stream& log_record_stream::operator<<(const hex& h)
 {
-	m_impl->hex_numbers = true;
+	impl().hex_numbers = true;
 	return *this;
 }
 
@@ -269,11 +269,11 @@ log_record_stream& log_record_stream::operator<<(severity_level severity)
 
 log_record_stream& log_record_stream::operator<<(const begin_pair& b)
 {
-	boost::json::value& v = *m_impl->obj_stack.top();
+	boost::json::value& v = *impl().obj_stack.top();
 	if (v.is_object())
 	{
 		v.as_object().emplace(b.key, boost::json::value());
-		m_impl->obj_stack.push(&(v.as_object()[b.key]));
+		impl().obj_stack.push(&(v.as_object()[b.key]));
 	}
 	else
 	{
@@ -281,18 +281,18 @@ log_record_stream& log_record_stream::operator<<(const begin_pair& b)
 		if (v.is_null())
 		{
 			v = new_v;
-			m_impl->obj_stack.push(&(v.as_object()[b.key]));
+			impl().obj_stack.push(&(v.as_object()[b.key]));
 		}
 		else if (v.is_array())
 		{
 			v.as_array().push_back(new_v);
-			m_impl->obj_stack.push(&(v.as_array()[v.as_array().size() - 1].as_object()[b.key]));
+			impl().obj_stack.push(&(v.as_array()[v.as_array().size() - 1].as_object()[b.key]));
 		}
 		else
 		{
 			v = boost::json::array({ v });
 			v.as_array().push_back(new_v);
-			m_impl->obj_stack.push(&(v.as_array()[v.as_array().size() - 1].as_object()[b.key]));
+			impl().obj_stack.push(&(v.as_array()[v.as_array().size() - 1].as_object()[b.key]));
 		}
 	}
 	return *this;
@@ -313,7 +313,7 @@ log_record_stream& log_record_stream::operator<<(const std::exception& e)
 log_record_stream& log_record_stream::operator<<(const begin_array&)
 {
 	*this << begin_complex();
-	boost::json::value& v = *m_impl->obj_stack.top();
+	boost::json::value& v = *impl().obj_stack.top();
 	v = boost::json::array();
 	return *this;
 }
@@ -357,14 +357,15 @@ namespace
 	std::mutex cerr_log_redirection_mutex;
 } // anonymous namespace
 
-struct cerr_log_redirection::implementation
+template<>
+struct pimpl_impl<cerr_log_redirection>
 {
 	std::ostringstream string_stream;
 	std::unique_lock<std::mutex> cerr_log_redirection_mutex_lock;
 };
 
 cerr_log_redirection::cerr_log_redirection(source_location location)
-	: m_redirected(false), m_cerr_buf_backup(nullptr), m_location(location), m_impl(new implementation())
+	: m_redirected(false), m_cerr_buf_backup(nullptr), m_location(location)
 {
 	redirect();
 }
@@ -377,19 +378,19 @@ cerr_log_redirection::~cerr_log_redirection()
 
 void cerr_log_redirection::redirect()
 {
-	m_impl->cerr_log_redirection_mutex_lock = std::unique_lock<std::mutex>(cerr_log_redirection_mutex);
-	m_cerr_buf_backup = std::cerr.rdbuf(m_impl->string_stream.rdbuf());
+	impl().cerr_log_redirection_mutex_lock = std::unique_lock<std::mutex>(cerr_log_redirection_mutex);
+	m_cerr_buf_backup = std::cerr.rdbuf(impl().string_stream.rdbuf());
 	m_redirected = true;
 }
 
 void cerr_log_redirection::restore()
 {
 	std::cerr.rdbuf(m_cerr_buf_backup);
-	m_impl->cerr_log_redirection_mutex_lock.unlock();
+	impl().cerr_log_redirection_mutex_lock.unlock();
 	m_cerr_buf_backup = nullptr;
 	if (log_verbosity_includes(debug))
 	{
-		std::string redirected_cerr = m_impl->string_stream.str();
+		std::string redirected_cerr = impl().string_stream.str();
 		if (!redirected_cerr.empty())
 		{
 			std::unique_ptr<log_record_stream> log_record_stream = create_log_record_stream(debug, m_location);

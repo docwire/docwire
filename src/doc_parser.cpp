@@ -590,7 +590,7 @@ class SubDocumentHandler : public wvWare::SubDocumentHandler
 		}
 };
 
-void DOCParser::parse(const data_source& data) const
+void DOCParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using DOC parser.";
 

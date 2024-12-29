@@ -17,8 +17,10 @@
 namespace docwire
 {
 
-struct Parser::Implementation
+template<>
+struct pimpl_impl<Parser>
 {
+  using parsing_continuation = Parser::parsing_continuation;
   Info sendTag(const Tag& tag) const
   {
     parsing_continuation continuation = m_callback(tag);
@@ -31,30 +33,28 @@ struct Parser::Implementation
   mutable std::function<parsing_continuation(const Tag&)> m_callback;
 };
 
-void Parser::ImplementationDeleter::operator()(Parser::Implementation *impl)
-{
-  delete impl;
-}
-
 Parser::Parser()
 {
-  base_impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{}, ImplementationDeleter{}};
 }
+
+Parser::Parser(Parser&&) = default;
+
+Parser::~Parser() = default;
 
 Info Parser::sendTag(const Tag& tag) const
 {
   docwire_log_func_with_args(tag);
-  return base_impl->sendTag(tag);
+  return impl().sendTag(tag);
 }
 
 Info Parser::sendTag(const Info &info) const
 {
-  return base_impl->sendTag(info.tag);
+  return impl().sendTag(info.tag);
 }
 
-void Parser::operator()(const data_source& data, std::function<parsing_continuation(const Tag&)> callback) const
+void Parser::operator()(const data_source& data, std::function<parsing_continuation(const Tag&)> callback)
 {
-  base_impl->m_callback = callback;
+  impl().m_callback = callback;
   parse(data);
 }
 

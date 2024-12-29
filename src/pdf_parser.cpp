@@ -684,14 +684,10 @@ namespace
 	std::mutex podofo_freetype_mutex;
 } // anonymous namespace
 
-struct PDFParser::Implementation
+template<>
+struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 {
 	PoDoFo::PdfMemDocument m_pdf_document;
-	const PDFParser* m_owner;
-
-  Implementation(const PDFParser* owner)
-  : m_owner(owner)
-  {}
 
 	class PredefinedSimpleEncodings : public std::map<std::string, unsigned int*>
 	{
@@ -7290,7 +7286,7 @@ struct PDFParser::Implementation
 				FileStream file_stream(cmap_to_cid_file_name);
 				if (!file_stream.open())
 				{
-					m_owner->sendTag(make_error_ptr("Cannot open file", cmap_to_cid_file_name));
+					owner().sendTag(make_error_ptr("Cannot open file", cmap_to_cid_file_name));
 					return;
 				}
 				std::vector<char> buffer(file_stream.size() + 2);
@@ -7440,7 +7436,7 @@ struct PDFParser::Implementation
 			#endif
 			if (!file_stream.open())
 			{
-				m_owner->sendTag(make_error_ptr("Cannot open file", cid_to_unicode_cmap));
+				owner().sendTag(make_error_ptr("Cannot open file", cid_to_unicode_cmap));
 				return;
 			}
 			std::vector<char> buffer(file_stream.size() + 2);
@@ -7659,7 +7655,7 @@ struct PDFParser::Implementation
 		for (size_t page_num = 0; page_num < page_count; page_num++)
 		{
 			docwire_log_var(page_num);
-			auto response = m_owner->sendTag(tag::Page{});
+			auto response = owner().sendTag(tag::Page{});
 			if (response.skip)
 			{
 				continue;
@@ -7943,7 +7939,7 @@ struct PDFParser::Implementation
 								}
 								else
 								{
-									m_owner->sendTag(make_error_ptr("Unknown font"));
+									owner().sendTag(make_error_ptr("Unknown font"));
 								}
 
 								break;
@@ -8000,12 +7996,12 @@ struct PDFParser::Implementation
 				std::string single_page_text;
 				page_text.getText(single_page_text);
 				single_page_text += "\n\n";
-				auto response = m_owner->sendTag(tag::Text{single_page_text});
+				auto response = owner().sendTag(tag::Text{single_page_text});
 				if (response.cancel)
 				{
 					break;
 				}
-        auto response2 = m_owner->sendTag(tag::ClosePage{});
+        auto response2 = owner().sendTag(tag::ClosePage{});
         if (response2.cancel)
         {
           break;
@@ -8154,48 +8150,47 @@ struct PDFParser::Implementation
 	}
 };
 
-PDFParser::Implementation::CIDToUnicode PDFParser::Implementation::m_pdf_cid_to_unicode;
-PDFParser::Implementation::PDFContent::FontMetricsMap PDFParser::Implementation::PDFContent::pdf_font_metrics_map;
-PDFParser::Implementation::CharacterNames PDFParser::Implementation::m_pdf_character_names;
-PDFParser::Implementation::PredefinedSimpleEncodings PDFParser::Implementation::m_pdf_predefined_simple_encodings;
-PDFParser::Implementation::PDFReader::CompressionCodes PDFParser::Implementation::PDFReader::m_compression_codes;
-PDFParser::Implementation::PDFReader::OperatorCodes PDFParser::Implementation::PDFReader::m_operator_codes;
+pimpl_impl<PDFParser>::CIDToUnicode pimpl_impl<PDFParser>::m_pdf_cid_to_unicode;
+pimpl_impl<PDFParser>::PDFContent::FontMetricsMap pimpl_impl<PDFParser>::PDFContent::pdf_font_metrics_map;
+pimpl_impl<PDFParser>::CharacterNames pimpl_impl<PDFParser>::m_pdf_character_names;
+pimpl_impl<PDFParser>::PredefinedSimpleEncodings pimpl_impl<PDFParser>::m_pdf_predefined_simple_encodings;
+pimpl_impl<PDFParser>::PDFReader::CompressionCodes pimpl_impl<PDFParser>::PDFReader::m_compression_codes;
+pimpl_impl<PDFParser>::PDFReader::OperatorCodes pimpl_impl<PDFParser>::PDFReader::m_operator_codes;
 
 std::mutex podofo_mutex;
 
 PDFParser::PDFParser()
+	: with_pimpl<PDFParser>(nullptr)
 {
 	std::lock_guard<std::mutex> podofo_mutex_lock(podofo_mutex);
-	impl = new Implementation(this);
+	renew_impl();
 }
+
+PDFParser::PDFParser(PDFParser&&) = default;
 
 PDFParser::~PDFParser()
 {
-	if (impl)
-	{
-		std::lock_guard<std::mutex> podofo_freetype_mutex_lock(podofo_freetype_mutex);
-		delete impl;
-	}
+	std::lock_guard<std::mutex> podofo_freetype_mutex_lock(podofo_freetype_mutex);
+	destroy_impl();
 }
 
-attributes::Metadata PDFParser::metaData(const data_source& data) const
+attributes::Metadata PDFParser::metaData(const data_source& data)
 {
 	attributes::Metadata metadata;
-	impl->m_data_stream = data.istream();
-	impl->loadDocument(data);
-	Implementation::PDFReader pdf_reader(impl->m_data_stream);
-	impl->parseMetadata(pdf_reader, metadata);
+	impl().m_data_stream = data.istream();
+	impl().loadDocument(data);
+	pimpl_impl<PDFParser>::PDFReader pdf_reader(impl().m_data_stream);
+	impl().parseMetadata(pdf_reader, metadata);
 	return metadata;
 }
 
 void
-PDFParser::parse(const data_source& data) const
+PDFParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using PDF parser.";
-	delete impl;
 	{
 		std::lock_guard<std::mutex> podofo_mutex_lock(podofo_mutex);
-		((PDFParser*)this)->impl = new Implementation(this);
+		renew_impl();
 	}
 	sendTag(tag::Document
 		{
@@ -8204,10 +8199,10 @@ PDFParser::parse(const data_source& data) const
 				return metaData(data);
 			}
 		});
-	impl->loadDocument(data);
+	impl().loadDocument(data);
 	{
 		std::lock_guard<std::mutex> podofo_mutex_lock(podofo_mutex);
-		impl->parseText();
+		impl().parseText();
 	}
 	sendTag(tag::CloseDocument{});
 }

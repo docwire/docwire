@@ -21,21 +21,23 @@ namespace docwire
 
 class ZipReader;
 
-class DllExport XLSBParser : public Parser
+class DllExport XLSBParser : public Parser, public with_pimpl<XLSBParser>
 {
 	private:
-		struct Implementation;
-		std::unique_ptr<Implementation> impl;
-		attributes::Metadata metaData(const ZipReader& unzip) const;
+		friend pimpl_impl<XLSBParser>;
+		using with_pimpl<XLSBParser>::impl;
+		using with_pimpl<XLSBParser>::renew_impl;
+		attributes::Metadata metaData(ZipReader& unzip);
 
 	public:
 		XLSBParser();
+		XLSBParser(XLSBParser&&);
 		~XLSBParser();
 		inline static const std::vector<mime_type> supported_mime_types =
 		{
 			mime_type{"application/vnd.ms-excel.sheet.binary.macroenabled.12"}
 		};
-		void parse(const data_source& data) const override;
+		void parse(const data_source& data) override;
 };
 
 } // namespace docwire

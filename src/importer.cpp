@@ -18,22 +18,11 @@
 namespace docwire
 {
 
-class Importer::Implementation
+template<>
+struct pimpl_impl<Importer> : with_pimpl_owner<Importer>
 {
-public:
-  Implementation(const ParserParameters &parameters, Importer& owner)
-    : m_parameters(parameters),
-      m_owner(owner)
-  {}
-
-  Implementation(const Implementation &other, Importer& owner)
-    : m_parameters(other.m_parameters),
-      m_owner(owner)
-  {}
-
-  Implementation(const Implementation &&other, Importer& owner)
-    : m_parameters(other.m_parameters),
-      m_owner(owner)
+  pimpl_impl(const ParserParameters &parameters)
+    : m_parameters(parameters)
   {}
 
   bool
@@ -56,7 +45,7 @@ public:
     std::optional<mime_type> mt = data.highest_confidence_mime_type();
     throw_if(!mt, "Data source has no mime type", errors::uninterpretable_data{});
     throw_if(data.mime_type_confidence(mime_type { "application/encrypted" }) >= confidence::high, errors::file_encrypted{});
-    std::unique_ptr<ParserBuilder> builder = m_owner.find_parser_by_mime_type(*mt);
+    std::unique_ptr<ParserBuilder> builder = owner().find_parser_by_mime_type(*mt);
     throw_if (!builder, "find_parser_by_mime_type() failed", 
       mt->v, data.highest_mime_type_confidence(), errors::uninterpretable_data{});
     return builder;
@@ -82,7 +71,7 @@ public:
   {
     if (!std::holds_alternative<data_source>(info.tag))
     {
-      m_owner.emit(info);
+      owner().emit(info);
       return;
     }
     auto data = std::get<data_source>(info.tag);
@@ -92,9 +81,9 @@ public:
     {
       Info info{tag};
       if (std::holds_alternative<data_source>(tag))
-        get_root_element(m_owner).process(info);
+        get_root_element(owner()).process(info);
       else
-        m_owner.emit(info);
+        owner().emit(info);
       if (info.cancel)
         return Parser::parsing_continuation::stop;
       else if (info.skip)
@@ -121,52 +110,29 @@ public:
   std::shared_ptr<ParserBuilder> m_parser_builder;
 
   ParserParameters m_parameters;
-  Importer& m_owner;
 };
 
 Importer::Importer(const ParserParameters &parameters)
+  : with_pimpl<Importer>(parameters)
 {
-  impl = std::unique_ptr<Implementation>{new Implementation{parameters, *this}};
 }
 
-Importer::Importer(const Importer &other)
-  :  ChainElement(other),
-     impl(new Implementation(*(other.impl), *this))
-{}
-
-Importer::Importer(const Importer &&other)
-  :  ChainElement(other),
-     impl(new Implementation(*(other.impl), *this))
-{}
+Importer::Importer(Importer&&) = default;
 
 Importer::~Importer()
 {
 }
 
-Importer&
-Importer::operator=(const Importer &other)
-{
-  impl.reset(new Implementation(*(other.impl), *this));
-  return *this;
-}
-
-Importer&
-Importer::operator=(const Importer &&other)
-{
-  impl.reset(new Implementation(*(other.impl), *this));
-  return *this;
-}
-
 void
-Importer::process(Info& info) const
+Importer::process(Info& info)
 {
-  impl->process(info);
+  impl().process(info);
 }
 
 void
 Importer::add_parameters(const ParserParameters &parameters)
 {
-  impl->add_parameters(parameters);
+  impl().add_parameters(parameters);
 }
 
 } // namespace docwire

@@ -24,12 +24,6 @@ Find::Find(const std::string& what, const std::string& api_key, Model model, flo
 	docwire_log_func_with_args(what);
 }
 
-Find::Find(const Find& other)
-	: Chat(other)
-{
-	docwire_log_func();
-}
-
 Find::~Find()
 {
 }

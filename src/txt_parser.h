@@ -19,13 +19,9 @@ namespace docwire
 
 class DllExport TXTParser : public Parser
 {
-	private:
-		struct Implementation;
-		Implementation* impl;
-
 	public:
 
-    void parse(const data_source& data) const override;
+    void parse(const data_source& data) override;
 
 		inline static const std::vector<mime_type> supported_mime_types =
 		{
@@ -68,6 +64,7 @@ class DllExport TXTParser : public Parser
 		};
 
 		TXTParser();
+		TXTParser(TXTParser&&) = default;
 };
 
 } // namespace docwire

@@ -24,12 +24,6 @@ ExtractEntities::ExtractEntities(const std::string& api_key, Model model, float 
 	docwire_log_func();
 }
 
-ExtractEntities::ExtractEntities(const ExtractEntities& other)
-	: Chat(other)
-{
-	docwire_log_func();
-}
-
 ExtractEntities::~ExtractEntities()
 {
 }

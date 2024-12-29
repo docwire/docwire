@@ -59,6 +59,8 @@ public:
   {
   }
 
+  OutputChainElement(OutputChainElement&&) = default;
+
   virtual ~OutputChainElement() = default;
 
   bool is_leaf() const override
@@ -66,7 +68,7 @@ public:
     return true;
   }
 
-  void process(Info &info) const override;
+  void process(Info& info) override;
 
 private:
   std::shared_ptr<std::ostream> m_out_stream;

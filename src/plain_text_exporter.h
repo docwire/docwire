@@ -28,12 +28,14 @@ struct link_formatter
 /**
  * @brief Exports data to plain text format.
  */
-class DllExport PlainTextExporter: public ChainElement
+class DllExport PlainTextExporter: public ChainElement, public with_pimpl<PlainTextExporter>
 {
 public:
 	PlainTextExporter(eol_sequence eol = eol_sequence{"\n"}, link_formatter formatter = default_link_formatter);
+	PlainTextExporter(PlainTextExporter&&);
+	~PlainTextExporter();
 
-  void process(Info& info) const override;
+  void process(Info& info) override;
 
 	bool is_leaf() const override
 	{
@@ -53,9 +55,7 @@ private:
 		}
 	};
 
-	struct Implementation;
-	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
-	std::unique_ptr<Implementation, ImplementationDeleter> impl;
+	using with_pimpl<PlainTextExporter>::impl;
 };
 
 } // namespace docwire

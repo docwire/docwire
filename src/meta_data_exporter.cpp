@@ -18,42 +18,36 @@
 namespace docwire
 {
 
-struct MetaDataExporter::Implementation
+template<>
+struct pimpl_impl<MetaDataExporter>
 {
 	std::shared_ptr<std::stringstream> m_stream;
 	MetaDataWriter m_writer;
 };
 
 MetaDataExporter::MetaDataExporter()
-	: impl(new Implementation)
 {}
 
-MetaDataExporter::MetaDataExporter(const MetaDataExporter& other)
-	: impl(new Implementation(), ImplementationDeleter())
-{
-}
+MetaDataExporter::MetaDataExporter(MetaDataExporter&&) = default;
 
-void MetaDataExporter::process(Info &info) const
+MetaDataExporter::~MetaDataExporter() = default;
+
+void MetaDataExporter::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	if (std::holds_alternative<tag::Document>(info.tag) || !impl->m_stream)
-		impl->m_stream = std::make_shared<std::stringstream>();
-	impl->m_writer.write_to(info.tag, *impl->m_stream);
+	if (std::holds_alternative<tag::Document>(info.tag) || !impl().m_stream)
+		impl().m_stream = std::make_shared<std::stringstream>();
+	impl().m_writer.write_to(info.tag, *impl().m_stream);
 	if (std::holds_alternative<tag::CloseDocument>(info.tag))
 	{
-		Info info(data_source{seekable_stream_ptr{impl->m_stream}});
+		Info info(data_source{seekable_stream_ptr{impl().m_stream}});
 		emit(info);
-		impl->m_stream.reset();
+		impl().m_stream.reset();
 	}
-}
-
-void MetaDataExporter::ImplementationDeleter::operator()(MetaDataExporter::Implementation* impl)
-{
-	delete impl;
 }
 
 } // namespace docwire

@@ -20,13 +20,14 @@ namespace docwire
 /**
  * @brief Exports data to CSV format.
  */
-class DllExport CsvExporter: public ChainElement
+class DllExport CsvExporter: public ChainElement, public with_pimpl<CsvExporter>
 {
 public:
 	CsvExporter();
-	CsvExporter(const CsvExporter& other);
+	CsvExporter(CsvExporter&&);
+	~CsvExporter();
 
-  void process(Info& info) const override;
+  void process(Info& info) override;
 
 	bool is_leaf() const override
 	{
@@ -34,9 +35,7 @@ public:
 	}
 
 private:
-	struct Implementation;
-	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
-	std::unique_ptr<Implementation, ImplementationDeleter> impl;
+  using with_pimpl<CsvExporter>::impl;
 };
 
 } // namespace docwire

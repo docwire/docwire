@@ -13,28 +13,28 @@
 #define DOCWIRE_OCR_PARSER_H
 
 #include <string>
-#include <memory>
 
 #include "language.h"
 #include "parser.h"
+#include "pimpl.h"
 
 namespace docwire
 {
 
-class DllExport OCRParser : public Parser
+class DllExport OCRParser : public Parser, public with_pimpl<OCRParser>
 {
 private:
-    struct Implementation;
-    std::unique_ptr<Implementation> impl;
+    using with_pimpl<OCRParser>::impl;
+    friend pimpl_impl<OCRParser>;
 
 public:
     static std::string get_default_tessdata_prefix();
 
-    OCRParser();
+    OCRParser(const std::vector<Language>& languages = {});
     OCRParser(OCRParser&&);
     ~OCRParser();
 
-    void parse(const data_source& data) const override;
+    void parse(const data_source& data) override;
     inline static const std::vector<mime_type> supported_mime_types =
     {
         mime_type{"image/tiff"},
@@ -50,7 +50,7 @@ public:
     void setTessdataPrefix(const std::string& tessdata_prefix);
 
 private:
-    std::string parse(const data_source& data, const std::vector<Language>& languages) const;
+    std::string parse(const data_source& data, const std::vector<Language>& languages);
 };
 
 } // namespace docwire

@@ -22,16 +22,16 @@ namespace docwire
 {
 	class Metadata;
 
-class DllExport HTMLParser : public Parser
+class DllExport HTMLParser : public Parser, public with_pimpl<HTMLParser>
 {
 	private:
-		struct Implementation;
-		std::unique_ptr<Implementation> impl;
+		using with_pimpl<HTMLParser>::impl;
+		using with_pimpl<HTMLParser>::renew_impl;
 		friend class SaxParser;
 
 	public:
 
-    void parse(const data_source& data) const override;
+    void parse(const data_source& data) override;
 
 		inline static const std::vector<mime_type> supported_mime_types =
 		{
@@ -42,6 +42,7 @@ class DllExport HTMLParser : public Parser
 		Parser& withParameters(const ParserParameters &parameters) override;
 
 		HTMLParser();
+		HTMLParser(HTMLParser&&);
 		~HTMLParser();
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).
 		void skipCharsetDecoding();

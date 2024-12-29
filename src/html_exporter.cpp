@@ -18,7 +18,8 @@
 namespace docwire
 {
 
-struct HtmlExporter::Implementation
+template<>
+struct pimpl_impl<HtmlExporter>
 {
 	std::shared_ptr<std::stringstream> m_stream;
 	HtmlWriter m_writer;
@@ -26,43 +27,36 @@ struct HtmlExporter::Implementation
 };
 
 HtmlExporter::HtmlExporter()
-  : impl(new Implementation(), ImplementationDeleter())
 {}
 
-HtmlExporter::HtmlExporter(const HtmlExporter& other)
-	: impl(new Implementation(), ImplementationDeleter())
-{
-}
+HtmlExporter::HtmlExporter(HtmlExporter&&) = default;
 
-void HtmlExporter::process(Info &info) const
+HtmlExporter::~HtmlExporter() = default;
+
+void HtmlExporter::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	if (std::holds_alternative<tag::Document>(info.tag) || !impl->m_stream)
+	if (std::holds_alternative<tag::Document>(info.tag) || !impl().m_stream)
 	{
-		++impl->m_nested_docs_level;
-		if (impl->m_nested_docs_level == 1)
-			impl->m_stream = std::make_shared<std::stringstream>();
+		++impl().m_nested_docs_level;
+		if (impl().m_nested_docs_level == 1)
+			impl().m_stream = std::make_shared<std::stringstream>();
 	}
-	impl->m_writer.write_to(info.tag, *impl->m_stream);
+	impl().m_writer.write_to(info.tag, *impl().m_stream);
 	if (std::holds_alternative<tag::CloseDocument>(info.tag))
 	{
-		--impl->m_nested_docs_level;
-		if (impl->m_nested_docs_level == 0)
+		--impl().m_nested_docs_level;
+		if (impl().m_nested_docs_level == 0)
 		{
-			Info info(data_source{seekable_stream_ptr{impl->m_stream}});
+			Info info(data_source{seekable_stream_ptr{impl().m_stream}});
 			emit(info);
-			impl->m_stream.reset();
+			impl().m_stream.reset();
 		}
 	}
-}
-
-void HtmlExporter::ImplementationDeleter::operator()(HtmlExporter::Implementation* impl)
-{
-	delete impl;
 }
 
 } // namespace docwire
