@@ -30,7 +30,7 @@ protected:
 	using impl_type = pimpl_impl<T>;
 	template <typename... Args>
 	explicit with_pimpl(Args&&... args)
-		: m_impl(std::make_unique<impl_type>(std::forward<Args>(args)...))
+		: m_impl(new impl_type{std::forward<Args>(args)...})
 	{
 		set_impl_owner();
 	}
