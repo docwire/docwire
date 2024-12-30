@@ -71,6 +71,7 @@ protected:
 private:
 	std::unique_ptr<impl_type> m_impl;
 
+	template <typename DelayInstantiation = void>
 	void set_impl_owner()
 	{
 		if constexpr (std::is_base_of_v<with_pimpl_owner<T>, impl_type>)
