@@ -69,7 +69,7 @@ protected:
 
 	void renew_impl()
 	{
-		m_impl = std::make_unique<impl_type>();
+		m_impl.reset(static_cast<pimpl_impl_base*>(new impl_type{)));
 		set_impl_owner();
 	}
 
