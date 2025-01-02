@@ -67,9 +67,10 @@ protected:
 	impl_type& impl() { return static_cast<impl_type&>(*m_impl); }
 	const impl_type& impl() const { return static_cast<impl_type&>(*m_impl); }
 
-	void renew_impl()
+	template <typename... Args>
+	void renew_impl(Args&&... args)
 	{
-		m_impl.reset(static_cast<pimpl_impl_base*>(new impl_type{}));
+		m_impl.reset(static_cast<pimpl_impl_base*>(new impl_type{std::forward<Args>(args)...}));
 		set_impl_owner();
 	}
 
