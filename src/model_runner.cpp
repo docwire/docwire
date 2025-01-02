@@ -99,7 +99,7 @@ std::filesystem::path default_model_path()
 } // anonymous namespace
 
 template<>
-struct pimpl_impl<local_ai::model_runner>
+struct pimpl_impl<local_ai::model_runner> : pimpl_impl_base
 {
 	ctranslate2::Translator m_translator;
 	tokenizer m_tokenizer;

@@ -82,7 +82,7 @@ std::shared_ptr<TextElement> tag_with_attributes(const std::string& tag_name, co
 } // anonymous namespace
 
 template<>
-struct pimpl_impl<HtmlWriter>
+struct pimpl_impl<HtmlWriter> : pimpl_impl_base
 {
   bool m_header_is_open { false };
   int m_nested_docs_counter { 0 };

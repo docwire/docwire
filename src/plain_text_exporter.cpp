@@ -19,7 +19,7 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<PlainTextExporter>
+struct pimpl_impl<PlainTextExporter> : pimpl_impl_base
 {
 	pimpl_impl(eol_sequence eol_sequence, link_formatter link_formatter)
 		: m_writer{eol_sequence.v, link_formatter.format_opening, link_formatter.format_closing}

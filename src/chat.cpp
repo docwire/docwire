@@ -29,8 +29,10 @@ namespace docwire
 using namespace openai;
 
 template<>
-struct pimpl_impl<openai::Chat>
+struct pimpl_impl<openai::Chat> : pimpl_impl_base
 {
+	pimpl_impl(const std::string& system_message, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+		: m_system_message(system_message), m_api_key(api_key), m_model(model), m_temperature(temperature), m_image_detail(image_detail) {}
 	std::string m_system_message;
 	std::string m_api_key;
 	Model m_model;

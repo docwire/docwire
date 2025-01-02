@@ -19,7 +19,7 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<CsvExporter>
+struct pimpl_impl<CsvExporter> : pimpl_impl_base
 {
 	std::shared_ptr<std::stringstream> m_stream;
 	CsvWriter m_writer;

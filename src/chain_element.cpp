@@ -18,7 +18,7 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<ChainElement>
+struct pimpl_impl<ChainElement> : pimpl_impl_base
 {
   pimpl_impl()
   : m_on_new_node_signal(std::make_shared<boost::signals2::signal<void(Info &info)>>())

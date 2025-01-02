@@ -40,7 +40,7 @@ typedef std::function<void(Info &info)> NewNodeCallback;
 /**
  * @brief Abstract class for all parsers
  */
-class DllExport Parser : with_pimpl<Parser>
+class DllExport Parser : public with_pimpl<Parser>
 {
 public:
   explicit Parser();

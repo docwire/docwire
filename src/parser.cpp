@@ -18,7 +18,7 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<Parser>
+struct pimpl_impl<Parser> : pimpl_impl_base
 {
   using parsing_continuation = Parser::parsing_continuation;
   Info sendTag(const Tag& tag) const

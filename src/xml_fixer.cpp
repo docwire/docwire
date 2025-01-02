@@ -113,7 +113,7 @@ struct Tag
 };
 
 template<>
-struct pimpl_impl<XmlFixer>
+struct pimpl_impl<XmlFixer> : pimpl_impl_base
 {
 	std::istringstream xml;
 

@@ -20,7 +20,7 @@ namespace docwire
 using namespace wvWare;
 
 template<>
-struct pimpl_impl<ThreadSafeOLEStreamReader>
+struct pimpl_impl<ThreadSafeOLEStreamReader> : pimpl_impl_base
 {
 	DataStream* m_data_stream{};
 	uint64_t m_size{0};

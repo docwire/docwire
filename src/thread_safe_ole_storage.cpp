@@ -24,7 +24,7 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<ThreadSafeOLEStorage>
+struct pimpl_impl<ThreadSafeOLEStorage> : pimpl_impl_base
 {
 	bool m_is_valid_ole;
 	std::string m_error;

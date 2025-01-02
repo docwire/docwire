@@ -658,7 +658,7 @@ class MetaSaxParser : public ParserSax
 };
 
 template<>
-struct pimpl_impl<HTMLParser>
+struct pimpl_impl<HTMLParser> : pimpl_impl_base
 {
 	bool m_skip_decoding = false;
 };

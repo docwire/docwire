@@ -19,7 +19,7 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<HtmlExporter>
+struct pimpl_impl<HtmlExporter> : pimpl_impl_base
 {
 	std::shared_ptr<std::stringstream> m_stream;
 	HtmlWriter m_writer;

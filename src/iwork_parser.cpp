@@ -233,7 +233,7 @@ static std::string find_main_xml_file(const ZipReader& unzip)
 }
 
 template<>
-struct pimpl_impl<IWorkParser>
+struct pimpl_impl<IWorkParser> : pimpl_impl_base
 {
 	std::string m_xml_file;
 

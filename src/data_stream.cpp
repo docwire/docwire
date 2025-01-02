@@ -18,7 +18,7 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<FileStream>
+struct pimpl_impl<FileStream> : pimpl_impl_base
 {
 	FILE* m_file;
 	std::string m_file_name;
@@ -126,7 +126,7 @@ DataStream* FileStream::clone()
 }
 
 template<>
-struct pimpl_impl<BufferStream>
+struct pimpl_impl<BufferStream> : pimpl_impl_base
 {
 	const char* m_buffer;
 	size_t m_size;

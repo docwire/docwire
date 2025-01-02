@@ -23,8 +23,9 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<openai::Transcribe>
+struct pimpl_impl<openai::Transcribe> : pimpl_impl_base
 {
+	pimpl_impl(const std::string& api_key) : m_api_key(api_key) {}
 	std::string m_api_key;
 };
 

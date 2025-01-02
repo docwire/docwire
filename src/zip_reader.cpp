@@ -102,7 +102,7 @@ static int buffer_error(voidpf opaque, voidpf stream)
 }
 
 template<>
-struct pimpl_impl<ZipReader>
+struct pimpl_impl<ZipReader> : pimpl_impl_base
 {
 	unzFile ArchiveFile;
 	std::map<std::string, unz_file_pos> m_directory;

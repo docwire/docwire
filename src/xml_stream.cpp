@@ -99,7 +99,7 @@ static std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> make_xml_tex
 	if XmlStream was more frugal
 
 template<>
-struct pimpl_impl<XmlStream>
+struct pimpl_impl<XmlStream> : pimpl_impl_base
 {
 	bool m_badbit = false;
 	std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> m_reader;

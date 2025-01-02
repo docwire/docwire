@@ -87,7 +87,7 @@ public:
 };
 
 template<>
-struct pimpl_impl<PlainTextWriter>
+struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
 {
   std::string timestampToString(unsigned int timestamp)
   {

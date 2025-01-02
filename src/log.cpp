@@ -56,7 +56,7 @@ void set_log_stream(std::ostream* stream)
 }
 
 template<>
-struct pimpl_impl<log_record_stream>
+struct pimpl_impl<log_record_stream> : pimpl_impl_base
 {
 	boost::json::value root;
 	std::stack<boost::json::value*> obj_stack;
@@ -358,7 +358,7 @@ namespace
 } // anonymous namespace
 
 template<>
-struct pimpl_impl<cerr_log_redirection>
+struct pimpl_impl<cerr_log_redirection> : pimpl_impl_base
 {
 	std::ostringstream string_stream;
 	std::unique_lock<std::mutex> cerr_log_redirection_mutex_lock;

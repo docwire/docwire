@@ -20,17 +20,27 @@ namespace docwire
 template <typename T>
 struct pimpl_impl;
 
+class with_pimpl_base {};
+
+struct pimpl_impl_base
+{
+	virtual ~pimpl_impl_base() = default;
+	virtual void set_owner(with_pimpl_base*)
+	{
+	}
+};
+
 template <typename T>
 class with_pimpl_owner;
 
 template <typename T>
-class with_pimpl
+class with_pimpl : public with_pimpl_base
 {
 protected:
 	using impl_type = pimpl_impl<T>;
 	template <typename... Args>
 	explicit with_pimpl(Args&&... args)
-		: m_impl(new impl_type{std::forward<Args>(args)...})
+		: m_impl(static_cast<pimpl_impl_base*>(new impl_type{std::forward<Args>(args)...}))
 	{
 		set_impl_owner();
 	}
@@ -54,8 +64,8 @@ protected:
 		return *this;
 	}
 
-	impl_type& impl() { return *m_impl; }
-	const impl_type& impl() const { return *m_impl; }
+	impl_type& impl() { return static_cast<impl_type&>(*m_impl); }
+	const impl_type& impl() const { return static_cast<impl_type&>(*m_impl); }
 
 	void renew_impl()
 	{
@@ -69,23 +79,25 @@ protected:
 	}
 
 private:
-	std::unique_ptr<impl_type> m_impl;
+	std::unique_ptr<pimpl_impl_base> m_impl;
 
-	template <typename DelayInstantiation = void>
 	void set_impl_owner()
 	{
-		if constexpr (std::is_base_of_v<with_pimpl_owner<T>, impl_type>)
-			m_impl->set_owner(static_cast<T*>(this));
+		m_impl->set_owner(this);
 	}
 };
 
 template <typename T>
-class with_pimpl_owner
+class with_pimpl_owner : public pimpl_impl_base
 {
 protected:
-	T& owner() { return *static_cast<T*>(m_owner); }
-	const T& owner() const { return *static_cast<const T*>(m_owner); }
-	void set_owner(T* owner) { m_owner = owner; }
+	T& owner() { return *m_owner; }
+	const T& owner() const { return *m_owner; }
+
+	void set_owner(with_pimpl_base* owner) override
+	{
+		m_owner = static_cast<T*>(static_cast<with_pimpl<T>*>(owner));
+	}
 
 private:
 	T* m_owner;

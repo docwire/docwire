@@ -26,8 +26,11 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<http::Post>
+struct pimpl_impl<http::Post> : pimpl_impl_base
 {
+	pimpl_impl(const std::string& url, const std::optional<std::map<std::string, std::string>> form, const std::string& pipe_field_name, const DefaultFileName& default_file_name, const std::string& oauth2_bearer_token)
+		: m_url(url), m_form(form), m_pipe_field_name(pipe_field_name), m_default_file_name(default_file_name), m_oauth2_bearer_token(oauth2_bearer_token)
+	{}
 	std::string m_url;
 	std::optional<std::map<std::string, std::string>> m_form;
 	std::string m_pipe_field_name;

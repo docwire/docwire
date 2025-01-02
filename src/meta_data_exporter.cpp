@@ -19,7 +19,7 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<MetaDataExporter>
+struct pimpl_impl<MetaDataExporter> : pimpl_impl_base
 {
 	std::shared_ptr<std::stringstream> m_stream;
 	MetaDataWriter m_writer;

@@ -25,8 +25,10 @@ namespace docwire
 using namespace openai;
 
 template<>
-struct pimpl_impl<openai::TextToSpeech>
+struct pimpl_impl<openai::TextToSpeech> : pimpl_impl_base
 {
+	pimpl_impl(const std::string& api_key, TextToSpeech::Model model, TextToSpeech::Voice voice)
+		: m_api_key(api_key), m_model(model), m_voice(voice) {}
 	std::string m_api_key;
 	TextToSpeech::Model m_model;
 	TextToSpeech::Voice m_voice;
