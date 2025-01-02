@@ -64,8 +64,11 @@ protected:
 		return *this;
 	}
 
-	impl_type& impl() { return *reinterpret_cast<impl_type*>(m_impl.get()); }
-	const impl_type& impl() const { return *reinterpret_cast<impl_type*>(m_impl.get()); }
+	template <typename DeferInstantiation = void>
+	impl_type& impl() { return *static_cast<impl_type*>(m_impl.get()); }
+
+	template <typename DeferInstantiation = void>
+	const impl_type& impl() const { return *static_cast<impl_type*>(m_impl.get()); }
 
 	template <typename... Args>
 	void renew_impl(Args&&... args)
