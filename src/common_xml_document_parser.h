@@ -82,11 +82,6 @@ class CommonXMLDocumentParser: public Parser, public with_pimpl<CommonXMLDocumen
 		**/
 		void registerODFOOXMLCommandHandler(const std::string& xml_tag, CommandHandler handler);
 
-		///it is executed for each undefined tag (xml tag without associated handler). Can be overwritten
-		virtual void onUnregisteredCommand(XmlStream& xml_stream, XmlParseMode mode,
-										   const ZipReader* zipfile, std::string& text,
-										   bool& children_processed, std::string& level_suffix, bool first_on_level);
-
 		///parses xml data for given xml stream. It executes commands for each xml tag
 		std::string parseXmlData(XmlStream& xml_stream, XmlParseMode mode, ZipReader* zipfile);
 

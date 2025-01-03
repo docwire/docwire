@@ -264,6 +264,19 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
     is_underline = xml_stream.attribute("val") != "none";
   }
 
+	void onUnregisteredCommand(XmlStream& xml_stream, XmlParseMode mode,
+								const ZipReader* zipfile, std::string& text,
+								bool& children_processed, std::string& level_suffix, bool first_on_level)
+	{
+		if (m_disabled_text == false && xml_stream.name() == "#text")
+		{
+			char* content = xml_stream.content();
+			if (content != NULL)
+				text += content;
+			children_processed = true;
+		}
+	}
+
 	void executeCommand(const std::string& command, XmlStream& xml_stream, XmlParseMode mode,
 						ZipReader* zipfile, std::string& text,
 						bool& children_processed, std::string& level_suffix, bool first_on_level)
@@ -273,7 +286,7 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 		if (it != m_command_handlers.end())
 			it->second(owner(), xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
 		else
-			owner().onUnregisteredCommand(xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
+			onUnregisteredCommand(xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
 	}
 };
 
@@ -567,19 +580,6 @@ class CommonXMLDocumentParser::CommandHandlersSet
 void CommonXMLDocumentParser::registerODFOOXMLCommandHandler(const std::string& xml_tag, CommandHandler handler)
 {
 	impl().m_command_handlers[xml_tag] = handler;
-}
-
-void CommonXMLDocumentParser::onUnregisteredCommand(XmlStream& xml_stream, XmlParseMode mode,
-													const ZipReader* zipfile, std::string& text,
-													bool& children_processed, std::string& level_suffix, bool first_on_level)
-{
-	if (impl().m_disabled_text == false && xml_stream.name() == "#text")
-	{
-		char* content = xml_stream.content();
-		if (content != NULL)
-			text += content;
-		children_processed = true;
-	}
 }
 
 std::string CommonXMLDocumentParser::parseXmlData(
