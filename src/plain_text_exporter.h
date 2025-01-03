@@ -32,7 +32,6 @@ class DllExport PlainTextExporter: public ChainElement, public with_pimpl<PlainT
 {
 public:
 	PlainTextExporter(eol_sequence eol = eol_sequence{"\n"}, link_formatter formatter = default_link_formatter);
-	PlainTextExporter(PlainTextExporter&&);
 
   void process(Info& info) override;
 

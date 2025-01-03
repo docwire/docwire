@@ -28,8 +28,6 @@ struct pimpl_impl<CsvExporter> : pimpl_impl_base
 CsvExporter::CsvExporter()
 {}
 
-CsvExporter::CsvExporter(CsvExporter&&) = default;
-
 void CsvExporter::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))

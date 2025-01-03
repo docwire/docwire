@@ -386,8 +386,6 @@ ODFOOXMLParser::ODFOOXMLParser()
 		registerODFOOXMLCommandHandler("tableStyleId", &CommandHandlersSet::onOOXMLTableStyleId);
 }
 
-ODFOOXMLParser::ODFOOXMLParser(ODFOOXMLParser&&) = default;
-
 Parser&
 ODFOOXMLParser::withParameters(const ParserParameters &parameters)
 {

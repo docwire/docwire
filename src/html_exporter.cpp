@@ -29,8 +29,6 @@ struct pimpl_impl<HtmlExporter> : pimpl_impl_base
 HtmlExporter::HtmlExporter()
 {}
 
-HtmlExporter::HtmlExporter(HtmlExporter&&) = default;
-
 void HtmlExporter::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))

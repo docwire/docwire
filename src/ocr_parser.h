@@ -31,7 +31,6 @@ public:
     static std::string get_default_tessdata_prefix();
 
     OCRParser(const std::vector<Language>& languages = {});
-    OCRParser(OCRParser&&);
 
     void parse(const data_source& data) override;
     inline static const std::vector<mime_type> supported_mime_types =

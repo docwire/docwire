@@ -64,7 +64,6 @@ class DllExport TXTParser : public Parser
 		};
 
 		TXTParser();
-		TXTParser(TXTParser&&) = default;
 };
 
 } // namespace docwire

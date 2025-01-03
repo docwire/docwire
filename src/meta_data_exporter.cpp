@@ -28,8 +28,6 @@ struct pimpl_impl<MetaDataExporter> : pimpl_impl_base
 MetaDataExporter::MetaDataExporter()
 {}
 
-MetaDataExporter::MetaDataExporter(MetaDataExporter&&) = default;
-
 void MetaDataExporter::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))

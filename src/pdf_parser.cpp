@@ -8166,8 +8166,6 @@ PDFParser::PDFParser()
 	renew_impl();
 }
 
-PDFParser::PDFParser(PDFParser&&) = default;
-
 PDFParser::~PDFParser()
 {
 	std::lock_guard<std::mutex> podofo_freetype_mutex_lock(podofo_freetype_mutex);

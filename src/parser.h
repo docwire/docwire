@@ -44,7 +44,7 @@ class DllExport Parser : public with_pimpl<Parser>
 {
 public:
   explicit Parser();
-  Parser(Parser&&);
+  Parser(Parser&&) = default;
   virtual ~Parser() = default;
 
   enum class parsing_continuation { proceed, skip, stop };

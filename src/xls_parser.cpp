@@ -863,8 +863,6 @@ XLSParser::XLSParser()
 {
 }
 
-XLSParser::XLSParser(XLSParser&&) = default;
-
 void XLSParser::parse(const data_source& data)
 {
 	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());

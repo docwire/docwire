@@ -51,8 +51,6 @@ Post::Post(const std::string& url, const std::map<std::string, std::string> form
 {
 }
 
-Post::Post(Post&&) = default;
-
 void
 Post::process(Info& info)
 try

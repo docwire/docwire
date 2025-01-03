@@ -41,8 +41,6 @@ ChainElement::ChainElement()
 {
 }
 
-ChainElement::ChainElement(ChainElement&&) = default;
-
 void
 ChainElement::connect(ChainElement& chain_element)
 {

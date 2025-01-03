@@ -26,8 +26,6 @@ public:
 
   HtmlExporter();
 
-	HtmlExporter(HtmlExporter&&);
-
   void process(Info& info) override;
 
 	bool is_leaf() const override

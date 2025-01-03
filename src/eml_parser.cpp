@@ -146,8 +146,6 @@ EMLParser::EMLParser()
 {
 }
 
-EMLParser::EMLParser(EMLParser&&) = default;
-
 namespace
 {
 

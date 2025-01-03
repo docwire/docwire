@@ -63,8 +63,6 @@ ODFXMLParser::ODFXMLParser()
 		registerODFOOXMLCommandHandler("binary-data", &CommandHandlersSet::onODFBinaryData);
 }
 
-ODFXMLParser::ODFXMLParser(ODFXMLParser&&) = default;
-
 void ODFXMLParser::parse(const data_source& data, XmlParseMode mode)
 {
 	std::string xml_content = data.string();

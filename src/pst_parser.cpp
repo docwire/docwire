@@ -522,6 +522,4 @@ PSTParser::PSTParser()
 {
 }
 
-PSTParser::PSTParser(PSTParser&&) = default;
-
 } // namespace docwire

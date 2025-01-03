@@ -53,8 +53,6 @@ Chat::Chat(const std::string& system_message, const std::string& api_key, Model 
 	docwire_log_func_with_args(system_message, temperature);
 }
 
-Chat::Chat(Chat&&) = default;
-
 using magic_enum::ostream_operators::operator<<;
 
 namespace

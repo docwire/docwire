@@ -23,7 +23,6 @@ class DllExport ExtractEntities : public Chat
 {
 public:
 	ExtractEntities(const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
-	ExtractEntities(ExtractEntities&&) = default;
 };
 
 } // namespace openai

@@ -31,7 +31,6 @@ class DllExport EMLParser : public Parser, public with_pimpl<EMLParser>
 
 	public:
 		EMLParser();
-		EMLParser(EMLParser&&);
 		void parse(const data_source& data) override;
 		inline static const std::vector<mime_type> supported_mime_types = { mime_type{"message/rfc822"} };
 };

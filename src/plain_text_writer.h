@@ -27,7 +27,6 @@ public:
   PlainTextWriter(const std::string& eol_sequence,
     std::function<std::string(const tag::Link&)> format_link_opening,
     std::function<std::string(const tag::CloseLink&)> format_link_closing);
-  PlainTextWriter(PlainTextWriter&&);
 
   /**
    * @brief Converts text from callback to plain text format.

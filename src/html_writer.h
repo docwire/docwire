@@ -27,8 +27,6 @@ public:
 
   HtmlWriter();
 
-  HtmlWriter(HtmlWriter&& html_writer);
-
   /**
    * @brief Converts text from callback to html format
    * @param tag data from callback

@@ -233,8 +233,6 @@ class DllExport cerr_log_redirection : public with_pimpl<cerr_log_redirection>
 {
 public:
 	cerr_log_redirection(source_location location);
-	cerr_log_redirection(cerr_log_redirection&&);
-	cerr_log_redirection& operator=(cerr_log_redirection&&);
 	cerr_log_redirection(const cerr_log_redirection&) = delete;
 	cerr_log_redirection& operator=(const cerr_log_redirection&) = delete;
 	~cerr_log_redirection();

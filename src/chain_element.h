@@ -24,7 +24,7 @@ class DllExport ChainElement : public with_pimpl<ChainElement>
 {
 public:
   ChainElement();
-  ChainElement(ChainElement&&);
+  ChainElement(ChainElement&&) = default;
   virtual ~ChainElement() = default;
 
   /**

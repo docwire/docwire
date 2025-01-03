@@ -97,8 +97,6 @@ OCRParser::OCRParser(const std::vector<Language>& languages)
     impl().m_languages = languages;
 }
 
-OCRParser::OCRParser(OCRParser&&) = default;
-
 Pix* pixToGrayscale(Pix* pix)
 {
     Pix* output{};

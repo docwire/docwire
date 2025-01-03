@@ -34,8 +34,6 @@ PlainTextExporter::PlainTextExporter(eol_sequence eol_sequence, link_formatter l
 	: with_pimpl<PlainTextExporter>(eol_sequence, link_formatter)
 {}
 
-PlainTextExporter::PlainTextExporter(PlainTextExporter&&) = default;
-
 void PlainTextExporter::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))

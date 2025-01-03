@@ -667,8 +667,6 @@ HTMLParser::HTMLParser()
 {
 }
 
-HTMLParser::HTMLParser(HTMLParser&&) = default;
-
 Parser&
 HTMLParser::withParameters(const ParserParameters &parameters)
 {

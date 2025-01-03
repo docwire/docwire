@@ -39,8 +39,6 @@ public:
    */
   TransformerFunc(NewNodeCallback transformer_function);
 
-  TransformerFunc(TransformerFunc&&);
-
   /**
    * @brief Executes transform operation for given node data.
    * @see Info

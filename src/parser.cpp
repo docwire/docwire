@@ -37,8 +37,6 @@ Parser::Parser()
 {
 }
 
-Parser::Parser(Parser&&) = default;
-
 Info Parser::sendTag(const Tag& tag) const
 {
   docwire_log_func_with_args(tag);

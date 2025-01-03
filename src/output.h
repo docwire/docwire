@@ -59,8 +59,6 @@ public:
   {
   }
 
-  OutputChainElement(OutputChainElement&&) = default;
-
   bool is_leaf() const override
   {
     return true;

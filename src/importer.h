@@ -31,10 +31,6 @@ public:
    */
   explicit Importer(const ParserParameters &parameters = ParserParameters());
 
-  Importer(Importer &&other);
-
-  Importer& operator=(const Importer &&other);
-
   bool is_leaf() const override
   {
     return false;

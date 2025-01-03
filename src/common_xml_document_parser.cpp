@@ -781,8 +781,6 @@ CommonXMLDocumentParser::CommonXMLDocumentParser()
 		registerODFOOXMLCommandHandler("object", &CommandHandlersSet::onODFObject);
 }
 
-CommonXMLDocumentParser::CommonXMLDocumentParser(CommonXMLDocumentParser&&) = default;
-
 int CommonXMLDocumentParser::getXmlOptions() const
 {
 	return impl().m_xml_options;

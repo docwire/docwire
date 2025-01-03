@@ -43,8 +43,6 @@ TextToSpeech::TextToSpeech(const std::string& api_key, Model model, Voice voice)
 	docwire_log_func();
 }
 
-TextToSpeech::TextToSpeech(TextToSpeech&&) = default;
-
 namespace
 {
 

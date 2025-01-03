@@ -38,8 +38,6 @@ Transcribe::Transcribe(const std::string& api_key)
 	docwire_log_func();
 }
 
-Transcribe::Transcribe(Transcribe&&) = default;
-
 void Transcribe::process(Info& info)
 {
 	docwire_log_func();

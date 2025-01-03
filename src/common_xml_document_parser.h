@@ -134,7 +134,6 @@ class CommonXMLDocumentParser: public Parser, public with_pimpl<CommonXMLDocumen
 	//public interface
 	public:
 		CommonXMLDocumentParser();
-		CommonXMLDocumentParser(CommonXMLDocumentParser&&);
 };
 
 } // namespace docwire

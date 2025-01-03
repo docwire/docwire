@@ -39,7 +39,6 @@ class DllExport ODFXMLParser : public CommonXMLDocumentParser
 		Parser& withParameters(const ParserParameters &parameters) override;
 
 		ODFXMLParser();
-		ODFXMLParser(ODFXMLParser&&);
 };
 
 } // namespace docwire

@@ -39,8 +39,6 @@ public:
 		: m_prompt{prompt}, m_model_runner{model_runner}
 	{}
 
-	model_chain_element(model_chain_element&&) = default;
-
 	/**
 	 * @brief Process the input.
 	 *

@@ -370,10 +370,6 @@ cerr_log_redirection::cerr_log_redirection(source_location location)
 	redirect();
 }
 
-cerr_log_redirection::cerr_log_redirection(cerr_log_redirection&&) = default;
-
-cerr_log_redirection& cerr_log_redirection::operator=(cerr_log_redirection&&) = default;
-
 cerr_log_redirection::~cerr_log_redirection()
 {
 	if (m_redirected)

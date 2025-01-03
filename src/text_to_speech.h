@@ -33,7 +33,6 @@ public:
 	};
 
 	TextToSpeech(const std::string& api_key, Model model = Model::tts1, Voice voice = Voice::alloy);
-	TextToSpeech(TextToSpeech&&);
 
 	/**
 	* @brief Executes transform operation for given node data.

@@ -23,7 +23,6 @@ class DllExport Summarize : public Chat
 {
 public:
 	Summarize(const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
-	Summarize(Summarize&&) = default;
 };
 
 } // namespace openai
