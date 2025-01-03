@@ -141,10 +141,6 @@ XmlStream::XmlStream(const std::string &xml, int xml_parse_options)
 {
 }
 
-XmlStream::~XmlStream()
-{
-}
-
 XmlStream::operator bool()
 {
 	return !impl().m_badbit;

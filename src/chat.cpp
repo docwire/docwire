@@ -55,10 +55,6 @@ Chat::Chat(const std::string& system_message, const std::string& api_key, Model 
 
 Chat::Chat(Chat&&) = default;
 
-Chat::~Chat()
-{
-}
-
 using magic_enum::ostream_operators::operator<<;
 
 namespace

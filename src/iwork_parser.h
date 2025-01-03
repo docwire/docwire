@@ -31,7 +31,6 @@ class DllExport IWorkParser : public Parser, public with_pimpl<IWorkParser>
 	public:
 		IWorkParser();
 		IWorkParser(IWorkParser&&);
-		~IWorkParser();
 		inline static const std::vector<mime_type> supported_mime_types = 
 		{
 			mime_type{"application/vnd.apple.pages"},

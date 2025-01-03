@@ -42,12 +42,6 @@ public:
 	model_chain_element(model_chain_element&&) = default;
 
 	/**
-	 * @brief Destroy the model chain element.
-	 */
-	virtual ~model_chain_element()
-	{}
-
-	/**
 	 * @brief Process the input.
 	 *
 	 * If the input is not a data source, emit the input and return. If the

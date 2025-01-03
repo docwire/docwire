@@ -783,8 +783,6 @@ CommonXMLDocumentParser::CommonXMLDocumentParser()
 
 CommonXMLDocumentParser::CommonXMLDocumentParser(CommonXMLDocumentParser&&) = default;
 
-CommonXMLDocumentParser::~CommonXMLDocumentParser() = default;
-
 int CommonXMLDocumentParser::getXmlOptions() const
 {
 	return impl().m_xml_options;

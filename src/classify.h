@@ -25,7 +25,6 @@ class DllExport Classify : public Chat
 public:
 	Classify(const std::set<std::string>& categories, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
 	Classify(Classify&&) = default;
-	virtual ~Classify();
 };
 
 } // namespace openai

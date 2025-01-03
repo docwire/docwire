@@ -353,10 +353,6 @@ XmlFixer::XmlFixer()
 {
 }
 
-XmlFixer::~XmlFixer()
-{
-}
-
 std::string XmlFixer::fix(const std::string& xml)
 {
 	impl().xml.str(xml);

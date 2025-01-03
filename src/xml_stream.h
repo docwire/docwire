@@ -24,7 +24,6 @@ class DllExport XmlStream : public with_pimpl<XmlStream>
 {
 	public:
 		XmlStream(const std::string& xml, int xml_parse_options = 0);
-		~XmlStream();
 		operator bool();
 		void next();
 		void levelDown();

@@ -40,10 +40,6 @@ TransformerFunc::TransformerFunc(NewNodeCallback transformer_function)
 
 TransformerFunc::TransformerFunc(TransformerFunc&&) = default;
 
-TransformerFunc::~TransformerFunc()
-{
-}
-
 void TransformerFunc::process(Info& info)
 {
   impl().transform(info);

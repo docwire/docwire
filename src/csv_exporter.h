@@ -25,7 +25,6 @@ class DllExport CsvExporter: public ChainElement, public with_pimpl<CsvExporter>
 public:
 	CsvExporter();
 	CsvExporter(CsvExporter&&);
-	~CsvExporter();
 
   void process(Info& info) override;
 

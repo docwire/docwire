@@ -39,7 +39,6 @@ public:
 
   PSTParser();
   PSTParser(PSTParser&&);
-  ~PSTParser();
 };
 
 } // namespace docwire

@@ -41,8 +41,6 @@ public:
 
   TransformerFunc(TransformerFunc&&);
 
-  virtual ~TransformerFunc();
-
   /**
    * @brief Executes transform operation for given node data.
    * @see Info

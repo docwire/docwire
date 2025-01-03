@@ -34,7 +34,6 @@ public:
 	Post(const std::string& url, const std::string& oauth2_bearer_token = "");
 	Post(const std::string& url, const std::map<std::string, std::string> form, const std::string& pipe_field_name, const DefaultFileName& default_file_name, const std::string& oauth2_bearer_token = "");
 	Post(Post&&);
-	virtual ~Post();
 
 	/**
 	* @brief Executes transform operation for given node data.

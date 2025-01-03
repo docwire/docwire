@@ -31,8 +31,6 @@ HtmlExporter::HtmlExporter()
 
 HtmlExporter::HtmlExporter(HtmlExporter&&) = default;
 
-HtmlExporter::~HtmlExporter() = default;
-
 void HtmlExporter::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))

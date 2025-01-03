@@ -60,7 +60,6 @@ class DllExport ODFOOXMLParser : public CommonXMLDocumentParser, public with_pim
 
     ODFOOXMLParser();
     ODFOOXMLParser(ODFOOXMLParser&&);
-    ~ODFOOXMLParser();
 };
 
 } // namespace docwire

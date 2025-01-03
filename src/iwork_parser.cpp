@@ -2078,8 +2078,6 @@ IWorkParser::IWorkParser()
 
 IWorkParser::IWorkParser(IWorkParser&&) = default;
 
-IWorkParser::~IWorkParser() = default;
-
 void IWorkParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using iWork parser.";

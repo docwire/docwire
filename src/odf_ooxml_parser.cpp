@@ -388,8 +388,6 @@ ODFOOXMLParser::ODFOOXMLParser()
 
 ODFOOXMLParser::ODFOOXMLParser(ODFOOXMLParser&&) = default;
 
-ODFOOXMLParser::~ODFOOXMLParser() = default;
-
 Parser&
 ODFOOXMLParser::withParameters(const ParserParameters &parameters)
 {

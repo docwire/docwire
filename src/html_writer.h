@@ -26,7 +26,6 @@ class DllExport HtmlWriter : public Writer, public with_pimpl<HtmlWriter>
 public:
 
   HtmlWriter();
-  ~HtmlWriter();
 
   HtmlWriter(HtmlWriter&& html_writer);
 

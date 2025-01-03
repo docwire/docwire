@@ -140,10 +140,6 @@ BufferStream::BufferStream(const char *buffer, size_t size)
 	impl().m_pointer = 0;
 }
 
-BufferStream::~BufferStream()
-{
-}
-
 bool BufferStream::open()
 {
 	impl().m_pointer = 0;

@@ -497,8 +497,6 @@ PlainTextWriter::PlainTextWriter(const std::string& eol_sequence,
 
 PlainTextWriter::PlainTextWriter(PlainTextWriter&&) = default;
 
-PlainTextWriter::~PlainTextWriter() = default;
-
 void
 PlainTextWriter::write_to(const Tag& tag, std::ostream &stream)
 {

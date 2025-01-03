@@ -40,9 +40,6 @@ public:
      */
     model_runner(const std::filesystem::path& model_data_path);
 
-    /// @brief Destructor. Frees memory used by model.
-    ~model_runner();
-
     /**
      * @brief Process input text using the model.
      * @param input Text to process.

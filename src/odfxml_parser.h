@@ -40,7 +40,6 @@ class DllExport ODFXMLParser : public CommonXMLDocumentParser
 
 		ODFXMLParser();
 		ODFXMLParser(ODFXMLParser&&);
-		~ODFXMLParser();
 };
 
 } // namespace docwire

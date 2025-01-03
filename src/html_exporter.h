@@ -27,7 +27,6 @@ public:
   HtmlExporter();
 
 	HtmlExporter(HtmlExporter&&);
-	virtual ~HtmlExporter();
 
   void process(Info& info) override;
 

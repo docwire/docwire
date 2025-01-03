@@ -65,8 +65,6 @@ ODFXMLParser::ODFXMLParser()
 
 ODFXMLParser::ODFXMLParser(ODFXMLParser&&) = default;
 
-ODFXMLParser::~ODFXMLParser() = default;
-
 void ODFXMLParser::parse(const data_source& data, XmlParseMode mode)
 {
 	std::string xml_content = data.string();

@@ -30,7 +30,6 @@ class DllExport ThreadSafeOLEStorage : public AbstractOLEStorage, public with_pi
 	public:
 		explicit ThreadSafeOLEStorage(const std::string& file_name);
 		ThreadSafeOLEStorage(std::span<const std::byte> buffer);
-		~ThreadSafeOLEStorage() override;
 		bool isValid() const override;
 		bool open(Mode mode) override;
 		void close() override;

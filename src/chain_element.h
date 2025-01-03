@@ -25,7 +25,7 @@ class DllExport ChainElement : public with_pimpl<ChainElement>
 public:
   ChainElement();
   ChainElement(ChainElement&&);
-  virtual ~ChainElement();
+  virtual ~ChainElement() = default;
 
   /**
    * @brief Connects next object to the end of chain

@@ -636,8 +636,6 @@ XLSBParser::XLSBParser()
 
 XLSBParser::XLSBParser(XLSBParser&&) = default;
 
-XLSBParser::~XLSBParser() = default;
-
 attributes::Metadata XLSBParser::metaData(ZipReader& unzip)
 {
 	attributes::Metadata metadata;

@@ -22,7 +22,6 @@ class DllExport DecompressArchives : public ChainElement
 public:
 	DecompressArchives();
 	DecompressArchives(const DecompressArchives &other);
-	virtual ~DecompressArchives();
 
 	/**
 	* @brief Executes transform operation for given node data.

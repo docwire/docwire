@@ -23,7 +23,6 @@ class DllExport XmlFixer : public with_pimpl<XmlFixer>
 {
 	public:
 		XmlFixer();
-		~XmlFixer();
 		std::string fix(const std::string& xml);
 };
 

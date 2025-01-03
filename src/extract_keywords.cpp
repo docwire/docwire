@@ -27,9 +27,5 @@ ExtractKeywords::ExtractKeywords(unsigned int max_keywords, const std::string& a
 	docwire_log_func_with_args(max_keywords, temperature);
 }
 
-ExtractKeywords::~ExtractKeywords()
-{
-}
-
 } // namespace openai
 } // namespace docwire

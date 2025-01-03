@@ -99,8 +99,6 @@ OCRParser::OCRParser(const std::vector<Language>& languages)
 
 OCRParser::OCRParser(OCRParser&&) = default;
 
-OCRParser::~OCRParser() = default;
-
 Pix* pixToGrayscale(Pix* pix)
 {
     Pix* output{};

@@ -35,8 +35,6 @@ public:
 
   Importer& operator=(const Importer &&other);
 
-  virtual ~Importer();
-
   bool is_leaf() const override
   {
     return false;

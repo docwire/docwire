@@ -550,10 +550,6 @@ ThreadSafeOLEStorage::ThreadSafeOLEStorage(std::span<const std::byte> buffer)
 {
 }
 
-ThreadSafeOLEStorage::~ThreadSafeOLEStorage()
-{
-}
-
 bool ThreadSafeOLEStorage::open(Mode mode)
 {
 	if (mode == ReadOnly)	//opening in constructor

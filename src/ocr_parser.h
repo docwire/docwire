@@ -32,7 +32,6 @@ public:
 
     OCRParser(const std::vector<Language>& languages = {});
     OCRParser(OCRParser&&);
-    ~OCRParser();
 
     void parse(const data_source& data) override;
     inline static const std::vector<mime_type> supported_mime_types =

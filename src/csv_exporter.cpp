@@ -30,8 +30,6 @@ CsvExporter::CsvExporter()
 
 CsvExporter::CsvExporter(CsvExporter&&) = default;
 
-CsvExporter::~CsvExporter() = default;
-
 void CsvExporter::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))

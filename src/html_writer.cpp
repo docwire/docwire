@@ -225,8 +225,6 @@ HtmlWriter::HtmlWriter()
 {
 }
 
-HtmlWriter::~HtmlWriter() = default;
-
 HtmlWriter::HtmlWriter(HtmlWriter&&) = default;
 
 void HtmlWriter::write_to(const Tag& tag, std::ostream &stream)

@@ -43,7 +43,6 @@ class DllExport HTMLParser : public Parser, public with_pimpl<HTMLParser>
 
 		HTMLParser();
 		HTMLParser(HTMLParser&&);
-		~HTMLParser();
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).
 		void skipCharsetDecoding();
 };

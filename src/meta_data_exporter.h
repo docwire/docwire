@@ -25,7 +25,6 @@ class DllExport MetaDataExporter: public ChainElement, public with_pimpl<MetaDat
 public:
   MetaDataExporter();
 	MetaDataExporter(MetaDataExporter&&);
-	~MetaDataExporter();
 
   void process(Info& info) override;
 

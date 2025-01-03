@@ -59,7 +59,6 @@ class DllExport BufferStream : public DataStream, public with_pimpl<BufferStream
 {
 	public:
 		BufferStream(const char* buffer, size_t size);
-		~BufferStream();
 		bool open();
 		bool close();
 		bool read(void* data, int element_size, size_t elements_num);

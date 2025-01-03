@@ -25,9 +25,5 @@ AnalyzeData::AnalyzeData(const std::string& api_key, Model model, float temperat
 	docwire_log_func_with_args(temperature);
 }
 
-AnalyzeData::~AnalyzeData()
-{
-}
-
 } // namespace openai
 } // namespace docwire

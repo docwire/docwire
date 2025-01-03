@@ -24,7 +24,6 @@ class DllExport Transcribe : public ChainElement, public with_pimpl<Transcribe>
 public:
 	Transcribe(const std::string& api_key);
 	Transcribe(Transcribe&&);
-	virtual ~Transcribe();
 
 	/**
 	* @brief Executes transform operation for given node data.

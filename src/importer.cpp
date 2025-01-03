@@ -119,10 +119,6 @@ Importer::Importer(const ParserParameters &parameters)
 
 Importer::Importer(Importer&&) = default;
 
-Importer::~Importer()
-{
-}
-
 void
 Importer::process(Info& info)
 {

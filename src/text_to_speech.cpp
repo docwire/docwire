@@ -45,10 +45,6 @@ TextToSpeech::TextToSpeech(const std::string& api_key, Model model, Voice voice)
 
 TextToSpeech::TextToSpeech(TextToSpeech&&) = default;
 
-TextToSpeech::~TextToSpeech()
-{
-}
-
 namespace
 {
 

@@ -30,8 +30,6 @@ MetaDataExporter::MetaDataExporter()
 
 MetaDataExporter::MetaDataExporter(MetaDataExporter&&) = default;
 
-MetaDataExporter::~MetaDataExporter() = default;
-
 void MetaDataExporter::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))

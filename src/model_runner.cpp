@@ -142,9 +142,6 @@ model_runner::model_runner(const std::filesystem::path& model_data_path)
     : with_pimpl(model_data_path)
 {}
 
-model_runner::~model_runner()
-{}
-
 std::string model_runner::process(const std::string& input)
 {
     std::vector<std::string> input_tokens = impl().m_tokenizer.tokenize(input);

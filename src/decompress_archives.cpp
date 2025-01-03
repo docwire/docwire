@@ -30,10 +30,6 @@ DecompressArchives::DecompressArchives(const DecompressArchives &other)
 {
 }
 
-DecompressArchives::~DecompressArchives()
-{
-}
-
 class ArchiveReader
 {
 public:

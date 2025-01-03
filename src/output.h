@@ -61,8 +61,6 @@ public:
 
   OutputChainElement(OutputChainElement&&) = default;
 
-  virtual ~OutputChainElement() = default;
-
   bool is_leaf() const override
   {
     return true;

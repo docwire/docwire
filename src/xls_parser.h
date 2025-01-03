@@ -31,7 +31,6 @@ class DllExport XLSParser : public Parser, public with_pimpl<XLSParser>
 	public:
 		XLSParser();
 		XLSParser(XLSParser&&);
-		~XLSParser();
 		inline static const std::vector<mime_type> supported_mime_types = 
 		{
 			mime_type{"application/vnd.ms-excel"},

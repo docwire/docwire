@@ -24,9 +24,5 @@ ExtractEntities::ExtractEntities(const std::string& api_key, Model model, float 
 	docwire_log_func();
 }
 
-ExtractEntities::~ExtractEntities()
-{
-}
-
 } // namespace openai
 } // namespace docwire
