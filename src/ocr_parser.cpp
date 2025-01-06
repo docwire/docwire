@@ -226,7 +226,7 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
 
     {
         std::lock_guard<std::mutex> tesseract_libtiff_mutex_lock{ tesseract_libtiff_mutex };
-        throw_if (api->Init(impl().m_ocr_data_path.v.c_str(), langs.c_str()) != 0,
+        throw_if (api->Init(impl().m_ocr_data_path.v.string().c_str(), langs.c_str()) != 0,
             "Could not initialize tesseract", impl().m_ocr_data_path.v.string(), langs);
     }
 
