@@ -13,7 +13,6 @@
 #define DOCWIRE_DOCWIRE_H
 
 // IWYU pragma: begin_exports
-#include "office_formats_parser_provider.h"
 #include "classify.h"
 #include "content_type.h"
 #include "decompress_archives.h"
@@ -23,10 +22,10 @@
 #include "fuzzy_match.h"
 #include "input.h"
 #include "output.h"
-#include "mail_parser_provider.h"
+#include "mail_parser.h"
 #include "model_chain_element.h"
-#include "ocr_parser_provider.h"
-#include "parse_detected_format.h"
+#include "ocr_parser.h"
+#include "office_formats_parser.h"
 #include "parsing_chain_adapters.h"
 #include "plain_text_exporter.h"
 #include "plain_text_writer.h"

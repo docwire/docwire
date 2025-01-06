@@ -31,6 +31,7 @@ concept ChainElementDerived = std::derived_from<T, ChainElement>;
   public:
     ParsingChain(std::shared_ptr<ChainElement> element1, std::shared_ptr<ChainElement> element2);
     ParsingChain(std::shared_ptr<InputChainElement> input, std::shared_ptr<ChainElement> element);
+    explicit ParsingChain(std::shared_ptr<ChainElement> element);
     ParsingChain& operator|(std::shared_ptr<ChainElement> element);
 
     template<ChainElementDerived T>
@@ -40,6 +41,9 @@ concept ChainElementDerived = std::derived_from<T, ChainElement>;
     }
 
     void process(InputChainElement& input);
+
+    const std::vector<std::shared_ptr<ChainElement>>& elements() const { return element_list; }
+
   private:
     std::shared_ptr<InputChainElement> m_input;
     std::shared_ptr<ChainElement> first_element;
@@ -60,6 +64,14 @@ std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> chain, T&&
   return chain;
 }
 
+DllExport std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> lhs, ParsingChain&& rhs);
+
+template<ChainElementDerived T>
+std::shared_ptr<ParsingChain> operator|(T&& element, ParsingChain&& chain)
+{
+  return std::make_shared<ParsingChain>(std::make_shared<T>(std::move(element))) | std::forward<ParsingChain>(chain);
+}
+
 inline std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ChainElement> lhs, std::shared_ptr<ChainElement> rhs)
 {
   return std::make_shared<ParsingChain>(lhs, rhs);
@@ -78,9 +90,9 @@ std::shared_ptr<ParsingChain> operator|(T&& lhs, std::shared_ptr<ChainElement> r
 }
 
 template<ChainElementDerived T, ChainElementDerived U>
-std::shared_ptr<ParsingChain> operator|(T&& lhs, U&& rhs)
+ParsingChain operator|(T&& lhs, U&& rhs)
 {
-  return std::make_shared<ParsingChain>(std::make_shared<T>(std::move(lhs)), std::make_shared<U>(std::move(rhs)));
+  return ParsingChain(std::make_shared<T>(std::move(lhs)), std::make_shared<U>(std::move(rhs)));
 }
 
 } // namespace docwire

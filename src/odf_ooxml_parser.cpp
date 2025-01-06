@@ -386,13 +386,6 @@ ODFOOXMLParser::ODFOOXMLParser()
 		registerODFOOXMLCommandHandler("tableStyleId", &CommandHandlersSet::onOOXMLTableStyleId);
 }
 
-Parser&
-ODFOOXMLParser::withParameters(const ParserParameters &parameters)
-{
-	Parser::withParameters(parameters);
-	return *this;
-}
-
 int ODFOOXMLParser::lastOOXMLRowNum()
 {
 	return impl().last_ooxml_row_num;

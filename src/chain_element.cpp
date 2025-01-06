@@ -29,6 +29,11 @@ struct pimpl_impl<ChainElement> : pimpl_impl_base
     m_on_new_node_signal->connect([&chain_element](Info &info){chain_element.process(info);});
   }
 
+  void disconnect_all()
+  {
+    m_on_new_node_signal->disconnect_all_slots();
+  }
+
   void emit(Info &info) const
   {
     (*m_on_new_node_signal)(info);
@@ -45,6 +50,11 @@ void
 ChainElement::connect(ChainElement& chain_element)
 {
   impl().connect(chain_element);
+}
+
+void ChainElement::disconnect_all()
+{
+  impl().disconnect_all();
 }
 
 void

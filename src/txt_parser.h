@@ -17,9 +17,16 @@
 namespace docwire
 {
 
-class DllExport TXTParser : public Parser
+struct parse_paragraphs { bool v; };
+struct parse_lines { bool v; };
+
+class DllExport TXTParser : public Parser, public with_pimpl<TXTParser>
 {
 	public:
+
+	TXTParser(
+		parse_paragraphs parse_paragraphs_arg = parse_paragraphs{true},
+		parse_lines parse_lines_arg = parse_lines{true});
 
     void parse(const data_source& data) override;
 
@@ -63,7 +70,8 @@ class DllExport TXTParser : public Parser
 			mime_type{"text/yaml"}
 		};
 
-		TXTParser();
+private:
+	using with_pimpl<TXTParser>::impl;
 };
 
 } // namespace docwire

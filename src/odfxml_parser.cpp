@@ -115,13 +115,6 @@ attributes::Metadata ODFXMLParser::metaData(const std::string& xml_content) cons
 	return metadata;
 }
 
-Parser&
-ODFXMLParser::withParameters(const ParserParameters &parameters)
-{
-	Parser::withParameters(parameters);
-	return *this;
-}
-
 void ODFXMLParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using ODFXML parser.";

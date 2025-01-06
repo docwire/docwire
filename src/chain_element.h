@@ -33,6 +33,8 @@ public:
    */
   void connect(ChainElement& chain_element);
 
+  void disconnect_all();
+
   /**
    * @brief Emits signal with Info object to the next element
    * @param info

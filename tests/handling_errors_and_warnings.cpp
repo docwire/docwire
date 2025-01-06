@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
   {
     std::filesystem::path("data_processing_definition.doc") |
       content_type::by_file_extension::detector{} |
-      ParseDetectedFormat<OfficeFormatsParserProvider>() |
+      office_formats_parser{} |
       PlainTextExporter() |
       [](Info& info)
 	    {

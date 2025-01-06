@@ -670,10 +670,4 @@ void DOCParser::parse(const data_source& data)
 	sendTag(tag::CloseDocument{});
 }
 
-Parser& DOCParser::withParameters(const ParserParameters &parameters)
-{
-	Parser::withParameters(parameters);
-	return *this;
-}
-
 } // namespace docwire

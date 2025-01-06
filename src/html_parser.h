@@ -15,7 +15,6 @@
 #include <string>
 #include <vector>
 #include "parser.h"
-#include "parser_builder.h"
 #include "tags.h"
 
 namespace docwire
@@ -39,7 +38,6 @@ class DllExport HTMLParser : public Parser, public with_pimpl<HTMLParser>
 			mime_type{"application/xhtml+xml"},
 			mime_type{"application/vnd.pwg-xhtml-print+xml"}
 		};
-		Parser& withParameters(const ParserParameters &parameters) override;
 
 		HTMLParser();
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).

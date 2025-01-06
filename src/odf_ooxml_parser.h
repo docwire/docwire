@@ -56,8 +56,6 @@ class DllExport ODFOOXMLParser : public CommonXMLDocumentParser, public with_pim
       mime_type{"application/vnd.openxmlformats-officedocument.presentationml.slideshow"},
     };
 
-    Parser& withParameters(const ParserParameters &parameters) override;
-
     ODFOOXMLParser();
 };
 

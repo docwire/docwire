@@ -16,14 +16,23 @@
 #include <boost/signals2.hpp>
 #include "log.h"
 #include "make_error.h"
+#include "pimpl.h"
 #include <string.h>
 
 namespace docwire
 {
 
-TXTParser::TXTParser()
+template<>
+struct pimpl_impl<TXTParser> : pimpl_impl_base
 {
-}
+	pimpl_impl(parse_paragraphs parse_paragraphs_arg, parse_lines parse_lines_arg)
+		: m_parse_paragraphs{parse_paragraphs_arg}, m_parse_lines{parse_lines_arg} {}
+	parse_paragraphs m_parse_paragraphs;
+	parse_lines m_parse_lines;
+};
+
+TXTParser::TXTParser(parse_paragraphs parse_paragraphs_arg, parse_lines parse_lines_arg)
+	: with_pimpl<TXTParser>{parse_paragraphs_arg, parse_lines_arg} {}
 
 namespace
 {
@@ -131,8 +140,8 @@ void TXTParser::parse(const data_source& data)
 		charset_detector = NULL;
 		std::throw_with_nested(make_error("Error converting text to UTF-8"));
 	}
-	bool parse_paragraphs = m_parameters.getParameterValue<bool>("TXTParser::parse_paragraphs").value_or(true);
-	bool parse_lines = m_parameters.getParameterValue<bool>("TXTParser::parse_lines").value_or(true);
+	bool parse_paragraphs = impl().m_parse_paragraphs.v;
+	bool parse_lines = impl().m_parse_lines.v;
 	sendTag(tag::Document{});
 	if (parse_lines || parse_paragraphs)
 	{

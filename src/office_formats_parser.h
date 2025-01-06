@@ -9,18 +9,35 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_MAIL_PARSER_PROVIDER_H
-#define DOCWIRE_MAIL_PARSER_PROVIDER_H
 
-#include "eml_parser.h"
-#include "parser_provider.h"
-#include "pst_parser.h"
+#ifndef DOCWIRE_OFFICE_FORMATS_PARSER_H
+#define DOCWIRE_OFFICE_FORMATS_PARSER_H
+
+#include "doc_parser.h"
+#include "html_parser.h"
+#include "iwork_parser.h"
+#include "odfxml_parser.h"
+#include "parsing_chain_adapters.h"
+#include "pdf_parser.h"
+#include "xls_parser.h"
+#include "xlsb_parser.h"
+#include "odf_ooxml_parser.h"
+#include "ppt_parser.h"
+#include "rtf_parser.h"
+#include "txt_parser.h"
+#include "xml_parser.h"
 
 namespace docwire
 {
 
-using MailParserProvider = parser_provider<EMLParser, PSTParser>;
+class office_formats_parser : public ParsingChain
+{
+    public:
+        office_formats_parser()
+            : ParsingChain{HTMLParser{} | DOCParser{} | PDFParser{} | XLSParser{} | XLSBParser{} | IWorkParser{} | PPTParser{} | RTFParser{} | ODFOOXMLParser{} | ODFXMLParser{} | XMLParser{} | TXTParser{}}
+        {}
+};
 
 } // namespace docwire
 
-#endif //DOCWIRE_MAIL_PARSER_PROVIDER_H
+#endif //DOCWIRE_OFFICE_FORMATS_PARSER_H

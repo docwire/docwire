@@ -31,6 +31,12 @@ namespace docwire
     element_list = {first_element};
   }
 
+  ParsingChain::ParsingChain(std::shared_ptr<ChainElement> element)
+  : first_element(element)
+  {
+    element_list = {first_element};
+  }
+
   ParsingChain&
   ParsingChain::operator|(std::shared_ptr<ChainElement> element_ptr)
   {
@@ -66,5 +72,15 @@ namespace docwire
       input.process(*first_element);
     }
   }
+
+std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> lhs, ParsingChain&& rhs)
+{
+  for (auto element : rhs.elements())
+  {
+    element->disconnect_all();
+    lhs->operator|(element);
+  }
+  return lhs;
+}
 
 } // namespace docwire

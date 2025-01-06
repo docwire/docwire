@@ -14,6 +14,7 @@
 
 #include "chain_element.h"
 #include <filesystem>
+#include <map>
 
 namespace docwire
 {

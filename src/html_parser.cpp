@@ -667,13 +667,6 @@ HTMLParser::HTMLParser()
 {
 }
 
-Parser&
-HTMLParser::withParameters(const ParserParameters &parameters)
-{
-	Parser::withParameters(parameters);
-	return *this;
-}
-
 void
 HTMLParser::parse(const data_source& data)
 {

@@ -21,6 +21,9 @@
 namespace docwire
 {
 
+struct ocr_data_path { std::filesystem::path v; };
+struct ocr_timeout { std::optional<int32_t> v; };
+
 class DllExport OCRParser : public Parser, public with_pimpl<OCRParser>
 {
 private:
@@ -28,9 +31,9 @@ private:
     friend pimpl_impl<OCRParser>;
 
 public:
-    static std::string get_default_tessdata_prefix();
 
-    OCRParser(const std::vector<Language>& languages = {});
+    OCRParser(const std::vector<Language>& languages = {},
+        ocr_timeout ocr_timeout_arg = {}, ocr_data_path ocr_data_path_arg = {});
 
     void parse(const data_source& data) override;
     inline static const std::vector<mime_type> supported_mime_types =
@@ -43,9 +46,6 @@ public:
         mime_type{"image/x-portable-anymap"},
         mime_type{"image/webp"}
     };
-    Parser& withParameters(const ParserParameters &parameters) override;
-
-    void setTessdataPrefix(const std::string& tessdata_prefix);
 
 private:
     std::string parse(const data_source& data, const std::vector<Language>& languages);

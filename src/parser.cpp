@@ -54,10 +54,4 @@ void Parser::operator()(const data_source& data, std::function<parsing_continuat
   parse(data);
 }
 
-Parser& Parser::withParameters(const ParserParameters &parameters)
-{
-    m_parameters += parameters;
-    return *this;
-}
-
 } // namespace docwire

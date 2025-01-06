@@ -16,7 +16,6 @@
 #include <functional>
 #include <memory>
 
-#include "parser_parameters.h"
 #include "pimpl.h"
 #include "tags.h"
 #include "defines.h"
@@ -57,8 +56,6 @@ public:
    */
   void operator()(const data_source& data, std::function<parsing_continuation(const Tag&)> callback);
 
-  virtual Parser &withParameters(const ParserParameters &parameters);
-
 protected:
   /**
    * @brief Executes text parsing
@@ -67,8 +64,6 @@ protected:
 
   Info sendTag(const Tag& tag) const;
   Info sendTag(const Info &info) const;
-
-  ParserParameters m_parameters;
 };
 
 } // namespace docwire

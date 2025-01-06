@@ -13,7 +13,6 @@
 #include <memory>
 #include <fstream>
 #include "analyze_data.h"
-#include "office_formats_parser_provider.h"
 #include "classify.h"
 #include "content_type.h"
 #include "csv_exporter.h"
@@ -27,12 +26,12 @@
 #include "language.h"
 #include "log.h"
 #include <magic_enum/magic_enum_iostream.hpp>
-#include "mail_parser_provider.h"
+#include "mail_parser.h"
 #include "meta_data_exporter.h"
 #include "model_chain_element.h"
-#include "ocr_parser_provider.h"
+#include "ocr_parser.h"
+#include "office_formats_parser.h"
 #include "output.h"
-#include "parse_detected_format.h"
 #include "parsing_chain_adapters.h"
 #include "plain_text_exporter.h"
 #include "post.h"
@@ -197,13 +196,6 @@ int main(int argc, char* argv[])
 
 	std::string file_name = vm["input-file"].as<std::string>();
 
-	ParserParameters parameters;
-	if (vm.count("language"))
-	{
-		const std::vector<Language>& languages = vm["language"].as<std::vector<Language>>();
-		parameters += ParserParameters("languages", languages);
-	}
-
 	docwire_log_vars(use_stream, file_name);
 	auto chain = use_stream ?
 		(std::ifstream{file_name, std::ios_base::binary} | DecompressArchives()) :
@@ -218,8 +210,7 @@ int main(int argc, char* argv[])
 	{
 		chain = chain |
 			content_type::detector{} |
-			ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters);
-
+			office_formats_parser{} | mail_parser{} | OCRParser{vm["language"].as<std::vector<Language>>()};
 		if (vm.count("max_nodes_number"))
 		{
 			chain = chain | StandardFilter::filterByMaxNodeNumber(vm["max_nodes_number"].as<unsigned int>());

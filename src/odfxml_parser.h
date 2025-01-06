@@ -36,8 +36,6 @@ class DllExport ODFXMLParser : public CommonXMLDocumentParser
 			mime_type{"application/vnd.oasis.opendocument.graphics-flat-xml"}
 		};
 
-		Parser& withParameters(const ParserParameters &parameters) override;
-
 		ODFXMLParser();
 };
 

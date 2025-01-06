@@ -15,18 +15,15 @@ add_library(docwire_core SHARED
     decompress_archives.cpp
     log.cpp
     misc.cpp
-    parser_parameters.cpp
     thread_safe_ole_storage.cpp
     thread_safe_ole_stream_reader.cpp
     data_stream.cpp
     parser.cpp
-    parser_parameters.cpp
     post.cpp
     html_writer.cpp
     csv_writer.cpp
     plain_text_writer.cpp
     standard_filter.cpp
-    importer.cpp
     output.cpp
     plain_text_exporter.cpp
     html_exporter.cpp
