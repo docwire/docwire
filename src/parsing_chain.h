@@ -14,6 +14,7 @@
 
 #include <memory>
 #include "defines.h"
+#include "pimpl.h"
 #include <vector>
 
 namespace docwire
@@ -26,8 +27,8 @@ class ChainElement;
 template<class T>
 concept ChainElementDerived = std::derived_from<T, ChainElement>;
 
-  class DllExport ParsingChain
-  {
+class DllExport ParsingChain : public with_pimpl<ParsingChain>
+{
   public:
     ParsingChain(std::shared_ptr<ChainElement> element1, std::shared_ptr<ChainElement> element2);
     ParsingChain(std::shared_ptr<InputChainElement> input, std::shared_ptr<ChainElement> element);
@@ -42,14 +43,8 @@ concept ChainElementDerived = std::derived_from<T, ChainElement>;
 
     void process(InputChainElement& input);
 
-    const std::vector<std::shared_ptr<ChainElement>>& elements() const { return element_list; }
-
-  private:
-    std::shared_ptr<InputChainElement> m_input;
-    std::shared_ptr<ChainElement> first_element;
-    std::shared_ptr<ChainElement> last_element;
-    std::vector<std::shared_ptr<ChainElement>> element_list;
-  };
+    const std::vector<std::shared_ptr<ChainElement>>& elements() const;
+};
 
 inline std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> chain, std::shared_ptr<ChainElement> element)
 {

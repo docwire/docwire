@@ -112,7 +112,7 @@ inline std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> cha
 template<parser_derived T>
 inline ParsingChain operator|(ParsingChain&& chain, T&& parser)
 {
-  return std::forward<ParsingChain>(chain) | parser_chain_element<T>(std::forward<T>(parser));
+  return std::move(std::forward<ParsingChain>(chain) | parser_chain_element<T>(std::forward<T>(parser)));
 }
 
 template<parser_derived T>
