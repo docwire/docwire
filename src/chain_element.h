@@ -71,5 +71,8 @@ private:
 template<typename T>
 concept ParsingChainOrChainElement = std::derived_from<T, ParsingChain> || std::derived_from<T, ChainElement>;
 
+template<typename T>
+concept parsing_chain_or_chain_element_ref_qualified = ParsingChainOrChainElement<std::remove_reference_t<T>>;
+
 }
 #endif //DOCWIRE_CHAIN_ELEMENT_H

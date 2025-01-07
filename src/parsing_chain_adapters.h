@@ -13,6 +13,7 @@
 #define DOCWIRE_PARSING_CHAIN_ADAPTERS_H
 
 #include "chain_element.h"
+#include "data_source.h"
 #include "error_tags.h"
 #include "parsing_chain.h"
 #include "ref_or_owned.h"
@@ -29,6 +30,9 @@ inline std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> cha
 
 template<typename T>
 concept parser_derived = std::derived_from<T, Parser>;
+
+template<typename T>
+concept parser_derived_ref_qualified = parser_derived<std::remove_reference_t<T>>;
 
 inline ChainElement& get_root_element(ChainElement& elem)
 {
@@ -103,31 +107,31 @@ private:
   ref_or_owned<T> m_parser;
 };
 
-template<parser_derived T>
+template<parser_derived_ref_qualified T>
 inline std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> chain, T&& parser)
 {
   return chain | parser_chain_element<T>(std::forward<T>(parser));
 }
 
-template<parser_derived T>
+template<parser_derived_ref_qualified T>
 inline ParsingChain operator|(ParsingChain&& chain, T&& parser)
 {
   return std::move(std::forward<ParsingChain>(chain) | parser_chain_element<T>(std::forward<T>(parser)));
 }
 
-template<parser_derived T>
+template<parser_derived_ref_qualified T>
 inline std::shared_ptr<ParsingChain> operator|(T&& parser, std::shared_ptr<ChainElement> element)
 {
   return parser_chain_element<T>(std::forward<T>(parser)) | element;
 }
 
-template<data_source_compatible_type T, parser_derived U>
+template<data_source_compatible_type_ref_qualified T, parser_derived_ref_qualified U>
 inline std::shared_ptr<ParsingChain> operator|(T&& v, U&& parser)
 {
   return std::forward<T>(v) | parser_chain_element<U>(std::forward<U>(parser));
 }
 
-template<parser_derived T1, parser_derived T2>
+template<parser_derived_ref_qualified T1, parser_derived_ref_qualified T2>
 inline ParsingChain operator|(T1&& lhs, T2&& rhs)
 {
   return parser_chain_element<T1>(std::forward<T1>(lhs)) | parser_chain_element<T2>(std::forward<T2>(rhs));

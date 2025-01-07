@@ -23,6 +23,9 @@ namespace docwire
 template<class T>
 concept IStreamDerived = std::derived_from<T, std::istream>;
 
+template<typename T>
+concept istream_derived_ref_qualified = IStreamDerived<std::remove_reference_t<T>>;
+
 class DllExport InputChainElement
 {
 public:
@@ -44,9 +47,9 @@ public:
   : m_data{seekable_stream_ptr{stream}}
   {}
 
-  template<IStreamDerived T>
+  template<istream_derived_ref_qualified T>
   explicit InputChainElement(T&& stream)
-    : m_data{seekable_stream_ptr{std::make_shared<T>(std::move(stream))}}
+    : m_data{seekable_stream_ptr{std::make_shared<T>(std::forward<T>(stream))}}
   {}
 
   void process(ChainElement& chain_element) const;
@@ -67,10 +70,10 @@ std::shared_ptr<ParsingChain> operator|(std::shared_ptr<InputChainElement> input
   return std::make_shared<ParsingChain>(input, chainElement);
 }
 
-template<ChainElementDerived T>
+template<chain_element_derived_ref_qualified T>
 std::shared_ptr<ParsingChain> operator|(InputChainElement&& input, T&& chainElement)
 {
-  return std::make_shared<ParsingChain>(std::make_shared<InputChainElement>(std::move(input)), std::make_shared<T>(std::move(chainElement)));
+  return std::make_shared<ParsingChain>(std::make_shared<InputChainElement>(std::move(input)), std::make_shared<T>(std::forward<T>(chainElement)));
 }
 
 template<ParsingChainOrChainElement U>
@@ -79,10 +82,10 @@ std::shared_ptr<ParsingChain> operator|(data_source&& data, std::shared_ptr<U> c
   return InputChainElement{std::move(data)} | chain_element;
 }
 
-template<ParsingChainOrChainElement U>
+template<parsing_chain_or_chain_element_ref_qualified U>
 std::shared_ptr<ParsingChain> operator|(data_source&& data, U&& chain_element)
 {
-  return InputChainElement(std::move(data)) | std::move(chain_element);
+  return InputChainElement(std::move(data)) | std::forward<U>(chain_element);
 }
 
 template<IStreamDerived T, ParsingChainOrChainElement U>
@@ -91,46 +94,34 @@ std::shared_ptr<ParsingChain> operator|(std::shared_ptr<T> stream, std::shared_p
   return InputChainElement(stream) | chain_element;
 }
 
-template<IStreamDerived T, ParsingChainOrChainElement U>
+template<IStreamDerived T, parsing_chain_or_chain_element_ref_qualified U>
 std::shared_ptr<ParsingChain> operator|(std::shared_ptr<T> stream, U&& chain_element)
 {
-  return InputChainElement(stream) | std::move(chain_element);
+  return InputChainElement(stream) | std::forward<U>(chain_element);
 }
 
-template<IStreamDerived T, ParsingChainOrChainElement U>
+template<istream_derived_ref_qualified T, ParsingChainOrChainElement U>
 std::shared_ptr<ParsingChain> operator|(T&& stream, std::shared_ptr<U> chain_element)
 {
-  return InputChainElement(std::move(stream)) | chain_element;
+  return InputChainElement(std::forward<T>(stream)) | chain_element;
 }
 
-template<IStreamDerived T, ParsingChainOrChainElement U>
+template<istream_derived_ref_qualified T, parsing_chain_or_chain_element_ref_qualified U>
 std::shared_ptr<ParsingChain> operator|(T&& stream, U&& chain_element)
 {
-  return InputChainElement(std::move(stream)) | std::move(chain_element);
+  return InputChainElement(std::forward<T>(stream)) | std::forward<U>(chain_element);
 }
 
-template<data_source_compatible_type T, ParsingChainOrChainElement U>
-inline std::shared_ptr<ParsingChain> operator|(const T& v, std::shared_ptr<U> chain_element)
-{
-  return InputChainElement(v) | chain_element;
-}
-
-template<data_source_compatible_type T, ParsingChainOrChainElement U>
-inline std::shared_ptr<ParsingChain> operator|(const T& v, U&& chain_element)
-{
-  return InputChainElement(v) | std::move(chain_element);
-}
-
-template<data_source_compatible_type T, ParsingChainOrChainElement U>
+template<data_source_compatible_type_ref_qualified T, ParsingChainOrChainElement U>
 inline std::shared_ptr<ParsingChain> operator|(T&& v, std::shared_ptr<U> chain_element)
 {
-  return InputChainElement(std::move(v)) | chain_element;
+  return InputChainElement(std::forward<T>(v)) | chain_element;
 }
 
-template<data_source_compatible_type T, ParsingChainOrChainElement U>
+template<data_source_compatible_type_ref_qualified T, ParsingChainOrChainElement U>
 inline std::shared_ptr<ParsingChain> operator|(T&& v, U&& chain_element)
 {
-  return InputChainElement(std::move(v)) | std::move(chain_element);
+  return InputChainElement(std::forward<T>(v)) | std::forward<U>(chain_element);
 }
 
 }

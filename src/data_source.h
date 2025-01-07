@@ -83,6 +83,9 @@ concept data_source_compatible_type =
 	std::is_same_v<T, seekable_stream_ptr> ||
 	std::is_same_v<T, unseekable_stream_ptr>;
 
+template <typename T>
+concept data_source_compatible_type_ref_qualified = data_source_compatible_type<std::remove_reference_t<T>>;
+
 template<class... Ts>
 struct overloaded : Ts... { using Ts::operator()...; };
 template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
