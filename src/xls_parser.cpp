@@ -69,6 +69,7 @@ enum RecordType
 template<>
 struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 {
+	pimpl_impl(XLSParser& owner) : with_pimpl_owner{owner} {}
 	std::string m_codepage = "cp1251";
 	enum BiffVersion { BIFF2, BIFF3, BIFF4, BIFF5, BIFF8 };
 	BiffVersion m_biff_version;

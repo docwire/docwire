@@ -17,11 +17,15 @@
 
 using namespace docwire;
 
-void
-InputChainElement::process(ChainElement& chain_element) const
+void InputChainElement::process(Info &info)
 {
   docwire_log_func();
-  docwire_log_var(m_data);
-  Info info{m_data};
-  chain_element.process(info);
+  if (std::holds_alternative<tag::start_processing>(info.tag))
+  {
+    docwire_log_var(m_data.get());
+    Info info{m_data.get()};
+    emit(info);
+  }
+  else
+    emit(info);
 }

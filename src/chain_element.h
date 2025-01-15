@@ -26,14 +26,13 @@ public:
   ChainElement();
   ChainElement(ChainElement&&) = default;
   virtual ~ChainElement() = default;
+  ChainElement& operator=(ChainElement&&) = default;
 
   /**
    * @brief Connects next object to the end of chain
    * @param chain_element
    */
-  void connect(ChainElement& chain_element);
-
-  void disconnect_all();
+  virtual void connect(ChainElement& chain_element);
 
   /**
    * @brief Emits signal with Info object to the next element
@@ -47,6 +46,8 @@ public:
    */
   virtual bool is_leaf() const = 0;
 
+  virtual bool is_generator() const { return false; }
+
   /**
    * @brief Start processing
    * @param info
@@ -54,18 +55,12 @@ public:
   virtual void process(Info &info) = 0;
 
   /**
-   * @brief Set parent (previous element)
-   * @param chainElement
+   * @brief Set parsing chain that this element belongs to
+   * @param chain
    */
-  void set_parent(const std::shared_ptr<ChainElement>& chainElement);
+  void set_chain(ParsingChain& chainElement);
 
-  /**
-   * @return pointer to previous element in a chain
-   */
-  std::shared_ptr<ChainElement> get_parent() const;
-
-private:
-  std::shared_ptr<ChainElement> m_parent;
+  std::optional<std::reference_wrapper<ParsingChain>> chain() const;
 };
 
 template<typename T>

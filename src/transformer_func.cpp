@@ -17,8 +17,8 @@ namespace docwire
 template<>
 struct pimpl_impl<TransformerFunc> : with_pimpl_owner<TransformerFunc>
 {
-  pimpl_impl(NewNodeCallback transformer_function)
-    : m_transformer_function(transformer_function)
+  pimpl_impl(TransformerFunc& owner, NewNodeCallback transformer_function)
+    : with_pimpl_owner{owner}, m_transformer_function(transformer_function)
   {}
 
   void transform(Info &info) const

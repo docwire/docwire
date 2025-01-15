@@ -235,16 +235,16 @@ int main(int argc, char* argv[])
 		switch (vm["output_type"].as<OutputType>())
 		{
 			case OutputType::plain_text:
-				chain | PlainTextExporter();
+				chain = chain | PlainTextExporter();
 				break;
 			case OutputType::html:
-				chain | HtmlExporter();
+				chain = chain | HtmlExporter();
 				break;
 			case OutputType::csv:
-				chain | CsvExporter();
+				chain = chain | CsvExporter();
 				break;
 			case OutputType::metadata:
-				chain | MetaDataExporter();
+				chain = chain | MetaDataExporter();
 				break;
 		}
 	}
@@ -397,7 +397,7 @@ int main(int argc, char* argv[])
 
 	try
 	{
-		chain | std::cout;
+		chain = chain | std::cout;
 	}
 	catch (const std::exception& e)
 	{

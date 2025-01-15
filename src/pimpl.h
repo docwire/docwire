@@ -25,7 +25,7 @@ class with_pimpl_base {};
 struct pimpl_impl_base
 {
 	virtual ~pimpl_impl_base() = default;
-	virtual void set_owner(with_pimpl_base*)
+	virtual void set_owner(with_pimpl_base&)
 	{
 	}
 };
@@ -38,11 +38,20 @@ class with_pimpl : public with_pimpl_base
 {
 protected:
 	using impl_type = pimpl_impl<T>;
+
+	template <typename... Args>
+	impl_type* create_impl(Args&&... args)
+	{
+		if constexpr (std::is_base_of_v<with_pimpl_owner<T>, impl_type>)
+			return new impl_type(static_cast<T&>(*this), std::forward<Args>(args)...);
+		else
+			return new impl_type(impl_type{std::forward<Args>(args)...});
+	}
+
 	template <typename... Args>
 	explicit with_pimpl(Args&&... args)
-		: m_impl(static_cast<pimpl_impl_base*>(new impl_type{std::forward<Args>(args)...}))
+		: m_impl(static_cast<pimpl_impl_base*>(create_impl(std::forward<Args>(args)...)))
 	{
-		set_impl_owner();
 	}
 
 	with_pimpl(with_pimpl<T>&& other) noexcept
@@ -73,7 +82,7 @@ protected:
 	template <typename... Args>
 	void renew_impl(Args&&... args)
 	{
-		m_impl.reset(static_cast<pimpl_impl_base*>(new impl_type{std::forward<Args>(args)...}));
+		m_impl.reset(static_cast<pimpl_impl_base*>(create_impl(std::forward<Args>(args)...)));
 		set_impl_owner();
 	}
 
@@ -87,7 +96,7 @@ private:
 
 	void set_impl_owner()
 	{
-		m_impl->set_owner(this);
+		m_impl->set_owner(*this);
 	}
 };
 
@@ -95,16 +104,17 @@ template <typename T>
 class with_pimpl_owner : public pimpl_impl_base
 {
 protected:
-	T& owner() { return *m_owner; }
-	const T& owner() const { return *m_owner; }
+	with_pimpl_owner(T& owner) : m_owner(owner) {}
+	T& owner() { return m_owner; }
+	const T& owner() const { return m_owner; }
 
-	void set_owner(with_pimpl_base* owner) override
+	void set_owner(with_pimpl_base& owner) override
 	{
-		m_owner = static_cast<T*>(static_cast<with_pimpl<T>*>(owner));
+		m_owner = static_cast<T&>(static_cast<with_pimpl<T>&>(owner));
 	}
 
 private:
-	T* m_owner;
+	std::reference_wrapper<T> m_owner;
 	friend with_pimpl<T>;
 };
 

@@ -29,17 +29,13 @@ struct pimpl_impl<ChainElement> : pimpl_impl_base
     m_on_new_node_signal->connect([&chain_element](Info &info){chain_element.process(info);});
   }
 
-  void disconnect_all()
-  {
-    m_on_new_node_signal->disconnect_all_slots();
-  }
-
   void emit(Info &info) const
   {
     (*m_on_new_node_signal)(info);
   }
 
   std::shared_ptr<boost::signals2::signal<void(Info &info)>> m_on_new_node_signal;
+  std::optional<std::reference_wrapper<ParsingChain>> m_chain;
 };
 
 ChainElement::ChainElement()
@@ -52,21 +48,14 @@ ChainElement::connect(ChainElement& chain_element)
   impl().connect(chain_element);
 }
 
-void ChainElement::disconnect_all()
+void ChainElement::set_chain(ParsingChain& chain)
 {
-  impl().disconnect_all();
+  impl().m_chain = std::ref(chain);
 }
 
-void
-ChainElement::set_parent(const std::shared_ptr<ChainElement>& chainElement)
+std::optional<std::reference_wrapper<ParsingChain>> ChainElement::chain() const
 {
-  m_parent = chainElement;
-}
-
-std::shared_ptr<ChainElement>
-ChainElement::get_parent() const
-{
-  return m_parent;
+  return impl().m_chain;
 }
 
 void

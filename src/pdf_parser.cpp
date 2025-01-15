@@ -687,6 +687,7 @@ namespace
 template<>
 struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 {
+	pimpl_impl(PDFParser& owner) : with_pimpl_owner{owner} {}
 	PoDoFo::PdfMemDocument m_pdf_document;
 
 	class PredefinedSimpleEncodings : public std::map<std::string, unsigned int*>

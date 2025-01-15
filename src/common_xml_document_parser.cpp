@@ -38,8 +38,9 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
     };
   }
 
-  pimpl_impl()
-  : is_bold(false),
+  pimpl_impl(CommonXMLDocumentParser& owner)
+  : with_pimpl_owner{owner},
+  	is_bold(false),
     is_italic(false),
     is_underline(false),
     space_preserve(false),

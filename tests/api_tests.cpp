@@ -1080,7 +1080,7 @@ TEST(PlainTextExporter, content_inside_table_row_without_cells)
 
 TEST(PlainTextExporter, eol_sequence_crlf)
 {
-    auto exporter = std::make_shared<PlainTextExporter>(eol_sequence{"\r\n"});
+    PlainTextExporter exporter{eol_sequence{"\r\n"}};
     std::ostringstream output_stream{};
     auto parsing_chain = exporter | output_stream;
     std::vector<Tag> tags
@@ -1094,14 +1094,14 @@ TEST(PlainTextExporter, eol_sequence_crlf)
     for (auto tag: tags)
     {
         Info info{tag};
-        exporter->process(info);    
+        exporter.process(info);
     }
     ASSERT_EQ(output_stream.str(), "Line1\r\nLine2\r\n");
 }
 
 TEST(PlainTextExporter, custom_link_formatting)
 {
-    auto exporter = std::make_shared<PlainTextExporter>(
+    PlainTextExporter exporter(
         eol_sequence{"\n"},
         link_formatter{
             .format_opening = [](const tag::Link& link){ return (link.url ? "(" + *link.url + ")" : "") + "["; },
@@ -1120,9 +1120,58 @@ TEST(PlainTextExporter, custom_link_formatting)
     for (auto tag: tags)
     {
         Info info{tag};
-        exporter->process(info);    
+        exporter.process(info);
     }
     ASSERT_EQ(output_stream.str(), "(https://docwire.io)[DocWire SDK home page]\n");
+}
+
+template<typename RefOrOwnedType, typename ValueType>
+void test_ref_or_owned(int expected_result)
+{
+    ValueType v;
+
+    ref_or_owned<RefOrOwnedType> ref{v};
+    ASSERT_EQ(ref.get().value(), expected_result);
+    ref_or_owned<RefOrOwnedType> ref_copied{ref};
+    ASSERT_EQ(ref_copied.get().value(), expected_result);
+    ref_or_owned<RefOrOwnedType> ref_moved{std::move(ref)};
+    ASSERT_EQ(ref_moved.get().value(), expected_result);
+
+    ref_or_owned<RefOrOwnedType> owned{ValueType{}};
+    ASSERT_EQ(owned.get().value(), expected_result);
+    ref_or_owned<RefOrOwnedType> owned_copied{owned};
+    ASSERT_EQ(owned.get().value(), expected_result);
+    ref_or_owned<RefOrOwnedType> owned_moved{std::move(owned)};
+    ASSERT_EQ(owned_moved.get().value(), expected_result);
+
+    ref_or_owned<RefOrOwnedType> shared{std::make_shared<ValueType>()};
+    ASSERT_EQ(shared.get().value(), expected_result);
+    ref_or_owned<RefOrOwnedType> shared_copied{shared};
+    ASSERT_EQ(shared_copied.get().value(), expected_result);
+    ref_or_owned<RefOrOwnedType> shared_moved{std::move(shared)};
+    ASSERT_EQ(shared_moved.get().value(), expected_result);
+}
+
+TEST(ref_or_owned, general)
+{
+    struct TestBase
+    {
+        TestBase() : m_value(1) {};
+        TestBase(TestBase&)
+        {
+            throw std::runtime_error{"copy constructor called"};
+        }
+        TestBase(TestBase&&) = default;
+        virtual ~TestBase() = default;
+        int value() { return m_value; }
+        int m_value;
+    };
+    struct TestDerived : TestBase
+    {
+        TestDerived() { m_value = 2; };
+    };
+    test_ref_or_owned<TestBase, TestBase>(1);
+    test_ref_or_owned<TestBase, TestDerived>(2);
 }
 
 TEST(Input, data_source_with_file_ext)
@@ -1487,6 +1536,38 @@ TEST(tuple_utils, last_element)
         tuple_utils::last_element(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4})),
         char{4}
     );
+}
+
+TEST(chaining, set_chain_get_chain_top_chain)
+{
+    class TestChainElement : public ChainElement
+    {
+    protected:
+        bool is_leaf() const override { return false; }
+        void process(Info &info) override {}        
+    };
+
+    TestChainElement element0;
+    TestChainElement element1;
+    TestChainElement element2;
+    ASSERT_FALSE(element0.chain());
+    ASSERT_FALSE(element1.chain());
+    ASSERT_FALSE(element2.chain());
+    ParsingChain chain1{element1, element2};
+    element0.set_chain(chain1);
+    ASSERT_TRUE(element0.chain());
+    ASSERT_TRUE(element1.chain());
+    ASSERT_TRUE(element2.chain());
+    ASSERT_EQ(&element0.chain()->get(), &chain1);
+    ASSERT_EQ(&element1.chain()->get(), &chain1);
+    ASSERT_EQ(&element2.chain()->get(), &chain1);
+    ASSERT_EQ(&element0.chain()->get().top_chain(), &chain1);
+    ASSERT_EQ(&element1.chain()->get().top_chain(), &chain1);
+    ASSERT_EQ(&element2.chain()->get().top_chain(), &chain1);
+    TestChainElement element3;
+    ParsingChain chain2{chain1, element3};
+    ASSERT_EQ(&chain1.chain()->get(), &chain2);
+    ASSERT_EQ(&element1.chain()->get().top_chain(), &chain2);
 }
 
 TEST(chaining, val_temp_to_func_ref_one_arg_no_result)

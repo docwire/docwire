@@ -13,10 +13,13 @@
 #define DOCWIRE_REF_OR_OWNED_H
 
 #include <memory>
-#include <variant>
+#include <type_traits>
 
 namespace docwire
 {
+
+template<typename U, typename T>
+concept ref_or_owned_compatible = std::is_convertible_v<std::shared_ptr<std::remove_reference_t<U>>, std::shared_ptr<T>>;
 
 /**
  * @brief A utility class that simplifies declaring function attributes that need to be stored without requiring the user to create a shared pointer.
@@ -33,6 +36,13 @@ class ref_or_owned
   static_assert(!std::is_void<T>::value, "ref_or_owned<T> cannot be instantiated with void type");
 
 public:
+  ref_or_owned(ref_or_owned<T>&& other) noexcept
+    : v{other.to_shared_ptr()}
+  {}
+
+  ref_or_owned(const ref_or_owned<T>& other)
+    : v{other.to_shared_ptr()}
+  {}
 
   /**
    * @brief Constructs a ref_or_owned object from a reference to an object.
@@ -41,8 +51,9 @@ public:
    *
    * @param value The object to be stored.
    */
-  ref_or_owned(T& value)
-    : v{std::reference_wrapper<T>(value)}
+  template<ref_or_owned_compatible<T> U>
+  ref_or_owned(U& value)
+    : v{std::shared_ptr<T>{&value, [](auto*) {}}}
   {}
 
   /**
@@ -52,8 +63,14 @@ public:
    *
    * @param value The object to be stored.
    */
-  ref_or_owned(std::remove_const_t<T>&& value)
-    : v{std::make_shared<T>(std::move(value))}
+  template<ref_or_owned_compatible<T> U>
+  ref_or_owned(U&& value)
+    : v{std::make_shared<std::remove_reference_t<U>>(std::forward<U>(value))}
+  {}
+
+  template<ref_or_owned_compatible<T> U>
+  ref_or_owned(std::shared_ptr<U> ptr)
+    : v{ptr}
   {}
 
   /**
@@ -62,7 +79,7 @@ public:
    * @return A const reference to the stored object.
    */
   const T& get() const {
-    return get_impl();
+    return *v;
   }
 
   /**
@@ -71,19 +88,16 @@ public:
    * @return A non-const reference to the stored object.
    */
   T& get() {
-    return get_impl();
+    return *v;
+  }
+
+  std::shared_ptr<T> to_shared_ptr() const
+  {
+    return v;
   }
 
 private:
-
-  T& get_impl() const {
-    if (std::holds_alternative<std::shared_ptr<T>>(v))
-      return *std::get<std::shared_ptr<T>>(v);
-    else
-      return std::get<std::reference_wrapper<T>>(v).get();
-  }
-
-  std::variant<std::shared_ptr<T>, std::reference_wrapper<T>> v;
+  std::shared_ptr<T> v;
 };
 
 } // namespace docwire

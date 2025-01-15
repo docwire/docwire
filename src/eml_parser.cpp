@@ -37,6 +37,7 @@ namespace
 template<>
 struct pimpl_impl<EMLParser> : with_pimpl_owner<EMLParser>
 {
+	pimpl_impl(EMLParser& owner) : with_pimpl_owner{owner} {}
 	void convertToUtf8(const std::string& charset, std::string& text) const
 	{
 		try

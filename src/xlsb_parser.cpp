@@ -28,6 +28,7 @@ namespace docwire
 template<>
 struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
 {
+	pimpl_impl(XLSBParser& owner) : with_pimpl_owner{owner} {}
 	struct XLSBContent
 	{
 		class ErrorsCodes : public std::map<uint32_t, std::string>

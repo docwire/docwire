@@ -357,6 +357,7 @@ class Folder
 template<>
 struct pimpl_impl<PSTParser> : with_pimpl_owner<PSTParser>
 {
+	pimpl_impl(PSTParser& owner) : with_pimpl_owner{owner} {}
 	void parse(std::shared_ptr<std::istream>) const;
 
   private:

@@ -39,29 +39,9 @@ public:
   /**
    * @param out_stream OutputChainElement stream. Parsing chain will be writing to this stream.
    */
-  OutputChainElement(std::shared_ptr<std::ostream> out_stream)
+  OutputChainElement(ref_or_owned<std::ostream> out_stream)
     : m_out_stream{out_stream}
   {}
-
-  /**
-   * @param out_stream OutputChainElement stream. Parsing chain will be writing to this stream.
-   */
-  template<OStreamDerived T>
-  OutputChainElement(T&& out_stream)
-    : OutputChainElement{std::make_shared<T>(std::move(out_stream))}
-  {}
-
-  /**
-   * @brief Constructs OutputChainElement with a non-owning pointer (reference) to an output stream.
-   * @details This constructor is useful when you want to pass a stack variable, global variable or predefined objects like as output stream.
-   * @warning It is your responsibility to ensure that the stream outlives OutputChainElement. Consider using std::shared_ptr instead.
-   * @param out_stream OutputChainElement stream. Parsing chain will be writing to this stream.
-   */
-  template<OStreamDerived T>
-  OutputChainElement(T& out_stream)
-    : OutputChainElement(std::shared_ptr<T>{&out_stream, [](auto*) {}})
-  {
-  }
 
   bool is_leaf() const override
   {
@@ -71,31 +51,13 @@ public:
   void process(Info& info) override;
 
 private:
-  std::shared_ptr<std::ostream> m_out_stream;
+  ref_or_owned<std::ostream> m_out_stream;
 };
 
-template<ParsingChainOrChainElement E, OStreamDerived S>
-std::shared_ptr<ParsingChain> operator|(std::shared_ptr<E> element_or_chain, std::shared_ptr<S> stream)
+inline ParsingChain operator|(ref_or_owned<ChainElement> element, ref_or_owned<std::ostream> stream)
 {
-  return element_or_chain | OutputChainElement(stream);
-}
-
-template<parsing_chain_or_chain_element_ref_qualified E, OStreamDerived S>
-std::shared_ptr<ParsingChain> operator|(E&& element_or_chain, std::shared_ptr<S> stream)
-{
-  return std::forward<E>(element_or_chain) | OutputChainElement(stream);
-}
-
-template<ParsingChainOrChainElement E, ostream_derived_ref_qualified S>
-std::shared_ptr<ParsingChain> operator|(std::shared_ptr<E> element_or_chain, S&& stream)
-{
-  return element_or_chain | OutputChainElement(std::forward<S>(stream));
-}
-
-template<parsing_chain_or_chain_element_ref_qualified E, ostream_derived_ref_qualified S>
-std::shared_ptr<ParsingChain> operator|(E&& element_or_chain, S&& stream)
-{
-  return std::forward<E>(element_or_chain) | OutputChainElement(std::forward<S>(stream));
+  return element | OutputChainElement(stream);
+  return element | OutputChainElement(stream);
 }
 
 } // namespace docwire

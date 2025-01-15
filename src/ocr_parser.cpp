@@ -73,6 +73,7 @@ thread_local std::string leptonica_stderr_capturer::m_contents;
 template<>
 struct pimpl_impl<OCRParser> : with_pimpl_owner<OCRParser>
 {
+    pimpl_impl(OCRParser& owner) : with_pimpl_owner{owner} {}
     std::vector<Language> m_languages;
     ocr_timeout m_ocr_timeout;
     ocr_data_path m_ocr_data_path;

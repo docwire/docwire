@@ -10,110 +10,95 @@
 /*********************************************************************************************************************************************/
 
 #include "chain_element.h"
-#include "input.h"
 #include "pimpl.h"
-#include <memory>
+#include <functional>
 #include "parsing_chain.h"
 
 namespace docwire
 {
 
 template<>
-struct pimpl_impl<ParsingChain> : pimpl_impl_base
+struct pimpl_impl<ParsingChain> : with_pimpl_owner<ParsingChain>
 {
-  pimpl_impl(std::shared_ptr<ChainElement> first_element, std::shared_ptr<ChainElement> last_element, std::shared_ptr<InputChainElement> input)
-    : m_first_element{first_element}, m_last_element{last_element}, m_input{input}
+  pimpl_impl(ParsingChain& owner, ref_or_owned<ChainElement> lhs_element, ref_or_owned<ChainElement> rhs_element)
+    : with_pimpl_owner{owner}, m_lhs_element{lhs_element}, m_rhs_element{rhs_element}
   {
-    if (last_element)
-    {
-      m_element_list = {m_first_element, m_last_element};
-      first_element->connect(*last_element);
-      last_element->set_parent(first_element);
-    }
+    m_lhs_element.get().set_chain(owner);
+    m_rhs_element.get().set_chain(owner);
+    m_lhs_element.get().connect(m_rhs_element.get());
+  }
+
+  ParsingChain& top_chain()
+  {
+    std::optional<std::reference_wrapper<ParsingChain>> chain = owner().chain();
+    if (chain)
+      return chain->get().top_chain();
     else
-      m_element_list = {m_first_element};
+      return owner();
   }
 
-  void append_element(std::shared_ptr<ChainElement> element_ptr)
-  {
-    m_element_list.push_back(element_ptr);
-    if (m_last_element)
-    {
-      m_last_element->connect(*element_ptr);
-      element_ptr->set_parent(m_last_element);
-    }
-    else
-    {
-      m_first_element->connect(*element_ptr);
-      element_ptr->set_parent(m_first_element);
-    }
-    m_last_element = element_ptr;
-
-    if (m_last_element->is_leaf())
-    {
-      if (m_input)
-      {
-        m_input->process(*m_first_element);
-      }
-    }
-  }
-
-  void process(InputChainElement& input)
-  {
-    m_input = std::make_shared<InputChainElement>(input);
-    if (m_last_element && m_last_element->is_leaf())
-    {
-      input.process(*m_first_element);
-    }
-  }
-
-  std::shared_ptr<InputChainElement> m_input;
-  std::shared_ptr<ChainElement> m_first_element;
-  std::shared_ptr<ChainElement> m_last_element;
-  std::vector<std::shared_ptr<ChainElement>> m_element_list;
+  ref_or_owned<ChainElement> m_lhs_element;
+  ref_or_owned<ChainElement> m_rhs_element;
 };
 
-  ParsingChain::ParsingChain(std::shared_ptr<ChainElement> element1, std::shared_ptr<ChainElement> element2)
-  : with_pimpl(element1, element2, nullptr)
-  {
-  }
+ParsingChain::ParsingChain(ref_or_owned<ChainElement> lhs_element, ref_or_owned<ChainElement> rhs_element)
+: with_pimpl<ParsingChain>(lhs_element, rhs_element)
+{}
 
-  ParsingChain::ParsingChain(std::shared_ptr<InputChainElement> input, std::shared_ptr<ChainElement> element)
-  : with_pimpl(element, nullptr, input)
-  {
-  }
-
-  ParsingChain::ParsingChain(std::shared_ptr<ChainElement> element)
-  : with_pimpl(element, nullptr, nullptr)
-  {
-  }
-
-  ParsingChain&
-  ParsingChain::operator|(std::shared_ptr<ChainElement> element_ptr)
-  {
-    impl().append_element(element_ptr);
-    return *this;
-  }
-
-  void
-  ParsingChain::process(InputChainElement& input)
-  {
-    impl().process(input);
-  }
-
-const std::vector<std::shared_ptr<ChainElement>>& ParsingChain::elements() const
+ParsingChain::ParsingChain(ParsingChain&& other)
+  : with_pimpl<ParsingChain>(std::move(static_cast<with_pimpl<ParsingChain>&>(other)))
 {
-  return impl().m_element_list;
+  impl().m_lhs_element.get().set_chain(*this);
+  impl().m_rhs_element.get().set_chain(*this);
 }
 
-std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> lhs, ParsingChain&& rhs)
+ParsingChain& ParsingChain::operator=(ParsingChain&& other)
 {
-  for (auto element : rhs.elements())
+  with_pimpl<ParsingChain>::operator=(std::move(static_cast<with_pimpl<ParsingChain>&>(other)));
+  impl().m_lhs_element.get().set_chain(*this);
+  impl().m_rhs_element.get().set_chain(*this);
+  return *this;
+}
+
+void ParsingChain::process(Info &info)
+{
+  impl().m_lhs_element.get().process(info);
+}
+
+bool ParsingChain::is_leaf() const
+{
+  return impl().m_rhs_element.get().is_leaf();
+}
+
+bool ParsingChain::is_generator() const
+{
+  return impl().m_lhs_element.get().is_generator();
+}
+
+bool ParsingChain::is_complete() const
+{
+  return is_generator() && is_leaf();
+}
+
+void ParsingChain::connect(ChainElement& chain_element)
+{
+  impl().m_rhs_element.get().connect(chain_element);
+}
+
+ParsingChain& ParsingChain::top_chain()
+{
+  return impl().top_chain();
+}
+
+ParsingChain operator|(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement> rhs)
+{
+  ParsingChain chain{lhs, rhs};
+  if (chain.is_complete())
   {
-    element->disconnect_all();
-    lhs->operator|(element);
+    Info info{tag::start_processing{}};
+    chain.process(info);
   }
-  return lhs;
+  return chain;
 }
 
 } // namespace docwire

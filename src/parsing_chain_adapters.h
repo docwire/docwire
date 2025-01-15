@@ -15,6 +15,7 @@
 #include "chain_element.h"
 #include "data_source.h"
 #include "error_tags.h"
+#include <functional>
 #include "parsing_chain.h"
 #include "ref_or_owned.h"
 #include "throw_if.h"
@@ -23,9 +24,9 @@
 namespace docwire
 {
 
-inline std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> chain, NewNodeCallback func)
+inline ParsingChain operator|(ref_or_owned<ChainElement> element, NewNodeCallback func)
 {
-  return chain | TransformerFunc{func};
+  return element | TransformerFunc{func};
 }
 
 template<typename T>
@@ -33,14 +34,6 @@ concept parser_derived = std::derived_from<T, Parser>;
 
 template<typename T>
 concept parser_derived_ref_qualified = parser_derived<std::remove_reference_t<T>>;
-
-inline ChainElement& get_root_element(ChainElement& elem)
-{
-  if (elem.get_parent())
-    return get_root_element(*elem.get_parent());
-  else
-    return elem;
-}
 
 inline bool is_mime_type_in_vector(const mime_type& mime, const std::vector<mime_type>& mime_type_list)
   {
@@ -57,7 +50,7 @@ template<parser_derived T>
 class parser_chain_element : public ChainElement
 {
 public:
-  explicit parser_chain_element(T&& parser) : m_parser(std::forward<T>(parser)) {}
+  explicit parser_chain_element(ref_or_owned<T> parser) : m_parser(parser) {}
   void process(Info &info) override
   {
     if (!std::holds_alternative<data_source>(info.tag))
@@ -79,7 +72,9 @@ public:
       Info info{tag};
       if (std::holds_alternative<data_source>(tag))
       {
-        get_root_element(*this).process(info);
+        std::optional<std::reference_wrapper<ParsingChain>> ch = chain();
+        DOCWIRE_THROW_IF(!ch, "Cannot send datasource to top chain because chain is not assigned", errors::program_logic{});
+        ch->get().top_chain().process(info);
       }
       else
         emit(info);
@@ -107,34 +102,28 @@ private:
   ref_or_owned<T> m_parser;
 };
 
-template<parser_derived_ref_qualified T>
-inline std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> chain, T&& parser)
+template<parser_derived T>
+inline ParsingChain operator|(ref_or_owned<ChainElement> element, T&& parser)
 {
-  return chain | parser_chain_element<T>(std::forward<T>(parser));
+  return std::move(element | parser_chain_element<T>(std::forward<T>(parser)));
 }
 
-template<parser_derived_ref_qualified T>
-inline ParsingChain operator|(ParsingChain&& chain, T&& parser)
+template<parser_derived T>
+inline ParsingChain operator|(ref_or_owned<T> parser, ref_or_owned<ChainElement> element)
 {
-  return std::move(std::forward<ParsingChain>(chain) | parser_chain_element<T>(std::forward<T>(parser)));
-}
-
-template<parser_derived_ref_qualified T>
-inline std::shared_ptr<ParsingChain> operator|(T&& parser, std::shared_ptr<ChainElement> element)
-{
-  return parser_chain_element<T>(std::forward<T>(parser)) | element;
+  return parser_chain_element<T>(parser) | element;
 }
 
 template<data_source_compatible_type_ref_qualified T, parser_derived_ref_qualified U>
-inline std::shared_ptr<ParsingChain> operator|(T&& v, U&& parser)
+inline ParsingChain operator|(T&& v, U&& parser)
 {
   return std::forward<T>(v) | parser_chain_element<U>(std::forward<U>(parser));
 }
 
-template<parser_derived_ref_qualified T1, parser_derived_ref_qualified T2>
-inline ParsingChain operator|(T1&& lhs, T2&& rhs)
+template<parser_derived_ref_qualified L, parser_derived_ref_qualified R>
+inline ParsingChain operator|(L&& lhs, R&& rhs)
 {
-  return parser_chain_element<T1>(std::forward<T1>(lhs)) | parser_chain_element<T2>(std::forward<T2>(rhs));
+  return parser_chain_element<L>(std::forward<L>(lhs)) | parser_chain_element<R>(std::forward<R>(rhs));
 }
 
 } // namespace docwire
