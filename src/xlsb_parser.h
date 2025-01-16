@@ -31,9 +31,9 @@ class DllExport XLSBParser : public Parser, public with_pimpl<XLSBParser>
 
 	public:
 		XLSBParser();
-		inline static const std::vector<mime_type> supported_mime_types =
+		const std::vector<mime_type> supported_mime_types() override
 		{
-			mime_type{"application/vnd.ms-excel.sheet.binary.macroenabled.12"}
+			return { mime_type{"application/vnd.ms-excel.sheet.binary.macroenabled.12"} };
 		};
 		void parse(const data_source& data) override;
 };

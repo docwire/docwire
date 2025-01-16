@@ -14,6 +14,7 @@
 #include <boost/json.hpp>
 #include "chaining.h"
 #include "content_type.h"
+#include "data_source.h"
 #include "error_hash.h" // IWYU pragma: keep
 #include "error_tags.h"
 #include "exception_utils.h"
@@ -1365,7 +1366,7 @@ TEST(TXTParser, lines)
     using namespace chaining;
     std::vector<Tag> tags;
     std::string test_input {"Line ends with LF\nLine ends with CR\rLine ends with CRLF\r\nLine without EOL"};
-    docwire::data_source{test_input, docwire::file_extension{".txt"}} |
+    docwire::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
         TXTParser{} | tags;
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),
@@ -1381,7 +1382,7 @@ TEST(TXTParser, lines)
         VariantWith<tag::CloseDocument>(_)
     ));
     tags.clear();
-    docwire::data_source{test_input, docwire::file_extension{".txt"}} |
+    docwire::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
         TXTParser{parse_paragraphs{true}, parse_lines{false}} | tags;
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),
@@ -1397,7 +1398,7 @@ TEST(TXTParser, lines)
         VariantWith<tag::CloseDocument>(_)
     ));
     tags.clear();
-    docwire::data_source{test_input, docwire::file_extension{".txt"}} |
+    docwire::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
         TXTParser{parse_paragraphs{false}, parse_lines{false}} | tags;
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),
@@ -1413,7 +1414,7 @@ TEST(TXTParser, paragraphs)
     std::vector<Tag> tags;
     docwire::data_source{
             std::string{"Paragraph 1 Line 1\nParagraph 1 Line 2\n\nParagraph 2 Line 1"},
-            docwire::file_extension{".txt"}} |
+            mime_type{"text/plain"}, confidence::highest} |
         TXTParser{} | tags;
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),
@@ -1428,7 +1429,7 @@ TEST(TXTParser, paragraphs)
         VariantWith<tag::CloseDocument>(_)
     ));
     tags.clear();
-    docwire::data_source{std::string{"\nLine\n"}, docwire::file_extension{".txt"}} |
+    docwire::data_source{std::string{"\nLine\n"}, mime_type{"text/plain"}, confidence::highest} |
         TXTParser{} | tags;
     ASSERT_THAT(tags, testing::ElementsAre(
         VariantWith<tag::Document>(_),
@@ -1440,7 +1441,7 @@ TEST(TXTParser, paragraphs)
         VariantWith<tag::CloseDocument>(_)
     ));
     tags.clear();
-    docwire::data_source{std::string{"\nLine\n"}, docwire::file_extension{".txt"}} |
+    docwire::data_source{std::string{"\nLine\n"}, mime_type{"text/plain"}, confidence::highest} |
         TXTParser{parse_paragraphs{false}} |
         tags;
     ASSERT_THAT(tags, testing::ElementsAre(
@@ -1457,7 +1458,8 @@ TEST(OCRParser, leptonica_stderr_capturer)
     try
     {
         using namespace chaining;
-        data_source{std::string{"Incorrect image data"}, docwire::file_extension{".jpg"}} |
+        data_source{std::string{"Incorrect image data"}, 
+            mime_type{"image/jpeg"}, confidence::highest} |
             OCRParser{} | std::vector<Tag>{};
         FAIL() << "OCRParser should have thrown an exception";
     }

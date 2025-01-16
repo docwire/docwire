@@ -12,13 +12,25 @@
 #ifndef DOCWIRE_CHAIN_ELEMENT_H
 #define DOCWIRE_CHAIN_ELEMENT_H
 
-#include "parser.h"
+#include "defines.h"
 #include "pimpl.h"
+#include "tags.h"
 
 namespace docwire
 {
 
 class ParsingChain;
+
+struct DllExport Info
+{
+  Tag tag;
+  bool cancel = false; //!< cancel flag. If set true then parsing process will be stopped.
+  bool skip = false; //!< skip flag. If set true then tag will be skipped.
+
+  explicit Info(const Tag& tag)
+    : tag(tag)
+  {}
+};
 
 class DllExport ChainElement : public with_pimpl<ChainElement>
 {

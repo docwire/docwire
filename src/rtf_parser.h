@@ -28,11 +28,13 @@ class DllExport RTFParser : public Parser
 
     	void parse(const data_source& data) override;
 
-		inline static const std::vector<mime_type> supported_mime_types =
+		const std::vector<mime_type> supported_mime_types() override
 		{
+			return {
 			mime_type{"application/rtf"},
 			mime_type{"text/rtf"},
 			mime_type{"text/richtext"}
+			};
 		};
 
 		RTFParser();

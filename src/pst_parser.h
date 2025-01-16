@@ -31,10 +31,12 @@ public:
 
   void parse(const data_source& data) override;
 
-  inline static const std::vector<mime_type> supported_mime_types =
+  const std::vector<mime_type> supported_mime_types() override
   {
+    return {
     mime_type{"application/vnd.ms-outlook-pst"},
     mime_type{"application/vnd.ms-outlook-ost"}
+    };
   };
 
   PSTParser();

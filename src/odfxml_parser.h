@@ -28,12 +28,14 @@ class DllExport ODFXMLParser : public CommonXMLDocumentParser
 
     void parse(const data_source& data) override;
 
-		inline static const std::vector<mime_type> supported_mime_types =
+		const std::vector<mime_type> supported_mime_types() override
 		{
+			return {
 			mime_type{"application/vnd.oasis.opendocument.text-flat-xml"},
 			mime_type{"application/vnd.oasis.opendocument.spreadsheet-flat-xml"},
 			mime_type{"application/vnd.oasis.opendocument.presentation-flat-xml"},
 			mime_type{"application/vnd.oasis.opendocument.graphics-flat-xml"}
+			};
 		};
 
 		ODFXMLParser();

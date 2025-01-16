@@ -29,12 +29,14 @@ class DllExport PPTParser : public Parser
 
 	public:
 		PPTParser();
-		inline static const std::vector<mime_type> supported_mime_types =
+		const std::vector<mime_type> supported_mime_types() override
 		{
+			return {
 			mime_type{"application/vnd.ms-powerpoint"},
 			mime_type{"application/vnd.ms-powerpoint.presentation.macroenabled.12"},
 			mime_type{"application/vnd.ms-powerpoint.template.macroenabled.12"},
 			mime_type{"application/vnd.ms-powerpoint.slideshow.macroenabled.12"}
+			};
 		};
 		void parse(const data_source& data) override;
 };

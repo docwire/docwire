@@ -36,8 +36,9 @@ public:
         ocr_timeout ocr_timeout_arg = {}, ocr_data_path ocr_data_path_arg = {});
 
     void parse(const data_source& data) override;
-    inline static const std::vector<mime_type> supported_mime_types =
+    const std::vector<mime_type> supported_mime_types() override
     {
+        return {
         mime_type{"image/tiff"},
         mime_type{"image/jpeg"},
         mime_type{"image/bmp"},
@@ -45,6 +46,7 @@ public:
         mime_type{"image/png"},
         mime_type{"image/x-portable-anymap"},
         mime_type{"image/webp"}
+        };
     };
 
 private:

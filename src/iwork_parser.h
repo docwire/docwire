@@ -30,14 +30,16 @@ class DllExport IWorkParser : public Parser, public with_pimpl<IWorkParser>
 
 	public:
 		IWorkParser();
-		inline static const std::vector<mime_type> supported_mime_types = 
+		const std::vector<mime_type> supported_mime_types() override
 		{
+			return {
 			mime_type{"application/vnd.apple.pages"},
 			mime_type{"application/vnd.apple.numbers"},
 			mime_type{"application/vnd.apple.keynote"},
 			mime_type{"application/x-iwork-pages-sffpages"},
 			mime_type{"application/x-iwork-numbers-sffnumbers"},
 			mime_type{"application/x-iwork-keynote-sffkey"}
+			};
 		};
 
 		void parse(const data_source& data) override;

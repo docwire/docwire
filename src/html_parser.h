@@ -12,10 +12,8 @@
 #ifndef DOCWIRE_HTML_PARSER_H
 #define DOCWIRE_HTML_PARSER_H
 
-#include <string>
 #include <vector>
 #include "parser.h"
-#include "tags.h"
 
 namespace docwire
 {
@@ -32,11 +30,13 @@ class DllExport HTMLParser : public Parser, public with_pimpl<HTMLParser>
 
     void parse(const data_source& data) override;
 
-		inline static const std::vector<mime_type> supported_mime_types =
+		const std::vector<mime_type> supported_mime_types() override
 		{
+			return {
 			mime_type{"text/html"},
 			mime_type{"application/xhtml+xml"},
 			mime_type{"application/vnd.pwg-xhtml-print+xml"}
+			};
 		};
 
 		HTMLParser();

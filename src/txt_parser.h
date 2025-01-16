@@ -30,8 +30,9 @@ class DllExport TXTParser : public Parser, public with_pimpl<TXTParser>
 
     void parse(const data_source& data) override;
 
-		inline static const std::vector<mime_type> supported_mime_types =
+		const std::vector<mime_type> supported_mime_types() override
 		{
+			return {
 			mime_type{"text/x-asm"},
 			mime_type{"text/asp"},
 			mime_type{"text/aspdotnet"},
@@ -68,6 +69,7 @@ class DllExport TXTParser : public Parser, public with_pimpl<TXTParser>
 			mime_type{"text/x-vbscript"},
 			mime_type{"application/xml"},
 			mime_type{"text/yaml"}
+			};
 		};
 
 private:

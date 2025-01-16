@@ -36,8 +36,9 @@ class DllExport ODFOOXMLParser : public CommonXMLDocumentParser, public with_pim
 
     void parse(const data_source& data) override;
 
-    inline static const std::vector<mime_type> supported_mime_types =
+    const std::vector<mime_type> supported_mime_types() override
     {
+      return {
       mime_type{"application/vnd.oasis.opendocument.text"},
       mime_type{"application/vnd.oasis.opendocument.spreadsheet"},
       mime_type{"application/vnd.oasis.opendocument.presentation"},
@@ -54,6 +55,7 @@ class DllExport ODFOOXMLParser : public CommonXMLDocumentParser, public with_pim
       mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.template"},
       mime_type{"application/vnd.openxmlformats-officedocument.presentationml.template"},
       mime_type{"application/vnd.openxmlformats-officedocument.presentationml.slideshow"},
+      };
     };
 
     ODFOOXMLParser();
