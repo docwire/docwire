@@ -36,7 +36,6 @@
 #ifdef WIN32
 	#include <windows.h>
 #endif
-#include <boost/signals2.hpp>
 #include "wv2/word_helper.h"
 #include "wv2/word97_generated.h"
 #include "xls_parser.h"

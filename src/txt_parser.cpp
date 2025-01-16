@@ -13,7 +13,6 @@
 
 #include "charsetdetect.h"
 #include "htmlcxx/html/CharsetConverter.h"
-#include <boost/signals2.hpp>
 #include "log.h"
 #include "make_error.h"
 #include "pimpl.h"

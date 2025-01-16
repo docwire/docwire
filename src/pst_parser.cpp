@@ -29,8 +29,6 @@ extern "C"
  #include <libbfio.h>
 }
 
-#include <boost/signals2.hpp>
-
 #include "error_tags.h"
 #include "log.h"
 #include "misc.h"

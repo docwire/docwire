@@ -51,9 +51,6 @@
 			"name": "boost-dll"
 		},
 		{
-			"name": "boost-signals2"
-		},
-		{
 			"name": "boost-json"
 		},
 		{

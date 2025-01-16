@@ -53,6 +53,7 @@ public:
 
 private:
   using with_pimpl<TransformerFunc>::impl;
+  friend pimpl_impl<TransformerFunc>;
 };
 
 } // namespace docwire

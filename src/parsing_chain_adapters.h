@@ -69,21 +69,23 @@ public:
     }
     auto parser_callback = [this](const Tag& tag)
     {
-      Info info{tag};
       if (std::holds_alternative<data_source>(tag))
       {
         std::optional<std::reference_wrapper<ParsingChain>> ch = chain();
         DOCWIRE_THROW_IF(!ch, "Cannot send datasource to top chain because chain is not assigned", errors::program_logic{});
-        ch->get().top_chain().process(info);
+        ch->get().top_chain()(tag);
       }
       else
+      {
+        Info info{tag};
         emit(info);
-      if (info.cancel)
-        return Parser::parsing_continuation::stop;
-      else if (info.skip)
-        return Parser::parsing_continuation::skip;
-      else
-        return Parser::parsing_continuation::proceed;
+        if (info.cancel)
+          return Parser::parsing_continuation::stop;
+        else if (info.skip)
+          return Parser::parsing_continuation::skip;
+        else
+          return Parser::parsing_continuation::proceed;
+      }
     };
     try
     {

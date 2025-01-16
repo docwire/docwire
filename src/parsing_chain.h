@@ -27,13 +27,16 @@ class DllExport ParsingChain : public ChainElement, public with_pimpl<ParsingCha
     ParsingChain(ParsingChain&& chain);
     ParsingChain& operator=(ParsingChain&& chain);
 
-    void process(Info &info) override;
+    void operator()(const Tag& tag);
+
     bool is_leaf() const override;
     bool is_generator() const override;
-    void connect(ChainElement& chain_element) override;
 
     ParsingChain& top_chain();
     bool is_complete() const;
+
+  protected:
+    void process(Info &info) override;
 
   private:
     using with_pimpl<ParsingChain>::impl;

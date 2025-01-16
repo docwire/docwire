@@ -257,7 +257,6 @@ ional AI, document summarization, and topic extraction.
 - **Can be embedded** in your application (SDK)
 - **Can be integrated** with other data mining and data analytics applications
 - **Parsing process can be easily designed** by connecting objects with the pipe `|` operator into a chain
-- Parsing chain elements communicate based on Boost Signals
 - **Custom parsing chain elements can be added** (parsers, transformers, exporters)
 - **Small binaries, fast** native C++ code
 

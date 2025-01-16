@@ -21,7 +21,6 @@
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/signals2.hpp>
 
 #include <filesystem>
 #include <cstdlib>

@@ -55,12 +55,11 @@ find_package(unofficial-curlpp CONFIG REQUIRED)
 target_link_libraries(docwire_core PRIVATE
     ${wv2} Boost::filesystem Boost::system Boost::json magic_enum::magic_enum ${unzip}
     ZLIB::ZLIB LibArchive::LibArchive unofficial::curlpp::curlpp docwire_base64)
+target_link_libraries(docwire_core PUBLIC magic_enum::magic_enum)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(docwire_core PRIVATE dl)
 endif()
 
-find_path(boost_signals2_inc boost/signals2.hpp HINT ${Boost_INCLUDE_DIRS} REQUIRED)
-target_include_directories(docwire_core PUBLIC ${Boost_INCLUDE_DIRS})
 target_include_directories(docwire_core PUBLIC ../) # for version.h
 target_include_directories(docwire_core PUBLIC .) # for other headers
 

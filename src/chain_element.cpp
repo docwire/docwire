@@ -9,8 +9,6 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include <boost/signals2.hpp>
-
 #include "chain_element.h"
 #include "parsing_chain.h"
 
@@ -21,20 +19,16 @@ template<>
 struct pimpl_impl<ChainElement> : pimpl_impl_base
 {
   pimpl_impl()
-  : m_on_new_node_signal(std::make_shared<boost::signals2::signal<void(Info &info)>>())
   {}
-
-  void connect(ChainElement& chain_element)
-  {
-    m_on_new_node_signal->connect([&chain_element](Info &info){chain_element.process(info);});
-  }
 
   void emit(Info &info) const
   {
-    (*m_on_new_node_signal)(info);
+    ChainElement::continuation continuation = m_callback(info.tag);
+    info.skip = continuation == ChainElement::continuation::skip;
+    info.cancel = continuation == ChainElement::continuation::stop;
   }
 
-  std::shared_ptr<boost::signals2::signal<void(Info &info)>> m_on_new_node_signal;
+  mutable std::function<ChainElement::continuation(const Tag&)> m_callback;
   std::optional<std::reference_wrapper<ParsingChain>> m_chain;
 };
 
@@ -42,10 +36,17 @@ ChainElement::ChainElement()
 {
 }
 
-void
-ChainElement::connect(ChainElement& chain_element)
+ChainElement::continuation ChainElement::operator()(const Tag& tag, std::function<continuation(const Tag&)> callback)
 {
-  impl().connect(chain_element);
+  impl().m_callback = callback;
+  Info info{tag};
+  process(info);
+  if (info.cancel)
+    return continuation::stop;
+  else if (info.skip)
+    return continuation::skip;
+  else
+    return continuation::proceed;
 }
 
 void ChainElement::set_chain(ParsingChain& chain)

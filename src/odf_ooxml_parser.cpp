@@ -22,7 +22,6 @@
 #include <regex>
 #include <stdlib.h>
 #include <string.h>
-#include <boost/signals2.hpp>
 #include "xml_stream.h"
 #include "throw_if.h"
 
@@ -244,7 +243,6 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 	pimpl_impl(ODFOOXMLParser& owner) : with_pimpl_owner{owner} {}
 	int last_ooxml_col_num = 0;
 	int last_ooxml_row_num = 0;
-	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
 
   void
   onOOXMLStyle(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,

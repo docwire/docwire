@@ -43,7 +43,7 @@ private:
 
 inline ParsingChain operator|(ref_or_owned<data_source> data, ref_or_owned<ChainElement> chain_element)
 {
-  return InputChainElement{data} | chain_element.to_shared_ptr();
+  return InputChainElement{data} | chain_element;
 }
 
 inline ParsingChain operator|(ref_or_owned<std::istream> stream, ref_or_owned<ChainElement> chain_element)
@@ -54,7 +54,6 @@ inline ParsingChain operator|(ref_or_owned<std::istream> stream, ref_or_owned<Ch
 template<data_source_compatible_type_ref_qualified T>
 ParsingChain operator|(T&& v, ref_or_owned<ChainElement> chain_element)
 {
-  return data_source{std::forward<T>(v)} | chain_element;
   return data_source{std::forward<T>(v)} | chain_element;
 }
 

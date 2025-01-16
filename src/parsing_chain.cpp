@@ -11,6 +11,7 @@
 
 #include "chain_element.h"
 #include "pimpl.h"
+#include "tags.h"
 #include <functional>
 #include "parsing_chain.h"
 
@@ -25,7 +26,6 @@ struct pimpl_impl<ParsingChain> : with_pimpl_owner<ParsingChain>
   {
     m_lhs_element.get().set_chain(owner);
     m_rhs_element.get().set_chain(owner);
-    m_lhs_element.get().connect(m_rhs_element.get());
   }
 
   ParsingChain& top_chain()
@@ -60,9 +60,31 @@ ParsingChain& ParsingChain::operator=(ParsingChain&& other)
   return *this;
 }
 
+void ParsingChain::operator()(const Tag& tag)
+{
+  ChainElement::operator()(tag, [](const Tag&) { return continuation::proceed; });
+}
+
 void ParsingChain::process(Info &info)
 {
-  impl().m_lhs_element.get().process(info);
+  auto rhs_callback = [this](const Tag& tag)
+  {
+    Info info{tag};
+    emit(info);
+    if (info.cancel)
+      return continuation::stop;
+    else if (info.skip)
+      return continuation::skip;
+    else
+      return continuation::proceed;
+  };
+  auto lhs_callback = [this, rhs_callback](const Tag& tag)
+  {
+    return impl().m_rhs_element.get()(tag, rhs_callback);
+  };
+  ChainElement::continuation continuation = impl().m_lhs_element.get()(info.tag, lhs_callback);
+  info.skip = continuation == continuation::skip;
+  info.cancel = continuation == continuation::stop;
 }
 
 bool ParsingChain::is_leaf() const
@@ -80,11 +102,6 @@ bool ParsingChain::is_complete() const
   return is_generator() && is_leaf();
 }
 
-void ParsingChain::connect(ChainElement& chain_element)
-{
-  impl().m_rhs_element.get().connect(chain_element);
-}
-
 ParsingChain& ParsingChain::top_chain()
 {
   return impl().top_chain();
@@ -95,8 +112,7 @@ ParsingChain operator|(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement
   ParsingChain chain{lhs, rhs};
   if (chain.is_complete())
   {
-    Info info{tag::start_processing{}};
-    chain.process(info);
+    chain(tag::start_processing{});
   }
   return chain;
 }

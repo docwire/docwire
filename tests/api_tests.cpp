@@ -1093,8 +1093,7 @@ TEST(PlainTextExporter, eol_sequence_crlf)
     };
     for (auto tag: tags)
     {
-        Info info{tag};
-        exporter.process(info);
+        parsing_chain(tag);
     }
     ASSERT_EQ(output_stream.str(), "Line1\r\nLine2\r\n");
 }
@@ -1119,8 +1118,7 @@ TEST(PlainTextExporter, custom_link_formatting)
     };
     for (auto tag: tags)
     {
-        Info info{tag};
-        exporter.process(info);
+        parsing_chain(tag);
     }
     ASSERT_EQ(output_stream.str(), "(https://docwire.io)[DocWire SDK home page]\n");
 }
