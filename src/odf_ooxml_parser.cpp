@@ -257,6 +257,16 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
     parser.activeEmittingSignals(true);
   }
 
+	void onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
+								const ZipReader* zipfile, std::string& text,
+								bool& children_processed, std::string& level_suffix, bool first_on_level) const
+	{
+		docwire_log(debug) << "OOXML_BREAK command.";
+		text += "\n";
+
+		parser.trySendTag(tag::BreakLine{});
+	}
+
 	void assertODFFileIsNotEncrypted(ZipReader& zipfile) const
 	{
 		std::string content;
@@ -373,13 +383,13 @@ ODFOOXMLParser::ODFOOXMLParser()
 		registerODFOOXMLCommandHandler("headerFooter", &CommandHandlersSet::onOOXMLHeaderFooter);
 		registerODFOOXMLCommandHandler("commentReference", &CommandHandlersSet::onOOXMLCommentReference);
 		registerODFOOXMLCommandHandler("hyperlink", &CommandHandlersSet::onOOXMLHyperlink);
-		registerODFOOXMLCommandHandler("br", [this](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+		registerODFOOXMLCommandHandler("br", [impl=impl()](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			onOOXMLBreak(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
+			impl.onOOXMLBreak(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
     	});
-		registerODFOOXMLCommandHandler("document-styles", [this](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+		registerODFOOXMLCommandHandler("document-styles", [impl=impl()](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			impl().onOOXMLStyle(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
+			impl.onOOXMLStyle(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
     	});
 		registerODFOOXMLCommandHandler("instrText", &CommandHandlersSet::onOOXMLInstrtext);
 		registerODFOOXMLCommandHandler("tableStyleId", &CommandHandlersSet::onOOXMLTableStyleId);
@@ -403,17 +413,6 @@ int ODFOOXMLParser::lastOOXMLColNum()
 void ODFOOXMLParser::setLastOOXMLColNum(int c)
 {
 	impl().last_ooxml_col_num = c;
-}
-
-void
-ODFOOXMLParser::onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                             const ZipReader* zipfile, std::string& text,
-                             bool& children_processed, std::string& level_suffix, bool first_on_level) const
-{
-	docwire_log(debug) << "OOXML_BREAK command.";
-	text += "\n";
-
-	parser.trySendTag(tag::BreakLine{});
 }
 
 void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode)

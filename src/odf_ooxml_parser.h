@@ -26,9 +26,6 @@ class DllExport ODFOOXMLParser : public CommonXMLDocumentParser, public with_pim
     void setLastOOXMLRowNum(int r);
     int lastOOXMLColNum();
     void setLastOOXMLColNum(int c);
-  void onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                     const ZipReader* zipfile, std::string& text,
-                     bool& children_processed, std::string& level_suffix, bool first_on_level) const;
     void parse(const data_source& data, XmlParseMode mode);
     attributes::Metadata metaData(ZipReader& zipfile) const;
 
