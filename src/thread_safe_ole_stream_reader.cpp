@@ -12,7 +12,6 @@
 #include "thread_safe_ole_stream_reader.h"
 
 #include "data_stream.h"
-#include <new>
 
 namespace docwire
 {

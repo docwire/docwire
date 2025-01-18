@@ -15,7 +15,6 @@
 #include <archive_entry.h>
 #include <filesystem>
 #include "log.h"
-#include "parser.h"
 #include <set>
 #include "throw_if.h"
 

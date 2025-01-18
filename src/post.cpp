@@ -17,7 +17,6 @@
 #include <curlpp/Options.hpp>
 #include "error_tags.h"
 #include "log.h"
-#include "parser.h"
 #include "throw_if.h"
 #include <sstream>
 #include "version.h"

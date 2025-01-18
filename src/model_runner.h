@@ -15,7 +15,6 @@
 #include "defines.h"
 #include "pimpl.h"
 #include <filesystem>
-#include <memory>
 #include <string>
 
 namespace docwire::local_ai

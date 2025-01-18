@@ -11,7 +11,6 @@
 
 #include "data_stream.h"
 
-#include <new>
 #include <string.h>
 
 namespace docwire

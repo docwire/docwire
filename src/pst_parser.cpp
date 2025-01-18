@@ -10,17 +10,11 @@
 /*********************************************************************************************************************************************/
 
 
-#include <fstream>
 #include <iomanip>
 #include <ctime>
 
 #include <optional>
 #include <iostream>
-#include <algorithm>
-#include <filesystem>
-#include <memory>
-#include <chrono>
-#include <sstream>
 extern "C"
 {
 #define LIBPFF_HAVE_BFIO

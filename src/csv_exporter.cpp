@@ -12,7 +12,6 @@
 #include "csv_exporter.h"
 
 #include "csv_writer.h"
-#include "parser.h"
 #include <sstream>
 
 namespace docwire

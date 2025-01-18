@@ -13,7 +13,6 @@
 #define DOCWIRE_TRANSFORMER_FUNC_H
 
 #include "chain_element.h"
-#include "parser.h"
 #include "defines.h"
 #include "parsing_chain.h"
 #include "ref_or_owned.h"

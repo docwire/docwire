@@ -20,8 +20,8 @@
 #include <boost/preprocessor/variadic/size.hpp>
 #include <boost/preprocessor/variadic/to_seq.hpp>
 #include <boost/preprocessor/control/iif.hpp>
-#include "error.h"
-#include "nested_exception.h"
+#include "error.h" // IWYU pragma: keep
+#include "nested_exception.h" // IWYU pragma: keep
 
 #define DOCWIRE_MAKE_ERROR_SINGLE(v) errors::impl { errors::convert_to_context(BOOST_PP_STRINGIZE(v), v) }
 #define DOCWIRE_MAKE_ERROR_FIRST(...) DOCWIRE_MAKE_ERROR_SINGLE(BOOST_PP_SEQ_HEAD(BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))

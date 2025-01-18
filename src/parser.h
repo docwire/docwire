@@ -14,7 +14,6 @@
 #define DOCWIRE_PARSER_H
 
 #include "chain_element.h"
-#include <functional>
 #include "tags.h"
 
 namespace docwire

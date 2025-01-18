@@ -12,7 +12,6 @@
 #include "meta_data_exporter.h"
 
 #include "meta_data_writer.h"
-#include "parser.h"
 #include <sstream>
 
 namespace docwire

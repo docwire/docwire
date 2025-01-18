@@ -12,7 +12,6 @@
 #include "html_exporter.h"
 
 #include "html_writer.h"
-#include "parser.h"
 #include <sstream>
 
 namespace docwire

@@ -14,7 +14,6 @@
 
 #include "defines.h"
 #include "pimpl.h"
-#include <memory>
 #include <string>
 
 namespace docwire
