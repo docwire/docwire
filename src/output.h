@@ -57,7 +57,11 @@ private:
 inline ParsingChain operator|(ref_or_owned<ChainElement> element, ref_or_owned<std::ostream> stream)
 {
   return element | OutputChainElement(stream);
-  return element | OutputChainElement(stream);
+}
+
+inline ParsingChain& operator|=(ParsingChain& chain, ref_or_owned<std::ostream> stream)
+{
+  return chain |= OutputChainElement(stream);
 }
 
 } // namespace docwire

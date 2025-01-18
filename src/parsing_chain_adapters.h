@@ -29,6 +29,11 @@ inline ParsingChain operator|(ref_or_owned<ChainElement> element, NewNodeCallbac
   return element | TransformerFunc{func};
 }
 
+inline ParsingChain& operator|=(ParsingChain& chain, NewNodeCallback func)
+{
+  return chain |= TransformerFunc{func};
+}
+
 } // namespace docwire
 
 #endif //DOCWIRE_PARSING_CHAIN_ADAPTERS_H

@@ -44,6 +44,12 @@ class DllExport ParsingChain : public ChainElement, public with_pimpl<ParsingCha
 
 DllExport ParsingChain operator|(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement> rhs);
 
+inline ParsingChain& operator|=(ParsingChain& lhs, ref_or_owned<ChainElement> rhs)
+{
+  lhs = std::move(lhs) | rhs;
+  return lhs;
+}
+
 } // namespace docwire
 
 #endif //DOCWIRE_PARSING_CHAIN_H
