@@ -32,7 +32,6 @@
 #include "ocr_parser.h"
 #include "office_formats_parser.h"
 #include "output.h"
-#include "parsing_chain_adapters.h"
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "standard_filter.h"

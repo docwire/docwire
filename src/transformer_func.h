@@ -12,14 +12,16 @@
 #ifndef DOCWIRE_TRANSFORMER_FUNC_H
 #define DOCWIRE_TRANSFORMER_FUNC_H
 
-#include <memory>
-
 #include "chain_element.h"
 #include "parser.h"
 #include "defines.h"
+#include "parsing_chain.h"
+#include "ref_or_owned.h"
 
 namespace docwire
 {
+
+typedef std::function<void(Info &info)> NewNodeCallback;
 
 /**
  * @brief Wraps single function (NewNodeCallback) into ChainElement object
@@ -55,6 +57,16 @@ private:
   using with_pimpl<TransformerFunc>::impl;
   friend pimpl_impl<TransformerFunc>;
 };
+
+inline ParsingChain operator|(ref_or_owned<ChainElement> element, NewNodeCallback func)
+{
+  return element | TransformerFunc{func};
+}
+
+inline ParsingChain& operator|=(ParsingChain& chain, NewNodeCallback func)
+{
+  return chain |= TransformerFunc{func};
+}
 
 } // namespace docwire
 

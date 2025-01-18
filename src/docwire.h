@@ -26,7 +26,6 @@
 #include "model_chain_element.h"
 #include "ocr_parser.h"
 #include "office_formats_parser.h"
-#include "parsing_chain_adapters.h"
 #include "plain_text_exporter.h"
 #include "plain_text_writer.h"
 #include "html_exporter.h"

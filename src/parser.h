@@ -20,8 +20,6 @@
 namespace docwire
 {
 
-typedef std::function<void(Info &info)> NewNodeCallback;
-
 /**
  * @brief Abstract class for all parsers
  */

@@ -13,7 +13,7 @@
 #define DOCWIRE_MAIL_PARSER_H
 
 #include "eml_parser.h"
-#include "parsing_chain_adapters.h"
+#include "parsing_chain.h"
 #include "pst_parser.h"
 
 namespace docwire
