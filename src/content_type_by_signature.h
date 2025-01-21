@@ -25,7 +25,7 @@ struct allow_multiple
     bool v;
 };
 
-class database : public with_pimpl<database>
+class DllExport database : public with_pimpl<database>
 {
 public:
     explicit database();
