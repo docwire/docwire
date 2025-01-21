@@ -29,7 +29,7 @@ class database : public with_pimpl<database>
 {
 public:
     explicit database();
-    friend void detect(data_source& data, const database& database_to_use, allow_multiple allow_multiple);
+    friend DllExport void detect(data_source& data, const database& database_to_use, allow_multiple allow_multiple);
 };
 
 DllExport void detect(data_source& data, const database& database_to_use = database{}, allow_multiple allow_multiple = {false});
