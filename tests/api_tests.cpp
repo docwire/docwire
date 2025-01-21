@@ -14,6 +14,7 @@
 #include <boost/json.hpp>
 #include "chaining.h"
 #include "content_type.h"
+#include "content_type_by_signature.h"
 #include "data_source.h"
 #include "error_hash.h" // IWYU pragma: keep
 #include "error_tags.h"
@@ -1683,20 +1684,35 @@ TEST(content_type, by_file_extension)
 
 TEST(content_type, by_signature)
 {
-    data_source data { seekable_stream_ptr { std::make_shared<std::ifstream>("1.doc", std::ios_base::binary) }};
+    auto prepare_data = []()
+    {
+        return data_source { seekable_stream_ptr { std::make_shared<std::ifstream>("1.doc", std::ios_base::binary) } };
+    };
+    auto check_result = [](const data_source& data)
+    {
+        using namespace testing;
+        ASSERT_THAT(data.mime_types, testing::ElementsAre(
+            std::pair {
+                mime_type { "application/msword" },
+                confidence::very_high
+            }
+        ));
+    };
     try {
+        data_source data = prepare_data();
         content_type::by_signature::detect(data);
+        check_result(data);
+        content_type::by_signature::database db;
+        data = prepare_data();
+        content_type::by_signature::detect(data, db);
+        check_result(data);
+        data = prepare_data();
+        content_type::by_signature::detect(data, db);
+        check_result(data);
     }
     catch (const std::exception& e) {
         FAIL() << errors::diagnostic_message(e);
     }
-    using namespace testing;
-    ASSERT_THAT(data.mime_types, testing::ElementsAre(
-        std::pair {
-            mime_type { "application/msword" },
-            confidence::very_high
-        }
-    ));
 }
 
 TEST(content_type, html)

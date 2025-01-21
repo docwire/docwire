@@ -22,24 +22,29 @@
 #include "content_type_odf_flat.h"
 #include "content_type_outlook.h"
 #include "content_type_xlsb.h"
+#include "ref_or_owned.h"
 
 namespace docwire::content_type
 {
 
-inline void detect(data_source& data)
+inline void detect(data_source& data, const by_signature::database& signatures_db_to_use = by_signature::database{})
 {
     content_type::by_file_extension::detect(data);
-    content_type::by_signature::detect(data);
+    content_type::by_signature::detect(data, signatures_db_to_use);
     content_type::html::detect(data);
     content_type::iwork::detect(data);
     content_type::odf_flat::detect(data);
-    content_type::outlook::detect(data);
+    content_type::outlook::detect(data, signatures_db_to_use);
     content_type::xlsb::detect(data);
 }
 
 class detector : public ChainElement
 {
 public:
+
+    detector(ref_or_owned<by_signature::database> signatures_db_to_use = by_signature::database{})
+        : m_signatures_db_to_use(signatures_db_to_use) {}
+
     void process(Info& info) override
     {
         if (!std::holds_alternative<data_source>(info.tag))
@@ -48,7 +53,7 @@ public:
 		    return;
 	    }
 	    data_source& data = std::get<data_source>(info.tag);
-        detect(data);
+        content_type::detect(data, m_signatures_db_to_use.get());
         emit(info);
     }
 
@@ -56,6 +61,9 @@ public:
 	{
 		return false;
 	}
+
+private:
+    ref_or_owned<by_signature::database> m_signatures_db_to_use;
 };
 
 } // namespace docwire::content_type
