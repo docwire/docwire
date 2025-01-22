@@ -14,7 +14,13 @@
 #include <boost/json.hpp>
 #include "chaining.h"
 #include "content_type.h"
+#include "content_type_by_file_extension.h"
 #include "content_type_by_signature.h"
+#include "content_type_html.h"
+#include "content_type_iwork.h"
+#include "content_type_odf_flat.h"
+#include "content_type_outlook.h"
+#include "content_type_xlsb.h"
 #include "data_source.h"
 #include "error_hash.h" // IWYU pragma: keep
 #include "error_tags.h"

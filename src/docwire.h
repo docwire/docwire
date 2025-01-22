@@ -15,6 +15,12 @@
 // IWYU pragma: begin_exports
 #include "classify.h"
 #include "content_type.h"
+#include "content_type_by_file_extension.h"
+#include "content_type_html.h"
+#include "content_type_iwork.h"
+#include "content_type_odf_flat.h"
+#include "content_type_outlook.h"
+#include "content_type_xlsb.h"
 #include "decompress_archives.h"
 #include "detect_sentiment.h"
 #include "exception_utils.h"
