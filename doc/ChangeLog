@@ -1,3 +1,33 @@
+## Version 2025.01.22
+
+This release brings enhancements and fixes, focusing on content type detection and code refactoring for improved
+performance, stability and maintainability.
+
+> A new dawn breaks, a new release unfolds,  
+> With features that shine, and performance that's told.  
+> The code is clean, the heart is light,  
+> In this version, all is made right.  
+> The file signatures, a secret they hold,  
+> The content type, no longer to be cold.  
+> The parsing chain, a mighty stream,  
+> With operators that make the heart beam.  
+> The code is new, the code is grand,  
+> In this release, a new world to expand.  
+> So here's to the future, and all that's to come,  
+> With this release, a new journey has just begun.  
+
+- **New features**
+	- Added support for content type detection based on file signatures.
+	- Improved file format detection performance and robustness.
+	- Added operator|= for easy parsing chain extension.
+
+- **Refactor**
+	- New API for file format detection and content type detection
+	- All file format detection features moved to separate namespace and library
+	- Highly refactored base parsing chain classes and operators
+	- Introduced a general-purpose pimpl mechanism and made all parsing chain elements movable
+	- A lot of other refactoring and code cleanup
+
 ## Version 2024.12.04
 
 This release introduces significant improvements to error handling and code organization, enhancing the overall stability and usability of our software.
