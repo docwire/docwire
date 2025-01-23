@@ -16,11 +16,31 @@
 #include "data_source.h"
 #include "defines.h"
 
+/**
+ * Provides content type detection based on file extension
+ */
 namespace docwire::content_type::by_file_extension
 {
 
+/**
+* @brief Detects and assigns content types to the provided data source using file extension.
+*
+* @param data The data source to be analyzed for content type detection.
+*
+* @see content_type::detect
+* @see content_type::detector
+* @see content_type::by_file_extension::detector
+*/
 DllExport void detect(data_source& data);
 
+/**
+* @brief Detector chain element
+*
+* This class represents a chain element that detects and assigns content types to data sources using file extension.
+*
+* @see content_type::detector
+* @see content_type::by_file_extension::detect
+*/
 class detector : public ChainElement
 {
 public:
