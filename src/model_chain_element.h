@@ -40,12 +40,6 @@ public:
 	{}
 
 	/**
-	 * @brief Destroy the model chain element.
-	 */
-	virtual ~model_chain_element()
-	{}
-
-	/**
 	 * @brief Process the input.
 	 *
 	 * If the input is not a data source, emit the input and return. If the
@@ -55,7 +49,7 @@ public:
 	 *
 	 * @param info The input Info object to process.
 	 */
-	void process(Info &info) const override;
+	void process(Info& info) override;
 
 	/**
 	 * @brief Check if the model chain element is a leaf.

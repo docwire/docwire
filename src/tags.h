@@ -227,6 +227,8 @@ struct Document
 
 struct CloseDocument { };
 
+struct start_processing {};
+
 using Variant = std::variant<
   PleaseWait,
   Paragraph,
@@ -275,6 +277,7 @@ using Variant = std::variant<
   data_source,
   Document,
   CloseDocument,
+  start_processing,
   std::exception_ptr
 >;
 

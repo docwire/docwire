@@ -12,67 +12,57 @@
 #ifndef DOCWIRE_CHAIN_ELEMENT_H
 #define DOCWIRE_CHAIN_ELEMENT_H
 
-#include "parser.h"
+#include "defines.h"
+#include "pimpl.h"
+#include "tags.h"
 
 namespace docwire
 {
 
 class ParsingChain;
 
-class DllExport ChainElement
+struct DllExport Info
+{
+  Tag tag;
+  bool cancel = false; //!< cancel flag. If set true then parsing process will be stopped.
+  bool skip = false; //!< skip flag. If set true then tag will be skipped.
+
+  explicit Info(const Tag& tag)
+    : tag(tag)
+  {}
+};
+
+class DllExport ChainElement : public with_pimpl<ChainElement>
 {
 public:
   ChainElement();
-  ChainElement(const ChainElement& element);
+  ChainElement(ChainElement&&) = default;
   virtual ~ChainElement() = default;
+  ChainElement& operator=(ChainElement&&) = default;
+
+  enum class continuation { proceed, skip, stop };
+  continuation operator()(const Tag& tag, std::function<continuation(const Tag&)> callback);
 
   /**
-   * @brief Connects next object to the end of chain
-   * @param chain_element
-   */
-  void connect(const ChainElement &chain_element);
-
-  /**
-   * @brief Emits signal with Info object to the next element
-   * @param info
-   */
-  void emit(Info &info) const;
-
-  /**
-   * @brief Check if ChainElement is a leaf(last element which doesn't emit any signals). At this moment only Exporters are leafs.
+   * @brief Check if ChainElement is a leaf (last element which doesn't produce any tags). At this moment only Exporters are leafs.
    * @return true if leaf
    */
   virtual bool is_leaf() const = 0;
 
-  ChainElement& operator=(const ChainElement &chain_element);
+  virtual bool is_generator() const { return false; }
 
   /**
-   * @brief Start processing
-   * @param info
+   * @brief Set parsing chain that this element belongs to
+   * @param chain
    */
-  virtual void process(Info &info) const = 0;
+  void set_chain(ParsingChain& chainElement);
 
-  /**
-   * @brief Set parent (previous element)
-   * @param chainElement
-   */
-  void set_parent(const std::shared_ptr<ChainElement>& chainElement);
+  std::optional<std::reference_wrapper<ParsingChain>> chain() const;
 
-  /**
-   * @return pointer to previous element in a chain
-   */
-  std::shared_ptr<ChainElement> get_parent() const;
-
-private:
-  struct DllExport Implementation;
-  struct DllExport ImplementationDeleter { void operator() (Implementation*); };
-  std::unique_ptr<Implementation, ImplementationDeleter> base_impl;
-
-  std::shared_ptr<ChainElement> m_parent;
+protected:
+  void emit(Info &info) const;
+  virtual void process(Info &info) = 0;
 };
-
-template<typename T>
-concept ParsingChainOrChainElement = std::derived_from<T, ParsingChain> || std::derived_from<T, ChainElement>;
 
 }
 #endif //DOCWIRE_CHAIN_ELEMENT_H

@@ -4,7 +4,8 @@ add_executable(api_tests api_tests.cpp)
 if(MSVC)
     target_compile_options(api_tests PRIVATE /bigobj)
 endif()
-target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_fuzzy_match docwire_base64 GTest::gtest_main)
+target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr
+	docwire_fuzzy_match docwire_base64 docwire_content_type GTest::gtest_main GTest::gmock)
 target_compile_definitions(api_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 
 find_package(Boost REQUIRED COMPONENTS json)
@@ -41,7 +42,8 @@ while (TRUE)
 	file(WRITE ${example_file} "${code_block}")
 	add_executable(example_${n} ${example_file})
 	target_include_directories(example_${n} PUBLIC ../src)
-	target_link_libraries(example_${n} PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_local_ai docwire_fuzzy_match)
+	target_link_libraries(example_${n} PRIVATE docwire_core docwire_office_formats docwire_mail
+		docwire_ocr docwire_local_ai docwire_fuzzy_match docwire_content_type)
 	string(FIND "${code_block}" "OPENAI_API_KEY" openai_api_key_pos)
 	if (openai_api_key_pos EQUAL -1 OR NOT "$ENV{OPENAI_API_KEY}" STREQUAL "")
 		message(STATUS "Adding test example_${n}")
@@ -63,7 +65,8 @@ endwhile()
 
 add_executable(handling_errors_and_warnings handling_errors_and_warnings.cpp)
 target_include_directories(handling_errors_and_warnings PUBLIC ../src)
-target_link_libraries(handling_errors_and_warnings PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_local_ai docwire_fuzzy_match)
+target_link_libraries(handling_errors_and_warnings PRIVATE docwire_core docwire_office_formats docwire_mail
+	docwire_ocr docwire_local_ai docwire_fuzzy_match docwire_content_type)
 add_test(NAME handling_errors_and_warnings COMMAND handling_errors_and_warnings)
 set_property(TEST handling_errors_and_warnings PROPERTY LABELS "is_example")
 

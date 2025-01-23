@@ -36,7 +36,6 @@
 #ifdef WIN32
 	#include <windows.h>
 #endif
-#include <boost/signals2.hpp>
 #include "wv2/word_helper.h"
 #include "wv2/word97_generated.h"
 #include "xls_parser.h"
@@ -590,24 +589,7 @@ class SubDocumentHandler : public wvWare::SubDocumentHandler
 		}
 };
 
-bool DOCParser::understands(const data_source& data) const
-{
-	cerr_log_redirection cerr_redirection(docwire_current_source_location());
-	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
-	SharedPtr<wvWare::Parser> parser;
-	{
-		std::lock_guard<std::mutex> parser_factory_mutex_1_lock(parser_factory_mutex_1);
-		parser = ParserFactory::createParser(storage.release()); //storage will be deleted inside parser from wv2 library
-	}
-	cerr_redirection.restore();
-	if (!parser || !parser->isOk())
-	{
-		return false;
-	}
-	return true;
-}
-
-void DOCParser::parse(const data_source& data) const
+void DOCParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using DOC parser.";
 
@@ -685,12 +667,6 @@ void DOCParser::parse(const data_source& data) const
 	throw_if (!res, "parse() failed", errors::uninterpretable_data{});
 	text_handler.endOfDocument();
 	sendTag(tag::CloseDocument{});
-}
-
-Parser& DOCParser::withParameters(const ParserParameters &parameters)
-{
-	Parser::withParameters(parameters);
-	return *this;
 }
 
 } // namespace docwire

@@ -21,30 +21,26 @@
 
 namespace docwire
 {
+
+using namespace openai;
+
+template<>
+struct pimpl_impl<openai::TextToSpeech> : pimpl_impl_base
+{
+	pimpl_impl(const std::string& api_key, TextToSpeech::Model model, TextToSpeech::Voice voice)
+		: m_api_key(api_key), m_model(model), m_voice(voice) {}
+	std::string m_api_key;
+	TextToSpeech::Model m_model;
+	TextToSpeech::Voice m_voice;
+};
+
 namespace openai
 {
 
-struct TextToSpeech::Implementation
-{
-	std::string m_api_key;
-	Model m_model;
-	Voice m_voice;
-};
-
 TextToSpeech::TextToSpeech(const std::string& api_key, Model model, Voice voice)
-	: impl(new Implementation{api_key, model, voice})
+	: with_pimpl<TextToSpeech>(api_key, model, voice)
 {
 	docwire_log_func();
-}
-
-TextToSpeech::TextToSpeech(const TextToSpeech& other)
-	: impl(new Implementation(*other.impl))
-{
-	docwire_log_func();
-}
-
-TextToSpeech::~TextToSpeech()
-{
 }
 
 namespace
@@ -103,7 +99,7 @@ std::string post_request(const std::string& query, const std::string& api_key)
 
 } // anonymous namespace
 
-void TextToSpeech::process(Info &info) const
+void TextToSpeech::process(Info& info)
 {
 	docwire_log_func();
 	if (!std::holds_alternative<data_source>(info.tag))
@@ -114,7 +110,7 @@ void TextToSpeech::process(Info &info) const
 	docwire_log(debug) << "data_source received";
 	const data_source& data = std::get<data_source>(info.tag);
 	std::string data_str = data.string();
-	std::string content = post_request(prepare_query(data_str, impl->m_model, impl->m_voice), impl->m_api_key);
+	std::string content = post_request(prepare_query(data_str, impl().m_model, impl().m_voice), impl().m_api_key);
 	Info new_info(data_source{content});
 	emit(new_info);
 }

@@ -9,25 +9,27 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include <iostream>
-#include "parser_parameters.h"
-namespace docwire
+#include "content_type.h"
+
+#include "content_type_by_file_extension.h"
+#include "content_type_html.h"
+#include "content_type_iwork.h"
+#include "content_type_odf_flat.h"
+#include "content_type_outlook.h"
+#include "content_type_xlsb.h"
+
+namespace docwire::content_type
 {
-ParserParameters::ParserParameters()
+
+void detect(data_source& data, const by_signature::database& signatures_db_to_use)
 {
+    content_type::by_file_extension::detect(data);
+    content_type::by_signature::detect(data, signatures_db_to_use);
+    content_type::html::detect(data);
+    content_type::iwork::detect(data);
+    content_type::odf_flat::detect(data);
+    content_type::outlook::detect(data, signatures_db_to_use);
+    content_type::xlsb::detect(data);
 }
 
-ParserParameters::ParserParameters(const std::string &name, const std::any value)
-{
-  m_parameters.insert(std::pair<std::string, std::any>(name, value));
-}
-
-void
-ParserParameters::operator+=(const ParserParameters &parameters)
-{
-  for (const auto &f : parameters.m_parameters)
-  {
-    this->m_parameters.insert(f);
-  }
-}
-} // namespace docwire
+} // namespace docwire::content_type

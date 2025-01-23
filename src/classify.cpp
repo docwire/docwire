@@ -27,15 +27,5 @@ Classify::Classify(const std::set<std::string>& categories, const std::string& a
 	docwire_log_func_with_args(categories, temperature);
 }
 
-Classify::Classify(const Classify& other)
-	: Chat(other)
-{
-	docwire_log_func();
-}
-
-Classify::~Classify()
-{
-}
-
 } // namespace openai
 } // namespace docwire

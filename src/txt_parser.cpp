@@ -13,17 +13,25 @@
 
 #include "charsetdetect.h"
 #include "htmlcxx/html/CharsetConverter.h"
-#include <boost/signals2.hpp>
 #include "log.h"
 #include "make_error.h"
+#include "pimpl.h"
 #include <string.h>
 
 namespace docwire
 {
 
-TXTParser::TXTParser()
+template<>
+struct pimpl_impl<TXTParser> : pimpl_impl_base
 {
-}
+	pimpl_impl(parse_paragraphs parse_paragraphs_arg, parse_lines parse_lines_arg)
+		: m_parse_paragraphs{parse_paragraphs_arg}, m_parse_lines{parse_lines_arg} {}
+	parse_paragraphs m_parse_paragraphs;
+	parse_lines m_parse_lines;
+};
+
+TXTParser::TXTParser(parse_paragraphs parse_paragraphs_arg, parse_lines parse_lines_arg)
+	: with_pimpl<TXTParser>{parse_paragraphs_arg, parse_lines_arg} {}
 
 namespace
 {
@@ -63,12 +71,7 @@ std::string sequences_of_printable_characters(const std::string& text, size_t mi
 
 } // anonymous namespace
 
-bool TXTParser::understands(const data_source& data) const
-{
-	return true;
-}
-
-void TXTParser::parse(const data_source& data) const
+void TXTParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using TXT parser.";
 	std::string text;
@@ -136,8 +139,8 @@ void TXTParser::parse(const data_source& data) const
 		charset_detector = NULL;
 		std::throw_with_nested(make_error("Error converting text to UTF-8"));
 	}
-	bool parse_paragraphs = m_parameters.getParameterValue<bool>("TXTParser::parse_paragraphs").value_or(true);
-	bool parse_lines = m_parameters.getParameterValue<bool>("TXTParser::parse_lines").value_or(true);
+	bool parse_paragraphs = impl().m_parse_paragraphs.v;
+	bool parse_lines = impl().m_parse_lines.v;
 	sendTag(tag::Document{});
 	if (parse_lines || parse_paragraphs)
 	{
@@ -199,56 +202,6 @@ void TXTParser::parse(const data_source& data) const
 	else
 		sendTag(tag::Text{.text = text});
 	sendTag(tag::CloseDocument{});
-}
-
-std::vector<file_extension> TXTParser::getExtensions()
-{
-	return
-	{
-		file_extension{".asm"}, // Assembler source code
-		file_extension{".asp"}, // Active Server Page script page
-		file_extension{".aspx"}, // Active Server Page Extended ASP.NET script
-		file_extension{".bas"}, // Basic source code
-		file_extension{".bat"}, // Batch file (script)
-		file_extension{".c"}, // C source code
-		file_extension{".cc"}, // C++ language source code
-		file_extension{".cmake"}, // CMake module or script
-		file_extension{".cs"}, // Microsoft Visual Studio Visual C#.NET source code
-		file_extension{".conf"}, // Configuration information
-		file_extension{".cpp"}, // C++ source code file format
-		file_extension{".css"}, // Cascading Style Sheets
-		file_extension{".csv"}, // Comma Separated Value file
-		file_extension{".cxx"}, // C++ source code file format
-		file_extension{".d"}, // D Programming Language source code
-		file_extension{".f"}, file_extension{".fpp"}, // Fortran source code
-		file_extension{".fs"}, // Microsoft Visual F# source code
-		file_extension{".go"}, // Google Go programming language source code
-		file_extension{".h"}, // C header data
-		file_extension{".hpp"}, // C++ header data
-		file_extension{".htm"}, file_extension{".html"}, // HyperText Markup Language web page
-		file_extension{".hxx"}, // C++ header data
-		file_extension{".java"}, // Java language source code
-		file_extension{".js"}, // JavaScript source code script
-		file_extension{".json"}, // JavaScript object notation data interchange format
-		file_extension{".jsp"}, // JAVA Server page file
-		file_extension{".log"}, // Log
-		file_extension{".lua"}, // Lua script
-		file_extension{".md"}, // Markdown markup language source code
-		file_extension{".pas"}, // Delphi unit source code
-		file_extension{".php"}, // PHP script or page
-		file_extension{".pl"}, file_extension{".perl"}, // Perl script language source code
-		file_extension{".py"}, // Python script language source code
-		file_extension{".r"}, // R script
-		file_extension{".rss"}, // Really Simple Syndication - RSS file format
-		file_extension{".sh"}, // Unix Bourne Shell (Bash) script
-		file_extension{".tcl"}, // TCL script source code
-		file_extension{".txt"}, file_extension{".text"}, // Simple text
-		file_extension{".vb"}, file_extension{".vbs"}, // Visual Basic script
-		file_extension{".xsd"}, // XML schema description
-		file_extension{".xsl"}, // XML eXtensible stylesheet
-		file_extension{".yml"}, file_extension{".yaml"}, // YAML document
-		file_extension{".ws"} // Microsoft Windows script
-	};
 }
 
 } // namespace docwire

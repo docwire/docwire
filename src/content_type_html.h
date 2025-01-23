@@ -9,17 +9,39 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OCR_PARSER_PROVIDER_H
-#define DOCWIRE_OCR_PARSER_PROVIDER_H
+#ifndef DOCWIRE_CONTENT_TYPE_HTML_H
+#define DOCWIRE_CONTENT_TYPE_HTML_H
 
-#include "ocr_parser.h"
-#include "parser_provider.h"
+#include "chain_element.h"
+#include "data_source.h"
+#include "defines.h"
 
-namespace docwire
+namespace docwire::content_type::html
 {
 
-using OcrParserProvider = parser_provider<OCRParser>;
+DllExport void detect(data_source& data);
 
-} // namespace docwire
+class detector : public ChainElement
+{
+public:
+    void process(Info& info) override
+    {
+        if (!std::holds_alternative<data_source>(info.tag))
+        {
+	        emit(info);
+		    return;
+	    }
+	    data_source& data = std::get<data_source>(info.tag);
+        detect(data);
+        emit(info);
+    }
 
-#endif //DOCWIRE_OCR_PARSER_PROVIDER_H
+    bool is_leaf() const override
+	{
+		return false;
+	}
+};
+
+} // namespace docwire::content_type::html
+
+#endif // DOCWIRE_CONTENT_TYPE_HTML

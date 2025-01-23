@@ -19,6 +19,7 @@
 #include <optional>
 #include <string_view>
 #include "unique_identifier.h"
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -40,6 +41,38 @@ struct length_limit
 	size_t v;
 };
 
+struct mime_type
+{
+	std::string v;
+	bool operator==(const mime_type& rhs) const = default;
+};
+
+}
+
+namespace std {
+template <>
+struct hash<docwire::mime_type>
+{
+	size_t operator()(const docwire::mime_type& mt) const
+	{
+		return hash<std::string>{}(mt.v);
+	}
+};
+} // namespace std
+
+namespace docwire
+{
+
+enum class confidence
+{
+	none,
+	low,
+	medium,
+	high,
+	very_high,
+	highest
+};
+
 template <typename T>
 concept data_source_compatible_type =
 	std::is_same_v<T, std::filesystem::path> ||
@@ -49,6 +82,9 @@ concept data_source_compatible_type =
 	std::is_same_v<T, std::string_view> ||
 	std::is_same_v<T, seekable_stream_ptr> ||
 	std::is_same_v<T, unseekable_stream_ptr>;
+
+template <typename T>
+concept data_source_compatible_type_ref_qualified = data_source_compatible_type<std::remove_reference_t<T>>;
 
 template<class... Ts>
 struct overloaded : Ts... { using Ts::operator()...; };
@@ -89,7 +125,21 @@ class DllExport data_source
 			: m_source{std::move(source)}, m_file_extension{file_extension}
 		{}
 
-		std::span<const std::byte> span() const;
+		template <data_source_compatible_type T>
+		explicit data_source(const T& source, mime_type mime_type, confidence mime_type_confidence)
+			: m_source{source}
+		{
+			add_mime_type(mime_type, mime_type_confidence);
+		}
+
+		template <data_source_compatible_type T>
+		explicit data_source(T&& source, mime_type mime_type, confidence mime_type_confidence)
+			: m_source{std::move(source)}
+		{
+			add_mime_type(mime_type, mime_type_confidence);
+		}
+
+		std::span<const std::byte> span(std::optional<length_limit> limit = std::nullopt) const;
 
 		std::string string(std::optional<length_limit> limit = std::nullopt) const;
 
@@ -104,13 +154,64 @@ class DllExport data_source
 			return m_id;
 		}
 
+		std::optional<std::pair<mime_type, confidence>> highest_confidence_mime_type_info() const
+		{
+			auto hc_mt_it = std::max_element(mime_types.begin(), mime_types.end(),
+			[](const auto& p1, const auto& p2)
+				{
+					return p1.second < p2.second;
+				});
+			if (hc_mt_it != mime_types.end())
+				return *hc_mt_it;
+			else
+				return std::nullopt;
+		}
+
+		std::optional<mime_type> highest_confidence_mime_type() const
+		{
+			auto hc_mt = highest_confidence_mime_type_info();
+			if (hc_mt)
+				return hc_mt->first;
+			else
+				return std::nullopt;
+		}
+
+		confidence highest_mime_type_confidence() const
+		{
+			auto hc_mt = highest_confidence_mime_type_info();
+			if (hc_mt)
+				return hc_mt->second;
+			else
+				return confidence::none;
+		}
+
+		confidence mime_type_confidence(mime_type mt) const
+		{
+    		auto mt_iter = mime_types.find(mt);
+			if (mt_iter == mime_types.end())
+				return confidence::none;
+			else
+				return mt_iter->second;
+		}
+
+		void add_mime_type(mime_type mt, confidence c)
+		{
+			auto [existing_it, inserted] = mime_types.try_emplace(mt, c);
+			if (!inserted && existing_it->second < c)
+				existing_it->second = c;
+		}
+
+		std::unordered_map<mime_type, confidence> mime_types;
+
 	private:
 		std::variant<std::filesystem::path, std::vector<std::byte>, std::span<const std::byte>, std::string, std::string_view, seekable_stream_ptr, unseekable_stream_ptr> m_source;
 		std::optional<docwire::file_extension> m_file_extension;
 		mutable std::shared_ptr<memory_buffer> m_memory_cache;
+		mutable std::shared_ptr<std::istream> m_path_stream;
+		mutable std::optional<size_t> m_stream_size;
 		unique_identifier m_id;
 
-		void fill_memory_cache() const;
+		void fill_memory_cache(std::optional<length_limit> limit) const;
 };
 
 } // namespace docwire

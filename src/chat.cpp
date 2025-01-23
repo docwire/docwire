@@ -25,11 +25,14 @@
 
 namespace docwire
 {
-namespace openai
-{
 
-struct Chat::Implementation
+using namespace openai;
+
+template<>
+struct pimpl_impl<openai::Chat> : pimpl_impl_base
 {
+	pimpl_impl(const std::string& system_message, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+		: m_system_message(system_message), m_api_key(api_key), m_model(model), m_temperature(temperature), m_image_detail(image_detail) {}
 	std::string m_system_message;
 	std::string m_api_key;
 	Model m_model;
@@ -37,20 +40,17 @@ struct Chat::Implementation
 	ImageDetail m_image_detail;
 };
 
+}
+
+namespace docwire
+{
+namespace openai
+{
+
 Chat::Chat(const std::string& system_message, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
-	: impl(new Implementation{system_message, api_key, model, temperature, image_detail})
+	: with_pimpl<Chat>(system_message, api_key, model, temperature, image_detail)
 {
 	docwire_log_func_with_args(system_message, temperature);
-}
-
-Chat::Chat(const Chat& other)
-	: impl(new Implementation(*other.impl))
-{
-	docwire_log_func();
-}
-
-Chat::~Chat()
-{
 }
 
 using magic_enum::ostream_operators::operator<<;
@@ -162,7 +162,7 @@ bool has_txt_extension(const file_extension& extension)
 
 } // anonymous namespace
 
-void Chat::process(Info &info) const
+void Chat::process(Info& info)
 {
 	docwire_log_func();
 	if (!std::holds_alternative<data_source>(info.tag))
@@ -189,7 +189,7 @@ void Chat::process(Info &info) const
 		docwire_log_var(base64Encoded);
 		data_str = std::string{"data:image/*;base64,"} + base64Encoded;
 	}
-	std::string content = parse_response(post_request(prepare_query(impl->m_system_message, user_msg_type, data_str, impl->m_model, impl->m_temperature, impl->m_image_detail), impl->m_api_key)) + '\n';
+	std::string content = parse_response(post_request(prepare_query(impl().m_system_message, user_msg_type, data_str, impl().m_model, impl().m_temperature, impl().m_image_detail), impl().m_api_key)) + '\n';
 	Info new_info(data_source{content});
 	emit(new_info);
 }

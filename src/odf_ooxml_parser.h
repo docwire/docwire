@@ -17,35 +17,45 @@
 namespace docwire
 {
 
-class DllExport ODFOOXMLParser : public CommonXMLDocumentParser
+class DllExport ODFOOXMLParser : public CommonXMLDocumentParser, public with_pimpl<ODFOOXMLParser>
 {
   private:
-    struct ExtendedImplementation;
-    std::unique_ptr<ExtendedImplementation> extended_impl;
+    using with_pimpl<ODFOOXMLParser>::impl;
     class CommandHandlersSet;
     int lastOOXMLRowNum();
     void setLastOOXMLRowNum(int r);
     int lastOOXMLColNum();
     void setLastOOXMLColNum(int c);
-  void onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                     const ZipReader* zipfile, std::string& text,
-                     bool& children_processed, std::string& level_suffix, bool first_on_level) const;
-    void parse(const data_source& data, XmlParseMode mode) const;
+    void parse(const data_source& data, XmlParseMode mode);
     attributes::Metadata metaData(ZipReader& zipfile) const;
 
 	public:
 
-    void parse(const data_source& data) const override;
+    void parse(const data_source& data) override;
 
-    static std::vector<file_extension> getExtensions()
+    const std::vector<mime_type> supported_mime_types() override
     {
-      return { file_extension{".odt"}, file_extension{".ods"}, file_extension{".odp"}, file_extension{".odg"}, file_extension{".docx"}, file_extension{".xlsx"}, file_extension{".pptx"}, file_extension{".ppsx"}};
-    }
-    Parser& withParameters(const ParserParameters &parameters) override;
+      return {
+      mime_type{"application/vnd.oasis.opendocument.text"},
+      mime_type{"application/vnd.oasis.opendocument.spreadsheet"},
+      mime_type{"application/vnd.oasis.opendocument.presentation"},
+      mime_type{"application/vnd.oasis.opendocument.graphics"},
+      mime_type{"application/vnd.oasis.opendocument.text-template"},
+      mime_type{"application/vnd.oasis.opendocument.spreadsheet-template"},
+      mime_type{"application/vnd.oasis.opendocument.presentation-template"},
+      mime_type{"application/vnd.oasis.opendocument.graphics-template"},
+      mime_type{"application/vnd.oasis.opendocument.text-web"},
+      mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
+      mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+      mime_type{"application/vnd.openxmlformats-officedocument.presentationml.presentation"},
+      mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.template"},
+      mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.template"},
+      mime_type{"application/vnd.openxmlformats-officedocument.presentationml.template"},
+      mime_type{"application/vnd.openxmlformats-officedocument.presentationml.slideshow"},
+      };
+    };
 
     ODFOOXMLParser();
-    ~ODFOOXMLParser();
-    bool understands(const data_source& data) const override;
 };
 
 } // namespace docwire

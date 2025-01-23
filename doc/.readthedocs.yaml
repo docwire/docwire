@@ -13,3 +13,5 @@ build:
       - cd doc && cmake --build . --target doxygen
       - mkdir --parents $READTHEDOCS_OUTPUT/html/
       - cp --recursive doc/html/* $READTHEDOCS_OUTPUT/html/
+sphinx:
+  configuration: conf.py

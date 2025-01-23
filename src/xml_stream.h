@@ -13,21 +13,16 @@
 #define DOCWIRE_XML_STREAM_H
 
 #include "defines.h"
-#include <memory>
+#include "pimpl.h"
 #include <string>
 
 namespace docwire
 {
 
-class DllExport XmlStream
+class DllExport XmlStream : public with_pimpl<XmlStream>
 {
-	private:
-		struct Implementation;
-		std::unique_ptr<Implementation> impl;
-
 	public:
 		XmlStream(const std::string& xml, int xml_parse_options = 0);
-		~XmlStream();
 		operator bool();
 		void next();
 		void levelDown();

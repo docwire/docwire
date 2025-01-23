@@ -14,13 +14,14 @@
 
 #include <iostream>
 
+#include "pimpl.h"
 #include "writer.h"
 #include "defines.h"
 
 namespace docwire
 {
 
-class DllExport PlainTextWriter : public Writer
+class DllExport PlainTextWriter : public Writer, public with_pimpl<PlainTextWriter>
 {
 public:
   PlainTextWriter(const std::string& eol_sequence,
@@ -35,11 +36,6 @@ public:
   void write_to(const Tag& tag, std::ostream &stream) override;
 
   const std::string eol_sequence() const;
-
-private:
-  struct DllExport Implementation;
-  struct DllExport ImplementationDeleter { void operator() (Implementation*); };
-  std::unique_ptr<Implementation, ImplementationDeleter> impl;
 };
 } // namespace docwire
 

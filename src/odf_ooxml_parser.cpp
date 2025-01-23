@@ -22,7 +22,6 @@
 #include <regex>
 #include <stdlib.h>
 #include <string.h>
-#include <boost/signals2.hpp>
 #include "xml_stream.h"
 #include "throw_if.h"
 
@@ -58,7 +57,7 @@ class ODFOOXMLParser::CommandHandlersSet
 		}
 
     static void onOOXMLRow(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                           const ZipReader* zipfile, std::string& text,
+                           ZipReader* zipfile, std::string& text,
                            bool& children_processed, std::string& level_suffix, bool first_on_level)
     {
 		ODFOOXMLParser& p = (ODFOOXMLParser&)parser;
@@ -92,7 +91,7 @@ class ODFOOXMLParser::CommandHandlersSet
     }
 
   static void onOOXMLSheetData(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                         const ZipReader* zipfile, std::string& text,
+                         ZipReader* zipfile, std::string& text,
                          bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
 	  ODFOOXMLParser& p = (ODFOOXMLParser&)parser;
@@ -105,7 +104,7 @@ class ODFOOXMLParser::CommandHandlersSet
   }
 
 		static void onOOXMLCell(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								const ZipReader* zipfile, std::string& text,
+								ZipReader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "OOXML_CELL command.";
@@ -200,7 +199,7 @@ class ODFOOXMLParser::CommandHandlersSet
 		}
 
 		static void onOOXMLHyperlink(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-								  const ZipReader* zipfile, std::string& text,
+								  ZipReader* zipfile, std::string& text,
 								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "OOXML_HYPERLINK command.";
@@ -238,20 +237,16 @@ class ODFOOXMLParser::CommandHandlersSet
 		}
 };
 
-struct ODFOOXMLParser::ExtendedImplementation
+template<>
+struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 {
+	pimpl_impl(ODFOOXMLParser& owner) : with_pimpl_owner{owner} {}
 	int last_ooxml_col_num = 0;
 	int last_ooxml_row_num = 0;
-	const ODFOOXMLParser* m_interf;
-	boost::signals2::signal<void(Info &info)> m_on_new_node_signal;
-
-	ExtendedImplementation(const ODFOOXMLParser* interf)
-		: m_interf(interf)
-	{}
 
   void
   onOOXMLStyle(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                               const ZipReader* zipfile, std::string& text,
+                               ZipReader* zipfile, std::string& text,
                                bool& children_processed, std::string& level_suffix, bool first_on_level) const
   {
     xml_stream.levelDown();
@@ -262,7 +257,17 @@ struct ODFOOXMLParser::ExtendedImplementation
     parser.activeEmittingSignals(true);
   }
 
-	void assertODFFileIsNotEncrypted(const ZipReader& zipfile)
+	void onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
+								const ZipReader* zipfile, std::string& text,
+								bool& children_processed, std::string& level_suffix, bool first_on_level) const
+	{
+		docwire_log(debug) << "OOXML_BREAK command.";
+		text += "\n";
+
+		parser.trySendTag(tag::BreakLine{});
+	}
+
+	void assertODFFileIsNotEncrypted(ZipReader& zipfile) const
 	{
 		std::string content;
 		throw_if (zipfile.exists("META-INF/manifest.xml")
@@ -271,7 +276,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 			errors::file_encrypted{});
 	}
 
-	void readOOXMLComments(const ZipReader& zipfile, XmlParseMode mode)
+	void readOOXMLComments(ZipReader& zipfile, XmlParseMode mode)
 	{
 		std::string content;
 		throw_if (!zipfile.read("word/comments.xml", &content), "Error reading word/comments.xml");
@@ -285,7 +290,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 			xml = content;
 		try
 		{
-			XmlStream xml_stream(xml, m_interf->getXmlOptions());
+			XmlStream xml_stream(xml, owner().getXmlOptions());
 			xml_stream.levelDown();
 			while (xml_stream)
 			{
@@ -295,12 +300,12 @@ struct ODFOOXMLParser::ExtendedImplementation
 					std::string author = xml_stream.attribute("author");
 					std::string date = xml_stream.attribute("date");
 					xml_stream.levelDown();
-					m_interf->activeEmittingSignals(false);
-					std::string text = m_interf->parseXmlData(xml_stream, mode, &zipfile);
-					m_interf->activeEmittingSignals(true);
+					owner().activeEmittingSignals(false);
+					std::string text = owner().parseXmlData(xml_stream, mode, &zipfile);
+					owner().activeEmittingSignals(true);
 					xml_stream.levelUp();
 					CommonXMLDocumentParser::Comment c(author, date, text);
-					m_interf->getComments()[id] = c;
+					owner().getComments()[id] = c;
 				}
 				xml_stream.next();
 			}
@@ -311,7 +316,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 		}
 	}
 
-	void readOOXMLRelationships(const ZipReader& zipfile, XmlParseMode mode)
+	void readOOXMLRelationships(ZipReader& zipfile, XmlParseMode mode)
 	{
 		std::string content;
 		throw_if (!zipfile.read("word/_rels/document.xml.rels", &content), "Error reading word/_rels/document.xml.rels");
@@ -325,7 +330,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 			xml = content;
 		try
 		{
-			XmlStream xml_stream(xml, m_interf->getXmlOptions());
+			XmlStream xml_stream(xml, owner().getXmlOptions());
 			xml_stream.levelDown();
 			while (xml_stream)
 			{
@@ -334,7 +339,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 					std::string id = xml_stream.attribute("Id");
 					std::string target = xml_stream.attribute("Target");
 					CommonXMLDocumentParser::Relationship r{target};
-					m_interf->getRelationships()[id] = r;
+					owner().getRelationships()[id] = r;
 				}
 				xml_stream.next();
 			}
@@ -345,7 +350,7 @@ struct ODFOOXMLParser::ExtendedImplementation
 		}
 	}
 
-	void readStyles(const ZipReader& zipfile, XmlParseMode mode)
+	void readStyles(ZipReader& zipfile, XmlParseMode mode)
 	{
 		std::string content;
 		throw_if (!zipfile.read("styles.xml", &content), "Error reading styles.xml");
@@ -359,8 +364,8 @@ struct ODFOOXMLParser::ExtendedImplementation
 			xml = content;
 		try
 		{
-			XmlStream xml_stream(xml, m_interf->getXmlOptions());
-			m_interf->parseXmlData(xml_stream, mode, &zipfile);
+			XmlStream xml_stream(xml, owner().getXmlOptions());
+			owner().parseXmlData(xml_stream, mode, &zipfile);
 		}
 		catch (const std::exception& e)
 		{
@@ -370,7 +375,6 @@ struct ODFOOXMLParser::ExtendedImplementation
 };
 
 ODFOOXMLParser::ODFOOXMLParser()
-	: extended_impl{std::make_unique<ExtendedImplementation>(this)}
 {
 		registerODFOOXMLCommandHandler("attrName", &CommandHandlersSet::onOOXMLAttribute);
 		registerODFOOXMLCommandHandler("c", &CommandHandlersSet::onOOXMLCell);
@@ -379,86 +383,39 @@ ODFOOXMLParser::ODFOOXMLParser()
 		registerODFOOXMLCommandHandler("headerFooter", &CommandHandlersSet::onOOXMLHeaderFooter);
 		registerODFOOXMLCommandHandler("commentReference", &CommandHandlersSet::onOOXMLCommentReference);
 		registerODFOOXMLCommandHandler("hyperlink", &CommandHandlersSet::onOOXMLHyperlink);
-		registerODFOOXMLCommandHandler("br", [this](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+		registerODFOOXMLCommandHandler("br", [impl=impl()](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			onOOXMLBreak(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
+			impl.onOOXMLBreak(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
     	});
-		registerODFOOXMLCommandHandler("document-styles", [this](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, const ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+		registerODFOOXMLCommandHandler("document-styles", [impl=impl()](CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode, ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			extended_impl->onOOXMLStyle(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
+			impl.onOOXMLStyle(parser, xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
     	});
 		registerODFOOXMLCommandHandler("instrText", &CommandHandlersSet::onOOXMLInstrtext);
 		registerODFOOXMLCommandHandler("tableStyleId", &CommandHandlersSet::onOOXMLTableStyleId);
 }
 
-ODFOOXMLParser::~ODFOOXMLParser() = default;
-
-Parser&
-ODFOOXMLParser::withParameters(const ParserParameters &parameters)
-{
-	Parser::withParameters(parameters);
-	return *this;
-}
-
 int ODFOOXMLParser::lastOOXMLRowNum()
 {
-	return extended_impl->last_ooxml_row_num;
+	return impl().last_ooxml_row_num;
 }
 
 void ODFOOXMLParser::setLastOOXMLRowNum(int r)
 {
-	extended_impl->last_ooxml_row_num = r;
+	impl().last_ooxml_row_num = r;
 }
 
 int ODFOOXMLParser::lastOOXMLColNum()
 {
-	return extended_impl->last_ooxml_col_num;
+	return impl().last_ooxml_col_num;
 }
 
 void ODFOOXMLParser::setLastOOXMLColNum(int c)
 {
-	extended_impl->last_ooxml_col_num = c;
+	impl().last_ooxml_col_num = c;
 }
 
-void
-ODFOOXMLParser::onOOXMLBreak(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
-                             const ZipReader* zipfile, std::string& text,
-                             bool& children_processed, std::string& level_suffix, bool first_on_level) const
-{
-	docwire_log(debug) << "OOXML_BREAK command.";
-	text += "\n";
-
-	parser.trySendTag(tag::BreakLine{});
-}
-
-bool ODFOOXMLParser::understands(const data_source& data) const
-{
-	try
-	{
-		ZipReader zipfile{data};
-		zipfile.open();
-		string main_file_name;
-		try
-		{
-			main_file_name = locate_main_file(zipfile);
-		}
-		catch (const std::exception&)
-		{
-			return false;
-		}
-		string contents;
-		if (!zipfile.read(main_file_name, &contents, 1))
-			return false;
-	}
-	catch (const std::exception&)
-	{
-		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_encrypted{}, "Microsoft Office Document Cryptography");
-		return false;
-	}
-	return true;
-}
-
-void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
+void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode)
 {
 	ZipReader zipfile{data};
 	try
@@ -477,14 +434,14 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 	//according to the ODF specification, we must skip blank nodes. Otherwise output may be messed up.
 	if (main_file_name == "content.xml")
 	{
-		extended_impl->assertODFFileIsNotEncrypted(zipfile);
+		impl().assertODFFileIsNotEncrypted(zipfile);
 		setXmlOptions(XML_PARSE_NOBLANKS);
 	}
 	if (zipfile.exists("word/comments.xml"))
 	{
 		try
 		{
-			extended_impl->readOOXMLComments(zipfile, mode);
+			impl().readOOXMLComments(zipfile, mode);
 		}
 		catch (const std::exception& e)
 		{
@@ -495,7 +452,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 	{
 		try
 		{
-			extended_impl->readOOXMLRelationships(zipfile, mode);
+			impl().readOOXMLRelationships(zipfile, mode);
 		}
 		catch (const std::exception& e)
 		{
@@ -503,7 +460,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode) const
 		}
 	}
 	if (zipfile.exists("styles.xml"))
-		extended_impl->readStyles(zipfile, mode);
+		impl().readStyles(zipfile, mode);
 	string content;
 	if (main_file_name == "ppt/presentation.xml")
 	{
@@ -605,7 +562,7 @@ attributes::Metadata ODFOOXMLParser::metaData(ZipReader& zipfile) const
 	attributes::Metadata meta;
 	if (zipfile.exists("meta.xml"))
 	{
-		extended_impl->assertODFFileIsNotEncrypted(zipfile);
+		impl().assertODFFileIsNotEncrypted(zipfile);
 		std::string meta_xml;
 		throw_if (!zipfile.read("meta.xml", &meta_xml), "Error reading XML file from ZIP file", std::make_pair("file_name", "meta.xml" ));
 		try
@@ -703,10 +660,10 @@ attributes::Metadata ODFOOXMLParser::metaData(ZipReader& zipfile) const
 }
 
 void
-ODFOOXMLParser::parse(const data_source& data) const
+ODFOOXMLParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using ODF/OOXML parser.";
-	*extended_impl = ExtendedImplementation{this};
+	with_pimpl<ODFOOXMLParser>::renew_impl();
 	parse(data, XmlParseMode::PARSE_XML);
 }
 

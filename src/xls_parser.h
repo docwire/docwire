@@ -21,19 +21,25 @@ namespace docwire
 
 class ThreadSafeOLEStorage;
 
-class DllExport XLSParser : public Parser
+class DllExport XLSParser : public Parser, public with_pimpl<XLSParser>
 {
 	private:
-		struct Implementation;
-		std::unique_ptr<Implementation> impl;
+		friend pimpl_impl<XLSParser>;
+		using with_pimpl<XLSParser>::impl;
+		using with_pimpl<XLSParser>::renew_impl;
 
 	public:
 		XLSParser();
-		~XLSParser();
-    	static std::vector<file_extension> getExtensions() {return { file_extension{".xls"} };}
-		bool understands(const data_source& data) const override;
-		void parse(const data_source& data) const override;
-		std::string parse(ThreadSafeOLEStorage& storage) const;
+		const std::vector<mime_type> supported_mime_types() override
+		{
+			return {
+			mime_type{"application/vnd.ms-excel"},
+			mime_type{"application/vnd.ms-excel.sheet.macroenabled.12"},
+			mime_type{"application/vnd.ms-excel.template.macroenabled.12"}
+			};
+		};
+		void parse(const data_source& data) override;
+		std::string parse(ThreadSafeOLEStorage& storage);
 };
 
 } // namespace docwire

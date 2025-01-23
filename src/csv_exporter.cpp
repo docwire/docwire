@@ -12,48 +12,37 @@
 #include "csv_exporter.h"
 
 #include "csv_writer.h"
-#include "parser.h"
 #include <sstream>
 
 namespace docwire
 {
 
-struct CsvExporter::Implementation
+template<>
+struct pimpl_impl<CsvExporter> : pimpl_impl_base
 {
 	std::shared_ptr<std::stringstream> m_stream;
 	CsvWriter m_writer;
 };
 
 CsvExporter::CsvExporter()
-	: impl(new Implementation)
 {}
 
-CsvExporter::CsvExporter(const CsvExporter& other)
-	: impl(new Implementation(), ImplementationDeleter())
-{
-}
-
-void CsvExporter::process(Info &info) const
+void CsvExporter::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))
 	{
 		emit(info);
 		return;
 	}
-	if (std::holds_alternative<tag::Document>(info.tag) || !impl->m_stream)
-		impl->m_stream = std::make_shared<std::stringstream>();
-	impl->m_writer.write_to(info.tag, *impl->m_stream);
+	if (std::holds_alternative<tag::Document>(info.tag) || !impl().m_stream)
+		impl().m_stream = std::make_shared<std::stringstream>();
+	impl().m_writer.write_to(info.tag, *impl().m_stream);
 	if (std::holds_alternative<tag::CloseDocument>(info.tag))
 	{
-		Info info{data_source{seekable_stream_ptr{impl->m_stream}}};
+		Info info{data_source{seekable_stream_ptr{impl().m_stream}}};
 		emit(info);
-		impl->m_stream.reset();
+		impl().m_stream.reset();
 	}
-}
-
-void CsvExporter::ImplementationDeleter::operator()(CsvExporter::Implementation* impl)
-{
-	delete impl;
 }
 
 } // namespace docwire

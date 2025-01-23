@@ -10,18 +10,11 @@
 /*********************************************************************************************************************************************/
 
 
-#include <fstream>
 #include <iomanip>
 #include <ctime>
 
 #include <optional>
 #include <iostream>
-#include <algorithm>
-#include <filesystem>
-#include "importer.h"
-#include <memory>
-#include <chrono>
-#include <sstream>
 extern "C"
 {
 #define LIBPFF_HAVE_BFIO
@@ -29,8 +22,6 @@ extern "C"
 #include <libpff.h>
  #include <libbfio.h>
 }
-
-#include <boost/signals2.hpp>
 
 #include "error_tags.h"
 #include "log.h"
@@ -355,34 +346,29 @@ class Folder
 	pffItem _folderHandle;
 };
 
-struct PSTParser::Implementation
+template<>
+struct pimpl_impl<PSTParser> : with_pimpl_owner<PSTParser>
 {
-	Implementation(PSTParser* owner)
-		: m_owner(owner)
-	{
-	}
-
+	pimpl_impl(PSTParser& owner) : with_pimpl_owner{owner} {}
 	void parse(std::shared_ptr<std::istream>) const;
-
-  PSTParser* m_owner;
 
   private:
     void parse_element(const char* buffer, size_t size, const std::string& extension="") const;
     void parse_internal(const Folder& root, int deep, unsigned int &mail_counter) const;
 };
 
-void PSTParser::Implementation::parse_internal(const Folder& root, int deep, unsigned int &mail_counter) const
+void pimpl_impl<PSTParser>::parse_internal(const Folder& root, int deep, unsigned int &mail_counter) const
 {
 	for (int i = 0; i < root.getSubFolderNumber(); ++i)
 	{
 		auto sub_folder = root.getSubFolder(i);
-    auto callback = m_owner->sendTag(tag::Folder{.name = sub_folder.getName(), .level = deep});
+    auto callback = owner().sendTag(tag::Folder{.name = sub_folder.getName(), .level = deep});
     if(callback.skip)
     {
       continue;
     }
     parse_internal(sub_folder, deep + 1, mail_counter);
-	m_owner->sendTag(tag::CloseFolder{});
+	owner().sendTag(tag::CloseFolder{});
 	}
 	for (int i = 0; i < root.getMessageNumber(); ++i)
 	{
@@ -391,31 +377,31 @@ void PSTParser::Implementation::parse_internal(const Folder& root, int deep, uns
     auto html_text = message.getTextAsHtml();
     if(html_text)
     {
-      auto callback = m_owner->sendTag(tag::Mail{.subject = message.getName(), .date = message.getCreationDate(), .level = deep});
+      auto callback = owner().sendTag(tag::Mail{.subject = message.getName(), .date = message.getCreationDate(), .level = deep});
       if(callback.skip)
       {
         continue;
       }
-      m_owner->sendTag(tag::MailBody{});
-      m_owner->sendTag(data_source{*html_text, file_extension{".html"}});
+      owner().sendTag(tag::MailBody{});
+      owner().sendTag(data_source{*html_text, mime_type { "text/html" }, confidence::very_high});
       ++mail_counter;
-      m_owner->sendTag(tag::CloseMailBody{});
+      owner().sendTag(tag::CloseMailBody{});
     }
 
 		auto attachments = message.getAttachments();
     for (auto &attachment : attachments)
     {
       file_extension extension { std::filesystem::path{attachment.m_name} };
-      auto callback = m_owner->sendTag(
+      auto callback = owner().sendTag(
         tag::Attachment{.name = attachment.m_name, .size = attachment.m_size, .extension = extension});
       if(callback.skip)
       {
         continue;
       }
-      m_owner->sendTag(data_source{std::string((const char*)attachment.m_raw_data.get(), attachment.m_size), extension});
-      m_owner->sendTag(tag::CloseAttachment{});
+      owner().sendTag(data_source{std::string((const char*)attachment.m_raw_data.get(), attachment.m_size), extension});
+      owner().sendTag(tag::CloseAttachment{});
     }
-	m_owner->sendTag(tag::CloseMail{});
+	owner().sendTag(tag::CloseMail{});
 	}
 }
 
@@ -478,7 +464,7 @@ void libbfio_stream_initialize(libbfio_handle_t** handle, std::shared_ptr<std::i
 
 } // anonymous namespace
 
-void PSTParser::Implementation::parse(std::shared_ptr<std::istream> stream) const
+void pimpl_impl<PSTParser>::parse(std::shared_ptr<std::istream> stream) const
 {
 	libpff_file_t* file = nullptr;
 	pffError error{nullptr};
@@ -498,9 +484,9 @@ void PSTParser::Implementation::parse(std::shared_ptr<std::istream> stream) cons
 	libpff_file_get_root_folder(file, &root, &error);
 	Folder root_folder(std::move(root));
   unsigned int mail_counter = 0;
-  m_owner->sendTag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
+	owner().sendTag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
   parse_internal(root_folder, 0, mail_counter);
-  m_owner->sendTag(tag::CloseDocument{});
+	owner().sendTag(tag::CloseDocument{});
 
   if (file)
   {
@@ -517,53 +503,15 @@ void PSTParser::Implementation::parse(std::shared_ptr<std::istream> stream) cons
 }
 
 void
-PSTParser::parse(const data_source& data) const
+PSTParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using PST parser.";
   std::shared_ptr<std::istream> stream = data.istream();
-  impl->parse(stream);
+	impl().parse(stream);
 }
 
 PSTParser::PSTParser()
-  : impl{std::make_unique<Implementation>(this)}
 {
-}
-
-PSTParser::~PSTParser() = default;
-
-bool PSTParser::understands(const data_source& data) const
-{
-	pffError error;
-	libpff_file_t* file = NULL;
-
-	if (libpff_file_initialize(&file, &error) != 1)
-	{
-		return false;
-	}
-
-  libbfio_handle_t* handle = nullptr;
-  libbfio_error_t* bfio_error = nullptr;
-  std::shared_ptr<std::istream> stream = data.istream();
-  libbfio_stream_initialize(&handle, stream);
-  libbfio_handle_open(handle, LIBBFIO_OPEN_READ_WRITE_TRUNCATE, &bfio_error);
-  libpff_file_open_file_io_handle(file, handle, LIBBFIO_OPEN_READ, &error);
-
-  pffItem root = NULL;
-  int result = libpff_file_get_root_folder(file, &root, &error);
-  if (handle)
-  {
-    libpff_file_close(file, &error);
-    libpff_file_free(&file, &error);
-    libbfio_handle_close(handle, &bfio_error);
-    libbfio_handle_free(&handle, &bfio_error);
-    handle = nullptr;
-  }
-  libbfio_error_free(&bfio_error);
-  if (result != 1)
-  {
-    return false;
-  }
-  return true;
 }
 
 } // namespace docwire

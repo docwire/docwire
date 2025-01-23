@@ -19,7 +19,7 @@ namespace docwire
 namespace openai
 {
 
-class DllExport TextToSpeech : public ChainElement
+class DllExport TextToSpeech : public ChainElement, public with_pimpl<TextToSpeech>
 {
 public:
 	enum class Model
@@ -33,15 +33,13 @@ public:
 	};
 
 	TextToSpeech(const std::string& api_key, Model model = Model::tts1, Voice voice = Voice::alloy);
-	TextToSpeech(const TextToSpeech& other);
-	virtual ~TextToSpeech();
 
 	/**
 	* @brief Executes transform operation for given node data.
 	* @see docwire::Info
 	* @param info
 	*/
-	void process(Info &info) const override;
+	void process(Info& info) override;
 
 	bool is_leaf() const override
 	{
@@ -49,8 +47,7 @@ public:
 	}
 
 private:
-	struct Implementation;
-	std::unique_ptr<Implementation> impl;
+	using with_pimpl<TextToSpeech>::impl;
 };
 
 } // namespace openai

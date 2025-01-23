@@ -15,7 +15,6 @@
 #include <archive_entry.h>
 #include <filesystem>
 #include "log.h"
-#include "parser.h"
 #include <set>
 #include "throw_if.h"
 
@@ -27,10 +26,6 @@ DecompressArchives::DecompressArchives()
 }
 
 DecompressArchives::DecompressArchives(const DecompressArchives &other)
-{
-}
-
-DecompressArchives::~DecompressArchives()
 {
 }
 
@@ -193,7 +188,7 @@ private:
 };
 
 void
-DecompressArchives::process(Info &info) const
+DecompressArchives::process(Info& info)
 {
 	if (!std::holds_alternative<data_source>(info.tag))
 	{

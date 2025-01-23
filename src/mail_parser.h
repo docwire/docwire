@@ -9,4 +9,24 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "parser_wrapper.h"
+#ifndef DOCWIRE_MAIL_PARSER_H
+#define DOCWIRE_MAIL_PARSER_H
+
+#include "eml_parser.h"
+#include "parsing_chain.h"
+#include "pst_parser.h"
+
+namespace docwire
+{
+
+class mail_parser : public ParsingChain
+{
+    public:
+        mail_parser()
+            : ParsingChain{EMLParser{} | PSTParser{}}
+        {}
+};
+
+} // namespace docwire
+
+#endif //DOCWIRE_MAIL_PARSER_H

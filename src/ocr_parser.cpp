@@ -12,7 +12,6 @@
 #include "ocr_parser.h"
 
 #include "error_tags.h"
-#include "parser_parameters.h"
 
 #include <leptonica/allheaders.h>
 #include <leptonica/array_internal.h>
@@ -22,7 +21,6 @@
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/signals2.hpp>
 
 #include <filesystem>
 #include <cstdlib>
@@ -71,37 +69,22 @@ thread_local std::string leptonica_stderr_capturer::m_contents;
 
 } // anonymous namespace
 
-struct OCRParser::Implementation
+template<>
+struct pimpl_impl<OCRParser> : with_pimpl_owner<OCRParser>
 {
-    OCRParser* m_owner;
-    std::string m_tessdata_prefix;
-
-    Implementation(OCRParser* owner)
-        : m_owner(owner)
-    {}
+    pimpl_impl(OCRParser& owner) : with_pimpl_owner{owner} {}
+    std::vector<Language> m_languages;
+    ocr_timeout m_ocr_timeout;
+    ocr_data_path m_ocr_data_path;
 
     static bool cancel (void* data, int words)
     {
-        auto impl = reinterpret_cast<OCRParser::Implementation*>(data);
+        auto impl = reinterpret_cast<pimpl_impl<OCRParser>*>(data);
         Info info{tag::PleaseWait{}};
-        impl->m_owner->sendTag(info);
+        impl->owner().sendTag(info);
         return info.cancel;
     }
 };  
-
-std::string OCRParser::get_default_tessdata_prefix()
-{
-    return "./tessdata/";
-}
-
-OCRParser::OCRParser()
-    : impl(std::make_unique<Implementation>(this))
-{
-}
-
-OCRParser::OCRParser(OCRParser&&) = default;
-
-OCRParser::~OCRParser() = default;
 
 Pix* pixToGrayscale(Pix* pix)
 {
@@ -187,8 +170,8 @@ std::shared_ptr<PIX> load_pix(const data_source& data)
     return pix_cache.get_or_create(data.id(),
         [data](const unique_identifier& key)
         {
-            leptonica_stderr_capturer leptonica_stderr_capturer;
             std::lock_guard<std::mutex> lock { tesseract_libtiff_mutex };
+            leptonica_stderr_capturer leptonica_stderr_capturer;
             std::optional<std::filesystem::path> path = data.path();
             PIX* pix;
             if (path)
@@ -205,17 +188,24 @@ std::shared_ptr<PIX> load_pix(const data_source& data)
         });
 }
 
-std::filesystem::path default_tessdata_path()
+ocr_data_path default_tessdata_path()
 {
     std::filesystem::path def_tessdata_path = resource_path("tessdata-fast").string();
     throw_if (!std::filesystem::exists(def_tessdata_path),
         "Could not find tessdata in default location", def_tessdata_path, errors::program_corrupted{});
-    return def_tessdata_path;
+    return ocr_data_path{def_tessdata_path};
 }
 
 } // anonymous namespace
 
-std::string OCRParser::parse(const data_source& data, const std::vector<Language>& languages) const
+OCRParser::OCRParser(const std::vector<Language>& languages, ocr_timeout ocr_timeout, ocr_data_path ocr_data_path)
+{
+    impl().m_languages = languages;
+    impl().m_ocr_timeout = ocr_timeout;
+    impl().m_ocr_data_path = ocr_data_path.v.empty() ? default_tessdata_path() : ocr_data_path;
+}
+
+std::string OCRParser::parse(const data_source& data, const std::vector<Language>& languages)
 {
     tessAPIWrapper api{ nullptr, tessAPIDeleter };
     try
@@ -227,16 +217,6 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
         throw;
     }
 
-    auto tess_data_prefix = m_parameters.getParameterValue<std::string>("TESSDATA_PREFIX");
-    if (tess_data_prefix)
-    {
-      impl->m_tessdata_prefix = *tess_data_prefix;
-    }
-    else
-    {
-      impl->m_tessdata_prefix = default_tessdata_path().string();
-    }
-
     std::string langs = std::accumulate(languages.begin(), languages.end(), std::string{},
       [](const std::string& acc, const Language& lang)
       {
@@ -246,7 +226,8 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
 
     {
         std::lock_guard<std::mutex> tesseract_libtiff_mutex_lock{ tesseract_libtiff_mutex };
-        throw_if (api->Init(impl->m_tessdata_prefix.c_str(), langs.c_str()) != 0, "Could not initialize tesseract", impl->m_tessdata_prefix, langs);
+        throw_if (api->Init(impl().m_ocr_data_path.v.string().c_str(), langs.c_str()) != 0,
+            "Could not initialize tesseract", impl().m_ocr_data_path.v.string(), langs);
     }
 
     // Read the image and convert to a gray-scale image
@@ -287,13 +268,12 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
 
     api->SetImage(inverted.get());
     tesseract::ETEXT_DESC monitor;
-    auto ocr_timeout = m_parameters.getParameterValue<int32_t>("ocr_timeout");
-    if (ocr_timeout)
+    if (impl().m_ocr_timeout.v)
     {
-        monitor.set_deadline_msecs(*ocr_timeout);
+        monitor.set_deadline_msecs(*impl().m_ocr_timeout.v);
     }
-    monitor.cancel = &Implementation::cancel;
-    monitor.cancel_this = reinterpret_cast<void*>(impl.get());
+    monitor.cancel = &pimpl_impl<OCRParser>::cancel;
+    monitor.cancel_this = reinterpret_cast<void*>(const_cast<pimpl_impl<OCRParser>*>(&(impl())));
     api->Recognize(&monitor);
     auto txt = api->GetUTF8Text();
     std::string output{ txt };
@@ -301,37 +281,11 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     return output;
 }
 
-void OCRParser::setTessdataPrefix(const std::string& tessdata_prefix)
-{
-    impl->m_tessdata_prefix = tessdata_prefix;
-}
-
-bool OCRParser::understands(const data_source& data) const
-{
-    try
-    {
-        load_pix(data);
-    }
-    catch (const std::exception& e)
-    {
-        return false;
-    }
-    return true;
-}
-
-Parser&
-OCRParser::withParameters(const ParserParameters &parameters)
-{
-	Parser::withParameters(parameters);
-    return *this;
-}
-
-void OCRParser::parse(const data_source& data) const
+void OCRParser::parse(const data_source& data)
 {
   docwire_log(debug) << "Using OCR parser.";
-  auto language = m_parameters.getParameterValue<std::vector<Language>>("languages");
   sendTag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
-  std::string plain_text = parse(data, language && language->size() > 0 ? *language : std::vector({ Language::eng }));
+  std::string plain_text = parse(data, impl().m_languages.size() > 0 ? impl().m_languages : std::vector({ Language::eng }));
   sendTag(tag::Text{.text = plain_text});
   sendTag(tag::CloseDocument{});
 }

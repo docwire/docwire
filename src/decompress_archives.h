@@ -22,14 +22,13 @@ class DllExport DecompressArchives : public ChainElement
 public:
 	DecompressArchives();
 	DecompressArchives(const DecompressArchives &other);
-	virtual ~DecompressArchives();
 
 	/**
 	* @brief Executes transform operation for given node data.
 	* @see docwire::Info
 	* @param info
 	*/
-	void process(Info &info) const override;
+	void process(Info& info) override;
 
 	bool is_leaf() const override
 	{

@@ -12,9 +12,8 @@
 #ifndef DOCWIRE_STANDARD_FILTER_H
 #define DOCWIRE_STANDARD_FILTER_H
 
-#include "parser.h"
 #include "defines.h"
-#include <vector>
+#include "transformer_func.h"
 
 namespace docwire
 {
@@ -22,10 +21,10 @@ namespace docwire
  * @brief Sets of standard filters to use in parsers.
  * example of use:
  * @code
- *  PSTParser pst_parser("test.pst");
- *  pst_parser.onNewNode(StandardFilter::filterByFolderName({"Inbox", "Sent"}))
- *      .onNewNode(StandardFilter::filterByAttachmentType({"jpg", "png"}))
- *      .parse();
+ * std::filesystem::path{"test.pst"} | content_type::by_file_extension::detector{} | PSTParser{} |
+ *  StandardFilter::filterByFolderName({"Inbox", "Sent"}) |
+ *  StandardFilter::filterByAttachmentType({"jpg", "png"}) |
+ *  PlainTextExporter{};
  * @endcode
  */
 class DllExport StandardFilter

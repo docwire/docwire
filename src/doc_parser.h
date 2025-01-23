@@ -27,14 +27,12 @@ class DllExport DOCParser : public Parser
 		friend class TableHandler;
 
 	public:
-    	void parse(const data_source& data) const override;
-		Parser& withParameters(const ParserParameters &parameters) override;
-		static std::vector<file_extension> getExtensions()
-		{
-			return { file_extension{".doc"}, file_extension{".dot"} };
-		}
+    	void parse(const data_source& data) override;
 
-		bool understands(const data_source& data) const override;
+		const std::vector<mime_type> supported_mime_types() override
+		{
+			return { mime_type{"application/msword"} };
+		}
 };
 
 } // namespace docwire

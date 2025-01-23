@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "parser.h"
+#include "pimpl.h"
 
 namespace docwire
 {
@@ -22,19 +23,19 @@ namespace docwire
 class Metadata;
 //class Attachment;
 
-class DllExport EMLParser : public Parser
+class DllExport EMLParser : public Parser, public with_pimpl<EMLParser>
 {
 	private:
-		struct Implementation;
-		std::unique_ptr<Implementation> impl;
+		using with_pimpl<EMLParser>::impl;
+		friend pimpl_impl<EMLParser>;
 
 	public:
 		EMLParser();
-		~EMLParser();
-		void parse(const data_source& data) const override;
-		static std::vector<file_extension> getExtensions() { return { file_extension{".eml"}}; }
-
-		bool understands(const data_source& data) const override;
+		void parse(const data_source& data) override;
+		const std::vector<mime_type> supported_mime_types() override
+		{
+			return { mime_type{"message/rfc822"} };
+		};
 };
 
 } // namespace docwire

@@ -26,11 +26,18 @@ class DllExport RTFParser : public Parser
 
 	public:
 
-    	void parse(const data_source& data) const override;
-    	static std::vector<file_extension> getExtensions() { return { file_extension{".rtf"} }; }
+    	void parse(const data_source& data) override;
+
+		const std::vector<mime_type> supported_mime_types() override
+		{
+			return {
+			mime_type{"application/rtf"},
+			mime_type{"text/rtf"},
+			mime_type{"text/richtext"}
+			};
+		};
 
 		RTFParser();
-		bool understands(const data_source& data) const override;
 };
 
 } // namespace docwire

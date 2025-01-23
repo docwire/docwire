@@ -9,37 +9,18 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include "content_type_html.h"
 
-#ifndef DOCWIRE_PARSER_BUILDER_H
-#define DOCWIRE_PARSER_BUILDER_H
-
-#include <memory>
-#include "parser.h"
-#include "parser_parameters.h"
-#include "defines.h"
-
-namespace docwire
+namespace docwire::content_type::html
 {
 
-/**
- * Abstract class to build parsers. Parser could be built from path to file or from data buffer.
- */
-class DllExport ParserBuilder
+void detect(data_source& data)
 {
-public:
-  /**
-   * @brief Builds new parser object.
-   * @return pointer to new parser object
-   */
-  virtual std::unique_ptr<Parser> build() const = 0;
+    if (!data.mime_types.empty() && data.mime_type_confidence(mime_type { "text/xml" }) < confidence::medium)
+      return;
+    std::string initial_xml = data.string(length_limit{1024});
+    if (initial_xml.find("<html") != std::string::npos || initial_xml.find("<HTML") != std::string::npos)
+		data.add_mime_type(mime_type { "text/html" }, confidence::highest);
+}
 
-  /**
-   * @brief Sets parser parameters.
-   * @param inParameters
-   */
-  virtual ParserBuilder &withParameters(const ParserParameters &inParameters) = 0;
-
-  virtual ~ParserBuilder() = default;
-};
-} // namespace docwire
-#endif //DOCWIRE_PARSER_BUILDER_H
+} // namespace docwire::content_type::html

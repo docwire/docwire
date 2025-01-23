@@ -9,29 +9,39 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#ifndef DOCWIRE_CONTENT_TYPE_IWORK_H
+#define DOCWIRE_CONTENT_TYPE_IWORK_H
 
-#ifndef DOCWIRE_OFFICE_FORMATS_PARSER_PROVIDER_H
-#define DOCWIRE_OFFICE_FORMATS_PARSER_PROVIDER_H
+#include "chain_element.h"
+#include "data_source.h"
+#include "defines.h"
 
-#include "doc_parser.h"
-#include "html_parser.h"
-#include "iwork_parser.h"
-#include "odfxml_parser.h"
-#include "pdf_parser.h"
-#include "xls_parser.h"
-#include "xlsb_parser.h"
-#include "odf_ooxml_parser.h"
-#include "parser_provider.h"
-#include "ppt_parser.h"
-#include "rtf_parser.h"
-#include "txt_parser.h"
-#include "xml_parser.h"
-
-namespace docwire
+namespace docwire::content_type::iwork
 {
 
-using OfficeFormatsParserProvider = parser_provider<HTMLParser, DOCParser, PDFParser, XLSParser, XLSBParser, IWorkParser, PPTParser, RTFParser, ODFOOXMLParser, ODFXMLParser, XMLParser, TXTParser>;
+DllExport void detect(data_source& data);
 
-} // namespace docwire
+class detector : public ChainElement
+{
+public:
+    void process(Info& info) override
+    {
+        if (!std::holds_alternative<data_source>(info.tag))
+        {
+	        emit(info);
+		    return;
+	    }
+	    data_source& data = std::get<data_source>(info.tag);
+        detect(data);
+        emit(info);
+    }
 
-#endif //DOCWIRE_OFFICE_FORMATS_PARSER_PROVIDER_H
+    bool is_leaf() const override
+	{
+		return false;
+	}
+};
+
+} // namespace docwire::content_type::iwork
+
+#endif // DOCWIRE_CONTENT_TYPE_IWORK

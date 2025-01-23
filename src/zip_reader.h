@@ -13,29 +13,25 @@
 #define DOCWIRE_ZIP_READER_H
 
 #include "data_source.h"
-#include <memory>
 #include <string>
 #include "defines.h"
+#include "pimpl.h"
 
 namespace docwire
 {
 
-class DllExport ZipReader
+class DllExport ZipReader : public with_pimpl<ZipReader>
 {
-	private:
-		struct Implementation;
-		std::unique_ptr<Implementation> Impl;
-
 	public:
 		ZipReader(const data_source& data);
 		~ZipReader();
 		void open();
 		bool exists(const std::string& file_name) const;
-		bool read(const std::string& file_name, std::string* contents, int num_of_chars = 0) const;
-		bool getFileSize(const std::string& file_name, unsigned long& file_size) const;
-		bool readChunk(const std::string& file_name, std::string* contents, int chunk_size) const;
-		bool readChunk(const std::string& file_name, char* contents, int chunk_size, int& readed) const;
-		void closeReadingFileForChunks() const;
+		bool read(const std::string& file_name, std::string* contents, int num_of_chars = 0);
+		bool getFileSize(const std::string& file_name, unsigned long& file_size);
+		bool readChunk(const std::string& file_name, std::string* contents, int chunk_size);
+		bool readChunk(const std::string& file_name, char* contents, int chunk_size, int& readed);
+		void closeReadingFileForChunks();
 		/**
 			Load and cache zip file directory. Speed up locating files dramatically. Use before multiple read() calls.
 		**/

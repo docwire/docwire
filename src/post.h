@@ -14,6 +14,7 @@
 
 #include "chain_element.h"
 #include <filesystem>
+#include <map>
 
 namespace docwire
 {
@@ -28,20 +29,18 @@ struct DefaultFileName
 namespace http
 {
 
-class DllExport Post : public ChainElement
+class DllExport Post : public ChainElement, public with_pimpl<Post>
 {
 public:
 	Post(const std::string& url, const std::string& oauth2_bearer_token = "");
 	Post(const std::string& url, const std::map<std::string, std::string> form, const std::string& pipe_field_name, const DefaultFileName& default_file_name, const std::string& oauth2_bearer_token = "");
-	Post(const Post& other);
-	virtual ~Post();
 
 	/**
 	* @brief Executes transform operation for given node data.
 	* @see docwire::Info
 	* @param info
 	*/
-	void process(Info &info) const override;
+	void process(Info& info) override;
 
 	bool is_leaf() const override
 	{
@@ -49,8 +48,7 @@ public:
 	}
 
 private:
-	struct Implementation;
-	std::unique_ptr<Implementation> impl;
+	using with_pimpl<Post>::impl;
 };
 
 } // namespace http

@@ -18,12 +18,6 @@
 namespace docwire
 {
 
-bool XMLParser::understands(const data_source& data) const
-{
-	std::string signature = data.string(length_limit{5});
-	return (signature == "<?xml");
-}
-
 namespace
 {
 
@@ -62,7 +56,7 @@ void parseXmlData(std::function<void(const Tag&)> send_tag, XmlStream& xml_strea
 
 } // anonymous namespace
 
-void XMLParser::parse(const data_source& data) const
+void XMLParser::parse(const data_source& data)
 {
 	sendTag(tag::Document{});
 	std::string xml_content = data.string();

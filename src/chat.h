@@ -33,19 +33,17 @@ enum class ImageDetail
 	low, high, automatic
 };
 
-class DllExport Chat : public ChainElement
+class DllExport Chat : public ChainElement, public with_pimpl<Chat>
 {
 public:
 	Chat(const std::string& system_message, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0.7, ImageDetail image_detail = ImageDetail::automatic);
-	Chat(const Chat& other);
-	virtual ~Chat();
 
 	/**
 	* @brief Executes transform operation for given node data.
 	* @see docwire::Info
 	* @param info
 	*/
-	void process(Info &info) const override;
+	void process(Info& info) override;
 
 	bool is_leaf() const override
 	{
@@ -53,8 +51,7 @@ public:
 	}
 
 private:
-	struct Implementation;
-	std::unique_ptr<Implementation> impl;
+	using with_pimpl<Chat>::impl;
 };
 
 } // namespace openai

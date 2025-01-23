@@ -20,9 +20,14 @@ namespace docwire
 class DllExport XMLParser : public Parser
 {
 public:
-	void parse(const data_source& data) const override;
-    static std::vector<file_extension> getExtensions() { return { file_extension{".xml"} }; }
-	bool understands(const data_source& data) const override;
+	void parse(const data_source& data) override;
+	const std::vector<mime_type> supported_mime_types() override
+	{
+		return {
+		mime_type{"application/xml"},
+		mime_type{"text/xml"}
+		};
+	};
 };
 
 } // namespace docwire

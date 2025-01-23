@@ -12,75 +12,42 @@
 #ifndef DOCWIRE_PARSING_CHAIN_H
 #define DOCWIRE_PARSING_CHAIN_H
 
-#include <memory>
+#include "chain_element.h"
 #include "defines.h"
-#include <vector>
+#include "pimpl.h"
+#include "ref_or_owned.h"
 
 namespace docwire
 {
 
-class InputChainElement;
-
-class ChainElement;
-
-template<class T>
-concept ChainElementDerived = std::derived_from<T, ChainElement>;
-
-  class DllExport ParsingChain
-  {
+class DllExport ParsingChain : public ChainElement, public with_pimpl<ParsingChain>
+{
   public:
-    ParsingChain(std::shared_ptr<ChainElement> element1, std::shared_ptr<ChainElement> element2);
-    ParsingChain(std::shared_ptr<InputChainElement> input, std::shared_ptr<ChainElement> element);
-    ParsingChain& operator|(std::shared_ptr<ChainElement> element);
+    ParsingChain(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement> rhs);
+    ParsingChain(ParsingChain&& chain);
+    ParsingChain& operator=(ParsingChain&& chain);
 
-    template<ChainElementDerived T>
-    ParsingChain& operator|(T&& element)
-    {
-      return operator|(std::make_shared<T>(std::move(element)));
-    }
+    void operator()(const Tag& tag);
 
-    void process(InputChainElement& input);
+    bool is_leaf() const override;
+    bool is_generator() const override;
+
+    ParsingChain& top_chain();
+    bool is_complete() const;
+
+  protected:
+    void process(Info &info) override;
+
   private:
-    std::shared_ptr<InputChainElement> m_input;
-    std::shared_ptr<ChainElement> first_element;
-    std::shared_ptr<ChainElement> last_element;
-    std::vector<std::shared_ptr<ChainElement>> element_list;
-  };
+    using with_pimpl<ParsingChain>::impl;
+};
 
-inline std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> chain, std::shared_ptr<ChainElement> element)
-{
-  chain->operator|(element);
-  return chain;
-}
+DllExport ParsingChain operator|(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement> rhs);
 
-template<ChainElementDerived T>
-std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ParsingChain> chain, T&& element)
+inline ParsingChain& operator|=(ParsingChain& lhs, ref_or_owned<ChainElement> rhs)
 {
-  chain->operator|(std::move(element));
-  return chain;
-}
-
-inline std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ChainElement> lhs, std::shared_ptr<ChainElement> rhs)
-{
-  return std::make_shared<ParsingChain>(lhs, rhs);
-}
-
-template<ChainElementDerived T>
-std::shared_ptr<ParsingChain> operator|(std::shared_ptr<ChainElement> lhs, T&& rhs)
-{
-  return std::make_shared<ParsingChain>(lhs, std::make_shared<T>(std::move(rhs)));
-}
-
-template<ChainElementDerived T>
-std::shared_ptr<ParsingChain> operator|(T&& lhs, std::shared_ptr<ChainElement> rhs)
-{
-  return std::make_shared<ParsingChain>(std::make_shared<T>(std::move(lhs)), rhs);
-}
-
-template<ChainElementDerived T, ChainElementDerived U>
-std::shared_ptr<ParsingChain> operator|(T&& lhs, U&& rhs)
-{
-  return std::make_shared<ParsingChain>(std::make_shared<T>(std::move(lhs)), std::make_shared<U>(std::move(rhs)));
+  lhs = std::move(lhs) | rhs;
+  return lhs;
 }
 
 } // namespace docwire

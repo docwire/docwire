@@ -66,9 +66,10 @@ enum RecordType
 	XLS_EOF = 0x0A
 };
 
-struct XLSParser::Implementation
+template<>
+struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 {
-	const XLSParser* m_parser;
+	pimpl_impl(XLSParser& owner) : with_pimpl_owner{owner} {}
 	std::string m_codepage = "cp1251";
 	enum BiffVersion { BIFF2, BIFF3, BIFF4, BIFF5, BIFF8 };
 	BiffVersion m_biff_version;
@@ -86,10 +87,6 @@ struct XLSParser::Implementation
 	int m_last_string_formula_col;
 	std::set<int> m_defined_num_format_ids;
 	int m_last_row, m_last_col;
-
-	Implementation(const XLSParser* parser)
-		: m_parser(parser)
-	{}
 
 	U16 getU16LittleEndian(std::vector<unsigned char>::const_iterator buffer)
 	{
@@ -132,7 +129,7 @@ struct XLSParser::Implementation
 		static StandardDateFormats formats;
 		if (xf_index >= m_xf_records.size())
 		{
-			m_parser->sendTag(make_error_ptr("Incorrect format code", xf_index));
+			owner().sendTag(make_error_ptr("Incorrect format code", xf_index));
 			return "";
 		}
 		int num_format_id = m_xf_records[xf_index].num_format_id;
@@ -215,7 +212,7 @@ struct XLSParser::Implementation
 		{
 			size_t diff = record_pos - record_sizes[record_index];
 			if (diff > 0)
-				m_parser->sendTag(make_error_ptr("XLUnicodeString starts after record boundary", diff));
+				owner().sendTag(make_error_ptr("XLUnicodeString starts after record boundary", diff));
 			record_pos = diff;
 			record_index++;
 		}
@@ -230,7 +227,7 @@ struct XLSParser::Implementation
 		// warning TODO: Add support for record 0x0004 (in BIFF2).
 		if (src_end - *src < 2)
 		{
-			m_parser->sendTag(make_error_ptr("Unexpected end of buffer."));
+			owner().sendTag(make_error_ptr("Unexpected end of buffer."));
 			*src = src_end;
 			return "";
 		}
@@ -239,7 +236,7 @@ struct XLSParser::Implementation
 		record_pos += 2;
 		if (src_end - *src < 1)
 		{
-			m_parser->sendTag(make_error_ptr("Unexpected end of buffer."));
+			owner().sendTag(make_error_ptr("Unexpected end of buffer."));
 			*src = src_end;
 			return "";
 		}
@@ -257,7 +254,7 @@ struct XLSParser::Implementation
 			docwire_log(debug) << "Rich text flag enabled.";
 			if (src_end - *src < 2)
 			{
-				m_parser->sendTag(make_error_ptr("Unexpected end of buffer."));
+				owner().sendTag(make_error_ptr("Unexpected end of buffer."));
 				*src = src_end;
 				return "";
 			}
@@ -270,7 +267,7 @@ struct XLSParser::Implementation
 			docwire_log(debug) << "Asian flag enabled.";
 			if (src_end - *src < 4)
 			{
-				m_parser->sendTag(make_error_ptr("Unexpected end of buffer."));
+				owner().sendTag(make_error_ptr("Unexpected end of buffer."));
 				*src = src_end;
 				return "";
 			}
@@ -289,12 +286,12 @@ struct XLSParser::Implementation
 		{
 			if (s >= src_end)
 			{
-				m_parser->sendTag(make_error_ptr("Unexpected end of buffer."));
+				owner().sendTag(make_error_ptr("Unexpected end of buffer."));
 				*src = src_end;
 				return dest;
 			}
 			if (record_pos > record_sizes[record_index])
-				m_parser->sendTag(make_error_ptr("Record boundary crossed.", record_pos, record_sizes[record_index]));
+				owner().sendTag(make_error_ptr("Record boundary crossed.", record_pos, record_sizes[record_index]));
 			if (record_pos == record_sizes[record_index])
 			{
 				docwire_log(debug) << "Record boundary reached.";
@@ -306,12 +303,12 @@ struct XLSParser::Implementation
 				// from 8‑bit characters to 16‑bit characters and vice versa.
 				if (s >= src_end)
 				{
-					m_parser->sendTag(make_error_ptr("Unexpected end of buffer."));
+					owner().sendTag(make_error_ptr("Unexpected end of buffer."));
 					*src = src_end;
 					return dest;
 				}
 				if ((*s) != 0 && (*s) != 1)
-					m_parser->sendTag(make_error_ptr("Incorrect XLUnicodeString flag.", *s));
+					owner().sendTag(make_error_ptr("Incorrect XLUnicodeString flag.", *s));
 				char_size = ((*s) & 0x01) ? 2 : 1;
 				if (char_size == 2)
 				{
@@ -325,7 +322,7 @@ struct XLSParser::Implementation
 			{
 				if (src_end - *src < 2)
 				{
-					m_parser->sendTag(make_error_ptr("Unexpected end of buffer."));
+					owner().sendTag(make_error_ptr("Unexpected end of buffer."));
 					*src = src_end;
 					return dest;
 				}
@@ -339,7 +336,7 @@ struct XLSParser::Implementation
 					s += 2;
 					if (src_end - *src < 2)
 					{
-						m_parser->sendTag(make_error_ptr("Unexpected end of buffer."));
+						owner().sendTag(make_error_ptr("Unexpected end of buffer."));
 						*src = src_end;
 						return dest;
 					}
@@ -352,7 +349,7 @@ struct XLSParser::Implementation
 			{
 				if (s >= src_end)
 				{
-					m_parser->sendTag(make_error_ptr("Unexpected end of buffer."));
+					owner().sendTag(make_error_ptr("Unexpected end of buffer."));
 					*src = src_end;
 					return dest;
 				}
@@ -378,7 +375,7 @@ struct XLSParser::Implementation
 		docwire_log(debug) << "Parsing shared string table.";
 		if (sst_buf.size() < 8)
 		{
-			m_parser->sendTag(make_error_ptr("Error while parsing shared string table. Buffer must contain at least 8 bytes.", sst_buf.size()));
+			owner().sendTag(make_error_ptr("Error while parsing shared string table. Buffer must contain at least 8 bytes.", sst_buf.size()));
 			return;
 		}
 		int sst_size = getS32LittleEndian(sst_buf.begin() + 4);
@@ -420,7 +417,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 4)
 				{
-					m_parser->sendTag(make_error_ptr("Record is too short. XLS_BLANK must be 4 bytes in length", rec.size()));
+					owner().sendTag(make_error_ptr("Record is too short. XLS_BLANK must be 4 bytes in length", rec.size()));
 					break;
 				}
 				int row = getU16LittleEndian(rec.begin());
@@ -493,7 +490,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 2)
 				{
-					m_parser->sendTag(make_error_ptr("Record is too short. XLS_FORMAT must be 2 bytes in length", rec.size()));
+					owner().sendTag(make_error_ptr("Record is too short. XLS_FORMAT must be 2 bytes in length", rec.size()));
 					break;
 				}
 				int num_format_id = getU16LittleEndian(rec.begin());
@@ -504,7 +501,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 14)
 				{
-					m_parser->sendTag(make_error_ptr("Record is too short. XLS_FORMULA must be 14 bytes in length", rec.size()));
+					owner().sendTag(make_error_ptr("Record is too short. XLS_FORMULA must be 14 bytes in length", rec.size()));
 					break;
 				}
 				m_last_string_formula_row = -1;
@@ -536,7 +533,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 9)
 				{
-					m_parser->sendTag(make_error_ptr("Record is too short. XLS_INTEGER_CELL must be 9 bytes in length", rec.size()));
+					owner().sendTag(make_error_ptr("Record is too short. XLS_INTEGER_CELL must be 9 bytes in length", rec.size()));
 					break;
 				}
 				int row = getU16LittleEndian(rec.begin());
@@ -549,7 +546,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 6)
 				{
-					m_parser->sendTag(make_error_ptr("Record is too short. XLS_LABEL and XLS_RSTRING must be at least 6 bytes in length", rec.size()));
+					owner().sendTag(make_error_ptr("Record is too short. XLS_LABEL and XLS_RSTRING must be at least 6 bytes in length", rec.size()));
 					break;
 				}
 				m_last_string_formula_row = -1;
@@ -567,7 +564,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 8)
 				{
-					m_parser->sendTag(make_error_ptr("Record is too short. XLS_LABEL_SST must be at least 8 bytes in length", rec.size()));
+					owner().sendTag(make_error_ptr("Record is too short. XLS_LABEL_SST must be at least 8 bytes in length", rec.size()));
 					break;
 				}
 				m_last_string_formula_row = -1;
@@ -576,7 +573,7 @@ struct XLSParser::Implementation
 				int sst_index = getU16LittleEndian(rec.begin() + 6);
 				if (sst_index >= m_shared_string_table.size() || sst_index < 0)
 				{
-					m_parser->sendTag(make_error_ptr("Incorrect SST index.", sst_index, m_shared_string_table.size()));
+					owner().sendTag(make_error_ptr("Incorrect SST index.", sst_index, m_shared_string_table.size()));
 					return;
 				}
 				else
@@ -587,7 +584,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 4)
 				{
-					m_parser->sendTag(make_error_ptr("Record is too short. XLS_MULBLANK must be at least 4 bytes in length", rec.size()));
+					owner().sendTag(make_error_ptr("Record is too short. XLS_MULBLANK must be at least 4 bytes in length", rec.size()));
 					break;
 				}
 				int row = getU16LittleEndian(rec.begin());
@@ -601,7 +598,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 4)
 				{
-					m_parser->sendTag(make_error_ptr("Record is too short. XLS_MULRK must be at least 4 bytes in length", rec.size()));
+					owner().sendTag(make_error_ptr("Record is too short. XLS_MULRK must be at least 4 bytes in length", rec.size()));
 					break;
 				}
 				m_last_string_formula_row = -1;
@@ -611,7 +608,7 @@ struct XLSParser::Implementation
 				int min_size = 4 + 6 * (end_col - start_col + 1);
 				if (rec.size() < min_size)
 				{
-					m_parser->sendTag(make_error_ptr("Record is too short. XLS_MULRK has its minimum size.", min_size, rec.size()));
+					owner().sendTag(make_error_ptr("Record is too short. XLS_MULRK has its minimum size.", min_size, rec.size()));
 					break;
 				}
 				for (int offset = 4, col = start_col; col <= end_col; offset += 6, col++)
@@ -628,7 +625,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 14)
 				{
-					m_parser->sendTag(make_error_ptr("Record is too short. XLS_NUMBER (or record of number 0x03, 0x103, 0x303) must be at least 14 bytes in length", rec.size()));
+					owner().sendTag(make_error_ptr("Record is too short. XLS_NUMBER (or record of number 0x03, 0x103, 0x303) must be at least 14 bytes in length", rec.size()));
 					break;
 				}
 				m_last_string_formula_row = -1;
@@ -641,7 +638,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 10)
 				{
-					m_parser->sendTag(make_error_ptr("Record is too short. XLS_RK must be at least 10 bytes in length", rec.size()));
+					owner().sendTag(make_error_ptr("Record is too short. XLS_RK must be at least 10 bytes in length", rec.size()));
 					break;
 				}
 				m_last_string_formula_row = -1;
@@ -665,7 +662,7 @@ struct XLSParser::Implementation
 			{
 				std::vector<unsigned char>::const_iterator src = rec.begin();
 				if (m_last_string_formula_row < 0) {
-					m_parser->sendTag(make_error_ptr("String record without preceeding string formula."));
+					owner().sendTag(make_error_ptr("String record without preceeding string formula."));
 					break;
 				}
 				std::vector<size_t> sizes;
@@ -680,7 +677,7 @@ struct XLSParser::Implementation
 			{
 				if (rec.size() < 4)
 				{
-					m_parser->sendTag(make_error_ptr("Record is too short. XLS_XF (or record of number 0x43) must be at least 4 bytes in length", rec.size()));
+					owner().sendTag(make_error_ptr("Record is too short. XLS_XF (or record of number 0x43) must be at least 4 bytes in length", rec.size()));
 					break;
 				}
 				XFRecord xf_record;
@@ -864,24 +861,10 @@ struct XLSParser::Implementation
 };
 
 XLSParser::XLSParser()
-	: impl(std::make_unique<Implementation>(this))
 {
 }
 
-XLSParser::~XLSParser() = default;
-
-bool XLSParser::understands(const data_source& data) const
-{
-	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
-	if (!storage->isValid())
-		return false;
-	std::unique_ptr<AbstractOLEStreamReader> reader{storage->createStreamReader("Workbook")};
-	if (reader == nullptr)
-		reader = std::unique_ptr<AbstractOLEStreamReader>{storage->createStreamReader("Book")};
-	return reader != nullptr;
-}
-
-void XLSParser::parse(const data_source& data) const
+void XLSParser::parse(const data_source& data)
 {
 	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
 	throw_if (!storage->isValid(), storage->getLastError());
@@ -905,9 +888,9 @@ void XLSParser::parse(const data_source& data) const
 	sendTag(tag::CloseDocument{});
 }
 
-std::string XLSParser::parse(ThreadSafeOLEStorage& storage) const
+std::string XLSParser::parse(ThreadSafeOLEStorage& storage)
 {
-	*impl = Implementation{this};
+	renew_impl();
 	docwire_log(debug) << "Using XLS parser.";
 
 	try
@@ -917,13 +900,13 @@ std::string XLSParser::parse(ThreadSafeOLEStorage& storage) const
 		std::string text;
 		if (workbook_reader != nullptr)
 		{
-			impl->parseXLS(*workbook_reader, text, [this](std::exception_ptr e) { sendTag(e); });
+			impl().parseXLS(*workbook_reader, text, [this](std::exception_ptr e) { sendTag(e); });
 		}
 		else
 		{
 			std::unique_ptr<ThreadSafeOLEStreamReader> book_reader { static_cast<ThreadSafeOLEStreamReader*>(storage.createStreamReader("Book")) };
 			throw_if (book_reader == nullptr, storage.getLastError());
-			impl->parseXLS(*book_reader, text, [this](std::exception_ptr e) { sendTag(e); });
+			impl().parseXLS(*book_reader, text, [this](std::exception_ptr e) { sendTag(e); });
 		}		
 		return text;
 	}

@@ -24,15 +24,5 @@ Summarize::Summarize(const std::string& api_key, Model model, float temperature,
 	docwire_log_func();
 }
 
-Summarize::Summarize(const Summarize& other)
-	: Chat(other)
-{
-	docwire_log_func();
-}
-
-Summarize::~Summarize()
-{
-}
-
 } // namespace openai
 } // namespace docwire

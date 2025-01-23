@@ -9,83 +9,60 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include <boost/signals2.hpp>
-
 #include "chain_element.h"
 #include "parsing_chain.h"
 
 namespace docwire
 {
 
-struct ChainElement::Implementation
+template<>
+struct pimpl_impl<ChainElement> : pimpl_impl_base
 {
-  Implementation()
-  : m_on_new_node_signal(std::make_shared<boost::signals2::signal<void(Info &info)>>())
+  pimpl_impl()
   {}
-
-  Implementation(const Implementation& implementation)
-  : m_on_new_node_signal(std::make_shared<boost::signals2::signal<void(Info &info)>>())
-  {}
-
-  void connect(const ChainElement &chain_element)
-  {
-    m_on_new_node_signal->connect([&chain_element](Info &info){chain_element.process(info);});
-  }
 
   void emit(Info &info) const
   {
-    (*m_on_new_node_signal)(info);
+    ChainElement::continuation continuation = m_callback(info.tag);
+    info.skip = continuation == ChainElement::continuation::skip;
+    info.cancel = continuation == ChainElement::continuation::stop;
   }
 
-  std::shared_ptr<boost::signals2::signal<void(Info &info)>> m_on_new_node_signal;
+  mutable std::function<ChainElement::continuation(const Tag&)> m_callback;
+  std::optional<std::reference_wrapper<ParsingChain>> m_chain;
 };
 
 ChainElement::ChainElement()
 {
-  base_impl = std::unique_ptr<Implementation, ImplementationDeleter>{new Implementation{}, ImplementationDeleter{}};
 }
 
-ChainElement::ChainElement(const ChainElement& element)
-: base_impl(new Implementation(*(element.base_impl))),
-  m_parent(element.m_parent)
-{}
-
-ChainElement&
-ChainElement::operator=(const ChainElement &chain_element)
+ChainElement::continuation ChainElement::operator()(const Tag& tag, std::function<continuation(const Tag&)> callback)
 {
-  base_impl->m_on_new_node_signal = chain_element.base_impl->m_on_new_node_signal;
-  m_parent = chain_element.m_parent;
-  return *this;
+  impl().m_callback = callback;
+  Info info{tag};
+  process(info);
+  if (info.cancel)
+    return continuation::stop;
+  else if (info.skip)
+    return continuation::skip;
+  else
+    return continuation::proceed;
 }
 
-void
-ChainElement::connect(const ChainElement &chain_element)
+void ChainElement::set_chain(ParsingChain& chain)
 {
-  base_impl->connect(chain_element);
+  impl().m_chain = std::ref(chain);
 }
 
-void
-ChainElement::set_parent(const std::shared_ptr<ChainElement>& chainElement)
+std::optional<std::reference_wrapper<ParsingChain>> ChainElement::chain() const
 {
-  m_parent = chainElement;
-}
-
-std::shared_ptr<ChainElement>
-ChainElement::get_parent() const
-{
-  return m_parent;
+  return impl().m_chain;
 }
 
 void
 ChainElement::emit(Info &info) const
 {
-  base_impl->emit(info);
-}
-
-void
-ChainElement::ImplementationDeleter::operator()(ChainElement::Implementation *impl)
-{
-  delete impl;
+  impl().emit(info);
 }
 
 } // namespace docwire

@@ -274,18 +274,7 @@ PPTParser::PPTParser()
 {
 }
 
-bool PPTParser::understands(const data_source& data) const
-{
-	ThreadSafeOLEStorage storage(data.span());
-	if (!storage.isValid())
-		return false;
-	std::unique_ptr<AbstractOLEStreamReader> reader{storage.createStreamReader("PowerPoint Document")};
-	if (reader == nullptr)
-		return false;
-	return true;
-}
-
-void PPTParser::parse(const data_source& data) const
+void PPTParser::parse(const data_source& data)
 {	
 	docwire_log(debug) << "Using PPT parser.";
 	try

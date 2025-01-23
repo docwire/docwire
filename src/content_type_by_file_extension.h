@@ -9,45 +9,59 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PARSER_WRAPPER_H
-#define DOCWIRE_PARSER_WRAPPER_H
+#ifndef DOCWIRE_CONTENT_TYPE_BY_FILE_EXTENSION_H
+#define DOCWIRE_CONTENT_TYPE_BY_FILE_EXTENSION_H
 
-#include "parser.h"
-#include "parser_builder.h"
+#include "chain_element.h"
+#include "data_source.h"
 #include "defines.h"
 
-namespace docwire
+/**
+ * Provides content type detection based on file extension
+ */
+namespace docwire::content_type::by_file_extension
 {
 
 /**
- * @brief Provides the basic mechanism to build any parser.
- * @tparam ParserType type of parser to build
- */
-template<typename ParserType>
-class DllExport ParserBuilderWrapper : public ParserBuilder
+* @brief Detects and assigns content types to the provided data source using file extension.
+*
+* @param data The data source to be analyzed for content type detection.
+*
+* @see content_type::detect
+* @see content_type::detector
+* @see content_type::by_file_extension::detector
+*/
+DllExport void detect(data_source& data);
+
+/**
+* @brief Detector chain element
+*
+* This class represents a chain element that detects and assigns content types to data sources using file extension.
+*
+* @see content_type::detector
+* @see content_type::by_file_extension::detect
+*/
+class detector : public ChainElement
 {
 public:
-  ParserBuilderWrapper()
-  {
+    void process(Info& info) override
+    {
+        if (!std::holds_alternative<data_source>(info.tag))
+        {
+	        emit(info);
+		    return;
+	    }
+	    data_source& data = std::get<data_source>(info.tag);
+        detect(data);
+        emit(info);
+    }
 
-  }
-
-  std::unique_ptr<Parser>
-  build() const override
-  {
-    auto parser = std::make_unique<ParserType>();
-    parser->withParameters(m_parameters);
-    return parser;
-  }
-
-  ParserBuilder& withParameters(const ParserParameters &inParameter) override
-  {
-    m_parameters += inParameter;
-    return *this;
-  }
-
-private:
-  ParserParameters m_parameters;
+    bool is_leaf() const override
+	{
+		return false;
+	}
 };
-} // namespace docwire
-#endif //DOCWIRE_PARSER_WRAPPER_H
+
+} // namespace docwire::content_type::by_file_extension
+
+#endif // DOCWIRE_CONTENT_TYPE_BY_FILE_EXTENSION_H

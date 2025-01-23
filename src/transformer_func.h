@@ -12,14 +12,15 @@
 #ifndef DOCWIRE_TRANSFORMER_FUNC_H
 #define DOCWIRE_TRANSFORMER_FUNC_H
 
-#include <memory>
-
 #include "chain_element.h"
-#include "parser.h"
 #include "defines.h"
+#include "parsing_chain.h"
+#include "ref_or_owned.h"
 
 namespace docwire
 {
+
+typedef std::function<void(Info &info)> NewNodeCallback;
 
 /**
  * @brief Wraps single function (NewNodeCallback) into ChainElement object
@@ -27,10 +28,10 @@ namespace docwire
  * auto reverse_text = [](Info &info) {
  *   std::reverse(info.plain_text.begin(), info.plain_text.end())}; // create function to reverse text in callback
  * TransformerFunc transformer(reverse_text); // wraps into ChainElement
- * Input("test.pdf") | ParseDetectedFormat<OfficeFormatsParserProvider, MailParserProvider, OcrParserProvider>(parameters) | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
+ * Input("test.pdf") | office_formats_parser{} | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
  * @endcode
  */
-class DllExport TransformerFunc : public ChainElement
+class DllExport TransformerFunc : public ChainElement, public with_pimpl<TransformerFunc>
 {
 public:
   /**
@@ -39,16 +40,12 @@ public:
    */
   TransformerFunc(NewNodeCallback transformer_function);
 
-  TransformerFunc(const TransformerFunc &other);
-
-  virtual ~TransformerFunc();
-
   /**
    * @brief Executes transform operation for given node data.
    * @see Info
    * @param info
    */
-  void process(Info &info) const override;
+  void process(Info& info) override;
 
   bool is_leaf() const override
   {
@@ -56,9 +53,19 @@ public:
   }
 
 private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
+  using with_pimpl<TransformerFunc>::impl;
+  friend pimpl_impl<TransformerFunc>;
 };
+
+inline ParsingChain operator|(ref_or_owned<ChainElement> element, NewNodeCallback func)
+{
+  return element | TransformerFunc{func};
+}
+
+inline ParsingChain& operator|=(ParsingChain& chain, NewNodeCallback func)
+{
+  return chain |= TransformerFunc{func};
+}
 
 } // namespace docwire
 

@@ -13,8 +13,8 @@
 #define DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
 
 #include "defines.h"
+#include "pimpl.h"
 #include <filesystem>
-#include <memory>
 #include <string>
 
 namespace docwire::local_ai
@@ -27,7 +27,7 @@ namespace docwire::local_ai
  * Destructor frees memory used by model.
  * It is important not to duplicate the object because memory consumption can be high.
  */
-class DllExport model_runner
+class DllExport model_runner : public with_pimpl<model_runner>
 {
 public:
     /// @brief Default constructor. Loads model to memory.
@@ -39,19 +39,12 @@ public:
      */
     model_runner(const std::filesystem::path& model_data_path);
 
-    /// @brief Destructor. Frees memory used by model.
-    ~model_runner();
-
     /**
      * @brief Process input text using the model.
      * @param input Text to process.
      * @return Processed text.
      */
-    std::string process(const std::string& input) const;
-
-private:
-    struct implementation;
-    std::unique_ptr<implementation> m_impl;
+    std::string process(const std::string& input);
 };
 
 } // namespace docwire::local_ai

@@ -13,21 +13,17 @@
 #define DOCWIRE_XML_FIXER_H
 
 #include "defines.h"
+#include "pimpl.h"
 #include <string>
 
 namespace docwire
 {
 
-class DllExport XmlFixer
+class DllExport XmlFixer : public with_pimpl<XmlFixer>
 {
-	private:
-		struct Implementation;
-		Implementation* Impl;
-
 	public:
 		XmlFixer();
-		~XmlFixer();
-		std::string fix(const std::string& xml) const;
+		std::string fix(const std::string& xml);
 };
 
 } // namespace docwire

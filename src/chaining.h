@@ -59,7 +59,7 @@ struct value_to_function_binding
    * @return The result of the function call.
    */
   template <typename... Args>
-  auto operator()(Args&&... args) const
+  auto operator()(Args&&... args)
   {
     return function.get()(value.get(), std::forward<Args>(args)...);
   }

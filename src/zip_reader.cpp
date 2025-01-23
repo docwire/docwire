@@ -101,7 +101,8 @@ static int buffer_error(voidpf opaque, voidpf stream)
 	return 0;	//no errors at all?
 }
 
-struct ZipReader::Implementation
+template<>
+struct pimpl_impl<ZipReader> : pimpl_impl_base
 {
 	unzFile ArchiveFile;
 	std::map<std::string, unz_file_pos> m_directory;
@@ -111,27 +112,26 @@ struct ZipReader::Implementation
 };
 
 ZipReader::ZipReader(const data_source& data)
-	: Impl{std::make_unique<Implementation>()}
 {
-		Impl->m_opened_for_chunks = false;
-		Impl->m_span = data.span();
-		Impl->ArchiveFile = NULL;
-		Impl->m_zipped_buffer = NULL;
+		impl().m_opened_for_chunks = false;
+		impl().m_span = data.span();
+		impl().ArchiveFile = NULL;
+		impl().m_zipped_buffer = NULL;
 }
 
 ZipReader::~ZipReader()
 {
-	if (Impl->ArchiveFile != NULL)
-		unzClose(Impl->ArchiveFile);
-	if (Impl->m_zipped_buffer != NULL)
-		delete Impl->m_zipped_buffer;
+	if (impl().ArchiveFile != NULL)
+		unzClose(impl().ArchiveFile);
+	if (impl().m_zipped_buffer != NULL)
+		delete impl().m_zipped_buffer;
 }
 
 void ZipReader::open()
 {
-		Impl->m_zipped_buffer = new ZippedBuffer;
-		Impl->m_zipped_buffer->m_span = Impl->m_span;
-		Impl->m_zipped_buffer->m_pointer = 0;
+		impl().m_zipped_buffer = new ZippedBuffer;
+		impl().m_zipped_buffer->m_span = impl().m_span;
+		impl().m_zipped_buffer->m_pointer = 0;
 		zlib_filefunc_def read_from_buffer_functions;
 		read_from_buffer_functions.zopen_file = &buffer_open;
 		read_from_buffer_functions.zread_file = &buffer_read;
@@ -140,37 +140,37 @@ void ZipReader::open()
 		read_from_buffer_functions.zseek_file = &buffer_seek;
 		read_from_buffer_functions.zclose_file = &buffer_close;
 		read_from_buffer_functions.zerror_file = &buffer_error;
-		read_from_buffer_functions.opaque = Impl->m_zipped_buffer;
+		read_from_buffer_functions.opaque = impl().m_zipped_buffer;
 		//this function allows us to override default behaviour (reading from hard disc)
-		Impl->ArchiveFile = unzOpen2("stream", &read_from_buffer_functions);
-	throw_if (Impl->ArchiveFile == NULL, "Could not open zip archive");
+		impl().ArchiveFile = unzOpen2("stream", &read_from_buffer_functions);
+	throw_if (impl().ArchiveFile == NULL, "Could not open zip archive");
 }
 
 bool ZipReader::exists(const std::string& file_name) const
 {
-	return (unzLocateFile(Impl->ArchiveFile, file_name.c_str(), CASESENSITIVITY) == UNZ_OK);
+	return (unzLocateFile(impl().ArchiveFile, file_name.c_str(), CASESENSITIVITY) == UNZ_OK);
 }
 
-bool ZipReader::read(const std::string& file_name, std::string* contents, int num_of_chars) const
+bool ZipReader::read(const std::string& file_name, std::string* contents, int num_of_chars)
 {
 	int res;
-	if (Impl->m_directory.size() > 0)
+	if (impl().m_directory.size() > 0)
 	{
-		std::map<std::string, unz_file_pos>::iterator i = Impl->m_directory.find(file_name);
-		if (i == Impl->m_directory.end())
+		std::map<std::string, unz_file_pos>::iterator i = impl().m_directory.find(file_name);
+		if (i == impl().m_directory.end())
 			return false;
-		res = unzGoToFilePos(Impl->ArchiveFile, &i->second);
+		res = unzGoToFilePos(impl().ArchiveFile, &i->second);
 	}
 	else
-		res = unzLocateFile(Impl->ArchiveFile, file_name.c_str(), CASESENSITIVITY);
+		res = unzLocateFile(impl().ArchiveFile, file_name.c_str(), CASESENSITIVITY);
 	if (res != UNZ_OK)
 		return false;
-	res = unzOpenCurrentFile(Impl->ArchiveFile);
+	res = unzOpenCurrentFile(impl().ArchiveFile);
 	if (res != UNZ_OK)
 		return false;
 	*contents = "";
 	char buffer[1024 + 1];
-	while((res = unzReadCurrentFile(Impl->ArchiveFile, buffer, (num_of_chars > 0 && num_of_chars < 1024) ? num_of_chars : 1024)) > 0)
+	while((res = unzReadCurrentFile(impl().ArchiveFile, buffer, (num_of_chars > 0 && num_of_chars < 1024) ? num_of_chars : 1024)) > 0)
 	{
 		buffer[res] = '\0';
 		*contents += buffer;
@@ -183,57 +183,57 @@ bool ZipReader::read(const std::string& file_name, std::string* contents, int nu
 	}
 	if (res < 0)
 	{
-		unzCloseCurrentFile(Impl->ArchiveFile);
+		unzCloseCurrentFile(impl().ArchiveFile);
 		return false;
 	}
-	unzCloseCurrentFile(Impl->ArchiveFile);
+	unzCloseCurrentFile(impl().ArchiveFile);
 	return true;
 }
 
-void ZipReader::closeReadingFileForChunks() const
+void ZipReader::closeReadingFileForChunks()
 {
-	Impl->m_opened_for_chunks = false;
+	impl().m_opened_for_chunks = false;
 }
 
-bool ZipReader::readChunk(const std::string& file_name, char* contents, int num_of_chars, int& readed) const
+bool ZipReader::readChunk(const std::string& file_name, char* contents, int num_of_chars, int& readed)
 {
-	if (Impl->m_opened_for_chunks == false)
+	if (impl().m_opened_for_chunks == false)
 	{
 		int res;
-		if (Impl->m_directory.size() > 0)
+		if (impl().m_directory.size() > 0)
 		{
-			std::map<std::string, unz_file_pos>::iterator i = Impl->m_directory.find(file_name);
-			if (i == Impl->m_directory.end())
+			std::map<std::string, unz_file_pos>::iterator i = impl().m_directory.find(file_name);
+			if (i == impl().m_directory.end())
 				return false;
-			res = unzGoToFilePos(Impl->ArchiveFile, &i->second);
+			res = unzGoToFilePos(impl().ArchiveFile, &i->second);
 		}
 		else
-			res = unzLocateFile(Impl->ArchiveFile, file_name.c_str(), CASESENSITIVITY);
+			res = unzLocateFile(impl().ArchiveFile, file_name.c_str(), CASESENSITIVITY);
 		if (res != UNZ_OK)
 			return false;
-		res = unzOpenCurrentFile(Impl->ArchiveFile);
+		res = unzOpenCurrentFile(impl().ArchiveFile);
 		if (res != UNZ_OK)
 			return false;
-		Impl->m_opened_for_chunks = true;
+		impl().m_opened_for_chunks = true;
 	}
-	readed = unzReadCurrentFile(Impl->ArchiveFile, contents, num_of_chars);
+	readed = unzReadCurrentFile(impl().ArchiveFile, contents, num_of_chars);
 	if (readed < 0)
 	{
-		unzCloseCurrentFile(Impl->ArchiveFile);
+		unzCloseCurrentFile(impl().ArchiveFile);
 		return false;
 	}
 	if(readed < num_of_chars)	//end of file detected
 	{
 		contents[readed] = '\0';
-		unzCloseCurrentFile(Impl->ArchiveFile);
-		Impl->m_opened_for_chunks = false;
+		unzCloseCurrentFile(impl().ArchiveFile);
+		impl().m_opened_for_chunks = false;
 		return true;
 	}
 	contents[readed] = '\0';
 	return true;
 }
 
-bool ZipReader::readChunk(const std::string& file_name, std::string* contents, int num_of_chars) const
+bool ZipReader::readChunk(const std::string& file_name, std::string* contents, int num_of_chars)
 {
 	std::vector<char> vcontents(num_of_chars + 1);
 	int readed;
@@ -246,22 +246,22 @@ bool ZipReader::readChunk(const std::string& file_name, std::string* contents, i
 	return true;
 }
 
-bool ZipReader::getFileSize(const std::string& file_name, unsigned long& file_size) const
+bool ZipReader::getFileSize(const std::string& file_name, unsigned long& file_size)
 {
 	int res;
 	unz_file_info file_info;
-	if (Impl->m_directory.size() > 0)
+	if (impl().m_directory.size() > 0)
 	{
-		std::map<std::string, unz_file_pos>::iterator i = Impl->m_directory.find(file_name);
-		if (i == Impl->m_directory.end())
+		std::map<std::string, unz_file_pos>::iterator i = impl().m_directory.find(file_name);
+		if (i == impl().m_directory.end())
 			return false;
-		res = unzGoToFilePos(Impl->ArchiveFile, &i->second);
+		res = unzGoToFilePos(impl().ArchiveFile, &i->second);
 	}
 	else
-		res = unzLocateFile(Impl->ArchiveFile, file_name.c_str(), CASESENSITIVITY);
+		res = unzLocateFile(impl().ArchiveFile, file_name.c_str(), CASESENSITIVITY);
 	if (res != UNZ_OK)
 		return false;
-	if (unzGetCurrentFileInfo(Impl->ArchiveFile, &file_info, NULL, 0, NULL, 0, NULL, 0) != UNZ_OK)
+	if (unzGetCurrentFileInfo(impl().ArchiveFile, &file_info, NULL, 0, NULL, 0, NULL, 0) != UNZ_OK)
 		return false;
 	file_size = file_info.uncompressed_size;
 	return true;
@@ -269,19 +269,19 @@ bool ZipReader::getFileSize(const std::string& file_name, unsigned long& file_si
 
 bool ZipReader::loadDirectory()
 {
-	Impl->m_directory.clear();
-	if (unzGoToFirstFile(Impl->ArchiveFile) != UNZ_OK)
+	impl().m_directory.clear();
+	if (unzGoToFirstFile(impl().ArchiveFile) != UNZ_OK)
 		return false;
 	for (;;)
 	{
 		char name[1024];
-		if (unzGetCurrentFileInfo(Impl->ArchiveFile, NULL, name, 1024, NULL, 0, NULL, 0) != UNZ_OK)
+		if (unzGetCurrentFileInfo(impl().ArchiveFile, NULL, name, 1024, NULL, 0, NULL, 0) != UNZ_OK)
 			return false;
 		unz_file_pos pos;
-		if (unzGetFilePos(Impl->ArchiveFile, &pos) != UNZ_OK)
+		if (unzGetFilePos(impl().ArchiveFile, &pos) != UNZ_OK)
 			return false;
-		Impl->m_directory[name] = pos;
-		int res = unzGoToNextFile(Impl->ArchiveFile);
+		impl().m_directory[name] = pos;
+		int res = unzGoToNextFile(impl().ArchiveFile);
 		if (res == UNZ_END_OF_LIST_OF_FILE)
 			break;
 		if (res != UNZ_OK)

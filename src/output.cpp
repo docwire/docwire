@@ -18,7 +18,7 @@ namespace docwire
 {
 
 void
-OutputChainElement::process(Info &info) const
+OutputChainElement::process(Info& info)
 {
 	if (std::holds_alternative<std::exception_ptr>(info.tag))
 	{
@@ -28,7 +28,7 @@ OutputChainElement::process(Info &info) const
 	throw_if (!std::holds_alternative<data_source>(info.tag),
 		"Only data_source tags are supported", errors::program_logic{});
 	std::shared_ptr<std::istream> in_stream = std::get<data_source>(info.tag).istream();
-	*m_out_stream << in_stream->rdbuf();
+	m_out_stream.get() << in_stream->rdbuf();
 }
 
 } // namespace docwire

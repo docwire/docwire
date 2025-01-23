@@ -9,69 +9,39 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_IMPORTER_H
-#define DOCWIRE_IMPORTER_H
-
-#include <memory>
+#ifndef DOCWIRE_CONTENT_TYPE_ODF_FLAT_H
+#define DOCWIRE_CONTENT_TYPE_ODF_FLAT_H
 
 #include "chain_element.h"
-#include "parser.h"
-#include "parser_builder.h"
-#include "parser_parameters.h"
+#include "data_source.h"
 #include "defines.h"
 
-namespace docwire
+namespace docwire::content_type::odf_flat
 {
 
-class DllExport Importer : public ChainElement
+DllExport void detect(data_source& data);
+
+class detector : public ChainElement
 {
 public:
-  /**
-   * @param parameters parser parameters
-   */
-  explicit Importer(const ParserParameters &parameters = ParserParameters());
+    void process(Info& info) override
+    {
+        if (!std::holds_alternative<data_source>(info.tag))
+        {
+	        emit(info);
+		    return;
+	    }
+	    data_source& data = std::get<data_source>(info.tag);
+        detect(data);
+        emit(info);
+    }
 
-  Importer(const Importer &other);
-
-  Importer(const Importer &&other);
-
-  Importer& operator=(const Importer &other);
-
-  Importer& operator=(const Importer &&other);
-
-  virtual ~Importer();
-
-  bool is_leaf() const override
-  {
-    return false;
-  }
-
-  /**
-   * @brief Sets new input stream to parse
-   * @param input_stream new input stream to parse
-   */
-  void set_input_stream(std::istream &input_stream);
-
-  /**
-   * @brief Adds parser parameters.
-   * @param parameters parser parameters
-   */
-  void add_parameters(const ParserParameters &parameters);
-
-  virtual std::unique_ptr<ParserBuilder> findParserByExtension(const file_extension& extension) const = 0;
-  virtual std::unique_ptr<ParserBuilder> findParserByData(const data_source& data) const = 0;
-
-protected:
-  /**
-   * @brief Starts parsing process.
-   */
-  void process(Info& info) const override;
-
-private:
-  class Implementation;
-  std::unique_ptr<Implementation> impl;
+    bool is_leaf() const override
+	{
+		return false;
+	}
 };
 
-} // namespace docwire
+} // namespace docwire::content_type::odf_flat
 
-#endif //DOCWIRE_IMPORTER_H
+#endif // DOCWIRE_CONTENT_TYPE_ODF_FLAT_H

@@ -20,25 +20,25 @@ namespace docwire
 class DllExport ODFXMLParser : public CommonXMLDocumentParser
 {
 	private:
-		struct ExtendedImplementation;
-		std::unique_ptr<ExtendedImplementation> extended_impl;
 		class CommandHandlersSet;
 		attributes::Metadata metaData(const std::string& xml_content) const;
-		void parse(const data_source& data, XmlParseMode mode) const;
+		void parse(const data_source& data, XmlParseMode mode);
 
 	public:
 
-    void parse(const data_source& data) const override;
+    void parse(const data_source& data) override;
 
-    	static std::vector<file_extension> getExtensions()
+		const std::vector<mime_type> supported_mime_types() override
 		{
-			return { file_extension{".fodt"}, file_extension{".fods"}, file_extension{".fodp"}, file_extension{".fodg"} };
-		}
-		Parser& withParameters(const ParserParameters &parameters) override;
+			return {
+			mime_type{"application/vnd.oasis.opendocument.text-flat-xml"},
+			mime_type{"application/vnd.oasis.opendocument.spreadsheet-flat-xml"},
+			mime_type{"application/vnd.oasis.opendocument.presentation-flat-xml"},
+			mime_type{"application/vnd.oasis.opendocument.graphics-flat-xml"}
+			};
+		};
 
 		ODFXMLParser();
-		~ODFXMLParser();
-		bool understands(const data_source& data) const override;
 };
 
 } // namespace docwire

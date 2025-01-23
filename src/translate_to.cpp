@@ -24,15 +24,5 @@ TranslateTo::TranslateTo(const std::string& language, const std::string& api_key
 	docwire_log_func_with_args(language);
 }
 
-TranslateTo::TranslateTo(const TranslateTo& other)
-	: Chat(other)
-{
-	docwire_log_func();
-}
-
-TranslateTo::~TranslateTo()
-{
-}
-
 } // namespace openai
 } // namespace docwire

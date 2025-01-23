@@ -176,7 +176,7 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
 - Able to extract/import and export **text, images, formatting, and metadata along with annotations**
 - **Data can be transformed** between import and export (filtering, aggregating, translation, text classification, sentiment analysis, named entity recognition etc).
 
-- **Equipped with multiple importers**:
+- **Equipped with multiple parsers**:
     - Microsoft Office new Office Open XML (OOXML): DOCX, XLSX, PPTX files
     - Microsoft Office old binary formats: DOC, XLS, XLSB, PPT files
     - OpenOffice/LibreOffice Open Document Format (ODF): ODT, ODS, ODP files
@@ -200,6 +200,8 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
     - HTML: Export content in HTML format for web use.
     - CSV: Export data to Comma-Separated Values format.
     - XLSX and more are coming: Additional export formats for diverse use cases.
+
+- **Fast and accurate file format detection**: Leveraging file signatures, file name extensions, content analysis, and MIME type recognition, the DocWire SDK automatically detects the format of any file. This ensures that the appropriate parser is selected for processing. With its ability to identify various formats, DocWire SDK serves as a versatile tool for numerous file processing tasks. For more information, see the following functions and classes: [content_type::detector](https://docwire.readthedocs.io/en/latest/classdocwire_1_1content__type_1_1detector.html) and [content_type::detect](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1content__type.html#ab8fcce329158e74aed1c402df93fa4e4).
 
 - **Build-in powerful flan-t5-large model**: This state-of-the-art transformer-based model is designed for a wide range of natural language processing tasks, including text translation, question answering, summarization, text generation, and more. It has been trained on a diverse range of data sources and can handle complex linguistic phenomena such as word order, syntax, and semantics. The model's versatility and ability to perform multiple tasks make it a valuable addition to the DocWire SDK, allowing developers to leverage its capabilities for a variety of NLP tasks within their applications. **The build-in model is optimized to run with descent speed on lower-end desktops and mobile devices without GPU acceleration and consuming less than 1 GB of memory**
 
@@ -257,8 +259,7 @@ ional AI, document summarization, and topic extraction.
 - **Can be embedded** in your application (SDK)
 - **Can be integrated** with other data mining and data analytics applications
 - **Parsing process can be easily designed** by connecting objects with the pipe `|` operator into a chain
-- Parsing chain elements communicate based on Boost Signals
-- **Custom parsing chain elements can be added** (importers, transformers, exporters)
+- **Custom parsing chain elements can be added** (parsers, transformers, exporters)
 - **Small binaries, fast** native C++ code
 
 <a name="api-concept"></a>
@@ -341,7 +342,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | out_stream;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -369,7 +370,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::ifstream("data_processing_definition.docx", std::ios_base::binary) | ParseDetectedFormat<OfficeFormatsParserProvider>() | HtmlExporter() | out_stream;
+    std::ifstream("data_processing_definition.docx", std::ios_base::binary) | content_type::detector{} | office_formats_parser{} | HtmlExporter() | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -405,7 +406,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   try
   {
-    std::filesystem::path("test.zip") | DecompressArchives() | ParseDetectedFormat<OfficeFormatsParserProvider, OcrParserProvider>() | PlainTextExporter() | std::cout;
+    std::filesystem::path("test.zip") | DecompressArchives() | content_type::detector{} | office_formats_parser{} | OCRParser{} | PlainTextExporter() | std::cout;
   }
   catch (const std::exception& e)
   {
@@ -430,7 +431,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("document_processing_market_trends.odt") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Classify to one of the following categories and answer with exact category name: agreement, invoice, report, legal, user manual, other:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+    std::filesystem::path("document_processing_market_trends.odt") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Classify to one of the following categories and answer with exact category name: agreement, invoice, report, legal, user manual, other:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -457,7 +458,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("document_processing_market_trends.odt") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::Classify({ "agreement", "invoice", "report", "legal", "other"}, std::getenv("OPENAI_API_KEY")) | out_stream;
+    std::filesystem::path("document_processing_market_trends.odt") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | openai::Classify({ "agreement", "invoice", "report", "legal", "other"}, std::getenv("OPENAI_API_KEY")) | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -484,7 +485,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Translate to spanish:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Translate to spanish:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -510,7 +511,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::TranslateTo("spanish", std::getenv("OPENAI_API_KEY")) | out_stream;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | openai::TranslateTo("spanish", std::getenv("OPENAI_API_KEY")) | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -536,7 +537,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Detect sentiment:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Detect sentiment:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -561,7 +562,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_turbo_preview) | std::cout;
+    std::filesystem::path("1.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_turbo_preview) | std::cout;
   }
   catch (const std::exception& e)
   {
@@ -587,7 +588,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Write a short summary for this text:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Write a short summary for this text:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -611,7 +612,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   try
   {
-    std::filesystem::path("1.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | openai::TextToSpeech(std::getenv("OPENAI_API_KEY")) | std::ofstream("summary.mp3");
+    std::filesystem::path("1.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | openai::TextToSpeech(std::getenv("OPENAI_API_KEY")) | std::ofstream("summary.mp3");
   }
   catch (const std::exception& e)
   {
@@ -661,7 +662,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | ParseDetectedFormat<OfficeFormatsParserProvider>() | PlainTextExporter() | local_ai::model_chain_element("Find sentence about \"data convertion\" in the following text:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Find sentence about \"data convertion\" in the following text:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -713,7 +714,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    auto chain = ParseDetectedFormat<parser_provider<ODFOOXMLParser>>() | PlainTextExporter() | std::cout;  // create a chain of steps to parse a file
+    auto chain = content_type::detector{} | office_formats_parser{} | PlainTextExporter() | std::cout;  // create a chain of steps to parse a file
     for (int i = 1; i < 3; ++i)
       std::ifstream(std::to_string(i) + ".docx", std::ios_base::binary) | chain; // set the input file as an input stream
   }
@@ -739,9 +740,9 @@ Using transformer to filter out emails (eg. from Outlook PST mailbox) with subje
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  std::filesystem::path("1.pst") |
-  ParseDetectedFormat<MailParserProvider, OfficeFormatsParserProvider>()
-    | TransformerFunc([](Info &info) // Create an importer from file name and connect it to transformer
+  std::filesystem::path("1.pst") | content_type::detector{} |
+  mail_parser{} | office_formats_parser{}
+    | [](Info &info) // Create an input from file path, parser and connect them to transformer
       {
         if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
         {
@@ -754,7 +755,7 @@ int main(int argc, char* argv[])
             }
           }
         }
-      })
+      }
     | PlainTextExporter() // sets exporter to plain text
     | std::cout;
   return 0;
@@ -771,9 +772,9 @@ Joining transformers to filter out emails (eg. from Outlook PST mailbox) with su
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  std::filesystem::path("1.pst") |
-  ParseDetectedFormat<MailParserProvider, OfficeFormatsParserProvider>() |
-    TransformerFunc([](Info &info) // Create an input from file name, importer and connect them to transformer
+  std::filesystem::path("1.pst") | content_type::detector{} |
+  mail_parser{} | office_formats_parser{} |
+    [](Info &info) // Create an input from file path, parser and connect them to transformer
     {
       if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
       {
@@ -786,8 +787,8 @@ int main(int argc, char* argv[])
           }
         }
       }
-    }) |
-    TransformerFunc([counter = 0, max_mails = 1](Info &info) mutable // Create a transformer and connect it to previous transformer
+    } |
+    [counter = 0, max_mails = 1](Info &info) mutable // Create a transformer and connect it to previous transformer
     {
       if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
       {
@@ -796,7 +797,7 @@ int main(int argc, char* argv[])
           info.cancel = true; // cancel the parsing process
         }
       }
-    }) |
+    } |
     PlainTextExporter() | // sets exporter to plain text
     std::cout;
  return 0;

@@ -20,13 +20,12 @@ namespace docwire
 /**
  * @brief Exports meta data only to plain text format.
  */
-class DllExport MetaDataExporter: public ChainElement
+class DllExport MetaDataExporter: public ChainElement, public with_pimpl<MetaDataExporter>
 {
 public:
   MetaDataExporter();
-	MetaDataExporter(const MetaDataExporter& other);
 
-  void process(Info& info) const override;
+  void process(Info& info) override;
 
 	bool is_leaf() const override
 	{
@@ -34,9 +33,7 @@ public:
 	}
 
 private:
-	struct Implementation;
-	struct DllExport ImplementationDeleter { void operator() (Implementation*); };
-	std::unique_ptr<Implementation, ImplementationDeleter> impl;
+  using with_pimpl<MetaDataExporter>::impl;
 };
 
 } // namespace docwire

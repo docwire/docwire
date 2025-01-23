@@ -26,7 +26,6 @@
 #include "throw_if.h"
 #include <wv2/textconverter.h>
 #include <wv2/ustring.h>
-#include <boost/signals2.hpp>
 
 namespace docwire
 {
@@ -35,12 +34,6 @@ using namespace wvWare;
 
 RTFParser::RTFParser()
 {
-}
-
-bool RTFParser::understands(const data_source& data) const
-{
-	std::string signature = data.string(length_limit{5});
-	return (signature == "{\\rtf");
 }
 
 #define RTFNAMEMAXLEN 32
@@ -484,7 +477,7 @@ namespace
 	std::mutex converter_mutex;
 } // anonymous namespace
 
-void RTFParser::parse(const data_source& data) const
+void RTFParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using RTF parser.";
 	UString text;
@@ -493,7 +486,6 @@ void RTFParser::parse(const data_source& data) const
 	TextConverter* converter = NULL;
 	try
 	{
-		throw_if (!understands(data), "Not a RTF file", errors::uninterpretable_data{}); //check if this is really rtf file
 		sendTag(tag::Document
 			{
 				.metadata = [this, &data]() { return metaData(data); }

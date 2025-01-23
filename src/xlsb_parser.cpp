@@ -25,8 +25,10 @@
 namespace docwire
 {
 
-struct XLSBParser::Implementation
+template<>
+struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
 {
+	pimpl_impl(XLSBParser& owner) : with_pimpl_owner{owner} {}
 	struct XLSBContent
 	{
 		class ErrorsCodes : public std::map<uint32_t, std::string>
@@ -61,12 +63,7 @@ struct XLSBParser::Implementation
 		}
 	};
 
-	const XLSBParser* m_parser;
 	XLSBContent m_xlsb_content;
-
-	Implementation(const XLSBParser* parser)
-		: m_parser(parser)
-	{}
 
 	class XLSBReader
 	{
@@ -457,7 +454,7 @@ struct XLSBParser::Implementation
 					uint32_t str_index;
 					xlsb_reader.readUint32(str_index);
 					if (str_index >= m_xlsb_content.m_shared_strings.size())
-						m_parser->sendTag(make_error_ptr("Detected reference to string that does not exist", str_index, m_xlsb_content.m_shared_strings.size()));
+						owner().sendTag(make_error_ptr("Detected reference to string that does not exist", str_index, m_xlsb_content.m_shared_strings.size()));
 					else
 						text += m_xlsb_content.m_shared_strings[str_index];
 				}
@@ -561,7 +558,7 @@ struct XLSBParser::Implementation
 		}
 	}
 
-	void readMetadata(const ZipReader& unzip, attributes::Metadata& metadata)
+	void readMetadata(ZipReader& unzip, attributes::Metadata& metadata)
 	{
 		docwire_log(debug) << "Extracting metadata.";
 		std::string data;
@@ -635,35 +632,15 @@ struct XLSBParser::Implementation
 };
 
 XLSBParser::XLSBParser()
-	: impl(std::make_unique<Implementation>(this))
 {
 }
 
-XLSBParser::~XLSBParser() = default;
-
-bool XLSBParser::understands(const data_source& data) const
-{
-	ZipReader unzip{data};
-	try
-	{
-		unzip.open();
-	if (!unzip.exists("xl/workbook.bin"))
-		return false;
-	}
-	catch (const std::exception&)
-	{
-		throw_if (is_encrypted_with_ms_offcrypto(data), errors::file_encrypted{}, "Microsoft Office Document Cryptography");
-		return false;
-	}
-	return true;
-}
-
-attributes::Metadata XLSBParser::metaData(const ZipReader& unzip) const
+attributes::Metadata XLSBParser::metaData(ZipReader& unzip)
 {
 	attributes::Metadata metadata;
 	try
 	{
-		impl->readMetadata(unzip, metadata);
+		impl().readMetadata(unzip, metadata);
 	}
 	catch (const std::exception& e)
 	{
@@ -672,10 +649,10 @@ attributes::Metadata XLSBParser::metaData(const ZipReader& unzip) const
 	return metadata;
 }
 
-void XLSBParser::parse(const data_source& data) const
+void XLSBParser::parse(const data_source& data)
 {
 	docwire_log(debug) << "Using XLSB parser.";
-	*impl = Implementation{this};
+	renew_impl();
 	std::string text;
 	ZipReader unzip{data};
 	try
@@ -694,7 +671,7 @@ void XLSBParser::parse(const data_source& data) const
 	}
 	try
 	{
-		impl->parseXLSB(unzip, text);
+		impl().parseXLSB(unzip, text);
 	}
 	catch (const std::exception& e)
 	{

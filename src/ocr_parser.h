@@ -13,38 +13,44 @@
 #define DOCWIRE_OCR_PARSER_H
 
 #include <string>
-#include <memory>
 
 #include "language.h"
 #include "parser.h"
+#include "pimpl.h"
 
 namespace docwire
 {
 
-class DllExport OCRParser : public Parser
+struct ocr_data_path { std::filesystem::path v; };
+struct ocr_timeout { std::optional<int32_t> v; };
+
+class DllExport OCRParser : public Parser, public with_pimpl<OCRParser>
 {
 private:
-    struct Implementation;
-    std::unique_ptr<Implementation> impl;
+    using with_pimpl<OCRParser>::impl;
+    friend pimpl_impl<OCRParser>;
 
 public:
-    static std::string get_default_tessdata_prefix();
 
-    OCRParser();
-    OCRParser(OCRParser&&);
-    ~OCRParser();
+    OCRParser(const std::vector<Language>& languages = {},
+        ocr_timeout ocr_timeout_arg = {}, ocr_data_path ocr_data_path_arg = {});
 
-    void parse(const data_source& data) const override;
-    static std::vector <file_extension> getExtensions()
+    void parse(const data_source& data) override;
+    const std::vector<mime_type> supported_mime_types() override
     {
-        return { file_extension{".tiff"}, file_extension{".jpeg"}, file_extension{".bmp"}, file_extension{".png"}, file_extension{".pnm"}, file_extension{".jfif"}, file_extension{".jpg"}, file_extension{".webp"} };
-    }
-    Parser& withParameters(const ParserParameters &parameters) override;
+        return {
+        mime_type{"image/tiff"},
+        mime_type{"image/jpeg"},
+        mime_type{"image/bmp"},
+        mime_type{"image/x-ms-bmp"},
+        mime_type{"image/png"},
+        mime_type{"image/x-portable-anymap"},
+        mime_type{"image/webp"}
+        };
+    };
 
-    void setTessdataPrefix(const std::string& tessdata_prefix);
-    bool understands(const data_source& data) const override;
 private:
-    std::string parse(const data_source& data, const std::vector<Language>& languages) const;
+    std::string parse(const data_source& data, const std::vector<Language>& languages);
 };
 
 } // namespace docwire

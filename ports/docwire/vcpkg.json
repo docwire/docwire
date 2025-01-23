@@ -51,9 +51,6 @@
 			"name": "boost-dll"
 		},
 		{
-			"name": "boost-signals2"
-		},
-		{
 			"name": "boost-json"
 		},
 		{
@@ -117,6 +114,9 @@
 		},
 		{
 			"name": "aklomp-base64"
+		},
+		{
+			"name": "libmagic"
 		}
 	]
 }

@@ -112,7 +112,8 @@ struct Tag
 	}
 };
 
-struct XmlFixer::Implementation
+template<>
+struct pimpl_impl<XmlFixer> : pimpl_impl_base
 {
 	std::istringstream xml;
 
@@ -350,17 +351,11 @@ struct XmlFixer::Implementation
 
 XmlFixer::XmlFixer()
 {
-	Impl = new Implementation();
 }
 
-XmlFixer::~XmlFixer()
+std::string XmlFixer::fix(const std::string& xml)
 {
-	delete Impl;
-}
-
-std::string XmlFixer::fix(const std::string& xml) const
-{
-	Impl->xml.str(xml);
+	impl().xml.str(xml);
 	std::stack<XmlName> open_tags;
 	std::string fixed_xml;
 	for (;;)
@@ -369,9 +364,9 @@ std::string XmlFixer::fix(const std::string& xml) const
 		std::string entity;
 		std::string utf8_char;
 		char ch;
-		if (Impl->parseTag(&tag))
+		if (impl().parseTag(&tag))
 		{
-			if (tag.type == Tag::OPENING_AND_CLOSING && open_tags.empty() && Impl->xml.peek() != EOF)
+			if (tag.type == Tag::OPENING_AND_CLOSING && open_tags.empty() && impl().xml.peek() != EOF)
 			{
 				// some text after root opening and closing tag!
 				open_tags.push(tag.name);
@@ -383,7 +378,7 @@ std::string XmlFixer::fix(const std::string& xml) const
 					open_tags.pop();
 				else
 				{
-					if (open_tags.empty() && Impl->xml.peek() != EOF)
+					if (open_tags.empty() && impl().xml.peek() != EOF)
 					{
 						// some text after root closing tag!
 						continue;
@@ -409,11 +404,11 @@ std::string XmlFixer::fix(const std::string& xml) const
 			}
 			fixed_xml += tag.toText();
 		}
-		else if (Impl->parseEntity(&entity))
+		else if (impl().parseEntity(&entity))
 			fixed_xml += entity;
-		else if (Impl->parseUtf8Char(&utf8_char))
+		else if (impl().parseUtf8Char(&utf8_char))
 			fixed_xml += utf8_char;
-		else if (Impl->parseChar(&ch))
+		else if (impl().parseChar(&ch))
 		{
 			if (isascii(ch) && ch != '<' && ch != '&')
 				fixed_xml += ch;
