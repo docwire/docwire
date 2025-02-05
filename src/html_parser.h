@@ -19,7 +19,7 @@ namespace docwire
 {
 	class Metadata;
 
-class DllExport HTMLParser : public Parser, public with_pimpl<HTMLParser>
+class DOCWIRE_EXPORT HTMLParser : public Parser, public with_pimpl<HTMLParser>
 {
 	private:
 		using with_pimpl<HTMLParser>::impl;

@@ -24,7 +24,7 @@ namespace docwire
 struct ocr_data_path { std::filesystem::path v; };
 struct ocr_timeout { std::optional<int32_t> v; };
 
-class DllExport OCRParser : public Parser, public with_pimpl<OCRParser>
+class DOCWIRE_EXPORT OCRParser : public Parser, public with_pimpl<OCRParser>
 {
 private:
     using with_pimpl<OCRParser>::impl;

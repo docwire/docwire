@@ -1,15 +1,12 @@
 set(CMAKE_INSTALL_RPATH .)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 set(EMPTY_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/empty.cpp)
 file(GENERATE OUTPUT ${EMPTY_SOURCE} CONTENT "
-	#ifdef MSVC_BUILD
-		#define DllExport  __declspec( dllexport )
-	#else
-		#define DllExport
-	#endif
+	#include \"export.h\"
 	namespace docwire
 	{
-		DllExport void dummy() {}
+		DOCWIRE_EXPORT void dummy() {}
 	}
 ")
 

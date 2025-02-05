@@ -12,14 +12,14 @@
 #ifndef DOCWIRE_XML_FIXER_H
 #define DOCWIRE_XML_FIXER_H
 
-#include "defines.h"
+#include "export.h"
 #include "pimpl.h"
 #include <string>
 
 namespace docwire
 {
 
-class DllExport XmlFixer : public with_pimpl<XmlFixer>
+class DOCWIRE_EXPORT XmlFixer : public with_pimpl<XmlFixer>
 {
 	public:
 		XmlFixer();

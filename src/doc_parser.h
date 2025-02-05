@@ -19,7 +19,7 @@ namespace docwire
 {
 	class Metadata;
 
-class DllExport DOCParser : public Parser
+class DOCWIRE_EXPORT DOCParser : public Parser
 {
 	private:
 		friend class TextHandler;

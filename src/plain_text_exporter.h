@@ -28,7 +28,7 @@ struct link_formatter
 /**
  * @brief Exports data to plain text format.
  */
-class DllExport PlainTextExporter: public ChainElement, public with_pimpl<PlainTextExporter>
+class DOCWIRE_EXPORT PlainTextExporter: public ChainElement, public with_pimpl<PlainTextExporter>
 {
 public:
 	PlainTextExporter(eol_sequence eol = eol_sequence{"\n"}, link_formatter formatter = default_link_formatter);

@@ -20,7 +20,7 @@ namespace docwire
 struct parse_paragraphs { bool v; };
 struct parse_lines { bool v; };
 
-class DllExport TXTParser : public Parser, public with_pimpl<TXTParser>
+class DOCWIRE_EXPORT TXTParser : public Parser, public with_pimpl<TXTParser>
 {
 	public:
 

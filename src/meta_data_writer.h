@@ -15,12 +15,12 @@
 #include <iostream>
 
 #include "writer.h"
-#include "defines.h"
+#include "export.h"
 
 namespace docwire
 {
 
-class DllExport MetaDataWriter : public Writer
+class DOCWIRE_EXPORT MetaDataWriter : public Writer
 {
 public:
   /**

@@ -21,7 +21,7 @@
 namespace docwire
 {
 
-class DllExport PSTParser : public Parser, public with_pimpl<PSTParser>
+class DOCWIRE_EXPORT PSTParser : public Parser, public with_pimpl<PSTParser>
 {
 private:
   using with_pimpl<PSTParser>::impl;

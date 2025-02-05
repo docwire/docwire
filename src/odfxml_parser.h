@@ -17,7 +17,7 @@
 namespace docwire
 {
 
-class DllExport ODFXMLParser : public CommonXMLDocumentParser
+class DOCWIRE_EXPORT ODFXMLParser : public CommonXMLDocumentParser
 {
 	private:
 		class CommandHandlersSet;

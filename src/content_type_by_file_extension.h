@@ -14,7 +14,7 @@
 
 #include "chain_element.h"
 #include "data_source.h"
-#include "defines.h"
+#include "export.h"
 
 /**
  * Provides content type detection based on file extension
@@ -31,7 +31,7 @@ namespace docwire::content_type::by_file_extension
 * @see content_type::detector
 * @see content_type::by_file_extension::detector
 */
-DllExport void detect(data_source& data);
+DOCWIRE_EXPORT void detect(data_source& data);
 
 /**
 * @brief Detector chain element

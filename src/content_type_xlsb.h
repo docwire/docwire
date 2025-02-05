@@ -14,12 +14,12 @@
 
 #include "chain_element.h"
 #include "data_source.h"
-#include "defines.h"
+#include "export.h"
 
 namespace docwire::content_type::xlsb
 {
 
-DllExport void detect(data_source& data);
+DOCWIRE_EXPORT void detect(data_source& data);
 
 class detector : public ChainElement
 {

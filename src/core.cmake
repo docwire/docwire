@@ -56,3 +56,8 @@ install(TARGETS docwire_core)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_core> DESTINATION bin CONFIGURATIONS Debug)
 endif()
+
+include(GenerateExportHeader)
+generate_export_header(docwire_core BASE_NAME docwire EXPORT_FILE_NAME export.h)
+target_include_directories(docwire_core PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/export.h DESTINATION include/docwire)

@@ -19,7 +19,7 @@ namespace docwire
 namespace openai
 {
 
-class DllExport Transcribe : public ChainElement, public with_pimpl<Transcribe>
+class DOCWIRE_EXPORT Transcribe : public ChainElement, public with_pimpl<Transcribe>
 {
 public:
 	Transcribe(const std::string& api_key);

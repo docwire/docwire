@@ -16,12 +16,12 @@
 
 #include "pimpl.h"
 #include "writer.h"
-#include "defines.h"
+#include "export.h"
 
 namespace docwire
 {
 
-class DllExport HtmlWriter : public Writer, public with_pimpl<HtmlWriter>
+class DOCWIRE_EXPORT HtmlWriter : public Writer, public with_pimpl<HtmlWriter>
 {
 public:
 

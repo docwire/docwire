@@ -19,7 +19,7 @@
 namespace docwire
 {
 
-class DllExport RTFParser : public Parser
+class DOCWIRE_EXPORT RTFParser : public Parser
 {
 	private:
 		attributes::Metadata metaData(const data_source& data) const;

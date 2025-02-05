@@ -13,14 +13,14 @@
 #define DOCWIRE_PARSING_CHAIN_H
 
 #include "chain_element.h"
-#include "defines.h"
+#include "export.h"
 #include "pimpl.h"
 #include "ref_or_owned.h"
 
 namespace docwire
 {
 
-class DllExport ParsingChain : public ChainElement, public with_pimpl<ParsingChain>
+class DOCWIRE_EXPORT ParsingChain : public ChainElement, public with_pimpl<ParsingChain>
 {
   public:
     ParsingChain(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement> rhs);
@@ -42,7 +42,7 @@ class DllExport ParsingChain : public ChainElement, public with_pimpl<ParsingCha
     using with_pimpl<ParsingChain>::impl;
 };
 
-DllExport ParsingChain operator|(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement> rhs);
+DOCWIRE_EXPORT ParsingChain operator|(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement> rhs);
 
 inline ParsingChain& operator|=(ParsingChain& lhs, ref_or_owned<ChainElement> rhs)
 {

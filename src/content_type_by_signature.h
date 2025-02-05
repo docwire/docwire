@@ -14,7 +14,7 @@
 
 #include "chain_element.h"
 #include "data_source.h"
-#include "defines.h"
+#include "export.h"
 #include "ref_or_owned.h"
 
 /**
@@ -39,11 +39,11 @@ struct allow_multiple
  * @see content_type::by_signature::detector
  * @see content_type::by_signature::detect
  */
-class DllExport database : public with_pimpl<database>
+class DOCWIRE_EXPORT database : public with_pimpl<database>
 {
 public:
     explicit database();
-    friend DllExport void detect(data_source& data, const database& database_to_use, allow_multiple allow_multiple);
+    friend DOCWIRE_EXPORT void detect(data_source& data, const database& database_to_use, allow_multiple allow_multiple);
 };
 
 /**
@@ -58,7 +58,7 @@ public:
 * @see content_type::by_signature::database
 * @see content_type::by_signature::detector
 */
-DllExport void detect(data_source& data, const database& database_to_use = database{}, allow_multiple allow_multiple = {false});
+DOCWIRE_EXPORT void detect(data_source& data, const database& database_to_use = database{}, allow_multiple allow_multiple = {false});
 
 /**
 * @brief Detector chain element

@@ -21,7 +21,7 @@ namespace docwire
 
 class ThreadSafeOLEStorage;
 
-class DllExport XLSParser : public Parser, public with_pimpl<XLSParser>
+class DOCWIRE_EXPORT XLSParser : public Parser, public with_pimpl<XLSParser>
 {
 	private:
 		friend pimpl_impl<XLSParser>;

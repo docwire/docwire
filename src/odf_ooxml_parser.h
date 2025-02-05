@@ -17,7 +17,7 @@
 namespace docwire
 {
 
-class DllExport ODFOOXMLParser : public CommonXMLDocumentParser, public with_pimpl<ODFOOXMLParser>
+class DOCWIRE_EXPORT ODFOOXMLParser : public CommonXMLDocumentParser, public with_pimpl<ODFOOXMLParser>
 {
   private:
     using with_pimpl<ODFOOXMLParser>::impl;

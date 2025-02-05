@@ -15,12 +15,12 @@
 #include "chain_element.h"
 #include "content_type_by_signature.h"
 #include "data_source.h"
-#include "defines.h"
+#include "export.h"
 
 namespace docwire::content_type::outlook
 {
 
-DllExport void detect(data_source& data,
+DOCWIRE_EXPORT void detect(data_source& data,
     const by_signature::database& signatures_db_to_use = by_signature::database{});
 
 class detector : public ChainElement

@@ -19,7 +19,7 @@ namespace docwire
 namespace openai
 {
 
-class DllExport TextToSpeech : public ChainElement, public with_pimpl<TextToSpeech>
+class DOCWIRE_EXPORT TextToSpeech : public ChainElement, public with_pimpl<TextToSpeech>
 {
 public:
 	enum class Model

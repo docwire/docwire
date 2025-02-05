@@ -23,7 +23,7 @@ namespace docwire
 class Metadata;
 //class Attachment;
 
-class DllExport EMLParser : public Parser, public with_pimpl<EMLParser>
+class DOCWIRE_EXPORT EMLParser : public Parser, public with_pimpl<EMLParser>
 {
 	private:
 		using with_pimpl<EMLParser>::impl;

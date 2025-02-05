@@ -13,7 +13,7 @@
 #define DOCWIRE_TRANSFORMER_FUNC_H
 
 #include "chain_element.h"
-#include "defines.h"
+#include "export.h"
 #include "parsing_chain.h"
 #include "ref_or_owned.h"
 
@@ -31,7 +31,7 @@ typedef std::function<void(Info &info)> NewNodeCallback;
  * Input("test.pdf") | office_formats_parser{} | transformer | PlainTextExporter | std::cout; // reverse text in pdf file
  * @endcode
  */
-class DllExport TransformerFunc : public ChainElement, public with_pimpl<TransformerFunc>
+class DOCWIRE_EXPORT TransformerFunc : public ChainElement, public with_pimpl<TransformerFunc>
 {
 public:
   /**

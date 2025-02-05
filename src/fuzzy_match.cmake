@@ -1,7 +1,7 @@
 add_library(docwire_fuzzy_match SHARED fuzzy_match.cpp)
 
 find_package(rapidfuzz REQUIRED)
-target_link_libraries(docwire_fuzzy_match PRIVATE rapidfuzz::rapidfuzz)
+target_link_libraries(docwire_fuzzy_match PRIVATE rapidfuzz::rapidfuzz docwire_core)
 
 install(TARGETS docwire_fuzzy_match)
 if(MSVC)

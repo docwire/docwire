@@ -14,13 +14,13 @@
 
 #include "data_source.h"
 #include <string>
-#include "defines.h"
+#include "export.h"
 #include "pimpl.h"
 
 namespace docwire
 {
 
-class DllExport ZipReader : public with_pimpl<ZipReader>
+class DOCWIRE_EXPORT ZipReader : public with_pimpl<ZipReader>
 {
 	public:
 		ZipReader(const data_source& data);

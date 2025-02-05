@@ -21,7 +21,7 @@ namespace docwire
 
 class Metadata;
 
-class DllExport IWorkParser : public Parser, public with_pimpl<IWorkParser>
+class DOCWIRE_EXPORT IWorkParser : public Parser, public with_pimpl<IWorkParser>
 {
 	private:
 		using with_pimpl<IWorkParser>::impl;

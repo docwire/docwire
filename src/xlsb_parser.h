@@ -21,7 +21,7 @@ namespace docwire
 
 class ZipReader;
 
-class DllExport XLSBParser : public Parser, public with_pimpl<XLSBParser>
+class DOCWIRE_EXPORT XLSBParser : public Parser, public with_pimpl<XLSBParser>
 {
 	private:
 		friend pimpl_impl<XLSBParser>;

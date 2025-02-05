@@ -22,7 +22,7 @@ namespace docwire
 
 class Metadata;
 
-class DllExport PDFParser : public Parser, public with_pimpl<PDFParser>
+class DOCWIRE_EXPORT PDFParser : public Parser, public with_pimpl<PDFParser>
 {
 	private:
 		using with_pimpl<PDFParser>::impl;

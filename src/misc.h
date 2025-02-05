@@ -13,7 +13,7 @@
 #define DOCWIRE_MISC_H
 
 #include "data_source.h"
-#include "defines.h"
+#include "export.h"
 #include <string>
 #include <vector>
 #include <wv2/ustring.h>
@@ -28,25 +28,25 @@ using namespace wvWare;
 
 typedef std::vector<std::string> svector;
 
-DllExport std::string formatTable(std::vector<svector>& mcols);
-DllExport std::string formatUrl(const std::string& mlink_url, const std::string& mlink_text);
-DllExport std::string formatList(std::vector<std::string>& mlist);
-DllExport std::string formatNumberedList(std::vector<std::string>& mlist);
+DOCWIRE_EXPORT std::string formatTable(std::vector<svector>& mcols);
+DOCWIRE_EXPORT std::string formatUrl(const std::string& mlink_url, const std::string& mlink_text);
+DOCWIRE_EXPORT std::string formatList(std::vector<std::string>& mlist);
+DOCWIRE_EXPORT std::string formatNumberedList(std::vector<std::string>& mlist);
 
-DllExport std::string ustring_to_string(const UString& s);
+DOCWIRE_EXPORT std::string ustring_to_string(const UString& s);
 
 /**
 	Parses date and time in %Y-%m-%dT%H:%M:%S or %Y%m%d;%H%M%S format
 **/
-DllExport bool string_to_date(const std::string& s, tm& date);
+DOCWIRE_EXPORT bool string_to_date(const std::string& s, tm& date);
 
-DllExport std::string date_to_string(const tm& date);
+DOCWIRE_EXPORT std::string date_to_string(const tm& date);
 
-DllExport std::string uint_to_string(unsigned int value);
+DOCWIRE_EXPORT std::string uint_to_string(unsigned int value);
 
-DllExport UString utf8_to_ustring(const std::string& src);
+DOCWIRE_EXPORT UString utf8_to_ustring(const std::string& src);
 
-DllExport std::string unichar_to_utf8(unsigned int unichar);
+DOCWIRE_EXPORT std::string unichar_to_utf8(unsigned int unichar);
 
 /**
 	UTF16 characters take from 2 to 4 bytes length.
@@ -70,13 +70,13 @@ inline bool utf16_unichar_has_4_bytes(unsigned int ch)
 	return (ch & 0xFC00) == 0xD800;
 }
 
-DllExport std::string int_to_str(int i);
+DOCWIRE_EXPORT std::string int_to_str(int i);
 
-DllExport int str_to_int(const std::string& s);
+DOCWIRE_EXPORT int str_to_int(const std::string& s);
 
-DllExport bool is_encrypted_with_ms_offcrypto(const data_source& data);
+DOCWIRE_EXPORT bool is_encrypted_with_ms_offcrypto(const data_source& data);
 
-DllExport tm *thread_safe_gmtime (const time_t *timer, struct tm &time_buffer);
+DOCWIRE_EXPORT tm *thread_safe_gmtime (const time_t *timer, struct tm &time_buffer);
 
 } // namespace docwire
 

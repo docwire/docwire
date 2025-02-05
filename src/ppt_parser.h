@@ -22,7 +22,7 @@ namespace docwire
 struct Metadata;
 class ThreadSafeOLEStorage;
 
-class DllExport PPTParser : public Parser
+class DOCWIRE_EXPORT PPTParser : public Parser
 {
 	private:
 		attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage) const;

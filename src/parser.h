@@ -22,7 +22,7 @@ namespace docwire
 /**
  * @brief Abstract class for all parsers
  */
-class DllExport Parser : public ChainElement
+class DOCWIRE_EXPORT Parser : public ChainElement
 {
 public:
 

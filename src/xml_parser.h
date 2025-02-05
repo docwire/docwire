@@ -17,7 +17,7 @@
 namespace docwire
 {
 
-class DllExport XMLParser : public Parser
+class DOCWIRE_EXPORT XMLParser : public Parser
 {
 public:
 	void parse(const data_source& data) override;

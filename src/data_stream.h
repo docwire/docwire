@@ -14,7 +14,7 @@
 
 #include <stdio.h>
 #include <string>
-#include "defines.h"
+#include "export.h"
 #include "pimpl.h"
 
 namespace docwire
@@ -37,7 +37,7 @@ class DataStream
 		virtual DataStream* clone() = 0;
 };
 
-class DllExport FileStream : public DataStream, public with_pimpl<FileStream>
+class DOCWIRE_EXPORT FileStream : public DataStream, public with_pimpl<FileStream>
 {
 	public:
 		FileStream(const std::string& file_name);
@@ -55,7 +55,7 @@ class DllExport FileStream : public DataStream, public with_pimpl<FileStream>
 		DataStream* clone();
 };
 
-class DllExport BufferStream : public DataStream, public with_pimpl<BufferStream>
+class DOCWIRE_EXPORT BufferStream : public DataStream, public with_pimpl<BufferStream>
 {
 	public:
 		BufferStream(const char* buffer, size_t size);
