@@ -1,17 +1,6 @@
 add_library(docwire_core SHARED
-    chat.cpp
     data_source.cpp
     entities.cpp
-    extract_entities.cpp
-    summarize.cpp
-    translate_to.cpp
-    classify.cpp
-    extract_keywords.cpp
-    detect_sentiment.cpp
-    analyze_data.cpp
-    find.cpp
-    text_to_speech.cpp
-    transcribe.cpp
     decompress_archives.cpp
     log.cpp
     misc.cpp
@@ -54,7 +43,7 @@ find_package(LibArchive REQUIRED)
 find_package(unofficial-curlpp CONFIG REQUIRED)
 target_link_libraries(docwire_core PRIVATE
     ${wv2} Boost::filesystem Boost::system Boost::json magic_enum::magic_enum ${unzip}
-    ZLIB::ZLIB LibArchive::LibArchive unofficial::curlpp::curlpp docwire_base64)
+    ZLIB::ZLIB LibArchive::LibArchive unofficial::curlpp::curlpp)
 target_link_libraries(docwire_core PUBLIC magic_enum::magic_enum)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(docwire_core PRIVATE dl)

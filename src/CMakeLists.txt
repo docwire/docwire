@@ -32,6 +32,7 @@ include(mail.cmake)
 include(local_ai.cmake)
 include(fuzzy_match.cmake)
 include(content_type.cmake)
+include(openai.cmake)
 include(cli.cmake)
 
 file(GLOB HEADERS "*.h")
