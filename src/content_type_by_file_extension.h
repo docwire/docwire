@@ -27,6 +27,7 @@ namespace docwire::content_type::by_file_extension
 *
 * @param data The data source to be analyzed for content type detection.
 *
+* @see @ref file_type_determination.cpp "performing file type detection example"
 * @see content_type::detect
 * @see content_type::detector
 * @see content_type::by_file_extension::detector
@@ -38,6 +39,7 @@ DOCWIRE_EXPORT void detect(data_source& data);
 *
 * This class represents a chain element that detects and assigns content types to data sources using file extension.
 *
+* @see @ref file_type_determination.cpp "performing file type detection example"
 * @see content_type::detector
 * @see content_type::by_file_extension::detect
 */

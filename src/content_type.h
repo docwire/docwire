@@ -37,6 +37,7 @@ namespace docwire::content_type
  * @param data The data source to be analyzed for content type detection.
  * @param signatures_db_to_use The loaded database of signatures used for signature-based content detection. It will be created (and loaded) if not provided.
  *
+ * @see @ref file_type_determination.cpp "performing file type detection example"
  * @see content_type::detector
  * @see content_type::by_signature::database
  * @see content_type::by_file_extension::detect
@@ -63,6 +64,7 @@ DOCWIRE_EXPORT void detect(data_source& data, const by_signature::database& sign
  * - Outlook format detection
  * - XLSB format detection
  *
+ * @see @ref file_type_determination.cpp "performing file type detection example"
  * @see content_type::detect
  * @see content_type::by_file_extension::detector
  * @see content_type::by_signature::detector

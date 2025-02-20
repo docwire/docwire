@@ -49,4 +49,10 @@
  * how to use transformer to process non-critical errors (warnings) flowing through the pipeline
 */
 
+/**
+ * @example file_type_determination.cpp
+ * This example shows how to perform file type detection (with or without document processing)
+ * by file extension or file signature or rely on provided mime-type
+*/
+
 #endif
