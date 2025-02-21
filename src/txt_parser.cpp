@@ -12,7 +12,7 @@
 #include "txt_parser.h"
 
 #include "charsetdetect.h"
-#include "htmlcxx/html/CharsetConverter.h"
+#include "charset_converter.h"
 #include "log.h"
 #include "make_error.h"
 #include "pimpl.h"
@@ -76,7 +76,7 @@ void TXTParser::parse(const data_source& data)
 	docwire_log(debug) << "Using TXT parser.";
 	std::string text;
 	csd_t charset_detector = NULL;
-	htmlcxx::CharsetConverter* converter = NULL;
+	charset_converter* converter = NULL;
 	try
 	{
 		std::string encoding;
@@ -110,9 +110,9 @@ void TXTParser::parse(const data_source& data)
 		{
 			try
 			{
-				converter = new htmlcxx::CharsetConverter(encoding, "UTF-8");
+				converter = new charset_converter(encoding, "UTF-8");
 			}
-			catch (htmlcxx::CharsetConverter::Exception& ex)
+			catch (std::exception& ex)
 			{
 				sendTag(make_nested_ptr(ex, make_error("Cannot convert text to UTF-8", encoding)));
 				if (converter)

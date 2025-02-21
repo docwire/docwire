@@ -1,0 +1,32 @@
+/*********************************************************************************************************************************************/
+/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
+/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
+/*  document analysis. Offline processing possible for security and confidentiality                                                          */
+/*                                                                                                                                           */
+/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
+/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
+/*                                                                                                                                           */
+/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
+/*********************************************************************************************************************************************/
+
+#ifndef DOCWIRE_CHARSET_CONVERTER_H
+#define DOCWIRE_CHARSET_CONVERTER_H
+
+#include "export.h"
+#include "pimpl.h"
+#include <string>
+
+namespace docwire
+{
+
+class DOCWIRE_EXPORT charset_converter : public with_pimpl<charset_converter>
+{
+	public:		
+		charset_converter(const std::string &from, const std::string &to);
+		~charset_converter();
+		std::string convert(const std::string &input);
+};
+
+} // namespace docwire
+
+#endif

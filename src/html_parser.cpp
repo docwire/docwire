@@ -15,10 +15,10 @@
 #include <regex>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include "charset_converter.h"
 #include "entities.h"
 #include "htmlcxx/html/Node.h"
 #include "htmlcxx/html/ParserSax.h"
-#include "htmlcxx/html/CharsetConverter.h"
 #include "log.h"
 #include "make_error.h"
 #include "misc.h"
@@ -84,7 +84,7 @@ class SaxParser : public ParserSax
 		bool m_turn_off_ol_enumeration;
 		std::string m_style_text;
 		std::string m_charset;
-		htmlcxx::CharsetConverter* m_converter;
+		charset_converter* m_converter;
 		char* m_decoded_buffer;	//for decoding html entities
 		size_t m_decoded_buffer_size;
 		bool m_skip_decoding;
@@ -120,9 +120,9 @@ class SaxParser : public ParserSax
 			{
 				try
 				{
-					m_converter = new htmlcxx::CharsetConverter(m_charset, "UTF-8");
+					m_converter = new charset_converter(m_charset, "UTF-8");
 				}
-				catch (htmlcxx::CharsetConverter::Exception& ex)
+				catch (std::exception& ex)
 				{
 					m_parser->sendTag(errors::make_nested_ptr(ex, make_error("Cannot create charset to UTF-8 converter", m_charset)));
 					m_converter = nullptr;

@@ -1,4 +1,5 @@
 add_library(docwire_core SHARED
+    charset_converter.cpp
     data_source.cpp
     entities.cpp
     decompress_archives.cpp
