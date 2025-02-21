@@ -13,6 +13,7 @@
 
 #include <cstring>
 #include <iconv.h>
+#include <mutex>
 #include "throw_if.h"
 
 namespace docwire
