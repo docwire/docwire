@@ -13,13 +13,14 @@
 #define DOCWIRE_TRANSCRIBE_H
 
 #include "chain_element.h"
+#include "openai_export.h"
 
 namespace docwire
 {
 namespace openai
 {
 
-class DOCWIRE_EXPORT Transcribe : public ChainElement, public with_pimpl<Transcribe>
+class DOCWIRE_OPENAI_EXPORT Transcribe : public ChainElement, public with_pimpl<Transcribe>
 {
 public:
 	Transcribe(const std::string& api_key);

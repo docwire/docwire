@@ -20,7 +20,7 @@ namespace docwire
 /**
  * @brief Exports data to CSV format.
  */
-class DOCWIRE_EXPORT CsvExporter: public ChainElement, public with_pimpl<CsvExporter>
+class DOCWIRE_CORE_EXPORT CsvExporter: public ChainElement, public with_pimpl<CsvExporter>
 {
 public:
 	CsvExporter();

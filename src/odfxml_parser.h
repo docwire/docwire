@@ -13,11 +13,12 @@
 #define DOCWIRE_ODFXML_PARSER_H
 
 #include "common_xml_document_parser.h"
+#include "odf_ooxml_export.h"
 
 namespace docwire
 {
 
-class DOCWIRE_EXPORT ODFXMLParser : public CommonXMLDocumentParser
+class DOCWIRE_ODF_OOXML_EXPORT ODFXMLParser : public CommonXMLDocumentParser
 {
 	private:
 		class CommandHandlersSet;

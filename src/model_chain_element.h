@@ -13,6 +13,7 @@
 #define DOCWIRE_LOCAL_AI_MODEL_CHAIN_ELEMENT_H
 
 #include "chain_element.h"
+#include "local_ai_export.h"
 #include "model_runner.h"
 
 namespace docwire::local_ai
@@ -26,7 +27,7 @@ namespace docwire::local_ai
  * passing the text to the model runner. The output of the model runner is
  * then emitted as a new Info object.
  */
-class DOCWIRE_EXPORT model_chain_element : public ChainElement
+class DOCWIRE_LOCAL_AI_EXPORT model_chain_element : public ChainElement
 {
 public:
 	/**

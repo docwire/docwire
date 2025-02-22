@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_XLS_PARSER_H
 #define DOCWIRE_XLS_PARSER_H
 
+#include "ole_office_formats_export.h"
 #include "parser.h"
 #include <string>
 #include <vector>
@@ -21,7 +22,7 @@ namespace docwire
 
 class ThreadSafeOLEStorage;
 
-class DOCWIRE_EXPORT XLSParser : public Parser, public with_pimpl<XLSParser>
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT XLSParser : public Parser, public with_pimpl<XLSParser>
 {
 	private:
 		friend pimpl_impl<XLSParser>;

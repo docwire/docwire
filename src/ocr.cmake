@@ -13,3 +13,7 @@ install(TARGETS docwire_ocr)
 if(MSVC)
     install(FILES $<TARGET_PDB_FILE:docwire_ocr> DESTINATION bin CONFIGURATIONS Debug)
 endif()
+
+include(GenerateExportHeader)
+generate_export_header(docwire_ocr EXPORT_FILE_NAME ocr_export.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ocr_export.h DESTINATION include/docwire)

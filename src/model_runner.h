@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
 #define DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
 
-#include "export.h"
+#include "local_ai_export.h"
 #include "pimpl.h"
 #include <filesystem>
 #include <string>
@@ -27,7 +27,7 @@ namespace docwire::local_ai
  * Destructor frees memory used by model.
  * It is important not to duplicate the object because memory consumption can be high.
  */
-class DOCWIRE_EXPORT model_runner : public with_pimpl<model_runner>
+class DOCWIRE_LOCAL_AI_EXPORT model_runner : public with_pimpl<model_runner>
 {
 public:
     /// @brief Default constructor. Loads model to memory.

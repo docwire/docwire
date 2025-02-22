@@ -13,6 +13,7 @@
 #define DOCWIRE_TXT_PARSER_H
 
 #include "parser.h"
+#include "plain_text_export.h"
 
 namespace docwire
 {
@@ -20,7 +21,7 @@ namespace docwire
 struct parse_paragraphs { bool v; };
 struct parse_lines { bool v; };
 
-class DOCWIRE_EXPORT TXTParser : public Parser, public with_pimpl<TXTParser>
+class DOCWIRE_PLAIN_TEXT_EXPORT TXTParser : public Parser, public with_pimpl<TXTParser>
 {
 	public:
 

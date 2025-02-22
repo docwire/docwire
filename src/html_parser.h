@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_HTML_PARSER_H
 #define DOCWIRE_HTML_PARSER_H
 
+#include "html_export.h"
 #include <vector>
 #include "parser.h"
 
@@ -19,7 +20,7 @@ namespace docwire
 {
 	class Metadata;
 
-class DOCWIRE_EXPORT HTMLParser : public Parser, public with_pimpl<HTMLParser>
+class DOCWIRE_HTML_EXPORT HTMLParser : public Parser, public with_pimpl<HTMLParser>
 {
 	private:
 		using with_pimpl<HTMLParser>::impl;

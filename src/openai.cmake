@@ -17,3 +17,7 @@ install(TARGETS docwire_openai)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_openai> DESTINATION bin CONFIGURATIONS Debug)
 endif()
+
+include(GenerateExportHeader)
+generate_export_header(docwire_openai EXPORT_FILE_NAME openai_export.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openai_export.h DESTINATION include/docwire)

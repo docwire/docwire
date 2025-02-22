@@ -13,6 +13,7 @@
 #define DOCWIRE_OPENAI_CHAT_H
 
 #include "chain_element.h"
+#include "openai_export.h"
 
 namespace docwire
 {
@@ -33,7 +34,7 @@ enum class ImageDetail
 	low, high, automatic
 };
 
-class DOCWIRE_EXPORT Chat : public ChainElement, public with_pimpl<Chat>
+class DOCWIRE_OPENAI_EXPORT Chat : public ChainElement, public with_pimpl<Chat>
 {
 public:
 	Chat(const std::string& system_message, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0.7, ImageDetail image_detail = ImageDetail::automatic);

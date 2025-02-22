@@ -11,3 +11,7 @@ install(TARGETS docwire_odf_ooxml)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_odf_ooxml> DESTINATION bin CONFIGURATIONS Debug)
 endif()
+
+include(GenerateExportHeader)
+generate_export_header(docwire_odf_ooxml EXPORT_FILE_NAME odf_ooxml_export.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/odf_ooxml_export.h DESTINATION include/docwire)

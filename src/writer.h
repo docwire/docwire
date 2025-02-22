@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_WRITER_H
 #define DOCWIRE_WRITER_H
 
-#include "export.h"
+#include "core_export.h"
 #include "tags.h"
 
 namespace docwire
@@ -35,7 +35,7 @@ private:
 /**
  * @brief The Writer class is used to write data from callbacks to an output stream.
  */
-class DOCWIRE_EXPORT Writer
+class DOCWIRE_CORE_EXPORT Writer
 {
 public:
   /**

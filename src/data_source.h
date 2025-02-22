@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_DATA_SOURCE_H
 #define DOCWIRE_DATA_SOURCE_H
 
-#include "export.h"
+#include "core_export.h"
 #include "file_extension.h"
 #include <filesystem>
 #include "memory_buffer.h"
@@ -101,7 +101,7 @@ template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 	as required (lazy) and cached inside the class, for example file should be read to memory only once.
 	Performance is very important, for example we should not duplicate memory buffer that is passed to class.
 **/
-class DOCWIRE_EXPORT data_source
+class DOCWIRE_CORE_EXPORT data_source
 {
 	public:
 		

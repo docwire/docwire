@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_CHAIN_ELEMENT_H
 #define DOCWIRE_CHAIN_ELEMENT_H
 
-#include "export.h"
+#include "core_export.h"
 #include "pimpl.h"
 #include "tags.h"
 
@@ -21,7 +21,7 @@ namespace docwire
 
 class ParsingChain;
 
-struct DOCWIRE_EXPORT Info
+struct DOCWIRE_CORE_EXPORT Info
 {
   Tag tag;
   bool cancel = false; //!< cancel flag. If set true then parsing process will be stopped.
@@ -32,7 +32,7 @@ struct DOCWIRE_EXPORT Info
   {}
 };
 
-class DOCWIRE_EXPORT ChainElement : public with_pimpl<ChainElement>
+class DOCWIRE_CORE_EXPORT ChainElement : public with_pimpl<ChainElement>
 {
 public:
   ChainElement();

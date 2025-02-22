@@ -12,14 +12,14 @@
 #ifndef DOCWIRE_XML_STREAM_H
 #define DOCWIRE_XML_STREAM_H
 
-#include "export.h"
 #include "pimpl.h"
 #include <string>
+#include "xml_export.h"
 
 namespace docwire
 {
 
-class DOCWIRE_EXPORT XmlStream : public with_pimpl<XmlStream>
+class DOCWIRE_XML_EXPORT XmlStream : public with_pimpl<XmlStream>
 {
 	public:
 		XmlStream(const std::string& xml, int xml_parse_options = 0);

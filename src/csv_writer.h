@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_CSV_WRITER_H
 #define DOCWIRE_CSV_WRITER_H
 
-#include "export.h"
+#include "core_export.h"
 #include <iostream>
 #include "writer.h"
 #include <vector>
@@ -21,7 +21,7 @@ namespace docwire
 {
   struct Info;
 
-class DOCWIRE_EXPORT CsvWriter : public Writer
+class DOCWIRE_CORE_EXPORT CsvWriter : public Writer
 {
 public:
   /**

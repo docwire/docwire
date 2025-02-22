@@ -19,7 +19,7 @@ namespace docwire
 namespace openai
 {
 
-class DOCWIRE_EXPORT Summarize : public Chat
+class DOCWIRE_OPENAI_EXPORT Summarize : public Chat
 {
 public:
 	Summarize(const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);

@@ -13,6 +13,7 @@
 #ifndef DOCWIRE_PST_PARSER_H
 #define DOCWIRE_PST_PARSER_H
 
+#include "mail_export.h"
 #include <vector>
 
 #include "parser.h"
@@ -21,7 +22,7 @@
 namespace docwire
 {
 
-class DOCWIRE_EXPORT PSTParser : public Parser, public with_pimpl<PSTParser>
+class DOCWIRE_MAIL_EXPORT PSTParser : public Parser, public with_pimpl<PSTParser>
 {
 private:
   using with_pimpl<PSTParser>::impl;

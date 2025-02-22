@@ -1,15 +1,6 @@
 set(CMAKE_INSTALL_RPATH .)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-set(EMPTY_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/empty.cpp)
-file(GENERATE OUTPUT ${EMPTY_SOURCE} CONTENT "
-	#include \"export.h\"
-	namespace docwire
-	{
-		DOCWIRE_EXPORT void dummy() {}
-	}
-")
-
 add_compile_definitions(DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 
 include(core.cmake)

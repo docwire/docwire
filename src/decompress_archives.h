@@ -17,7 +17,7 @@
 namespace docwire
 {
 
-class DOCWIRE_EXPORT DecompressArchives : public ChainElement
+class DOCWIRE_CORE_EXPORT DecompressArchives : public ChainElement
 {
 public:
 	DecompressArchives();

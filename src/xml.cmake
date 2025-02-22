@@ -12,3 +12,7 @@ install(TARGETS docwire_xml)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_xml> DESTINATION bin CONFIGURATIONS Debug)
 endif()
+
+include(GenerateExportHeader)
+generate_export_header(docwire_xml EXPORT_FILE_NAME xml_export.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/xml_export.h DESTINATION include/docwire)

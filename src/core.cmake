@@ -60,6 +60,6 @@ if(MSVC)
 endif()
 
 include(GenerateExportHeader)
-generate_export_header(docwire_core BASE_NAME docwire EXPORT_FILE_NAME export.h)
+generate_export_header(docwire_core EXPORT_FILE_NAME core_export.h)
 target_include_directories(docwire_core PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/core_export.h DESTINATION include/docwire)

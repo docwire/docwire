@@ -12,15 +12,15 @@
 #ifndef DOCWIRE_METADATA_WRITER_H
 #define DOCWIRE_METADATA_WRITER_H
 
+#include "core_export.h"
 #include <iostream>
 
 #include "writer.h"
-#include "export.h"
 
 namespace docwire
 {
 
-class DOCWIRE_EXPORT MetaDataWriter : public Writer
+class DOCWIRE_CORE_EXPORT MetaDataWriter : public Writer
 {
 public:
   /**

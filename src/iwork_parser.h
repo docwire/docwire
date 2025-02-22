@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_IWORK_PARSER_H
 #define DOCWIRE_IWORK_PARSER_H
 
+#include "iwork_export.h"
 #include "parser.h"
 #include "tags.h"
 #include <vector>
@@ -21,7 +22,7 @@ namespace docwire
 
 class Metadata;
 
-class DOCWIRE_EXPORT IWorkParser : public Parser, public with_pimpl<IWorkParser>
+class DOCWIRE_IWORK_EXPORT IWorkParser : public Parser, public with_pimpl<IWorkParser>
 {
 	private:
 		using with_pimpl<IWorkParser>::impl;

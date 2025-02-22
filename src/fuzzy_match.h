@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_FUZZY_MATCH_H
 #define DOCWIRE_FUZZY_MATCH_H
 
-#include "export.h"
+#include "fuzzy_match_export.h"
 #include <string>
 
 namespace docwire::fuzzy_match
@@ -30,7 +30,7 @@ namespace docwire::fuzzy_match
  *
  * @return The ratio of similarity between the two strings.
  */
-DOCWIRE_EXPORT double ratio(const std::string& a, const std::string& b);
+DOCWIRE_FUZZY_MATCH_EXPORT double ratio(const std::string& a, const std::string& b);
 
 } // namespace docwire::fuzzy_match
 

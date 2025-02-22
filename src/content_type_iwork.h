@@ -13,13 +13,13 @@
 #define DOCWIRE_CONTENT_TYPE_IWORK_H
 
 #include "chain_element.h"
+#include "content_type_export.h"
 #include "data_source.h"
-#include "export.h"
 
 namespace docwire::content_type::iwork
 {
 
-DOCWIRE_EXPORT void detect(data_source& data);
+DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
 class detector : public ChainElement
 {

@@ -13,13 +13,14 @@
 #define DOCWIRE_OPENAI_TEXT_TO_SPEECH_H
 
 #include "chain_element.h"
+#include "openai_export.h"
 
 namespace docwire
 {
 namespace openai
 {
 
-class DOCWIRE_EXPORT TextToSpeech : public ChainElement, public with_pimpl<TextToSpeech>
+class DOCWIRE_OPENAI_EXPORT TextToSpeech : public ChainElement, public with_pimpl<TextToSpeech>
 {
 public:
 	enum class Model

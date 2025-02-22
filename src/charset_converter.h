@@ -12,14 +12,14 @@
 #ifndef DOCWIRE_CHARSET_CONVERTER_H
 #define DOCWIRE_CHARSET_CONVERTER_H
 
-#include "export.h"
+#include "core_export.h"
 #include "pimpl.h"
 #include <string>
 
 namespace docwire
 {
 
-class DOCWIRE_EXPORT charset_converter : public with_pimpl<charset_converter>
+class DOCWIRE_CORE_EXPORT charset_converter : public with_pimpl<charset_converter>
 {
 	public:		
 		charset_converter(const std::string &from, const std::string &to);

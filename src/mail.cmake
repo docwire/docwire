@@ -10,3 +10,7 @@ install(TARGETS docwire_mail)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_mail> DESTINATION bin CONFIGURATIONS Debug)
 endif()
+
+include(GenerateExportHeader)
+generate_export_header(docwire_mail EXPORT_FILE_NAME mail_export.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mail_export.h DESTINATION include/docwire)

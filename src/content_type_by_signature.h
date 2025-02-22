@@ -13,8 +13,8 @@
 #define DOCWIRE_CONTENT_TYPE_BY_SIGNATURE_H
 
 #include "chain_element.h"
+#include "content_type_export.h"
 #include "data_source.h"
-#include "export.h"
 #include "ref_or_owned.h"
 
 /**
@@ -39,11 +39,11 @@ struct allow_multiple
  * @see content_type::by_signature::detector
  * @see content_type::by_signature::detect
  */
-class DOCWIRE_EXPORT database : public with_pimpl<database>
+class DOCWIRE_CONTENT_TYPE_EXPORT database : public with_pimpl<database>
 {
 public:
     explicit database();
-    friend DOCWIRE_EXPORT void detect(data_source& data, const database& database_to_use, allow_multiple allow_multiple);
+    friend DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& database_to_use, allow_multiple allow_multiple);
 };
 
 /**
@@ -59,7 +59,7 @@ public:
 * @see content_type::by_signature::database
 * @see content_type::by_signature::detector
 */
-DOCWIRE_EXPORT void detect(data_source& data, const database& database_to_use = database{}, allow_multiple allow_multiple = {false});
+DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& database_to_use = database{}, allow_multiple allow_multiple = {false});
 
 /**
 * @brief Detector chain element

@@ -48,7 +48,7 @@ namespace docwire::content_type
  * @see content_type::outlook::detect
  * @see content_type::xlsb::detect
  */
-DOCWIRE_EXPORT void detect(data_source& data, const by_signature::database& signatures_db_to_use = by_signature::database{});
+DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const by_signature::database& signatures_db_to_use = by_signature::database{});
 
 /**
  * @brief Content type detection chain element

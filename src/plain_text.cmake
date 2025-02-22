@@ -9,3 +9,7 @@ install(TARGETS docwire_plain_text)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_plain_text> DESTINATION bin CONFIGURATIONS Debug)
 endif()
+
+include(GenerateExportHeader)
+generate_export_header(docwire_plain_text EXPORT_FILE_NAME plain_text_export.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plain_text_export.h DESTINATION include/docwire)
