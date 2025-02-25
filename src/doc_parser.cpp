@@ -341,9 +341,9 @@ class TextHandler : public wvWare::TextHandler
 					{
 						parse_comments(m_parser, m_comments, [&](std::exception_ptr e) { m_parent->sendTag(e); });
 					}
-					catch (std::exception& error)
+					catch (std::exception&)
 					{
-						m_parent->sendTag(errors::make_nested_ptr(error, make_error("Parsing comments failed.")));
+						m_parent->sendTag(errors::make_nested_ptr(std::current_exception(), make_error("Parsing comments failed.")));
 						m_comments.clear();
 					}
 					m_comments_parsed = true;
@@ -629,9 +629,9 @@ void DOCParser::parse(const data_source& data)
 						XLSParser xls{};
 						obj_text = xls.parse(*storage);
 					}
-					catch (const std::exception& e)
+					catch (const std::exception&)
 					{
-						sendTag(errors::make_nested_ptr(e, make_error("Error while parsing embedded MS Excel workbook.")));
+						sendTag(errors::make_nested_ptr(std::current_exception(), make_error("Error while parsing embedded MS Excel workbook.")));
 					}
 				}
 				storage->leaveDirectory();

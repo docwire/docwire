@@ -112,9 +112,9 @@ void TXTParser::parse(const data_source& data)
 			{
 				converter = new charset_converter(encoding, "UTF-8");
 			}
-			catch (std::exception& ex)
+			catch (std::exception&)
 			{
-				sendTag(make_nested_ptr(ex, make_error("Cannot convert text to UTF-8", encoding)));
+				sendTag(make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", encoding)));
 				if (converter)
 					delete converter;
 				converter = NULL;

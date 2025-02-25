@@ -808,6 +808,63 @@ TEST(errors, diagnostic_message)
     );
 }
 
+template <typename Inner>
+void test_make_nested(const Inner& inner)
+{
+    auto e = errors::make_nested(inner, std::logic_error{"level 2"}, std::runtime_error{"level 3"});
+    static_assert(std::is_same_v<std::decay_t<decltype(e)>, errors::nested<std::runtime_error>>);
+    ASSERT_STREQ(e.what(), "level 3");
+    try
+    {
+        std::rethrow_if_nested(e);
+        FAIL() << "Expected nested exception";
+    }
+    catch(const std::exception& e)
+    {
+        ASSERT_EQ(typeid(e), typeid(errors::nested<std::logic_error>));
+        ASSERT_STREQ(e.what(), "level 2");
+        try
+        {
+            std::rethrow_if_nested(e);
+            FAIL() << "Expected nested exception";
+        }
+        catch(const std::exception& e)
+        {
+            ASSERT_EQ(typeid(e), typeid(std::out_of_range));
+            ASSERT_STREQ(e.what(), "level 1");
+        }
+        catch(...)
+        {
+            FAIL() << "Unexpected exception";
+        }
+    }
+    catch(...)
+    {
+        FAIL() << "Unexpected exception";
+    }
+}
+
+TEST(errors, make_nested)
+{
+    test_make_nested(std::out_of_range{"level 1"});
+}
+
+TEST(errors, make_nested_current_exception)
+{
+    try
+    {
+        throw std::out_of_range{"level 1"};
+    }
+    catch (std::exception&)
+    {
+        test_make_nested(std::current_exception());
+    }
+    catch(...)
+    {
+        FAIL() << "Unexpected exception";
+    }
+}
+
 TEST(errors, hashing)
 {
     std::hash<errors::base> hasher;

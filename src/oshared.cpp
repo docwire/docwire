@@ -146,9 +146,9 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metad
 					{
 						meta.author = read_vt_string(reader);
 					}
-					catch (const std::exception& e)
+					catch (const std::exception&)
 					{
-						non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error reading author.")));
+						non_fatal_error_handler(errors::make_nested_ptr(std::current_exception(), make_error("Error reading author.")));
 					}
 					break;
 				}
@@ -159,9 +159,9 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metad
 					{
 						meta.last_modified_by = read_vt_string(reader);
 					}
-					catch (const std::exception& e)
+					catch (const std::exception&)
 					{
-						non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error reading last modified by.")));
+						non_fatal_error_handler(errors::make_nested_ptr(std::current_exception(), make_error("Error reading last modified by.")));
 					}
 					break;
 				}
@@ -172,9 +172,9 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metad
 					{
 						meta.creation_date = read_vt_filetime(reader);
 					}
-					catch (const std::exception& e)
+					catch (const std::exception&)
 					{
-						non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error reading creation date.")));
+						non_fatal_error_handler(errors::make_nested_ptr(std::current_exception(), make_error("Error reading creation date.")));
 					}
 					break;
 				}
@@ -185,9 +185,9 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metad
 					{
 						meta.last_modification_date = read_vt_filetime(reader);
 					}
-					catch (const std::exception& e)
+					catch (const std::exception&)
 					{
-						non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error reading last modification date.")));
+						non_fatal_error_handler(errors::make_nested_ptr(std::current_exception(), make_error("Error reading last modification date.")));
 					}
 					break;
 				}
@@ -198,9 +198,9 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metad
 					{
 						meta.page_count = read_vt_i4(reader);
 					}
-					catch (const std::exception& e)
+					catch (const std::exception&)
 					{
-						non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error reading page count.")));
+						non_fatal_error_handler(errors::make_nested_ptr(std::current_exception(), make_error("Error reading page count.")));
 					}
 					break;
 				}
@@ -211,9 +211,9 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metad
 					{
 						meta.word_count = read_vt_i4(reader);
 					}
-					catch (const std::exception& e)
+					catch (const std::exception&)
 					{
-						non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error reading word count.")));
+						non_fatal_error_handler(errors::make_nested_ptr(std::current_exception(), make_error("Error reading word count.")));
 					}
 					break;
 				}

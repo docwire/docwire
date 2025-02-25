@@ -811,12 +811,12 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			{
 				throw_if (!reader.readU16(rec_type), reader.getLastError());
 			}
-			catch (const std::exception& e)
+			catch (const std::exception&)
 			{
 				if (text.length() == 0)
 					std::throw_with_nested(make_error("Type of record could not be read"));
 				else
-					non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Type of record could not be read")));
+					non_fatal_error_handler(errors::make_nested_ptr(std::current_exception(), make_error("Type of record could not be read")));
 				break;
 			}
 			if (oleEof(reader))
@@ -829,12 +829,12 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			{
 				throw_if (!reader.readU16(rec_len), reader.getLastError());
 			}
-			catch (const std::exception& e)
+			catch (const std::exception&)
 			{
 				if (text.length() == 0)
 					std::throw_with_nested(make_error("Length of record could not be read"));
 				else
-					non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Length of record could not be read")));
+					non_fatal_error_handler(errors::make_nested_ptr(std::current_exception(), make_error("Length of record could not be read")));
 				break;
 			}
 			if (rec_len > 0)

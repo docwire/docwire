@@ -122,9 +122,9 @@ class SaxParser : public ParserSax
 				{
 					m_converter = new charset_converter(m_charset, "UTF-8");
 				}
-				catch (std::exception& ex)
+				catch (std::exception&)
 				{
-					m_parser->sendTag(errors::make_nested_ptr(ex, make_error("Cannot create charset to UTF-8 converter", m_charset)));
+					m_parser->sendTag(errors::make_nested_ptr(std::current_exception(), make_error("Cannot create charset to UTF-8 converter", m_charset)));
 					m_converter = nullptr;
 				}
 			}

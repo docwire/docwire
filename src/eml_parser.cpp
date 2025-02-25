@@ -40,9 +40,9 @@ struct pimpl_impl<EMLParser> : with_pimpl_owner<EMLParser>
 			charset_converter converter(charset, "UTF-8");
 			text = converter.convert(text);
 		}
-		catch (std::exception& ex)
+		catch (std::exception&)
 		{
-			owner().sendTag(errors::make_nested_ptr(ex, make_error("Cannot convert text to UTF-8", charset)));
+			owner().sendTag(errors::make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", charset)));
 		}
 	}
 

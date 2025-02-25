@@ -443,9 +443,9 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode)
 		{
 			impl().readOOXMLComments(zipfile, mode);
 		}
-		catch (const std::exception& e)
+		catch (const std::exception&)
 		{
-			sendTag(make_nested_ptr(e, make_error("Error parsing comments.")));
+			sendTag(make_nested_ptr(std::current_exception(), make_error("Error parsing comments.")));
 		}
 	}
 	if (zipfile.exists("word/_rels/document.xml.rels"))
@@ -454,9 +454,9 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode)
 		{
 			impl().readOOXMLRelationships(zipfile, mode);
 		}
-		catch (const std::exception& e)
+		catch (const std::exception&)
 		{
-			sendTag(make_nested_ptr(e, make_error("Error parsing relationships.")));
+			sendTag(make_nested_ptr(std::current_exception(), make_error("Error parsing relationships.")));
 		}
 	}
 	if (zipfile.exists("styles.xml"))
