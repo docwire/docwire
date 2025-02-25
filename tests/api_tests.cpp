@@ -473,8 +473,8 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     }
     catch (const std::exception& ex)
     {
-        std::cerr << errors::diagnostic_message(ex);
-        ASSERT_TRUE(errors::contains_type<errors::file_encrypted>(ex));
+        ASSERT_TRUE(errors::contains_type<errors::file_encrypted>(ex))
+            << "Thrown exception diagnostic message:\n" << errors::diagnostic_message(ex);
     }   
 }
 
@@ -1528,7 +1528,8 @@ TEST(OCRParser, leptonica_stderr_capturer)
     }
     catch (const std::exception& e)
     {
-        ASSERT_TRUE(errors::contains_type<errors::uninterpretable_data>(e));
+        ASSERT_TRUE(errors::contains_type<errors::uninterpretable_data>(e))
+            << "Thrown exception diagnostic message:\n" << errors::diagnostic_message(e);
         ASSERT_THAT(errors::diagnostic_message(e), testing::HasSubstr(
             "with context \"leptonica_stderr_capturer.contents(): Error in pixReadMem: Unknown format: no pix returned\""));
     }
