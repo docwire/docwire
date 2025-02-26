@@ -739,7 +739,7 @@ TEST (errors, throwing)
     try
     {
         std::string s { "test" };
-        throw_if("2 < 3", errors::file_encrypted{}, s);
+        throw_if(2 < 3, errors::file_encrypted{}, s);
     }
     catch (const errors::base& e)
     {
@@ -762,7 +762,7 @@ TEST (errors, throwing)
             catch (const errors::base& e)
             {
                 ASSERT_EQ(e.context_type(), typeid(std::pair<std::string, const char*>));
-                ASSERT_EQ(e.context_string(), "triggering_condition: \"2 < 3\"");
+                ASSERT_EQ(e.context_string(), "triggering_condition: 2 < 3");
             }
         }
     }
