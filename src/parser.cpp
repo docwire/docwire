@@ -43,7 +43,7 @@ void Parser::process(Info &info)
   }
   catch (...)
   {
-    throw make_nested(std::current_exception(), make_error("Parsing failed"));
+    std::throw_with_nested(make_error("Parsing failed"));
   }
 }
 
