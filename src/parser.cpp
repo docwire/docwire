@@ -16,7 +16,6 @@
 #include "log_tags.h" // IWYU pragma: keep
 #include "parsing_chain.h"
 #include "throw_if.h"
-#include <iostream>
 
 namespace docwire
 {
@@ -44,7 +43,6 @@ void Parser::process(Info &info)
   }
   catch (const std::exception& e)
   {
-    std::cerr << "parsing failed:\n" << errors::diagnostic_message(e) << std::endl;
     std::throw_with_nested(make_error("Parsing failed"));
   }
 }
