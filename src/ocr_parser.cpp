@@ -13,7 +13,6 @@
 
 #include "error_tags.h"
 
-#include <iostream>
 #include <leptonica/allheaders.h>
 #include <leptonica/array_internal.h>
 #include <leptonica/pix_internal.h>
@@ -26,7 +25,6 @@
 #include <filesystem>
 #include <cstdlib>
 #include <magic_enum/magic_enum_iostream.hpp>
-#include "exception_utils.h"
 #include "log.h"
 #include "lru_memory_cache.h"
 #include <mutex>
@@ -235,13 +233,7 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     // Read the image and convert to a gray-scale image
     pix_unique_ptr gray{ nullptr };
 
-    std::shared_ptr<PIX> image;
-    try {
-    image = load_pix(data);
-    } catch (const std::exception& e) {
-        std::cerr << "load_pix failed:\n" << errors::diagnostic_message(e) << std::endl;
-        throw;
-    }
+    std::shared_ptr<PIX> image = load_pix(data);
 
     pix_unique_ptr inverted{ nullptr };
     try
