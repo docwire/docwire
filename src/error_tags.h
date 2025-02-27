@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_ERROR_TAGS_H
 #define DOCWIRE_ERROR_TAGS_H
 
+#include "core_export.h"
 #include <string>
 
 namespace docwire::errors
@@ -35,9 +36,9 @@ namespace docwire::errors
  * }
  * @endcode
  */
-struct program_logic
+struct DOCWIRE_CORE_EXPORT program_logic
 {
-	std::string string() const { return "program logic error tag"; }
+	std::string string() const;
 };
 
 /**
@@ -59,9 +60,9 @@ struct program_logic
  * }
  * @endcode
  */
-struct program_corrupted
+struct DOCWIRE_CORE_EXPORT program_corrupted
 {
-	std::string string() const { return "program corrupted error tag"; }
+	std::string string() const;
 };
 
 /**
@@ -83,9 +84,9 @@ struct program_corrupted
  * }
  * @endcode
  */
-struct uninterpretable_data
+struct DOCWIRE_CORE_EXPORT uninterpretable_data
 {
-	std::string string() const { return "uninterpretable data error tag"; }
+	std::string string() const;
 };
 
 /**
@@ -107,9 +108,9 @@ struct uninterpretable_data
  * }
  * @endcode
  */
-struct network_failure
+struct DOCWIRE_CORE_EXPORT network_failure
 {
-	std::string string() const { return "network failure error tag"; }
+	std::string string() const;
 };
 
 /**
@@ -129,9 +130,9 @@ struct network_failure
  * }
  * @endcode
  */
-struct file_encrypted
+struct DOCWIRE_CORE_EXPORT file_encrypted
 {
-	std::string string() const { return "file encrypted error tag"; }
+	std::string string() const;
 };
 
 template <typename T>

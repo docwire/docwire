@@ -2,6 +2,8 @@ add_library(docwire_core SHARED
     charset_converter.cpp
     data_source.cpp
     entities.cpp
+    error.cpp
+    error_tags.cpp
     decompress_archives.cpp
     log.cpp
     misc.cpp
