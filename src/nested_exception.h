@@ -60,6 +60,8 @@ public:
         : T(t)
     {
     }
+
+	virtual ~nested() = default;
 };
 
 /**
