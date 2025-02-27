@@ -34,7 +34,10 @@ if ($env:DOWNLOAD_VCPKG -ne "0")
     }
     git clone https://github.com/microsoft/vcpkg.git
     cd vcpkg
-    git apply --verbose ..\tools\vcpkg_hotfixes\*.patch
+    $patchFiles = Get-ChildItem -Path ..\tools\vcpkg_hotfixes\*.patch
+    Invoke-ExternalCommand {
+        git apply --ignore-whitespace --verbose $patchFiles.FullName
+    }
     .\bootstrap-vcpkg.bat
     cd ..
 }
