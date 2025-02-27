@@ -41,7 +41,7 @@ void Parser::process(Info &info)
   {
       parse(data);
   }
-  catch (const std::exception& e)
+  catch (...)
   {
     std::throw_with_nested(make_error("Parsing failed"));
   }
