@@ -443,11 +443,6 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
         }
         else
         {
-          if (table.empty())
-          {
-            std::cerr << "TABLE IS EMPTY" << std::endl;
-            docwire_log(severity_level::error) << "Cell content inside table without rows" << tags[i];
-          }
           throw_if (table.empty(), "Cell content inside table without rows", errors::program_logic{});
           throw_if (table.back().empty(), "Cell content inside table row without cells", errors::program_logic{});
           table.back().back().write(tags[i]);
