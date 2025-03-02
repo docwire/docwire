@@ -245,8 +245,11 @@ class SaxParser : public ParserSax
 					boost::trim_right(m_buffered_text);
 					m_last_char_in_inline_formatting_context = '\0'; // inline formatting context is now empty
 				}
-				m_parser->sendTag(tag::Text{.text = m_buffered_text});
-				m_buffered_text = "";
+				if (!m_buffered_text.empty())
+				{
+					m_parser->sendTag(tag::Text{.text = m_buffered_text});
+					m_buffered_text = "";
+				}
 			}
 			// All html elements that will emit tag::Paragraph (as we do not have H1 etc)
 			CaseInsensitiveStringSet paragraph_elements({"h1", "h2", "h3", "h4", "h5", "h6", "p"});
