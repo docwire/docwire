@@ -1092,6 +1092,92 @@ TEST(DataSource, increamental_seekable_stream_ptr)
     test_data_source_incremental<seekable_stream_ptr>();
 }
 
+template<typename Exporter>
+void test_table_exporting(const std::string& expected)
+{
+    std::ostringstream output_stream{};
+    auto parsing_chain = Exporter{} | output_stream;
+    std::vector<Tag> tags
+    {
+        tag::Document{},
+        tag::Table{},
+        tag::Caption{},
+        tag::Text{.text = "Table caption"},
+        tag::CloseCaption{},
+        tag::TableRow{},
+        tag::TableCell{},
+        tag::Text{.text = "Header 1"},
+        tag::CloseTableCell{},
+        tag::TableCell{},
+        tag::Text{.text = "Header 2"},
+        tag::CloseTableCell{},
+        tag::CloseTableRow{},
+        tag::TableRow{},
+        tag::TableCell{},
+        tag::Text{.text = "Row 1 Cell 1"},
+        tag::CloseTableCell{},
+        tag::TableCell{},
+        tag::Text{.text = "Row 1 Cell 2"},
+        tag::CloseTableCell{},
+        tag::CloseTableRow{},
+        tag::TableRow{},
+        tag::TableCell{},
+        tag::Text{.text = "Row 2 Cell 1"},
+        tag::CloseTableCell{},
+        tag::TableCell{},
+        tag::Text{.text = "Row 2 Cell 2"},
+        tag::CloseTableCell{},
+        tag::CloseTableRow{},
+        tag::TableRow{},
+        tag::TableCell{},
+        tag::Text{.text = "Footer 1"},
+        tag::CloseTableCell{},
+        tag::TableCell{},
+        tag::Text{.text = "Footer 2"},
+        tag::CloseTableCell{},
+        tag::CloseTableRow{},
+        tag::CloseTable{},
+        tag::CloseDocument{}
+    };
+    for (auto tag: tags)
+    {
+        parsing_chain(tag);
+    }
+    ASSERT_EQ(output_stream.str(), expected);
+}
+
+TEST(HtmlExporter, table)
+{
+    test_table_exporting<HtmlExporter>(
+        "<!DOCTYPE html>\n"
+        "<html>\n"
+        "<head>\n"
+        "<meta charset=\"utf-8\">\n"
+        "<title>DocWire</title>\n"
+        "</head>\n"
+        "<body>\n"
+        "<table>"
+        "<caption>Table caption</caption>"
+        "<tr><td>Header 1</td><td>Header 2</td></tr>"
+        "<tr><td>Row 1 Cell 1</td><td>Row 1 Cell 2</td></tr>"
+        "<tr><td>Row 2 Cell 1</td><td>Row 2 Cell 2</td></tr>"
+        "<tr><td>Footer 1</td><td>Footer 2</td></tr>"
+        "</table>"
+        "</body>\n"
+        "</html>\n");
+}
+
+TEST(PlainTextExporter, table)
+{
+    test_table_exporting<PlainTextExporter>(
+        "Table caption\n"
+        "Header 1      Header 2    \n"
+        "Row 1 Cell 1  Row 1 Cell 2\n"
+        "Row 2 Cell 1  Row 2 Cell 2\n"
+        "Footer 1      Footer 2    \n"
+        "\n");
+}
+
 TEST(PlainTextExporter, table_inside_table_without_rows)
 {
     ASSERT_ANY_THROW(
@@ -1514,6 +1600,66 @@ TEST(TXTParser, paragraphs)
         VariantWith<tag::BreakLine>(_),
         VariantWith<tag::CloseDocument>(_)
     ));    
+}
+
+TEST(HTMLParser, table)
+{
+    using namespace testing;
+    using namespace chaining;
+    std::vector<Tag> tags;
+    docwire::data_source{std::string{
+        "<table>"
+            "<caption>Table caption</caption>"
+            "<thead><tr><th>Header 1</th><th>Header 2</th></tr></thead>"
+            "<tbody>"
+                "<tr><td>Row 1 Cell 1</td><td>Row 1 Cell 2</td></tr>"
+                "<tr><td>Row 2 Cell 1</td><td>Row 2 Cell 2</td></tr>"
+            "</tbody>"
+            "<tfoot><tr><td>Footer 1</td><td>Footer 2</td></tr></tfoot>"
+        "</table>"},
+        mime_type{"text/html"}, confidence::highest} |
+        HTMLParser{} | tags;
+    ASSERT_THAT(tags, testing::ElementsAre(
+        VariantWith<tag::Document>(_),
+        VariantWith<tag::Table>(_),
+        VariantWith<tag::Caption>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Table caption"))),
+        VariantWith<tag::CloseCaption>(_),
+        VariantWith<tag::TableRow>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Header 1"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Header 2"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::CloseTableRow>(_),
+        VariantWith<tag::TableRow>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Row 1 Cell 1"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Row 1 Cell 2"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::CloseTableRow>(_),
+        VariantWith<tag::TableRow>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Row 2 Cell 1"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Row 2 Cell 2"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::CloseTableRow>(_),
+        VariantWith<tag::TableRow>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Footer 1"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Footer 2"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::CloseTableRow>(_),
+        VariantWith<tag::CloseTable>(_),
+        VariantWith<tag::CloseDocument>(_)
+    ));
 }
 
 TEST(OCRParser, leptonica_stderr_capturer)

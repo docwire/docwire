@@ -135,6 +135,13 @@ struct TableCell
 
 struct CloseTableCell {};
 
+struct Caption
+{
+  attributes::Styling styling;
+};
+
+struct CloseCaption {};
+
 struct Text
 {
   std::string text;
@@ -246,6 +253,8 @@ using Variant = std::variant<
   CloseUnderline,
   Table,
   CloseTable,
+  Caption,
+  CloseCaption,
   TableRow,
   CloseTableRow,
   TableCell,

@@ -86,6 +86,29 @@ public:
   std::vector<std::string> lines;
 };
 
+class nested_writer
+{
+public:
+  nested_writer(std::string eol_sequence,
+    std::function<std::string(const tag::Link&)> format_link_opening,
+    std::function<std::string(const tag::CloseLink&)> format_link_closing)
+  : m_writer(eol_sequence, format_link_opening, format_link_closing)
+  {}
+
+  void write(const Tag& tag)
+  {
+    m_writer.write_to(tag, m_stream);
+  }
+
+  std::string result_text() const
+  {
+    return m_stream.str();
+  }
+
+  PlainTextWriter m_writer;
+  std::stringstream m_stream;
+};
+
 template<>
 struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
 {
@@ -328,6 +351,10 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   std::string render_table()
   {
     std::string result;
+
+    if (table_caption_writer)
+      result += table_caption_writer->result_text() + m_eol_sequence;
+
     int max_column_width = 0;
     int cell_in_row = 0;
 
@@ -387,7 +414,18 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
         throw_if (table.back().empty(), "Table inside table row without cells", errors::program_logic{});
         table.back().back().write(ss.str());
       }
-
+      else if (std::holds_alternative<tag::Caption>(tags[i]))
+      {
+        throw_if (table_caption_mode, "Table caption inside table caption", errors::program_logic{});
+        throw_if (table_caption_writer, "Second caption inside table", errors::program_logic{});
+        table_caption_mode = true;
+        table_caption_writer = nested_writer{m_eol_sequence, m_format_link_opening, m_format_link_closing};
+      }
+      else if (std::holds_alternative<tag::CloseCaption>(tags[i]))
+      {
+        throw_if (!table_caption_mode, "Close caption outside table caption", errors::program_logic{});
+        table_caption_mode = false;
+      }
       else if (std::holds_alternative<tag::TableRow>(tags[i]))
       {
         table.push_back({});
@@ -399,9 +437,21 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
       }
       else if (!std::holds_alternative<tag::CloseTableRow>(tags[i]) && !std::holds_alternative<tag::CloseTableCell>(tags[i]))
       {
-        throw_if (table.empty(), "Cell content inside table without rows", errors::program_logic{});
-        throw_if (table.back().empty(), "Cell content inside table row without cells", errors::program_logic{});
-        table.back().back().write(tags[i]);
+        if (table_caption_mode)
+        {
+          table_caption_writer->write(tags[i]);
+        }
+        else
+        {
+          if (table.empty())
+          {
+            std::cerr << "TABLE IS EMPTY" << std::endl;
+            docwire_log(severity_level::error) << "Cell content inside table without rows" << tags[i];
+          }
+          throw_if (table.empty(), "Cell content inside table without rows", errors::program_logic{});
+          throw_if (table.back().empty(), "Cell content inside table row without cells", errors::program_logic{});
+          table.back().back().write(tags[i]);
+        }
       }
     }
     return render_table();
@@ -418,6 +468,8 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
         stream << create_table();
         tags.clear();
         table.clear();
+        table_caption_mode = false;
+        table_caption_writer.reset();
         return;
       }
     }
@@ -478,13 +530,13 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   std::vector<Tag> tags;
   std::string list_type;
   int list_counter;
-  bool first_cell_in_row;
   bool list_mode{ false };
   bool header_mode{false};
   bool footer_mode{false};
   std::stringstream footer_stream;
   std::vector<std::vector<Cell>> table;
-  std::string footer;
+  std::optional<nested_writer> table_caption_writer;
+  bool table_caption_mode{false};
   int m_nested_docs_counter { 0 };
 };
 

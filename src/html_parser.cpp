@@ -281,6 +281,10 @@ class SaxParser : public ParserSax
 				{
 					m_parser->sendTag(tag::CloseTable{});
 				}
+				else if (str_iequals(tag_name, "caption"))
+				{
+					m_parser->sendTag(tag::CloseCaption{});
+				}
 				else if (str_iequals(tag_name, "tr"))
 				{
 					m_parser->sendTag(tag::CloseTableRow{});
@@ -403,6 +407,11 @@ class SaxParser : public ParserSax
 			{
 				node.parseAttributes();
 				m_parser->sendTag(tag::Table{.styling=html_node_styling(node)});
+			}
+			else if (str_iequals(node.tagName(), "caption"))
+			{
+				node.parseAttributes();
+				m_parser->sendTag(tag::Caption{.styling=html_node_styling(node)});
 			}
 			else if (str_iequals(tag_name, "tr"))
 			{
