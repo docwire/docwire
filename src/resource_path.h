@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_RESOURCE_PATH_H
 #define DOCWIRE_RESOURCE_PATH_H
 
-#include "defines.h"
+#include "core_export.h"
 #include <filesystem>
 
 namespace docwire
@@ -20,8 +20,8 @@ namespace docwire
 
 typedef std::filesystem::path(this_line_location_t)();
 
-DllExport std::filesystem::path this_line_location_helper(const this_line_location_t& this_line_location_instance);
-DllExport std::filesystem::path resource_path(const std::filesystem::path& module_path, const std::filesystem::path& resource_rel_path);
+DOCWIRE_CORE_EXPORT std::filesystem::path this_line_location_helper(const this_line_location_t& this_line_location_instance);
+DOCWIRE_CORE_EXPORT std::filesystem::path resource_path(const std::filesystem::path& module_path, const std::filesystem::path& resource_rel_path);
 
 // Anonymous namespace to make sure that inline methods are instantiated in
 // current translation unit and are not shadowed by instantiations from other units.

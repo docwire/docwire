@@ -1,17 +1,9 @@
 add_library(docwire_core SHARED
-    chat.cpp
+    charset_converter.cpp
     data_source.cpp
     entities.cpp
-    extract_entities.cpp
-    summarize.cpp
-    translate_to.cpp
-    classify.cpp
-    extract_keywords.cpp
-    detect_sentiment.cpp
-    analyze_data.cpp
-    find.cpp
-    text_to_speech.cpp
-    transcribe.cpp
+    error.cpp
+    error_tags.cpp
     decompress_archives.cpp
     log.cpp
     misc.cpp
@@ -52,9 +44,10 @@ find_library(unzip unzip REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(LibArchive REQUIRED)
 find_package(unofficial-curlpp CONFIG REQUIRED)
+find_package(Iconv REQUIRED)
 target_link_libraries(docwire_core PRIVATE
     ${wv2} Boost::filesystem Boost::system Boost::json magic_enum::magic_enum ${unzip}
-    ZLIB::ZLIB LibArchive::LibArchive unofficial::curlpp::curlpp docwire_base64)
+    ZLIB::ZLIB LibArchive::LibArchive unofficial::curlpp::curlpp Iconv::Iconv)
 target_link_libraries(docwire_core PUBLIC magic_enum::magic_enum)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(docwire_core PRIVATE dl)
@@ -67,3 +60,8 @@ install(TARGETS docwire_core)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_core> DESTINATION bin CONFIGURATIONS Debug)
 endif()
+
+include(GenerateExportHeader)
+generate_export_header(docwire_core EXPORT_FILE_NAME core_export.h)
+target_include_directories(docwire_core PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/core_export.h DESTINATION include/docwire)

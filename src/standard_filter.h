@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_STANDARD_FILTER_H
 #define DOCWIRE_STANDARD_FILTER_H
 
-#include "defines.h"
+#include "core_export.h"
 #include "transformer_func.h"
 
 namespace docwire
@@ -27,7 +27,7 @@ namespace docwire
  *  PlainTextExporter{};
  * @endcode
  */
-class DllExport StandardFilter
+class DOCWIRE_CORE_EXPORT StandardFilter
 {
 public:
   /**

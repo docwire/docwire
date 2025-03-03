@@ -20,7 +20,7 @@ namespace docwire
 /**
  * @brief Exports data to HTML format.
  */
-class DllExport HtmlExporter: public ChainElement, public with_pimpl<HtmlExporter>
+class DOCWIRE_CORE_EXPORT HtmlExporter: public ChainElement, public with_pimpl<HtmlExporter>
 {
 public:
 

@@ -198,6 +198,8 @@ struct pimpl_impl<HtmlWriter> : pimpl_impl_base
       [](const tag::CloseTableRow& tag) { return std::make_shared<TextElement>("</tr>"); },
       [](const tag::TableCell& tag) { return tag_with_attributes("td", styling_attributes(tag)); },
       [](const tag::CloseTableCell& tag) { return std::make_shared<TextElement>("</td>"); },
+      [](const tag::Caption& tag) { return tag_with_attributes("caption", styling_attributes(tag)); },
+      [](const tag::CloseCaption& tag) { return std::make_shared<TextElement>("</caption>"); },
       [](const tag::BreakLine& tag) { return tag_with_attributes("br", styling_attributes(tag)); },
       [](const tag::Text& tag) { return std::make_shared<TextElement>(tag.text); },
       [this](const tag::Link& tag) { return write_link(tag); },

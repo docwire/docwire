@@ -15,3 +15,7 @@ install(TARGETS docwire_content_type)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_content_type> DESTINATION bin CONFIGURATIONS Debug)
 endif()
+
+include(GenerateExportHeader)
+generate_export_header(docwire_content_type EXPORT_FILE_NAME content_type_export.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/content_type_export.h DESTINATION include/docwire)

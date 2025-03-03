@@ -473,8 +473,8 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     }
     catch (const std::exception& ex)
     {
-        std::cerr << errors::diagnostic_message(ex);
-        ASSERT_TRUE(errors::contains_type<errors::file_encrypted>(ex));
+        ASSERT_TRUE(errors::contains_type<errors::file_encrypted>(ex))
+            << "Thrown exception diagnostic message:\n" << errors::diagnostic_message(ex);
     }   
 }
 
@@ -739,7 +739,7 @@ TEST (errors, throwing)
     try
     {
         std::string s { "test" };
-        throw_if("2 < 3", errors::file_encrypted{}, s);
+        throw_if(2 < 3, errors::file_encrypted{}, s);
     }
     catch (const errors::base& e)
     {
@@ -762,7 +762,7 @@ TEST (errors, throwing)
             catch (const errors::base& e)
             {
                 ASSERT_EQ(e.context_type(), typeid(std::pair<std::string, const char*>));
-                ASSERT_EQ(e.context_string(), "triggering_condition: \"2 < 3\"");
+                ASSERT_EQ(e.context_string(), "triggering_condition: 2 < 3");
             }
         }
     }
@@ -806,6 +806,63 @@ TEST(errors, diagnostic_message)
         "in " + err3_loc.function_name() + "\n"
         "at " + + err3_loc.file_name() + ":" + std::to_string(err3_loc.line() + 1) + "\n"
     );
+}
+
+template <typename Inner>
+void test_make_nested(const Inner& inner)
+{
+    auto e = errors::make_nested(inner, std::logic_error{"level 2"}, std::runtime_error{"level 3"});
+    static_assert(std::is_same_v<std::decay_t<decltype(e)>, errors::nested<std::runtime_error>>);
+    ASSERT_STREQ(e.what(), "level 3");
+    try
+    {
+        std::rethrow_if_nested(e);
+        FAIL() << "Expected nested exception";
+    }
+    catch(const std::exception& e)
+    {
+        ASSERT_EQ(typeid(e), typeid(errors::nested<std::logic_error>));
+        ASSERT_STREQ(e.what(), "level 2");
+        try
+        {
+            std::rethrow_if_nested(e);
+            FAIL() << "Expected nested exception";
+        }
+        catch(const std::exception& e)
+        {
+            ASSERT_EQ(typeid(e), typeid(std::out_of_range));
+            ASSERT_STREQ(e.what(), "level 1");
+        }
+        catch(...)
+        {
+            FAIL() << "Unexpected exception";
+        }
+    }
+    catch(...)
+    {
+        FAIL() << "Unexpected exception";
+    }
+}
+
+TEST(errors, make_nested)
+{
+    test_make_nested(std::out_of_range{"level 1"});
+}
+
+TEST(errors, make_nested_current_exception)
+{
+    try
+    {
+        throw std::out_of_range{"level 1"};
+    }
+    catch (std::exception&)
+    {
+        test_make_nested(std::current_exception());
+    }
+    catch(...)
+    {
+        FAIL() << "Unexpected exception";
+    }
 }
 
 TEST(errors, hashing)
@@ -1033,6 +1090,92 @@ TEST(DataSource, incremental_unseekable_stream_ptr)
 TEST(DataSource, increamental_seekable_stream_ptr)
 {
     test_data_source_incremental<seekable_stream_ptr>();
+}
+
+template<typename Exporter>
+void test_table_exporting(const std::string& expected)
+{
+    std::ostringstream output_stream{};
+    auto parsing_chain = Exporter{} | output_stream;
+    std::vector<Tag> tags
+    {
+        tag::Document{},
+        tag::Table{},
+        tag::Caption{},
+        tag::Text{.text = "Table caption"},
+        tag::CloseCaption{},
+        tag::TableRow{},
+        tag::TableCell{},
+        tag::Text{.text = "Header 1"},
+        tag::CloseTableCell{},
+        tag::TableCell{},
+        tag::Text{.text = "Header 2"},
+        tag::CloseTableCell{},
+        tag::CloseTableRow{},
+        tag::TableRow{},
+        tag::TableCell{},
+        tag::Text{.text = "Row 1 Cell 1"},
+        tag::CloseTableCell{},
+        tag::TableCell{},
+        tag::Text{.text = "Row 1 Cell 2"},
+        tag::CloseTableCell{},
+        tag::CloseTableRow{},
+        tag::TableRow{},
+        tag::TableCell{},
+        tag::Text{.text = "Row 2 Cell 1"},
+        tag::CloseTableCell{},
+        tag::TableCell{},
+        tag::Text{.text = "Row 2 Cell 2"},
+        tag::CloseTableCell{},
+        tag::CloseTableRow{},
+        tag::TableRow{},
+        tag::TableCell{},
+        tag::Text{.text = "Footer 1"},
+        tag::CloseTableCell{},
+        tag::TableCell{},
+        tag::Text{.text = "Footer 2"},
+        tag::CloseTableCell{},
+        tag::CloseTableRow{},
+        tag::CloseTable{},
+        tag::CloseDocument{}
+    };
+    for (auto tag: tags)
+    {
+        parsing_chain(tag);
+    }
+    ASSERT_EQ(output_stream.str(), expected);
+}
+
+TEST(HtmlExporter, table)
+{
+    test_table_exporting<HtmlExporter>(
+        "<!DOCTYPE html>\n"
+        "<html>\n"
+        "<head>\n"
+        "<meta charset=\"utf-8\">\n"
+        "<title>DocWire</title>\n"
+        "</head>\n"
+        "<body>\n"
+        "<table>"
+        "<caption>Table caption</caption>"
+        "<tr><td>Header 1</td><td>Header 2</td></tr>"
+        "<tr><td>Row 1 Cell 1</td><td>Row 1 Cell 2</td></tr>"
+        "<tr><td>Row 2 Cell 1</td><td>Row 2 Cell 2</td></tr>"
+        "<tr><td>Footer 1</td><td>Footer 2</td></tr>"
+        "</table>"
+        "</body>\n"
+        "</html>\n");
+}
+
+TEST(PlainTextExporter, table)
+{
+    test_table_exporting<PlainTextExporter>(
+        "Table caption\n"
+        "Header 1      Header 2    \n"
+        "Row 1 Cell 1  Row 1 Cell 2\n"
+        "Row 2 Cell 1  Row 2 Cell 2\n"
+        "Footer 1      Footer 2    \n"
+        "\n");
 }
 
 TEST(PlainTextExporter, table_inside_table_without_rows)
@@ -1459,6 +1602,66 @@ TEST(TXTParser, paragraphs)
     ));    
 }
 
+TEST(HTMLParser, table)
+{
+    using namespace testing;
+    using namespace chaining;
+    std::vector<Tag> tags;
+    docwire::data_source{std::string{
+        "<table>"
+            "<caption>Table caption</caption>"
+            "<thead><tr><th>Header 1</th><th>Header 2</th></tr></thead>"
+            "<tbody>"
+                "<tr><td>Row 1 Cell 1</td><td>Row 1 Cell 2</td></tr>"
+                "<tr><td>Row 2 Cell 1</td><td>Row 2 Cell 2</td></tr>"
+            "</tbody>"
+            "<tfoot><tr><td>Footer 1</td><td>Footer 2</td></tr></tfoot>"
+        "</table>"},
+        mime_type{"text/html"}, confidence::highest} |
+        HTMLParser{} | tags;
+    ASSERT_THAT(tags, testing::ElementsAre(
+        VariantWith<tag::Document>(_),
+        VariantWith<tag::Table>(_),
+        VariantWith<tag::Caption>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Table caption"))),
+        VariantWith<tag::CloseCaption>(_),
+        VariantWith<tag::TableRow>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Header 1"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Header 2"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::CloseTableRow>(_),
+        VariantWith<tag::TableRow>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Row 1 Cell 1"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Row 1 Cell 2"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::CloseTableRow>(_),
+        VariantWith<tag::TableRow>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Row 2 Cell 1"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Row 2 Cell 2"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::CloseTableRow>(_),
+        VariantWith<tag::TableRow>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Footer 1"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Footer 2"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::CloseTableRow>(_),
+        VariantWith<tag::CloseTable>(_),
+        VariantWith<tag::CloseDocument>(_)
+    ));
+}
+
 TEST(OCRParser, leptonica_stderr_capturer)
 {
     try
@@ -1471,7 +1674,8 @@ TEST(OCRParser, leptonica_stderr_capturer)
     }
     catch (const std::exception& e)
     {
-        ASSERT_TRUE(errors::contains_type<errors::uninterpretable_data>(e));
+        ASSERT_TRUE(errors::contains_type<errors::uninterpretable_data>(e))
+            << "Thrown exception diagnostic message:\n" << errors::diagnostic_message(e);
         ASSERT_THAT(errors::diagnostic_message(e), testing::HasSubstr(
             "with context \"leptonica_stderr_capturer.contents(): Error in pixReadMem: Unknown format: no pix returned\""));
     }

@@ -20,7 +20,7 @@ namespace docwire
 /**
  * @brief Exports meta data only to plain text format.
  */
-class DllExport MetaDataExporter: public ChainElement, public with_pimpl<MetaDataExporter>
+class DOCWIRE_CORE_EXPORT MetaDataExporter: public ChainElement, public with_pimpl<MetaDataExporter>
 {
 public:
   MetaDataExporter();
@@ -38,4 +38,4 @@ private:
 
 } // namespace docwire
 
-#endif //DOCWIRE_EXPORTER_H
+#endif //DOCWIRE_META_DATA_EXPORTER_H

@@ -26,7 +26,7 @@ concept IStreamDerived = std::derived_from<T, std::istream>;
 template<typename T>
 concept istream_derived_ref_qualified = IStreamDerived<std::remove_reference_t<T>>;
 
-class DllExport InputChainElement : public ChainElement
+class DOCWIRE_CORE_EXPORT InputChainElement : public ChainElement
 {
 public:
   explicit InputChainElement(ref_or_owned<data_source> data)

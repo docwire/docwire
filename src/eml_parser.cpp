@@ -14,8 +14,8 @@
 
 #include "eml_parser.h"
 
+#include "charset_converter.h"
 #include "data_source.h"
-#include "htmlcxx/html/CharsetConverter.h"
 #include <iostream>
 #include "log.h"
 #include <mailio/message.hpp>
@@ -29,11 +29,6 @@ using mailio::mime;
 using mailio::message;
 using mailio::codec;
 
-namespace
-{
-	std::mutex charset_converter_mutex;	
-} // anonymous namespace
-
 template<>
 struct pimpl_impl<EMLParser> : with_pimpl_owner<EMLParser>
 {
@@ -42,13 +37,12 @@ struct pimpl_impl<EMLParser> : with_pimpl_owner<EMLParser>
 	{
 		try
 		{
-			std::lock_guard<std::mutex> charset_converter_mutex_lock(charset_converter_mutex);
-			htmlcxx::CharsetConverter converter(charset, "UTF-8");
+			charset_converter converter(charset, "UTF-8");
 			text = converter.convert(text);
 		}
-		catch (htmlcxx::CharsetConverter::Exception& ex)
+		catch (std::exception&)
 		{
-			owner().sendTag(errors::make_nested_ptr(ex, make_error("Cannot convert text to UTF-8", charset)));
+			owner().sendTag(errors::make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", charset)));
 		}
 	}
 

@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_LOG_H
 #define DOCWIRE_LOG_H
 
-#include "defines.h"
+#include "core_export.h"
 #include "pimpl.h"
 #include <filesystem>
 #include <functional>
@@ -32,26 +32,26 @@ enum severity_level
 	error
 };
 
-struct DllExport source_location
+struct DOCWIRE_CORE_EXPORT source_location
 {
 	std::string file_name;
 	unsigned int line;
 	std::string function_name;
 };
 
-DllExport void set_log_verbosity(severity_level severity);
+DOCWIRE_CORE_EXPORT void set_log_verbosity(severity_level severity);
 
-DllExport bool log_verbosity_includes(severity_level severity);
+DOCWIRE_CORE_EXPORT bool log_verbosity_includes(severity_level severity);
 
-DllExport void set_log_stream(std::ostream* stream);
+DOCWIRE_CORE_EXPORT void set_log_stream(std::ostream* stream);
 
-struct DllExport hex {};
-struct DllExport begin_complex {};
-struct DllExport end_complex {};
-struct DllExport begin_pair { std::string key; };
-struct DllExport end_pair {};
-struct DllExport begin_array {};
-struct DllExport end_array {};
+struct DOCWIRE_CORE_EXPORT hex {};
+struct DOCWIRE_CORE_EXPORT begin_complex {};
+struct DOCWIRE_CORE_EXPORT end_complex {};
+struct DOCWIRE_CORE_EXPORT begin_pair { std::string key; };
+struct DOCWIRE_CORE_EXPORT end_pair {};
+struct DOCWIRE_CORE_EXPORT begin_array {};
+struct DOCWIRE_CORE_EXPORT end_array {};
 
 #define docwire_log_streamable_type_of(var) std::make_pair("typeid", std::type_index(typeid(var)))
 
@@ -68,7 +68,7 @@ template <typename T>
 struct is_dereferenceable<T, std::void_t<decltype(*std::declval<T>()),
                                          decltype(bool(!std::declval<T>()))>> : std::true_type {};
 
-class DllExport log_record_stream : public with_pimpl<log_record_stream>
+class DOCWIRE_CORE_EXPORT log_record_stream : public with_pimpl<log_record_stream>
 {
 public:
 	log_record_stream(severity_level severity, source_location location);
@@ -138,9 +138,9 @@ public:
 
 typedef std::function<std::unique_ptr<log_record_stream>(severity_level severity, source_location location)> create_log_record_stream_func_t;
 
-DllExport void set_create_log_record_stream_func(create_log_record_stream_func_t func);
+DOCWIRE_CORE_EXPORT void set_create_log_record_stream_func(create_log_record_stream_func_t func);
 
-DllExport std::unique_ptr<log_record_stream> create_log_record_stream(severity_level severity, source_location location);
+DOCWIRE_CORE_EXPORT std::unique_ptr<log_record_stream> create_log_record_stream(severity_level severity, source_location location);
 
 inline void current_function_helper()
 {
@@ -229,7 +229,7 @@ template<typename T> std::pair<std::string, const T&> streamable_var(const std::
 #define docwire_log_func() docwire_log(debug) << "Entering function" << std::make_pair("funtion_name", docwire_current_function)
 #define docwire_log_func_with_args(...) docwire_log_func() << docwire_log_streamable_vars(__VA_ARGS__)
 
-class DllExport cerr_log_redirection : public with_pimpl<cerr_log_redirection>
+class DOCWIRE_CORE_EXPORT cerr_log_redirection : public with_pimpl<cerr_log_redirection>
 {
 public:
 	cerr_log_redirection(source_location location);

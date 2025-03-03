@@ -13,6 +13,7 @@
 #define DOCWIRE_PDF_PARSER_H
 
 #include "parser.h"
+#include "pdf_export.h"
 #include "pimpl.h"
 #include "tags.h"
 #include <vector>
@@ -22,7 +23,7 @@ namespace docwire
 
 class Metadata;
 
-class DllExport PDFParser : public Parser, public with_pimpl<PDFParser>
+class DOCWIRE_PDF_EXPORT PDFParser : public Parser, public with_pimpl<PDFParser>
 {
 	private:
 		using with_pimpl<PDFParser>::impl;

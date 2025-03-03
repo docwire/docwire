@@ -12,14 +12,14 @@
 #ifndef DOCWIRE_BASE64_H
 #define DOCWIRE_BASE64_H
 
-#include "defines.h"
+#include "base64_export.h"
 #include <span>
 #include <string>
 
 namespace docwire::base64
 {
 
-DllExport std::string encode(std::span<const std::byte> data);
+DOCWIRE_BASE64_EXPORT std::string encode(std::span<const std::byte> data);
 
 } // namespace docwire::base64
 

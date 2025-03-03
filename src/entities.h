@@ -16,13 +16,13 @@
 #ifndef DECODE_HTML_ENTITIES_UTF8_
 #define DECODE_HTML_ENTITIES_UTF8_
 
-#include "defines.h"
+#include "core_export.h"
 #include <stddef.h>
 
 namespace docwire
 {
 
-DllExport size_t decode_html_entities_utf8(char* dest, const char* src);
+DOCWIRE_CORE_EXPORT size_t decode_html_entities_utf8(char* dest, const char* src);
 /*
 	Takes input from <src> and decodes into <dest>
 	The function returns the length of the decoded string.

@@ -347,7 +347,7 @@ void set_create_log_record_stream_func(create_log_record_stream_func_t func)
 	create_log_record_stream_func = func;
 }
 
-DllExport std::unique_ptr<log_record_stream> create_log_record_stream(severity_level severity, source_location location)
+DOCWIRE_CORE_EXPORT std::unique_ptr<log_record_stream> create_log_record_stream(severity_level severity, source_location location)
 {
 	return create_log_record_stream_func(severity, location);
 }

@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_DOC_PARSER_H
 #define DOCWIRE_DOC_PARSER_H
 
+#include "ole_office_formats_export.h"
 #include "parser.h"
 #include <vector>
 
@@ -19,7 +20,7 @@ namespace docwire
 {
 	class Metadata;
 
-class DllExport DOCParser : public Parser
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT DOCParser : public Parser
 {
 	private:
 		friend class TextHandler;

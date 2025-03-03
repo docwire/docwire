@@ -203,9 +203,9 @@ namespace
 			TextConverter tc(codepage);
 			text = ustring_to_string(tc.convert(text));
 		}
-		catch (const std::exception& e)
+		catch (const std::exception&)
 		{
-			non_fatal_error_handler(errors::make_nested_ptr(e, make_error("Error converting text")));
+			non_fatal_error_handler(errors::make_nested_ptr(std::current_exception(), make_error("Error converting text")));
 		}
 		//new lines problem?
 		for (size_t i = 0; i < text.length(); ++i)

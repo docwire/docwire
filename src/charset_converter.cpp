@@ -9,23 +9,60 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XML_FIXER_H
-#define DOCWIRE_XML_FIXER_H
+#include "charset_converter.h"
 
-#include "pimpl.h"
-#include <string>
-#include "xml_export.h"
+#include <cstring>
+#include <iconv.h>
+#include <mutex>
+#include "throw_if.h"
 
 namespace docwire
 {
 
-class DOCWIRE_XML_EXPORT XmlFixer : public with_pimpl<XmlFixer>
+template<>
+struct pimpl_impl<charset_converter> : pimpl_impl_base
 {
-	public:
-		XmlFixer();
-		std::string fix(const std::string& xml);
+	iconv_t descriptor;
 };
 
-} // namespace docwire
+namespace
+{
+	std::mutex iconv_mutex;	
+} // anonymous namespace
 
-#endif
+	charset_converter::charset_converter(const std::string &from, const std::string &to)
+	{
+		std::lock_guard<std::mutex> mutex_lock(iconv_mutex);
+		impl().descriptor = iconv_open(to.c_str(), from.c_str());
+		throw_if(impl().descriptor == (iconv_t)(-1), "iconv_open() failed", strerror(errno), from, to);
+	}
+	
+	charset_converter::~charset_converter()
+	{
+		std::lock_guard<std::mutex> mutex_lock(iconv_mutex);
+		iconv_close(impl().descriptor);
+	}
+	
+	std::string charset_converter::convert(const std::string &input)
+	{	
+		size_t output_max_size = 2 * input.length();
+		std::unique_ptr<char[]> output{new char[output_max_size]};
+
+		const char* inbuf = input.c_str();
+		size_t inbytesleft = input.length();
+		char* outbuf = output.get();
+		size_t outbytesleft = output_max_size;
+	
+		std::lock_guard<std::mutex> mutex_lock(iconv_mutex);
+		for(;;)
+		{
+			size_t result = iconv(impl().descriptor, const_cast<char**>(&inbuf), &inbytesleft, &outbuf, &outbytesleft);
+			if (result == 0) break;
+			throw_if(result == (size_t)-1 && errno == E2BIG, "iconv() failed", strerror(errno));
+			inbuf++; inbytesleft--;
+		}
+
+		return std::string{output.get(), output_max_size - outbytesleft};
+	}
+
+} // namespace docwire

@@ -9,13 +9,19 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DEFINES_H
-#define DOCWIRE_DEFINES_H
+#include "error_tags.h"
 
-#ifdef MSVC_BUILD
-	#define DllExport  __declspec( dllexport )
-#else
-	#define DllExport
-#endif
+namespace docwire::errors
+{
 
-#endif //DOCWIRE_DEFINES_H
+std::string program_logic::string() const { return "program logic error tag"; }
+
+std::string program_corrupted::string() const { return "program corrupted error tag"; }
+
+std::string uninterpretable_data::string() const { return "uninterpretable data error tag"; }
+
+std::string network_failure::string() const { return "network failure error tag"; }
+
+std::string file_encrypted::string() const { return "file encrypted error tag"; }
+
+} // namespace docwire::errors

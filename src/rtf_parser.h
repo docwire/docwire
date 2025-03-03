@@ -13,13 +13,14 @@
 #define DOCWIRE_RTF_PARSER_H
 
 #include "parser.h"
+#include "rtf_export.h"
 #include "tags.h"
 #include <vector>
 
 namespace docwire
 {
 
-class DllExport RTFParser : public Parser
+class DOCWIRE_RTF_EXPORT RTFParser : public Parser
 {
 	private:
 		attributes::Metadata metaData(const data_source& data) const;

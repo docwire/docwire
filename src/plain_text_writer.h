@@ -12,16 +12,16 @@
 #ifndef DOCWIRE_PLAIN_TEXT_WRITER_H
 #define DOCWIRE_PLAIN_TEXT_WRITER_H
 
+#include "core_export.h"
 #include <iostream>
 
 #include "pimpl.h"
 #include "writer.h"
-#include "defines.h"
 
 namespace docwire
 {
 
-class DllExport PlainTextWriter : public Writer, public with_pimpl<PlainTextWriter>
+class DOCWIRE_CORE_EXPORT PlainTextWriter : public Writer, public with_pimpl<PlainTextWriter>
 {
 public:
   PlainTextWriter(const std::string& eol_sequence,

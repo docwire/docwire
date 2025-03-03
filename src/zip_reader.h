@@ -12,15 +12,15 @@
 #ifndef DOCWIRE_ZIP_READER_H
 #define DOCWIRE_ZIP_READER_H
 
+#include "core_export.h"
 #include "data_source.h"
 #include <string>
-#include "defines.h"
 #include "pimpl.h"
 
 namespace docwire
 {
 
-class DllExport ZipReader : public with_pimpl<ZipReader>
+class DOCWIRE_CORE_EXPORT ZipReader : public with_pimpl<ZipReader>
 {
 	public:
 		ZipReader(const data_source& data);

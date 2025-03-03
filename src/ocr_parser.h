@@ -15,6 +15,7 @@
 #include <string>
 
 #include "language.h"
+#include "ocr_export.h"
 #include "parser.h"
 #include "pimpl.h"
 
@@ -24,7 +25,7 @@ namespace docwire
 struct ocr_data_path { std::filesystem::path v; };
 struct ocr_timeout { std::optional<int32_t> v; };
 
-class DllExport OCRParser : public Parser, public with_pimpl<OCRParser>
+class DOCWIRE_OCR_EXPORT OCRParser : public Parser, public with_pimpl<OCRParser>
 {
 private:
     using with_pimpl<OCRParser>::impl;

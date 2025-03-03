@@ -15,10 +15,10 @@
 #include <regex>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include "charset_converter.h"
 #include "entities.h"
 #include "htmlcxx/html/Node.h"
 #include "htmlcxx/html/ParserSax.h"
-#include "htmlcxx/html/CharsetConverter.h"
 #include "log.h"
 #include "make_error.h"
 #include "misc.h"
@@ -84,7 +84,7 @@ class SaxParser : public ParserSax
 		bool m_turn_off_ol_enumeration;
 		std::string m_style_text;
 		std::string m_charset;
-		htmlcxx::CharsetConverter* m_converter;
+		charset_converter* m_converter;
 		char* m_decoded_buffer;	//for decoding html entities
 		size_t m_decoded_buffer_size;
 		bool m_skip_decoding;
@@ -120,11 +120,11 @@ class SaxParser : public ParserSax
 			{
 				try
 				{
-					m_converter = new htmlcxx::CharsetConverter(m_charset, "UTF-8");
+					m_converter = new charset_converter(m_charset, "UTF-8");
 				}
-				catch (htmlcxx::CharsetConverter::Exception& ex)
+				catch (std::exception&)
 				{
-					m_parser->sendTag(errors::make_nested_ptr(ex, make_error("Cannot create charset to UTF-8 converter", m_charset)));
+					m_parser->sendTag(errors::make_nested_ptr(std::current_exception(), make_error("Cannot create charset to UTF-8 converter", m_charset)));
 					m_converter = nullptr;
 				}
 			}
@@ -245,8 +245,11 @@ class SaxParser : public ParserSax
 					boost::trim_right(m_buffered_text);
 					m_last_char_in_inline_formatting_context = '\0'; // inline formatting context is now empty
 				}
-				m_parser->sendTag(tag::Text{.text = m_buffered_text});
-				m_buffered_text = "";
+				if (!m_buffered_text.empty())
+				{
+					m_parser->sendTag(tag::Text{.text = m_buffered_text});
+					m_buffered_text = "";
+				}
 			}
 			// All html elements that will emit tag::Paragraph (as we do not have H1 etc)
 			CaseInsensitiveStringSet paragraph_elements({"h1", "h2", "h3", "h4", "h5", "h6", "p"});
@@ -280,6 +283,10 @@ class SaxParser : public ParserSax
 				else if (str_iequals(tag_name, "table"))
 				{
 					m_parser->sendTag(tag::CloseTable{});
+				}
+				else if (str_iequals(tag_name, "caption"))
+				{
+					m_parser->sendTag(tag::CloseCaption{});
 				}
 				else if (str_iequals(tag_name, "tr"))
 				{
@@ -403,6 +410,11 @@ class SaxParser : public ParserSax
 			{
 				node.parseAttributes();
 				m_parser->sendTag(tag::Table{.styling=html_node_styling(node)});
+			}
+			else if (str_iequals(node.tagName(), "caption"))
+			{
+				node.parseAttributes();
+				m_parser->sendTag(tag::Caption{.styling=html_node_styling(node)});
 			}
 			else if (str_iequals(tag_name, "tr"))
 			{

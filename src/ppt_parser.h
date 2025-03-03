@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_PPT_PARSER_H
 #define DOCWIRE_PPT_PARSER_H
 
+#include "ole_office_formats_export.h"
 #include "parser.h"
 #include "tags.h"
 #include <vector>
@@ -22,7 +23,7 @@ namespace docwire
 struct Metadata;
 class ThreadSafeOLEStorage;
 
-class DllExport PPTParser : public Parser
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT PPTParser : public Parser
 {
 	private:
 		attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage) const;

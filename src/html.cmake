@@ -10,3 +10,7 @@ install(TARGETS docwire_html)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_html> DESTINATION bin CONFIGURATIONS Debug)
 endif()
+
+include(GenerateExportHeader)
+generate_export_header(docwire_html EXPORT_FILE_NAME html_export.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/html_export.h DESTINATION include/docwire)

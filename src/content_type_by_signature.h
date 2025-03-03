@@ -13,8 +13,8 @@
 #define DOCWIRE_CONTENT_TYPE_BY_SIGNATURE_H
 
 #include "chain_element.h"
+#include "content_type_export.h"
 #include "data_source.h"
-#include "defines.h"
 #include "ref_or_owned.h"
 
 /**
@@ -39,11 +39,11 @@ struct allow_multiple
  * @see content_type::by_signature::detector
  * @see content_type::by_signature::detect
  */
-class DllExport database : public with_pimpl<database>
+class DOCWIRE_CONTENT_TYPE_EXPORT database : public with_pimpl<database>
 {
 public:
     explicit database();
-    friend DllExport void detect(data_source& data, const database& database_to_use, allow_multiple allow_multiple);
+    friend DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& database_to_use, allow_multiple allow_multiple);
 };
 
 /**
@@ -53,18 +53,20 @@ public:
 * @param database_to_use The loaded database of signatures used for signature-based content detection. It will be created (and loaded) if not provided.
 * @param allow_multiple Allow multiple content types to be assigned to the same data source.
 *
+* @see @ref file_type_determination.cpp "performing file type detection example"
 * @see content_type::detect
 * @see content_type::detector
 * @see content_type::by_signature::database
 * @see content_type::by_signature::detector
 */
-DllExport void detect(data_source& data, const database& database_to_use = database{}, allow_multiple allow_multiple = {false});
+DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& database_to_use = database{}, allow_multiple allow_multiple = {false});
 
 /**
 * @brief Detector chain element
 *
 * This class represents a chain element that detects and assigns content types to data sources using signatures-based content detection.
 *
+* @see @ref file_type_determination.cpp "performing file type detection example"
 * @see content_type::detector
 * @see content_type::by_signature::detect
 */

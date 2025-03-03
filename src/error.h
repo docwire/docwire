@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_ERROR_H
 #define DOCWIRE_ERROR_H
 
+#include "core_export.h"
 #include <exception>
 #include <string>
 #include "stringification.h"
@@ -96,7 +97,7 @@ namespace docwire::errors
  * @see errors::diagnostic_message
  * @see @ref handling_errors_and_warnings.cpp "handling errors and warnings example"
  */
-struct base : public std::exception
+struct DOCWIRE_CORE_EXPORT base : public std::exception
 {
 	/**
 	 * @brief The source location where the exception was thrown.
@@ -108,7 +109,7 @@ struct base : public std::exception
 	 *
 	 * @param location The source location of the exception (initialized by current location by default).
 	 */
-	base(const errors::source_location& location) : source_location(location) {}
+	base(const errors::source_location& location);
 
 	/**
 	 * @brief Get the type information of the context.
@@ -135,10 +136,7 @@ struct base : public std::exception
 	 * @return The exception type.
 	 * @see diagnostic_message
 	 */
-	virtual const char* what() const noexcept override
-	{
-		return typeid(*this).name();
-	}
+	virtual const char* what() const noexcept override;
 };
 
 /**

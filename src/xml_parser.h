@@ -13,11 +13,12 @@
 #define DOCWIRE_XML_PARSER_H
 
 #include "parser.h"
+#include "xml_export.h"
 
 namespace docwire
 {
 
-class DllExport XMLParser : public Parser
+class DOCWIRE_XML_EXPORT XMLParser : public Parser
 {
 public:
 	void parse(const data_source& data) override;

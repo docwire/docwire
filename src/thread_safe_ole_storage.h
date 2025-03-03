@@ -12,12 +12,12 @@
 #ifndef DOCWIRE_THREAD_SAFE_OLE_STORAGE_H
 #define DOCWIRE_THREAD_SAFE_OLE_STORAGE_H
 
+#include "core_export.h"
 #include "pimpl.h"
 #include <span>
 #include <string>
 #include <vector>
 #include "wv2/olestorage.h"
-#include "defines.h"
 
 namespace docwire
 {
@@ -25,7 +25,7 @@ namespace docwire
 class ThreadSafeOLEStreamReader;
 using namespace wvWare;
 
-class DllExport ThreadSafeOLEStorage : public AbstractOLEStorage, public with_pimpl<ThreadSafeOLEStorage>
+class DOCWIRE_CORE_EXPORT ThreadSafeOLEStorage : public AbstractOLEStorage, public with_pimpl<ThreadSafeOLEStorage>
 {
 	public:
 		explicit ThreadSafeOLEStorage(const std::string& file_name);

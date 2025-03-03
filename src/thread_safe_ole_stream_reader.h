@@ -12,13 +12,13 @@
 #ifndef DOCWIRE_THREAD_SAFE_OLE_STREAM_READER_H
 #define DOCWIRE_THREAD_SAFE_OLE_STREAM_READER_H
 
+#include "core_export.h"
 #include <cstdint>
 #include <cstdio>
 #include "pimpl.h"
 #include <string>
 #include <vector>
 #include "wv2/olestream.h"
-#include "defines.h"
 
 namespace docwire
 {
@@ -27,7 +27,7 @@ class ThreadSafeOLEStorage;
 using namespace wvWare;
 class DataStream;
 
-class DllExport ThreadSafeOLEStreamReader : public wvWare::AbstractOLEStreamReader, public with_pimpl<ThreadSafeOLEStreamReader>
+class DOCWIRE_CORE_EXPORT ThreadSafeOLEStreamReader : public wvWare::AbstractOLEStreamReader, public with_pimpl<ThreadSafeOLEStreamReader>
 {
 	friend class ThreadSafeOLEStorage;
 	public:

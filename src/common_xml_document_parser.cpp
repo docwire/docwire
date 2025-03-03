@@ -570,9 +570,9 @@ class CommonXMLDocumentParser::CommandHandlersSet
 			{
 				parser.extractText(content, mode, zipfile, object_text);
 			}
-			catch (const std::exception& e)
+			catch (const std::exception&)
 			{
-				parser.impl().send_tag(make_nested_ptr(e, make_error("Error parsing file", content_fn)));
+				parser.impl().send_tag(make_nested_ptr(std::current_exception(), make_error("Error parsing file", content_fn)));
 			}
 			text += object_text;
 		}

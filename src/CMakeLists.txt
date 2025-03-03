@@ -1,17 +1,5 @@
 set(CMAKE_INSTALL_RPATH .)
-
-set(EMPTY_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/empty.cpp)
-file(GENERATE OUTPUT ${EMPTY_SOURCE} CONTENT "
-	#ifdef MSVC_BUILD
-		#define DllExport  __declspec( dllexport )
-	#else
-		#define DllExport
-	#endif
-	namespace docwire
-	{
-		DllExport void dummy() {}
-	}
-")
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 add_compile_definitions(DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 
@@ -32,6 +20,7 @@ include(mail.cmake)
 include(local_ai.cmake)
 include(fuzzy_match.cmake)
 include(content_type.cmake)
+include(openai.cmake)
 include(cli.cmake)
 
 file(GLOB HEADERS "*.h")

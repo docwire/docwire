@@ -89,6 +89,12 @@ inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::T
 	return log_stream;
 }
 
+inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Caption& caption)
+{
+	log_stream << docwire_log_streamable_obj(caption, caption.styling);
+	return log_stream;
+}
+
 inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::TableRow& table_row)
 {
 	log_stream << docwire_log_streamable_obj(table_row, table_row.styling);

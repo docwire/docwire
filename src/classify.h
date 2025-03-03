@@ -20,7 +20,7 @@ namespace docwire
 namespace openai
 {
 
-class DllExport Classify : public Chat
+class DOCWIRE_OPENAI_EXPORT Classify : public Chat
 {
 public:
 	Classify(const std::set<std::string>& categories, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);

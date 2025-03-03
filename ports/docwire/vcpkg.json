@@ -75,6 +75,9 @@
 			"name": "libbfio"
 		},
 		{
+			"name": "libiconv"
+		},
+		{
 			"name": "libpff-unix",
 			"platform": "!windows"
 		},

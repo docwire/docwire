@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_EML_PARSER_H
 #define DOCWIRE_EML_PARSER_H
 
+#include "mail_export.h"
 #include <vector>
 
 #include "parser.h"
@@ -23,7 +24,7 @@ namespace docwire
 class Metadata;
 //class Attachment;
 
-class DllExport EMLParser : public Parser, public with_pimpl<EMLParser>
+class DOCWIRE_MAIL_EXPORT EMLParser : public Parser, public with_pimpl<EMLParser>
 {
 	private:
 		using with_pimpl<EMLParser>::impl;

@@ -1,0 +1,29 @@
+diff --git a/ports/libmagic/portfile.cmake b/ports/libmagic/portfile.cmake
+index b125a3b262..452e07ffde 100644
+--- a/ports/libmagic/portfile.cmake
++++ b/ports/libmagic/portfile.cmake
+@@ -21,8 +21,8 @@ endif()
+ vcpkg_from_github(
+     OUT_SOURCE_PATH SOURCE_PATH
+     REPO file/file
+-    REF FILE5_46
+-    SHA512 fb8157ee8065feaf57412ccdeee57cd8fc853b54ac49b0ddc818eeb1ca3555a7cfd25dea08996503f7c565dcba8c57fd7e4dc5fe3452872c617f5612a94a8f0e
++    REF 8924478fb07075a5ce7bb4db01902e4640e7489b
++    SHA512 61bc8836962424d56b083d87b3d57b5d621cb41a9f6a83f1b957c68cea60a92f18b3f183b7bc82cf2b3c9ab7358c9efc920931141946f222d5a96d58eb0483c9
+     HEAD_REF master
+     PATCHES ${PATCHES}
+ )
+diff --git a/ports/libmagic/vcpkg.json b/ports/libmagic/vcpkg.json
+index 2fd5916e79..3e6945c9b8 100644
+--- a/ports/libmagic/vcpkg.json
++++ b/ports/libmagic/vcpkg.json
+@@ -1,7 +1,7 @@
+ {
+   "name": "libmagic",
+-  "version": "5.46",
+-  "port-version": 1,
++  "version-date": "2024-11-26",
++  "port-version": 0,
+   "description": "This library can be used to classify files according to magic number tests.",
+   "homepage": "https://github.com/file/file",
+   "license": "BSD-2-Clause",
