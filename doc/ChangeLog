@@ -1,3 +1,31 @@
+## Version 2025.03.02
+
+This release brings a multitude of improvements, focusing on library build enhancements, error handling, charset conversion, and HTML parsing.
+
+> As functions refine and errors cease,  
+> Charset conversions bring their peace.  
+> HTML parsing, a seamless release,  
+> In the realm of code, our skills increase.  
+> Progress marches on, in harmony's lease.  
+
+### Improvements
+- Extracted all OpenAI-related features to `docwire_openai` library.
+- Added table caption support to `HTMLParser`, `HTMLExporter`, and `PlainTextExporter`.
+- Introduced `charset_converter` class and used it instead of `htmlcxx::CharsetConverter` to prevent crashes on errors and avoid linking `htmlcxx` library.
+- Added support for `std::exception_ptr` in `errors::make_nested` and used `std::current_exception()` to avoid exception object slicing.
+- Made `errors::base` struct and all error tag structs non-inline to avoid ODR violations.
+
+### Refactoring
+- Replaced `defines.h` with standard CMake-generated `*_export.h` files.
+
+### Bug Fixes
+- Added patch to vcpkg libmagic port to fix 5.46 zip regression introduced by microsoft/vcpkg#43565.
+- Fixed automatic test that was disabled by mistake.
+- Fixed incorrect empty `Text` tags emitting in `HtmlParser`.
+
+### Documentation
+- Added file type determination example to the documentation.
+
 ## Version 2025.01.22
 
 This release brings enhancements and fixes, focusing on content type detection and code refactoring for improved
