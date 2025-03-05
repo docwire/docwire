@@ -53,15 +53,19 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(docwire_core PRIVATE dl)
 endif()
 
-target_include_directories(docwire_core PUBLIC ../) # for version.h
-target_include_directories(docwire_core PUBLIC .) # for other headers
+target_include_directories(docwire_core PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>) # for version.h
 
-install(TARGETS docwire_core)
+# Enable access to SDK headers
+target_include_directories(docwire_core PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> # during building headers are in the source tree
+    $<INSTALL_INTERFACE:include>) # after installation headers are in include/docwire
+
+install(TARGETS docwire_core EXPORT docwire_targets)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_core> DESTINATION bin CONFIGURATIONS Debug)
 endif()
 
 include(GenerateExportHeader)
 generate_export_header(docwire_core EXPORT_FILE_NAME core_export.h)
-target_include_directories(docwire_core PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(docwire_core PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/core_export.h DESTINATION include/docwire)

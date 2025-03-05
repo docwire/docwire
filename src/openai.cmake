@@ -14,7 +14,7 @@ add_library(docwire_openai SHARED
 find_package(Boost REQUIRED COMPONENTS json)
 target_link_libraries(docwire_openai PRIVATE docwire_base64 docwire_core Boost::json)
 
-install(TARGETS docwire_openai)
+install(TARGETS docwire_openai EXPORT docwire_targets)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_openai> DESTINATION bin CONFIGURATIONS Debug)
 endif()
