@@ -115,10 +115,10 @@ jobs:
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'asan' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
           TSAN_OPTIONS: ${{ matrix.sanitizer == 'tsan' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
           DEBUG: ${{ runner.debug }}
-      - name: "Test DocWire CLI"
+      - name: "Run additional tests after installation"
         if: matrix.sanitizer == ''
         working-directory: vcpkg/buildtrees/docwire/${{ matrix.triplet }}-rel
-        run: ctest --label-regex is_cli_test
+        run: ctest --label-regex is_after_installation_test
       - name: "Upload logs"
         uses: actions/upload-artifact@v4
         if: always()
