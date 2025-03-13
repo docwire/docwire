@@ -94,7 +94,7 @@ if (WIN32)
 	# DLL files are copied to application directory on Windows (see VCPKG_APPLOCAL_DEPS) but resources are not
 	add_custom_command(
 		OUTPUT ${CMAKE_BINARY_DIR}/integration_test/CMakeLists.txt
-		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_INSTALLED_DIR}/share/libmagic/misc/magic.mgc ${CMAKE_BINARY_DIR}/integration_test/share/libmagic/misc/magic.mgc
+		COMMAND ${CMAKE_COMMAND} -E copy ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share/libmagic/misc/magic.mgc ${CMAKE_BINARY_DIR}/integration_test/share/libmagic/misc/magic.mgc
 		APPEND
 	)
 endif()
