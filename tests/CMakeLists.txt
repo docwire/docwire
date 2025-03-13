@@ -90,6 +90,14 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/integration_example.cpp ${CMAKE_BINARY_DIR}/integration_test/integration_example.cpp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/integration_example.cmake ${CMAKE_CURRENT_SOURCE_DIR}/integration_example.cpp
 )
+if (WIN32)
+	# DLL files are copied to application directory on Windows (see VCPKG_APPLOCAL_DEPS) but resources are not
+	add_custom_command(
+		OUTPUT ${CMAKE_BINARY_DIR}/integration_test/CMakeLists.txt
+		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_INSTALLED_DIR}/share/libmagic/misc/magic.mgc ${CMAKE_BINARY_DIR}/integration_test/share/libmagic/misc/magic.mgc
+		APPEND
+	)
+endif()
 add_custom_target(setup_integration_test ALL
 	DEPENDS ${CMAKE_BINARY_DIR}/integration_test/CMakeLists.txt
 )
