@@ -97,6 +97,7 @@ add_test(
 	NAME integration_configure_test
 	COMMAND ${CMAKE_COMMAND}
 		-DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLED_DIR}/../scripts/buildsystems/vcpkg.cmake
+		-DVCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}
 		-S ${CMAKE_BINARY_DIR}/integration_test
 		-B ${CMAKE_BINARY_DIR}/integration_test_build
 )
