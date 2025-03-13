@@ -128,6 +128,7 @@ jobs:
             vcpkg/buildtrees/*/*.log
             vcpkg/buildtrees/*/*/*.log
             vcpkg/buildtrees/*/*/*/*.log
+            vcpkg/buildtrees/*/*/*/*/*.log
             ${{ matrix.sanitizer == 'callgrind' && 'vcpkg/buildtrees/**/callgrind.out.*' || '' }}
           if-no-files-found: error
       - name: "Export built packages with 'vcpkg export'"
