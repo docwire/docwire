@@ -29,7 +29,6 @@ struct pimpl_impl<content_type::by_signature::database> : public pimpl_impl_base
         : magic_cookie(magic_open(MAGIC_NONE))
     {
         throw_if (magic_cookie == nullptr);
-        std::clog << "this_line_location(): \"" << this_line_location().string() << "\"" << std::endl;
         std::clog << "magic.mgc path: \"" << resource_path("libmagic/misc/magic.mgc").string() << "\"" << std::endl;
         throw_if (magic_load(magic_cookie, resource_path("libmagic/misc/magic.mgc").string().c_str()) != 0, magic_error(magic_cookie));
         throw_if (magic_getparam(magic_cookie, MAGIC_PARAM_BYTES_MAX, &bytes_max) != 0, magic_error(magic_cookie));
