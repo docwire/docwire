@@ -70,7 +70,7 @@
 			"name": "unzip"
 		},
 		{
-			"name": "htmlcxx"
+			"name": "lexbor"
 		},
 		{
 			"name": "tesseract"

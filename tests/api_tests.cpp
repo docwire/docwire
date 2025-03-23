@@ -49,6 +49,7 @@
 #include "output.h"
 #include "plain_text_exporter.h"
 #include "post.h"
+#include "tags.h"
 #include "throw_if.h"
 #include "txt_parser.h"
 #include "input.h"
@@ -1661,6 +1662,114 @@ TEST(HTMLParser, table)
         VariantWith<tag::CloseDocument>(_)
     ));
 }
+
+TEST(HTMLParser, whitespaces)
+{
+    using namespace testing;
+    using namespace chaining;
+    std::vector<Tag> tags;
+    docwire::data_source{std::string{
+        "<div>\n"
+            "\t <p> Paragraph </p> \n"
+            "\t <p>  Paragraph   with   many   spaces   </p>\n"
+            "   <p>Paragraph&nbsp;with&nbsp;non-breaking&nbsp;spaces</p>\n"
+        "</div>"},
+        mime_type{"text/html"}, confidence::highest} |
+        HTMLParser{} | tags;    
+    ASSERT_THAT(tags, testing::ElementsAre(
+        VariantWith<tag::Document>(_),
+        VariantWith<tag::Section>(_),
+        VariantWith<tag::Paragraph>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph"))),
+        VariantWith<tag::CloseParagraph>(_),
+        VariantWith<tag::Paragraph>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph with many spaces"))),
+        VariantWith<tag::CloseParagraph>(_),
+        VariantWith<tag::Paragraph>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph\xC2\xA0with\xC2\xA0non-breaking\xC2\xA0spaces"))),
+        VariantWith<tag::CloseParagraph>(_),
+        VariantWith<tag::CloseSection>(_),
+        VariantWith<tag::CloseDocument>(_)
+    ));
+}
+
+TEST(HTMLParser, encoding)
+{
+    using namespace testing;
+    using namespace chaining;
+    std::vector<const char*> test_cases =
+    {
+        "<html><head><meta charset=\"cp1250\"></head><body><p>\xB9\x9C\xE6\xB3\xF3\xBF\xB3</p></body></html>",
+        "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=cp1250\"></head><body><p>\xB9\x9C\xE6\xB3\xF3\xBF\xB3</p></body></html>",
+        "<?xml version=\"1.0\" encoding=\"cp1250\"?><html xmlns=\"http://www.w3.org/1999/xhtml\"><head></head><body><p>\xB9\x9C\xE6\xB3\xF3\xBF\xB3</p></body></html>",
+        "<html><body><p>ąśćłóżł</p></body></html>"
+    };
+    for (const auto& html_content : test_cases)
+    {
+        std::vector<Tag> tags;
+        docwire::data_source{std::string{html_content},
+            mime_type{"text/html"}, confidence::highest} |
+            HTMLParser{} | tags;
+        ASSERT_THAT(tags, testing::ElementsAre(
+            VariantWith<tag::Document>(_),
+            VariantWith<tag::Paragraph>(_),
+            VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("ąśćłóżł"))),
+            VariantWith<tag::CloseParagraph>(_),
+            VariantWith<tag::CloseDocument>(_)
+        ));
+    }
+}
+
+TEST(HTMLParser, lists)
+{
+    using namespace testing;
+    using namespace chaining;
+    std::vector<Tag> tags;
+    docwire::data_source{std::string{
+        "<ul>"
+            "<li>Item 1</li>"
+            "<li>Item 2</li>"
+        "</ul>"
+        "<ol>"
+            "<li>Item 3</li>"
+            "<li>Item 4</li>"
+        "</ol>"
+        "<ul style=\"list-style: none\">"
+            "<li>Item 5</li>"
+            "<li>Item 6</li>"
+        "</ul>"},
+        mime_type{"text/html"}, confidence::highest} |
+        HTMLParser{} | tags;
+    ASSERT_THAT(tags, testing::ElementsAre(
+        VariantWith<tag::Document>(_),
+        VariantWith<tag::List>(testing::Field(&tag::List::type, StrEq("disc"))),
+        VariantWith<tag::ListItem>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Item 1"))),
+        VariantWith<tag::CloseListItem>(_),
+        VariantWith<tag::ListItem>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Item 2"))),
+        VariantWith<tag::CloseListItem>(_),
+        VariantWith<tag::CloseList>(_),
+        VariantWith<tag::List>(testing::Field(&tag::List::type, StrEq("decimal"))),
+        VariantWith<tag::ListItem>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Item 3"))),
+        VariantWith<tag::CloseListItem>(_),
+        VariantWith<tag::ListItem>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Item 4"))),
+        VariantWith<tag::CloseListItem>(_),
+        VariantWith<tag::CloseList>(_),
+        VariantWith<tag::List>(testing::Field(&tag::List::type, StrEq("none"))),
+        VariantWith<tag::ListItem>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Item 5"))),
+        VariantWith<tag::CloseListItem>(_),
+        VariantWith<tag::ListItem>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Item 6"))),
+        VariantWith<tag::CloseListItem>(_),
+        VariantWith<tag::CloseList>(_),
+        VariantWith<tag::CloseDocument>(_)
+    ));
+}
+
 
 TEST(OCRParser, leptonica_stderr_capturer)
 {
