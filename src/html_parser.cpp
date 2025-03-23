@@ -413,10 +413,11 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 		// TODO: elements can have also block style in CSS
 		static std::set<lxb_tag_id_t> block_level_elements = { LXB_TAG_ADDRESS, LXB_TAG_ARTICLE, LXB_TAG_ASIDE, LXB_TAG_BLOCKQUOTE, LXB_TAG_DETAILS, LXB_TAG_DIALOG, LXB_TAG_DD, LXB_TAG_DIV, LXB_TAG_DL,
 			LXB_TAG_DT, LXB_TAG_FIELDSET, LXB_TAG_FIGCAPTION, LXB_TAG_FIGURE, LXB_TAG_FOOTER, LXB_TAG_FORM, LXB_TAG_H1, LXB_TAG_H2, LXB_TAG_H3, LXB_TAG_H4, LXB_TAG_H5, LXB_TAG_H6, LXB_TAG_HEADER, LXB_TAG_HGROUP, LXB_TAG_HR, LXB_TAG_LI,
-			LXB_TAG_MAIN, LXB_TAG_NAV, LXB_TAG_OL, LXB_TAG_P, LXB_TAG_PRE, LXB_TAG_SECTION, LXB_TAG_TABLE, LXB_TAG_UL };
-		// We treat the following elements like block-level elements. It should be more clear when CSS support is better.
-		static std::set<lxb_tag_id_t> similar_to_block_level_elements = { LXB_TAG_HTML, LXB_TAG_BODY, LXB_TAG_TD, LXB_TAG_TR, LXB_TAG_TH };		
-		if (block_level_elements.contains(tag_id) || similar_to_block_level_elements.contains(tag_id))
+			LXB_TAG_MAIN, LXB_TAG_NAV, LXB_TAG_OL, LXB_TAG_P, LXB_TAG_PRE, LXB_TAG_SECTION, LXB_TAG_TABLE, LXB_TAG_UL,
+			LXB_TAG_HTML, LXB_TAG_BODY };
+		// These elements are part of a table structure. We treat them like block-level elements for whitespace processing.
+        static std::set<lxb_tag_id_t> table_elements = { LXB_TAG_TD, LXB_TAG_TR, LXB_TAG_TH, LXB_TAG_CAPTION, LXB_TAG_THEAD, LXB_TAG_TBODY, LXB_TAG_TFOOT };
+		if (block_level_elements.contains(tag_id) || table_elements.contains(tag_id))
 		{
 			// Remove sequences of spaces at the end of an block-level element
 			// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace

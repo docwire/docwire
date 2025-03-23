@@ -1673,7 +1673,13 @@ TEST(HTMLParser, whitespaces)
             "\t <p> Paragraph </p> \n"
             "\t <p>  Paragraph   with   many   spaces   </p>\n"
             "   <p>Paragraph&nbsp;with&nbsp;non-breaking&nbsp;spaces</p>\n"
-        "</div>"},
+        "</div>\n"
+        "<table>\n"
+            "\t<caption> Table caption </caption>\n"
+            "\t<tr>\n"
+                "\t\t<td> Table cell </td>\n"
+                "\t</tr>\n"
+        "</table>\n"},
         mime_type{"text/html"}, confidence::highest} |
         HTMLParser{} | tags;    
     ASSERT_THAT(tags, testing::ElementsAre(
@@ -1689,6 +1695,16 @@ TEST(HTMLParser, whitespaces)
         VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph\xC2\xA0with\xC2\xA0non-breaking\xC2\xA0spaces"))),
         VariantWith<tag::CloseParagraph>(_),
         VariantWith<tag::CloseSection>(_),
+        VariantWith<tag::Table>(_),
+        VariantWith<tag::Caption>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Table caption"))),
+        VariantWith<tag::CloseCaption>(_),
+        VariantWith<tag::TableRow>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Table cell"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::CloseTableRow>(_),
+        VariantWith<tag::CloseTable>(_),
         VariantWith<tag::CloseDocument>(_)
     ));
 }
