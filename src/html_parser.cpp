@@ -25,6 +25,7 @@
 #include "log.h"
 #include "make_error.h"
 #include "misc.h"
+#include <mutex>
 #include <set>
 #include "pimpl.h"
 #include "tags.h"
