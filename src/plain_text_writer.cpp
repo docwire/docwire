@@ -366,6 +366,9 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
         max_column_width = std::max(max_column_width, cell.width());
       }
     }
+    // Limit the maximum column width for performance reasons
+    constexpr int column_width_limit = 1000;
+    max_column_width = std::min(max_column_width, column_width_limit);
 
     for (const auto &row : table)
     {
@@ -379,8 +382,11 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
       {
         for (unsigned int j = 0; j < row.size(); ++j)
         {
-          row_result += row[j].getLine(i);
-          int size_diff = max_column_width - row[j].getLine(i).size();
+          std::string l = row[j].getLine(i);
+          // limit length of l to column_width_limit
+          l = l.substr(0, std::min(l.size(), size_t(column_width_limit)));
+          row_result += l;
+          int size_diff = max_column_width - l.size();
           int right_margin = j < (row.size() - 1) ? 2 : 0;
           row_result += add_shift(size_diff + right_margin);
         }
