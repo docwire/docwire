@@ -71,15 +71,21 @@ void convert_to_utf8(std::string& text, const std::string& charset)
 
 std::optional<std::string> get_encoding_from_meta_tags(const std::string& html_content)
 {
-	lxb_html_encoding_t em;
-	throw_if (lxb_html_encoding_init(&em) != LXB_STATUS_OK);
-	if (lxb_html_encoding_determine(&em, (const lxb_char_t*)html_content.data(), (lxb_char_t*)html_content.data() + html_content.length()) != LXB_STATUS_OK)
+	std::unique_ptr<lxb_html_encoding_t, decltype([](lxb_html_encoding_t* h)
+		{
+			lxb_html_encoding_destroy(h, true);
+		})>
+		em
+		{
+			lxb_html_encoding_create()
+		};
+	throw_if (lxb_html_encoding_init(em.get()) != LXB_STATUS_OK);
+	if (lxb_html_encoding_determine(em.get(), (const lxb_char_t*)html_content.data(), (lxb_char_t*)html_content.data() + html_content.length()) != LXB_STATUS_OK)
 		return std::nullopt;
-	lxb_html_encoding_entry_t* entry = lxb_html_encoding_meta_entry(&em, 0);
+	lxb_html_encoding_entry_t* entry = lxb_html_encoding_meta_entry(em.get(), 0);
 	if (entry == nullptr)
 		return std::nullopt;
 	std::string detected_encoding = std::string((const char*)entry->name, (size_t)(entry->end - entry->name));
-	lxb_html_encoding_destroy(&em, false);
 	return detected_encoding;
 }
 
