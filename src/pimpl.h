@@ -52,7 +52,7 @@ protected:
 		{
 			static_assert(std::is_constructible_v<impl_type, Args...>,
 				"Template specialization of pimpl_impl<T> is required to have constructor with Args... arguments");
-			return new impl_type(impl_type{std::forward<Args>(args)...});
+			return new impl_type(std::forward<Args>(args)...);
 		}
 	}
 

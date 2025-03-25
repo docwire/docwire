@@ -65,7 +65,7 @@ attributes::Styling html_node_styling(const lxb_dom_node_t* node)
 
 void convert_to_utf8(std::string& text, const std::string& charset)
 {
-	if (charset == "utf-8" && charset == "UTF-8")
+	if (boost::iequals(charset, "utf-8"))
 		return;
 	charset_converter converter(charset, "UTF-8");
 	text = converter.convert(text);
