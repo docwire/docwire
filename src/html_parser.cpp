@@ -234,6 +234,29 @@ void fix_dom_in_table_insertion_mode(lxb_dom_node_t* node, lxb_dom_node_t* child
 	}
 }
 
+void fix_dom_in_table_body_insertion_mode(lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
+{
+	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intbody
+	if (child_tag_id == LXB_TAG_TR)
+	{
+		// "A start tag whose tag name is "tr""
+		// "Insert an HTML element for the token, then switch the insertion mode to "in row"."
+		// Everything is OK.
+	}
+	else if (child_tag_id == LXB_TAG_TH || child_tag_id == LXB_TAG_TD)
+	{
+		// "A start tag whose tag name is one of: "th", "td""
+		// "Insert an HTML element for a "tr" start tag token with no attributes, then switch the insertion mode to "in row"."
+		// Everything is OK.
+	}
+	else
+	{
+		// "Anything else"
+		// "Process the token using the rules for the "in table" insertion mode."
+		fix_dom_in_table_insertion_mode(node, child_node, child_tag_id);
+	}
+}
+
 void fix_dom_in_table_row_insertion_mode(lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
 {
 	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intr
@@ -275,6 +298,8 @@ void fix_dom(lxb_dom_node_t* node)
 				lxb_tag_id_t child_tag_id = lxb_dom_element_tag_id(const_cast<lxb_dom_element_t*>(child_element));
 				if (tag_id == LXB_TAG_TABLE)
 					fix_dom_in_table_insertion_mode(node, child_node, child_tag_id);
+				else if (tag_id == LXB_TAG_TBODY || tag_id == LXB_TAG_TFOOT || tag_id == LXB_TAG_THEAD)
+					fix_dom_in_table_body_insertion_mode(node, child_node, child_tag_id);
 				else if (tag_id == LXB_TAG_TR)
 					fix_dom_in_table_row_insertion_mode(node, child_node, child_tag_id);
 			}
