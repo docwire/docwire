@@ -15,6 +15,8 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <charsetdetect.h>
 #include <lexbor/dom/dom.h>
+#include <lexbor/dom/interface.h>
+#include <lexbor/dom/interfaces/node.h>
 #include <lexbor/html/encoding.h>
 #include <lexbor/html/html.h>
 #include <lexbor/html/interfaces/document.h>
@@ -189,6 +191,98 @@ void ensure_html_utf8_encoding(std::string& html_content)
 	docwire_log(debug) << "After converting to utf8: [" << html_content << "]";
 }
 
+void move_child_node_to_parent(lxb_dom_node_t* node, lxb_dom_node_t* child_node)
+{
+	lxb_dom_node_remove_wo_events(child_node);
+	lxb_dom_node_insert_before_wo_events(node, child_node);
+}
+
+void fix_dom_in_table_insertion_mode(lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
+{
+	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intable
+	if (child_tag_id == LXB_TAG_CAPTION)
+	{
+		// "A start tag whose tag name is "caption""
+		// "Insert an HTML element for the token, then switch the insertion mode to "in caption"."
+		// Everything is OK.
+	}
+	else if (child_tag_id == LXB_TAG_TBODY || child_tag_id == LXB_TAG_TFOOT || child_tag_id == LXB_TAG_THEAD)
+	{
+		// "A start tag whose tag name is one of: "tbody", "tfoot", "thead""
+		// "Insert an HTML element for the token, then switch the insertion mode to "in table body"."
+		// Everything is OK.
+	}
+	else if (child_tag_id == LXB_TAG_TD || child_tag_id == LXB_TAG_TH || child_tag_id == LXB_TAG_TR)
+	{
+		// "A start tag whose tag name is one of: "td", "th", "tr""
+		// "Insert an HTML element for a "tbody" start tag token with no attributes, then switch the insertion mode to "in table body"."
+		// Everything is OK.
+	}
+	else if (child_tag_id == LXB_TAG_STYLE || child_tag_id == LXB_TAG_SCRIPT || child_tag_id == LXB_TAG_TEMPLATE)
+	{
+		// "A start tag whose tag name is one of: "style", "script", "template""
+		// "Process the token using the rules for the "in head" insertion mode."
+		// Move node to parent as a simple fix
+		move_child_node_to_parent(node, child_node);
+	}
+	else
+	{
+		// "Anything else"
+		// "Parse error. Enable foster parenting, process the token using the rules for the "in body" insertion mode, and then disable foster parenting."
+		// Move node to parent as a simple fix
+		move_child_node_to_parent(node, child_node);
+	}
+}
+
+void fix_dom_in_table_row_insertion_mode(lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
+{
+	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intr
+	if (child_tag_id == LXB_TAG_TH || child_tag_id == LXB_TAG_TD)
+	{
+		// "A start tag whose tag name is one of: "th", "td""
+		// "Insert an HTML element for the token, then switch the insertion mode to "in cell"."
+		// Everything is OK.
+	}
+	else
+	{
+		// "Anything else"
+		// "Process the token using the rules for the "in table" insertion mode."
+		fix_dom_in_table_insertion_mode(node, child_node, child_tag_id);
+	}
+}
+
+void fix_dom(lxb_dom_node_t* node)
+{
+	// First of all fix all child nodes as it may cause moving some nodes to the parent (this node)
+	lxb_dom_node_t* child_node = lxb_dom_node_first_child(const_cast<lxb_dom_node_t*>(node));
+    while (child_node != nullptr)
+	{
+        fix_dom(child_node);
+        child_node = lxb_dom_node_next(child_node);
+    }
+	// Now all child nodes are correct but it does not mean that this node is correct
+	if (node->type == LXB_DOM_NODE_TYPE_ELEMENT)
+	{
+		lxb_dom_element_t* element = lxb_dom_interface_element(node);
+    	lxb_tag_id_t tag_id = lxb_dom_element_tag_id(element);
+		lxb_dom_node_t* child_node = lxb_dom_node_first_child(node);
+		while (child_node != nullptr)
+		{
+			lxb_dom_node_t* next_child_node = lxb_dom_node_next(child_node); // child_node may be moved
+			if (child_node->type == LXB_DOM_NODE_TYPE_ELEMENT)
+			{					
+				const lxb_dom_element_t* child_element = lxb_dom_interface_element(child_node);
+				lxb_tag_id_t child_tag_id = lxb_dom_element_tag_id(const_cast<lxb_dom_element_t*>(child_element));
+				if (tag_id == LXB_TAG_TABLE)
+					fix_dom_in_table_insertion_mode(node, child_node, child_tag_id);
+				else if (tag_id == LXB_TAG_TR)
+					fix_dom_in_table_row_insertion_mode(node, child_node, child_tag_id);
+			}
+			child_node = next_child_node;
+		}
+	}
+}
+
 struct state
 {
 	bool turn_off_ul_enumeration = false;
@@ -196,6 +290,7 @@ struct state
 	bool head_parsed = false;
 	bool in_metadata = false;
 	bool in_head = false;
+	bool in_title = false;
 	bool in_script = false;
 	bool in_style = false;
 	std::string style_text;
@@ -306,6 +401,8 @@ void pimpl_impl<HTMLParser>::parse_document(const std::string& html_content_arg)
 	throw_if(lxb_html_document_parse(document, (const lxb_char_t *)html_content.data(), html_content.size()) != LXB_STATUS_OK,
 		"Failed to parse HTML document");
 
+	fix_dom(lxb_dom_interface_node(document));
+
 	lxb_dom_node_t* head = lxb_dom_interface_node(lxb_html_document_head_element(document));
 	parse_css((const char*)lxb_dom_node_text_content(head, nullptr));
 
@@ -351,7 +448,7 @@ void pimpl_impl<HTMLParser>::process_node(const lxb_dom_node_t* node)
         }
         case LXB_DOM_NODE_TYPE_TEXT:
         {
-			if (m_state.in_metadata || m_state.in_script)
+			if (m_state.in_metadata || m_state.in_title || m_state.in_script)
 				break;
             process_text(node);
             break;
@@ -479,6 +576,10 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 		{
 			owner().sendTag(tag::CloseTableCell{});
 		}
+		else if (tag_id == LXB_TAG_TITLE)
+		{
+			m_state.in_title = false;
+		}
 		else if ((tag_id == LXB_TAG_SCRIPT || tag_id == LXB_TAG_IFRAME) && m_state.in_script)
 		{
 			m_state.in_script = false;
@@ -583,6 +684,10 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 		else if (tag_id == LXB_TAG_LI)
 		{
 			owner().sendTag(tag::ListItem{ .styling = html_node_styling(node) });
+		}
+		else if (tag_id == LXB_TAG_TITLE)
+		{
+			m_state.in_title = true;
 		}
 		else if (tag_id == LXB_TAG_SCRIPT || tag_id == LXB_TAG_IFRAME)
 		{

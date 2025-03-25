@@ -1786,6 +1786,50 @@ TEST(HTMLParser, lists)
     ));
 }
 
+TEST(HTMLParser, misplaced_tags)
+{
+    using namespace testing;
+    using namespace chaining;
+    std::vector<Tag> tags;
+    docwire::data_source{std::string{
+        "<html>\n"
+        "\t<body>\n"
+        "\t\t<title>title1</title>\n"
+        "\t\t<table>\n"
+        "\t\t<title>title2</title>\n"
+        "\t\t<style>css content</style>\n"
+        "\t\t<tr><td>cell1</td></tr>\n"
+        "\t\t<p>paragraph1</p>\n"
+        "\t\t<tr><p>paragraph2</p><td>cell2</td></tr>\n"
+        "\t</table>\n"
+        "\t</body>\n"
+        "</html>\n"},
+        mime_type{"text/html"}, confidence::highest} |
+        HTMLParser{} | tags;
+    ASSERT_THAT(tags, testing::ElementsAre(
+        VariantWith<tag::Document>(_),
+        VariantWith<tag::Paragraph>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("paragraph1"))),
+        VariantWith<tag::CloseParagraph>(_),
+        VariantWith<tag::Paragraph>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("paragraph2"))),
+        VariantWith<tag::CloseParagraph>(_),
+        VariantWith<tag::Style>(testing::Field(&tag::Style::css_text, StrEq("css content"))),
+        VariantWith<tag::Table>(_),
+        VariantWith<tag::TableRow>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("cell1"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::CloseTableRow>(_),
+        VariantWith<tag::TableRow>(_),
+        VariantWith<tag::TableCell>(_),
+        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("cell2"))),
+        VariantWith<tag::CloseTableCell>(_),
+        VariantWith<tag::CloseTableRow>(_),
+        VariantWith<tag::CloseTable>(_),
+        VariantWith<tag::CloseDocument>(_)
+    ));
+}
 
 TEST(OCRParser, leptonica_stderr_capturer)
 {
