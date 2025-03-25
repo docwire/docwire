@@ -6,7 +6,7 @@ find_package(mailio CONFIG REQUIRED)
 find_package(Boost REQUIRED COMPONENTS date_time) # mailio requires it
 target_link_libraries(docwire_mail PRIVATE ${bfio} ${pff} mailio docwire_core)
 
-install(TARGETS docwire_mail)
+install(TARGETS docwire_mail EXPORT docwire_targets)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_mail> DESTINATION bin CONFIGURATIONS Debug)
 endif()

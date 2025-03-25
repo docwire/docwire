@@ -44,6 +44,11 @@
 // IWYU pragma: end_exports
 
 /**
+ * @example integration_example.cmake
+ * This example presents how to integrate DocWire SDK with your project using CMake
+*/
+
+/**
  * @example handling_errors_and_warnings.cpp
  * This example presents how to catch exceptions to handle critical errors and
  * how to use transformer to process non-critical errors (warnings) flowing through the pipeline

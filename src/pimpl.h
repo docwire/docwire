@@ -43,9 +43,17 @@ protected:
 	impl_type* create_impl(Args&&... args)
 	{
 		if constexpr (std::is_base_of_v<with_pimpl_owner<T>, impl_type>)
+		{
+			static_assert(std::is_constructible_v<impl_type, T&, Args...>,
+				"Template specialization of pimpl_impl<T> that inherits from with_pimpl_owner<T> is required to have constructor with T&, Args... arguments");
 			return new impl_type(static_cast<T&>(*this), std::forward<Args>(args)...);
+		}
 		else
-			return new impl_type(impl_type{std::forward<Args>(args)...});
+		{
+			static_assert(std::is_constructible_v<impl_type, Args...>,
+				"Template specialization of pimpl_impl<T> is required to have constructor with Args... arguments");
+			return new impl_type(std::forward<Args>(args)...);
+		}
 	}
 
 	template <typename... Args>

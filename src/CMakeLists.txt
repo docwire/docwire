@@ -39,3 +39,12 @@ if (WIN32)
 else()
 	install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION lib/docwire_system_libraries)
 endif()
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+	docwire-config.cmake.in
+	${CMAKE_CURRENT_BINARY_DIR}/docwire-config.cmake
+	INSTALL_DESTINATION lib/cmake/docwire
+)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/docwire-config.cmake DESTINATION lib/cmake/docwire)
+install(EXPORT docwire_targets FILE docwire-targets.cmake DESTINATION lib/cmake/docwire)

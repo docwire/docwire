@@ -1,3 +1,34 @@
+## Version 2025.03.24
+
+This release introduces a major overhaul of the HTML parsing component within the DocWire SDK, significantly enhancing the accuracy, robustness, and efficiency of HTML processing.  Alongside this core update, we've modernized the build system and improved overall project structure. **Please note that we have removed support for Ubuntu 20.04 in our CI/CD pipeline. If this change impacts your workflow, please contact us for assistance.**
+
+> I'm a coding bunny on a merry sprint,  
+> Hopping through workflows without a hint,  
+> Matrix trimmed and targets set to shine,  
+> Parsing HTML with a twist so fine.  
+> With tests and docs in cheerful array,  
+> I nibble bugs and brighten the day!  
+> 🐇💻✨
+
+- **New Features**
+  - **Enhanced HTML Parsing Capabilities:** The HTML parsing engine has been significantly upgraded, featuring:
+    - **Improved Encoding Detection:**  More accurate and reliable detection of various character encodings, ensuring correct handling of diverse web content.
+    - **DOM Correction:** Enhanced ability to automatically correct common HTML structure errors, leading to more robust and reliable parsing results.
+
+- **Improvements**
+  - **Modernized HTML Parser:** The HTML parser has been replaced with a modern, high-performance alternative, providing significant improvements in parsing speed, accuracy, and stability.
+  - **Modernized Build Workflow:** Streamlined the CI/CD workflow with a more modern environment and adjustments to build and test steps.
+  - **Expanded Logging:** Increased log uploads to provide more detailed insights into the build and test processes.
+  - **CMake Integration:** Upgraded package configuration and dependency management for smoother integration with CMake-based projects.
+  - **Target Installation:** Numerous CMake files now install targets with an export specification, improving the overall build process.
+
+- **Documentation**
+  - **Practical Integration Guidance:** Enriched documentation with practical integration examples, highlighting the new HTML parsing capabilities, to help developers quickly get started.
+
+- **Refactor**
+    - **HTML Parser Replacement:** Replaced the previous HTML parser and removed all related configuration files.
+    - Numerous CMake files now install targets with an export specification, and a new package configuration template is added.
+
 ## Version 2025.03.02
 
 This release brings a multitude of improvements, focusing on library build enhancements, error handling, charset conversion, and HTML parsing.

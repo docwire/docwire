@@ -36,6 +36,10 @@
 			"host": true
 		},
 		{
+			"name": "vcpkg-cmake-config",
+			"host": true
+		},
+		{
 			"name": "libcharsetdetect"
 		},
 		{
@@ -66,7 +70,7 @@
 			"name": "unzip"
 		},
 		{
-			"name": "htmlcxx"
+			"name": "lexbor"
 		},
 		{
 			"name": "tesseract"

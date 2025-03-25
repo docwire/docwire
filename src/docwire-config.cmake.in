@@ -1,0 +1,8 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/docwire-targets.cmake")
+
+check_required_components(docwire)
+
+include(CMakeFindDependencyMacro)
+find_dependency(magic_enum REQUIRED)

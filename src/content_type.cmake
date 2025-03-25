@@ -11,7 +11,7 @@ add_library(docwire_content_type SHARED
 find_package(unofficial-libmagic REQUIRED)
 target_link_libraries(docwire_content_type PRIVATE unofficial::libmagic::libmagic docwire_core)
 
-install(TARGETS docwire_content_type)
+install(TARGETS docwire_content_type EXPORT docwire_targets)
 if(MSVC)
 	install(FILES $<TARGET_PDB_FILE:docwire_content_type> DESTINATION bin CONFIGURATIONS Debug)
 endif()

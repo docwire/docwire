@@ -79,5 +79,39 @@ foreach(ext IN ITEMS doc pdf png)
 		COMMAND ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/docwire tests/1.${ext}
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} # ensure CLI is running correctly outside build directory
 	)
-	set_property(TEST cli_${ext} PROPERTY LABELS "is_cli_test")
+	set_property(TEST cli_${ext} PROPERTY LABELS "is_after_installation_test")
 endforeach()
+
+message(STATUS "Adding integration test" ${VCPKG_TARGET_TRIPLET} ${VCPKG_DEFAULT_TRIPLET})
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/integration_test/CMakeLists.txt
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/integration_test
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/integration_example.cmake ${CMAKE_BINARY_DIR}/integration_test/CMakeLists.txt
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/integration_example.cpp ${CMAKE_BINARY_DIR}/integration_test/integration_example.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/integration_example.cmake ${CMAKE_CURRENT_SOURCE_DIR}/integration_example.cpp
+)
+add_custom_target(setup_integration_test ALL
+	DEPENDS ${CMAKE_BINARY_DIR}/integration_test/CMakeLists.txt
+)
+add_test(
+	NAME integration_configure_test
+	COMMAND ${CMAKE_COMMAND}
+		-DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLED_DIR}/../scripts/buildsystems/vcpkg.cmake
+		-DVCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}
+		-S ${CMAKE_BINARY_DIR}/integration_test
+		-B ${CMAKE_BINARY_DIR}/integration_test_build
+)
+set_property(TEST integration_configure_test PROPERTY LABELS is_after_installation_test)
+add_test(
+	NAME integration_build_test
+	COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/integration_test_build
+)
+set_property(TEST integration_build_test PROPERTY LABELS is_after_installation_test)
+set_property(TEST integration_build_test PROPERTY DEPENDS integration_configure_test)
+add_test(
+	NAME integration_run_test
+	COMMAND integration_example
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/integration_test_build
+)
+set_property(TEST integration_run_test PROPERTY LABELS is_after_installation_test)
+set_property(TEST integration_run_test PROPERTY DEPENDS integration_build_test)

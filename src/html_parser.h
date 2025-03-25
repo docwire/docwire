@@ -24,8 +24,7 @@ class DOCWIRE_HTML_EXPORT HTMLParser : public Parser, public with_pimpl<HTMLPars
 {
 	private:
 		using with_pimpl<HTMLParser>::impl;
-		using with_pimpl<HTMLParser>::renew_impl;
-		friend class SaxParser;
+		friend pimpl_impl<HTMLParser>;
 
 	public:
 

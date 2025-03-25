@@ -17,16 +17,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04, windows-2019, windows-2022, macos-13, macos-14, macos-15]
+        os: [ubuntu-22.04, ubuntu-24.04, windows-2019, windows-2022, macos-13, macos-14, macos-15]
         triplet: [x64-linux-dynamic, x64-windows, x64-osx-dynamic, arm64-osx-dynamic]
         sanitizer: ["", "asan", "tsan"]
         exclude:
-          - os: ubuntu-20.04
-            triplet: x64-windows
-          - os: ubuntu-20.04
-            triplet: x64-osx-dynamic
-          - os: ubuntu-20.04
-            triplet: arm64-osx-dynamic
           - os: ubuntu-22.04
             triplet: x64-windows
           - os: ubuntu-22.04
@@ -97,7 +91,6 @@ jobs:
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
       - name: Build DocWire SDK
         run: |
-          ${{ matrix.os == 'ubuntu-20.04' && 'sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt-get update && sudo apt-get install gcc-11 g++-11 -y && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 && sudo update-alternatives --set gcc /usr/bin/gcc-11' || '' }}
           ${{ matrix.os == 'ubuntu-24.04' && 'sudo apt-get install -y mono-complete' || '' }}
           ${{ (matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind') && 'sudo apt-get update && sudo apt-get install -y valgrind' || '' }}
           ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint doxygen autoconf-archive' || '' }}
@@ -115,10 +108,10 @@ jobs:
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'asan' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
           TSAN_OPTIONS: ${{ matrix.sanitizer == 'tsan' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
           DEBUG: ${{ runner.debug }}
-      - name: "Test DocWire CLI"
+      - name: "Run additional tests after installation"
         if: matrix.sanitizer == ''
         working-directory: vcpkg/buildtrees/docwire/${{ matrix.triplet }}-rel
-        run: ctest --label-regex is_cli_test
+        run: ctest --label-regex is_after_installation_test
       - name: "Upload logs"
         uses: actions/upload-artifact@v4
         if: always()
@@ -126,6 +119,9 @@ jobs:
           name: ${{ matrix.triplet }}-${{ matrix.os }}-${{ matrix.sanitizer == '' && 'binaries' || format('{0}-sanitizer', matrix.sanitizer) }}-logs
           path: |
             vcpkg/buildtrees/*/*.log
+            vcpkg/buildtrees/*/*/*.log
+            vcpkg/buildtrees/*/*/*/*.log
+            vcpkg/buildtrees/*/*/*/*/*.log
             ${{ matrix.sanitizer == 'callgrind' && 'vcpkg/buildtrees/**/callgrind.out.*' || '' }}
           if-no-files-found: error
       - name: "Export built packages with 'vcpkg export'"
