@@ -1,9 +1,6 @@
 add_library(docwire_rtf SHARED rtf_parser.cpp)
 
-find_path(wv2_incdir wv2/ustring.h) # because of misc.h, TODO: misc.h should be splitted
-target_include_directories(docwire_rtf PRIVATE ${wv2_incdir})
-find_library(wv2 wv2 HINTS ${wv2_incdir}/../lib/static REQUIRED)
-target_link_libraries(docwire_rtf PRIVATE ${wv2} docwire_core)
+target_link_libraries(docwire_rtf PRIVATE wv2 docwire_core)
 
 install(TARGETS docwire_rtf EXPORT docwire_targets)
 if(MSVC)

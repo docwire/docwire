@@ -3,6 +3,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 add_compile_definitions(DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 
+add_subdirectory(wv2)
 include(core.cmake)
 include(base64.cmake)
 include(odf_ooxml.cmake)

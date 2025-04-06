@@ -20,8 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "throw_if.h"
-#include <wv2/ustring.h>
-#include "wv2/textconverter.h"
+#include "wv2/src/textconverter.h"
 #include <vector>
 #include <stack>
 #include "thread_safe_ole_stream_reader.h"

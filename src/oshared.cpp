@@ -15,7 +15,7 @@
 #include "misc.h"
 #include "log.h"
 #include "throw_if.h"
-#include "wv2/utilities.h"
+#include "wv2/src/utilities.h"
 #include <time.h>
 #include "thread_safe_ole_stream_reader.h"
 #include "thread_safe_ole_storage.h"

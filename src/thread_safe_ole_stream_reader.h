@@ -18,7 +18,7 @@
 #include "pimpl.h"
 #include <string>
 #include <vector>
-#include "wv2/olestream.h"
+#include "wv2/src/olestream.h"
 
 namespace docwire
 {

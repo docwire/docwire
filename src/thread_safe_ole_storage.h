@@ -17,7 +17,7 @@
 #include <span>
 #include <string>
 #include <vector>
-#include "wv2/olestorage.h"
+#include "wv2/src/olestorage.h"
 
 namespace docwire
 {

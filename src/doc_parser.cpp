@@ -19,25 +19,25 @@
 //Dirty hack, be we now what we are doing and this is internal library.
 #define protected public
 #define private public
-#include "wv2/parser.h"
-#include "wv2/parser9x.h"
+#include "wv2/src/parser.h"
+#include "wv2/src/parser9x.h"
 #undef protected
 #undef private
 
-#include "wv2/fields.h"
-#include "wv2/handlers.h"
+#include "wv2/src/fields.h"
+#include "wv2/src/handlers.h"
 #include <mutex>
 #include "oshared.h"
-#include "wv2/paragraphproperties.h"
-#include "wv2/parserfactory.h"
+#include "wv2/src/paragraphproperties.h"
+#include "wv2/src/parserfactory.h"
 #include <stdio.h>
-#include "wv2/ustring.h"
+#include "wv2/src/ustring.h"
 #include <vector>
 #ifdef WIN32
 	#include <windows.h>
 #endif
-#include "wv2/word_helper.h"
-#include "wv2/word97_generated.h"
+#include "wv2/src/word_helper.h"
+#include "wv2/src/word97_generated.h"
 #include "xls_parser.h"
 #include "thread_safe_ole_stream_reader.h"
 #include "thread_safe_ole_storage.h"

@@ -1,0 +1,22 @@
+A small listing for me as I keep forgetting important steps like tagging...
+
+- Bump the version numbers in:
+    * configure.in: WV_MAJOR/MINOR/MICRO_VERSION and LT_CURRENT/REVISION/AGE
+    * global.cpp: libwv2_version string
+- Add a ChangeLog entry for the release
+- Make the directory cvs-clean and test the build
+- Run the regression test suite
+- Commit the changes
+- Tag the wv2 module with WV2_x_y_z
+- Update the anonymous CVS tree (and make sure it's up to date)
+- cvs-clean the anonymous tree
+- cp -a the anonymous tree to wv2-x.y.z
+- Run ./autogen.sh in the anonymous tree
+- Create a tarball of wv2-x.y.z and bzip2 it
+- gpg --detach-sign --armor wv2-x.y.z.tar.bz2
+- gpg --verify wv2-x.y.z.tar.bz2.asc
+- Upload the tarball and the signature to ftp://upload.sourceforge.net/incoming
+- Create the sourceforge release
+- Download the tarball and the signature and --verify it again
+- Create the freshmeat announcement
+- Announce the release on koffice-devel@mail.kde.org 
