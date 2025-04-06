@@ -19,10 +19,6 @@
 #ifndef DLLMAGIC_H
 #define DLLMAGIC_H
 
-#ifdef WV2_DLL
-# define WV2_DLLEXPORT __declspec(dllexport)
-#else
-# define WV2_DLLEXPORT
-#endif
+#include "wv2_export.h"
 
 #endif // DLLMAGIC_H
