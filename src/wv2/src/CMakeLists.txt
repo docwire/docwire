@@ -68,6 +68,7 @@ SET( wv2_HEADERS
 
 add_library(docwire_wv2 SHARED ${wv2_SOURCES} ${wv2_HEADERS} )
 target_link_libraries(docwire_wv2 ${ZLIB_LIBRARIES} ${ICONV_LIBRARIES})
+target_compile_features(docwire_wv2 PRIVATE cxx_std_14)
 
 include(GenerateExportHeader)
 generate_export_header(docwire_wv2 EXPORT_FILE_NAME wv2_export.h EXPORT_MACRO_NAME WV2_DLLEXPORT)
