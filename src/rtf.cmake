@@ -1,6 +1,6 @@
 add_library(docwire_rtf SHARED rtf_parser.cpp)
 
-target_link_libraries(docwire_rtf PRIVATE wv2 docwire_core)
+target_link_libraries(docwire_rtf PRIVATE docwire_wv2 docwire_core)
 
 install(TARGETS docwire_rtf EXPORT docwire_targets)
 if(MSVC)

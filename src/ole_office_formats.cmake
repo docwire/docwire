@@ -4,7 +4,7 @@ add_library(docwire_ole_office_formats SHARED
     ppt_parser.cpp
     xls_parser.cpp)
 
-target_link_libraries(docwire_ole_office_formats PRIVATE wv2 docwire_core)
+target_link_libraries(docwire_ole_office_formats PRIVATE docwire_wv2 docwire_core)
 
 install(TARGETS docwire_ole_office_formats EXPORT docwire_targets)
 if(MSVC)

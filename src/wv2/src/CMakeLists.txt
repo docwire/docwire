@@ -66,13 +66,14 @@ SET( wv2_HEADERS
 	wvlog.h 
     )
 
-ADD_LIBRARY( wv2 SHARED ${wv2_SOURCES} ${wv2_HEADERS} )
-TARGET_LINK_LIBRARIES( wv2 ${ZLIB_LIBRARIES} ${ICONV_LIBRARIES} )
-include(GenerateExportHeader)
-generate_export_header(wv2 EXPORT_MACRO_NAME WV2_DLLEXPORT)
-target_include_directories(wv2 PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+add_library(docwire_wv2 SHARED ${wv2_SOURCES} ${wv2_HEADERS} )
+target_link_libraries(docwire_wv2 ${ZLIB_LIBRARIES} ${ICONV_LIBRARIES})
 
-INSTALL( TARGETS wv2
+include(GenerateExportHeader)
+generate_export_header(docwire_wv2 EXPORT_FILE_NAME wv2_export.h EXPORT_MACRO_NAME WV2_DLLEXPORT)
+target_include_directories(docwire_wv2 PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+
+install(TARGETS docwire_wv2
     EXPORT docwire_targets
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib${LIB_SUFFIX}
