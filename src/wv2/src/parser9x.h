@@ -294,6 +294,11 @@ namespace wvWare
         };
 
         std::stack<ParsingState> oldParsingStates;
+    
+    public:
+        const PLCF<Word97::PCD>* pieceTable() const { return m_plcfpcd; }
+        const Paragraph* currentParagraph() const { return m_currentParagraph; }
+        void calculateRealFC(U32& fc, bool& unicode) const { realFC( fc, unicode ); }
     };
 
     inline void Parser9x::realFC( U32& fc, bool& unicode ) const

@@ -127,6 +127,7 @@ public:
 
 	// Do we need public access to parts of the AbstractOLEStorage interface?
     // If we add public accessors we should make m_storage private.
+    AbstractOLEStorage* storage() const { return m_storage; }
 
 protected:
     InlineReplacementHandler* m_inlineHandler;
