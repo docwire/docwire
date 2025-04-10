@@ -19,7 +19,7 @@
 #ifndef STYLES_H
 #define STYLES_H
 
-#include <word97_generated.h>
+#include "word97_generated.h"
 
 namespace wvWare
 {

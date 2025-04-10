@@ -169,7 +169,7 @@ typedef enum
     sprmCCharScale = 0x4852,
     sprmCLidBi = 0x485F,
     sprmCIbstRMarkDel = 0x4863,
-    sprmCShd = 0x4866,
+    sprmCShd80 = 0x4866,
     sprmCIdslRMarkDel = 0x4867,
     sprmCCpg = 0x486B,
     sprmCRgLid0 = 0x486D,
@@ -217,7 +217,7 @@ typedef enum
     sprmCObjLocation = 0x680E,
     sprmCDttmRMarkDel = 0x6864,
     sprmCBrc = 0x6865,
-    sprmCUndocumented3 = 0x6870, // OOo says this is the text color (BGR, not RGB!)
+    sprmCCv = 0x6870,
     sprmCPicLocation = 0x6A03,
     sprmCSymbol = 0x6A09,
     sprmPicBrcTop = 0x6C02,
@@ -285,6 +285,7 @@ typedef enum
     sprmCMajority50 = 0xCA4C,
     sprmCPropRMark = 0xCA57,
     sprmCDispFldRMark = 0xCA62,
+    sprmCShd = 0xCA71,
     sprmPicScale = 0xCE01,
     sprmSOlstAnm = 0xD202,
     sprmSPropRMark = 0xD227,
@@ -585,39 +586,39 @@ void PAP::apply( const U8* grpprl, U16 count, const Style* style, const StyleShe
         switch(ico)
         {
             case 0: //default and we choose black as most paper is white
-                return 0x000000;
+                return 0xFF000000;
             case 1://black
-                return 0x000000;
+                return 0x00000000;
             case 2://blue
-                return 0x0000FF;
+                return 0x000000FF;
             case 3://cyan
-                return 0x00FFFF;
+                return 0x0000FFFF;
             case 4://green
-                return 0x008000;
+                return 0x00008000;
             case 5://magenta
-                return 0xFF00FF;
+                return 0x00FF00FF;
             case 6://red
-                return 0xFF0000;
+                return 0x00FF0000;
             case 7://yellow
-                return 0xFFFF00;
+                return 0x00FFFF00;
             case 8://white
-                return 0xFFFFFF;
+                return 0x00FFFFFF;
             case 9://dark blue
-                return 0x00008B;
+                return 0x0000008B;
             case 10://dark cyan
-                return 0x008B8B;
+                return 0x00008B8B;
             case 11://dark green
-                return 0x006400;
+                return 0x00006400;
             case 12://dark magenta
-                return 0x8B008B;
+                return 0x008B008B;
             case 13://dark red
-                return 0x8B0000;
+                return 0x008B0000;
             case 14://dark yellow
-            return 0x808000;
+                return 0x00808000;
             case 15://dark gray
-                return 0xA9A9A9;
+                return 0x00A9A9A9;
             case 16://light gray
-                return 0xD3D3D3;
+                return 0x00D3D3D3;
 
             default:
                 return 0x000000;
@@ -996,7 +997,7 @@ S16 PAP::applyPAPSPRM( const U8* ptr, const Style* style, const StyleSheet* styl
             lvl = readS8( ptr );
             break;
         case SPRM::sprmPFBiDi:
-            wvlog << "Warning: sprmPFBiDi isn't documented properly" << std::endl;
+            fBiDi = readS8( ptr );
             break;
         case SPRM::sprmPFNumRMIns:
             fNumRMIns = *ptr == 1;
@@ -1206,7 +1207,7 @@ S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, const StyleSh
             fCaps = false;
             fVanish = false;
             kul = 0;
-            ico = 0;
+            cv = 0;
             break;
         case SPRM::sprmCPlain:
         {
@@ -1331,9 +1332,25 @@ S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, const StyleSh
             lidDefault = lidFE = lid = readU16( ptr );
             //wvlog << "Error: sprmCLid only used internally in MS Word" << std::endl;
             break;
-        case SPRM::sprmCIco:
-            ico = *ptr;
+        case SPRM::sprmCIco: {
+            U16 ico = *ptr;
+            cv=Word97::icoToRGB(ico);
             break;
+        }
+        case SPRM::sprmCCv: {
+            U8 r,g,b,k;
+
+            r=readU8(ptr);
+            ptr+=sizeof(U8);
+            g=readU8(ptr);
+            ptr+=sizeof(U8);
+            b=readU8(ptr);
+            ptr+=sizeof(U8);
+            k=readU8(ptr);
+            ptr+=sizeof(U8);
+            cv=(k<<24)|(r<<16)|(g<<8)|(b);
+            break;
+        }
         case SPRM::sprmCHps:
             hps = readU16( ptr );
             break;
@@ -1380,8 +1397,8 @@ S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, const StyleSh
                     kul = pstyle.kul;
                 if ( tmpChp.dxaSpace == dxaSpace ) // qpsSpace???
                     dxaSpace = pstyle.dxaSpace;
-                if ( tmpChp.ico == ico )
-                    ico = pstyle.ico;
+                if ( tmpChp.cv == cv )
+                    cv = pstyle.cv;
             }
             else
                 wvlog << "Warning: sprmCMajority couldn't find a style" << std::endl;
@@ -1511,6 +1528,10 @@ S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, const StyleSh
             }
             break;
         }
+        case SPRM::sprmCShd:
+            ptr++;
+            shd.read90Ptr( ptr );
+            break;
         case SPRM::sprmCIbstRMarkDel:
             ibstRMarkDel = readS16( ptr );
             break;
@@ -1520,7 +1541,7 @@ S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, const StyleSh
         case SPRM::sprmCBrc:
             readBRC( brc, ptr, version );
             break;
-        case SPRM::sprmCShd:
+        case SPRM::sprmCShd80:
             shd.readPtr( ptr );
             break;
         case SPRM::sprmCIdslRMarkDel:
@@ -1547,7 +1568,6 @@ S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, const StyleSh
         // Fall-through intended
         case SPRM::sprmCUndocumented1:
         case SPRM::sprmCUndocumented2:
-        case SPRM::sprmCUndocumented3:
             break;  // They are not documented but they are skipped correctly
         default:
             wvlog << "Huh? None of the defined sprms matches 0x" << std::hex << sprm << std::dec << "... trying to skip anyway" << std::endl;

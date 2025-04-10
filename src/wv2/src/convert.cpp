@@ -229,7 +229,7 @@ Word97::CHP toWord97(const Word95::CHP &s) {
     ret.dxaSpace=s.dxaSpace;
     ret.iss=s.iss;
     ret.fSysVanish=s.fSysVanish;
-    ret.ico=s.ico;
+    ret.cv= Word97::icoToRGB(s.ico);
     ret.kul=s.kul;
     ret.hpsPos=s.hpsPos;
     ret.lid=s.lid;

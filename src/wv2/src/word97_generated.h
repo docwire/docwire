@@ -2565,8 +2565,9 @@ struct CHP : public Shared {
      * 15 DkGray
      * 16 LtGray
      */
-    U8 ico:5;
-
+    
+    U8 icoObsolete:5;
+    
     /**
      * reserved
      */
@@ -2587,6 +2588,11 @@ struct CHP : public Shared {
      * negative means text is lowered.
      */
     S16 hpsPos;
+
+    /**
+     * foreground color, color of the text
+     */
+    U32 cv;
 
     /**
      * LID language identification code (no longer stored here, see rglid
@@ -6836,6 +6842,8 @@ struct WV2_DLLEXPORT PAP : public Shared {
     DCS dcs;
 
     S8 lvl;
+
+    S8 fBiDi;
 
     S8 fNumRMIns;
 

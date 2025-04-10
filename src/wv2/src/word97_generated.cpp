@@ -500,7 +500,7 @@ void SHD::readPtr(const U8 *ptr) {
 void SHD::read90Ptr(const U8 *ptr) {
 
     U16 shifterU16;
-    U8 r,g,b;
+    U8 r,g,b,cvauto;
 
     r=readU8(ptr);
     ptr+=sizeof(U8);
@@ -508,23 +508,25 @@ void SHD::read90Ptr(const U8 *ptr) {
     ptr+=sizeof(U8);
     b=readU8(ptr);
     ptr+=sizeof(U8);
+    cvauto=readU8(ptr);
     ptr+=sizeof(U8);
-    cvFore=(r<<16)|(g<<8)|(b);
+    cvFore=(cvauto<<24)|(r<<16)|(g<<8)|(b);
     r=readU8(ptr);
     ptr+=sizeof(U8);
     g=readU8(ptr);
     ptr+=sizeof(U8);
     b=readU8(ptr);
     ptr+=sizeof(U8);
+    cvauto=readU8(ptr);
     ptr+=sizeof(U8);
-    cvBack=(r<<16)|(g<<8)|(b);
+    cvBack=(cvauto<<24)|(r<<16)|(g<<8)|(b);
     shifterU16=readU16(ptr);
     ipat=shifterU16;
 }
 
 void SHD::clear() {
-    cvFore=0;
-    cvBack=0;
+    cvFore=0xff000000;
+    cvBack=0xff000000;
     ipat=0;
 }
 
@@ -757,7 +759,7 @@ void BRC::readPtr(const U8 *ptr) {
 
 void BRC::read90Ptr(const U8 *ptr) {
     U16 shifterU16;
-    U8 r,g,b;
+    U8 r,g,b,cvauto;
 
     r=readU8(ptr);
     ptr+=sizeof(U8);
@@ -765,8 +767,9 @@ void BRC::read90Ptr(const U8 *ptr) {
     ptr+=sizeof(U8);
     b=readU8(ptr);
     ptr+=sizeof(U8);
+    cvauto=readU8(ptr);
     ptr+=sizeof(U8);
-    cv=(r<<16)|(g<<8)|(b);
+    cv=(cvauto<<24)|(r<<16)|(g<<8)|(b);
     shifterU16=readU16(ptr);
     ptr+=sizeof(U16);
     dptLineWidth=shifterU16;
@@ -2387,7 +2390,7 @@ bool CHP::read(OLEStreamReader *stream, bool preservePos) {
     shifterU8>>=4;
     fSpecSymbol=shifterU8;
     shifterU8=stream->readU8();
-    ico=shifterU8;
+    //ico=shifterU8;
     shifterU8>>=5;
     unused23_5=shifterU8;
     shifterU8>>=1;
@@ -2486,7 +2489,6 @@ void CHP::clear() {
     iss=0;
     kul=0;
     fSpecSymbol=0;
-    ico=0;
     unused23_5=0;
     fSysVanish=0;
     hpScript=0;
@@ -2536,6 +2538,7 @@ void CHP::clear() {
         xstDispFldRMark[_i]=0;
     shd.clear();
     brc.clear();
+    cv=0;
 }
 
 void CHP::dump() const
@@ -2610,8 +2613,6 @@ std::string CHP::toString() const
     s += uint2string( kul );
     s += "\nfSpecSymbol=";
     s += uint2string( fSpecSymbol );
-    s += "\nico=";
-    s += uint2string( ico );
     s += "\nunused23_5=";
     s += uint2string( unused23_5 );
     s += "\nfSysVanish=";
@@ -2752,7 +2753,7 @@ bool operator==(const CHP &lhs, const CHP &rhs) {
            lhs.iss==rhs.iss &&
            lhs.kul==rhs.kul &&
            lhs.fSpecSymbol==rhs.fSpecSymbol &&
-           lhs.ico==rhs.ico &&
+           lhs.cv==rhs.cv &&
            lhs.unused23_5==rhs.unused23_5 &&
            lhs.fSysVanish==rhs.fSysVanish &&
            lhs.hpScript==rhs.hpScript &&
@@ -5632,6 +5633,8 @@ std::string PAP::toString() const
     s += "\n{" + dcs.toString() + "}\n";
     s += "\nlvl=";
     s += int2string( lvl );
+    s += "\nfBiDi=";
+    s += int2string( fBiDi );
     s += "\nfNumRMIns=";
     s += int2string( fNumRMIns );
     s += "\nanld=";
@@ -5720,6 +5723,7 @@ bool operator==(const PAP &lhs, const PAP &rhs) {
            lhs.shd==rhs.shd &&
            lhs.dcs==rhs.dcs &&
            lhs.lvl==rhs.lvl &&
+           lhs.fBiDi==rhs.fBiDi &&
            lhs.fNumRMIns==rhs.fNumRMIns &&
            lhs.anld==rhs.anld &&
            lhs.fPropRMark==rhs.fPropRMark &&
