@@ -25,7 +25,7 @@
 
 using namespace wvWare;
 
-FontCollection::FontCollection( AbstractOLEStreamReader* reader, const Word97::FIB& fib )
+FontCollection::FontCollection( OLEStreamReader* reader, const Word97::FIB& fib )
 {
     m_fallbackFont = new Word97::FFN();
     m_fallbackFont->xszFfn = "Helvetica";

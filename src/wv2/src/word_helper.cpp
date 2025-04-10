@@ -24,7 +24,7 @@
 namespace wvWare
 {
 
-	STTBF::STTBF( U16 lid, AbstractOLEStreamReader* reader, bool preservePos )
+    STTBF::STTBF( U16 lid, OLEStreamReader* reader, bool preservePos )
     {
         if ( preservePos )
             reader->push();
@@ -157,7 +157,7 @@ namespace wvWare
             wvlog << "   '" << ( *it ).ascii() << "'" << std::endl;
     }
 
-	void STTBF::init( U16 lid, AbstractOLEStreamReader* reader, const U8* ptr )
+    void STTBF::init( U16 lid, OLEStreamReader* reader, const U8* ptr )
     {
         bool extended = false;
         U16 count = readU16( reader, &ptr );
@@ -211,7 +211,7 @@ namespace wvWare
         delete textconverter;
     }
 
-	U16 STTBF::readU16( AbstractOLEStreamReader* reader, const U8** ptr ) const
+    U16 STTBF::readU16( OLEStreamReader* reader, const U8** ptr ) const
     {
         if ( reader )
             return reader->readU16();
@@ -226,7 +226,7 @@ namespace wvWare
         }
     }
 
-	U8 STTBF::readU8( AbstractOLEStreamReader* reader, const U8** ptr ) const
+    U8 STTBF::readU8( OLEStreamReader* reader, const U8** ptr ) const
     {
         if ( reader )
             return reader->readU8();
@@ -241,7 +241,7 @@ namespace wvWare
         }
     }
 
-	bool STTBF::read( AbstractOLEStreamReader* reader, const U8** ptr, U8* buffer, size_t length ) const
+    bool STTBF::read( OLEStreamReader* reader, const U8** ptr, U8* buffer, size_t length ) const
     {
         if ( reader )
             return reader->read( buffer, length );
@@ -262,7 +262,7 @@ namespace wvWare
         clear();
     }
 
-	CHPFKP_BX::CHPFKP_BX( AbstractOLEStreamReader* stream, bool preservePos )
+    CHPFKP_BX::CHPFKP_BX( OLEStreamReader* stream, bool preservePos )
     {
         clear();
         read( stream, preservePos );
@@ -274,7 +274,7 @@ namespace wvWare
         readPtr( ptr );
     }
 
-	bool CHPFKP_BX::read( AbstractOLEStreamReader* stream, bool preservePos )
+    bool CHPFKP_BX::read( OLEStreamReader* stream, bool preservePos )
     {
         if ( preservePos )
             stream->push();

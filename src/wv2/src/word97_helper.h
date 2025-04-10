@@ -23,7 +23,7 @@
 
 namespace wvWare
 {
-	class AbstractOLEStreamReader;
+    class OLEStreamReader;
     class ParagraphProperties;
     class StyleSheet;
 
@@ -34,8 +34,8 @@ namespace wvWare
 
     namespace Word97
     {
-		ParagraphProperties* initPAPFromStyle( const U8* exceptions, const StyleSheet* stylesheet, AbstractOLEStreamReader* dataStream, WordVersion version );
-		Word97::TAP* initTAP( const U8* exceptions, AbstractOLEStreamReader* dataStream, WordVersion version );
+        ParagraphProperties* initPAPFromStyle( const U8* exceptions, const StyleSheet* stylesheet, OLEStreamReader* dataStream, WordVersion version );
+        Word97::TAP* initTAP( const U8* exceptions, OLEStreamReader* dataStream, WordVersion version );
 
         namespace SPRM
         {

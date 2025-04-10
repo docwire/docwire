@@ -105,7 +105,7 @@ namespace wvWare
     class WV2_DLLEXPORT Parser9x : public Parser
     {
     public:
-		Parser9x( AbstractOLEStorage* storage, AbstractOLEStreamReader* wordDocument, const Word97::FIB& fib );
+        Parser9x( AbstractOLEStorage* storage, OLEStreamReader* wordDocument, const Word97::FIB& fib );
         virtual ~Parser9x();
 
         /**
@@ -148,9 +148,9 @@ namespace wvWare
         // the parsing process. We don't have to save and restore those.
         const Word97::FIB m_fib;
 
-		AbstractOLEStreamReader* m_table; // table stream ('WordDocument' for Word 6+95 and
+        OLEStreamReader* m_table; // table stream ('WordDocument' for Word 6+95 and
                                   // the real table stream for Word 97+)
-		AbstractOLEStreamReader* m_data;  // data stream (if any, most of the time 0)
+        OLEStreamReader* m_data;  // data stream (if any, most of the time 0)
 
         Properties97* m_properties;
         Headers* m_headers;

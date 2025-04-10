@@ -38,7 +38,7 @@ STD::STD()
     clearInternal();
 }
 
-STD::STD( U16 baseSize, U16 totalSize, AbstractOLEStreamReader* stream, bool preservePos )
+STD::STD( U16 baseSize, U16 totalSize, OLEStreamReader* stream, bool preservePos )
 {
     clearInternal();
     read( baseSize, totalSize, stream, preservePos );
@@ -103,7 +103,7 @@ STD& STD::operator=( const STD& rhs )
     return *this;
 }
 
-bool STD::read( U16 baseSize, U16 totalSize, AbstractOLEStreamReader* stream, bool preservePos )
+bool STD::read( U16 baseSize, U16 totalSize, OLEStreamReader* stream, bool preservePos )
 {
     U16 shifterU16;
     S32 startOffset=stream->tell();  // address where the STD starts
@@ -232,7 +232,7 @@ void STD::clearInternal()
     unused8_3 = 0; grupx = 0; grupxLen = 0;
 }
 
-void STD::readStyleName( U16 baseSize, AbstractOLEStreamReader* stream )
+void STD::readStyleName( U16 baseSize, OLEStreamReader* stream )
 {
     // Read the length of the string. It seems that the spec is
     // buggy and the "length byte" is actually a short in Word97+
@@ -318,7 +318,7 @@ bool operator!=( const STD& lhs, const STD& rhs )
 
 using namespace wvWare;
 
-Style::Style( U16 baseSize, AbstractOLEStreamReader* tableStream, U16* ftc ) : m_isEmpty( false ),
+Style::Style( U16 baseSize, OLEStreamReader* tableStream, U16* ftc ) : m_isEmpty( false ),
     m_isWrapped( true ), m_std( 0 ), m_properties( 0 ), m_chp( 0 ), m_upechpx( 0 )
 {
     // size of the STD
@@ -609,7 +609,7 @@ void Style::mergeUpechpx( const Style* parentStyle, WordVersion version )
 }
 
 
-StyleSheet::StyleSheet( AbstractOLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf )
+StyleSheet::StyleSheet( OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf )
 {
     WordVersion version = Word8;
 

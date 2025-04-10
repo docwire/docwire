@@ -54,7 +54,7 @@ Parser9x::Position::Position( U32 cp, const PLCF<Word97::PCD>* plcfpcd ) :
 }
 
 
-Parser9x::Parser9x( AbstractOLEStorage* storage, AbstractOLEStreamReader* wordDocument, const Word97::FIB& fib ) :
+Parser9x::Parser9x( AbstractOLEStorage* storage, OLEStreamReader* wordDocument, const Word97::FIB& fib ) :
     Parser( storage, wordDocument ), m_fib( fib ), m_table( 0 ), m_data( 0 ), m_properties( 0 ),
     m_headers( 0 ), m_lists( 0 ), m_textconverter( 0 ), m_fields( 0 ), m_footnotes( 0 ),
     m_fonts( 0 ), m_plcfpcd( 0 ), m_tableRowStart( 0 ), m_tableRowLength( 0 ),
@@ -809,7 +809,7 @@ void Parser9x::emitPictureData( SharedPtr<const Word97::CHP> chp )
     wvlog << "Found a picture; the fcPic is " << chp->fcPic_fcObj_lTagObj << std::endl;
 #endif
 
-	AbstractOLEStreamReader* stream( m_fib.nFib < Word8nFib ? m_wordDocument : m_data );
+    OLEStreamReader* stream( m_fib.nFib < Word8nFib ? m_wordDocument : m_data );
     if ( !stream || static_cast<unsigned int>( chp->fcPic_fcObj_lTagObj ) >= stream->size() ) {
         wvlog << "Error: Severe problems when trying to read an image. Skipping." << std::endl;
         return;

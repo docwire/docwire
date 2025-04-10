@@ -34,7 +34,7 @@ namespace wvWare
     class Properties97
     {
     public:
-		Properties97( AbstractOLEStreamReader* wordDocument, AbstractOLEStreamReader* table, const Word97::FIB &fib );
+        Properties97( OLEStreamReader* wordDocument, OLEStreamReader* table, const Word97::FIB &fib );
         ~Properties97();
 
         // StyleSheet ---------
@@ -49,13 +49,13 @@ namespace wvWare
 
         // Paragraph properties ---------
         // Determines the PAP state from the last full-save (ownership is transferred)
-		ParagraphProperties* fullSavedPap( U32 fc, AbstractOLEStreamReader* dataStream );
+        ParagraphProperties* fullSavedPap( U32 fc, OLEStreamReader* dataStream );
         // Apply the latest changes recorded in the clxGrppl section of the piece table
         void applyClxGrpprl( const Word97::PCD* pcd, U32 fcClx, ParagraphProperties* properties );
 
         // Table properties ---------
         // Determines the TAP state from the last full-save (ownership is transferred)
-		Word97::TAP* fullSavedTap( U32 fc, AbstractOLEStreamReader* dataStream );
+        Word97::TAP* fullSavedTap( U32 fc, OLEStreamReader* dataStream );
         void applyClxGrpprl( const Word97::PCD* pcd, U32 fcClx, Word97::TAP* tap, const Style* style );
 
         // Character properties ---------
@@ -74,8 +74,8 @@ namespace wvWare
         void fillBinTable( PLCF<Word97::BTE>* bte, U16 cpnBte );
 
         const WordVersion m_version;
-		AbstractOLEStreamReader* m_wordDocument; // doesn't belong to us, be careful
-		AbstractOLEStreamReader* m_table; // doesn't belong to us, be careful
+        OLEStreamReader* m_wordDocument; // doesn't belong to us, be careful
+        OLEStreamReader* m_table; // doesn't belong to us, be careful
 
         StyleSheet* m_stylesheet;
         Word97::DOP m_dop;

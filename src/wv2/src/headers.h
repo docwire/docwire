@@ -26,7 +26,7 @@
 namespace wvWare
 {
 
-	class AbstractOLEStreamReader;
+    class OLEStreamReader;
 
     /**
      * @internal
@@ -38,7 +38,7 @@ namespace wvWare
     class Headers
     {
     public:
-		Headers( U32 fcPlcfhdd, U32 lcbPlcfhdd, AbstractOLEStreamReader* tableStream, WordVersion version );
+        Headers( U32 fcPlcfhdd, U32 lcbPlcfhdd, OLEStreamReader* tableStream, WordVersion version );
         virtual ~Headers();
 
         /**

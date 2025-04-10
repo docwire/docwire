@@ -42,7 +42,7 @@ DTTM::DTTM() {
     clear();
 }
 
-DTTM::DTTM(AbstractOLEStreamReader *stream, bool preservePos) {
+DTTM::DTTM(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
@@ -52,7 +52,7 @@ DTTM::DTTM(const U8 *ptr) {
     readPtr(ptr);
 }
 
-bool DTTM::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DTTM::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -153,12 +153,12 @@ PRM2::PRM2() {
     clear();
 }
 
-PRM2::PRM2(AbstractOLEStreamReader *stream, bool preservePos) {
+PRM2::PRM2(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool PRM2::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool PRM2::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -199,7 +199,7 @@ PRM::PRM() {
     clear();
 }
 
-PRM::PRM(AbstractOLEStreamReader *stream, bool preservePos) {
+PRM::PRM(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
@@ -209,7 +209,7 @@ PRM::PRM(const U8 *ptr) {
     readPtr(ptr);
 }
 
-bool PRM::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool PRM::read(OLEStreamReader *stream, bool preservePos) {
 
     U8 shifterU8;
 
@@ -264,7 +264,7 @@ SHD::SHD() {
     clear();
 }
 
-SHD::SHD(AbstractOLEStreamReader *stream, bool preservePos) {
+SHD::SHD(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
@@ -274,7 +274,7 @@ SHD::SHD(const U8 *ptr) {
     readPtr(ptr);
 }
 
-bool SHD::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool SHD::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -352,7 +352,7 @@ PHE::PHE() {
     clear();
 }
 
-PHE::PHE(AbstractOLEStreamReader *stream, bool preservePos) {
+PHE::PHE(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
@@ -362,7 +362,7 @@ PHE::PHE(const U8 *ptr) {
     readPtr(ptr);
 }
 
-bool PHE::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool PHE::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -470,7 +470,7 @@ BRC::BRC() {
     clear();
 }
 
-BRC::BRC(AbstractOLEStreamReader *stream, bool preservePos) {
+BRC::BRC(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
@@ -480,7 +480,7 @@ BRC::BRC(const U8 *ptr) {
     readPtr(ptr);
 }
 
-bool BRC::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool BRC::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -572,7 +572,7 @@ TLP::TLP() {
     clear();
 }
 
-TLP::TLP(AbstractOLEStreamReader *stream, bool preservePos) {
+TLP::TLP(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
@@ -582,7 +582,7 @@ TLP::TLP(const U8 *ptr) {
     readPtr(ptr);
 }
 
-bool TLP::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool TLP::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -723,7 +723,7 @@ TC::TC() {
     clear();
 }
 
-TC::TC(AbstractOLEStreamReader *stream, bool preservePos) {
+TC::TC(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
@@ -733,7 +733,7 @@ TC::TC(const U8 *ptr) {
     readPtr(ptr);
 }
 
-bool TC::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool TC::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -837,12 +837,12 @@ DPHEAD::DPHEAD() {
     clear();
 }
 
-DPHEAD::DPHEAD(AbstractOLEStreamReader *stream, bool preservePos) {
+DPHEAD::DPHEAD(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool DPHEAD::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DPHEAD::read(OLEStreamReader *stream, bool preservePos) {
 
     if(preservePos)
         stream->push();
@@ -889,12 +889,12 @@ DPTXBX::DPTXBX() {
     clear();
 }
 
-DPTXBX::DPTXBX(AbstractOLEStreamReader *stream, bool preservePos) {
+DPTXBX::DPTXBX(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool DPTXBX::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DPTXBX::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -966,7 +966,7 @@ DPPOLYLINE::DPPOLYLINE() {
     clearInternal();
 }
 
-DPPOLYLINE::DPPOLYLINE(AbstractOLEStreamReader *stream, bool preservePos) {
+DPPOLYLINE::DPPOLYLINE(OLEStreamReader *stream, bool preservePos) {
     clearInternal();
     read(stream, preservePos);
 }
@@ -1038,7 +1038,7 @@ DPPOLYLINE &DPPOLYLINE::operator=(const DPPOLYLINE &rhs) {
     return *this;
 }
 
-bool DPPOLYLINE::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DPPOLYLINE::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -1165,7 +1165,7 @@ TAP::TAP() : Shared() {
     clearInternal();
 }
 
-TAP::TAP(AbstractOLEStreamReader *stream, bool preservePos) : Shared() {
+TAP::TAP(OLEStreamReader *stream, bool preservePos) : Shared() {
     clearInternal();
     read(stream, preservePos);
 }
@@ -1232,7 +1232,7 @@ TAP &TAP::operator=(const TAP &rhs) {
     return *this;
 }
 
-bool TAP::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool TAP::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -1412,7 +1412,7 @@ ANLD::ANLD() {
     clear();
 }
 
-ANLD::ANLD(AbstractOLEStreamReader *stream, bool preservePos) {
+ANLD::ANLD(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
@@ -1422,7 +1422,7 @@ ANLD::ANLD(const U8 *ptr) {
     readPtr(ptr);
 }
 
-bool ANLD::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool ANLD::read(OLEStreamReader *stream, bool preservePos) {
 
     U8 shifterU8;
 
@@ -1715,7 +1715,7 @@ ANLV::ANLV() {
     clear();
 }
 
-ANLV::ANLV(AbstractOLEStreamReader *stream, bool preservePos) {
+ANLV::ANLV(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
@@ -1725,7 +1725,7 @@ ANLV::ANLV(const U8 *ptr) {
     readPtr(ptr);
 }
 
-bool ANLV::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool ANLV::read(OLEStreamReader *stream, bool preservePos) {
 
     U8 shifterU8;
 
@@ -1971,12 +1971,12 @@ BKF::BKF() {
     clear();
 }
 
-BKF::BKF(AbstractOLEStreamReader *stream, bool preservePos) {
+BKF::BKF(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool BKF::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool BKF::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -2026,12 +2026,12 @@ BKL::BKL() {
     clear();
 }
 
-BKL::BKL(AbstractOLEStreamReader *stream, bool preservePos) {
+BKL::BKL(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool BKL::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool BKL::read(OLEStreamReader *stream, bool preservePos) {
 
     if(preservePos)
         stream->push();
@@ -2063,12 +2063,12 @@ BRC10::BRC10() {
     clear();
 }
 
-BRC10::BRC10(AbstractOLEStreamReader *stream, bool preservePos) {
+BRC10::BRC10(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool BRC10::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool BRC10::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -2125,12 +2125,12 @@ BTE::BTE() {
     clear();
 }
 
-BTE::BTE(AbstractOLEStreamReader *stream, bool preservePos) {
+BTE::BTE(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool BTE::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool BTE::read(OLEStreamReader *stream, bool preservePos) {
 
     if(preservePos)
         stream->push();
@@ -2162,12 +2162,12 @@ CHP::CHP() : Shared() {
     clear();
 }
 
-CHP::CHP(AbstractOLEStreamReader *stream, bool preservePos) : Shared() {
+CHP::CHP(OLEStreamReader *stream, bool preservePos) : Shared() {
     clear();
     read(stream, preservePos);
 }
 
-bool CHP::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool CHP::read(OLEStreamReader *stream, bool preservePos) {
 
     U8 shifterU8;
 
@@ -2439,7 +2439,7 @@ DCS::DCS() {
     clear();
 }
 
-DCS::DCS(AbstractOLEStreamReader *stream, bool preservePos) {
+DCS::DCS(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
@@ -2449,7 +2449,7 @@ DCS::DCS(const U8 *ptr) {
     readPtr(ptr);
 }
 
-bool DCS::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DCS::read(OLEStreamReader *stream, bool preservePos) {
 
     U8 shifterU8;
 
@@ -2524,12 +2524,12 @@ DO::DO() {
     clear();
 }
 
-DO::DO(AbstractOLEStreamReader *stream, bool preservePos) {
+DO::DO(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool DO::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DO::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -2589,12 +2589,12 @@ DOP::DOP() {
     clear();
 }
 
-DOP::DOP(AbstractOLEStreamReader *stream, bool preservePos) {
+DOP::DOP(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool DOP::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DOP::read(OLEStreamReader *stream, bool preservePos) {
 
     U8 shifterU8;
     U16 shifterU16;
@@ -2937,12 +2937,12 @@ DPARC::DPARC() {
     clear();
 }
 
-DPARC::DPARC(AbstractOLEStreamReader *stream, bool preservePos) {
+DPARC::DPARC(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool DPARC::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DPARC::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -3011,12 +3011,12 @@ DPCALLOUT::DPCALLOUT() {
     clear();
 }
 
-DPCALLOUT::DPCALLOUT(AbstractOLEStreamReader *stream, bool preservePos) {
+DPCALLOUT::DPCALLOUT(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool DPCALLOUT::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DPCALLOUT::read(OLEStreamReader *stream, bool preservePos) {
 
     if(preservePos)
         stream->push();
@@ -3066,12 +3066,12 @@ DPELLIPSE::DPELLIPSE() {
     clear();
 }
 
-DPELLIPSE::DPELLIPSE(AbstractOLEStreamReader *stream, bool preservePos) {
+DPELLIPSE::DPELLIPSE(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool DPELLIPSE::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DPELLIPSE::read(OLEStreamReader *stream, bool preservePos) {
 
     if(preservePos)
         stream->push();
@@ -3130,12 +3130,12 @@ DPLINE::DPLINE() {
     clear();
 }
 
-DPLINE::DPLINE(AbstractOLEStreamReader *stream, bool preservePos) {
+DPLINE::DPLINE(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool DPLINE::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DPLINE::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -3231,12 +3231,12 @@ DPRECT::DPRECT() {
     clear();
 }
 
-DPRECT::DPRECT(AbstractOLEStreamReader *stream, bool preservePos) {
+DPRECT::DPRECT(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool DPRECT::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DPRECT::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -3305,12 +3305,12 @@ DPSAMPLE::DPSAMPLE() {
     clear();
 }
 
-DPSAMPLE::DPSAMPLE(AbstractOLEStreamReader *stream, bool preservePos) {
+DPSAMPLE::DPSAMPLE(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool DPSAMPLE::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool DPSAMPLE::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -3426,12 +3426,12 @@ FDOA::FDOA() {
     clear();
 }
 
-FDOA::FDOA(AbstractOLEStreamReader *stream, bool preservePos) {
+FDOA::FDOA(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool FDOA::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool FDOA::read(OLEStreamReader *stream, bool preservePos) {
 
     if(preservePos)
         stream->push();
@@ -3466,12 +3466,12 @@ FIB::FIB() {
     clear();
 }
 
-FIB::FIB(AbstractOLEStreamReader *stream, bool preservePos) {
+FIB::FIB(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool FIB::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool FIB::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -4080,12 +4080,12 @@ LSPD::LSPD() {
     clear();
 }
 
-LSPD::LSPD(AbstractOLEStreamReader *stream, bool preservePos) {
+LSPD::LSPD(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool LSPD::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool LSPD::read(OLEStreamReader *stream, bool preservePos) {
 
     if(preservePos)
         stream->push();
@@ -4138,12 +4138,12 @@ METAFILEPICT::METAFILEPICT() {
     clear();
 }
 
-METAFILEPICT::METAFILEPICT(AbstractOLEStreamReader *stream, bool preservePos) {
+METAFILEPICT::METAFILEPICT(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool METAFILEPICT::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool METAFILEPICT::read(OLEStreamReader *stream, bool preservePos) {
 
     if(preservePos)
         stream->push();
@@ -4184,12 +4184,12 @@ OBJHEADER::OBJHEADER() {
     clear();
 }
 
-OBJHEADER::OBJHEADER(AbstractOLEStreamReader *stream, bool preservePos) {
+OBJHEADER::OBJHEADER(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool OBJHEADER::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool OBJHEADER::read(OLEStreamReader *stream, bool preservePos) {
 
     if(preservePos)
         stream->push();
@@ -4229,7 +4229,7 @@ OLST::OLST() {
     clear();
 }
 
-OLST::OLST(AbstractOLEStreamReader *stream, bool preservePos) {
+OLST::OLST(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
@@ -4239,7 +4239,7 @@ OLST::OLST(const U8 *ptr) {
     readPtr(ptr);
 }
 
-bool OLST::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool OLST::read(OLEStreamReader *stream, bool preservePos) {
 
     if(preservePos)
         stream->push();
@@ -4348,7 +4348,7 @@ PAP::PAP() : Shared() {
     clearInternal();
 }
 
-PAP::PAP(AbstractOLEStreamReader *stream, bool preservePos) : Shared() {
+PAP::PAP(OLEStreamReader *stream, bool preservePos) : Shared() {
     clearInternal();
     read(stream, preservePos);
 }
@@ -4475,7 +4475,7 @@ PAP &PAP::operator=(const PAP &rhs) {
     return *this;
 }
 
-bool PAP::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool PAP::read(OLEStreamReader *stream, bool preservePos) {
 
     U8 shifterU8;
     U16 shifterU16;
@@ -4801,7 +4801,7 @@ PCD::PCD() {
     clear();
 }
 
-PCD::PCD(AbstractOLEStreamReader *stream, bool preservePos) {
+PCD::PCD(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
@@ -4811,7 +4811,7 @@ PCD::PCD(const U8 *ptr) {
     readPtr(ptr);
 }
 
-bool PCD::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool PCD::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -4889,12 +4889,12 @@ PGD::PGD() {
     clear();
 }
 
-PGD::PGD(AbstractOLEStreamReader *stream, bool preservePos) {
+PGD::PGD(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool PGD::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool PGD::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -4995,12 +4995,12 @@ PICF::PICF() : Shared() {
     clear();
 }
 
-PICF::PICF(AbstractOLEStreamReader *stream, bool preservePos) : Shared() {
+PICF::PICF(OLEStreamReader *stream, bool preservePos) : Shared() {
     clear();
     read(stream, preservePos);
 }
 
-bool PICF::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool PICF::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -5117,12 +5117,12 @@ SED::SED() {
     clear();
 }
 
-SED::SED(AbstractOLEStreamReader *stream, bool preservePos) {
+SED::SED(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool SED::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool SED::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 
@@ -5174,12 +5174,12 @@ SEP::SEP() : Shared() {
     clear();
 }
 
-SEP::SEP(AbstractOLEStreamReader *stream, bool preservePos) : Shared() {
+SEP::SEP(OLEStreamReader *stream, bool preservePos) : Shared() {
     clear();
     read(stream, preservePos);
 }
 
-bool SEP::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool SEP::read(OLEStreamReader *stream, bool preservePos) {
 
     if(preservePos)
         stream->push();
@@ -5425,7 +5425,7 @@ SEPX::SEPX() {
     clearInternal();
 }
 
-SEPX::SEPX(AbstractOLEStreamReader *stream, bool preservePos) {
+SEPX::SEPX(OLEStreamReader *stream, bool preservePos) {
     clearInternal();
     read(stream, preservePos);
 }
@@ -5451,7 +5451,7 @@ SEPX &SEPX::operator=(const SEPX &rhs) {
     return *this;
 }
 
-bool SEPX::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool SEPX::read(OLEStreamReader *stream, bool preservePos) {
 
     if(preservePos)
         stream->push();
@@ -5499,12 +5499,12 @@ STSHI::STSHI() {
     clear();
 }
 
-STSHI::STSHI(AbstractOLEStreamReader *stream, bool preservePos) {
+STSHI::STSHI(OLEStreamReader *stream, bool preservePos) {
     clear();
     read(stream, preservePos);
 }
 
-bool STSHI::read(AbstractOLEStreamReader *stream, bool preservePos) {
+bool STSHI::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
 

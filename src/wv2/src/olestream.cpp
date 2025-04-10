@@ -49,5 +49,5 @@ bool OLEStream::pop()
     return true;
 }
 
-AbstractOLEStreamReader::AbstractOLEStreamReader(AbstractOLEStorage* storage) : OLEStream(storage){}
-AbstractOLEStreamReader::~AbstractOLEStreamReader(){}
+OLEStreamReader::OLEStreamReader(AbstractOLEStorage* storage) : OLEStream(storage){}
+OLEStreamReader::~OLEStreamReader(){}

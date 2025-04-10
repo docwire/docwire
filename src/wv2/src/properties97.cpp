@@ -51,7 +51,7 @@ namespace wvWare
 using namespace wvWare;
 
 
-Properties97::Properties97( AbstractOLEStreamReader* wordDocument, AbstractOLEStreamReader* table, const Word97::FIB &fib ) :
+Properties97::Properties97( OLEStreamReader* wordDocument, OLEStreamReader* table, const Word97::FIB &fib ) :
     m_version( fib.nFib < Word8nFib ? Word67 : Word8 ), m_wordDocument( wordDocument ), m_table( table ),
     m_stylesheet( 0 ), m_plcfsed( 0 ), m_plcfbtePapx( 0 ), m_plcfbteChpx( 0 ), m_papxFkp( 0 ), m_chpxFkp( 0 )
 {
@@ -166,7 +166,7 @@ SharedPtr<const Word97::SEP> Properties97::sepForCP( U32 cp ) const
     return SharedPtr<const Word97::SEP>( 0 );
 }
 
-ParagraphProperties* Properties97::fullSavedPap( U32 fc, AbstractOLEStreamReader* dataStream  )
+ParagraphProperties* Properties97::fullSavedPap( U32 fc, OLEStreamReader* dataStream  )
 {
     // Step 1: Search the correct FKP entry in the PLCFBTE
     PLCFIterator<Word97::BTE> it( *m_plcfbtePapx );
@@ -218,7 +218,7 @@ void Properties97::applyClxGrpprl( const Word97::PCD* pcd, U32 fcClx, ParagraphP
     applyClxGrpprlImpl<Word97::PAP>( pcd, fcClx, &properties->pap(), m_stylesheet->styleByIndex( properties->pap().istd ) );
 }
 
-Word97::TAP* Properties97::fullSavedTap( U32 fc, AbstractOLEStreamReader* dataStream )
+Word97::TAP* Properties97::fullSavedTap( U32 fc, OLEStreamReader* dataStream )
 {
     // This method is quite similar to fullSavedPap, but a template solution would suck :}
     // Maybe I'll clean that up later

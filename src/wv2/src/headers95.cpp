@@ -21,7 +21,7 @@
 
 using namespace wvWare;
 
-Headers95::Headers95( U32 fcPlcfhdd, U32 lcbPlcfhdd, AbstractOLEStreamReader* tableStream, U8 dop_grpfIhdt ) :
+Headers95::Headers95( U32 fcPlcfhdd, U32 lcbPlcfhdd, OLEStreamReader* tableStream, U8 dop_grpfIhdt ) :
     Headers( fcPlcfhdd, lcbPlcfhdd, tableStream, Word67 ), ihddOffset( countOnes( dop_grpfIhdt, 0x40 ) )
 {
     m_headerCount.push_back( 0 );

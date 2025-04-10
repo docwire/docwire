@@ -28,7 +28,7 @@
 namespace wvWare
 {
     class STTBF;
-	class AbstractOLEStreamReader;
+    class OLEStreamReader;
     class StyleSheet;
     class ListLevel;
     class ListData;
@@ -194,7 +194,7 @@ namespace wvWare
          * This constructor reads the structures from the table stream of a
          * Word 97 document.
          */
-		ListInfoProvider( AbstractOLEStreamReader* tableStream, const Word97::FIB& fib, const StyleSheet* styleSheet );
+        ListInfoProvider( OLEStreamReader* tableStream, const Word97::FIB& fib, const StyleSheet* styleSheet );
         ~ListInfoProvider();
 
         /**
@@ -219,10 +219,10 @@ namespace wvWare
          */
         bool setPAP( Word97::PAP* pap );
 
-		void readListData( AbstractOLEStreamReader* tableStream, const U32 endOfLSTF );
-		void readListFormatOverride( AbstractOLEStreamReader* tableStream );
-		void readListNames( AbstractOLEStreamReader* tableStream );
-		void eatLeading0xff( AbstractOLEStreamReader* tableStream );
+        void readListData( OLEStreamReader* tableStream, const U32 endOfLSTF );
+        void readListFormatOverride( OLEStreamReader* tableStream );
+        void readListNames( OLEStreamReader* tableStream );
+        void eatLeading0xff( OLEStreamReader* tableStream );
 
         void processOverride( ListFormatOverride* lfo );
         void convertCompatANLD();

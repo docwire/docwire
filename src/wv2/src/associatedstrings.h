@@ -23,7 +23,7 @@
 
 namespace wvWare
 {
-	class AbstractOLEStreamReader;
+    class OLEStreamReader;
     class STTBF;
     class UString;
 
@@ -39,7 +39,7 @@ namespace wvWare
          * You shouldn't have to create such an object yourself, the Parser provides
          * it.
          */
-		AssociatedStrings( U32 fcSttbfAssoc, U32 lcbSttbfAssoc, U16 lid, AbstractOLEStreamReader* tableStream );
+        AssociatedStrings( U32 fcSttbfAssoc, U32 lcbSttbfAssoc, U16 lid, OLEStreamReader* tableStream );
         AssociatedStrings( const AssociatedStrings& rhs );
         ~AssociatedStrings();
 

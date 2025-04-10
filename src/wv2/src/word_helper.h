@@ -36,14 +36,14 @@ namespace wvWare
         Word97::BTE toWord97( const Word95::BTE& s );   // fake, to make gcc 3.4 happy :-(
     }
 
-	class AbstractOLEStreamReader;
+    class OLEStreamReader;
     class ParagraphProperties;
     class UString;
 
     class STTBF
     {
     public:
-		STTBF( U16 lid, AbstractOLEStreamReader* reader, bool preservePos = false );
+        STTBF( U16 lid, OLEStreamReader* reader, bool preservePos = false );
         STTBF( U16 lid, const U8* ptr );
         STTBF( const STTBF& rhs );
         ~STTBF();
@@ -69,10 +69,10 @@ namespace wvWare
         STTBF& operator=( const STTBF& rhs );
 
         // Internal helper methods to avoid code duplication in the CTORs
-		void init( U16 lid, AbstractOLEStreamReader* reader, const U8* ptr );
-		U16 readU16( AbstractOLEStreamReader* reader, const U8** ptr ) const;
-		U8 readU8( AbstractOLEStreamReader* reader, const U8** ptr ) const;
-		bool read( AbstractOLEStreamReader* reader, const U8** ptr, U8* buffer, size_t length ) const;
+        void init( U16 lid, OLEStreamReader* reader, const U8* ptr );
+        U16 readU16( OLEStreamReader* reader, const U8** ptr ) const;
+        U8 readU8( OLEStreamReader* reader, const U8** ptr ) const;
+        bool read( OLEStreamReader* reader, const U8** ptr, U8* buffer, size_t length ) const;
 
         std::vector<UString> m_strings;
         mutable std::vector<UString>::const_iterator m_stringIt;
@@ -89,7 +89,7 @@ namespace wvWare
     template<class T, bool shortCount = false> class PLF
     {
     public:
-		PLF( AbstractOLEStreamReader* reader, bool preservePos = false );
+        PLF( OLEStreamReader* reader, bool preservePos = false );
         PLF( const U8* ptr );
         ~PLF();
 
@@ -112,7 +112,7 @@ namespace wvWare
     };
 
     template<class T, bool shortCount>
-	PLF<T, shortCount>::PLF( AbstractOLEStreamReader* reader, bool preservePos )
+    PLF<T, shortCount>::PLF( OLEStreamReader* reader, bool preservePos )
     {
         if ( preservePos )
             reader->push();
@@ -186,7 +186,7 @@ namespace wvWare
         friend class PLCFIterator<T>;
         template<typename OldT, typename NewT> friend PLCF<NewT>* convertPLCF( const PLCF<OldT>& old );
     public:
-		PLCF( U32 length, AbstractOLEStreamReader *reader, bool preservePos = false );
+        PLCF( U32 length, OLEStreamReader *reader, bool preservePos = false );
         PLCF( U32 length, const U8* ptr );
         PLCF( const PLCF<T>& rhs );
         ~PLCF();
@@ -215,7 +215,7 @@ namespace wvWare
     };
 
     template<class T>
-	PLCF<T>::PLCF( U32 length, AbstractOLEStreamReader* reader, bool preservePos )
+    PLCF<T>::PLCF( U32 length, OLEStreamReader* reader, bool preservePos )
     {
         if ( preservePos )
             reader->push();
@@ -414,7 +414,7 @@ namespace wvWare
         friend class FKPIterator<Offset>;
         friend FKP< BX<Word97::PHE> >* convertFKP( const FKP< BX<Word95::PHE> >& old );
     public:
-		FKP( AbstractOLEStreamReader* reader, bool preservePos = false );
+        FKP( OLEStreamReader* reader, bool preservePos = false );
         FKP( const U8* ptr );
         FKP( const FKP<Offset>& rhs );
         ~FKP() { delete [] m_rgfc; delete [] m_rgb; delete [] m_fkp; }
@@ -438,7 +438,7 @@ namespace wvWare
     };
 
     template<class Offset>
-	FKP<Offset>::FKP( AbstractOLEStreamReader* reader, bool preservePos )
+    FKP<Offset>::FKP( OLEStreamReader* reader, bool preservePos )
     {
         if ( preservePos )
             reader->push();
@@ -583,7 +583,7 @@ namespace wvWare
         /**
          * Simply calls read(...)
          */
-		BX( AbstractOLEStreamReader* stream, bool preservePos = false )
+        BX( OLEStreamReader* stream, bool preservePos = false )
         {
             clear();
             read( stream, preservePos );
@@ -603,7 +603,7 @@ namespace wvWare
          * the stream to save the state. If it's false the state
          * of stream will be changed!
          */
-		bool read( AbstractOLEStreamReader* stream, bool preservePos = false )
+        bool read( OLEStreamReader* stream, bool preservePos = false )
         {
             if ( preservePos )
                 stream->push();
@@ -675,7 +675,7 @@ namespace wvWare
         /**
          * Simply calls read(...)
          */
-		CHPFKP_BX( AbstractOLEStreamReader* stream, bool preservePos = false );
+        CHPFKP_BX( OLEStreamReader* stream, bool preservePos = false );
         /**
          * Simply calls readPtr(...)
          */
@@ -687,7 +687,7 @@ namespace wvWare
          * the stream to save the state. If it's false the state
          * of stream will be changed!
          */
-		bool read( AbstractOLEStreamReader* stream, bool preservePos = false );
+        bool read( OLEStreamReader* stream, bool preservePos = false );
         /**
          * This method reads the struct from a pointer
          */

@@ -283,7 +283,7 @@ std::string OLEStorage::path() const
     return p;
 }
 
-AbstractOLEStreamReader* OLEStorage::createStreamReader( const std::string& stream )
+OLEStreamReader* OLEStorage::createStreamReader( const std::string& stream )
 {
     if ( !m_inputFile )
         return 0;
@@ -296,7 +296,7 @@ AbstractOLEStreamReader* OLEStorage::createStreamReader( const std::string& stre
     if ( !input )
         return 0;
 
-	AbstractOLEStreamReader* reader( new OLEStreamReader( input, this ) );
+    OLEStreamReader* reader( new OLEStreamReader( input, this ) );
     m_streams.push_back( reader );
     return reader;
 }

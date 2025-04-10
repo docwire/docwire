@@ -79,11 +79,11 @@ private:
 	AbstractOLEStorage *m_storage;
 };
 
-class WV2_DLLEXPORT AbstractOLEStreamReader : public OLEStream
+class WV2_DLLEXPORT OLEStreamReader : public OLEStream
 {
 	public:
-		AbstractOLEStreamReader(AbstractOLEStorage* storage);
-		virtual ~AbstractOLEStreamReader();
+		OLEStreamReader(AbstractOLEStorage* storage);
+		virtual ~OLEStreamReader();
 		virtual bool isValid() const = 0;
         virtual bool seek( int offset, int whence = SEEK_SET ) = 0;
 		virtual int tell() const = 0;

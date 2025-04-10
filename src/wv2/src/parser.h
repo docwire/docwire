@@ -44,7 +44,7 @@ class SubDocumentHandler;
 class TableHandler;
 class TextHandler;
 class AbstractOLEStorage;
-class AbstractOLEStreamReader;
+class OLEStreamReader;
 class StyleSheet;
 class AssociatedStrings;
 
@@ -64,7 +64,7 @@ public:
      * to determine the nFib to select the proper parser... oh well
      * At least we take ownership ;)
      */
-	Parser( AbstractOLEStorage* storage, AbstractOLEStreamReader* wordDocument );
+	Parser( AbstractOLEStorage* storage, OLEStreamReader* wordDocument );
     virtual ~Parser();  // Don't forget to close everything properly here
 
     /**
@@ -140,7 +140,7 @@ protected:
     bool m_ourTextHandler;
 
 	AbstractOLEStorage* m_storage;           // The storage representing the file
-	AbstractOLEStreamReader* m_wordDocument; // document stream ('WordDocument')
+    OLEStreamReader* m_wordDocument; // document stream ('WordDocument')
 
     bool m_okay;                     // Still allright?
 

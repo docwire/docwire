@@ -20,7 +20,7 @@
 
 using namespace wvWare;
 
-Headers97::Headers97( U32 fcPlcfhdd, U32 lcbPlcfhdd, AbstractOLEStreamReader* tableStream ) :
+Headers97::Headers97( U32 fcPlcfhdd, U32 lcbPlcfhdd, OLEStreamReader* tableStream ) :
     Headers( fcPlcfhdd, lcbPlcfhdd, tableStream, Word8 )
 {
 }

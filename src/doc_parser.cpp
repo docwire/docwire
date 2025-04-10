@@ -138,10 +138,10 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 
 		U32 atn_part_cp = parser->fib().ccpText + parser->fib().ccpFtn + parser->fib().ccpHdd + parser->fib().ccpMcr;
 		docwire_log(debug) << "Annotations part at CP " << atn_part_cp << ".";
-		std::unique_ptr<AbstractOLEStreamReader> reader { parser->storage()->createStreamReader("WordDocument") };
+		std::unique_ptr<OLEStreamReader> reader { parser->storage()->createStreamReader("WordDocument") };
 		throw_if (!reader, "Error opening WordDocument stream.", errors::uninterpretable_data{});
 		const Parser9x* parser9 = dynamic_cast<const Parser9x*>(parser);
-		std::unique_ptr<AbstractOLEStreamReader> table_reader { parser->storage()->createStreamReader(parser9->tableStream()) };
+		std::unique_ptr<OLEStreamReader> table_reader { parser->storage()->createStreamReader(parser9->tableStream()) };
 		throw_if (!table_reader, "Error opening table stream.", errors::uninterpretable_data{});
 
 		U32 annotation_txts_offset = parser->fib().fcPlcfandTxt;

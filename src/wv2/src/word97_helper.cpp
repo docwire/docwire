@@ -360,8 +360,8 @@ U16 determineParameterLength( U16 sprm, const U8* in, WordVersion version )
 // avoid duplicated code, so what ;)
 template<class T>
 void apply(T* const t,
-		   S16 ( T::* applySPRM ) ( const U8*, const Style*, AbstractOLEStreamReader*, WordVersion ),
-		   const U8* grpprl, U16 count, const Style* style, AbstractOLEStreamReader* dataStream, WordVersion version )
+           S16 ( T::* applySPRM ) ( const U8*, const Style*, OLEStreamReader*, WordVersion ),
+           const U8* grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version )
 {
     if ( !grpprl )
         return;
@@ -492,7 +492,7 @@ U16 word6toWord8( U8 sprm )
 } // namespace SPRM
 
 
-ParagraphProperties* initPAPFromStyle( const U8* exceptions, const StyleSheet* stylesheet, AbstractOLEStreamReader* dataStream, WordVersion version )
+ParagraphProperties* initPAPFromStyle( const U8* exceptions, const StyleSheet* stylesheet, OLEStreamReader* dataStream, WordVersion version )
 {
     ParagraphProperties* properties = 0;
     if ( exceptions == 0 ) {
@@ -543,7 +543,7 @@ ParagraphProperties* initPAPFromStyle( const U8* exceptions, const StyleSheet* s
     return properties;
 }
 
-Word97::TAP* initTAP( const U8* exceptions, AbstractOLEStreamReader* dataStream, WordVersion version )
+Word97::TAP* initTAP( const U8* exceptions, OLEStreamReader* dataStream, WordVersion version )
 {
     Word97::TAP* tap = new Word97::TAP;
 
@@ -567,7 +567,7 @@ Word97::TAP* initTAP( const U8* exceptions, AbstractOLEStreamReader* dataStream,
 
 
 // Apply a PAP grpprl of a given size ("count" bytes long)
-void PAP::apply( const U8* grpprl, U16 count, const Style* style, AbstractOLEStreamReader* dataStream, WordVersion version )
+void PAP::apply( const U8* grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version )
 {
     // A PAP grpprl might contain TAP sprms, we just skip them
     SPRM::apply<PAP>( this, &PAP::applyPAPSPRM, grpprl, count, style, dataStream, version );
@@ -658,7 +658,7 @@ namespace
 
 // Returns -1 if this wasn't a PAP sprm and it returns the length
 // of the applied sprm if it was successful
-S16 PAP::applyPAPSPRM( const U8* ptr, const Style* /*style*/, AbstractOLEStreamReader* dataStream, WordVersion version )
+S16 PAP::applyPAPSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* dataStream, WordVersion version )
 {
     U16 sprmLength;
     const U16 sprm( getSPRM( &ptr, version, sprmLength ) );
@@ -1001,13 +1001,13 @@ S16 PAP::applyPAPSPRM( const U8* ptr, const Style* /*style*/, AbstractOLEStreamR
 }
 
 // Apply a CHP grpprl of a given size ("count" bytes long)
-void CHP::apply( const U8* grpprl, U16 count, const Style* paragraphStyle, AbstractOLEStreamReader* dataStream, WordVersion version )
+void CHP::apply( const U8* grpprl, U16 count, const Style* paragraphStyle, OLEStreamReader* dataStream, WordVersion version )
 {
     // There should be only CHP sprms in the grpprl we get
     SPRM::apply<CHP>( this, &CHP::applyCHPSPRM, grpprl, count, paragraphStyle, dataStream, version );
 }
 
-void CHP::applyExceptions( const U8* exceptions, const Style* paragraphStyle, AbstractOLEStreamReader* dataStream, WordVersion version )
+void CHP::applyExceptions( const U8* exceptions, const Style* paragraphStyle, OLEStreamReader* dataStream, WordVersion version )
 {
     if ( exceptions == 0 )
         return;
@@ -1018,7 +1018,7 @@ void CHP::applyExceptions( const U8* exceptions, const Style* paragraphStyle, Ab
 
 // Returns -1 if this wasn't a CHP sprm and it returns the length
 // of the applied sprm if it was successful
-S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, AbstractOLEStreamReader* dataStream, WordVersion version )
+S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, OLEStreamReader* dataStream, WordVersion version )
 {
     U16 sprmLength;
     const U16 sprm( getSPRM( &ptr, version, sprmLength ) );
@@ -1459,20 +1459,20 @@ S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, AbstractOLESt
 
 
 // Apply a PICF grpprl of a given size ("count" bytes long)
-void PICF::apply( const U8* grpprl, U16 count, const Style* style, AbstractOLEStreamReader* dataStream, WordVersion version )
+void PICF::apply( const U8* grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version )
 {
     // There should be only PICF sprms in the grpprl we get
     SPRM::apply<PICF>( this, &PICF::applyPICFSPRM, grpprl, count, style, dataStream, version );
 }
 
-void PICF::applyExceptions(const U8* /*exceptions*/, const StyleSheet* /*stylesheet*/, AbstractOLEStreamReader* /*dataStream*/, WordVersion /*version*/ )
+void PICF::applyExceptions(const U8* /*exceptions*/, const StyleSheet* /*stylesheet*/, OLEStreamReader* /*dataStream*/, WordVersion /*version*/ )
 {
     // ### CHECK: Do we need that at all?
 }
 
 // Returns -1 if this wasn't a PICF sprm and it returns the length
 // of the applied sprm if it was successful
-S16 PICF::applyPICFSPRM( const U8* ptr, const Style* /*style*/, AbstractOLEStreamReader* /*dataStream*/, WordVersion version )
+S16 PICF::applyPICFSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* /*dataStream*/, WordVersion version )
 {
     U16 sprmLength;
     const U16 sprm( getSPRM( &ptr, version, sprmLength ) );
@@ -1522,13 +1522,13 @@ S16 PICF::applyPICFSPRM( const U8* ptr, const Style* /*style*/, AbstractOLEStrea
 
 
 // Apply a SEP grpprl of a given size ("count" bytes long)
-void SEP::apply( const U8* grpprl, U16 count, const Style* style, AbstractOLEStreamReader* dataStream, WordVersion version )
+void SEP::apply( const U8* grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version )
 {
     // There should be only SEP sprms in the grpprl we get
     SPRM::apply<SEP>( this, &SEP::applySEPSPRM, grpprl, count, style, dataStream, version );
 }
 
-void SEP::applyExceptions( const U8* exceptions, const StyleSheet* /*stylesheet*/, AbstractOLEStreamReader* dataStream, WordVersion version )
+void SEP::applyExceptions( const U8* exceptions, const StyleSheet* /*stylesheet*/, OLEStreamReader* dataStream, WordVersion version )
 {
     if ( exceptions == 0 )
         return;
@@ -1539,7 +1539,7 @@ void SEP::applyExceptions( const U8* exceptions, const StyleSheet* /*stylesheet*
 
 // Returns -1 if this wasn't a SEP sprm and it returns the length
 // of the applied sprm if it was successful
-S16 SEP::applySEPSPRM( const U8* ptr, const Style* /*style*/, AbstractOLEStreamReader* /*dataStream*/, WordVersion version )
+S16 SEP::applySEPSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* /*dataStream*/, WordVersion version )
 {
     U16 sprmLength;
     const U16 sprm( getSPRM( &ptr, version, sprmLength ) );
@@ -1734,14 +1734,14 @@ S16 SEP::applySEPSPRM( const U8* ptr, const Style* /*style*/, AbstractOLEStreamR
 
 // Apply a TAP grpprl (or at least the TAP properties of a PAP/TAP grpprl)
 // of a given size ("count" bytes long)
-void TAP::apply( const U8* grpprl, U16 count, const Style* style, AbstractOLEStreamReader* dataStream, WordVersion version )
+void TAP::apply( const U8* grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version )
 {
     // There should be mostly TAP sprms in the grpprl we get, and we
     // have to ignore the remaining PAP sprms, just what the template does
     SPRM::apply<TAP>( this, &TAP::applyTAPSPRM, grpprl, count, style, dataStream, version );
 }
 
-void TAP::applyExceptions( const U8* /*exceptions*/, const StyleSheet* /*stylesheet*/, AbstractOLEStreamReader* /*dataStream*/, WordVersion /*version*/ )
+void TAP::applyExceptions( const U8* /*exceptions*/, const StyleSheet* /*stylesheet*/, OLEStreamReader* /*dataStream*/, WordVersion /*version*/ )
 {
     // ### TODO -- is that needed at all?
 }
@@ -1763,7 +1763,7 @@ namespace
 
 // Returns -1 if this wasn't a TAP sprm and it returns the length
 // of the applied sprm if it was successful
-S16 TAP::applyTAPSPRM( const U8* ptr, const Style* /*style*/, AbstractOLEStreamReader* dataStream, WordVersion version )
+S16 TAP::applyTAPSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* dataStream, WordVersion version )
 {
     U16 sprmLength;
     const U16 sprm( getSPRM( &ptr, version, sprmLength ) );

@@ -28,15 +28,15 @@ namespace wvWare
         struct FIB;
     }
     template<class T> class PLCF;
-	class AbstractOLEStreamReader;
+    class OLEStreamReader;
 
     struct FLD
     {
         FLD();
-		FLD( AbstractOLEStreamReader* stream, bool preservePos = false );
+        FLD( OLEStreamReader* stream, bool preservePos = false );
         FLD( const U8* ptr );
 
-		bool read( AbstractOLEStreamReader* stream, bool preservePos = false );
+        bool read( OLEStreamReader* stream, bool preservePos = false );
         bool readPtr( const U8* ptr );
 
         void clear();
@@ -70,7 +70,7 @@ namespace wvWare
     class Fields
     {
     public:
-		Fields( AbstractOLEStreamReader* tableStream, const Word97::FIB& fib );
+        Fields( OLEStreamReader* tableStream, const Word97::FIB& fib );
         ~Fields();
 
         const FLD* fldForCP( Parser::SubDocument subDocument, U32 cp ) const;
@@ -79,8 +79,8 @@ namespace wvWare
         Fields( const Fields& rhs );
         Fields& operator=( const Fields& rhs );
 
-		void read( U32 fc, U32 lcb, AbstractOLEStreamReader* tableStream, PLCF<FLD>** plcf );
-		void sanityCheck( const AbstractOLEStreamReader* tableStream, U32 nextFC, U32 lcb ) const;
+        void read( U32 fc, U32 lcb, OLEStreamReader* tableStream, PLCF<FLD>** plcf );
+        void sanityCheck( const OLEStreamReader* tableStream, U32 nextFC, U32 lcb ) const;
         const FLD* fldForCP( const PLCF<FLD>* plcf, U32 cp ) const;
 
         PLCF<FLD>* m_main;

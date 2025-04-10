@@ -24,7 +24,7 @@
 namespace wvWare
 {
 
-class AbstractOLEStreamReader;
+class OLEStreamReader;
 
 namespace Word97
 {
@@ -41,7 +41,7 @@ struct STD
     /**
      * Simply calls read(...)
      */
-	STD( U16 baseSize, U16 totalSize, AbstractOLEStreamReader* stream, bool preservePos = false );
+    STD( U16 baseSize, U16 totalSize, OLEStreamReader* stream, bool preservePos = false );
     /**
      * Attention: This struct allocates memory on the heap
      */
@@ -56,7 +56,7 @@ struct STD
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read( U16 baseSize, U16 totalSize, AbstractOLEStreamReader* stream, bool preservePos = false );
+    bool read( U16 baseSize, U16 totalSize, OLEStreamReader* stream, bool preservePos = false );
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -141,7 +141,7 @@ struct STD
 
 private:
     void clearInternal();
-	void readStyleName( U16 baseSize, AbstractOLEStreamReader* stream );
+    void readStyleName( U16 baseSize, OLEStreamReader* stream );
 }; // STD
 
 bool operator==( const STD& lhs, const STD& rhs );
@@ -179,7 +179,7 @@ class Style
 public:
     enum StyleType { sgcUnknown = 0, sgcPara = 1, sgcChp = 2 };
 
-	Style( U16 baseSize, AbstractOLEStreamReader* tableStream, U16* ftc );
+    Style( U16 baseSize, OLEStreamReader* tableStream, U16* ftc );
     ~Style();
 
     /**
@@ -254,7 +254,7 @@ private:
 class StyleSheet
 {
 public:
-	StyleSheet( AbstractOLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf );
+    StyleSheet( OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf );
     ~StyleSheet();
 
     /**

@@ -39,7 +39,7 @@ class DOCWIRE_CORE_EXPORT ThreadSafeOLEStorage : public AbstractOLEStorage, publ
 		bool enterDirectory(const std::string& directory_path);
 		bool leaveDirectory();
 		bool readDirectFromBuffer(unsigned char* buffer, int size, int offset) override;
-		AbstractOLEStreamReader* createStreamReader(const std::string& stream_path) override;
+		OLEStreamReader* createStreamReader(const std::string& stream_path) override;
 	private:
 		void streamDestroyed(OLEStream* stream) override;
 };

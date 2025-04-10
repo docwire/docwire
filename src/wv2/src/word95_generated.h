@@ -34,7 +34,7 @@
 
 namespace wvWare {
 
-class AbstractOLEStreamReader;
+class OLEStreamReader;
 class StyleSheet;
 class Style;
 
@@ -52,7 +52,7 @@ struct DTTM {
     /**
      * Simply calls read(...)
      */
-	DTTM(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DTTM(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Simply calls readPtr(...)
      */
@@ -64,7 +64,7 @@ struct DTTM {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the struct from a pointer
@@ -141,7 +141,7 @@ struct PRM2 {
     /**
      * Simply calls read(...)
      */
-	PRM2(AbstractOLEStreamReader *stream, bool preservePos=false);
+    PRM2(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the PRM2 structure from the stream.
@@ -149,7 +149,7 @@ struct PRM2 {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -184,7 +184,7 @@ struct PRM {
     /**
      * Simply calls read(...)
      */
-	PRM(AbstractOLEStreamReader *stream, bool preservePos=false);
+    PRM(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Simply calls readPtr(...)
      */
@@ -196,7 +196,7 @@ struct PRM {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the struct from a pointer
@@ -249,7 +249,7 @@ struct SHD {
     /**
      * Simply calls read(...)
      */
-	SHD(AbstractOLEStreamReader *stream, bool preservePos=false);
+    SHD(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Simply calls readPtr(...)
      */
@@ -261,7 +261,7 @@ struct SHD {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the struct from a pointer
@@ -370,7 +370,7 @@ struct PHE {
     /**
      * Simply calls read(...)
      */
-	PHE(AbstractOLEStreamReader *stream, bool preservePos=false);
+    PHE(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Simply calls readPtr(...)
      */
@@ -382,7 +382,7 @@ struct PHE {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the struct from a pointer
@@ -463,7 +463,7 @@ struct BRC {
     /**
      * Simply calls read(...)
      */
-	BRC(AbstractOLEStreamReader *stream, bool preservePos=false);
+    BRC(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Simply calls readPtr(...)
      */
@@ -475,7 +475,7 @@ struct BRC {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the struct from a pointer
@@ -553,7 +553,7 @@ struct TLP {
     /**
      * Simply calls read(...)
      */
-	TLP(AbstractOLEStreamReader *stream, bool preservePos=false);
+    TLP(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Simply calls readPtr(...)
      */
@@ -565,7 +565,7 @@ struct TLP {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the struct from a pointer
@@ -664,7 +664,7 @@ struct TC {
     /**
      * Simply calls read(...)
      */
-	TC(AbstractOLEStreamReader *stream, bool preservePos=false);
+    TC(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Simply calls readPtr(...)
      */
@@ -676,7 +676,7 @@ struct TC {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the struct from a pointer
@@ -757,7 +757,7 @@ struct DPHEAD {
     /**
      * Simply calls read(...)
      */
-	DPHEAD(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DPHEAD(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the DPHEAD structure from the stream.
@@ -765,7 +765,7 @@ struct DPHEAD {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -822,7 +822,7 @@ struct DPTXBX {
     /**
      * Simply calls read(...)
      */
-	DPTXBX(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DPTXBX(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the DPTXBX structure from the stream.
@@ -830,7 +830,7 @@ struct DPTXBX {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -920,7 +920,7 @@ struct DPPOLYLINE {
     /**
      * Simply calls read(...)
      */
-	DPPOLYLINE(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DPPOLYLINE(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Attention: This struct allocates memory on the heap
      */
@@ -935,7 +935,7 @@ struct DPPOLYLINE {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -1076,7 +1076,7 @@ struct TAP : public Shared {
     /**
      * Simply calls read(...)
      */
-	TAP(AbstractOLEStreamReader *stream, bool preservePos=false);
+    TAP(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Attention: This struct allocates memory on the heap
      */
@@ -1091,7 +1091,7 @@ struct TAP : public Shared {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -1233,7 +1233,7 @@ bool operator!=(const TAP &lhs, const TAP &rhs);
 //    /**
 //     * Simply calls read(...)
 //     */
-//    TBD(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    TBD(OLEStreamReader *stream, bool preservePos=false);
 
 //    /**
 //     * This method reads the TBD structure from the stream.
@@ -1241,7 +1241,7 @@ bool operator!=(const TAP &lhs, const TAP &rhs);
 //     * the stream to save the state. If it's false the state
 //     * of stream will be changed!
 //     */
-//    bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    bool read(OLEStreamReader *stream, bool preservePos=false);
 
 //    /**
 //     * Same as reading :)
@@ -1296,7 +1296,7 @@ struct ANLD {
     /**
      * Simply calls read(...)
      */
-	ANLD(AbstractOLEStreamReader *stream, bool preservePos=false);
+    ANLD(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Simply calls readPtr(...)
      */
@@ -1308,7 +1308,7 @@ struct ANLD {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the struct from a pointer
@@ -1521,7 +1521,7 @@ struct ANLV {
     /**
      * Simply calls read(...)
      */
-	ANLV(AbstractOLEStreamReader *stream, bool preservePos=false);
+    ANLV(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Simply calls readPtr(...)
      */
@@ -1533,7 +1533,7 @@ struct ANLV {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the struct from a pointer
@@ -1724,7 +1724,7 @@ struct BKF {
     /**
      * Simply calls read(...)
      */
-	BKF(AbstractOLEStreamReader *stream, bool preservePos=false);
+    BKF(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the BKF structure from the stream.
@@ -1732,7 +1732,7 @@ struct BKF {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -1787,7 +1787,7 @@ struct BKL {
     /**
      * Simply calls read(...)
      */
-	BKL(AbstractOLEStreamReader *stream, bool preservePos=false);
+    BKL(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the BKL structure from the stream.
@@ -1795,7 +1795,7 @@ struct BKL {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -1825,7 +1825,7 @@ struct BRC10 {
     /**
      * Simply calls read(...)
      */
-	BRC10(AbstractOLEStreamReader *stream, bool preservePos=false);
+    BRC10(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the BRC10 structure from the stream.
@@ -1833,7 +1833,7 @@ struct BRC10 {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -1890,7 +1890,7 @@ struct BTE {
     /**
      * Simply calls read(...)
      */
-	BTE(AbstractOLEStreamReader *stream, bool preservePos=false);
+    BTE(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the BTE structure from the stream.
@@ -1898,7 +1898,7 @@ struct BTE {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -1931,7 +1931,7 @@ struct CHP : public Shared {
     /**
      * Simply calls read(...)
      */
-	CHP(AbstractOLEStreamReader *stream, bool preservePos=false);
+    CHP(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the CHP structure from the stream.
@@ -1939,7 +1939,7 @@ struct CHP : public Shared {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -2303,7 +2303,7 @@ bool operator!=(const CHP &lhs, const CHP &rhs);
 //    /**
 //     * Simply calls read(...)
 //     */
-//    CHPX(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    CHPX(OLEStreamReader *stream, bool preservePos=false);
 //    /**
 //     * Attention: This struct allocates memory on the heap
 //     */
@@ -2318,7 +2318,7 @@ bool operator!=(const CHP &lhs, const CHP &rhs);
 //     * the stream to save the state. If it's false the state
 //     * of stream will be changed!
 //     */
-//    bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    bool read(OLEStreamReader *stream, bool preservePos=false);
 
 //    /**
 //     * Same as reading :)
@@ -2368,7 +2368,7 @@ bool operator!=(const CHP &lhs, const CHP &rhs);
 //    /**
 //     * Simply calls read(...)
 //     */
-//    CHPXFKP(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    CHPXFKP(OLEStreamReader *stream, bool preservePos=false);
 //    /**
 //     * Attention: This struct allocates memory on the heap
 //     */
@@ -2383,7 +2383,7 @@ bool operator!=(const CHP &lhs, const CHP &rhs);
 //     * the stream to save the state. If it's false the state
 //     * of stream will be changed!
 //     */
-//    bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    bool read(OLEStreamReader *stream, bool preservePos=false);
 
 //    /**
 //     * Same as reading :)
@@ -2446,7 +2446,7 @@ struct DCS {
     /**
      * Simply calls read(...)
      */
-	DCS(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DCS(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Simply calls readPtr(...)
      */
@@ -2458,7 +2458,7 @@ struct DCS {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the struct from a pointer
@@ -2517,7 +2517,7 @@ struct DO {
     /**
      * Simply calls read(...)
      */
-	DO(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DO(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the DO structure from the stream.
@@ -2525,7 +2525,7 @@ struct DO {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -2592,7 +2592,7 @@ struct DOP {
     /**
      * Simply calls read(...)
      */
-	DOP(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DOP(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the DOP structure from the stream.
@@ -2600,7 +2600,7 @@ struct DOP {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -3063,7 +3063,7 @@ struct DPARC {
     /**
      * Simply calls read(...)
      */
-	DPARC(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DPARC(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the DPARC structure from the stream.
@@ -3071,7 +3071,7 @@ struct DPARC {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -3156,7 +3156,7 @@ struct DPCALLOUT {
     /**
      * Simply calls read(...)
      */
-	DPCALLOUT(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DPCALLOUT(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the DPCALLOUT structure from the stream.
@@ -3164,7 +3164,7 @@ struct DPCALLOUT {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -3224,7 +3224,7 @@ struct DPELLIPSE {
     /**
      * Simply calls read(...)
      */
-	DPELLIPSE(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DPELLIPSE(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the DPELLIPSE structure from the stream.
@@ -3232,7 +3232,7 @@ struct DPELLIPSE {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -3307,7 +3307,7 @@ struct DPLINE {
     /**
      * Simply calls read(...)
      */
-	DPLINE(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DPLINE(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the DPLINE structure from the stream.
@@ -3315,7 +3315,7 @@ struct DPLINE {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -3431,7 +3431,7 @@ struct DPRECT {
     /**
      * Simply calls read(...)
      */
-	DPRECT(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DPRECT(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the DPRECT structure from the stream.
@@ -3439,7 +3439,7 @@ struct DPRECT {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -3524,7 +3524,7 @@ struct DPSAMPLE {
     /**
      * Simply calls read(...)
      */
-	DPSAMPLE(AbstractOLEStreamReader *stream, bool preservePos=false);
+    DPSAMPLE(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the DPSAMPLE structure from the stream.
@@ -3532,7 +3532,7 @@ struct DPSAMPLE {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -3676,7 +3676,7 @@ struct FDOA {
     /**
      * Simply calls read(...)
      */
-	FDOA(AbstractOLEStreamReader *stream, bool preservePos=false);
+    FDOA(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the FDOA structure from the stream.
@@ -3684,7 +3684,7 @@ struct FDOA {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -3724,7 +3724,7 @@ bool operator!=(const FDOA &lhs, const FDOA &rhs);
 //    /**
 //     * Simply calls read(...)
 //     */
-//    FFN(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    FFN(OLEStreamReader *stream, bool preservePos=false);
 //    /**
 //     * Attention: This struct allocates memory on the heap
 //     */
@@ -3739,7 +3739,7 @@ bool operator!=(const FDOA &lhs, const FDOA &rhs);
 //     * the stream to save the state. If it's false the state
 //     * of stream will be changed!
 //     */
-//    bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    bool read(OLEStreamReader *stream, bool preservePos=false);
 
 //    /**
 //     * Same as reading :)
@@ -3825,7 +3825,7 @@ struct FIB {
     /**
      * Simply calls read(...)
      */
-	FIB(AbstractOLEStreamReader *stream, bool preservePos=false);
+    FIB(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the FIB structure from the stream.
@@ -3833,7 +3833,7 @@ struct FIB {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -4710,7 +4710,7 @@ bool operator!=(const FIB &lhs, const FIB &rhs);
 //    /**
 //     * Simply calls read(...)
 //     */
-//    FLD(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    FLD(OLEStreamReader *stream, bool preservePos=false);
 
 //    /**
 //     * This method reads the FLD structure from the stream.
@@ -4718,7 +4718,7 @@ bool operator!=(const FIB &lhs, const FIB &rhs);
 //     * the stream to save the state. If it's false the state
 //     * of stream will be changed!
 //     */
-//    bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    bool read(OLEStreamReader *stream, bool preservePos=false);
 
 //    /**
 //     * Same as reading :)
@@ -4756,7 +4756,7 @@ struct LSPD {
     /**
      * Simply calls read(...)
      */
-	LSPD(AbstractOLEStreamReader *stream, bool preservePos=false);
+    LSPD(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the LSPD structure from the stream.
@@ -4764,7 +4764,7 @@ struct LSPD {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -4807,7 +4807,7 @@ struct METAFILEPICT {
     /**
      * Simply calls read(...)
      */
-	METAFILEPICT(AbstractOLEStreamReader *stream, bool preservePos=false);
+    METAFILEPICT(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the METAFILEPICT structure from the stream.
@@ -4815,7 +4815,7 @@ struct METAFILEPICT {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -4877,7 +4877,7 @@ struct OBJHEADER {
     /**
      * Simply calls read(...)
      */
-	OBJHEADER(AbstractOLEStreamReader *stream, bool preservePos=false);
+    OBJHEADER(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the OBJHEADER structure from the stream.
@@ -4885,7 +4885,7 @@ struct OBJHEADER {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -4925,7 +4925,7 @@ struct OLST {
     /**
      * Simply calls read(...)
      */
-	OLST(AbstractOLEStreamReader *stream, bool preservePos=false);
+    OLST(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Simply calls readPtr(...)
      */
@@ -4937,7 +4937,7 @@ struct OLST {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the struct from a pointer
@@ -5011,7 +5011,7 @@ struct PAP : public Shared {
     /**
      * Simply calls read(...)
      */
-	PAP(AbstractOLEStreamReader *stream, bool preservePos=false);
+    PAP(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Attention: This struct allocates memory on the heap
      */
@@ -5026,7 +5026,7 @@ struct PAP : public Shared {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -5355,7 +5355,7 @@ bool operator!=(const PAP &lhs, const PAP &rhs);
 //    /**
 //     * Simply calls read(...)
 //     */
-//    PAPX(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    PAPX(OLEStreamReader *stream, bool preservePos=false);
 //    /**
 //     * Attention: This struct allocates memory on the heap
 //     */
@@ -5370,7 +5370,7 @@ bool operator!=(const PAP &lhs, const PAP &rhs);
 //     * the stream to save the state. If it's false the state
 //     * of stream will be changed!
 //     */
-//    bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    bool read(OLEStreamReader *stream, bool preservePos=false);
 
 //    /**
 //     * Same as reading :)
@@ -5438,7 +5438,7 @@ bool operator!=(const PAP &lhs, const PAP &rhs);
 //    /**
 //     * Simply calls read(...)
 //     */
-//    PAPXFKP(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    PAPXFKP(OLEStreamReader *stream, bool preservePos=false);
 //    /**
 //     * Attention: This struct allocates memory on the heap
 //     */
@@ -5453,7 +5453,7 @@ bool operator!=(const PAP &lhs, const PAP &rhs);
 //     * the stream to save the state. If it's false the state
 //     * of stream will be changed!
 //     */
-//    bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    bool read(OLEStreamReader *stream, bool preservePos=false);
 
 //    /**
 //     * Same as reading :)
@@ -5526,7 +5526,7 @@ struct PCD {
     /**
      * Simply calls read(...)
      */
-	PCD(AbstractOLEStreamReader *stream, bool preservePos=false);
+    PCD(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Simply calls readPtr(...)
      */
@@ -5538,7 +5538,7 @@ struct PCD {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the struct from a pointer
@@ -5605,7 +5605,7 @@ struct PGD {
     /**
      * Simply calls read(...)
      */
-	PGD(AbstractOLEStreamReader *stream, bool preservePos=false);
+    PGD(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the PGD structure from the stream.
@@ -5613,7 +5613,7 @@ struct PGD {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -5705,7 +5705,7 @@ struct PICF : public Shared {
     /**
      * Simply calls read(...)
      */
-	PICF(AbstractOLEStreamReader *stream, bool preservePos=false);
+    PICF(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the PICF structure from the stream.
@@ -5713,7 +5713,7 @@ struct PICF : public Shared {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -5886,7 +5886,7 @@ bool operator!=(const PICF &lhs, const PICF &rhs);
 //    /**
 //     * Simply calls read(...)
 //     */
-//    PLCF(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    PLCF(OLEStreamReader *stream, bool preservePos=false);
 //    /**
 //     * Attention: This struct allocates memory on the heap
 //     */
@@ -5901,7 +5901,7 @@ bool operator!=(const PICF &lhs, const PICF &rhs);
 //     * the stream to save the state. If it's false the state
 //     * of stream will be changed!
 //     */
-//    bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+//    bool read(OLEStreamReader *stream, bool preservePos=false);
 
 //    /**
 //     * Same as reading :)
@@ -5944,7 +5944,7 @@ struct SED {
     /**
      * Simply calls read(...)
      */
-	SED(AbstractOLEStreamReader *stream, bool preservePos=false);
+    SED(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the SED structure from the stream.
@@ -5952,7 +5952,7 @@ struct SED {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -6014,7 +6014,7 @@ struct SEP : public Shared {
     /**
      * Simply calls read(...)
      */
-	SEP(AbstractOLEStreamReader *stream, bool preservePos=false);
+    SEP(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the SEP structure from the stream.
@@ -6022,7 +6022,7 @@ struct SEP : public Shared {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -6280,7 +6280,7 @@ struct SEPX {
     /**
      * Simply calls read(...)
      */
-	SEPX(AbstractOLEStreamReader *stream, bool preservePos=false);
+    SEPX(OLEStreamReader *stream, bool preservePos=false);
     /**
      * Attention: This struct allocates memory on the heap
      */
@@ -6295,7 +6295,7 @@ struct SEPX {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -6334,7 +6334,7 @@ struct STSHI {
     /**
      * Simply calls read(...)
      */
-	STSHI(AbstractOLEStreamReader *stream, bool preservePos=false);
+    STSHI(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * This method reads the STSHI structure from the stream.
@@ -6342,7 +6342,7 @@ struct STSHI {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-	bool read(AbstractOLEStreamReader *stream, bool preservePos=false);
+    bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
      * Set all the fields to the inital value (default is 0)

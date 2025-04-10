@@ -108,7 +108,7 @@ namespace wvWare
     class ListLevel
     {
     public:
-		explicit ListLevel( AbstractOLEStreamReader* tableStream );
+        explicit ListLevel( OLEStreamReader* tableStream );
         explicit ListLevel( const Word97::ANLD& anld );
         ~ListLevel();
 
@@ -143,7 +143,7 @@ namespace wvWare
     class ListData
     {
     public:
-		explicit ListData( AbstractOLEStreamReader* tableStream );
+        explicit ListData( OLEStreamReader* tableStream );
         ListData( S32 lsid, bool fRestartHdn );
         ~ListData();
 
@@ -170,7 +170,7 @@ namespace wvWare
     class ListFormatOverrideLVL
     {
     public:
-		ListFormatOverrideLVL( AbstractOLEStreamReader* tableStream );
+        ListFormatOverrideLVL( OLEStreamReader* tableStream );
         ~ListFormatOverrideLVL();
 
         S32 startAt() const;
@@ -195,7 +195,7 @@ namespace wvWare
     class ListFormatOverride
     {
     public:
-		explicit ListFormatOverride( AbstractOLEStreamReader* tableStream );
+        explicit ListFormatOverride( OLEStreamReader* tableStream );
         explicit ListFormatOverride( S32 lsid );
         ~ListFormatOverride();
 
@@ -225,7 +225,7 @@ namespace wvWare
 
 using namespace wvWare;
 
-ListLevel::ListLevel( AbstractOLEStreamReader* tableStream ) :
+ListLevel::ListLevel( OLEStreamReader* tableStream ) :
     m_lvlf( tableStream, false ), m_grpprlPapx( 0 ), m_grpprlChpx( 0 )
 {
 #ifdef WV2_DEBUG_LIST_READING
@@ -412,7 +412,7 @@ int ListLevel::writeCharProperty( U16 sprm, U16 value, U8** grpprl )
     return 4;
 }
 
-ListData::ListData( AbstractOLEStreamReader* tableStream ) : m_lstf( tableStream, false )
+ListData::ListData( OLEStreamReader* tableStream ) : m_lstf( tableStream, false )
 {
 #ifdef WV2_DEBUG_LIST_READING
     wvlog << "   ListData::ListData() ######" << std::endl
@@ -486,7 +486,7 @@ void ListData::applyGrpprlPapx( Word97::PAP* pap ) const
 }
 
 
-ListFormatOverrideLVL::ListFormatOverrideLVL( AbstractOLEStreamReader* tableStream ) :
+ListFormatOverrideLVL::ListFormatOverrideLVL( OLEStreamReader* tableStream ) :
     m_lfolvl( tableStream, false ), m_level( 0 )
 {
     if ( m_lfolvl.fFormatting )
@@ -538,7 +538,7 @@ void ListFormatOverrideLVL::dump() const
 }
 
 
-ListFormatOverride::ListFormatOverride( AbstractOLEStreamReader* tableStream ) : m_lfo( tableStream, false )
+ListFormatOverride::ListFormatOverride( OLEStreamReader* tableStream ) : m_lfo( tableStream, false )
 {
 #ifdef WV2_DEBUG_LIST_READING
     wvlog << "   ListFormatOverride:ListFormatOverride() ######" << std::endl
@@ -655,7 +655,7 @@ ListInfoProvider::ListInfoProvider( const StyleSheet* styleSheet )
 #endif
 }
 
-ListInfoProvider::ListInfoProvider( AbstractOLEStreamReader* tableStream, const Word97::FIB& fib, const StyleSheet* styleSheet ) :
+ListInfoProvider::ListInfoProvider( OLEStreamReader* tableStream, const Word97::FIB& fib, const StyleSheet* styleSheet ) :
     m_listNames( 0 ), m_pap( 0 ), m_styleSheet( styleSheet ), m_currentLfoLVL( 0 ), m_currentLst( 0 ), m_version( Word8 )
 {
 #ifdef WV2_DEBUG_LIST_READING
@@ -750,7 +750,7 @@ bool ListInfoProvider::setPAP( Word97::PAP* pap )
     return true;
 }
 
-void ListInfoProvider::readListData( AbstractOLEStreamReader* tableStream, const U32 endOfLSTF )
+void ListInfoProvider::readListData( OLEStreamReader* tableStream, const U32 endOfLSTF )
 {
     const U16 count = tableStream->readU16();
 #ifdef WV2_DEBUG_LIST_READING
@@ -780,7 +780,7 @@ void ListInfoProvider::readListData( AbstractOLEStreamReader* tableStream, const
     }
 }
 
-void ListInfoProvider::readListFormatOverride( AbstractOLEStreamReader* tableStream )
+void ListInfoProvider::readListFormatOverride( OLEStreamReader* tableStream )
 {
     const U32 count = tableStream->readU32();
 #ifdef WV2_DEBUG_LIST_READING
@@ -802,7 +802,7 @@ void ListInfoProvider::readListFormatOverride( AbstractOLEStreamReader* tableStr
     }
 }
 
-void ListInfoProvider::readListNames( AbstractOLEStreamReader* tableStream )
+void ListInfoProvider::readListNames( OLEStreamReader* tableStream )
 {
 #ifdef WV2_DEBUG_LIST_READING
     wvlog << "ListInfoProvider::readListNames()" << std::endl;
@@ -813,7 +813,7 @@ void ListInfoProvider::readListNames( AbstractOLEStreamReader* tableStream )
 #endif
 }
 
-void ListInfoProvider::eatLeading0xff( AbstractOLEStreamReader* tableStream )
+void ListInfoProvider::eatLeading0xff( OLEStreamReader* tableStream )
 {
     while ( tableStream->readU8() == 0xff ); // semicolon intended ;)
     tableStream->seek( -1, SEEK_CUR ); // rewind the stream

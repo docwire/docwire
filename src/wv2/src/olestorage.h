@@ -27,12 +27,12 @@ namespace wvWare
 {
 
 class OLEStream;
-class AbstractOLEStreamReader;
+class OLEStreamReader;
 
 class AbstractOLEStorage
 {
 	friend class OLEStream;
-	friend class AbstractOLEStreamReader;
+	friend class OLEStreamReader;
 	public:
 		/**
 		 * The mode of the storage. libgsf doesn't support storages opened
@@ -46,7 +46,7 @@ class AbstractOLEStorage
 		virtual void close() = 0;
 		virtual std::string name() const = 0;
         virtual bool readDirectFromBuffer(unsigned char* buf, int size, int offset) = 0;
-		virtual AbstractOLEStreamReader* createStreamReader( const std::string& stream ) = 0;
+		virtual OLEStreamReader* createStreamReader( const std::string& stream ) = 0;
 	private:
 		virtual void streamDestroyed(OLEStream* stream) = 0;
 };

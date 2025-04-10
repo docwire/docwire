@@ -24,7 +24,7 @@
 
 namespace wvWare
 {
-	class AbstractOLEStreamReader;
+    class OLEStreamReader;
     namespace Word97
     {
         struct FIB;
@@ -42,7 +42,7 @@ namespace wvWare
          * provides accesst to the internal font collection.
          * @param reader is either a table or a document stream (97+ / older versions)
          */
-		FontCollection( AbstractOLEStreamReader* reader, const Word97::FIB& fib );
+        FontCollection( OLEStreamReader* reader, const Word97::FIB& fib );
         ~FontCollection();
 
         /**

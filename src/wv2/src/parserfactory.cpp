@@ -46,7 +46,7 @@ namespace
 	SharedPtr<Parser> setupParser( AbstractOLEStorage* storage )
     {
         // Is it called WordDocument in all versions?
-		AbstractOLEStreamReader* wordDocument = storage->createStreamReader( "WordDocument" );
+        OLEStreamReader* wordDocument = storage->createStreamReader( "WordDocument" );
         if ( !wordDocument || !wordDocument->isValid() ) {
             std::cerr << "Error: No 'WordDocument' stream found. Are you sure this is a Word document?" << std::endl;
             delete wordDocument;

@@ -25,7 +25,7 @@
 
 using namespace wvWare;
 
-Footnotes97::Footnotes97( AbstractOLEStreamReader* tableStream, const Word97::FIB& fib ) :
+Footnotes97::Footnotes97( OLEStreamReader* tableStream, const Word97::FIB& fib ) :
     m_footnoteRef( 0 ), m_footnoteRefIt( 0 ), m_endnoteRef( 0 ), m_endnoteRefIt( 0 )
 {
 #ifdef WV2_DEBUG_FOOTNOTES
@@ -94,7 +94,7 @@ U32 Footnotes97::nextEndnote() const
     return m_endnoteRefIt && m_endnoteRefIt->current() ? m_endnoteRefIt->currentStart() : 0xffffffff;
 }
 
-void Footnotes97::init( U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, AbstractOLEStreamReader* tableStream,
+void Footnotes97::init( U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, OLEStreamReader* tableStream,
                         PLCF<Word97::FRD>** ref, PLCFIterator<Word97::FRD>** refIt,
                         std::vector<U32>& txt, std::vector<U32>::const_iterator& txtIt )
 {

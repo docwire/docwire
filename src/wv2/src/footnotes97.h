@@ -33,7 +33,7 @@ namespace wvWare
     }
     template<class T> class PLCF;
     template<class T> class PLCFIterator;
-	class AbstractOLEStreamReader;
+    class OLEStreamReader;
     struct FootnoteData;
 
     /**
@@ -42,7 +42,7 @@ namespace wvWare
     class Footnotes97
     {
     public:
-		Footnotes97( AbstractOLEStreamReader* tableStream, const Word97::FIB& fib );
+        Footnotes97( OLEStreamReader* tableStream, const Word97::FIB& fib );
         ~Footnotes97();
 
         /**
@@ -69,7 +69,7 @@ namespace wvWare
         Footnotes97& operator=( const Footnotes97& rhs );
 
         // Ugly, but helps to avoid code duplication
-		void init( U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, AbstractOLEStreamReader* tableStream,
+        void init( U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, OLEStreamReader* tableStream,
                    PLCF<Word97::FRD>** ref, PLCFIterator<Word97::FRD>** refIt,
                    std::vector<U32>& txt, std::vector<U32>::const_iterator& txtIt );
 

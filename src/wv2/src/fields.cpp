@@ -29,7 +29,7 @@ namespace wvWare
     {
     }
 
-	FLD::FLD( AbstractOLEStreamReader* stream, bool preservePos ) : ch( 0 ), flt( 0 )
+    FLD::FLD( OLEStreamReader* stream, bool preservePos ) : ch( 0 ), flt( 0 )
     {
         read( stream, preservePos );
     }
@@ -39,7 +39,7 @@ namespace wvWare
         readPtr( ptr );
     }
 
-	bool FLD::read( AbstractOLEStreamReader* stream, bool preservePos )
+    bool FLD::read( OLEStreamReader* stream, bool preservePos )
     {
         if ( preservePos )
             stream->push();
@@ -82,7 +82,7 @@ namespace wvWare
 using namespace wvWare;
 
 
-Fields::Fields( AbstractOLEStreamReader* tableStream, const Word97::FIB& fib ) :
+Fields::Fields( OLEStreamReader* tableStream, const Word97::FIB& fib ) :
     m_main( 0 ), m_header( 0 ), m_footnote( 0 ), m_annotation( 0 ),
     m_endnote( 0 ), m_textbox( 0 ), m_headerTextbox( 0 )
 {
@@ -170,7 +170,7 @@ const FLD* Fields::fldForCP( Parser::SubDocument subDocument, U32 cp ) const
     return 0; // make the compiler happy, never reached
 }
 
-void Fields::read( U32 fc, U32 lcb, AbstractOLEStreamReader* tableStream, PLCF<FLD>** plcf )
+void Fields::read( U32 fc, U32 lcb, OLEStreamReader* tableStream, PLCF<FLD>** plcf )
 {
     if ( lcb == 0 )
         return;
@@ -178,7 +178,7 @@ void Fields::read( U32 fc, U32 lcb, AbstractOLEStreamReader* tableStream, PLCF<F
     *plcf = new PLCF<FLD>( lcb, tableStream );
 }
 
-void Fields::sanityCheck( const AbstractOLEStreamReader* tableStream, U32 nextFC, U32 lcb ) const
+void Fields::sanityCheck( const OLEStreamReader* tableStream, U32 nextFC, U32 lcb ) const
 {
     if ( lcb != 0 && static_cast<U32>( tableStream->tell() ) != nextFC )
         wvlog << "Warning: Detected a hole within the table stream (next fc=" << nextFC << ")" << std::endl;
