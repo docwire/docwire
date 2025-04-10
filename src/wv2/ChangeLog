@@ -1,3 +1,7 @@
+2009-03-05  Benjamin Cail <cricketc@gmail.com>
+
+	* Released wv2-0.3.1 with a few bugfixes for image handling.
+
 2009-02-16  Benjamin Cail <cricketc@gmail.com>
 
 	* Released wv2-0.3.0 with basic for images, both metafile and

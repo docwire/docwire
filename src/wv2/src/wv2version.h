@@ -20,10 +20,10 @@
 #ifndef WV2_VERSION_H
 #define WV2_VERSION_H
 
-#define WV2_VERSION_STRING "0.3.0"
+#define WV2_VERSION_STRING "0.3.1"
 #define WV2_VERSION_MAJOR 0
 #define WV2_VERSION_MINOR 3
-#define WV2_VERSION_RELEASE 0
+#define WV2_VERSION_RELEASE 1
 #define WV2_MAKE_VERSION( a, b, c ) ( ( ( a ) << 16 ) | ( ( b ) << 8 ) | ( c ) )
 
 #define WV2_VERSION \

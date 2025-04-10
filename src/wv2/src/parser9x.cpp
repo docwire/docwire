@@ -945,6 +945,17 @@ void Parser9x::parsePictureEscher( const PictureData& data, OLEStreamReader* str
         << "\n  current stream position = " << stream->tell()
         << "\n  endOfPicf = " << endOfPicf << std::endl;
 #endif
+
+    //from OOo code, looks like we have to process this type differently
+    //  read a byte in, and that's an offset before reading the image
+    if ( data.picf->mfp.mm == 102 )
+    {
+        U8 byte = stream->readU8();
+        int offset = static_cast<unsigned int> (byte);
+        wvlog << "  0x66 offset is " << offset << std::endl;
+        stream->seek( offset, G_SEEK_CUR );
+    }
+
     //now we do a big loop, just reading each record until we get to the end of the picf
     do
     {
@@ -1006,10 +1017,8 @@ void Parser9x::parsePictureEscher( const PictureData& data, OLEStreamReader* str
                 wvlog << "  Blip record dump:" << std::endl;
                 blip.dump();
 #endif
-                //if it's these types, we need to decompress the data
-                //TODO need to check that the data is actually compressed
-                if( blipType.compare("EMF") == 0 || blipType.compare("WMF") == 0
-                        || blipType.compare("PICT") == 0 )
+                //if Blip is compressed, we have to process differently
+                if( blip.isCompressed() ) 
                 {
                     wvlog << "Decompressing image data at " << stream->tell() << "..." << std::endl;
                     ZCodec z( 0x8000, 0x8000 );
@@ -1039,10 +1048,14 @@ void Parser9x::parsePictureEscher( const PictureData& data, OLEStreamReader* str
             }
             else
             {
-                U8* string = new U8[ header.recordSize() ];
-                stream->read( string, header.recordSize() );
+                //we can't really process this atom, because we don't recognize the type
+                //so just skip to the end of this picf
+                wvlog << "  unrecognized atom, so we'll skip this image" << std::endl;
+                stream->seek( endOfPicf );
+                //U8* string = new U8[ header.recordSize() ];
+                //stream->read( string, header.recordSize() );
                 //clean up memory
-                delete [] string;
+                //delete [] string;
             }
             wvlog << "End of atom." << std::endl;
         } //finished processing an atom record

@@ -233,12 +233,20 @@ Blip::Blip( OLEStreamReader* stream, string blipType )
 {
     m_size = 0; //just an initial value
     m_blipType = blipType;
+    m_isMetafileBlip = false;
     if( blipType.compare("JPEG") == 0 || blipType.compare("PNG") == 0
             || blipType.compare("DIB") == 0 )
     {
         stream->read( m_rgbUid, 16 ); //data UID
         m_bTag = stream->readU8();
         m_size = 17;
+        //initialize other variables just to 0
+        m_cb = 0;
+        m_rcBounds = 0;
+        m_ptSize = 0;
+        m_cbSave = 0;
+        m_fCompression = 255; //test value, so we'll just initialize to this
+        m_fFilter = 255; //test value, so we'll just initialize to this
     }
     else if( blipType.compare("EMF") == 0 || blipType.compare("WMF") == 0
             || blipType.compare("PICT") == 0 ) 
@@ -251,12 +259,28 @@ Blip::Blip( OLEStreamReader* stream, string blipType )
         m_cbSave = stream->readU32(); //cache of saved size (size of m_pvBits)
         m_fCompression = stream->readU8(); //compression
         m_fFilter = stream->readU8(); //always msofilterNone = 254
+        m_isMetafileBlip = true;
         m_size = 46;
     }
 }
 
 Blip::~Blip()
 {
+}
+
+bool Blip::isMetafileBlip()
+{
+    return m_isMetafileBlip;
+}
+
+bool Blip::isCompressed()
+{
+    //only metafile blips can be compressed
+    //and the flag has to be set
+    if( isMetafileBlip() && m_fCompression == 0 )
+        return true;
+    else
+        return false;
 }
 
 int Blip::recordSize()
@@ -276,15 +300,13 @@ int Blip::compressedImageSize()
 
 void Blip::dump()
 {
-    if( m_blipType.compare("JPEG") == 0 || m_blipType.compare("PNG") == 0
-            || m_blipType.compare("DIB") == 0 )
+    if( !isCompressed() )
     {
         wvlog << " bitmap blip:" << std::endl;
         wvlog << " m_rgbUid = " << m_rgbUid << std::endl;
         wvlog << " m_bTag = " << static_cast<unsigned int> (m_bTag) << std::endl;
     }
-    else if( m_blipType.compare("EMF") == 0 || m_blipType.compare("WMF") == 0
-            || m_blipType.compare("PICT") == 0 ) 
+    else 
     {
         wvlog << " metafile blip:" << std::endl;
         wvlog << " m_rgbUid = " << m_rgbUid << std::endl;

@@ -157,6 +157,8 @@ namespace wvWare
         Blip( OLEStreamReader* stream, string blipType );
         ~Blip();
         
+        bool isMetafileBlip(); //is this an EMF, WMF, or PICT?
+        bool isCompressed(); //is this blip compressed? (only applied to metafile blips)
         int recordSize(); //size of the record *without* the actual picture data
         int imageSize(); //size of the *uncompressed* image
         int compressedImageSize(); //size of the *compressed* image
@@ -174,6 +176,7 @@ namespace wvWare
         string m_blipType;
         unsigned int m_size; //store size of record (without actual picture data)
                 //this is set in the constructor when the data is read in
+        bool m_isMetafileBlip; //flag for remembering whether it's metafile or bitmap
     }; //Blip
 
 } // namespace wvWare

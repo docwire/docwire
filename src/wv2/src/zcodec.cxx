@@ -224,12 +224,11 @@ long ZCodec::Decompress( OLEStreamReader& rIStm, std::vector<U8>* outBuffer )
 		ImplInitBuf( TRUE );
 		PZSTREAM->next_out = mpOutBuf = new BYTE[ PZSTREAM->avail_out = mnOutBufSize ];
 	}
-        //loop as long as we're not at stream end and there's more to read
+        //loop through all the data to be decompressed
 	do
 	{
-            //flush out-buffer if needed
-		if ( PZSTREAM->avail_out == 0 )
-                    ImplWriteBack(outBuffer);
+            wvlog << "top of do-while loop; PZSTREAM->avail_out=" << PZSTREAM->avail_out
+                << "; PZSTREAM->avail_in=" << PZSTREAM->avail_in << "; mnInToRead=" << mnInToRead << std::endl;
             //replenish in-buffer if needed
 		if ( PZSTREAM->avail_in == 0 && mnInToRead )
 		{		
@@ -263,11 +262,10 @@ long ZCodec::Decompress( OLEStreamReader& rIStm, std::vector<U8>* outBuffer )
 			mbStatus = FALSE;
 			break;
 		}
-		
+                //now write that decompressed data to the data vector
+		ImplWriteBack(outBuffer);
 	}		
 	while ( ( err != Z_STREAM_END)  && ( PZSTREAM->avail_in || mnInToRead ) );
-        //final flush of out-buffer
-	ImplWriteBack(outBuffer);
 	
         //set the "finished" flag if we got the stream-end signal?
 	if ( err == Z_STREAM_END ) 
@@ -281,11 +279,11 @@ long ZCodec::Decompress( OLEStreamReader& rIStm, std::vector<U8>* outBuffer )
 
 void ZCodec::ImplWriteBack( std::vector<U8>* outBuffer )
 {
-    wvlog << "ImplWriteBack()" << std::endl;
-	ULONG nAvail = mnOutBufSize - PZSTREAM->avail_out;
+    ULONG nAvail = mnOutBufSize - PZSTREAM->avail_out;
+    wvlog << "ImplWriteBack() nAvail=" << nAvail << std::endl;
 	
-	if ( nAvail )
-	{
+    if ( nAvail )
+    {
                 //TODO fix CRC handling
 		//if ( mbInit & 2 && ( mnCompressMethod & ZCODEC_UPDATE_CRC ) )
 		//	mnCRC = UpdateCRC( mnCRC, mpOutBuf, nAvail );
@@ -294,8 +292,10 @@ void ZCodec::ImplWriteBack( std::vector<U8>* outBuffer )
             {
                 outBuffer->push_back( (U8) mpOutBuf[i]);
             }
+            //reset PZSTREAM settings
 	    PZSTREAM->avail_out = mnOutBufSize;
-	}
+            PZSTREAM->next_out = mpOutBuf;
+    }
 }
 
 // ------------------------------------------------------------------------
