@@ -44,7 +44,7 @@ bool OLEStream::pop()
 {
     if ( m_positions.empty() )
         return false;
-    seek( m_positions.top(), SEEK_SET );
+    seek( m_positions.top(), G_SEEK_SET );
     m_positions.pop();
     return true;
 }

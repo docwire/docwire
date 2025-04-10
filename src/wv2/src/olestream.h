@@ -24,6 +24,11 @@
 #include <stack>
 #include <stdio.h> //seek type
 
+#define GSeekType int
+#define G_SEEK_SET SEEK_SET
+#define G_SEEK_CUR SEEK_CUR
+#define G_SEEK_END SEEK_END
+
 namespace wvWare {
 
 class OLEStream
@@ -43,7 +48,7 @@ public:
     /**
      * works like plain fseek
      */
-    virtual bool seek( int offset, int whence = SEEK_SET ) = 0;
+    virtual bool seek( int offset, GSeekType whence = G_SEEK_SET ) = 0;
     /**
      * works like plain ftell
      */
@@ -85,7 +90,7 @@ class WV2_DLLEXPORT OLEStreamReader : public OLEStream
         OLEStreamReader(OLEStorage* storage);
 		virtual ~OLEStreamReader();
 		virtual bool isValid() const = 0;
-        virtual bool seek( int offset, int whence = SEEK_SET ) = 0;
+        virtual bool seek( int offset, GSeekType whence = G_SEEK_SET ) = 0;
 		virtual int tell() const = 0;
 		virtual size_t size() const = 0;
 		virtual U8 readU8() = 0;

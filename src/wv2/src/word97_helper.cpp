@@ -961,7 +961,7 @@ S16 PAP::applyPAPSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* d
         {
             if ( dataStream ) {
                 dataStream->push();
-                dataStream->seek( readU32( ptr ), SEEK_SET );
+                dataStream->seek( readU32( ptr ), G_SEEK_SET );
                 const U16 count( dataStream->readU16() );
                 U8* grpprl = new U8[ count ];
                 dataStream->read( grpprl, count );
@@ -2115,7 +2115,7 @@ S16 TAP::applyTAPSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* d
         {
             if ( dataStream ) {
                 dataStream->push();
-                dataStream->seek( readU32( ptr ), SEEK_SET );
+                dataStream->seek( readU32( ptr ), G_SEEK_SET );
                 const U16 count( dataStream->readU16() );
                 U8* grpprl = new U8[ count ];
                 dataStream->read( grpprl, count );

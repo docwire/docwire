@@ -42,7 +42,7 @@ Headers::Headers( U32 fcPlcfhdd, U32 lcbPlcfhdd, OLEStreamReader* tableStream, W
     else if ( version == Word8 && ( lcbPlcfhdd / 4 - 2 ) % headerTypes )
         wvlog << "Bug: #headers % " << headerTypes << " != 0!" << std::endl;
 
-    tableStream->seek( fcPlcfhdd, SEEK_SET );
+    tableStream->seek( fcPlcfhdd, G_SEEK_SET );
 
     U32 i = 0;
     if ( version == Word8 )

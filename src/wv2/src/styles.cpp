@@ -156,7 +156,7 @@ bool STD::read( U16 baseSize, U16 totalSize, OLEStreamReader* stream, bool prese
     wvlog << "curr. position: " << stream->tell() << std::endl;
 #endif
     baseSize += ( baseSize & 0x0001 ) ? 1 : 0;  // next even address
-    stream->seek( startOffset + baseSize, SEEK_SET );
+    stream->seek( startOffset + baseSize, G_SEEK_SET );
 #ifdef WV2_DEBUG_STYLESHEET
     wvlog << "new position: " << stream->tell() << std::endl;
 #endif
@@ -168,7 +168,7 @@ bool STD::read( U16 baseSize, U16 totalSize, OLEStreamReader* stream, bool prese
 #ifdef WV2_DEBUG_STYLESHEET
         wvlog << "Adjusting the position... from " << stream->tell() - startOffset;
 #endif
-        stream->seek( 1, SEEK_CUR );
+        stream->seek( 1, G_SEEK_CUR );
 #ifdef WV2_DEBUG_STYLESHEET
         wvlog << " to " << stream->tell() - startOffset << std::endl;
 #endif
@@ -183,7 +183,7 @@ bool STD::read( U16 baseSize, U16 totalSize, OLEStreamReader* stream, bool prese
     int offset = 0;
     for ( U8 i = 0; i < cupx; ++i) {
         U16 cbUPX = stream->readU16();  // size of the next UPX
-        stream->seek( -2, SEEK_CUR ); // rewind the "lookahead"
+        stream->seek( -2, G_SEEK_CUR ); // rewind the "lookahead"
         cbUPX += 2;                     // ...and correct the size
 #ifdef WV2_DEBUG_STYLESHEET
         wvlog << "cbUPX: " << cbUPX << std::endl;
@@ -205,7 +205,7 @@ bool STD::read( U16 baseSize, U16 totalSize, OLEStreamReader* stream, bool prese
 #ifdef WV2_DEBUG_STYLESHEET
             wvlog << "Adjusting the UPX position... from " << stream->tell() - startOffset;
 #endif
-            stream->seek( 1, SEEK_CUR );
+            stream->seek( 1, G_SEEK_CUR );
 #ifdef WV2_DEBUG_STYLESHEET
             wvlog << " to " << stream->tell() - startOffset << std::endl;
 #endif
@@ -335,7 +335,7 @@ Style::Style( U16 baseSize, OLEStreamReader* tableStream, U16* ftc ) : m_isEmpty
     m_std = new Word97::STD( baseSize, cb, tableStream, false );
     if ( tableStream->tell() != offset + cb ) {
         wvlog << "Warning: Found a \"hole\"" << std::endl;
-        tableStream->seek( cb, SEEK_CUR );  // correct the offset
+        tableStream->seek( cb, G_SEEK_CUR );  // correct the offset
     }
 
     if ( m_std->sgc == sgcPara ) {
@@ -614,7 +614,7 @@ StyleSheet::StyleSheet( OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf 
     WordVersion version = Word8;
 
     tableStream->push();
-    tableStream->seek( fcStshf, SEEK_SET );
+    tableStream->seek( fcStshf, G_SEEK_SET );
 
     const U16 cbStshi = tableStream->readU16();
 
@@ -639,7 +639,7 @@ StyleSheet::StyleSheet( OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf 
     if ( tableStream->tell() != static_cast<int>( fcStshf + cbStshi + 2 ) ) {
         wvlog << "Warning: STSHI too big? New version?"
               << " Expected: " << cbStshi + 2 << " Read: " << tableStream->tell() - fcStshf << std::endl;
-        tableStream->seek( fcStshf + 2 + cbStshi, SEEK_SET );
+        tableStream->seek( fcStshf + 2 + cbStshi, G_SEEK_SET );
     }
 
     // read all the styles

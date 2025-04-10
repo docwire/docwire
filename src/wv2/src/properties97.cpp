@@ -190,7 +190,7 @@ ParagraphProperties* Properties97::fullSavedPap( U32 fc, OLEStreamReader* dataSt
     // Step 3: Get the new FKP, if necessary
     if ( !m_papxFkp ) {
         m_wordDocument->push();
-        m_wordDocument->seek( it.current()->pn << 9, SEEK_SET );  // 512 byte pages ( << 9 )
+        m_wordDocument->seek( it.current()->pn << 9, G_SEEK_SET );  // 512 byte pages ( << 9 )
         if ( m_version == Word8 )
             m_papxFkp = new PAPXFKP_t( m_wordDocument, false );
         else
@@ -245,7 +245,7 @@ Word97::TAP* Properties97::fullSavedTap( U32 fc, OLEStreamReader* dataStream )
     // Step 3: Get the new FKP, if necessary
     if ( !m_papxFkp ) {
         m_wordDocument->push();
-        m_wordDocument->seek( it.current()->pn << 9, SEEK_SET );  // 512 byte pages ( << 9 )
+        m_wordDocument->seek( it.current()->pn << 9, G_SEEK_SET );  // 512 byte pages ( << 9 )
         if ( m_version == Word8 )
             m_papxFkp = new PAPXFKP_t( m_wordDocument, false );
         else
@@ -306,7 +306,7 @@ U32 Properties97::fullSavedChp( const U32 fc, Word97::CHP* chp, const Style* par
     // Step 3: Get the new FKP, if necessary
     if ( !m_chpxFkp ) {
         m_wordDocument->push();
-        m_wordDocument->seek( it.current()->pn << 9, SEEK_SET );  // 512 byte pages ( << 9 )
+        m_wordDocument->seek( it.current()->pn << 9, G_SEEK_SET );  // 512 byte pages ( << 9 )
         m_chpxFkp = new CHPXFKP_t( m_wordDocument, false );
         m_wordDocument->pop();
     }
@@ -359,7 +359,7 @@ void Properties97::applyClxGrpprlImpl( const Word97::PCD* pcd, U32 fcClx, P* pro
         while ( blockType == wvWare::clxtGrpprl && igrpprl > 0 ) {
             U16 size = m_table->readU16();
             //wvlog << "Skipping a clxtGrpprl (size=" << size << ")" << std::endl;
-            m_table->seek( size, SEEK_CUR );
+            m_table->seek( size, G_SEEK_CUR );
             blockType = m_table->readU8();
             --igrpprl;
         }
@@ -401,7 +401,7 @@ void Properties97::fillBinTable( PLCF<Word97::BTE>* bte, U16 cpnBte )
     while ( cpnBte > 0 ) {
         Word97::BTE* tmp( new Word97::BTE );
         tmp->pn = ++pnLast;
-        m_wordDocument->seek( pnLast << 9, SEEK_SET );
+        m_wordDocument->seek( pnLast << 9, G_SEEK_SET );
         bte->insert( m_wordDocument->readU32(), tmp );
         --cpnBte;
     }

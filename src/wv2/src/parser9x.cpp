@@ -286,7 +286,7 @@ bool Parser9x::readPieceTable()
 #if WV2_DUMP_PIECE_TABLE > 0
         wvlog << "Found a clxtGrpprl (size=" << size << ")" << std::endl;
 #endif
-        m_table->seek( size, SEEK_CUR );
+        m_table->seek( size, G_SEEK_CUR );
         blockType = m_table->readU8();
     }
     if ( blockType == wvWare::clxtPlcfpcd ) {
@@ -815,7 +815,7 @@ void Parser9x::emitPictureData( SharedPtr<const Word97::CHP> chp )
         return;
     }
     stream->push();
-    stream->seek( chp->fcPic_fcObj_lTagObj, SEEK_SET );
+    stream->seek( chp->fcPic_fcObj_lTagObj, G_SEEK_SET );
 
     Word97::PICF* picf( 0 );
     if ( m_fib.nFib < Word8nFib )
