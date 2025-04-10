@@ -28,15 +28,17 @@
 #include "textconverter.h"
 #include "olestream.h"
 #include "fields.h"
+#include "graphics.h"
 #include "associatedstrings.h"
 #include "paragraphproperties.h"
 #include "functor.h"
 #include "functordata.h"
 #include "word95_generated.h"
 #include "convert.h"
+#include "zcodec.hxx"
+#include "wvlog.h"
 
 #include <numeric>
-#include "wvlog.h"
 #include <string.h>
 
 using namespace wvWare;
@@ -57,7 +59,7 @@ Parser9x::Position::Position( U32 cp, const PLCF<Word97::PCD>* plcfpcd ) :
 Parser9x::Parser9x( OLEStorage* storage, OLEStreamReader* wordDocument, const Word97::FIB& fib ) :
     Parser( storage, wordDocument ), m_fib( fib ), m_table( 0 ), m_data( 0 ), m_properties( 0 ),
     m_headers( 0 ), m_lists( 0 ), m_textconverter( 0 ), m_fields( 0 ), m_footnotes( 0 ),
-    m_fonts( 0 ), m_plcfpcd( 0 ), m_tableRowStart( 0 ), m_tableRowLength( 0 ),
+    m_fonts( 0 ), m_drawings( 0 ), m_plcfpcd( 0 ), m_tableRowStart( 0 ), m_tableRowLength( 0 ),
     m_cellMarkFound( false ), m_remainingCells( 0 ), m_currentParagraph( new Paragraph ),
     m_remainingChars( 0 ), m_sectionNumber( 0 ), m_subDocument( None ), m_parsingMode( Default )
 {
@@ -123,6 +125,7 @@ Parser9x::~Parser9x()
 
     delete m_currentParagraph;
     delete m_tableRowStart;
+    delete m_drawings;
     delete m_fonts;
     delete m_plcfpcd;
     delete m_headers;
@@ -245,6 +248,40 @@ void Parser9x::parseTableRow( const TableRowData& data )
 #endif
 }
 
+void Parser9x::parsePicture( const PictureData& data )
+{
+    wvlog << "Parser9x::parsePicture" << std::endl;
+    OLEStreamReader* stream = m_fib.nFib < Word8nFib ? m_wordDocument : m_data;
+    stream->push(); // saveState would be overkill
+
+    //go to the position in the stream after the PICF, where the actual picture data/escher is
+    if ( !stream->seek( data.fcPic + data.picf->cbHeader, G_SEEK_SET ) ) {
+        wvlog << "Error: Parser9x::parsePicture couldn't seek properly" << std::endl;
+        stream->pop();
+        return;
+    }
+
+    if ( data.picf->mfp.mm == 0x64 || data.picf->mfp.mm == 0x66 ) {
+        wvlog << "Linked graphic in Escher object" << std::endl;
+        parsePictureEscher( data, stream, data.picf->lcb, data.fcPic );
+    }
+    else {
+        switch ( data.picf->mfp.mm ) {
+            case 94: // A .bmp or a .gif name is stored after the PICF
+            case 98: // The .tiff name is stored after the PICF
+                parsePictureExternalHelper( data, stream );
+                break;
+            case 99: // A full bmp is stored after the PICF -- not handled in OOo??
+                parsePictureBitmapHelper( data, stream );
+                break;
+            default: // It has to be a .wmf or .emf file (right after the PICF)
+                parsePictureWmfHelper( data, stream );
+                break;
+        }
+    }
+    stream->pop();
+}
+
 std::string Parser9x::tableStream() const
 {
     if ( m_fib.nFib < Word8nFib )
@@ -270,6 +307,7 @@ void Parser9x::init()
 
     m_fonts = new FontCollection( m_table, m_fib );
     m_fields = new Fields( m_table, m_fib );
+    m_drawings = new Drawings( m_table, m_fib );
 
     if ( m_fib.ccpFtn != 0 )
         m_footnotes = new Footnotes97( m_table, m_fib );
@@ -580,7 +618,7 @@ void Parser9x::processParagraph( U32 fc )
         // Get the appropriate style for this paragraph
         const Style* style = m_properties->styleByIndex( props->pap().istd );
         if ( !style ) {
-            wvlog << "Huh, really obscure error, couldn't find the Style for the current PAP -- skipping" << std::endl;
+            wvlog << "Warning: Huh, really obscure error, couldn't find the Style for the current PAP -- skipping" << std::endl;
             return;
         }
 
@@ -848,8 +886,11 @@ void Parser9x::emitPictureData( SharedPtr<const Word97::CHP> chp )
           << std::endl << " dxaOrigin=" << picf->dxaOrigin << " dyaOrigin="
           << picf->dyaOrigin << std::endl;
 #endif
-    // for now
-    delete picf;
+
+    SharedPtr<const Word97::PICF> sharedPicf( picf );
+    m_textHandler->pictureFound( make_functor( *this, &Parser9x::parsePicture,
+                                               PictureData( static_cast<U32>( chp->fcPic_fcObj_lTagObj ), sharedPicf ) ),
+                                 sharedPicf, chp );
 }
 
 void Parser9x::parseHeader( const HeaderData& data, unsigned char mask )
@@ -892,6 +933,161 @@ void Parser9x::parseHeader( const HeaderData& data, unsigned char mask )
     m_subDocumentHandler->headerEnd();
 
     restoreState();
+}
+
+void Parser9x::parsePictureEscher( const PictureData& data, OLEStreamReader* stream,
+        int totalPicfSize, int picfStartPos )
+{
+    int endOfPicf = picfStartPos + totalPicfSize;
+#ifdef WV2_DEBUG_PICTURES
+    wvlog << "Parser9x::parsePictureEscher:\n  Total PICF size = " << totalPicfSize
+        << "\n  PICF start position = " << picfStartPos 
+        << "\n  current stream position = " << stream->tell()
+        << "\n  endOfPicf = " << endOfPicf << std::endl;
+#endif
+    //now we do a big loop, just reading each record until we get to the end of the picf
+    do
+    {
+        //read header
+        EscherHeader header( stream );
+#ifdef WV2_DEBUG_PICTURES
+        wvlog << "Starting new outer record: " << std::endl;
+        header.dump();
+#endif
+        //process record
+        wvlog << header.getRecordType() << std::endl;
+        if( !header.isAtom() )
+        {
+            wvlog << "Reading container..." << std::endl;
+            //same process again with container
+            int endOfContainer = stream->tell() + header.recordSize();
+            do
+            {
+                //read header
+                EscherHeader h( stream );
+#ifdef WV2_DEBUG_PICTURES
+                wvlog << "  starting new inner record: " << std::endl;
+                h.dump();
+                wvlog << h.getRecordType() << std::endl;
+#endif
+                //process record
+                if( h.isAtom() )
+                {
+                    U8* s = new U8[ h.recordSize() ];
+                    stream->read( s, h.recordSize() );
+                    //clean up memory
+                    delete [] s;
+                }
+                else
+                    wvlog << "  Error - container inside a container!" << std::endl;
+            } while (stream->tell() != endOfContainer);
+            wvlog << "End of container." << std::endl;
+        } //finished processing a container
+        else
+        {
+            wvlog << "Reading atom" << std::endl;
+            if( header.getRecordType() == "msofbtBSE" )
+            {
+                //process image
+                FBSE fbse( stream );
+#ifdef WV2_DEBUG_PICTURES
+                fbse.dump();
+                wvlog << "name length is " << fbse.getNameLength() << std::endl;
+#endif
+                //the data is actually in a new record!
+                EscherHeader h( stream );
+#ifdef WV2_DEBUG_PICTURES
+                wvlog << " reading data record after fbse record" << std::endl;
+                h.dump();
+#endif
+                string blipType = h.getRecordType(); 
+                Blip blip( stream, blipType );
+#ifdef WV2_DEBUG_PICTURES
+                wvlog << "  Blip record dump:" << std::endl;
+                blip.dump();
+#endif
+                //if it's these types, we need to decompress the data
+                //TODO need to check that the data is actually compressed
+                if( blipType.compare("EMF") == 0 || blipType.compare("WMF") == 0
+                        || blipType.compare("PICT") == 0 )
+                {
+                    wvlog << "Decompressing image data at " << stream->tell() << "..." << std::endl;
+                    ZCodec z( 0x8000, 0x8000 );
+                    z.BeginCompression();
+                    z.SetBreak(blip.compressedImageSize());
+                    std::vector<U8> outBuffer;
+                    int err = z.Decompress( *stream, &outBuffer );
+#ifdef WV2_DEBUG_PICTURES
+                    wvlog << "  err=" << err << std::endl;
+                    wvlog << "  outBuffer size = " << outBuffer.size() << std::endl;
+#endif
+                    z.EndCompression(&outBuffer);
+                    //pass vector to escherData instead of OLEImageReader
+                    m_pictureHandler->escherData(outBuffer, data.picf, fbse.getBlipType());
+                }
+                //normal data, just create an OLEImageReader to be read
+                else
+                {
+                    int start = stream->tell();
+                    int limit = endOfPicf; //TODO is it possible that it wouldn't go all the way to the end?
+                    OLEImageReader reader( *stream, start, limit);
+                    m_pictureHandler->escherData(reader, data.picf, fbse.getBlipType());
+                    //we've read the data in OLEImageReader, so advance stream to the
+                    //end of OLEImageReader
+                    stream->seek( endOfPicf, G_SEEK_SET );
+                }
+            }
+            else
+            {
+                U8* string = new U8[ header.recordSize() ];
+                stream->read( string, header.recordSize() );
+                //clean up memory
+                delete [] string;
+            }
+            wvlog << "End of atom." << std::endl;
+        } //finished processing an atom record
+        wvlog << "current position: " << stream->tell() << ", endOfPicf:" << endOfPicf << std::endl;
+        if( stream->tell() > endOfPicf )
+            wvlog << "Error! We read past the end of the picture!" << std::endl;
+    } while (stream->tell() != endOfPicf); //end of record
+}
+
+void Parser9x::parsePictureExternalHelper( const PictureData& data, OLEStreamReader* stream )
+{
+#ifdef WV2_DEBUG_PICTURES
+    wvlog << "Parser9x::parsePictureExternalHelper" << std::endl;
+#endif
+
+    // Guessing... some testing would be nice
+    const U8 length( stream->readU8() );
+    U8* string = new U8[ length ];
+    stream->read( string, length );
+    // Do we have to use the textconverter here?
+    UString ustring( m_textconverter->convert( reinterpret_cast<char*>( string ),
+                                               static_cast<unsigned int>( length ) ) );
+    delete [] string;
+
+    m_pictureHandler->externalImage( ustring, data.picf );
+}
+
+void Parser9x::parsePictureBitmapHelper( const PictureData& data, OLEStreamReader* stream )
+{
+#ifdef WV2_DEBUG_PICTURES
+    wvlog << "Parser9x::parsePictureBitmapHelper" << std::endl;
+#endif
+    OLEImageReader reader( *stream, data.fcPic + data.picf->cbHeader, data.fcPic + data.picf->lcb );
+    m_pictureHandler->bitmapData( reader, data.picf );
+}
+
+void Parser9x::parsePictureWmfHelper( const PictureData& data, OLEStreamReader* stream )
+{
+#ifdef WV2_DEBUG_PICTURES
+    wvlog << "Parser9x::parsePictureWmfHelper" << std::endl;
+#endif
+    // ###### TODO: Handle the Mac case (x-wmf + PICT)
+    // ###### CHECK: Do we want to do anything about .emf files?
+    OLEImageReader reader( *stream, data.fcPic + data.picf->cbHeader, data.fcPic + data.picf->lcb );
+    m_pictureHandler->wmfData( reader, data.picf );
 }
 
 void Parser9x::saveState( U32 newRemainingChars, SubDocument newSubDocument, ParsingMode newParsingMode )

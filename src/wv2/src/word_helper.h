@@ -32,7 +32,7 @@ namespace wvWare
     {
         struct PHE;
         struct BTE;
-        Word97::PHE toWord97( const Word95::PHE& phe ); // fake, to make gcc 3.4 happy :-(
+        Word97::PHE toWord97( const Word95::PHE& phe );  // fake, to make gcc 3.4 happy :-(
         Word97::BTE toWord97( const Word95::BTE& s );   // fake, to make gcc 3.4 happy :-(
     }
 

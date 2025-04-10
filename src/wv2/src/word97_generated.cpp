@@ -1988,6 +1988,8 @@ bool operator!=(const ATRD &lhs, const ATRD &rhs) {
 
 // BKD implementation
 
+const unsigned int BKD::sizeOf = 6;
+
 BKD::BKD() {
     clear();
 }
@@ -2004,7 +2006,7 @@ bool BKD::read(OLEStreamReader *stream, bool preservePos) {
     if(preservePos)
         stream->push();
 
-    ipgd=stream->readS16();
+    ipgd_itxbxs=stream->readS16();
     dcpDepend=stream->readS16();
     shifterU16=stream->readU16();
     icol=shifterU16;
@@ -2027,7 +2029,7 @@ bool BKD::read(OLEStreamReader *stream, bool preservePos) {
 }
 
 void BKD::clear() {
-    ipgd=0;
+    ipgd_itxbxs=0;
     dcpDepend=0;
     icol=0;
     fTableBreak=0;
@@ -2040,7 +2042,7 @@ void BKD::clear() {
 
 bool operator==(const BKD &lhs, const BKD &rhs) {
 
-    return lhs.ipgd==rhs.ipgd &&
+    return lhs.ipgd_itxbxs==rhs.ipgd_itxbxs &&
            lhs.dcpDepend==rhs.dcpDepend &&
            lhs.icol==rhs.icol &&
            lhs.fTableBreak==rhs.fTableBreak &&
@@ -4362,6 +4364,8 @@ bool operator!=(const FRD &lhs, const FRD &rhs) {
 
 // FSPA implementation
 
+const unsigned int FSPA::sizeOf = 26;
+
 FSPA::FSPA() {
     clear();
 }
@@ -4448,6 +4452,8 @@ bool operator!=(const FSPA &lhs, const FSPA &rhs) {
 
 // FTXBXS implementation
 
+const unsigned int FTXBXS::sizeOf = 22;
+
 FTXBXS::FTXBXS() {
     clear();
 }
@@ -4462,8 +4468,7 @@ bool FTXBXS::read(OLEStreamReader *stream, bool preservePos) {
     if(preservePos)
         stream->push();
 
-    cTxbx=stream->readS32();
-    iNextReuse=stream->readS32();
+    cTxbx_iNextReuse=stream->readS32();
     cReusable=stream->readS32();
     fReusable=stream->readS16();
     reserved=stream->readU32();
@@ -4476,8 +4481,7 @@ bool FTXBXS::read(OLEStreamReader *stream, bool preservePos) {
 }
 
 void FTXBXS::clear() {
-    cTxbx=0;
-    iNextReuse=0;
+    cTxbx_iNextReuse=0;
     cReusable=0;
     fReusable=0;
     reserved=0;
@@ -4487,8 +4491,7 @@ void FTXBXS::clear() {
 
 bool operator==(const FTXBXS &lhs, const FTXBXS &rhs) {
 
-    return lhs.cTxbx==rhs.cTxbx &&
-           lhs.iNextReuse==rhs.iNextReuse &&
+    return lhs.cTxbx_iNextReuse==rhs.cTxbx_iNextReuse &&
            lhs.cReusable==rhs.cReusable &&
            lhs.fReusable==rhs.fReusable &&
            lhs.reserved==rhs.reserved &&
@@ -4876,6 +4879,28 @@ void METAFILEPICT::clear() {
     xExt=0;
     yExt=0;
     hMF=0;
+}
+
+void METAFILEPICT::dump() const
+{
+    wvlog << "Dumping METAFILEPICT:" << std::endl;
+    wvlog << toString().c_str() << std::endl;
+    wvlog << "\nDumping METAFILEPICT done." << std::endl;
+}
+
+std::string METAFILEPICT::toString() const
+{
+    std::string s( "METAFILEPICT:" );
+    s += "\nmm=";
+    s += int2string( mm );
+    s += "\nxExt=";
+    s += int2string( xExt );
+    s += "\nyExt=";
+    s += int2string( yExt );
+    s += "\nhMF=";
+    s += int2string( hMF );
+    s += "\nMETAFILEPICT Done.";
+    return s;
 }
 
 bool operator==(const METAFILEPICT &lhs, const METAFILEPICT &rhs) {
@@ -5971,6 +5996,72 @@ void PICF::clear() {
     dxaOrigin=0;
     dyaOrigin=0;
     cProps=0;
+}
+
+void PICF::dump() const
+{
+    wvlog << "Dumping PICF:" << std::endl;
+    wvlog << toString().c_str() << std::endl;
+    wvlog << "\nDumping PICF done." << std::endl;
+}
+
+std::string PICF::toString() const
+{
+    std::string s( "PICF:" );
+    s += "\nlcb=";
+    s += uint2string( lcb );
+    s += "\ncbHeader=";
+    s += uint2string( cbHeader );
+    s += "\nmfp=";
+    s += "\n{" + mfp.toString() + "}\n";
+    for(int _i=0; _i<(14); ++_i) {
+        s += "\nbm_rcWinMF[" + int2string( _i ) + "]=";
+    s += uint2string( bm_rcWinMF[_i] );
+    }
+    s += "\ndxaGoal=";
+    s += int2string( dxaGoal );
+    s += "\ndyaGoal=";
+    s += int2string( dyaGoal );
+    s += "\nmx=";
+    s += uint2string( mx );
+    s += "\nmy=";
+    s += uint2string( my );
+    s += "\ndxaCropLeft=";
+    s += int2string( dxaCropLeft );
+    s += "\ndyaCropTop=";
+    s += int2string( dyaCropTop );
+    s += "\ndxaCropRight=";
+    s += int2string( dxaCropRight );
+    s += "\ndyaCropBottom=";
+    s += int2string( dyaCropBottom );
+    s += "\nbrcl=";
+    s += uint2string( brcl );
+    s += "\nfFrameEmpty=";
+    s += uint2string( fFrameEmpty );
+    s += "\nfBitmap=";
+    s += uint2string( fBitmap );
+    s += "\nfDrawHatch=";
+    s += uint2string( fDrawHatch );
+    s += "\nfError=";
+    s += uint2string( fError );
+    s += "\nbpp=";
+    s += uint2string( bpp );
+    s += "\nbrcTop=";
+    s += "\n{" + brcTop.toString() + "}\n";
+    s += "\nbrcLeft=";
+    s += "\n{" + brcLeft.toString() + "}\n";
+    s += "\nbrcBottom=";
+    s += "\n{" + brcBottom.toString() + "}\n";
+    s += "\nbrcRight=";
+    s += "\n{" + brcRight.toString() + "}\n";
+    s += "\ndxaOrigin=";
+    s += int2string( dxaOrigin );
+    s += "\ndyaOrigin=";
+    s += int2string( dyaOrigin );
+    s += "\ncProps=";
+    s += int2string( cProps );
+    s += "\nPICF Done.";
+    return s;
 }
 
 bool operator==(const PICF &lhs, const PICF &rhs) {

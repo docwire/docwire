@@ -116,6 +116,31 @@ void TableHandler::tableCellEnd()
 }
 
 
+PictureHandler::~PictureHandler()
+{
+}
+
+void PictureHandler::bitmapData( OLEImageReader& /*reader*/, SharedPtr<const Word97::PICF> /*picf*/ )
+{
+}
+
+void PictureHandler::escherData( OLEImageReader& /*reader*/, SharedPtr<const Word97::PICF> /*picf*/, int type )
+{
+}
+
+void PictureHandler::escherData( std::vector<U8>, SharedPtr<const Word97::PICF> /*picf*/, int type )
+{
+}
+
+void PictureHandler::wmfData( OLEImageReader& /*reader*/, SharedPtr<const Word97::PICF> /*picf*/ )
+{
+}
+
+void PictureHandler::externalImage( const UString& /*name*/, SharedPtr<const Word97::PICF> /*picf*/ )
+{
+}
+
+
 TextHandler::~TextHandler()
 {
 }
@@ -180,4 +205,10 @@ void TextHandler::fieldEnd( const FLD* /*fld*/, SharedPtr<const Word97::CHP> /*c
 void TextHandler::tableRowFound( const TableRowFunctor& tableRow, SharedPtr<const Word97::TAP> /*tap*/ )
 {
     tableRow();
+}
+
+void TextHandler::pictureFound( const PictureFunctor& picture, SharedPtr<const Word97::PICF> /*picf*/,
+                                SharedPtr<const Word97::CHP> /*chp*/ )
+{
+    picture();
 }

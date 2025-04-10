@@ -24,9 +24,10 @@ using namespace wvWare;
 
 Parser::Parser( OLEStorage* storage, OLEStreamReader* wordDocument ) :
     m_inlineHandler( new InlineReplacementHandler ), m_subDocumentHandler( new SubDocumentHandler ),
-    m_tableHandler( new TableHandler ), m_textHandler( new TextHandler ),
-    m_ourInlineHandler( true ), m_ourSubDocumentHandler( true ), m_ourTableHandler( true ),
-    m_ourTextHandler( true ), m_storage( storage ), m_wordDocument( wordDocument ), m_okay( true )
+    m_tableHandler( new TableHandler ), m_pictureHandler( new PictureHandler ),
+    m_textHandler( new TextHandler ), m_ourInlineHandler( true ), m_ourSubDocumentHandler( true ),
+    m_ourTableHandler( true ), m_ourPictureHandler( true ), m_ourTextHandler( true ),
+    m_storage( storage ), m_wordDocument( wordDocument ), m_okay( true )
 {
     if ( !storage || !wordDocument ) {
         m_okay = false;
@@ -50,6 +51,8 @@ Parser::~Parser()
         delete m_subDocumentHandler;
     if ( m_ourTableHandler )
         delete m_tableHandler;
+    if ( m_ourPictureHandler )
+        delete m_pictureHandler;
     if ( m_ourTextHandler )
         delete m_textHandler;
 
@@ -61,36 +64,25 @@ Parser::~Parser()
 
 void Parser::setInlineReplacementHandler( InlineReplacementHandler* handler )
 {
-    if ( m_ourInlineHandler ) {
-        m_ourInlineHandler = false;
-        delete m_inlineHandler;
-    }
-    m_inlineHandler = handler;
+    setHandler<InlineReplacementHandler>( handler, &m_inlineHandler, m_ourInlineHandler );
 }
 
 void Parser::setSubDocumentHandler( SubDocumentHandler* handler )
 {
-    if ( m_ourSubDocumentHandler ) {
-        m_ourSubDocumentHandler = false;
-        delete m_subDocumentHandler;
-    }
-    m_subDocumentHandler = handler;
+    setHandler<SubDocumentHandler>( handler, &m_subDocumentHandler, m_ourSubDocumentHandler );
 }
 
 void Parser::setTableHandler( TableHandler* handler )
 {
-    if ( m_ourTableHandler ) {
-        m_ourTableHandler = false;
-        delete m_tableHandler;
-    }
-    m_tableHandler = handler;
+    setHandler<TableHandler>( handler, &m_tableHandler, m_ourTableHandler );
+}
+
+void Parser::setPictureHandler( PictureHandler* handler )
+{
+    setHandler<PictureHandler>( handler, &m_pictureHandler, m_ourPictureHandler );
 }
 
 void Parser::setTextHandler( TextHandler* handler )
 {
-    if ( m_ourTextHandler ) {
-        m_ourTextHandler = false;
-        delete m_textHandler;
-    }
-    m_textHandler = handler;
+    setHandler<TextHandler>( handler, &m_textHandler, m_ourTextHandler );
 }

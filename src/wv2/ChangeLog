@@ -1,8 +1,11 @@
+2009-02-16  Benjamin Cail <cricketc@gmail.com>
+
+	* Released wv2-0.3.0 with basic for images, both metafile and
+	  bitmap.
+
 2006-06-12  Werner Trobin  <trobin@kde.org>
 
-	* Released wv2-0.2.3
-
-	* Fixed an integer overflow bug (CVE-2006-2197)
+	* Applied security fix to HEAD
 
 2004-09-14  Werner Trobin  <trobin@kde.org>
 
@@ -10,17 +13,39 @@
 	  with fixes for Solaris / Sun C++ 5.5 Patch 113817-02 2003/08/29.
 	  Additionally fixes some tab-related bugs (unique and erase stuff)
 
+2004-05-10  Werner Trobin  <trobin@kde.org>
+
+	* Ported the gcc 3.4 fixes to HEAD
+
 2004-05-09  Werner Trobin  <trobin@kde.org>
 
-	* Released wv2-0.2.2
+	* Released wv2-0.2.2 (WV2_0_2_1_BRANCH)
 
 	* Fixed compilation with gcc 3.4
+
+2003-11-08  Werner Trobin  <trobin@kde.org>
+
+	* Cleaned up the configure.in script and the Makefiles a bit.
+	  Let's hope this still works everywhere and doesn't barf on the
+	  iconv test on Cygwin...
+
+2003-11-06  Werner Trobin  <trobin@kde.org>
+
+	* Safer version of the wvlog.h fix. Backported to the branch.
+
+	* Added a version header surprisingly similar to kdeversion.h to
+	  make it easier for the KOffice part of the filter.
 
 2003-11-05  Werner Trobin  <trobin@kde.org>
 
 	* Released wv2-0.2.1
 
 	* Fixed a very stupid bug: it didn't compile on gcc 2.95.x ... doh!
+
+	* Bumped the CVS version 0.2.5 and the library version to 2.0.0.
+	  The goal is to have at least basic image support for the 0.3
+	  release. Depending on the quality of the 0.2 release there might
+	  be one or more bugfix releases (0.2.1, 0.2.2,...).
 
 	* Released wv2-0.2
 
@@ -33,6 +58,15 @@
 	  index into the pllfo was off-by-one. This triggered a crash in case
 	  the first list in the pllfo was a compat one (i.e. there are *just*
 	  compat lists in a document).
+
+2003-09-11  Werner Trobin  <trobin@kde.org>
+
+	* More image stuff. I had to split some interfaces, let's see if it's
+	  cleaner that way.
+
+2003-09-08  Werner Trobin  <trobin@kde.org>
+
+	* Started to implement image support for Word 6 style inline images.
 
 2003-09-01  Werner Trobin  <trobin@kde.org>
 

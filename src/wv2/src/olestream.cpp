@@ -17,6 +17,8 @@
 */
 
 #include "olestream.h"
+#include "wvlog.h"
+
 #include <stdio.h> // FILE,...
 
 #ifdef HAVE_CONFIG_H
@@ -51,3 +53,82 @@ bool OLEStream::pop()
 
 OLEStreamReader::OLEStreamReader(OLEStorage* storage) : OLEStream(storage){}
 OLEStreamReader::~OLEStreamReader(){}
+
+
+OLEImageReader::OLEImageReader( OLEStreamReader& reader, unsigned int start, unsigned int limit ) :
+    m_reader( reader ), m_start( start ), m_limit( limit ), m_position( start )
+{
+    if ( limit <= start )
+        wvlog << "Error: The passed region is empty." << std::endl;
+}
+
+OLEImageReader::OLEImageReader( const OLEImageReader& rhs ) : m_reader( rhs.m_reader ), m_start( rhs.m_start ),
+                                                              m_limit( rhs.m_limit ), m_position( rhs.m_position )
+{
+}
+
+OLEImageReader::~OLEImageReader()
+{
+    // nothing to do
+}
+
+bool OLEImageReader::isValid() const
+{
+    return m_reader.isValid() && m_position >= m_start && m_position < m_limit;
+}
+
+bool OLEImageReader::seek( int offset, GSeekType whence )
+{
+    switch( whence ) {
+        case G_SEEK_CUR:
+            return updatePosition( m_position + offset );
+        case G_SEEK_SET:
+            return updatePosition( offset );
+        case G_SEEK_END:
+            return updatePosition( m_limit - 1 + offset );
+        default:
+            wvlog << "Error: Unknown GSeekType!" << std::endl;
+            return false;
+    }
+}
+
+int OLEImageReader::tell() const
+{
+    return static_cast<int>( m_position );
+}
+
+size_t OLEImageReader::size() const
+{
+    return m_limit - m_start;
+}
+
+size_t OLEImageReader::read( U8 *buffer, size_t length )
+{
+    m_reader.push();
+    if ( !m_reader.seek( m_position, G_SEEK_SET ) ) {
+        m_reader.pop();
+        return 0;
+    }
+
+    size_t bytesRead = ( m_limit - m_position ) < length ? m_limit - m_position : length;
+    if ( !m_reader.read( buffer, bytesRead ) ) {
+        m_reader.pop();
+        return 0;
+    }
+    //have to update our position in the stream
+    unsigned int newpos = m_position + (unsigned int) bytesRead;
+    wvlog << "new position is " << newpos << std::endl;
+    if ( !updatePosition( newpos ) )
+        wvlog << "error updating position in stream" << std::endl;
+    m_reader.pop();
+    return bytesRead;
+}
+
+bool OLEImageReader::updatePosition( unsigned int position )
+{
+    if ( m_start <= position && position < m_limit ) {
+        m_position = position;
+        return true;
+    }
+    return false;
+}

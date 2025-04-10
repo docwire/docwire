@@ -123,8 +123,8 @@ namespace wvWare
         UString text() const;
         U8 followingChar() const;
 
-        void applyGrpprlPapx( Word97::PAP* pap ) const;
-        void applyGrpprlChpx( Word97::CHP* chp, const Style* style ) const;
+        void applyGrpprlPapx( Word97::PAP* pap, const StyleSheet* styleSheet ) const;
+        void applyGrpprlChpx( Word97::CHP* chp, const Style* style, const StyleSheet* styleSheet ) const;
 
     private:
         ListLevel( const ListLevel& rhs );
@@ -156,7 +156,7 @@ namespace wvWare
         void appendListLevel( ListLevel* listLevel );
         const ListLevel* listLevel( U8 level ) const;
 
-        void applyGrpprlPapx( Word97::PAP* pap ) const;
+        void applyGrpprlPapx( Word97::PAP* pap, const StyleSheet* styleSheet ) const;
 
     private:
         ListData( const ListData& rhs );
@@ -376,22 +376,22 @@ U8 ListLevel::followingChar() const
     return m_lvlf.ixchFollow;
 }
 
-void ListLevel::applyGrpprlPapx( Word97::PAP* pap ) const
+void ListLevel::applyGrpprlPapx( Word97::PAP* pap, const StyleSheet* styleSheet ) const
 {
 #ifdef WV2_DEBUG_LIST_PROCESSING
     wvlog << "      ListLevel::applyGrpprlPapx: cbGrpprlPapx=" << static_cast<int>( m_lvlf.cbGrpprlPapx ) << std::endl;
 #endif
     if ( m_grpprlPapx )
-        pap->apply( m_grpprlPapx, m_lvlf.cbGrpprlPapx, 0, 0, Word8 );
+        pap->apply( m_grpprlPapx, m_lvlf.cbGrpprlPapx, 0, styleSheet, 0, Word8 );
 }
 
-void ListLevel::applyGrpprlChpx( Word97::CHP* chp, const Style* style ) const
+void ListLevel::applyGrpprlChpx( Word97::CHP* chp, const Style* style, const StyleSheet* styleSheet ) const
 {
 #ifdef WV2_DEBUG_LIST_PROCESSING
     wvlog << "      ListLevel::applyGrpprlChpx: cbGrpprlChpx=" << static_cast<int>( m_lvlf.cbGrpprlChpx ) << std::endl;
 #endif
     if ( m_grpprlChpx )
-        chp->apply( m_grpprlChpx, m_lvlf.cbGrpprlChpx, style, 0, Word8 );
+        chp->apply( m_grpprlChpx, m_lvlf.cbGrpprlChpx, style, styleSheet, 0, Word8 );
 }
 
 int ListLevel::writeCharProperty( U16 sprm, U8 value, U8** grpprl )
@@ -470,7 +470,7 @@ const ListLevel* ListData::listLevel( U8 level ) const
     return 0;
 }
 
-void ListData::applyGrpprlPapx( Word97::PAP* pap ) const
+void ListData::applyGrpprlPapx( Word97::PAP* pap, const StyleSheet* styleSheet ) const
 {
 #ifdef WV2_DEBUG_LIST_PROCESSING
     wvlog << "   ListData::applyGrpprlPapx(): level=" << static_cast<int>( pap->ilvl ) << std::endl;
@@ -480,7 +480,7 @@ void ListData::applyGrpprlPapx( Word97::PAP* pap ) const
         return;
     ListLevel* lvl = m_listLevels[ pap->ilvl ];
     if ( lvl )
-        lvl->applyGrpprlPapx( pap );
+        lvl->applyGrpprlPapx( pap, styleSheet );
     else
         wvlog << "Bug: Didn't find the level " << pap->ilvl << " in the LSTF!" << std::endl;
 }
@@ -835,14 +835,14 @@ void ListInfoProvider::processOverride( ListFormatOverride* lfo )
         m_currentLfoLVL->dump();
 #endif
         if ( m_currentLfoLVL->overridesFormat() && m_currentLfoLVL->listLevel() ) {
-            m_currentLfoLVL->listLevel()->applyGrpprlPapx( m_pap );
+            m_currentLfoLVL->listLevel()->applyGrpprlPapx( m_pap, m_styleSheet );
             appliedPapx = true;
         }
     }
     m_currentLst = findLST( lfo->lsid() );
 
     if ( m_currentLst && !appliedPapx )
-        m_currentLst->applyGrpprlPapx( m_pap );
+        m_currentLst->applyGrpprlPapx( m_pap, m_styleSheet );
 }
 
 void ListInfoProvider::convertCompatANLD()
@@ -939,6 +939,6 @@ ListText ListInfoProvider::text() const
     else
         ret.chp = new Word97::CHP( style->chp() );
 
-    formattingListLevel()->applyGrpprlChpx( ret.chp, style );
+    formattingListLevel()->applyGrpprlChpx( ret.chp, style, m_styleSheet );
     return ret;
 }

@@ -22,6 +22,13 @@
 #include <iostream>
 #include <string>     // Make gcc 2.95.x happy
 
+// ...and work around gcc 2.95.x's STL problems (e.g. ostream isn't a template)
+#if defined(__GNUC__)
+#  if __GNUC__ < 3
+#    define WV2_OLD_STL_WORKAROUND 1
+#  endif
+#endif
+
 /**
  * @file A very primitve logging mechanism used to disable any
  * debug output for release builds. Use it like std::cerr, as it
@@ -33,7 +40,7 @@ namespace wvWare
     class wvdebugstream
     {
     public:
-#if defined(__GNUC__) && __GNUC__ < 3
+#ifdef WV2_OLD_STL_WORKAROUND
         const wvdebugstream& operator<<( ostream& (*__pf)( ostream& ) ) const { std::cerr << __pf; return *this; }
         const wvdebugstream& operator<<( ios (*__pf)( ios& ) ) const { std::cerr << __pf; return *this; }
 #else
@@ -52,7 +59,7 @@ namespace wvWare
         const wvdebugstream& operator<<( float f ) const { std::cerr << f; return *this; }
         const wvdebugstream& operator<<( long double d ) const { std::cerr << d; return *this; }
         const wvdebugstream& operator<<( const void* cv ) const { std::cerr << cv; return *this; }
-#if defined(__GNUC__) && __GNUC__ < 3
+#ifdef WV2_OLD_STL_WORKAROUND
         const wvdebugstream& operator<<( streambuf* s ) const { std::cerr << s; return *this; }
 #else
         const wvdebugstream& operator<<( std::basic_streambuf<char>* s ) const { std::cerr << s; return *this; }
@@ -67,7 +74,7 @@ namespace wvWare
     class wvnodebugstream
     {
     public:
-#if defined(__GNUC__) && __GNUC__ < 3
+#ifdef WV2_OLD_STL_WORKAROUND
         const wvnodebugstream& operator<<( ostream& (*__pf)( ostream& ) ) const { std::cerr << __pf; return *this; }
         const wvnodebugstream& operator<<( ios (*__pf)( ios& ) ) const { std::cerr << __pf; return *this; }
 #else
@@ -86,7 +93,7 @@ namespace wvWare
         const wvnodebugstream& operator<<( float ) const { return *this; }
         const wvnodebugstream& operator<<( long double ) const { return *this; }
         const wvnodebugstream& operator<<( const void* ) const { return *this; }
-#if defined(__GNUC__) && __GNUC__ < 3
+#ifdef WV2_OLD_STL_WORKAROUND
         const wvnodebugstream& operator<<( streambuf* ) const { return *this; }
 #else
         const wvnodebugstream& operator<<( std::basic_streambuf<char>* ) const { return *this; }

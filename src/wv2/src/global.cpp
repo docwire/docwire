@@ -22,8 +22,6 @@
 #include <config.h>
 #endif
 
-const char* const libwv2_version = "0.2.3";
-
 namespace wvWare {
 
 // Endianness fun

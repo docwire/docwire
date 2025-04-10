@@ -20,6 +20,7 @@
 #define GLOBAL_H
 
 #include "dllmagic.h"
+#include "wv2version.h"  // ###### WV2 0.3: Remove this #include
 
 /** @file
  * We use this typedefs to be compatible with the types from
@@ -48,8 +49,6 @@
 
 // This define should only be commented out for releases (if at all)
 #define WV2_CHECKING 1
-
-extern const char* const libwv2_version;
 
 namespace wvWare
 {

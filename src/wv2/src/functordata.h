@@ -91,9 +91,10 @@ namespace wvWare
      */
     struct PictureData
     {
-        PictureData( SharedPtr<const Word97::PICF> sharedPicf );
+        PictureData( unsigned int fc, SharedPtr<const Word97::PICF> sharedPicf );
         ~PictureData();
 
+        unsigned int fcPic;
         SharedPtr<const Word97::PICF> picf;
     };
 

@@ -4822,6 +4822,16 @@ struct METAFILEPICT {
      */
     void clear();
 
+    /**
+     * Dumps all fields of this structure (for debugging)
+     */
+    void dump() const;
+
+    /**
+     * Converts the data structure to a string (for debugging)
+     */
+    std::string toString() const;
+
     // Data
     /**
      * Specifies the mapping mode in which the picture is drawn.
@@ -5719,6 +5729,16 @@ struct PICF : public Shared {
      * Set all the fields to the inital value (default is 0)
      */
     void clear();
+
+    /**
+     * Dumps all fields of this structure (for debugging)
+     */
+    void dump() const;
+
+    /**
+     * Converts the data structure to a string (for debugging)
+     */
+    std::string toString() const;
 
     // Data
     /**

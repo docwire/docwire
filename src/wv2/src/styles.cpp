@@ -388,7 +388,7 @@ void Style::unwrapStyle( const StyleSheet& stylesheet, WordVersion version )
 #ifdef WV2_DEBUG_SPRMS
         wvlog << "############# Applying paragraph exceptions: " << cbUPX << std::endl;
 #endif
-        m_properties->pap().apply( data, cbUPX, parentStyle, 0, version );  // try without data stream for now
+        m_properties->pap().apply( data, cbUPX, parentStyle, &stylesheet, 0, version );  // try without data stream for now
         data += cbUPX;
 #ifdef WV2_DEBUG_SPRMS
         wvlog << "############# done" << std::endl;
@@ -400,7 +400,7 @@ void Style::unwrapStyle( const StyleSheet& stylesheet, WordVersion version )
 #ifdef WV2_DEBUG_SPRMS
         wvlog << "############# Applying character exceptions: " << cbUPX << std::endl;
 #endif
-        m_chp->apply( data, cbUPX, parentStyle, 0, version );  // try without data stream for now
+        m_chp->apply( data, cbUPX, parentStyle, &stylesheet, 0, version );  // try without data stream for now
 #ifdef WV2_DEBUG_SPRMS
         wvlog << "############# done" << std::endl;
 #endif
@@ -411,14 +411,24 @@ void Style::unwrapStyle( const StyleSheet& stylesheet, WordVersion version )
         if ( m_std->istdBase != 0x0fff ) {
             parentStyle = stylesheet.styleByIndex( m_std->istdBase );
             if ( parentStyle ) {
+                wvlog << "##### in here, parent style = " << parentStyle->sti() << std::endl;
                 const_cast<Style*>( parentStyle )->unwrapStyle( stylesheet, version );
                 bool ok;
                 m_upechpx->istd = stylesheet.indexByID( m_std->sti, ok );
+                wvlog << "our istd = " << m_upechpx->istd << " sti = " << m_std->sti << std::endl;
                 mergeUpechpx( parentStyle, version );
+
+                // Normally we don't need the full CHP, but sprms like sprmCFBold are nasty and
+                // need that information (sometimes).
+                m_chp = new Word97::CHP();
+                m_chp->apply( m_upechpx->grpprl, m_upechpx->cb, parentStyle, &stylesheet, 0, version );
+                wvlog << "-------> fStrike = " << static_cast<int>( m_chp->fStrike ) << std::endl;
             }
             else
                 wvlog << "################# NO parent style for this character style found" << std::endl;
         }
+        else
+            m_chp = new Word97::CHP(); // initialize stiNormalChar
     }
     else
         wvlog << "Warning: Unknown style type code detected" << std::endl;
@@ -467,7 +477,8 @@ const ParagraphProperties& Style::paragraphProperties() const
 const Word97::CHP& Style::chp() const
 {
     if ( !m_chp ) {
-        wvlog << "You requested the CHP of a character style? Hmm..." << std::endl;
+        wvlog << "You requested the CHP of an unknown style type? Hmm..." << std::endl;
+        wvlog << "sti == " << m_std->sti << std::endl;
         m_chp = new Word97::CHP(); // let's return a default CHP, better than crashing
     }
     return *m_chp;

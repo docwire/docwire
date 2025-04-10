@@ -19,6 +19,8 @@
 #ifndef HANDLERS_H
 #define HANDLERS_H
 
+#include <vector>
+
 #include "global.h"
 #include "sharedptr.h"
 #include "functordata.h"
@@ -32,6 +34,7 @@ namespace wvWare {
     typedef Functor<Parser9x, HeaderData> HeaderFunctor;
     typedef Functor<Parser9x, TableRowData> TableRowFunctor;
     typedef Functor<Parser9x, FootnoteData> FootnoteFunctor;
+    typedef Functor<Parser9x, PictureData> PictureFunctor;
 
     /**
      * This class allows to replace the character values of some
@@ -161,6 +164,66 @@ namespace wvWare {
          * This method is invoked every time we reach a cell end.
          */
         virtual void tableCellEnd();
+    };
+
+
+    class OLEImageReader;
+
+    /**
+     * The PictureHandler class is the interface for all image related
+     * callbacks. All the image data is passed to the consumer via this
+     * interface.
+     */
+    class WV2_DLLEXPORT PictureHandler
+    {
+    public:
+        /**
+         * A small helper struct to express the dimensions of the passed
+         * .wmf. A dimension of 0 indicates an invalid dimension.
+         */
+        // ###### FIXME: Do we really need that?
+        /*
+        struct WMFDimensions
+        {
+            WMFDimensions( const U8* rcWinMF )
+            {
+                left = readS16( rcWinMF );
+                top = readS16( rcWinMF + 2 );
+                width = readU16( rcWinMF + 4 );
+                height = readU16( rcWinMF + 6 );
+            }
+            S16 left;
+            S16 top;
+            U16 width;
+            U16 height;
+        };
+        */
+
+        virtual ~PictureHandler();
+
+        /**
+         * This method is called when you invoke a PictureFunctor and the embedded
+         * image is a bitmap. The bitmap data can be accessed using the OLEImageReader.
+         * Note: The reader will only be valid until you return form that method, and
+         * don't forget that you're directly accessing little-endian image data!
+         */
+        virtual void bitmapData( OLEImageReader& reader, SharedPtr<const Word97::PICF> picf );
+        /**
+         * This method is called when the image is escher data.
+         */
+        virtual void escherData( OLEImageReader& reader, SharedPtr<const Word97::PICF> picf, int type );
+        virtual void escherData( std::vector<U8> data, SharedPtr<const Word97::PICF> picf, int type );
+        /**
+         * This method is called when you invoke a PictureFunctor and the embedded
+         * image is a .wmf file. The data can be accessed using the OLEImageReader.
+         * Note: The reader will only be valid until you return form that method, and
+         * don't forget that you're directly accessing little-endian data!
+         */
+        virtual void wmfData( OLEImageReader& reader, SharedPtr<const Word97::PICF> picf );
+        /**
+         * Word allows to store .tif, .bmp, or .gif images externally.
+         */
+        virtual void externalImage( const UString& name, SharedPtr<const Word97::PICF> picf );
     };
 
 
@@ -307,6 +370,17 @@ namespace wvWare {
          * you can do some preprocessing on the whole table first.
          */
         virtual void tableRowFound( const TableRowFunctor& tableRow, SharedPtr<const Word97::TAP> tap );
+
+        /**
+         * This method is called every time we find a picture. The default
+         * implementation invokes the functor, which triggers the parsing
+         * process for the given picture.
+         * @param picf the picture properties. Those are the same as the
+         * ones you'll get when invoking the functor, but by having them here,
+         * you can do some preprocessing.
+         */
+        virtual void pictureFound( const PictureFunctor& picture, SharedPtr<const Word97::PICF> picf,
+                                   SharedPtr<const Word97::CHP> chp );
     };
 
 } // namespace wvWare

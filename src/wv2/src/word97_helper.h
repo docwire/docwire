@@ -34,7 +34,7 @@ namespace wvWare
 
     namespace Word97
     {
-        ParagraphProperties* initPAPFromStyle( const U8* exceptions, const StyleSheet* stylesheet, OLEStreamReader* dataStream, WordVersion version );
+        ParagraphProperties* initPAPFromStyle( const U8* exceptions, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version );
         Word97::TAP* initTAP( const U8* exceptions, OLEStreamReader* dataStream, WordVersion version );
 
         namespace SPRM

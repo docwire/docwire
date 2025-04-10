@@ -221,7 +221,7 @@ public:
      */
     const ParagraphProperties& paragraphProperties() const;
     /*
-     * For paragraph styles only
+     * For paragraph and character styles
      */
     const Word97::CHP& chp() const;
     /*

@@ -360,8 +360,9 @@ U16 determineParameterLength( U16 sprm, const U8* in, WordVersion version )
 // avoid duplicated code, so what ;)
 template<class T>
 void apply(T* const t,
-           S16 ( T::* applySPRM ) ( const U8*, const Style*, OLEStreamReader*, WordVersion ),
-           const U8* grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version )
+           S16 ( T::* applySPRM ) ( const U8*, const Style*, const StyleSheet*, OLEStreamReader*, WordVersion ),
+           const U8* grpprl, U16 count, const Style* style, const StyleSheet* styleSheet,
+           OLEStreamReader* dataStream, WordVersion version )
 {
     if ( !grpprl )
         return;
@@ -373,7 +374,7 @@ void apply(T* const t,
 
     // walk through the grpprl, applying one sprm after the other
     while ( safeCount > 1 ) {
-        S16 result = ( t->*applySPRM )( grpprl, style, dataStream, version );
+        S16 result = ( t->*applySPRM )( grpprl, style, styleSheet, dataStream, version );
         if ( result == -1 ) {
             U16 sprm;
             if ( version == Word8 ) {
@@ -492,15 +493,15 @@ U16 word6toWord8( U8 sprm )
 } // namespace SPRM
 
 
-ParagraphProperties* initPAPFromStyle( const U8* exceptions, const StyleSheet* stylesheet, OLEStreamReader* dataStream, WordVersion version )
+ParagraphProperties* initPAPFromStyle( const U8* exceptions, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version )
 {
     ParagraphProperties* properties = 0;
     if ( exceptions == 0 ) {
-        if ( !stylesheet ) {
+        if ( !styleSheet ) {
             wvlog << "Warning: Couldn't read from the stylesheet." << std::endl;
             return new ParagraphProperties();
         }
-        const Style* normal = stylesheet->styleByID( 0 );  // stiNormal == 0x0000
+        const Style* normal = styleSheet->styleByID( 0 );  // stiNormal == 0x0000
         if ( normal )
             properties = new ParagraphProperties( normal->paragraphProperties() );
         else
@@ -519,8 +520,8 @@ ParagraphProperties* initPAPFromStyle( const U8* exceptions, const StyleSheet* s
         exceptions += 2;
 
         const Style* style = 0;
-        if ( stylesheet ) {
-            style = stylesheet->styleByIndex( tmpIstd );
+        if ( styleSheet ) {
+            style = styleSheet->styleByIndex( tmpIstd );
             if ( style )
                 properties = new ParagraphProperties( style->paragraphProperties() );
             else {
@@ -538,7 +539,7 @@ ParagraphProperties* initPAPFromStyle( const U8* exceptions, const StyleSheet* s
         cb = cb < 0 ? 0 : cb;  // safety :-}
         // Note: The caller also has to override the PHE from this
         // PAP with the PHE stored in the BX
-        properties->pap().apply( exceptions, cb, style, dataStream, version );
+        properties->pap().apply( exceptions, cb, style, styleSheet, dataStream, version );
     }
     return properties;
 }
@@ -560,17 +561,18 @@ Word97::TAP* initTAP( const U8* exceptions, OLEStreamReader* dataStream, WordVer
 
     exceptions += 2; // skip the istd
     cb = cb < 0 ? 0 : cb;  // safety :-}
-    tap->apply( exceptions, cb, 0, dataStream, version ); // we don't need a style, do we?
+    tap->apply( exceptions, cb, 0, 0, dataStream, version ); // we don't need a style(sheet), do we?
 
     return tap;
 }
 
 
 // Apply a PAP grpprl of a given size ("count" bytes long)
-void PAP::apply( const U8* grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version )
+void PAP::apply( const U8* grpprl, U16 count, const Style* style, const StyleSheet* styleSheet,
+                 OLEStreamReader* dataStream, WordVersion version )
 {
     // A PAP grpprl might contain TAP sprms, we just skip them
-    SPRM::apply<PAP>( this, &PAP::applyPAPSPRM, grpprl, count, style, dataStream, version );
+    SPRM::apply<PAP>( this, &PAP::applyPAPSPRM, grpprl, count, style, styleSheet, dataStream, version );
 }
 
 // Helper methods for the more complex sprms
@@ -658,7 +660,7 @@ namespace
 
 // Returns -1 if this wasn't a PAP sprm and it returns the length
 // of the applied sprm if it was successful
-S16 PAP::applyPAPSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* dataStream, WordVersion version )
+S16 PAP::applyPAPSPRM( const U8* ptr, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version )
 {
     U16 sprmLength;
     const U16 sprm( getSPRM( &ptr, version, sprmLength ) );
@@ -967,7 +969,7 @@ S16 PAP::applyPAPSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* d
                 dataStream->read( grpprl, count );
                 dataStream->pop();
 
-                apply( grpprl, count, 0, dataStream, version );
+                apply( grpprl, count, style, styleSheet, dataStream, version );
                 delete [] grpprl;
             }
             else
@@ -1001,24 +1003,44 @@ S16 PAP::applyPAPSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* d
 }
 
 // Apply a CHP grpprl of a given size ("count" bytes long)
-void CHP::apply( const U8* grpprl, U16 count, const Style* paragraphStyle, OLEStreamReader* dataStream, WordVersion version )
+void CHP::apply( const U8* grpprl, U16 count, const Style* paragraphStyle, const StyleSheet* styleSheet,
+                 OLEStreamReader* dataStream, WordVersion version )
 {
     // There should be only CHP sprms in the grpprl we get
-    SPRM::apply<CHP>( this, &CHP::applyCHPSPRM, grpprl, count, paragraphStyle, dataStream, version );
+    SPRM::apply<CHP>( this, &CHP::applyCHPSPRM, grpprl, count, paragraphStyle, styleSheet, dataStream, version );
 }
 
-void CHP::applyExceptions( const U8* exceptions, const Style* paragraphStyle, OLEStreamReader* dataStream, WordVersion version )
+void CHP::applyExceptions( const U8* exceptions, const Style* paragraphStyle, const StyleSheet* styleSheet,
+                           OLEStreamReader* dataStream, WordVersion version )
 {
     if ( exceptions == 0 )
         return;
     U8 cb = *exceptions;
     ++exceptions;
-    apply( exceptions, cb, paragraphStyle, dataStream, version );
+    apply( exceptions, cb, paragraphStyle, styleSheet, dataStream, version );
+}
+
+// Helper functions for more complex sprms
+namespace
+{
+    const Word97::CHP* determineCHP( U16 istd, const Style* paragraphStyle, const StyleSheet* styleSheet )
+    {
+        const Word97::CHP* chp( 0 );
+        if ( istd == 10 && paragraphStyle )
+            chp = &paragraphStyle->chp();
+        else if ( istd != 10 && styleSheet ) {
+            const Style* style( styleSheet->styleByIndex( istd ) );
+            chp = style != 0 && style->type() == Style::sgcChp ? &style->chp() : 0;
+        }
+        else
+            wvlog << "Warning: sprmCFxyz couldn't find a style" << std::endl;
+        return chp;
+    }
 }
 
 // Returns -1 if this wasn't a CHP sprm and it returns the length
 // of the applied sprm if it was successful
-S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, OLEStreamReader* dataStream, WordVersion version )
+S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version )
 {
     U16 sprmLength;
     const U16 sprm( getSPRM( &ptr, version, sprmLength ) );
@@ -1096,8 +1118,24 @@ S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, OLEStreamRead
             fFtcAsciSym = *ptr == 1;
             break;
         case SPRM::sprmCIstd:
+        {
+            wvlog << "######################## old character style = " << istd << std::endl;
             istd = readS16( ptr );
+            if ( styleSheet ) {
+                wvlog << "Trying to change the character style to " << istd << std::endl;
+                const Style* style = styleSheet->styleByIndex( istd );
+                if ( style && style->type() == Style::sgcChp ) {
+                    wvlog << "got a character style!" << std::endl;
+                    const UPECHPX& upechpx( style->upechpx() );
+                    apply( upechpx.grpprl, upechpx.cb, paragraphStyle, styleSheet, dataStream, version );
+                }
+                else
+                    wvlog << "Warning: Couldn't find the character style with istd " << istd << std::endl;
+            }
+            else
+                wvlog << "Warning: Tried to change the character style, but the stylesheet was 0" << std::endl;
             break;
+        }
         case SPRM::sprmCIstdPermute:
         {
             const U8* myPtr = ptr + 3; // cch, fLongg, fSpare
@@ -1135,82 +1173,94 @@ S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, OLEStreamRead
         case SPRM::sprmCFBold:
             if ( *ptr < 128 )
                 fBold = *ptr == 1;
-            else if ( *ptr == 128 && paragraphStyle )
-                fBold = paragraphStyle->chp().fBold;
-            else if ( *ptr == 129 && paragraphStyle )
-                fBold = !( paragraphStyle->chp().fBold );
-            else
-                wvlog << "Warning: sprmCFBold couldn't find a style" << std::endl;
+            else {
+                const Word97::CHP* chp( determineCHP( istd, paragraphStyle, styleSheet ) );
+                if ( *ptr == 128 && chp )
+                    fBold = chp->fBold;
+                else if ( *ptr == 129 && chp )
+                    fBold = !chp->fBold;
+            }
             break;
         case SPRM::sprmCFItalic:
             if ( *ptr < 128 )
                 fItalic = *ptr == 1;
-            else if ( *ptr == 128 && paragraphStyle )
-                fItalic = paragraphStyle->chp().fItalic;
-            else if ( *ptr == 129 && paragraphStyle )
-                fItalic = !( paragraphStyle->chp().fItalic );
-            else
-                wvlog << "Warning: sprmCFItalic couldn't find a style" << std::endl;
+            else {
+                const Word97::CHP* chp( determineCHP( istd, paragraphStyle, styleSheet ) );
+                if ( *ptr == 128 && chp )
+                    fItalic = chp->fItalic;
+                else if ( *ptr == 129 && chp )
+                    fItalic = !chp->fItalic;
+            }
             break;
         case SPRM::sprmCFStrike:
+            wvlog << "sprmCFStrike -- fStrike = " << static_cast<int>( fStrike ) << " *ptr = " << static_cast<int>( *ptr ) << std::endl;
             if ( *ptr < 128 )
                 fStrike = *ptr == 1;
-            else if ( *ptr == 128 && paragraphStyle )
-                fStrike = paragraphStyle->chp().fStrike;
-            else if ( *ptr == 129 && paragraphStyle )
-                fStrike = !( paragraphStyle->chp().fStrike );
-            else
-                wvlog << "Warning: sprmCFStrike couldn't find a style" << std::endl;
+            else {
+                const Word97::CHP* chp( determineCHP( istd, paragraphStyle, styleSheet ) );
+                if ( chp )
+                    wvlog << "chp->fStrike = " << static_cast<int>( chp->fStrike ) << std::endl;
+                if ( *ptr == 128 && chp )
+                    fStrike = chp->fStrike;
+                else if ( *ptr == 129 && chp )
+                    fStrike = !chp->fStrike;
+            }
+            wvlog << "sprmCFStrike -- fStrike (changed) = " << static_cast<int>( fStrike ) << std::endl;
             break;
         case SPRM::sprmCFOutline:
             if ( *ptr < 128 )
                 fOutline = *ptr == 1;
-            else if ( *ptr == 128 && paragraphStyle )
-                fOutline = paragraphStyle->chp().fOutline;
-            else if ( *ptr == 129 && paragraphStyle )
-                fOutline = !( paragraphStyle->chp().fOutline );
-            else
-                wvlog << "Warning: sprmCFOutline couldn't find a style" << std::endl;
+            else {
+                const Word97::CHP* chp( determineCHP( istd, paragraphStyle, styleSheet ) );
+                if ( *ptr == 128 && chp )
+                    fOutline = chp->fOutline;
+                else if ( *ptr == 129 && chp )
+                    fOutline = !chp->fOutline;
+            }
             break;
         case SPRM::sprmCFShadow:
             if ( *ptr < 128 )
                 fShadow = *ptr == 1;
-            else if ( *ptr == 128 && paragraphStyle )
-                fShadow = paragraphStyle->chp().fShadow;
-            else if ( *ptr == 129 && paragraphStyle )
-                fShadow = !( paragraphStyle->chp().fShadow );
-            else
-                wvlog << "Warning: sprmCFShadow couldn't find a style" << std::endl;
+            else {
+                const Word97::CHP* chp( determineCHP( istd, paragraphStyle, styleSheet ) );
+                if ( *ptr == 128 && chp )
+                    fShadow = chp->fShadow;
+                else if ( *ptr == 129 && chp )
+                    fShadow = !chp->fShadow;
+            }
             break;
         case SPRM::sprmCFSmallCaps:
             if ( *ptr < 128 )
                 fSmallCaps = *ptr == 1;
-            else if ( *ptr == 128 && paragraphStyle )
-                fSmallCaps = paragraphStyle->chp().fSmallCaps;
-            else if ( *ptr == 129 && paragraphStyle )
-                fSmallCaps = !( paragraphStyle->chp().fSmallCaps );
-            else
-                wvlog << "Warning: sprmCFSmallCaps couldn't find a style" << std::endl;
+            else {
+                const Word97::CHP* chp( determineCHP( istd, paragraphStyle, styleSheet ) );
+                if ( *ptr == 128 && chp )
+                    fSmallCaps = chp->fSmallCaps;
+                else if ( *ptr == 129 && chp )
+                    fSmallCaps = !chp->fSmallCaps;
+            }
             break;
         case SPRM::sprmCFCaps:
             if ( *ptr < 128 )
                 fCaps = *ptr == 1;
-            else if ( *ptr == 128 && paragraphStyle )
-                fCaps = paragraphStyle->chp().fCaps;
-            else if ( *ptr == 129 && paragraphStyle )
-                fCaps = !( paragraphStyle->chp().fCaps );
-            else
-                wvlog << "Warning: sprmCFCaps couldn't find a style" << std::endl;
+            else {
+                const Word97::CHP* chp( determineCHP( istd, paragraphStyle, styleSheet ) );
+                if ( *ptr == 128 && chp )
+                    fCaps = chp->fCaps;
+                else if ( *ptr == 129 && chp )
+                    fCaps = !chp->fCaps;
+            }
             break;
         case SPRM::sprmCFVanish:
             if ( *ptr < 128 )
                 fVanish = *ptr == 1;
-            else if ( *ptr == 128 && paragraphStyle )
-                fVanish = paragraphStyle->chp().fVanish;
-            else if ( *ptr == 129 && paragraphStyle )
-                fVanish = !( paragraphStyle->chp().fVanish );
-            else
-                wvlog << "Warning: sprmCFVanish couldn't find a style" << std::endl;
+            else {
+                const Word97::CHP* chp( determineCHP( istd, paragraphStyle, styleSheet ) );
+                if ( *ptr == 128 && chp )
+                    fVanish = chp->fVanish;
+                else if ( *ptr == 129 && chp )
+                    fVanish = !chp->fVanish;
+            }
             break;
         case SPRM::sprmCFtcDefault:
             // We are abusing this SPRM for Word 6 purposes (sprmCFtc, 93)
@@ -1254,7 +1304,7 @@ S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, OLEStreamRead
         {
             CHP tmpChp;
             tmpChp.ftc = 4; // the rest is default, looks a bit strange
-            tmpChp.apply( ptr + 1, *ptr, paragraphStyle, dataStream, version );
+            tmpChp.apply( ptr + 1, *ptr, paragraphStyle, styleSheet, dataStream, version );
             if ( paragraphStyle ) {
                 const CHP& pstyle( paragraphStyle->chp() );
                 if ( tmpChp.fBold == fBold )
@@ -1459,10 +1509,11 @@ S16 CHP::applyCHPSPRM( const U8* ptr, const Style* paragraphStyle, OLEStreamRead
 
 
 // Apply a PICF grpprl of a given size ("count" bytes long)
-void PICF::apply( const U8* grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version )
+void PICF::apply( const U8* grpprl, U16 count, const Style* style, const StyleSheet* styleSheet,
+                  OLEStreamReader* dataStream, WordVersion version )
 {
     // There should be only PICF sprms in the grpprl we get
-    SPRM::apply<PICF>( this, &PICF::applyPICFSPRM, grpprl, count, style, dataStream, version );
+    SPRM::apply<PICF>( this, &PICF::applyPICFSPRM, grpprl, count, style, styleSheet, dataStream, version );
 }
 
 void PICF::applyExceptions(const U8* /*exceptions*/, const StyleSheet* /*stylesheet*/, OLEStreamReader* /*dataStream*/, WordVersion /*version*/ )
@@ -1472,7 +1523,8 @@ void PICF::applyExceptions(const U8* /*exceptions*/, const StyleSheet* /*stylesh
 
 // Returns -1 if this wasn't a PICF sprm and it returns the length
 // of the applied sprm if it was successful
-S16 PICF::applyPICFSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* /*dataStream*/, WordVersion version )
+S16 PICF::applyPICFSPRM( const U8* ptr, const Style* /*style*/, const StyleSheet* /*styleSheet*/,
+                         OLEStreamReader* /*dataStream*/, WordVersion version )
 {
     U16 sprmLength;
     const U16 sprm( getSPRM( &ptr, version, sprmLength ) );
@@ -1522,24 +1574,25 @@ S16 PICF::applyPICFSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader*
 
 
 // Apply a SEP grpprl of a given size ("count" bytes long)
-void SEP::apply( const U8* grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version )
+void SEP::apply( const U8* grpprl, U16 count, const Style* style, const StyleSheet* styleSheet,
+                 OLEStreamReader* dataStream, WordVersion version )
 {
     // There should be only SEP sprms in the grpprl we get
-    SPRM::apply<SEP>( this, &SEP::applySEPSPRM, grpprl, count, style, dataStream, version );
+    SPRM::apply<SEP>( this, &SEP::applySEPSPRM, grpprl, count, style, styleSheet, dataStream, version );
 }
 
-void SEP::applyExceptions( const U8* exceptions, const StyleSheet* /*stylesheet*/, OLEStreamReader* dataStream, WordVersion version )
+void SEP::applyExceptions( const U8* exceptions, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version )
 {
     if ( exceptions == 0 )
         return;
     U16 cb = readU16( exceptions );
     exceptions += 2;
-    apply( exceptions, cb, 0, dataStream, version );
+    apply( exceptions, cb, 0, styleSheet, dataStream, version );
 }
 
 // Returns -1 if this wasn't a SEP sprm and it returns the length
 // of the applied sprm if it was successful
-S16 SEP::applySEPSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* /*dataStream*/, WordVersion version )
+S16 SEP::applySEPSPRM( const U8* ptr, const Style* /*style*/, const StyleSheet* /*styleSheet*/, OLEStreamReader* /*dataStream*/, WordVersion version )
 {
     U16 sprmLength;
     const U16 sprm( getSPRM( &ptr, version, sprmLength ) );
@@ -1734,11 +1787,12 @@ S16 SEP::applySEPSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* /
 
 // Apply a TAP grpprl (or at least the TAP properties of a PAP/TAP grpprl)
 // of a given size ("count" bytes long)
-void TAP::apply( const U8* grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version )
+void TAP::apply( const U8* grpprl, U16 count, const Style* style, const StyleSheet* styleSheet,
+                 OLEStreamReader* dataStream, WordVersion version )
 {
     // There should be mostly TAP sprms in the grpprl we get, and we
     // have to ignore the remaining PAP sprms, just what the template does
-    SPRM::apply<TAP>( this, &TAP::applyTAPSPRM, grpprl, count, style, dataStream, version );
+    SPRM::apply<TAP>( this, &TAP::applyTAPSPRM, grpprl, count, style, styleSheet, dataStream, version );
 }
 
 void TAP::applyExceptions( const U8* /*exceptions*/, const StyleSheet* /*stylesheet*/, OLEStreamReader* /*dataStream*/, WordVersion /*version*/ )
@@ -1763,7 +1817,7 @@ namespace
 
 // Returns -1 if this wasn't a TAP sprm and it returns the length
 // of the applied sprm if it was successful
-S16 TAP::applyTAPSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* dataStream, WordVersion version )
+S16 TAP::applyTAPSPRM( const U8* ptr, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version )
 {
     U16 sprmLength;
     const U16 sprm( getSPRM( &ptr, version, sprmLength ) );
@@ -2121,7 +2175,7 @@ S16 TAP::applyTAPSPRM( const U8* ptr, const Style* /*style*/, OLEStreamReader* d
                 dataStream->read( grpprl, count );
                 dataStream->pop();
 
-                apply( grpprl, count, 0, dataStream, version );
+                apply( grpprl, count, style, styleSheet, dataStream, version );
                 delete [] grpprl;
             }
             else

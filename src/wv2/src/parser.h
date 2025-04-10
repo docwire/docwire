@@ -42,6 +42,7 @@ struct STTBF;
 class InlineReplacementHandler;
 class SubDocumentHandler;
 class TableHandler;
+class PictureHandler;
 class TextHandler;
 class OLEStorage;
 class OLEStreamReader;
@@ -119,6 +120,11 @@ public:
      */
     void setTableHandler( TableHandler* handler );
     /**
+     * The picture handler passes the image/drawing data to the consumer.
+     * We don't take ownership of the handler!
+     */
+    void setPictureHandler( PictureHandler* handler );
+    /**
      * The text handler is the main worker among all handlers. It's used to forward
      * the formatted text to the document, make sure that it's fast.
      * We don't take ownership of the handler!
@@ -133,10 +139,12 @@ protected:
     InlineReplacementHandler* m_inlineHandler;
     SubDocumentHandler* m_subDocumentHandler;
     TableHandler* m_tableHandler;
+    PictureHandler* m_pictureHandler;
     TextHandler* m_textHandler;
     bool m_ourInlineHandler;
     bool m_ourSubDocumentHandler;
     bool m_ourTableHandler;
+    bool m_ourPictureHandler;
     bool m_ourTextHandler;
 
     OLEStorage* m_storage;           // The storage representing the file
@@ -147,6 +155,15 @@ protected:
 private:
     Parser( const Parser& rhs );
     Parser& operator=( const Parser& rhs );
+
+    template<typename Handler> void setHandler( Handler* newHandler, Handler** handler, bool& ourHandler )
+    {
+        if ( ourHandler ) {
+            ourHandler = false;
+            delete *handler;
+        }
+        *handler = newHandler;
+    }
 };
 
 } // namespace wvWare

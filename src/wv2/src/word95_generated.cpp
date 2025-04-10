@@ -4165,6 +4165,28 @@ void METAFILEPICT::clear() {
     hMF=0;
 }
 
+void METAFILEPICT::dump() const
+{
+    wvlog << "Dumping METAFILEPICT:" << std::endl;
+    wvlog << toString().c_str() << std::endl;
+    wvlog << "\nDumping METAFILEPICT done." << std::endl;
+}
+
+std::string METAFILEPICT::toString() const
+{
+    std::string s( "METAFILEPICT:" );
+    s += "\nmm=";
+    s += uint2string( mm );
+    s += "\nxExt=";
+    s += uint2string( xExt );
+    s += "\nyExt=";
+    s += uint2string( yExt );
+    s += "\nhMF=";
+    s += uint2string( hMF );
+    s += "\nMETAFILEPICT Done.";
+    return s;
+}
+
 bool operator==(const METAFILEPICT &lhs, const METAFILEPICT &rhs) {
 
     return lhs.mm==rhs.mm &&
@@ -5070,6 +5092,70 @@ void PICF::clear() {
     brcRight.clear();
     dxaOrigin=0;
     dyaOrigin=0;
+}
+
+void PICF::dump() const
+{
+    wvlog << "Dumping PICF:" << std::endl;
+    wvlog << toString().c_str() << std::endl;
+    wvlog << "\nDumping PICF done." << std::endl;
+}
+
+std::string PICF::toString() const
+{
+    std::string s( "PICF:" );
+    s += "\nlcb=";
+    s += uint2string( lcb );
+    s += "\ncbHeader=";
+    s += uint2string( cbHeader );
+    s += "\nmfp=";
+    s += "\n{" + mfp.toString() + "}\n";
+    for(int _i=0; _i<(14); ++_i) {
+        s += "\nbm_rcWinMF[" + int2string( _i ) + "]=";
+    s += uint2string( bm_rcWinMF[_i] );
+    }
+    s += "\ndxaGoal=";
+    s += uint2string( dxaGoal );
+    s += "\ndyaGoal=";
+    s += uint2string( dyaGoal );
+    s += "\nmx=";
+    s += uint2string( mx );
+    s += "\nmy=";
+    s += uint2string( my );
+    s += "\ndxaCropLeft=";
+    s += uint2string( dxaCropLeft );
+    s += "\ndyaCropTop=";
+    s += uint2string( dyaCropTop );
+    s += "\ndxaCropRight=";
+    s += uint2string( dxaCropRight );
+    s += "\ndyaCropBottom=";
+    s += uint2string( dyaCropBottom );
+    s += "\nbrcl=";
+    s += uint2string( brcl );
+    s += "\nfFrameEmpty=";
+    s += uint2string( fFrameEmpty );
+    s += "\nfBitmap=";
+    s += uint2string( fBitmap );
+    s += "\nfDrawHatch=";
+    s += uint2string( fDrawHatch );
+    s += "\nfError=";
+    s += uint2string( fError );
+    s += "\nbpp=";
+    s += uint2string( bpp );
+    s += "\nbrcTop=";
+    s += "\n{" + brcTop.toString() + "}\n";
+    s += "\nbrcLeft=";
+    s += "\n{" + brcLeft.toString() + "}\n";
+    s += "\nbrcBottom=";
+    s += "\n{" + brcBottom.toString() + "}\n";
+    s += "\nbrcRight=";
+    s += "\n{" + brcRight.toString() + "}\n";
+    s += "\ndxaOrigin=";
+    s += uint2string( dxaOrigin );
+    s += "\ndyaOrigin=";
+    s += uint2string( dyaOrigin );
+    s += "\nPICF Done.";
+    return s;
 }
 
 bool operator==(const PICF &lhs, const PICF &rhs) {

@@ -91,12 +91,14 @@ namespace wvWare
     class Fields;
     class Headers;
     class Footnotes97;
+    class Drawings;
     template<class T> class PLCF;
 
     // Helper structures for the Functor-based approach
     struct HeaderData;
     struct FootnoteData;
     struct TableRowData;
+    struct PictureData;
 
     /**
      * This class should contain all the common functionality shared
@@ -141,6 +143,7 @@ namespace wvWare
         void parseHeaders( const HeaderData& data );
         void parseFootnote( const FootnoteData& data );
         void parseTableRow( const TableRowData& data );
+        void parsePicture( const PictureData& data );
 
         std::string tableStream() const;
     protected:
@@ -232,6 +235,12 @@ namespace wvWare
 
         void parseHeader( const HeaderData& data, unsigned char mask );
 
+        void parsePictureEscher( const PictureData& data, OLEStreamReader* stream,
+                int totalPicfSize, int picfStartPos );
+        void parsePictureExternalHelper( const PictureData& data, OLEStreamReader* stream );
+        void parsePictureBitmapHelper( const PictureData& data, OLEStreamReader* stream );
+        void parsePictureWmfHelper( const PictureData& data, OLEStreamReader* stream );
+
         void saveState( U32 newRemainingChars, SubDocument newSubDocument, ParsingMode newParsingMode = Default );
         void restoreState();
 
@@ -251,6 +260,7 @@ namespace wvWare
         Fields* m_fields;
         Footnotes97* m_footnotes;
         FontCollection* m_fonts;
+        Drawings* m_drawings;
 
         PLCF<Word97::PCD>* m_plcfpcd;     // piece table
 

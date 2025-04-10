@@ -1162,21 +1162,21 @@ struct TAP : public Shared {
     /**
      * This method applies a grpprl with @param count elements
      */
-    void apply(const U8 *grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version);
+    void apply(const U8 *grpprl, U16 count, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * This method applies a whole TAPX to the structure.
      * The reason that we only pass a pointer to the start of the exception
      * structure is, that we don't know the type in the FKP template :}
      */
-    void applyExceptions(const U8 *exceptions, const StyleSheet *stylesheet, OLEStreamReader* dataStream, WordVersion version);
+    void applyExceptions(const U8 *exceptions, const StyleSheet *styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * This method applies one single SPRM. It returns -1 if it wasn't
      * a TAP SPRM and it returns the length of the applied SPRM
      * if it was successful.
      */
-    S16 applyTAPSPRM(const U8 *ptr, const Style* style, OLEStreamReader* dataStream, WordVersion version);
+    S16 applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * Dumps all fields of this structure (for debugging)
@@ -2025,13 +2025,16 @@ struct BKD {
      */
     void clear();
 
+    // Size of the structure
+    static const unsigned int sizeOf;
+
     // Data
     /**
      * except in textbox BKD, index to <b>PGD</b> in <b>plfpgd</b> that describes
-     * the page this break is on. Note: different behavior in textboxes! Check
-     * Version 1.9 or earlier for the "original" version (werner)
+     * the page this break is on. in textbox BKD, <br/>
+     * Note: different behavior in textboxes! Check Version 1.9 or earlier for the "original" version (Werner)
      */
-    S16 ipgd;
+    S16 ipgd_itxbxs;
 
     /**
      * number of cp's considered for this break; note that the CP's described
@@ -2314,21 +2317,21 @@ struct CHP : public Shared {
     /**
      * This method applies a grpprl with @param count elements
      */
-    void apply(const U8 *grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version);
+    void apply(const U8 *grpprl, U16 count, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * This method applies a whole CHPX to the structure.
      * The reason that we only pass a pointer to the start of the exception
      * structure is, that we don't know the type in the FKP template :}
      */
-    void applyExceptions(const U8* exceptions, const Style* paragraphStyle, OLEStreamReader* dataStream, WordVersion version);
+    void applyExceptions(const U8* exceptions, const Style* paragraphStyle, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * This method applies one single SPRM. It returns -1 if it wasn't
      * a CHP SPRM and it returns the length of the applied SPRM
      * if it was successful.
      */
-    S16 applyCHPSPRM(const U8 *ptr, const Style* style, OLEStreamReader* dataStream, WordVersion version);
+    S16 applyCHPSPRM(const U8* ptr, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * Dumps all fields of this structure (for debugging)
@@ -5544,6 +5547,9 @@ struct FSPA {
      */
     void clear();
 
+    // Size of the structure
+    static const unsigned int sizeOf;
+
     // Data
     /**
      * Shape Identifier. Used in conjunction with the office art data (found
@@ -5676,17 +5682,15 @@ struct FTXBXS {
      */
     void clear();
 
+    // Size of the structure
+    static const unsigned int sizeOf;
+
     // Data
     /**
-     * when not fReusable, counts the number of textboxes in this story chain
+     * when not fReusable, counts the number of textboxes in this story chain. when
+     * fReusable, the index of the next in the linked list of reusable FTXBXSs
      */
-    S32 cTxbx;
-
-    /**
-     * when fReusable, the index of the next in the linked list of reusable
-     * FTXBXSs
-     */
-    S32 iNextReuse;
+    S32 cTxbx_iNextReuse;
 
     /**
      * if fReusable, counts the number of reusable FTXBXSs follow this one
@@ -6120,6 +6124,16 @@ struct METAFILEPICT {
      */
     void clear();
 
+    /**
+     * Dumps all fields of this structure (for debugging)
+     */
+    void dump() const;
+
+    /**
+     * Converts the data structure to a string (for debugging)
+     */
+    std::string toString() const;
+
     // Data
     /**
      * Specifies the mapping mode in which the picture is drawn.
@@ -6422,21 +6436,21 @@ struct WV2_DLLEXPORT PAP : public Shared {
     /**
      * This method applies a grpprl with @param count elements
      */
-    void apply(const U8 *grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version);
+    void apply(const U8 *grpprl, U16 count, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * This method applies a whole PAPX to the structure.
      * The reason that we only pass a pointer to the start of the exception
      * structure is, that we don't know the type in the FKP template :}
      */
-    void applyExceptions(const U8 *exceptions, const StyleSheet *stylesheet, OLEStreamReader* dataStream, WordVersion version);
+    void applyExceptions(const U8 *exceptions, const StyleSheet *styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * This method applies one single SPRM. It returns -1 if it wasn't
      * a PAP SPRM and it returns the length of the applied SPRM
      * if it was successful.
      */
-    S16 applyPAPSPRM(const U8 *ptr, const Style* style, OLEStreamReader* dataStream, WordVersion version);
+    S16 applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * Dumps all fields of this structure (for debugging)
@@ -7303,21 +7317,31 @@ struct PICF : public Shared {
     /**
      * This method applies a grpprl with @param count elements
      */
-    void apply(const U8 *grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version);
+    void apply(const U8 *grpprl, U16 count, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * This method applies a whole PICFX to the structure.
      * The reason that we only pass a pointer to the start of the exception
      * structure is, that we don't know the type in the FKP template :}
      */
-    void applyExceptions(const U8 *exceptions, const StyleSheet *stylesheet, OLEStreamReader* dataStream, WordVersion version);
+    void applyExceptions(const U8 *exceptions, const StyleSheet *styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * This method applies one single SPRM. It returns -1 if it wasn't
      * a PICF SPRM and it returns the length of the applied SPRM
      * if it was successful.
      */
-    S16 applyPICFSPRM(const U8 *ptr, const Style* style, OLEStreamReader* dataStream, WordVersion version);
+    S16 applyPICFSPRM(const U8* ptr, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version);
+
+    /**
+     * Dumps all fields of this structure (for debugging)
+     */
+    void dump() const;
+
+    /**
+     * Converts the data structure to a string (for debugging)
+     */
+    std::string toString() const;
 
     // Data
     /**
@@ -7756,21 +7780,21 @@ struct SEP : public Shared {
     /**
      * This method applies a grpprl with @param count elements
      */
-    void apply(const U8 *grpprl, U16 count, const Style* style, OLEStreamReader* dataStream, WordVersion version);
+    void apply(const U8 *grpprl, U16 count, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * This method applies a whole SEPX to the structure.
      * The reason that we only pass a pointer to the start of the exception
      * structure is, that we don't know the type in the FKP template :}
      */
-    void applyExceptions(const U8 *exceptions, const StyleSheet *stylesheet, OLEStreamReader* dataStream, WordVersion version);
+    void applyExceptions(const U8 *exceptions, const StyleSheet *styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * This method applies one single SPRM. It returns -1 if it wasn't
      * a SEP SPRM and it returns the length of the applied SPRM
      * if it was successful.
      */
-    S16 applySEPSPRM(const U8 *ptr, const Style* style, OLEStreamReader* dataStream, WordVersion version);
+    S16 applySEPSPRM(const U8* ptr, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version);
 
     /**
      * Dumps all fields of this structure (for debugging)

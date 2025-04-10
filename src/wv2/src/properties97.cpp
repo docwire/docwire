@@ -157,7 +157,7 @@ SharedPtr<const Word97::SEP> Properties97::sepForCP( U32 cp ) const
         U8* grpprl = new U8[ count ];
         m_wordDocument->read( grpprl, count );
 
-        sep->apply( grpprl, count, 0, 0, m_version );
+        sep->apply( grpprl, count, 0, m_stylesheet, 0, m_version );
 
         delete [] grpprl;
         m_wordDocument->pop();
@@ -271,14 +271,12 @@ void Properties97::applyClxGrpprl( const Word97::PCD* pcd, U32 fcClx, Word97::TA
 U32 Properties97::fullSavedChp( const U32 fc, Word97::CHP* chp, const Style* paragraphStyle )
 {
     // Before we start with the plain FKP algorithm like above we have to apply any
-    // CHPX found in the style entry for the CHP, unless it's istdNormalChar
-    U16 oldIstd = chp->istd; // remember the old istd, see below
+    // CHPX found in the style entry for the CHP, unless it's istdNormalChar (10)
     if ( chp->istd != 10 ) {
-        wvlog << "Applying a character style" << std::endl;
         const Style* style = m_stylesheet->styleByIndex( chp->istd );
         if ( style && style->type() == Style::sgcChp ) {
             const UPECHPX& upechpx( style->upechpx() );
-            chp->apply( upechpx.grpprl, upechpx.cb, paragraphStyle, 0, m_version );
+            chp->apply( upechpx.grpprl, upechpx.cb, paragraphStyle, m_stylesheet, 0, m_version );
         }
         else
             wvlog << "Couldn't find the character style with istd " << chp->istd << std::endl;
@@ -317,22 +315,7 @@ U32 Properties97::fullSavedChp( const U32 fc, Word97::CHP* chp, const Style* par
         ++fkpit;
 
     // Step 5: Now that we are at the correct place let's apply the CHPX grpprl
-    chp->applyExceptions( fkpit.current(), paragraphStyle, 0, m_version );
-
-    // In case the applied exceptions changed the istd it seems we have to apply
-    // the new character style. The footnote handling indicates that this is right,
-    // but the specification doesn't talk about that. I'm not sure if the character
-    // style mess from above is need at all, but this simple if() doesn't hurt (Werner)
-    if ( chp->istd != oldIstd && chp->istd != 10 ) {
-        //wvlog << "Applying a character style (after applying the FKP sprms)" << std::endl;
-        const Style* style = m_stylesheet->styleByIndex( chp->istd );
-        if ( style && style->type() == Style::sgcChp ) {
-            const UPECHPX& upechpx( style->upechpx() );
-            chp->apply( upechpx.grpprl, upechpx.cb, paragraphStyle, 0, m_version );
-        }
-        else
-            wvlog << "Couldn't find the character style with istd " << chp->istd << std::endl;
-    }
+    chp->applyExceptions( fkpit.current(), paragraphStyle, m_stylesheet, 0, m_version );
     return fkpit.currentLim() - fc;
 }
 
@@ -369,7 +352,7 @@ void Properties97::applyClxGrpprlImpl( const Word97::PCD* pcd, U32 fcClx, P* pro
             //wvlog << "Found the right clxtGrpprl (size=" << size << ")" << std::endl;
             U8 *grpprl = new U8[ size ];
             m_table->read( grpprl, size );
-            properties->apply( grpprl, size, style, 0, m_version ); // dataStream shouldn't be necessary in a clx
+            properties->apply( grpprl, size, style, m_stylesheet, 0, m_version ); // dataStream shouldn't be necessary in a clx
             delete [] grpprl;
         }
         m_table->pop();
@@ -383,7 +366,7 @@ void Properties97::applyClxGrpprlImpl( const Word97::PCD* pcd, U32 fcClx, P* pro
             grpprl[ 0 ] = static_cast<U8>( sprm & 0x00ff );
             grpprl[ 1 ] = static_cast<U8>( ( sprm & 0xff00 ) >> 8 );
             grpprl[ 2 ] = pcd->prm.val;
-            properties->apply( grpprl, 3, style, 0, Word8 ); // dataStream shouldn't be necessary in a clx
+            properties->apply( grpprl, 3, style, m_stylesheet, 0, Word8 ); // dataStream shouldn't be necessary in a clx
         }
     }
 }

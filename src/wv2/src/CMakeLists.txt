@@ -38,6 +38,8 @@ SET( wv2_SOURCES
 	utilities.cpp 
 	crc32.c 
 	wvlog.cpp 
+	graphics.cpp
+	zcodec.cxx
     )
 
 SET( wv2_HEADERS

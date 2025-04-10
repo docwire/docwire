@@ -1,5 +1,6 @@
 /* This file is part of the wvWare 2 project
-   Copyright (C) 2002-2003 Werner Trobin <trobin@kde.org>
+   Copyright (C) 2003 KOffice Team
+   Copyright (C) 2003 Werner Trobin <trobin@kde.org>
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -16,28 +17,29 @@
    Boston, MA 02111-1307, USA.
 */
 
-#include "functordata.h"
-#include "word97_generated.h"
+#include "wv2version.h"
 
-using namespace wvWare;
-
-
-TableRowData::TableRowData( unsigned int sp, unsigned int so, unsigned int len,
-                            int subDoc, SharedPtr<const Word97::TAP> sharedTap ) :
-    startPiece( sp ), startOffset( so ), length( len ), subDocument( subDoc ), tap( sharedTap )
+unsigned int wvWare::version()
 {
+    return WV2_VERSION;
 }
 
-TableRowData::~TableRowData()
+unsigned int wvWare::versionMajor()
 {
+    return WV2_VERSION_MAJOR;
 }
 
-
-PictureData::PictureData( U32 fc, SharedPtr<const Word97::PICF> sharedPicf ) :
-    fcPic( fc ), picf( sharedPicf )
+unsigned int wvWare::versionMinor()
 {
+    return WV2_VERSION_MINOR;
 }
 
-PictureData::~PictureData()
+unsigned int wvWare::versionRelease()
 {
+    return WV2_VERSION_RELEASE;
+}
+
+const char *wvWare::versionString()
+{
+    return WV2_VERSION_STRING;
 }
