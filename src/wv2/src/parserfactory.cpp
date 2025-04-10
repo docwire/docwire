@@ -43,7 +43,7 @@ namespace
             std::cerr << "That doesn't seem to be a Word document." << std::endl;
     }
 
-	SharedPtr<Parser> setupParser( AbstractOLEStorage* storage )
+    SharedPtr<Parser> setupParser( OLEStorage* storage )
     {
         // Is it called WordDocument in all versions?
         OLEStreamReader* wordDocument = storage->createStreamReader( "WordDocument" );
@@ -88,9 +88,9 @@ namespace
     }
 }
 
-SharedPtr<Parser> ParserFactory::createParser( AbstractOLEStorage* storage )
+SharedPtr<Parser> ParserFactory::createParser( OLEStorage* storage )
 {
-    if ( !storage->open( AbstractOLEStorage::ReadOnly ) || !storage->isValid() )
+    if ( !storage->open( OLEStorage::ReadOnly ) || !storage->isValid() )
     {
         unsigned char buffer[4];
         if (!storage->readDirectFromBuffer(buffer, 4, 0))

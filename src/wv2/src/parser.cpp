@@ -22,7 +22,7 @@
 
 using namespace wvWare;
 
-Parser::Parser( AbstractOLEStorage* storage, OLEStreamReader* wordDocument ) :
+Parser::Parser( OLEStorage* storage, OLEStreamReader* wordDocument ) :
     m_inlineHandler( new InlineReplacementHandler ), m_subDocumentHandler( new SubDocumentHandler ),
     m_tableHandler( new TableHandler ), m_textHandler( new TextHandler ),
     m_ourInlineHandler( true ), m_ourSubDocumentHandler( true ), m_ourTableHandler( true ),

@@ -25,7 +25,7 @@
 
 using namespace wvWare;
 
-OLEStream::OLEStream( AbstractOLEStorage* storage ) : m_storage( storage )
+OLEStream::OLEStream( OLEStorage* storage ) : m_storage( storage )
 {
 }
 
@@ -49,5 +49,5 @@ bool OLEStream::pop()
     return true;
 }
 
-OLEStreamReader::OLEStreamReader(AbstractOLEStorage* storage) : OLEStream(storage){}
+OLEStreamReader::OLEStreamReader(OLEStorage* storage) : OLEStream(storage){}
 OLEStreamReader::~OLEStreamReader(){}

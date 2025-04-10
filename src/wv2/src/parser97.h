@@ -30,7 +30,7 @@ namespace wvWare
 class Parser97 : public Parser9x
 {
 public:
-    Parser97( AbstractOLEStorage* storage, OLEStreamReader* wordDocument );
+    Parser97( OLEStorage* storage, OLEStreamReader* wordDocument );
     virtual ~Parser97();
 
 private:

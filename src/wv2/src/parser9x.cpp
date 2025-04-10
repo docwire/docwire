@@ -54,7 +54,7 @@ Parser9x::Position::Position( U32 cp, const PLCF<Word97::PCD>* plcfpcd ) :
 }
 
 
-Parser9x::Parser9x( AbstractOLEStorage* storage, OLEStreamReader* wordDocument, const Word97::FIB& fib ) :
+Parser9x::Parser9x( OLEStorage* storage, OLEStreamReader* wordDocument, const Word97::FIB& fib ) :
     Parser( storage, wordDocument ), m_fib( fib ), m_table( 0 ), m_data( 0 ), m_properties( 0 ),
     m_headers( 0 ), m_lists( 0 ), m_textconverter( 0 ), m_fields( 0 ), m_footnotes( 0 ),
     m_fonts( 0 ), m_plcfpcd( 0 ), m_tableRowStart( 0 ), m_tableRowLength( 0 ),

@@ -26,7 +26,7 @@ namespace wvWare
 {
 
 class Parser;
-class AbstractOLEStorage;
+class OLEStorage;
 
 class WV2_DLLEXPORT ParserFactory
 {
@@ -39,7 +39,7 @@ public:
      * This method will return 0 if it wasn't successful (e.g unknown
      * version, corrupted file,...).
      */
-	static SharedPtr<Parser> createParser(AbstractOLEStorage *storage );
+    static SharedPtr<Parser> createParser(OLEStorage *storage );
     /**
      * This method opens a storage on a buffer in memory, determines the nFib,
      * and creates a proper parser for it.
@@ -48,7 +48,7 @@ public:
      * This method will return 0 if it wasn't successful (e.g unknown
      * version, corrupted file,...).
      */
-    //static SharedPtr<Parser> createParserFromBuffer( AbstractOLEStorage *storage );
+    //static SharedPtr<Parser> createParserFromBuffer( OLEStorage *storage );
 };
 
 } // namespace wvWare

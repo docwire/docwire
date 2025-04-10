@@ -23,7 +23,7 @@
 
 using namespace wvWare;
 
-Parser95::Parser95( AbstractOLEStorage* storage, OLEStreamReader* wordDocument ) :
+Parser95::Parser95( OLEStorage* storage, OLEStreamReader* wordDocument ) :
     Parser9x( storage, wordDocument, Word95::toWord97( Word95::FIB( wordDocument, true ) ) )
 {
     if ( !isOk() )

@@ -25,7 +25,7 @@ namespace docwire
 class ThreadSafeOLEStreamReader;
 using namespace wvWare;
 
-class DOCWIRE_CORE_EXPORT ThreadSafeOLEStorage : public AbstractOLEStorage, public with_pimpl<ThreadSafeOLEStorage>
+class DOCWIRE_CORE_EXPORT ThreadSafeOLEStorage : public OLEStorage, public with_pimpl<ThreadSafeOLEStorage>
 {
 	public:
 		explicit ThreadSafeOLEStorage(const std::string& file_name);

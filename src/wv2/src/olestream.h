@@ -32,7 +32,7 @@ public:
     /**
      * Create an OLE stream
      */
-	OLEStream(AbstractOLEStorage *storage );
+    OLEStream( OLEStorage *storage );
     virtual ~OLEStream();
 
     /**
@@ -76,13 +76,13 @@ private:
     /**
      *  for bookkeeping :}
      */
-	AbstractOLEStorage *m_storage;
+    OLEStorage *m_storage;
 };
 
 class WV2_DLLEXPORT OLEStreamReader : public OLEStream
 {
 	public:
-		OLEStreamReader(AbstractOLEStorage* storage);
+        OLEStreamReader(OLEStorage* storage);
 		virtual ~OLEStreamReader();
 		virtual bool isValid() const = 0;
         virtual bool seek( int offset, int whence = SEEK_SET ) = 0;

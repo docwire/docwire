@@ -43,7 +43,7 @@ class InlineReplacementHandler;
 class SubDocumentHandler;
 class TableHandler;
 class TextHandler;
-class AbstractOLEStorage;
+class OLEStorage;
 class OLEStreamReader;
 class StyleSheet;
 class AssociatedStrings;
@@ -64,7 +64,7 @@ public:
      * to determine the nFib to select the proper parser... oh well
      * At least we take ownership ;)
      */
-	Parser( AbstractOLEStorage* storage, OLEStreamReader* wordDocument );
+    Parser( OLEStorage* storage, OLEStreamReader* wordDocument );
     virtual ~Parser();  // Don't forget to close everything properly here
 
     /**
@@ -125,9 +125,9 @@ public:
      */
     void setTextHandler( TextHandler* handler );
 
-	// Do we need public access to parts of the AbstractOLEStorage interface?
+    // Do we need public access to parts of the OLEStorage interface?
     // If we add public accessors we should make m_storage private.
-    AbstractOLEStorage* storage() const { return m_storage; }
+    OLEStorage* storage() const { return m_storage; }
 
 protected:
     InlineReplacementHandler* m_inlineHandler;
@@ -139,7 +139,7 @@ protected:
     bool m_ourTableHandler;
     bool m_ourTextHandler;
 
-	AbstractOLEStorage* m_storage;           // The storage representing the file
+    OLEStorage* m_storage;           // The storage representing the file
     OLEStreamReader* m_wordDocument; // document stream ('WordDocument')
 
     bool m_okay;                     // Still allright?

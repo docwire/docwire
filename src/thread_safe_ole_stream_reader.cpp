@@ -33,7 +33,7 @@ struct pimpl_impl<ThreadSafeOLEStreamReader> : pimpl_impl_base
 };
 
 ThreadSafeOLEStreamReader::ThreadSafeOLEStreamReader(ThreadSafeOLEStorage *storage, Stream &stream)
-	: OLEStreamReader((wvWare::AbstractOLEStorage*)storage)
+	: OLEStreamReader((wvWare::OLEStorage*)storage)
 {
 	impl().m_data_stream = stream.m_data_stream;
 	impl().m_position = 0;

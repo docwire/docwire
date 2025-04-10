@@ -105,7 +105,7 @@ namespace wvWare
     class WV2_DLLEXPORT Parser9x : public Parser
     {
     public:
-        Parser9x( AbstractOLEStorage* storage, OLEStreamReader* wordDocument, const Word97::FIB& fib );
+        Parser9x( OLEStorage* storage, OLEStreamReader* wordDocument, const Word97::FIB& fib );
         virtual ~Parser9x();
 
         /**

@@ -29,7 +29,7 @@ namespace wvWare
 class OLEStream;
 class OLEStreamReader;
 
-class AbstractOLEStorage
+class OLEStorage
 {
 	friend class OLEStream;
 	friend class OLEStreamReader;
@@ -39,8 +39,8 @@ class AbstractOLEStorage
 		 * for reading and writing like libole2 did.
 		 */
 		enum Mode { ReadOnly, WriteOnly };
-		AbstractOLEStorage(){}
-		virtual ~AbstractOLEStorage(){}
+		OLEStorage(){}
+		virtual ~OLEStorage(){}
 		virtual bool isValid() const = 0;
 		virtual bool open( Mode mode ) = 0;
 		virtual void close() = 0;
