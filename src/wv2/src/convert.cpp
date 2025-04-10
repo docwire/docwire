@@ -52,7 +52,7 @@ Word97::BRC toWord97(const Word95::BRC &s) {
         ret.brcType = 7;
     }
     ret.fShadow = s.fShadow;
-    ret.ico = s.ico;
+    ret.cv = Word97::icoToRGB(s.ico);
     ret.dptSpace = s.dxpSpace;
     return ret;
 }
@@ -911,8 +911,8 @@ Word97::SHD toWord97(const Word95::SHD &s) {
 
     Word97::SHD ret;
 
-    ret.icoFore=s.icoFore;
-    ret.icoBack=s.icoBack;
+    ret.cvFore=Word97::icoToRGB(s.icoFore);
+    ret.cvBack=Word97::icoToRGB(s.icoBack);
     ret.ipat=s.ipat;
 
     return ret;

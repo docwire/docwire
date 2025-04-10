@@ -19,7 +19,7 @@
 #ifndef STYLES_H
 #define STYLES_H
 
-#include "word97_generated.h"
+#include <word97_generated.h>
 
 namespace wvWare
 {
@@ -221,7 +221,7 @@ public:
      */
     const ParagraphProperties& paragraphProperties() const;
     /*
-     * For paragraph and character styles
+     * For paragraph styles only
      */
     const Word97::CHP& chp() const;
     /*
@@ -239,7 +239,9 @@ private:
 
     bool m_isEmpty;
     bool m_isWrapped;
+public:
     Word97::STD* m_std;
+private:
 
     mutable ParagraphProperties *m_properties; // "mutable" in case someone goes mad
     mutable Word97::CHP *m_chp; //  with the styles. We have to create a default style

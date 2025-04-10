@@ -1,3 +1,9 @@
+2009-08-26  Benjamin Cail <cricketc@gmail.com>
+
+	* Release wv2-0.4.0 with cmake build system from Pau Garcia i 
+	Quiles and some table border/shading improvements from 
+	boemann.
+
 2009-03-05  Benjamin Cail <cricketc@gmail.com>
 
 	* Released wv2-0.3.1 with a few bugfixes for image handling.

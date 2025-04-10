@@ -232,6 +232,7 @@ namespace wvWare
         // Helper methods to gather and emit the information needed for the functors
         void emitHeaderData( SharedPtr<const Word97::SEP> sep );
         void emitPictureData( SharedPtr<const Word97::CHP> chp );
+        void emitDrawnObject( SharedPtr<const Word97::CHP> chp );
 
         void parseHeader( const HeaderData& data, unsigned char mask );
 
@@ -287,14 +288,16 @@ namespace wvWare
         // Needed to have reentrant parsing methods (to make the functor approach work)
         struct ParsingState
         {
-            ParsingState( Position* tableRowS, U32 tableRowL, int remCells, Paragraph* parag,
-                          U32 remChars, U32 sectionNum, SubDocument subD, ParsingMode mode ) :
-                tableRowStart( tableRowS ), tableRowLength( tableRowL ), remainingCells( remCells ),
-                paragraph( parag ), remainingChars( remChars ), sectionNumber( sectionNum ),
-                subDocument( subD ), parsingMode( mode ) {}
+            ParsingState( Position* tableRowS, U32 tableRowL, bool cMarkFound, 
+                          int remCells, Paragraph* parag, U32 remChars, U32 sectionNum,
+                          SubDocument subD, ParsingMode mode ) :
+                tableRowStart( tableRowS ), tableRowLength( tableRowL ), cellMarkFound( cMarkFound),
+                remainingCells( remCells ), paragraph( parag ), remainingChars( remChars ),
+                sectionNumber( sectionNum ), subDocument( subD ), parsingMode( mode ) {}
 
             Position* tableRowStart;
             U32 tableRowLength;
+            bool cellMarkFound;
             int remainingCells;
             Paragraph* paragraph;
             U32 remainingChars;

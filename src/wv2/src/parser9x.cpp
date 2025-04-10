@@ -275,6 +275,7 @@ void Parser9x::parsePicture( const PictureData& data )
                 parsePictureBitmapHelper( data, stream );
                 break;
             default: // It has to be a .wmf or .emf file (right after the PICF)
+                wvlog << "assuming WMF/EMF file... not sure this is correct" << std::endl;
                 parsePictureWmfHelper( data, stream );
                 break;
         }
@@ -762,6 +763,9 @@ void Parser9x::processSpecialCharacter( UChar character, U32 globalCP, SharedPtr
         case TextHandler::Picture:
             emitPictureData( chp );
             break;
+        case TextHandler::DrawnObject:
+            emitDrawnObject( chp );
+            break;
         case TextHandler::FootnoteAuto:
             if ( m_subDocument == Footnote || m_subDocument == Endnote )
                 m_textHandler->footnoteAutoNumber( chp );
@@ -839,6 +843,16 @@ void Parser9x::emitHeaderData( SharedPtr<const Word97::SEP> sep )
             data.headerMask |= HeaderData::HeaderEven | HeaderData::FooterEven;
     }
     m_textHandler->headersFound( make_functor( *this, &Parser9x::parseHeaders, data ) );
+}
+
+void Parser9x::emitDrawnObject( SharedPtr<const Word97::CHP> chp )
+{
+#ifdef WV2_DEBUG_PICTURES
+    wvlog << "TODO: process 'Drawn object': " << static_cast<int> (chp->fSpec) << " " 
+        << static_cast<int> (chp->fObj) << " " << static_cast<int> (chp->fOle2) << " " 
+        << chp->fcPic_fcObj_lTagObj << std::endl;
+#endif
+
 }
 
 void Parser9x::emitPictureData( SharedPtr<const Word97::CHP> chp )
@@ -1105,9 +1119,11 @@ void Parser9x::parsePictureWmfHelper( const PictureData& data, OLEStreamReader* 
 
 void Parser9x::saveState( U32 newRemainingChars, SubDocument newSubDocument, ParsingMode newParsingMode )
 {
-    oldParsingStates.push( ParsingState( m_tableRowStart, m_tableRowLength, m_remainingCells, m_currentParagraph,
-                                         m_remainingChars, m_sectionNumber, m_subDocument, m_parsingMode ) );
+    oldParsingStates.push( ParsingState( m_tableRowStart, m_tableRowLength, m_cellMarkFound, m_remainingCells,
+                                         m_currentParagraph, m_remainingChars, m_sectionNumber, m_subDocument,
+                                         m_parsingMode ) );
     m_tableRowStart = 0;
+    m_cellMarkFound = false;
     m_currentParagraph = new Paragraph;
     m_remainingChars = newRemainingChars;
     m_subDocument = newSubDocument;
@@ -1137,6 +1153,7 @@ void Parser9x::restoreState()
     delete m_tableRowStart;   // Should be a no-op, but I hate mem-leaks even for buggy code ;-)
     m_tableRowStart = ps.tableRowStart;
     m_tableRowLength = ps.tableRowLength;
+    m_cellMarkFound = ps.cellMarkFound;
     m_remainingCells = ps.remainingCells;
 
     if ( !m_currentParagraph->empty() )

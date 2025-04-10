@@ -288,24 +288,28 @@ typedef enum
     sprmPicScale = 0xCE01,
     sprmSOlstAnm = 0xD202,
     sprmSPropRMark = 0xD227,
-    sprmTTableBorders = 0xD605,
+    sprmTTableBorders80 = 0xD605,
     sprmTDefTable10 = 0xD606,
     sprmTDefTable = 0xD608,
-    sprmTDefTableShd = 0xD609,
-    sprmTTableShd = 0xD612,   // According to OOo
-    sprmTUndocumented3 = 0xD613,
-    sprmTUndocumented4 = 0xD61A,
-    sprmTUndocumented5 = 0xD61B,
-    sprmTUndocumented6 = 0xD61C,
-    sprmTUndocumented7 = 0xD61D,
-    sprmTSetBrc = 0xD620,
+    sprmTDefTableShd80 = 0xD609,
+    sprmTDefTableShd = 0xD612,
+    sprmTTableBorders = 0xD613,
+    sprmTDefTableShd2nd = 0xD616,
+    sprmTDefTableShd3rd = 0xD60C,
+    sprmTBrcTopCv = 0xD61A,
+    sprmTBrcLeftCv = 0xD61B,
+    sprmTBrcBottomCv = 0xD61C,
+    sprmTBrcRightCv = 0xD61D,
+    sprmTSetBrc80 = 0xD620,
     sprmTSetBrc10 = 0xD626,
     sprmTDiagLine = 0xD62A,
     sprmTVertMerge = 0xD62B,
     sprmTVertAlign = 0xD62C,
+    sprmTSetBrc = 0xD62F,
     sprmTUndocumentedSpacing = 0xD632, // OOo: specific spacing
     sprmTUndocumented8 = 0xD634,
     sprmTUndocumented9 = 0xD660, // "something to do with color" (OOo)
+    sprmTCellBrcType = 0xD662,
     sprmCChs = 0xEA08,
     sprmCSizePos = 0xEA3F,
     sprmSDxaColWidth = 0xF203,
@@ -475,8 +479,8 @@ U16 word6toWord8( U8 sprm )
         sprmSDzaGutter, sprmSDmPaperReq, sprmNoop, sprmNoop, sprmNoop,
         sprmNoop, sprmNoop, sprmNoop, sprmNoop, sprmNoop,
         sprmNoop, sprmNoop, sprmTJc, sprmTDxaLeft, sprmTDxaGapHalf,
-        sprmTFCantSplit, sprmTTableHeader, sprmTTableBorders, sprmTDefTable10, sprmTDyaRowHeight,
-        sprmTDefTable, sprmTDefTableShd, sprmTTlp, sprmTSetBrc, sprmTInsert,
+        sprmTFCantSplit, sprmTTableHeader, sprmTTableBorders80, sprmTDefTable10, sprmTDyaRowHeight,
+        sprmTDefTable, sprmTDefTableShd80, sprmTTlp, sprmTSetBrc80, sprmTInsert,
         sprmTDelete, sprmTDxaCol, sprmTMerge, sprmTSplit, sprmTSetBrc10,
         sprmTSetShd };
 
@@ -562,6 +566,7 @@ Word97::TAP* initTAP( const U8* exceptions, OLEStreamReader* dataStream, WordVer
     exceptions += 2; // skip the istd
     cb = cb < 0 ? 0 : cb;  // safety :-}
     tap->apply( exceptions, cb, 0, 0, dataStream, version ); // we don't need a style(sheet), do we?
+    
 
     return tap;
 }
@@ -574,6 +579,50 @@ void PAP::apply( const U8* grpprl, U16 count, const Style* style, const StyleShe
     // A PAP grpprl might contain TAP sprms, we just skip them
     SPRM::apply<PAP>( this, &PAP::applyPAPSPRM, grpprl, count, style, styleSheet, dataStream, version );
 }
+
+    U32 icoToRGB(U16 ico)
+    {
+        switch(ico)
+        {
+            case 0: //default and we choose black as most paper is white
+                return 0x000000;
+            case 1://black
+                return 0x000000;
+            case 2://blue
+                return 0x0000FF;
+            case 3://cyan
+                return 0x00FFFF;
+            case 4://green
+                return 0x008000;
+            case 5://magenta
+                return 0xFF00FF;
+            case 6://red
+                return 0xFF0000;
+            case 7://yellow
+                return 0xFFFF00;
+            case 8://white
+                return 0xFFFFFF;
+            case 9://dark blue
+                return 0x00008B;
+            case 10://dark cyan
+                return 0x008B8B;
+            case 11://dark green
+                return 0x006400;
+            case 12://dark magenta
+                return 0x8B008B;
+            case 13://dark red
+                return 0x8B0000;
+            case 14://dark yellow
+            return 0x808000;
+            case 15://dark gray
+                return 0xA9A9A9;
+            case 16://light gray
+                return 0xD3D3D3;
+
+            default:
+                return 0x000000;
+        }
+    }
 
 // Helper methods for the more complex sprms
 namespace
@@ -656,7 +705,7 @@ namespace
         else
             brc = toWord97( Word95::BRC( ptr ) );
     }
-}
+}       
 
 // Returns -1 if this wasn't a PAP sprm and it returns the length
 // of the applied sprm if it was successful
@@ -1866,15 +1915,25 @@ S16 TAP::applyTAPSPRM( const U8* ptr, const Style* style, const StyleSheet* styl
         case SPRM::sprmTTableHeader:
             fTableHeader = *ptr == 1;
             break;
-        case SPRM::sprmTTableBorders:
+        case SPRM::sprmTTableBorders80:
+        {
+            const U8 inc = version == Word8 ? Word97::BRC::sizeOf97 : Word95::BRC::sizeOf;
+            for ( int i = 0; i < 6; ++i )
+            {
+                // skip the leading size byte
+                readBRC( rgbrcTable[ i ], ptr + 1 + i * inc, version );
+            }
+            break;
+        }
+         case SPRM::sprmTTableBorders:
         {
             const U8 inc = version == Word8 ? Word97::BRC::sizeOf : Word95::BRC::sizeOf;
             for ( int i = 0; i < 6; ++i )
                 // skip the leading size byte
-                readBRC( rgbrcTable[ i ], ptr + 1 + i * inc, version );
+                rgbrcTable[ i ].read90Ptr( ptr + 1 + i * inc );
             break;
         }
-        case SPRM::sprmTDefTable10:
+       case SPRM::sprmTDefTable10:
             wvlog << "Warning: sprmTDefTable10 is obsolete" << std::endl;
             break;
         case SPRM::sprmTDyaRowHeight:
@@ -1917,7 +1976,7 @@ S16 TAP::applyTAPSPRM( const U8* ptr, const Style* style, const StyleSheet* styl
             rgshd.insert( rgshd.begin(), itcMac, SHD() );
             break;
         }
-        case SPRM::sprmTDefTableShd:
+        case SPRM::sprmTDefTableShd80:
         {
             const U8* myPtr = ptr + 1;
             const U8* myLim = ptr + 1 + *ptr;
@@ -1930,11 +1989,27 @@ S16 TAP::applyTAPSPRM( const U8* ptr, const Style* style, const StyleSheet* styl
                 rgshd.insert( rgshd.end(), itcMac - rgshd.size(), SHD() );
             break;
         }
-        case SPRM::sprmTTableShd:
+        case SPRM::sprmTDefTableShd:
         {
-            // Undocumented Word 2000+ sprm, provides some SHD-on-steroids or so,
-            // check the OOo code. Normally 10 bytes long.
-            //wvlog << "sprmTTableShd: undocumented, len=" << ( int )*ptr << std::endl;
+            const U8* myPtr = ptr + 1;
+            const U8* myLim = ptr + 1 + *ptr;
+            rgshd.clear();
+            while ( myPtr < myLim ) {
+                SHD shd;
+                shd.read90Ptr(myPtr);
+                rgshd.push_back( shd );
+                myPtr += SHD::sizeOf;
+            }
+            if ( rgshd.size() < static_cast<std::vector<S16>::size_type>( itcMac ) )
+                rgshd.insert( rgshd.end(), itcMac - rgshd.size(), SHD() );
+            break;
+        }
+        case SPRM::sprmTDefTableShd2nd:
+        {
+            break;
+        }
+        case SPRM::sprmTDefTableShd3rd:
+        {
             break;
         }
         case SPRM::sprmTTlp:
@@ -1946,7 +2021,7 @@ S16 TAP::applyTAPSPRM( const U8* ptr, const Style* style, const StyleSheet* styl
         case SPRM::sprmTHTMLProps:
             wvlog << "Warning: sprmTHTMLProps not implemented" << std::endl;
             break;
-        case SPRM::sprmTSetBrc:
+        case SPRM::sprmTSetBrc80:
         {
             const U8* myPtr( version == Word8 ? ptr + 1 : ptr );  // variable size byte for Word 8!
             U8 itcFirst = *myPtr;
@@ -2135,6 +2210,28 @@ S16 TAP::applyTAPSPRM( const U8* ptr, const Style* style, const StyleSheet* styl
                 rgtc[ itcFirst ].vertAlign = vertAlign;
             break;
         }
+        case SPRM::sprmTSetBrc:
+        {
+            const U8* myPtr( version == Word8 ? ptr + 1 : ptr );  // variable size byte for Word 8!
+            U8 itcFirst = *myPtr;
+            U8 itcLim = *( myPtr + 1 );
+            cropIndices( itcFirst, itcLim, rgtc.size() );
+            const U8 flags = *( myPtr + 2 );
+            BRC brc;
+            brc.read90Ptr(myPtr + 3 );
+
+            for ( ; itcFirst < itcLim; ++itcFirst ) {
+                if ( flags & 0x01 )
+                    rgtc[ itcFirst ].brcTop = brc;
+                if ( flags & 0x02 )
+                    rgtc[ itcFirst ].brcLeft = brc;
+                if ( flags & 0x04 )
+                    rgtc[ itcFirst ].brcBottom = brc;
+                if ( flags & 0x08 )
+                    rgtc[ itcFirst ].brcRight = brc;
+            }
+            break;
+        }
         case SPRM::sprmTUndocumentedSpacing:
             if ( *ptr == 6 ) {
 /*                wvlog << "sprmTUndocumentedSpacing----" << std::endl;
@@ -2152,11 +2249,43 @@ S16 TAP::applyTAPSPRM( const U8* ptr, const Style* style, const StyleSheet* styl
             break;
         case SPRM::sprmTUndocumented1:
         case SPRM::sprmTUndocumented2:
-        case SPRM::sprmTUndocumented3:
-        case SPRM::sprmTUndocumented4:
-        case SPRM::sprmTUndocumented5:
-        case SPRM::sprmTUndocumented6:
-        case SPRM::sprmTUndocumented7:
+            break;
+        case SPRM::sprmTBrcTopCv:
+        {
+            const U8* myPtr( version == Word8 ? ptr + 1 : ptr );  // variable size byte for Word 8!
+
+            for (int i=0 ; i < 64 && i < rgtc.size(); ++i ) {
+                rgtc[ i ].brcTop.cv = ((*(myPtr + i*4))<<16)  | ((*(myPtr + 1 + i*4))<<8) | (*(myPtr + 2 + i*4)) ;
+            }
+            break;
+        }
+        case SPRM::sprmTBrcLeftCv:
+        {
+            const U8* myPtr( version == Word8 ? ptr + 1 : ptr );  // variable size byte for Word 8!
+
+            for (int i=0 ; i < 64 && i < rgtc.size(); ++i ) {
+                rgtc[ i ].brcLeft.cv = ((*(myPtr + i*4))<<16)  | ((*(myPtr + 1 + i*4))<<8) | (*(myPtr + 2 + i*4)) ;
+            }
+            break;
+        }
+        case SPRM::sprmTBrcRightCv:
+        {
+            const U8* myPtr( version == Word8 ? ptr + 1 : ptr );  // variable size byte for Word 8!
+
+            for (int i=0 ; i < 64 && i < rgtc.size(); ++i ) {
+                rgtc[ i ].brcRight.cv = ((*(myPtr + i*4))<<16)  | ((*(myPtr + 1 + i*4))<<8) | (*(myPtr + 2 + i*4)) ;
+            }
+            break;
+        }
+        case SPRM::sprmTBrcBottomCv:
+        {
+            const U8* myPtr( version == Word8 ? ptr + 1 : ptr );  // variable size byte for Word 8!
+
+            for (int i=0 ; i < 64 && i < rgtc.size(); ++i ) {
+                rgtc[ i ].brcBottom.cv = ((*(myPtr + i*4))<<16)  | ((*(myPtr + 1 + i*4))<<8) | (*(myPtr + 2 + i*4)) ;
+            }
+            break;
+        }
         case SPRM::sprmTUndocumented9:
         case SPRM::sprmTUndocumented10:
         case SPRM::sprmTUndocumented11:

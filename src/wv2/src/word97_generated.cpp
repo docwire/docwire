@@ -443,7 +443,7 @@ bool operator!=(const PRM &lhs, const PRM &rhs) {
 
 // SHD implementation
 
-const unsigned int SHD::sizeOf = 2;
+const unsigned int SHD::sizeOf = 10;
 
 SHD::SHD() {
     clear();
@@ -462,14 +462,17 @@ SHD::SHD(const U8 *ptr) {
 bool SHD::read(OLEStreamReader *stream, bool preservePos) {
 
     U16 shifterU16;
+    U16 ico;
 
     if(preservePos)
         stream->push();
 
     shifterU16=stream->readU16();
-    icoFore=shifterU16;
+    ico=shifterU16;
+    cvFore=Word97::icoToRGB(ico);
     shifterU16>>=5;
-    icoBack=shifterU16;
+    ico=shifterU16;
+    cvBack=Word97::icoToRGB(ico);
     shifterU16>>=5;
     ipat=shifterU16;
 
@@ -481,19 +484,47 @@ bool SHD::read(OLEStreamReader *stream, bool preservePos) {
 void SHD::readPtr(const U8 *ptr) {
 
     U16 shifterU16;
+    U16 ico;
 
     shifterU16=readU16(ptr);
     ptr+=sizeof(U16);
-    icoFore=shifterU16;
+    ico=shifterU16 & 0x1F;
+    cvFore=Word97::icoToRGB(ico);
     shifterU16>>=5;
-    icoBack=shifterU16;
+    ico=shifterU16 & 0x1F;
+    cvBack=Word97::icoToRGB(ico);
     shifterU16>>=5;
     ipat=shifterU16;
 }
 
+void SHD::read90Ptr(const U8 *ptr) {
+
+    U16 shifterU16;
+    U8 r,g,b;
+
+    r=readU8(ptr);
+    ptr+=sizeof(U8);
+    g=readU8(ptr);
+    ptr+=sizeof(U8);
+    b=readU8(ptr);
+    ptr+=sizeof(U8);
+    ptr+=sizeof(U8);
+    cvFore=(r<<16)|(g<<8)|(b);
+    r=readU8(ptr);
+    ptr+=sizeof(U8);
+    g=readU8(ptr);
+    ptr+=sizeof(U8);
+    b=readU8(ptr);
+    ptr+=sizeof(U8);
+    ptr+=sizeof(U8);
+    cvBack=(r<<16)|(g<<8)|(b);
+    shifterU16=readU16(ptr);
+    ipat=shifterU16;
+}
+
 void SHD::clear() {
-    icoFore=0;
-    icoBack=0;
+    cvFore=0;
+    cvBack=0;
     ipat=0;
 }
 
@@ -507,10 +538,10 @@ void SHD::dump() const
 std::string SHD::toString() const
 {
     std::string s( "SHD:" );
-    s += "\nicoFore=";
-    s += uint2string( icoFore );
-    s += "\nicoBack=";
-    s += uint2string( icoBack );
+    s += "\ncvFore=";
+    s += uint2string( cvFore );
+    s += "\nicvBack=";
+    s += uint2string( cvBack );
     s += "\nipat=";
     s += uint2string( ipat );
     s += "\nSHD Done.";
@@ -519,8 +550,8 @@ std::string SHD::toString() const
 
 bool operator==(const SHD &lhs, const SHD &rhs) {
 
-    return lhs.icoFore==rhs.icoFore &&
-           lhs.icoBack==rhs.icoBack &&
+    return lhs.cvFore==rhs.cvFore &&
+           lhs.cvBack==rhs.cvBack &&
            lhs.ipat==rhs.ipat;
 }
 
@@ -656,7 +687,8 @@ bool operator!=(const PHE &lhs, const PHE &rhs) {
 
 // BRC implementation
 
-const unsigned int BRC::sizeOf = 4;
+const unsigned int BRC::sizeOf = 8;
+const unsigned int BRC::sizeOf97 = 4;
 
 BRC::BRC() {
     clear();
@@ -673,8 +705,8 @@ BRC::BRC(const U8 *ptr) {
 }
 
 bool BRC::read(OLEStreamReader *stream, bool preservePos) {
-
     U16 shifterU16;
+    U16 ico;
 
     if(preservePos)
         stream->push();
@@ -685,6 +717,7 @@ bool BRC::read(OLEStreamReader *stream, bool preservePos) {
     brcType=shifterU16;
     shifterU16=stream->readU16();
     ico=shifterU16;
+    cv=Word97::icoToRGB(ico);
     shifterU16>>=8;
     dptSpace=shifterU16;
     shifterU16>>=5;
@@ -700,8 +733,8 @@ bool BRC::read(OLEStreamReader *stream, bool preservePos) {
 }
 
 void BRC::readPtr(const U8 *ptr) {
-
     U16 shifterU16;
+    U16 ico;
 
     shifterU16=readU16(ptr);
     ptr+=sizeof(U16);
@@ -711,7 +744,36 @@ void BRC::readPtr(const U8 *ptr) {
     shifterU16=readU16(ptr);
     ptr+=sizeof(U16);
     ico=shifterU16;
+    cv=Word97::icoToRGB(ico);
     shifterU16>>=8;
+    dptSpace=shifterU16;
+    shifterU16>>=5;
+    fShadow=shifterU16;
+    shifterU16>>=1;
+    fFrame=shifterU16;
+    shifterU16>>=1;
+    unused2_15=shifterU16;
+}
+
+void BRC::read90Ptr(const U8 *ptr) {
+    U16 shifterU16;
+    U8 r,g,b;
+
+    r=readU8(ptr);
+    ptr+=sizeof(U8);
+    g=readU8(ptr);
+    ptr+=sizeof(U8);
+    b=readU8(ptr);
+    ptr+=sizeof(U8);
+    ptr+=sizeof(U8);
+    cv=(r<<16)|(g<<8)|(b);
+    shifterU16=readU16(ptr);
+    ptr+=sizeof(U16);
+    dptLineWidth=shifterU16;
+    shifterU16>>=8;
+    brcType=shifterU16;
+    shifterU16=readU16(ptr);
+    ptr+=sizeof(U16);
     dptSpace=shifterU16;
     shifterU16>>=5;
     fShadow=shifterU16;
@@ -724,7 +786,7 @@ void BRC::readPtr(const U8 *ptr) {
 void BRC::clear() {
     dptLineWidth=0;
     brcType=0;
-    ico=0;
+    cv=0;
     dptSpace=0;
     fShadow=0;
     fFrame=0;
@@ -745,8 +807,8 @@ std::string BRC::toString() const
     s += uint2string( dptLineWidth );
     s += "\nbrcType=";
     s += uint2string( brcType );
-    s += "\nico=";
-    s += uint2string( ico );
+    s += "\ncv=";
+    s += uint2string( cv );
     s += "\ndptSpace=";
     s += uint2string( dptSpace );
     s += "\nfShadow=";
@@ -763,7 +825,7 @@ bool operator==(const BRC &lhs, const BRC &rhs) {
 
     return lhs.dptLineWidth==rhs.dptLineWidth &&
            lhs.brcType==rhs.brcType &&
-           lhs.ico==rhs.ico &&
+           lhs.cv==rhs.cv &&
            lhs.dptSpace==rhs.dptSpace &&
            lhs.fShadow==rhs.fShadow &&
            lhs.fFrame==rhs.fFrame &&
@@ -972,7 +1034,7 @@ bool TC::read(OLEStreamReader *stream, bool preservePos) {
     brcLeft.read(stream, false);
     brcBottom.read(stream, false);
     brcRight.read(stream, false);
-
+    
     if(preservePos)
         stream->pop();
     return true;
@@ -1003,12 +1065,13 @@ void TC::readPtr(const U8 *ptr) {
     fUnused=shifterU16;
     wUnused=readU16(ptr);
     ptr+=sizeof(U16);
+    wvlog << std::endl;
     brcTop.readPtr(ptr);
-    ptr+=BRC::sizeOf;
+    ptr+=BRC::sizeOf97;
     brcLeft.readPtr(ptr);
-    ptr+=BRC::sizeOf;
+    ptr+=BRC::sizeOf97;
     brcBottom.readPtr(ptr);
-    ptr+=BRC::sizeOf;
+    ptr+=BRC::sizeOf97;
     brcRight.readPtr(ptr);
     ptr+=BRC::sizeOf;
 }

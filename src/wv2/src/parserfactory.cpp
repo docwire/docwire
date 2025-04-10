@@ -81,8 +81,22 @@ namespace
             return new Parser97( storage, wordDocument );
         }
         else {
-            wvlog << "A document newer than Word 8 found (nFib=" << nFib
-                  << "), trying with the Word 8 parser" << std::endl;
+            if ( nFib == 217 ) {
+                wvlog << "Looks like document was created with Word 9/Office 2000"
+                    << ", trying with the Word 8 parser." << std::endl;
+            }
+            else if ( nFib == 257 ) {
+                wvlog << "Looks like document was created with Word 10/Office XP"
+                    << ", trying with the Word 8 parser." << std::endl;
+            }
+            else if ( nFib == 268 ) {
+                wvlog << "Looks like document was created with Word 11/Office 2003"
+                    << ", trying with the Word 8 parser." << std::endl;
+            }
+            else {
+            wvlog << "A document newer than Word 8 found"
+                  << ", trying with the Word 8 parser" << std::endl;
+            }
             return new Parser97( storage, wordDocument );
         }
     }

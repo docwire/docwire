@@ -42,6 +42,11 @@ class Style;
 
 namespace Word97 {
 
+   /**
+    * Helper function to convert ico color codes to 24bit rgb values
+    */
+    U32 icoToRGB(U16 ico);
+
 /**
  * Font Family Name (FFN), this code is located in the template-Word97.h
  */
@@ -528,6 +533,11 @@ struct SHD {
     void readPtr(const U8 *ptr);
 
     /**
+     * This method reads the struct from a pointer (later than word97)
+     */
+    void read90Ptr(const U8 *ptr);
+
+    /**
      * Set all the fields to the inital value (default is 0)
      */
     void clear();
@@ -547,14 +557,14 @@ struct SHD {
 
     // Data
     /**
-     * foreground color (see chp.ico)
+     * foreground color
      */
-    U16 icoFore:5;
+    U32 cvFore;
 
     /**
-     * background color (see chp.ico)
+     * background color
      */
-    U16 icoBack:5;
+    U32 cvBack;
 
     /**
      * shading pattern (see ipat table below)
@@ -613,7 +623,7 @@ struct SHD {
      * 61 97.5 Percent
      * 62 97 Percent
      */
-    U16 ipat:6;
+    U16 ipat;
 
 }; // SHD
 
@@ -649,7 +659,7 @@ struct PHE {
     /**
      * This method reads the struct from a pointer
      */
-	void readPtr(const U8 *ptr);
+    void readPtr(const U8 *ptr);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -746,9 +756,14 @@ struct BRC {
     bool read(OLEStreamReader *stream, bool preservePos=false);
 
     /**
-     * This method reads the struct from a pointer
+     * This method reads the struct from a pointer (brc80)
      */
     void readPtr(const U8 *ptr);
+
+    /**
+     * This method reads the struct from a pointer (later than word97)
+     */
+    void read90Ptr(const U8 *ptr);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -767,8 +782,15 @@ struct BRC {
 
     // Size of the structure
     static const unsigned int sizeOf;
+    static const unsigned int sizeOf97;
 
     // Data
+    
+    /**
+     *  24-bit border color
+     */
+    U32 cv;
+
     /**
      * width of a single line in 1/8 pt, max of 32 pt.
      */
@@ -807,11 +829,6 @@ struct BRC {
     U16 brcType:8;
 
     /**
-     * color code (see chp.ico)
-     */
-    U16 ico:8;
-
-    /**
      * width of space to maintain between border and text within border. Must
      * be 0 when BRC is a substructure of TC. Stored in points.
      */
@@ -828,7 +845,7 @@ struct BRC {
     /**
      * reserved
      */
-    U16 unused2_15:1;
+    U16 unused2_15:9;
 
 }; // BRC
 
@@ -1348,7 +1365,7 @@ bool operator!=(const TAP &lhs, const TAP &rhs);
 //    /**
 //     * Same as reading :)
 //     */
-//    //bool write(OLEStreamWriter *stream, bool preservePos=false) const;
+//    bool write(OLEStreamWriter *stream, bool preservePos=false) const;
 
 //    /**
 //     * Set all the fields to the inital value (default is 0)
@@ -1644,7 +1661,7 @@ struct ANLV {
     /**
      * This method reads the struct from a pointer
      */
-	void readPtr(const U8 *ptr);
+    void readPtr(const U8 *ptr);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -2925,7 +2942,7 @@ bool operator!=(const CHP &lhs, const CHP &rhs);
 //    /**
 //     * Same as reading :)
 //     */
-//    //bool write(OLEStreamWriter *stream, bool preservePos=false) const;
+//    bool write(OLEStreamWriter *stream, bool preservePos=false) const;
 
 //    /**
 //     * Set all the fields to the inital value (default is 0)
@@ -2990,7 +3007,7 @@ bool operator!=(const CHP &lhs, const CHP &rhs);
 //    /**
 //     * Same as reading :)
 //     */
-//    //bool write(OLEStreamWriter *stream, bool preservePos=false) const;
+//    bool write(OLEStreamWriter *stream, bool preservePos=false) const;
 
 //    /**
 //     * Set all the fields to the inital value (default is 0)
@@ -4010,7 +4027,7 @@ bool operator!=(const DOP &lhs, const DOP &rhs);
 //    /**
 //     * Same as reading :)
 //     */
-//    //bool write(OLEStreamWriter *stream, bool preservePos=false) const;
+//    bool write(OLEStreamWriter *stream, bool preservePos=false) const;
 
 //    /**
 //     * Set all the fields to the inital value (default is 0)
@@ -5433,7 +5450,7 @@ bool operator!=(const FIBFCLCB &lhs, const FIBFCLCB &rhs);
 //    /**
 //     * Same as reading :)
 //     */
-//    //bool write(OLEStreamWriter *stream, bool preservePos=false) const;
+//    bool write(OLEStreamWriter *stream, bool preservePos=false) const;
 
 //    /**
 //     * Set all the fields to the inital value (default is 0)
@@ -6349,7 +6366,7 @@ struct OLST {
     /**
      * This method reads the struct from a pointer
      */
-	void readPtr(const U8 *ptr);
+    void readPtr(const U8 *ptr);
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -6898,7 +6915,7 @@ WV2_DLLEXPORT bool operator!=(const PAP &lhs, const PAP &rhs);
 //    /**
 //     * Same as reading :)
 //     */
-//    //bool write(OLEStreamWriter *stream, bool preservePos=false) const;
+//    bool write(OLEStreamWriter *stream, bool preservePos=false) const;
 
 //    /**
 //     * Set all the fields to the inital value (default is 0)
@@ -6987,7 +7004,7 @@ WV2_DLLEXPORT bool operator!=(const PAP &lhs, const PAP &rhs);
 //    /**
 //     * Same as reading :)
 //     */
-//    //bool write(OLEStreamWriter *stream, bool preservePos=false) const;
+//    bool write(OLEStreamWriter *stream, bool preservePos=false) const;
 
 //    /**
 //     * Set all the fields to the inital value (default is 0)
@@ -7537,7 +7554,7 @@ bool operator!=(const PICF &lhs, const PICF &rhs);
 //    /**
 //     * Same as reading :)
 //     */
-//    //bool write(OLEStreamWriter *stream, bool preservePos=false) const;
+//    bool write(OLEStreamWriter *stream, bool preservePos=false) const;
 
 //    /**
 //     * Set all the fields to the inital value (default is 0)
@@ -8231,7 +8248,7 @@ bool operator!=(const SEPX &lhs, const SEPX &rhs);
 //    /**
 //     * Same as reading :)
 //     */
-//    //bool write(OLEStreamWriter *stream, bool preservePos=false) const;
+//    bool write(OLEStreamWriter *stream, bool preservePos=false) const;
 
 //    /**
 //     * Set all the fields to the inital value (default is 0)
