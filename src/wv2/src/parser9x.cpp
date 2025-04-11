@@ -310,7 +310,7 @@ void Parser9x::init()
     m_fields = new Fields( m_table, m_fib );
     m_drawings = new Drawings( m_table, m_fib );
 
-    if ( m_fib.ccpFtn != 0 )
+    if (( m_fib.ccpFtn != 0 ) || ( m_fib.ccpEdn != 0 ))
         m_footnotes = new Footnotes97( m_table, m_fib );
 }
 
