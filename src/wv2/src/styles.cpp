@@ -386,6 +386,8 @@ void Style::unwrapStyle( const StyleSheet& stylesheet, WordVersion version )
             m_properties->pap().istd = readU16( data );
             data += 2;
             cbUPX -= 2;
+
+            cbUPX = std::min(cbUPX, U16(m_std->grupxLen - 4));
 #ifdef WV2_DEBUG_SPRMS
             wvlog << "############# Applying paragraph exceptions: " << cbUPX << endl;
 #endif
@@ -400,6 +402,8 @@ void Style::unwrapStyle( const StyleSheet& stylesheet, WordVersion version )
                 // character
                 cbUPX = readU16( data );
                 data += 2;
+
+                cbUPX = std::min(cbUPX, U16(m_std->grupxLen - datapos));
 #ifdef WV2_DEBUG_SPRMS
                 wvlog << "############# Applying character exceptions: " << cbUPX << endl;
 #endif
