@@ -644,7 +644,7 @@ bool ThreadSafeOLEStorage::leaveDirectory()
 	return true;
 }
 
-AbstractOLEStreamReader *ThreadSafeOLEStorage::createStreamReader(const std::string& stream_path)
+OLEStreamReader *ThreadSafeOLEStorage::createStreamReader(const std::string& stream_path)
 {
 	if (!impl().m_is_valid_ole || impl().m_current_directory == nullptr) {
         return nullptr;

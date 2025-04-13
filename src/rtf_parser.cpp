@@ -24,8 +24,8 @@
 #include <string.h>
 #include <time.h>
 #include "throw_if.h"
-#include <wv2/textconverter.h>
-#include <wv2/ustring.h>
+#include "wv2/src/textconverter.h"
+#include "wv2/src/ustring.h"
 
 namespace docwire
 {

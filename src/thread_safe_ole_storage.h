@@ -17,7 +17,7 @@
 #include <span>
 #include <string>
 #include <vector>
-#include "wv2/olestorage.h"
+#include "wv2/src/olestorage.h"
 
 namespace docwire
 {
@@ -25,7 +25,7 @@ namespace docwire
 class ThreadSafeOLEStreamReader;
 using namespace wvWare;
 
-class DOCWIRE_CORE_EXPORT ThreadSafeOLEStorage : public AbstractOLEStorage, public with_pimpl<ThreadSafeOLEStorage>
+class DOCWIRE_CORE_EXPORT ThreadSafeOLEStorage : public OLEStorage, public with_pimpl<ThreadSafeOLEStorage>
 {
 	public:
 		explicit ThreadSafeOLEStorage(const std::string& file_name);
@@ -39,7 +39,7 @@ class DOCWIRE_CORE_EXPORT ThreadSafeOLEStorage : public AbstractOLEStorage, publ
 		bool enterDirectory(const std::string& directory_path);
 		bool leaveDirectory();
 		bool readDirectFromBuffer(unsigned char* buffer, int size, int offset) override;
-		AbstractOLEStreamReader* createStreamReader(const std::string& stream_path) override;
+		OLEStreamReader* createStreamReader(const std::string& stream_path) override;
 	private:
 		void streamDestroyed(OLEStream* stream) override;
 };

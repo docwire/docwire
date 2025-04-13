@@ -18,7 +18,7 @@
 #include "pimpl.h"
 #include <string>
 #include <vector>
-#include "wv2/olestream.h"
+#include "wv2/src/olestream.h"
 
 namespace docwire
 {
@@ -27,7 +27,7 @@ class ThreadSafeOLEStorage;
 using namespace wvWare;
 class DataStream;
 
-class DOCWIRE_CORE_EXPORT ThreadSafeOLEStreamReader : public wvWare::AbstractOLEStreamReader, public with_pimpl<ThreadSafeOLEStreamReader>
+class DOCWIRE_CORE_EXPORT ThreadSafeOLEStreamReader : public wvWare::OLEStreamReader, public with_pimpl<ThreadSafeOLEStreamReader>
 {
 	friend class ThreadSafeOLEStorage;
 	public:

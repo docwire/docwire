@@ -1,5 +1,5 @@
 diff --git a/ports/libmagic/portfile.cmake b/ports/libmagic/portfile.cmake
-index b125a3b262..452e07ffde 100644
+index d04f65c105..50a8179652 100644
 --- a/ports/libmagic/portfile.cmake
 +++ b/ports/libmagic/portfile.cmake
 @@ -21,8 +21,8 @@ endif()
@@ -14,14 +14,14 @@ index b125a3b262..452e07ffde 100644
      PATCHES ${PATCHES}
  )
 diff --git a/ports/libmagic/vcpkg.json b/ports/libmagic/vcpkg.json
-index 2fd5916e79..3e6945c9b8 100644
+index a7357d6261..3e6945c9b8 100644
 --- a/ports/libmagic/vcpkg.json
 +++ b/ports/libmagic/vcpkg.json
 @@ -1,7 +1,7 @@
  {
    "name": "libmagic",
 -  "version": "5.46",
--  "port-version": 1,
+-  "port-version": 2,
 +  "version-date": "2024-11-26",
 +  "port-version": 0,
    "description": "This library can be used to classify files according to magic number tests.",

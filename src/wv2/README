@@ -1,0 +1,6 @@
+This is a modified version of the wv2 library:
+- autotools replaced with CMake build system
+- libgsf and glib2 dependencies removed (OLE container handling is abstracted)
+- exporting symbols improved
+- few bugs and warnings fixed
+- building and installing modified to be an internal library of DocWire SDK project

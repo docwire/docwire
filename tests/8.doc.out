@@ -17,14 +17,14 @@ Table with hyperlinks:
 <http://www.first.com/>first    <http://www.second.com/>second
 <http://www.third.com/>third    <http://www.fourth.com/>fourth
 Tabela with lists:
-first    one      second   third           
-         two      one      one             
-         three    two      two             
-                  three    three           
-fourth   one      fiveth   sixth           
-         two      one      one             
-         three    two      two             
-                  three                    
+first    second   third  
+one      one      one    
+two      two      two    
+three    three    three  
+fourth   fiveth   sixth  
+one      one      one    
+two      two      two    
+three    three           
 seventh  eighth   nineth 
                   one    
                   two    

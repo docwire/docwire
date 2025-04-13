@@ -3,6 +3,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 add_compile_definitions(DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 
+add_subdirectory(wv2)
 include(core.cmake)
 include(base64.cmake)
 include(odf_ooxml.cmake)
@@ -24,6 +25,10 @@ include(openai.cmake)
 include(cli.cmake)
 
 file(GLOB HEADERS "*.h")
+list(REMOVE_ITEM HEADERS
+	${CMAKE_CURRENT_SOURCE_DIR}/misc.h
+	${CMAKE_CURRENT_SOURCE_DIR}/thread_safe_ole_storage.h
+	${CMAKE_CURRENT_SOURCE_DIR}/thread_safe_ole_stream_reader.h)
 install(FILES ${HEADERS} DESTINATION include/docwire)
 
 set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)

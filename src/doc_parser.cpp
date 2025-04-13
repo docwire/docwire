@@ -15,29 +15,22 @@
 #include "misc.h"
 #include "nested_exception.h"
 #include "throw_if.h"
-
-//Dirty hack, be we now what we are doing and this is internal library.
-#define protected public
-#define private public
-#include "wv2/parser.h"
-#include "wv2/parser9x.h"
-#undef protected
-#undef private
-
-#include "wv2/fields.h"
-#include "wv2/handlers.h"
+#include "wv2/src/parser.h"
+#include "wv2/src/parser9x.h"
+#include "wv2/src/fields.h"
+#include "wv2/src/handlers.h"
 #include <mutex>
 #include "oshared.h"
-#include "wv2/paragraphproperties.h"
-#include "wv2/parserfactory.h"
+#include "wv2/src/paragraphproperties.h"
+#include "wv2/src/parserfactory.h"
 #include <stdio.h>
-#include "wv2/ustring.h"
+#include "wv2/src/ustring.h"
 #include <vector>
 #ifdef WIN32
 	#include <windows.h>
 #endif
-#include "wv2/word_helper.h"
-#include "wv2/word97_generated.h"
+#include "wv2/src/word_helper.h"
+#include "wv2/src/word97_generated.h"
 #include "xls_parser.h"
 #include "thread_safe_ole_stream_reader.h"
 #include "thread_safe_ole_storage.h"
@@ -109,21 +102,21 @@ static void cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& strea
 	throw_if (parser9 == NULL, "This is not a 9x parser.", errors::program_logic{});
 	U32 piece = 0;
 	U32 offset = cp;
-	throw_if (parser9->m_plcfpcd == NULL, "No pieces table found.", errors::uninterpretable_data{});
+	throw_if (parser9->pieceTable() == nullptr, "No pieces table found.", errors::uninterpretable_data{});
 	// Copied from wv2 code.
-	PLCFIterator<Word97::PCD> it( *parser9->m_plcfpcd );
+	PLCFIterator<Word97::PCD> it( *parser9->pieceTable() );
 	for ( ; it.current(); ++it, ++piece ) {
 		if ( it.currentLim() > cp && it.currentStart() <= cp )
 			break;
 		offset -= it.currentRun();
 	}
 	docwire_log(debug) << "Piece: " << piece << ", offset: " << offset;
-	PLCFIterator<Word97::PCD> it2(parser9->m_plcfpcd->at( piece ) );
+	PLCFIterator<Word97::PCD> it2(parser9->pieceTable()->at( piece ) );
 	throw_if (!it2.current(), "Specified piece not found.", errors::uninterpretable_data{});
 	U32 fc = it2.current()->fc;   // Start FC of this piece
 	docwire_log(debug) << "Piece start at FC " << fc << ".";
         bool unicode;
-        parser9->realFC(fc, unicode);
+        parser9->calculateRealFC(fc, unicode);
 	docwire_log(debug) << "After unicode transition piece start at FC " << fc << ".";
 	if (offset != 0 )
             fc += unicode ? offset * 2 : offset;
@@ -145,10 +138,10 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 
 		U32 atn_part_cp = parser->fib().ccpText + parser->fib().ccpFtn + parser->fib().ccpHdd + parser->fib().ccpMcr;
 		docwire_log(debug) << "Annotations part at CP " << atn_part_cp << ".";
-		std::unique_ptr<AbstractOLEStreamReader> reader { parser->m_storage->createStreamReader("WordDocument") };
+		std::unique_ptr<OLEStreamReader> reader { parser->storage()->createStreamReader("WordDocument") };
 		throw_if (!reader, "Error opening WordDocument stream.", errors::uninterpretable_data{});
 		const Parser9x* parser9 = dynamic_cast<const Parser9x*>(parser);
-		std::unique_ptr<AbstractOLEStreamReader> table_reader { parser->m_storage->createStreamReader(parser9->tableStream()) };
+		std::unique_ptr<OLEStreamReader> table_reader { parser->storage()->createStreamReader(parser9->tableStream()) };
 		throw_if (!table_reader, "Error opening table stream.", errors::uninterpretable_data{});
 
 		U32 annotation_txts_offset = parser->fib().fcPlcfandTxt;
@@ -323,12 +316,12 @@ class TextHandler : public wvWare::TextHandler
 				}
 			}
 			m_parent->sendTag(tag::Paragraph{});
-			if (((Parser9x*)m_parser)->m_currentParagraph->size() > 0)
+			if (((Parser9x*)m_parser)->currentParagraph()->size() > 0)
 			{
 				if (m_comments_parsed)
 				{
 					for (int i = 0; i < m_comments.size(); i++)
-					if (m_comments[i].fc >= m_prev_par_fc && m_comments[i].fc < ((Parser9x*)m_parser)->m_currentParagraph->back().m_startFC)
+					if (m_comments[i].fc >= m_prev_par_fc && m_comments[i].fc < ((Parser9x*)m_parser)->currentParagraph()->back().m_startFC)
 					{
 						std::string comment_text = m_comments[i].text;
 						std::replace(comment_text.begin(), comment_text.end(), '\x0b', '\n');
@@ -355,9 +348,9 @@ class TextHandler : public wvWare::TextHandler
 		{
 			docwire_log_func();
 			m_parent->sendTag(tag::CloseParagraph{});
-			if (!((Parser9x*)m_parser)->m_currentParagraph->empty())
+			if (!((Parser9x*)m_parser)->currentParagraph()->empty())
 			{
-				m_prev_par_fc = ((Parser9x*)m_parser)->m_currentParagraph->back().m_startFC;
+				m_prev_par_fc = ((Parser9x*)m_parser)->currentParagraph()->back().m_startFC;
 			}
 		}
 

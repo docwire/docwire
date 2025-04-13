@@ -43,9 +43,6 @@
 			"name": "libcharsetdetect"
 		},
 		{
-			"name": "wv2"
-		},
-		{
 			"name": "boost-callable-traits"
 		},
 		{
