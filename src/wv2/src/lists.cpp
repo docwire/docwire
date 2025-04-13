@@ -729,22 +729,33 @@ bool ListInfoProvider::setPAP( Word97::PAP* pap )
     }
 
     m_pap = pap;  // Don't we all love dangling pointers?
-    if ( m_version == Word67 )
+    bool invalid_ilfo = false;
+    if ( m_version == Word67 ) {
         convertCompatANLD();
+        if ( m_listFormatOverride.size() < static_cast<unsigned int>( pap->ilfo ) ) // 1-based index!
+            invalid_ilfo = true;
+    }
     else {
         if ( m_listFormatOverride.size() < static_cast<unsigned int>( pap->ilfo ) ) { // 1-based index!
             // This might be an old-style pap, where a pap->ilfo of 2047 suggests to look at
             // the ANLD of that paragaph and to convert it
-            if ( pap->ilfo == oldStyleIlfo )
+            if ( pap->ilfo == oldStyleIlfo ) {
                 convertCompatANLD();
+                if ( m_listFormatOverride.size() < static_cast<unsigned int>( pap->ilfo ) ) // 1-based index!
+                    invalid_ilfo = true;
+            }
             else {
-                wvlog << "Bug: ListInfoProvider::setWord97StylePAP -- out of bounds access (ilfo=" << pap->ilfo << ")" << std::endl;
-                m_pap = 0;
-                m_currentLfoLVL = 0;
-                m_currentLst = 0;
-                return false;
+                invalid_ilfo = true;
             }
         }
+    }
+    if (invalid_ilfo)
+    {
+        wvlog << "Bug: ListInfoProvider::setWord97StylePAP -- out of bounds access (ilfo=" << pap->ilfo << ")" << std::endl;
+        m_pap = 0;
+        m_currentLfoLVL = 0;
+        m_currentLst = 0;
+        return false;
     }
     processOverride( m_listFormatOverride[ pap->ilfo - 1 ] );
     return true;
