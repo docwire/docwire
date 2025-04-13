@@ -1,3 +1,27 @@
+## Version 2025.04.13
+
+This release significantly overhauls the classic Word Document (.doc) parsing by integrating, updating, and stabilizing the underlying parsing engine. Numerous fixes, including several backported from related projects, address stability and memory safety issues.
+
+> The classic `.doc`, a format old,  
+> Its secrets now DocWire unfolds.  
+> With steadier hand and sharper sight,  
+> It reads the past, and makes it right.  
+> 📜🔧✨
+
+- **Improvements**
+  - **DOC Parser:** Incorporated the `wv2` library directly as a subproject and rebased it to the latest available version (SVN r45, 2009-12-17) for significantly improved classic `.doc` file handling.
+  - **DOC Parser Stability:** Improved list (`ilfo`) handling and validation
+
+- **Bug Fixes**
+  - **DOC Parser Stability:** Prevented potential endless loops during style unwrapping in the `wv2` library.
+  - **DOC Parser Memory Safety:** Fixed invalid memory reads/writes in the `wv2` library reported by Valgrind by applying a fix adapted from the Calligra project
+  - **DOC Parser Memory Safety:** Fixed potential use of invalid data pointers within the `wv2` library by applying a fix from the Calligra project.
+  - **DOC Parser Security:** Prevented potential buffer overflows when handling specific structures within the `wv2` library by applying a fix from the Calligra project.
+  - **Dependencies:** Updated the vcpkg patch for `libmagic` to resolve a regression affecting zip file detection introduced in libmagic 5.46.
+
+- **Refactor**
+  - **Code Compatibility:** Adjusted internal class names (`OLEStorage`, `OLEStreamReader`) and constants (`SEEK_*`) to align better with the original `wv2` codebase, simplifying the integration and future updates.
+
 ## Version 2025.03.24
 
 This release introduces a major overhaul of the HTML parsing component within the DocWire SDK, significantly enhancing the accuracy, robustness, and efficiency of HTML processing.  Alongside this core update, we've modernized the build system and improved overall project structure. **Please note that we have removed support for Ubuntu 20.04 in our CI/CD pipeline. If this change impacts your workflow, please contact us for assistance.**
