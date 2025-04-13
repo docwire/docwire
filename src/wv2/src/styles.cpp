@@ -370,7 +370,7 @@ void Style::unwrapStyle( const StyleSheet& stylesheet, WordVersion version )
         // only try to unwrap the "parent" if the style isn't the Nil style
         if ( m_std->istdBase != 0x0fff ) {
             parentStyle = stylesheet.styleByIndex( m_std->istdBase );
-            if ( parentStyle ) {
+            if ( parentStyle && parentStyle != this) {
                 const_cast<Style*>( parentStyle )->unwrapStyle( stylesheet, version );
                 m_properties->pap() = parentStyle->paragraphProperties().pap();
                 *m_chp = parentStyle->chp();
@@ -419,7 +419,7 @@ void Style::unwrapStyle( const StyleSheet& stylesheet, WordVersion version )
         // only try to unwrap the "parent" if the style isn't the Nil style
         if ( m_std->istdBase != 0x0fff ) {
             parentStyle = stylesheet.styleByIndex( m_std->istdBase );
-            if ( parentStyle ) {
+            if ( parentStyle && parentStyle != this) {
                 wvlog << "##### in here, parent style = " << parentStyle->sti() << std::endl;
                 const_cast<Style*>( parentStyle )->unwrapStyle( stylesheet, version );
                 bool ok;
