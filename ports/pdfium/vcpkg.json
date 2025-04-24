@@ -1,0 +1,25 @@
+{
+	"name": "pdfium",
+	"version": "137.0.7123.0",
+	"description": "PDFium",
+	"homepage": "https://pdfium.googlesource.com/pdfium/",
+	"license": "Apache-2.0",
+	"dependencies": [
+		{
+			"name": "freetype"
+		},
+		{
+			"name": "icu"
+		},
+		{
+			"name": "libjpeg-turbo"
+		},
+		{
+			"name": "openjpeg"
+		},
+		{
+			"name": "vcpkg-cmake",
+			"host": true
+		}
+	]
+}
