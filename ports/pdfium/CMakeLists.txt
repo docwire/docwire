@@ -297,21 +297,8 @@ target_compile_definitions(pdfium PRIVATE
 
 target_compile_features(pdfium PRIVATE cxx_std_20)
 
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86|X86|i[3-6]86|amd64|AMD64|x86_64)$")
-    set(x86_cpu_family TRUE)
-else()
-    set(x86_cpu_family FALSE)
-endif()
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|ARM64|aarch64|AARCH64)$")
-    set(arm64_cpu TRUE)
-else()
-    set(arm64_cpu FALSE)
-endif()
-
 set(build_config_content
     "#include \"buildflag.h\"
-    #define ARCH_CPU_X86_FAMILY ${x86_cpu_family}
-    #define ARCH_CPU_ARM64 ${arm64_cpu}
     #define BUILDFLAG_INTERNAL_IS_POSIX() ${GN_VAR_is_posix}
     #define BUILDFLAG_INTERNAL_IS_LINUX() ${GN_VAR_is_linux}
     #define BUILDFLAG_INTERNAL_IS_WIN() ${GN_VAR_is_win}
@@ -322,6 +309,12 @@ set(build_config_content
     #define BUILDFLAG_INTERNAL_IS_ASMJS() FALSE")
 string(REPLACE "TRUE" "true" build_config_content "${build_config_content}")
 string(REPLACE "FALSE" "false" build_config_content "${build_config_content}")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86|X86|i[3-6]86|amd64|AMD64|x86_64)$")
+    string(APPEND build_config_content "#define ARCH_CPU_X86_FAMILY\n")
+endif()
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|ARM64|aarch64|AARCH64)$")
+    string(APPEND build_config_content "#define ARCH_CPU_ARM64\n")
+endif()
 file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/build/build_config.h" "${build_config_content}")
 
 find_package(Freetype REQUIRED)
