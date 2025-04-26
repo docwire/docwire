@@ -1,5 +1,5 @@
 diff --git a/core/fxcrt/immediate_crash.h b/core/fxcrt/immediate_crash.h
-index 490a71c..ce723ce 100644
+index 490a71c..82ae054 100644
 --- a/core/fxcrt/immediate_crash.h
 +++ b/core/fxcrt/immediate_crash.h
 @@ -103,8 +103,8 @@
@@ -8,8 +8,8 @@ index 490a71c..ce723ce 100644
  
 -#define TRAP_SEQUENCE1_() asm volatile("int3")
 -#define TRAP_SEQUENCE2_() asm volatile("ud2")
-+#define TRAP_SEQUENCE1_() __asm { int3 }
-+#define TRAP_SEQUENCE2_() __asm { ud2 }
++#define TRAP_SEQUENCE1_() __debugbreak()
++#define TRAP_SEQUENCE2_() ((void)0)
  
  #endif  // defined(ARCH_CPU_ARM64)
  
