@@ -1,8 +1,7 @@
 add_library(docwire_pdf SHARED pdf_parser.cpp)
 
 find_library(pdfium pdfium)
-find_package(ZLIB REQUIRED)
-target_link_libraries(docwire_pdf PRIVATE ${pdfium} ZLIB::ZLIB docwire_core)
+target_link_libraries(docwire_pdf PRIVATE ${pdfium} docwire_core)
 
 install(TARGETS docwire_pdf EXPORT docwire_targets)
 if(MSVC)
