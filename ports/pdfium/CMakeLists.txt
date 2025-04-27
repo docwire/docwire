@@ -295,6 +295,9 @@ target_compile_definitions(pdfium PRIVATE
     USE_SYSTEM_ICUUC USE_SYSTEM_ZLIB USE_SYSTEM_LIBJPEG USE_SYSTEM_LIBOPENJPEG2 DEFINE_PS_TABLES_DATA
     ${platform_defines}
 )
+if(MSVC)
+    add_compile_definitions(pdfium _HAS_ITERATOR_DEBUGGING=0)
+endif()
 
 target_compile_features(pdfium PRIVATE cxx_std_20)
 
