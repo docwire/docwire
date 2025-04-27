@@ -1,0 +1,13 @@
+diff --git a/core/fpdfapi/edit/cpdf_pagecontentgenerator.cpp b/core/fpdfapi/edit/cpdf_pagecontentgenerator.cpp
+index b1d4415..c485e8b 100644
+--- a/core/fpdfapi/edit/cpdf_pagecontentgenerator.cpp
++++ b/core/fpdfapi/edit/cpdf_pagecontentgenerator.cpp
+@@ -275,6 +275,8 @@ void CloneResourcesDictEntries(CPDF_Document* doc,
+   struct KeyAndObject {
+     ByteString key;
+     RetainPtr<const CPDF_Object> object;
++    KeyAndObject(const ByteString& k, RetainPtr<const CPDF_Object> o)
++        : key(k), object(o) {}
+   };
+   std::vector<KeyAndObject> entries_to_maybe_clone;
+   {
