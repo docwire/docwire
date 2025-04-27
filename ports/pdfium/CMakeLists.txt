@@ -342,4 +342,9 @@ install(FILES ${HEADERS} DESTINATION include/pdfium)
 file(GLOB CPP_HEADERS "public/cpp/*.h")
 install(FILES ${CPP_HEADERS} DESTINATION include/pdfium/cpp)
 
-install(TARGETS pdfium EXPORT PDFium_targets)
+install(TARGETS pdfium
+    EXPORT PDFium_targets
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
