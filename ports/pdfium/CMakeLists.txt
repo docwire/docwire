@@ -290,6 +290,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     list(APPEND platform_defines "COMPILER_MSVC")
     list(APPEND platform_defines "NOMINMAX")
+    list(APPEND platform defines "WIN32_LEAN_AND_MEAN")
 endif()
 target_compile_definitions(pdfium PRIVATE
     USE_SYSTEM_ICUUC USE_SYSTEM_ZLIB USE_SYSTEM_LIBJPEG USE_SYSTEM_LIBOPENJPEG2 DEFINE_PS_TABLES_DATA
