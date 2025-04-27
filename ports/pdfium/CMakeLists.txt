@@ -288,10 +288,14 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
     list(APPEND platform_defines "COMPILER_GCC")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    list(APPEND platform_defines "COMPILER_MSVC")
-    list(APPEND platform_defines "NOMINMAX")
-    list(APPEND platform_defines "WIN32_LEAN_AND_MEAN")
-    list(APPEND platform_defines "_HAS_ITERATOR_DEBUGGING=0")
+    list(APPEND platform_defines
+        "COMPILER_MSVC"
+        "NOMINMAX"
+        "WIN32_LEAN_AND_MEAN"
+        "_HAS_ITERATOR_DEBUGGING=0"
+        "_UNICODE"
+        "UNICODE"
+    )
 endif()
 target_compile_definitions(pdfium PRIVATE
     USE_SYSTEM_ICUUC USE_SYSTEM_ZLIB USE_SYSTEM_LIBJPEG USE_SYSTEM_LIBOPENJPEG2 DEFINE_PS_TABLES_DATA
