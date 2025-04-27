@@ -1,15 +1,21 @@
 diff --git a/core/fxcrt/fx_memory.h b/core/fxcrt/fx_memory.h
-index 694e7ff..d22d924 100644
+index 694e7ff..31957e6 100644
 --- a/core/fxcrt/fx_memory.h
 +++ b/core/fxcrt/fx_memory.h
-@@ -102,6 +102,12 @@ inline void FX_AlignedFree(void* ptr) {
+@@ -102,6 +102,18 @@ inline void FX_AlignedFree(void* ptr) {
  #endif
  }
  
++// --- Diagnostic Macros ---
++#define STRINGIFY_HELPER(x) #x
++#define STRINGIFY(x) STRINGIFY_HELPER(x)
++// --- End Diagnostic Macros ---
++
 +#ifdef pdfium
-+#error "pdfium is defined as macro before pdfium namespace definition
++  // Use #pragma message to print the value without stopping the build immediately
++  #pragma message("MSVC Diagnostic: 'pdfium' is defined and expands to: " STRINGIFY(pdfium))
 +#else
-+#warning "ok. pdfium is not defined as a macro"
++  #pragma message("MSVC Diagnostic: 'pdfium' is NOT defined at this point.")
 +#endif
 +
  namespace pdfium {
