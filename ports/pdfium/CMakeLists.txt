@@ -348,3 +348,5 @@ install(TARGETS pdfium
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
+
+install(FILES ${CMAKE_BINARY_DIR}/pdfium.lib DESTINATION lib)
