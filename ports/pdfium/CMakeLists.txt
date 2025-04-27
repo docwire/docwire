@@ -315,8 +315,8 @@ set(build_config_content
     #define BUILDFLAG_INTERNAL_IS_NACL() FALSE
     #define BUILDFLAG_INTERNAL_IS_ASMJS() FALSE
 ")
-string(REPLACE "TRUE" "true" build_config_content "${build_config_content}")
-string(REPLACE "FALSE" "false" build_config_content "${build_config_content}")
+string(REPLACE "TRUE" "1" build_config_content "${build_config_content}")
+string(REPLACE "FALSE" "0" build_config_content "${build_config_content}")
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86|X86|i[3-6]86|amd64|AMD64|x86_64)$")
     string(APPEND build_config_content "#define ARCH_CPU_X86_FAMILY\n")
 endif()
