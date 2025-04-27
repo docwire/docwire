@@ -1,19 +1,19 @@
 diff --git a/core/fxcodec/jpeg/jpeg_common.c b/core/fxcodec/jpeg/jpeg_common.c
-index d2798f6..02c0653 100644
+index d2798f6..2a80b11 100644
 --- a/core/fxcodec/jpeg/jpeg_common.c
 +++ b/core/fxcodec/jpeg/jpeg_common.c
 @@ -88,9 +88,12 @@ void jpeg_common_error_fatal(j_common_ptr cinfo) {
  }
  
  #if BUILDFLAG(IS_WIN)
-+#pragma message("Compiling jpeg_common_dest_do_nothing")
++#warning "Compiling jpeg_common_dest_do_nothing"
  void jpeg_common_dest_do_nothing(j_compress_ptr cinfo) {}
  
  boolean jpeg_common_dest_empty(j_compress_ptr cinfo) {
    return FALSE;
  }
 +#else
-+#pragma message("Not compiling jpeg_common_dest_do_nothing!")
++#warning "Not compiling jpeg_common_dest_do_nothing!"
  #endif  // BUILDFLAG(IS_WIN)
 diff --git a/core/fxcrt/byteorder.h b/core/fxcrt/byteorder.h
 index af29b6c..30d96df 100644
