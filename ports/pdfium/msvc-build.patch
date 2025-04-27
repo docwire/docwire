@@ -1,10 +1,16 @@
 diff --git a/core/fxcodec/jpeg/jpeg_common.c b/core/fxcodec/jpeg/jpeg_common.c
-index d2798f6..02c0653 100644
+index d2798f6..ea8eb60 100644
 --- a/core/fxcodec/jpeg/jpeg_common.c
 +++ b/core/fxcodec/jpeg/jpeg_common.c
-@@ -88,9 +88,12 @@ void jpeg_common_error_fatal(j_common_ptr cinfo) {
+@@ -87,10 +87,18 @@ void jpeg_common_error_fatal(j_common_ptr cinfo) {
+   longjmp(pCommon->jmpbuf, -1);
  }
  
++#define STRINGIFY_HELPER(x) #x
++#define STRINGIFY(x) STRINGIFY_HELPER(x)
++
++#pragma message("BUILDFLAG(IS_WIN) evaluates to: " STRINGIFY(BUILDFLAG(IS_WIN)))
++
  #if BUILDFLAG(IS_WIN)
 +#pragma message("Compiling jpeg_common_dest_do_nothing")
  void jpeg_common_dest_do_nothing(j_compress_ptr cinfo) {}
