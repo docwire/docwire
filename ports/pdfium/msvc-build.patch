@@ -1,3 +1,28 @@
+diff --git a/core/fxcrt/byteorder.h b/core/fxcrt/byteorder.h
+index af29b6c..30d96df 100644
+--- a/core/fxcrt/byteorder.h
++++ b/core/fxcrt/byteorder.h
+@@ -18,7 +18,7 @@ namespace internal {
+ // TODO(thestig): Once C++23 is available, replace with std::byteswap.
+ inline constexpr uint16_t ByteSwap(uint16_t x) {
+ #if defined(COMPILER_MSVC) && !defined(__clang__)
+-#error "MSVC is not supported."
++  return (x << 8) | (x >> 8);
+ #else
+   return __builtin_bswap16(x);
+ #endif
+@@ -26,7 +26,10 @@ inline constexpr uint16_t ByteSwap(uint16_t x) {
+ 
+ inline constexpr uint32_t ByteSwap(uint32_t x) {
+ #if defined(COMPILER_MSVC) && !defined(__clang__)
+-#error "MSVC is not supported."
++  return (x << 24) |
++    ((x & 0x0000FF00) <<  8) |
++    ((x & 0x00FF0000) >>  8) |
++    (x >> 24);
+ #else
+   return __builtin_bswap32(x);
+ #endif
 diff --git a/core/fxcrt/immediate_crash.h b/core/fxcrt/immediate_crash.h
 index 490a71c..82ae054 100644
 --- a/core/fxcrt/immediate_crash.h
