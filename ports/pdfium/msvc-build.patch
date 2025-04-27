@@ -1,3 +1,18 @@
+diff --git a/core/fxcrt/fx_memory.h b/core/fxcrt/fx_memory.h
+index 694e7ff..dd00560 100644
+--- a/core/fxcrt/fx_memory.h
++++ b/core/fxcrt/fx_memory.h
+@@ -102,6 +102,10 @@ inline void FX_AlignedFree(void* ptr) {
+ #endif
+ }
+ 
++#ifdef internal
++#undef internal
++#endif
++
+ namespace pdfium {
+ namespace internal {
+ 
 diff --git a/core/fxcrt/immediate_crash.h b/core/fxcrt/immediate_crash.h
 index 490a71c..82ae054 100644
 --- a/core/fxcrt/immediate_crash.h
