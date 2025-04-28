@@ -39,15 +39,19 @@ index 490a71c..82ae054 100644
  #endif  // defined(ARCH_CPU_ARM64)
  
 diff --git a/fpdfsdk/fpdf_annot.cpp b/fpdfsdk/fpdf_annot.cpp
-index 5d31041..594d2ff 100644
+index 5d31041..e908169 100644
 --- a/fpdfsdk/fpdf_annot.cpp
 +++ b/fpdfsdk/fpdf_annot.cpp
-@@ -1158,7 +1158,7 @@ FPDFAnnot_SetAP(FPDF_ANNOTATION annot,
+@@ -1157,9 +1157,9 @@ FPDFAnnot_SetAP(FPDF_ANNOTATION annot,
+     return false;
    }
  
-   static constexpr auto kModeKeyForMode =
+-  static constexpr auto kModeKeyForMode =
 -      fxcrt::ToArray<const char*>({"N", "R", "D"});
-+      std::to_array({"N", "R", "D"});
-   static_assert(kModeKeyForMode.size() == FPDF_ANNOT_APPEARANCEMODE_COUNT,
+-  static_assert(kModeKeyForMode.size() == FPDF_ANNOT_APPEARANCEMODE_COUNT,
++  static constexpr const char* kModeKeyForMode[] = {"N", "R", "D"};
++
++  static_assert(sizeof(kModeKeyForMode) / sizeof(kModeKeyForMode[0])== FPDF_ANNOT_APPEARANCEMODE_COUNT,
                  "length of kModeKeyForMode should be equal to "
                  "FPDF_ANNOT_APPEARANCEMODE_COUNT");
+ 
