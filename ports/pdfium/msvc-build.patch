@@ -20,6 +20,23 @@ index 84b72f3..25c3112 100644
  
  }  // namespace
  
+diff --git a/core/fpdfdoc/cpdf_dest.cpp b/core/fpdfdoc/cpdf_dest.cpp
+index 7da5be3..ddead30 100644
+--- a/core/fpdfdoc/cpdf_dest.cpp
++++ b/core/fpdfdoc/cpdf_dest.cpp
+@@ -21,9 +21,9 @@ namespace {
+ 
+ // These arrays are indexed by the PDFDEST_VIEW_* constants.
+ 
+-constexpr auto kZoomModes =
+-    fxcrt::ToArray<const char*>({"Unknown", "XYZ", "Fit", "FitH", "FitV",
+-                                 "FitR", "FitB", "FitBH", "FitBV"});
++constexpr const char* kZoomModes[] =
++    {"Unknown", "XYZ", "Fit", "FitH", "FitV",
++      "FitR", "FitB", "FitBH", "FitBV"};
+ 
+ constexpr auto kZoomModeMaxParamCount =
+     fxcrt::ToArray<const uint8_t>({0, 3, 0, 1, 1, 4, 0, 1, 1});
 diff --git a/core/fxcrt/byteorder.h b/core/fxcrt/byteorder.h
 index af29b6c..30d96df 100644
 --- a/core/fxcrt/byteorder.h
