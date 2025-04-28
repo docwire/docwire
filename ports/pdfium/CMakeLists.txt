@@ -159,7 +159,7 @@ else()
     set(GN_VAR_is_posix FALSE)
 endif()
 
-set(GN_VAR_is_component_build FALSE)
+set(GN_VAR_is_component_build TRUE)
 set(GN_VAR_pdf_use_partition_alloc FALSE)
 set(GN_VAR_pdf_enable_xfa FALSE)
 set(GN_VAR_pdf_enable_xfa_bmp FALSE)
@@ -299,6 +299,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 target_compile_definitions(pdfium PRIVATE
     USE_SYSTEM_ICUUC USE_SYSTEM_ZLIB USE_SYSTEM_LIBJPEG USE_SYSTEM_LIBOPENJPEG2 DEFINE_PS_TABLES_DATA
+    COMPONENT_BUILD
     ${platform_defines}
 )
 
