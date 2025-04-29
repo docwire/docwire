@@ -15,6 +15,7 @@
 #include "log.h"
 #include "make_error.h"
 #include <mutex>
+#include <pdfium/cpp/fpdf_scopers.h>
 #include <pdfium/fpdf_doc.h>
 #include <pdfium/fpdfview.h>
 #include <pdfium/fpdf_text.h>
@@ -59,13 +60,7 @@ template<>
 struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 {
 	pimpl_impl(PDFParser& owner) : with_pimpl_owner{owner} {}
-	struct fpdf_document
-	{
-		FPDF_DOCUMENT v;
-		fpdf_document() : v(nullptr) {}
-		~fpdf_document() { if (v) FPDF_CloseDocument(v); }
-	};
-	fpdf_document m_pdf_document;
+	ScopedFPDFDocument m_pdf_document;
 
 		struct PageText
 		{
@@ -192,7 +187,7 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 	void parseText()
 	{
 		docwire_log_func();
-		int page_count = FPDF_GetPageCount(m_pdf_document.v);
+		int page_count = FPDF_GetPageCount(m_pdf_document.get());
 		docwire_log_var(page_count);
 		for (size_t page_num = 0; page_num < page_count; page_num++)
 		{
@@ -209,26 +204,26 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 			try
 			{
 				PageText page_text;
-				FPDF_PAGE page = FPDF_LoadPage(m_pdf_document.v, page_num);
+				ScopedFPDFPage page { FPDF_LoadPage(m_pdf_document.get(), page_num) };
 				throw_if(!page);
-				FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
+				ScopedFPDFTextPage text_page { FPDFText_LoadPage(page.get()) };
 				throw_if(!text_page);
-				int object_count = FPDFPage_CountObjects(page);
+				int object_count = FPDFPage_CountObjects(page.get());
 				throw_if (object_count < 0);
 				charset_converter conv("UTF-16LE", "UTF-8"); // Create converter *outside* the loops
 				for (int i = 0; i < object_count; ++i)
 				{
-    				FPDF_PAGEOBJECT object = FPDFPage_GetObject(page, i);
+    				FPDF_PAGEOBJECT object = FPDFPage_GetObject(page.get(), i);
     				throw_if (!object);
     				int object_type = FPDFPageObj_GetType(object);
     				switch (object_type)
 					{
         				case FPDF_PAGEOBJ_TEXT:
         				{
-							unsigned long buffer_size = FPDFTextObj_GetText(object, text_page, nullptr, 0);
+							unsigned long buffer_size = FPDFTextObj_GetText(object, text_page.get(), nullptr, 0);
             				throw_if(buffer_size < 2);
                 			std::vector<unsigned short> buffer(buffer_size);
-                			unsigned long bytes_returned = FPDFTextObj_GetText(object, text_page, buffer.data(), buffer.size());
+                			unsigned long bytes_returned = FPDFTextObj_GetText(object, text_page.get(), buffer.data(), buffer.size());
                 			throw_if(bytes_returned != buffer_size);
                     		std::string utf8_text = conv.convert(std::string{
                         		reinterpret_cast<const char*>(buffer.data()),
@@ -286,11 +281,11 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 
 	std::string get_meta_text(const std::string& tag)
 	{
-		unsigned long buffer_size = FPDF_GetMetaText(m_pdf_document.v, tag.c_str(), nullptr, 0);
+		unsigned long buffer_size = FPDF_GetMetaText(m_pdf_document.get(), tag.c_str(), nullptr, 0);
 		throw_if(buffer_size < 2);
 		std::vector<unsigned short> buffer(buffer_size);
 		charset_converter conv("UTF-16LE", "UTF-8");
-		unsigned long bytes_returned = FPDF_GetMetaText(m_pdf_document.v, tag.c_str(), buffer.data(), buffer.size());
+		unsigned long bytes_returned = FPDF_GetMetaText(m_pdf_document.get(), tag.c_str(), buffer.data(), buffer.size());
 		throw_if(bytes_returned != buffer_size);
 		std::string utf8_text = conv.convert(std::string{
 			reinterpret_cast<const char*>(buffer.data()),
@@ -326,7 +321,7 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 			parsePDFDate(modify_date_tm, mod_date_str);
 			metadata.last_modification_date = modify_date_tm;
 		}
-		metadata.page_count = FPDF_GetPageCount(m_pdf_document.v);
+		metadata.page_count = FPDF_GetPageCount(m_pdf_document.get());
 	}
 
 	void init_pdfium()
@@ -358,15 +353,14 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 		init_pdfium();
 		std::span<const std::byte> span = data.span();
 		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-		FPDF_DOCUMENT doc = FPDF_LoadMemDocument(span.data(), span.size(), nullptr);
-		if (!doc)
+		m_pdf_document = ScopedFPDFDocument { FPDF_LoadMemDocument(span.data(), span.size(), nullptr) };
+		if (!m_pdf_document)
 		{
 			if (FPDF_GetLastError() == FPDF_ERR_PASSWORD)
 				throw make_error(errors::file_encrypted{});
 			else
 				throw make_error("FPDF_LoadMemDocument() failed", FPDF_GetLastError(), errors::uninterpretable_data{});
 		}
-		m_pdf_document.v = doc;
 	}
 };
 
