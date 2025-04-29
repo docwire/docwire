@@ -187,6 +187,7 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 	void parseText()
 	{
 		docwire_log_func();
+		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
 		int page_count = FPDF_GetPageCount(m_pdf_document.get());
 		docwire_log_var(page_count);
 		for (size_t page_num = 0; page_num < page_count; page_num++)
@@ -281,6 +282,7 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 
 	std::string get_meta_text(const std::string& tag)
 	{
+		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
 		unsigned long buffer_size = FPDF_GetMetaText(m_pdf_document.get(), tag.c_str(), nullptr, 0);
 		throw_if(buffer_size < 2);
 		std::vector<unsigned short> buffer(buffer_size);
@@ -321,10 +323,11 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 			parsePDFDate(modify_date_tm, mod_date_str);
 			metadata.last_modification_date = modify_date_tm;
 		}
+		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
 		metadata.page_count = FPDF_GetPageCount(m_pdf_document.get());
 	}
 
-	void init_pdfium()
+	void init_pdfium_once()
 	{
 		class pdfium_lifecycle_manager
 		{
@@ -336,11 +339,13 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 				config.m_pUserFontPaths = nullptr;
 				config.m_pIsolate = nullptr;
 				config.m_v8EmbedderSlot = 0;
+				std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
 				FPDF_InitLibraryWithConfig(&config);
 			}
 
 			~pdfium_lifecycle_manager()
 			{
+				std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
 				FPDF_DestroyLibrary();
 			}
 		};
@@ -350,8 +355,8 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 	void loadDocument(const data_source& data)
 	{
 		docwire_log_func();
-		init_pdfium();
 		std::span<const std::byte> span = data.span();
+		init_pdfium_once();
 		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
 		m_pdf_document = ScopedFPDFDocument { FPDF_LoadMemDocument(span.data(), span.size(), nullptr) };
 		if (!m_pdf_document)
@@ -401,10 +406,7 @@ PDFParser::parse(const data_source& data)
 			}
 		});
 	impl().loadDocument(data);
-	{
-		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-		impl().parseText();
-	}
+	impl().parseText();
 	sendTag(tag::CloseDocument{});
 }
 
