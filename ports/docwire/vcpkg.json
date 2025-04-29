@@ -61,7 +61,7 @@
 			"name": "magic-enum"
 		},
 		{
-			"name": "podofo"
+			"name": "pdfium"
 		},
 		{
 			"name": "unzip"
@@ -97,12 +97,6 @@
 		},
 		{
 			"name": "curlpp"
-		},
-		{
-			"name": "cmap-resources"
-		},
-		{
-			"name": "mapping-resources-pdf"
 		},
 		{
 			"name": "ctranslate2"

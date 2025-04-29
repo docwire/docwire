@@ -1,3 +1,28 @@
+## Version 2025.04.29
+
+This release marks a significant upgrade to PDF handling by replacing the PoDoFo library with Google's PDFium engine. This change aims to improve compatibility and resolve parsing issues encountered with various PDF documents. A substantial part of this release involved extensive stabilization work to ensure PDFium builds and integrates correctly across Windows (MSVC), MacOS, ARM64, and with Clang compilers. Subsequent fixes address runtime issues discovered in the PDF parser after the integration.
+
+> The old PDF engine, a source of some strife,  
+> Replaced by PDFium, bringing new life.  
+> Its powerful core resolves the plight,  
+> Parsing PDFs now shines so bright.  
+> 📄✨🔧
+
+- **Features**
+  - Replaced the PoDoFo library with PDFium in PDF parser to improve PDF parsing reliability and compatibility with problematic files.
+
+- **Fixes**
+  - **PDFium Integration & Build Stability:** Resolved numerous build, linking, and integration issues with the new PDFium backend across multiple platforms and toolchains:
+    - Addressed compilation errors, warnings, and configuration specifics for MSVC on Windows.
+    - Corrected linking problems and build issues on MacOS (including versions 13/14).
+    - Ensured compatibility with the ARM64 architecture.
+    - Fixed build issues encountered when using the Clang compiler.
+    - Corrected installation paths for PDFium library files on Windows.
+  - **PDFParser Runtime:**
+    - Fixed threading issues within the PDF parser.
+    - Addressed memory leaks identified in the PDF parser.
+  - **PDFium Headers:** Fixed incorrect include paths in PDFium public header files.
+
 ## Version 2025.04.13
 
 This release significantly overhauls the classic Word Document (.doc) parsing by integrating, updating, and stabilizing the underlying parsing engine. Numerous fixes, including several backported from related projects, address stability and memory safety issues.

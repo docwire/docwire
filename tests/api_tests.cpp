@@ -452,12 +452,6 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     auto format = GetParam();
     std::string file_name{ std::string{"password_protected."} + format };
 
-    std::ifstream ifs{ file_name + ".out" };
-    ASSERT_TRUE(ifs.good()) <<  "File " << file_name << ".out" << " not found\n";
-    
-    std::string expected_text{ std::istreambuf_iterator<char>{ifs},
-        std::istreambuf_iterator<char>{}};
-
     SCOPED_TRACE("file_name = " + file_name);
 
     // WHEN
