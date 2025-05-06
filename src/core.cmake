@@ -12,13 +12,11 @@ add_library(docwire_core SHARED
     data_stream.cpp
     parser.cpp
     post.cpp
-    html_writer.cpp
     csv_writer.cpp
     plain_text_writer.cpp
     standard_filter.cpp
     output.cpp
     plain_text_exporter.cpp
-    html_exporter.cpp
     csv_exporter.cpp
     meta_data_exporter.cpp
     transformer_func.cpp
