@@ -21,8 +21,10 @@
 #include <pdfium/fpdf_text.h>
 #include <pdfium/fpdf_edit.h>
 #include <set>
+#include <stack>
 #include <stdlib.h>
 #include <string.h>
+#include "scoped_stack_push.h"
 #include "throw_if.h"
 #include <vector>
 #include <zlib.h>
@@ -34,7 +36,6 @@ namespace docwire
 namespace
 {
 	std::mutex pdfium_mutex;
-} // unnamed namespace
 
 void parsePDFDate(tm& date, const std::string& str_date)
 {
@@ -56,11 +57,32 @@ void parsePDFDate(tm& date, const std::string& str_date)
 	--date.tm_mon;
 }
 
-template<>
-struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
+using scoped_fpdf_document_with_custom_deleter = std::unique_ptr<
+		std::remove_pointer_t<FPDF_DOCUMENT>,
+		std::function<void(FPDF_DOCUMENT)>>;
+
+struct context
 {
-	pimpl_impl(PDFParser& owner) : with_pimpl_owner{owner} {}
-	ScopedFPDFDocument m_pdf_document;
+	const emission_callbacks& emit_tag;
+	scoped_fpdf_document_with_custom_deleter pdf_document;
+};
+
+} // unnamed namespace
+
+template<>
+struct pimpl_impl<PDFParser> : pimpl_impl_base
+{
+	std::stack<context> m_context_stack;
+
+	continuation emit_tag(Tag&& tag)
+	{
+		return m_context_stack.top().emit_tag(std::move(tag));
+	}
+
+	FPDF_DOCUMENT pdf_document()
+	{
+		return m_context_stack.top().pdf_document.get();
+	}
 
 		struct PageText
 		{
@@ -188,24 +210,24 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 	{
 		docwire_log_func();
 		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-		int page_count = FPDF_GetPageCount(m_pdf_document.get());
+		int page_count = FPDF_GetPageCount(pdf_document());
 		docwire_log_var(page_count);
 		for (size_t page_num = 0; page_num < page_count; page_num++)
 		{
 			docwire_log_var(page_num);
-			auto response = owner().sendTag(tag::Page{});
-			if (response.skip)
+			auto response = emit_tag(tag::Page{});
+			if (response == continuation::skip)
 			{
 				continue;
 			}
-			if (response.cancel)
+			else if (response == continuation::stop)
 			{
 				break;
 			}
 			try
 			{
 				PageText page_text;
-				ScopedFPDFPage page { FPDF_LoadPage(m_pdf_document.get(), page_num) };
+				ScopedFPDFPage page { FPDF_LoadPage(pdf_document(), page_num) };
 				throw_if(!page);
 				ScopedFPDFTextPage text_page { FPDFText_LoadPage(page.get()) };
 				throw_if(!text_page);
@@ -261,13 +283,13 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 				std::string single_page_text;
 				page_text.getText(single_page_text);
 				single_page_text += "\n\n";
-				auto response = owner().sendTag(tag::Text{single_page_text});
-				if (response.cancel)
+				auto response = emit_tag(tag::Text{single_page_text});
+				if (response == continuation::stop)
 				{
 					break;
 				}
-        		auto response2 = owner().sendTag(tag::ClosePage{});
-        		if (response2.cancel)
+        		auto response2 = emit_tag(tag::ClosePage{});
+        		if (response2 == continuation::stop)
         		{
           			break;
         		}
@@ -283,11 +305,11 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 	std::string get_meta_text(const std::string& tag)
 	{
 		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-		unsigned long buffer_size = FPDF_GetMetaText(m_pdf_document.get(), tag.c_str(), nullptr, 0);
+		unsigned long buffer_size = FPDF_GetMetaText(pdf_document(), tag.c_str(), nullptr, 0);
 		throw_if(buffer_size < 2);
 		std::vector<unsigned short> buffer(buffer_size);
 		charset_converter conv("UTF-16LE", "UTF-8");
-		unsigned long bytes_returned = FPDF_GetMetaText(m_pdf_document.get(), tag.c_str(), buffer.data(), buffer.size());
+		unsigned long bytes_returned = FPDF_GetMetaText(pdf_document(), tag.c_str(), buffer.data(), buffer.size());
 		throw_if(bytes_returned != buffer_size);
 		std::string utf8_text = conv.convert(std::string{
 			reinterpret_cast<const char*>(buffer.data()),
@@ -324,7 +346,7 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 			metadata.last_modification_date = modify_date_tm;
 		}
 		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-		metadata.page_count = FPDF_GetPageCount(m_pdf_document.get());
+		metadata.page_count = FPDF_GetPageCount(pdf_document());
 	}
 
 	void init_pdfium_once()
@@ -358,8 +380,16 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 		std::span<const std::byte> span = data.span();
 		init_pdfium_once();
 		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-		m_pdf_document = ScopedFPDFDocument { FPDF_LoadMemDocument(span.data(), span.size(), nullptr) };
-		if (!m_pdf_document)
+		m_context_stack.top().pdf_document = scoped_fpdf_document_with_custom_deleter
+			{
+				FPDF_LoadMemDocument(span.data(), span.size(), nullptr),
+				[&](FPDF_DOCUMENT doc)
+				{
+					std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
+					FPDF_CloseDocument(doc);
+				}
+			};
+		if (!pdf_document())
 		{
 			if (FPDF_GetLastError() == FPDF_ERR_PASSWORD)
 				throw make_error(errors::file_encrypted{});
@@ -369,45 +399,32 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 	}
 };
 
-PDFParser::PDFParser()
-	: with_pimpl<PDFParser>(nullptr)
-{
-	std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-	renew_impl();
-}
+PDFParser::PDFParser() = default;
 
-PDFParser::~PDFParser()
-{
-	std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-	destroy_impl();
-}
+PDFParser::~PDFParser() = default;
 
 attributes::Metadata PDFParser::metaData(const data_source& data)
 {
 	attributes::Metadata metadata;
-	impl().loadDocument(data);
 	impl().parseMetadata(metadata);
 	return metadata;
 }
 
 void
-PDFParser::parse(const data_source& data)
+PDFParser::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using PDF parser.";
-	{
-		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-		renew_impl();
-	}
-	sendTag(tag::Document
+	scoped::stack_push<context> context_guard{impl().m_context_stack, {.emit_tag = emit_tag}};
+	impl().loadDocument(data);
+	emit_tag(tag::Document
 		{
 			.metadata = [this, &data]()
 			{
 				return metaData(data);
 			}
 		});
-	impl().loadDocument(data);
 	impl().parseText();
-	sendTag(tag::CloseDocument{});
+	emit_tag(tag::CloseDocument{});
 }
 
 } // namespace docwire

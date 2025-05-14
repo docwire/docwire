@@ -21,6 +21,7 @@
 #include "make_error.h"
 #include "output.h"
 #include "post.h"
+#include "tags.h"
 #include <sstream>
 
 namespace docwire
@@ -162,16 +163,13 @@ bool has_txt_extension(const file_extension& extension)
 
 } // anonymous namespace
 
-void Chat::process(Info& info)
+continuation Chat::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
 	docwire_log_func();
-	if (!std::holds_alternative<data_source>(info.tag))
-	{
-		emit(info);
-		return;
-	}
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
 	docwire_log(debug) << "data_source received";
-	const data_source& data = std::get<data_source>(info.tag);
+	const data_source& data = std::get<data_source>(tag);
 	UserMsgType user_msg_type;
 	std::string data_str;
 	if (data.file_extension() && has_txt_extension(*data.file_extension()))
@@ -190,8 +188,7 @@ void Chat::process(Info& info)
 		data_str = std::string{"data:image/*;base64,"} + base64Encoded;
 	}
 	std::string content = parse_response(post_request(prepare_query(impl().m_system_message, user_msg_type, data_str, impl().m_model, impl().m_temperature, impl().m_image_detail), impl().m_api_key)) + '\n';
-	Info new_info(data_source{content});
-	emit(new_info);
+	return emit_tag(data_source{content});
 }
 
 } // namespace openai

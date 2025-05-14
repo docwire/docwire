@@ -14,6 +14,7 @@
 
 #include "chain_element.h"
 #include "openai_export.h"
+#include "tags.h"
 
 namespace docwire
 {
@@ -37,10 +38,11 @@ public:
 
 	/**
 	* @brief Executes transform operation for given node data.
-	* @see docwire::Info
-	* @param info
+	* @see docwire::Tag
+	* @param tag
+	* @param emit_tag
 	*/
-	void process(Info& info) override;
+	continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
 
 	bool is_leaf() const override
 	{

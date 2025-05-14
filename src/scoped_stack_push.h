@@ -9,29 +9,37 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "output.h"
+#ifndef DOCWIRE_SCOPED_STACK_PUSH_H
+#define DOCWIRE_SCOPED_STACK_PUSH_H
 
-#include "error_tags.h"
-#include "ref_or_owned.h"
-#include "throw_if.h"
+#include <stack>
 
-namespace docwire
+namespace docwire::scoped
 {
 
-continuation OutputChainElement::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+template <typename T>
+class stack_push
 {
-	if (std::holds_alternative<std::exception_ptr>(tag))
-		return emit_tag(std::move(tag));
-	if (std::holds_alternative<ref_or_owned<std::ostream>>(m_out_obj))
+public:
+	stack_push(std::stack<T>& stack, const T& value) : m_stack(stack)
 	{
-		throw_if (!std::holds_alternative<data_source>(tag),
-			"Only data_source tags are supported", errors::program_logic{});
-		std::shared_ptr<std::istream> in_stream = std::get<data_source>(tag).istream();
-		std::get<ref_or_owned<std::ostream>>(m_out_obj).get() << in_stream->rdbuf();
+		m_stack.push(value);
 	}
-	else
-		std::get<ref_or_owned<std::vector<Tag>>>(m_out_obj).get().push_back(std::move(tag));
-	return continuation::proceed;
-}
+
+	stack_push(std::stack<T>& stack, T&& value) : m_stack(stack)
+	{
+		m_stack.push(std::move(value));
+	}
+
+	~stack_push()
+	{
+		m_stack.pop();
+	}
+
+private:
+	std::stack<T>& m_stack;
+};
 
 } // namespace docwire
+
+#endif

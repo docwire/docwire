@@ -31,16 +31,13 @@ public:
 protected:
 
   /**
-   * @brief Executes text parsing
+   * @brief Executes parsing
    */
-  virtual void parse(const data_source& data) = 0;
+  virtual void parse(const data_source& data, const emission_callbacks& emit_tag) = 0;
 
   virtual const std::vector<mime_type> supported_mime_types() = 0;
 
-  void process(Info &info) override;
-
-  Info sendTag(const Tag& tag) const;
-  Info sendTag(const Info &info) const;
+  virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
 };
 
 } // namespace docwire

@@ -17,21 +17,18 @@
 namespace docwire::local_ai
 {
 
-void model_chain_element::process(Info& info)
+continuation model_chain_element::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
-	if (!std::holds_alternative<data_source>(info.tag))
-	{
-		emit(info);
-		return;
-	}
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
 
-	const data_source& data = std::get<data_source>(info.tag);
+	const data_source& data = std::get<data_source>(tag);
 	throw_if (data.file_extension() && *data.file_extension() != file_extension{".txt"}, errors::program_logic{});
 	std::string input = m_prompt + "\n" + data.string();
 	std::string output = m_model_runner->process(input);
 
-	Info new_info(data_source{output});
-	emit(new_info);
+	emit_tag(data_source{output});
+	return continuation::proceed;
 }
 
 } // namespace docwire::local_ai

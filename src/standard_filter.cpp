@@ -13,84 +13,90 @@
 namespace docwire
 {
 
-NewNodeCallback StandardFilter::filterByFolderName(const std::vector<std::string> &names)
-{
-  return [names](Info &info)
+tag_transform_func StandardFilter::filterByFolderName(const std::vector<std::string> &names)
+{  
+  return [names](Tag&& tag, const emission_callbacks& emit_tag) -> continuation
   {
-    if (!std::holds_alternative<tag::Folder>(info.tag))
-      return;
-    auto folder_name = std::get<tag::Folder>(info.tag).name;
+    if (!std::holds_alternative<tag::Folder>(tag))
+      return emit_tag(std::move(tag));
+    auto folder_name = std::get<tag::Folder>(tag).name;
     if (folder_name)
     {
       if (!std::any_of(names.begin(), names.end(), [&folder_name](const std::string &name){return (*folder_name) == name;}))
       {
-        info.skip = true;
+        return continuation::skip;
       }
     }
+    return emit_tag(std::move(tag));
   };
 }
 
-NewNodeCallback StandardFilter::filterByAttachmentType(const std::vector<file_extension>& types)
+tag_transform_func StandardFilter::filterByAttachmentType(const std::vector<file_extension>& types)
 {
-  return [types](Info &info)
+  return [types](Tag&& tag, const emission_callbacks& emit_tag) -> continuation
   {
-    if (!std::holds_alternative<tag::Attachment>(info.tag))
-      return;
-    if (!std::get<tag::Attachment>(info.tag).extension)
-      return;
-    auto attachment_type = std::get<tag::Attachment>(info.tag).extension;
+    if (!std::holds_alternative<tag::Attachment>(tag))
+      return emit_tag(std::move(tag));
+    if (!std::get<tag::Attachment>(tag).extension)
+      return emit_tag(std::move(tag));
+    auto attachment_type = std::get<tag::Attachment>(tag).extension;
     if (attachment_type)
     {
       if (!std::any_of(types.begin(), types.end(), [&attachment_type](const file_extension& type){ return (*attachment_type) == type; }))
       {
-        info.skip = true;
+        return continuation::skip;
       }
     }
+    return emit_tag(std::move(tag));
   };
 }
 
-NewNodeCallback StandardFilter::filterByMailMinCreationTime(unsigned int min_time)
+tag_transform_func StandardFilter::filterByMailMinCreationTime(unsigned int min_time)
 {
-  return [min_time](Info &info)
+  return [min_time](Tag&& tag, const emission_callbacks& emit_tag) -> continuation
   {
-    if (!std::holds_alternative<tag::Mail>(info.tag))
-      return;
-    auto mail_creation_time = std::get<tag::Mail>(info.tag).date;
-    if (mail_creation_time)
-    {
-      if (*mail_creation_time < min_time)
-      {
-        info.skip = true;
-      }
-    }
+	  if (!std::holds_alternative<tag::Mail>(tag))
+		  return emit_tag(std::move(tag));
+	  auto mail_creation_time = std::get<tag::Mail>(tag).date;
+	  if (mail_creation_time)
+	  {
+		  if (*mail_creation_time < min_time)
+		  {
+			  return continuation::skip;
+		  }
+	  }
+	  return emit_tag(std::move(tag));
   };
 }
 
-NewNodeCallback StandardFilter::filterByMailMaxCreationTime(unsigned int max_time)
+tag_transform_func StandardFilter::filterByMailMaxCreationTime(unsigned int max_time)
 {
-  return [max_time](Info &info)
+	return [max_time](Tag&& tag, const emission_callbacks& emit_tag) -> continuation
+	{
+		if (!std::holds_alternative<tag::Mail>(tag))
+			return emit_tag(std::move(tag));
+		auto mail_creation_time = std::get<tag::Mail>(tag).date;
+		if (mail_creation_time)
+		{
+			if (*mail_creation_time > max_time)
+			{
+				return continuation::skip;
+			}
+		}
+		return emit_tag(std::move(tag));
+	};
+}
+
+tag_transform_func StandardFilter::filterByMaxNodeNumber(unsigned int max_nodes_arg)
+{
+  return [max_nodes = max_nodes_arg, node_no = 0](Tag&& tag, const emission_callbacks& emit_tag) mutable -> continuation
   {
-    if (!std::holds_alternative<tag::Mail>(info.tag))
-      return;
-    auto mail_creation_time = std::get<tag::Mail>(info.tag).date;
-    if (mail_creation_time)
-    {
-      if (mail_creation_time > max_time)
-      {
-        info.skip = true;
-      }
-    }
+	  if (node_no++ == max_nodes)
+	  {
+		  return continuation::stop;
+	  }
+	  return emit_tag(std::move(tag));
   };
 }
 
-NewNodeCallback StandardFilter::filterByMaxNodeNumber(unsigned int max_nodes)
-{
-  return [max_nodes, node_no = 0](Info &info) mutable
-  {
-    if (node_no++ == max_nodes)
-    {
-      info.cancel = true;
-    }
-  };
-}
 } // namespace docwire

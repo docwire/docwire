@@ -29,7 +29,7 @@ class DOCWIRE_PLAIN_TEXT_EXPORT TXTParser : public Parser, public with_pimpl<TXT
 		parse_paragraphs parse_paragraphs_arg = parse_paragraphs{true},
 		parse_lines parse_lines_arg = parse_lines{true});
 
-    void parse(const data_source& data) override;
+    	void parse(const data_source& data, const emission_callbacks& emit_tag) override;
 
 		const std::vector<mime_type> supported_mime_types() override
 		{

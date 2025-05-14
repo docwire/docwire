@@ -71,7 +71,7 @@ std::string sequences_of_printable_characters(const std::string& text, size_t mi
 
 } // anonymous namespace
 
-void TXTParser::parse(const data_source& data)
+void TXTParser::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using TXT parser.";
 	std::string text;
@@ -85,7 +85,7 @@ void TXTParser::parse(const data_source& data)
 		if (charset_detector == (csd_t)-1)
 		{
 			charset_detector = NULL;
-			sendTag(make_error_ptr("Could not create charset detector"));
+			emit_tag(make_error_ptr("Could not create charset detector"));
 			encoding = "UTF-8";
 		}
 		else
@@ -114,7 +114,7 @@ void TXTParser::parse(const data_source& data)
 			}
 			catch (std::exception&)
 			{
-				sendTag(make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", encoding)));
+				emit_tag(make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", encoding)));
 				if (converter)
 					delete converter;
 				converter = NULL;
@@ -141,7 +141,7 @@ void TXTParser::parse(const data_source& data)
 	}
 	bool parse_paragraphs = impl().m_parse_paragraphs.v;
 	bool parse_lines = impl().m_parse_lines.v;
-	sendTag(tag::Document{});
+	emit_tag(tag::Document{});
 	if (parse_lines || parse_paragraphs)
 	{
 		std::string::size_type curr_pos = 0;
@@ -158,12 +158,12 @@ void TXTParser::parse(const data_source& data)
 			{
 				if (paragraph_state == outside_paragraph)
 				{
-					sendTag(tag::Paragraph{});
+					emit_tag(tag::Paragraph{});
 					paragraph_state = empty_paragraph;
 				}
 				if (line.empty())
 				{
-					sendTag(tag::CloseParagraph{});
+					emit_tag(tag::CloseParagraph{});
 					paragraph_state = outside_paragraph;
 				}
 				else
@@ -171,24 +171,24 @@ void TXTParser::parse(const data_source& data)
 					if (paragraph_state == filled_paragraph)
 					{
 						if (parse_lines)
-							sendTag(tag::BreakLine{});
+							emit_tag(tag::BreakLine{});
 						else
-							sendTag(tag::Text{.text = last_eol});
+							emit_tag(tag::Text{.text = last_eol});
 					}
-					sendTag(tag::Text{.text = line});
+					emit_tag(tag::Text{.text = line});
 					paragraph_state = filled_paragraph;
 				}
 			}
 			else
 			{
 				if (!line.empty())
-					sendTag(tag::Text{.text = line});
+					emit_tag(tag::Text{.text = line});
 				if (!eol.empty())
 				{
 					if (parse_lines)
-						sendTag(tag::BreakLine{});
+						emit_tag(tag::BreakLine{});
 					else
-						sendTag(tag::Text{.text = eol});
+						emit_tag(tag::Text{.text = eol});
 				}
 			}
 			if (eol.empty())
@@ -197,11 +197,11 @@ void TXTParser::parse(const data_source& data)
 			last_eol = eol;
 		}
 		if (parse_paragraphs && paragraph_state != outside_paragraph)
-			sendTag(tag::CloseParagraph{});
+			emit_tag(tag::CloseParagraph{});
 	}
 	else
-		sendTag(tag::Text{.text = text});
-	sendTag(tag::CloseDocument{});
+		emit_tag(tag::Text{.text = text});
+	emit_tag(tag::CloseDocument{});
 }
 
 } // namespace docwire

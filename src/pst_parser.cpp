@@ -9,12 +9,14 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-
+#include "scoped_stack_push.h"
+#include "tags.h"
 #include <iomanip>
 #include <ctime>
 
 #include <optional>
 #include <iostream>
+#include <stack>
 extern "C"
 {
 #define LIBPFF_HAVE_BFIO
@@ -346,10 +348,22 @@ class Folder
 	pffItem _folderHandle;
 };
 
-template<>
-struct pimpl_impl<PSTParser> : with_pimpl_owner<PSTParser>
+namespace
 {
-	pimpl_impl(PSTParser& owner) : with_pimpl_owner{owner} {}
+
+struct context
+{
+	const emission_callbacks& emit_tag;
+};
+
+} // anonymous namespace
+
+template<>
+struct pimpl_impl<PSTParser> : pimpl_impl_base
+{
+	std::stack<context> m_context_stack;
+	continuation emit_tag(Tag&& tag) const;
+	continuation emit_tag_back(data_source&& data) const;
 	void parse(std::shared_ptr<std::istream>) const;
 
   private:
@@ -357,18 +371,28 @@ struct pimpl_impl<PSTParser> : with_pimpl_owner<PSTParser>
     void parse_internal(const Folder& root, int deep, unsigned int &mail_counter) const;
 };
 
+continuation pimpl_impl<PSTParser>::emit_tag(Tag&& tag) const
+{
+	return m_context_stack.top().emit_tag(std::move(tag));
+}
+
+continuation pimpl_impl<PSTParser>::emit_tag_back(data_source&& data) const
+{
+	return m_context_stack.top().emit_tag.back(std::move(data));
+}
+
 void pimpl_impl<PSTParser>::parse_internal(const Folder& root, int deep, unsigned int &mail_counter) const
 {
 	for (int i = 0; i < root.getSubFolderNumber(); ++i)
 	{
 		auto sub_folder = root.getSubFolder(i);
-    auto callback = owner().sendTag(tag::Folder{.name = sub_folder.getName(), .level = deep});
-    if(callback.skip)
+    auto result = emit_tag(tag::Folder{.name = sub_folder.getName(), .level = deep});
+    if (result == continuation::skip)
     {
       continue;
     }
     parse_internal(sub_folder, deep + 1, mail_counter);
-	owner().sendTag(tag::CloseFolder{});
+	emit_tag(tag::CloseFolder{});
 	}
 	for (int i = 0; i < root.getMessageNumber(); ++i)
 	{
@@ -377,31 +401,31 @@ void pimpl_impl<PSTParser>::parse_internal(const Folder& root, int deep, unsigne
     auto html_text = message.getTextAsHtml();
     if(html_text)
     {
-      auto callback = owner().sendTag(tag::Mail{.subject = message.getName(), .date = message.getCreationDate(), .level = deep});
-      if(callback.skip)
+      auto result = emit_tag(tag::Mail{.subject = message.getName(), .date = message.getCreationDate(), .level = deep});
+      if (result == continuation::skip)
       {
         continue;
       }
-      owner().sendTag(tag::MailBody{});
-      owner().sendTag(data_source{*html_text, mime_type { "text/html" }, confidence::very_high});
+      emit_tag(tag::MailBody{});
+      emit_tag_back(data_source{*html_text, mime_type { "text/html" }, confidence::very_high});
       ++mail_counter;
-      owner().sendTag(tag::CloseMailBody{});
+      emit_tag(tag::CloseMailBody{});
     }
 
 		auto attachments = message.getAttachments();
     for (auto &attachment : attachments)
     {
       file_extension extension { std::filesystem::path{attachment.m_name} };
-      auto callback = owner().sendTag(
+      auto result = emit_tag(
         tag::Attachment{.name = attachment.m_name, .size = attachment.m_size, .extension = extension});
-      if(callback.skip)
+      if (result == continuation::skip)
       {
         continue;
       }
-      owner().sendTag(data_source{std::string((const char*)attachment.m_raw_data.get(), attachment.m_size), extension});
-      owner().sendTag(tag::CloseAttachment{});
+      emit_tag_back(data_source{std::string((const char*)attachment.m_raw_data.get(), attachment.m_size), extension});
+      emit_tag(tag::CloseAttachment{});
     }
-	owner().sendTag(tag::CloseMail{});
+	emit_tag(tag::CloseMail{});
 	}
 }
 
@@ -484,9 +508,9 @@ void pimpl_impl<PSTParser>::parse(std::shared_ptr<std::istream> stream) const
 	libpff_file_get_root_folder(file, &root, &error);
 	Folder root_folder(std::move(root));
   unsigned int mail_counter = 0;
-	owner().sendTag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
+	emit_tag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
   parse_internal(root_folder, 0, mail_counter);
-	owner().sendTag(tag::CloseDocument{});
+	emit_tag(tag::CloseDocument{});
 
   if (file)
   {
@@ -503,10 +527,11 @@ void pimpl_impl<PSTParser>::parse(std::shared_ptr<std::istream> stream) const
 }
 
 void
-PSTParser::parse(const data_source& data)
+PSTParser::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using PST parser.";
   std::shared_ptr<std::istream> stream = data.istream();
+	scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
 	impl().parse(stream);
 }
 

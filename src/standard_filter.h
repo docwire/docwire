@@ -34,31 +34,31 @@ public:
    * @brief Filters folders by name. Keeps only folders with names that exist in the given list.
    * @param names list of names to keep
    */
-  static NewNodeCallback filterByFolderName(const std::vector<std::string> &names);
+  static tag_transform_func filterByFolderName(const std::vector<std::string> &names);
 
   /**
    * @brief Filters attachments by type. Keeps only attachments with type that exist in the given list.
    * @param types list of types to keep
    */
-  static NewNodeCallback filterByAttachmentType(const std::vector<file_extension>& types);
+  static tag_transform_func filterByAttachmentType(const std::vector<file_extension>& types);
 
   /**
    * @brief Filters mail by creation date. Keeps only mails that are created after the given date.
    * @param min_time minimum time to keep
    */
-  static NewNodeCallback filterByMailMinCreationTime(unsigned int min_time);
+  static tag_transform_func filterByMailMinCreationTime(unsigned int min_time);
 
   /**
    * @brief Filters mail by creation date. Keeps only mails that are created before the given date.
    * @param max_time maximum time to keep
    */
-  static NewNodeCallback filterByMailMaxCreationTime(unsigned int max_time);
+  static tag_transform_func filterByMailMaxCreationTime(unsigned int max_time);
 
   /**
    * @brief
    * @param max_nodes
    */
-  static NewNodeCallback filterByMaxNodeNumber(unsigned int max_nodes);
+  static tag_transform_func filterByMaxNodeNumber(unsigned int max_nodes);
 };
 } // namespace docwire
 

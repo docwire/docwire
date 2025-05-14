@@ -294,6 +294,14 @@ using Variant = std::variant<
 
 using Tag = tag::Variant;
 
+enum class continuation { proceed, skip, stop };
+struct emission_callbacks
+{
+  std::function<continuation(Tag&&)> further;
+  std::function<continuation(data_source&&)> back;
+  continuation operator()(Tag&& tag) const { return further(std::move(tag)); }
+};
+
 } // namespace docwire
 
 #endif //DOCWIRE_TAGS_H

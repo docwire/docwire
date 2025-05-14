@@ -14,20 +14,21 @@
 
 #include "common_xml_document_parser.h"
 #include "odf_ooxml_export.h"
+#include "pimpl.h"
 
 namespace docwire
 {
 
-class DOCWIRE_ODF_OOXML_EXPORT ODFXMLParser : public CommonXMLDocumentParser
+class DOCWIRE_ODF_OOXML_EXPORT ODFXMLParser : public CommonXMLDocumentParser, public with_pimpl<ODFXMLParser>
 {
 	private:
-		class CommandHandlersSet;
+		using with_pimpl<ODFXMLParser>::impl;
 		attributes::Metadata metaData(const std::string& xml_content) const;
-		void parse(const data_source& data, XmlParseMode mode);
+		void parse(const data_source& data, XmlParseMode mode, const emission_callbacks& emit_tag);
 
 	public:
 
-    void parse(const data_source& data) override;
+    void parse(const data_source& data, const emission_callbacks& emit_tag) override;
 
 		const std::vector<mime_type> supported_mime_types() override
 		{

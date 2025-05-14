@@ -19,7 +19,6 @@
 
 namespace docwire
 {
-  struct Info;
 
 class DOCWIRE_CORE_EXPORT CsvWriter : public Writer
 {

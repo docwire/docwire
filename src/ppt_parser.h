@@ -26,7 +26,7 @@ class ThreadSafeOLEStorage;
 class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT PPTParser : public Parser
 {
 	private:
-		attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage) const;
+		attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const emission_callbacks& emit_tag) const;
 
 	public:
 		PPTParser();
@@ -39,7 +39,7 @@ class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT PPTParser : public Parser
 			mime_type{"application/vnd.ms-powerpoint.slideshow.macroenabled.12"}
 			};
 		};
-		void parse(const data_source& data) override;
+		void parse(const data_source& data, const emission_callbacks& emit_tag) override;
 };
 
 } // namespace docwire

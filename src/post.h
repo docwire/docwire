@@ -37,10 +37,11 @@ public:
 
 	/**
 	* @brief Executes transform operation for given node data.
-	* @see docwire::Info
-	* @param info
+	* @see docwire::Tag
+	* @param tag
+	* @param callback
 	*/
-	void process(Info& info) override;
+	virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
 
 	bool is_leaf() const override
 	{

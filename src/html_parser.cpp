@@ -30,6 +30,7 @@
 #include <mutex>
 #include <set>
 #include "pimpl.h"
+#include "scoped_stack_push.h"
 #include "tags.h"
 #include "throw_if.h"
 
@@ -308,8 +309,9 @@ void fix_dom(lxb_dom_node_t* node)
 	}
 }
 
-struct state
+struct context
 {
+	const emission_callbacks& emit_tag;
 	bool turn_off_ul_enumeration = false;
 	bool turn_off_ol_enumeration = false;
 	bool head_parsed = false;
@@ -322,27 +324,27 @@ struct state
 	attributes::Metadata meta;
 	std::string buffered_text;
 	char last_char_in_inline_formatting_context = '\0';
-	state() = default;
-	state(state&&) = default;
-	state& operator=(state&&) = default;
-	state(const state&) = delete;
-	state& operator=(const state&) = delete;
 };
 
 } // unnamed namespace
 
 template<>
-struct pimpl_impl<HTMLParser> : with_pimpl_owner<HTMLParser>
+struct pimpl_impl<HTMLParser> : pimpl_impl_base
 {
-	pimpl_impl(HTMLParser& owner) : with_pimpl_owner(owner) {}
+	continuation emit_tag(Tag&& tag);
 	void parse_css(const std::string & m_style_text);
-	void parse_document(const std::string& html_content);
+	void parse_document(const std::string& html_content, const emission_callbacks& emit_tag);
 	void process_node(const lxb_dom_node_t* node);
 	void process_text(const lxb_dom_node_t* node);
 	void process_tag(const lxb_dom_node_t* node, bool is_closing = false);
 	bool m_skip_decoding = false;
-	state m_state;
+	std::stack<context> m_context_stack;
 };
+
+continuation pimpl_impl<HTMLParser>::emit_tag(Tag&& tag)
+{
+	return m_context_stack.top().emit_tag(std::move(tag));
+}
 
 void pimpl_impl<HTMLParser>::parse_css(const std::string & m_style_text)
 {
@@ -392,18 +394,18 @@ void pimpl_impl<HTMLParser>::parse_css(const std::string & m_style_text)
 			}
 			if (match == "li")
 			{
-				m_state.turn_off_ol_enumeration = true;
-				m_state.turn_off_ul_enumeration = true;
+				m_context_stack.top().turn_off_ol_enumeration = true;
+				m_context_stack.top().turn_off_ul_enumeration = true;
 			}
 			else if (match == "ul")
-				m_state.turn_off_ul_enumeration = true;
+				m_context_stack.top().turn_off_ul_enumeration = true;
 			else if (match == "ol")
-				m_state.turn_off_ol_enumeration = true;
+				m_context_stack.top().turn_off_ol_enumeration = true;
 		}
 	}
 }
 
-void pimpl_impl<HTMLParser>::parse_document(const std::string& html_content_arg)
+void pimpl_impl<HTMLParser>::parse_document(const std::string& html_content_arg, const emission_callbacks& emit_tag)
 {
 	std::string html_content = html_content_arg;
 	if (!m_skip_decoding)
@@ -414,11 +416,11 @@ void pimpl_impl<HTMLParser>::parse_document(const std::string& html_content_arg)
 		}
 		catch (std::exception&)
 		{
-			owner().sendTag(make_nested_ptr(std::current_exception(), make_error("Error ensuring HTML is encoded in UTF-8")));
+			emit_tag(make_nested_ptr(std::current_exception(), make_error("Error ensuring HTML is encoded in UTF-8")));
 		}
 	}
 
-	m_state = state{};
+	scoped::stack_push<context> context_guard{m_context_stack, context{emit_tag}};
 
 	lxb_html_document_t* document = lxb_html_document_create();
 	throw_if(document == nullptr, "lxb_html_document_create failed");
@@ -431,27 +433,27 @@ void pimpl_impl<HTMLParser>::parse_document(const std::string& html_content_arg)
 	lxb_dom_node_t* head = lxb_dom_interface_node(lxb_html_document_head_element(document));
 	parse_css((const char*)lxb_dom_node_text_content(head, nullptr));
 
-	owner().sendTag(tag::Document
+	emit_tag(tag::Document
 		{
 			.metadata = [this, head]()
 			{
 				docwire_log(debug) << "Extracting metadata.";
-				if (!m_state.head_parsed)
+				if (!m_context_stack.top().head_parsed)
 				{
-					m_state.in_metadata = true;
-					m_state.in_head = true;
+					m_context_stack.top().in_metadata = true;
+					m_context_stack.top().in_head = true;
 					process_node(head);
-					m_state.in_head = false;
-					m_state.in_metadata = false;
-					m_state.head_parsed = true;
+					m_context_stack.top().in_head = false;
+					m_context_stack.top().in_metadata = false;
+					m_context_stack.top().head_parsed = true;
 				}
-				return m_state.meta;
+				return m_context_stack.top().meta;
 			}
 		});
 
-	m_state.in_head = true;
+	m_context_stack.top().in_head = true;
 	process_node(head);
-	m_state.in_head = false;
+	m_context_stack.top().in_head = false;
 
 	lxb_dom_node_t* body = lxb_dom_interface_node(lxb_html_document_body_element(document));
     process_node(body);
@@ -473,7 +475,7 @@ void pimpl_impl<HTMLParser>::process_node(const lxb_dom_node_t* node)
         }
         case LXB_DOM_NODE_TYPE_TEXT:
         {
-			if (m_state.in_metadata || m_state.in_title || m_state.in_script)
+			if (m_context_stack.top().in_metadata || m_context_stack.top().in_title || m_context_stack.top().in_script)
 				break;
             process_text(node);
             break;
@@ -494,15 +496,15 @@ void pimpl_impl<HTMLParser>::process_node(const lxb_dom_node_t* node)
 
 void pimpl_impl<HTMLParser>::process_text(const lxb_dom_node_t* node)
 {
-	if (m_state.in_head && !m_state.in_style)
+	if (m_context_stack.top().in_head && !m_context_stack.top().in_style)
 		return;
     const lxb_char_t* data = lxb_dom_node_text_content(const_cast<lxb_dom_node_t*>(node), nullptr);
     if (data == nullptr)
         return;
     std::string text((const char*)data);
-	if (m_state.in_style)
+	if (m_context_stack.top().in_style)
 	{
-		m_state.style_text += text;
+		m_context_stack.top().style_text += text;
 		return;
 	}
 	// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace#what_is_whitespace
@@ -514,20 +516,20 @@ void pimpl_impl<HTMLParser>::process_text(const lxb_dom_node_t* node)
 		text = std::regex_replace(text, whitespaces_regex, " ");
 	}
 	docwire_log(debug) << "After converting and reducing whitespaces: [" << text << "]";
-	bool last_char_was_space = isspace((unsigned char)m_state.last_char_in_inline_formatting_context);
+	bool last_char_was_space = isspace((unsigned char)m_context_stack.top().last_char_in_inline_formatting_context);
 	docwire_log(debug) << "Last char in inline formatting context was whitespace: " << last_char_was_space;
 	// Reduce whitespaces between text nodes (end of previous and beginning of current.
 	// Remove whitespaces from beginning of inline formatting context.
-	if (last_char_was_space || m_state.last_char_in_inline_formatting_context == '\0')
+	if (last_char_was_space || m_context_stack.top().last_char_in_inline_formatting_context == '\0')
 	{
 		boost::trim_left(text);
 		docwire_log(debug) << "After reducing whitespaces between text nodes and removing whitespaces from begining of inline formatting context: [" << text << "]";
 	}
 	if (!text.empty())
 	{
-		m_state.last_char_in_inline_formatting_context = text.back();
+		m_context_stack.top().last_char_in_inline_formatting_context = text.back();
 		// buffer text because whitespaces from end of inline formatting context should be removed.
-		m_state.buffered_text += text;
+		m_context_stack.top().buffered_text += text;
 	}
 }
 
@@ -535,7 +537,7 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 {
     const lxb_dom_element_t* element = lxb_dom_interface_element(node);
     lxb_tag_id_t tag_id = lxb_dom_element_tag_id(const_cast<lxb_dom_element_t*>(element));
-	if (!m_state.buffered_text.empty())
+	if (!m_context_stack.top().buffered_text.empty())
 	{
 		// https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements
 		// TODO: elements can have also block style in CSS
@@ -549,13 +551,13 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 		{
 			// Remove sequences of spaces at the end of an block-level element
 			// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace
-			boost::trim_right(m_state.buffered_text);
-			m_state.last_char_in_inline_formatting_context = '\0'; // inline formatting context is now empty
+			boost::trim_right(m_context_stack.top().buffered_text);
+			m_context_stack.top().last_char_in_inline_formatting_context = '\0'; // inline formatting context is now empty
 		}
-		if (!m_state.buffered_text.empty())
+		if (!m_context_stack.top().buffered_text.empty())
 		{
-			owner().sendTag(tag::Text{.text = m_state.buffered_text});
-			m_state.buffered_text = "";
+			emit_tag(tag::Text{.text = m_context_stack.top().buffered_text});
+			m_context_stack.top().buffered_text = "";
 		}
 	}
     // All html elements that will emit tag::Paragraph (as we do not have H1 etc)
@@ -564,85 +566,85 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
     {
 		if (tag_id == LXB_TAG_STYLE)
 		{
-			m_state.in_style = false;
-			if (!m_state.in_metadata)
-				owner().sendTag(tag::Style{.css_text = m_state.style_text});
-			m_state.style_text.clear();
+			m_context_stack.top().in_style = false;
+			if (!m_context_stack.top().in_metadata)
+				emit_tag(tag::Style{.css_text = m_context_stack.top().style_text});
+			m_context_stack.top().style_text.clear();
 		}
 		else if (paragraph_elements.contains(tag_id))
 		{
-			owner().sendTag(tag::CloseParagraph{});
+			emit_tag(tag::CloseParagraph{});
 		}
 		else if (tag_id == LXB_TAG_DIV)
 		{
-			owner().sendTag(tag::CloseSection{});
+			emit_tag(tag::CloseSection{});
 		}
 		else if (tag_id == LXB_TAG_SPAN)
 		{
-			owner().sendTag(tag::CloseSpan{});
+			emit_tag(tag::CloseSpan{});
 		}
 		else if (tag_id == LXB_TAG_A)
 		{
-			owner().sendTag(tag::CloseLink{});
+			emit_tag(tag::CloseLink{});
 		}
 		else if (tag_id == LXB_TAG_TABLE)
 		{
-			owner().sendTag(tag::CloseTable{});
+			emit_tag(tag::CloseTable{});
 		}
 		else if (tag_id == LXB_TAG_CAPTION)
 		{
-			owner().sendTag(tag::CloseCaption{});
+			emit_tag(tag::CloseCaption{});
 		}
 		else if (tag_id == LXB_TAG_TR)
 		{
-			owner().sendTag(tag::CloseTableRow{});
+			emit_tag(tag::CloseTableRow{});
 		}
 		else if (tag_id == LXB_TAG_TD || tag_id == LXB_TAG_TH)
 		{
-			owner().sendTag(tag::CloseTableCell{});
+			emit_tag(tag::CloseTableCell{});
 		}
 		else if (tag_id == LXB_TAG_TITLE)
 		{
-			m_state.in_title = false;
+			m_context_stack.top().in_title = false;
 		}
-		else if ((tag_id == LXB_TAG_SCRIPT || tag_id == LXB_TAG_IFRAME) && m_state.in_script)
+		else if ((tag_id == LXB_TAG_SCRIPT || tag_id == LXB_TAG_IFRAME) && m_context_stack.top().in_script)
 		{
-			m_state.in_script = false;
+			m_context_stack.top().in_script = false;
 		}
 		else if (tag_id == LXB_TAG_UL || tag_id == LXB_TAG_OL)
 		{
-			owner().sendTag(tag::CloseList{});
+			emit_tag(tag::CloseList{});
 		}
 		else if (tag_id == LXB_TAG_LI)
 		{
-			owner().sendTag(tag::CloseListItem{});
+			emit_tag(tag::CloseListItem{});
 		}
 		else if (tag_id == LXB_TAG_B)
 		{
-			owner().sendTag(tag::CloseBold{});
+			emit_tag(tag::CloseBold{});
 		}
 		else if (tag_id == LXB_TAG_U)
 		{
-			owner().sendTag(tag::CloseUnderline{});
+			emit_tag(tag::CloseUnderline{});
 		}
     }
     else
     {
 		if (tag_id == LXB_TAG_STYLE)
 		{
-			m_state.in_style = true;
+			m_context_stack.top().in_style = true;
 		}
 		else if (paragraph_elements.contains(tag_id))
 		{
-			owner().sendTag(tag::Paragraph{ .styling = html_node_styling(node) });
+			emit_tag(tag::Paragraph{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_DIV)
 		{
-			owner().sendTag(tag::Section{ .styling = html_node_styling(node) });
+			emit_tag(tag::Section{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_SPAN)
 		{
-			owner().sendTag(tag::Span{ .styling = html_node_styling(node) });
+			emit_tag(tag::Span{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_A)
 		{
@@ -654,7 +656,7 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 				if (url[0] == '#' || url.find("javascript") == 0)
 					url = "";
 			}
-			owner().sendTag(tag::Link{ .url = url, .styling = html_node_styling(node) });
+			emit_tag(tag::Link{ .url = url, .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_IMG)
 		{
@@ -666,23 +668,23 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 			const lxb_char_t* alt_attr = lxb_dom_element_get_attribute(const_cast<lxb_dom_element_t*>(element), (const lxb_char_t *)"alt", 3, nullptr);
 			if (alt_attr)
 				alt = std::string((const char*)alt_attr);
-			owner().sendTag(tag::Image{.src = src, .alt = alt, .styling = html_node_styling(node)});
+			emit_tag(tag::Image{.src = src, .alt = alt, .styling = html_node_styling(node)});
 		}
 		else if (tag_id == LXB_TAG_TABLE)
 		{
-			owner().sendTag(tag::Table{ .styling = html_node_styling(node) });
+			emit_tag(tag::Table{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_CAPTION)
 		{
-			owner().sendTag(tag::Caption{ .styling = html_node_styling(node) });
+			emit_tag(tag::Caption{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_TR)
 		{
-			owner().sendTag(tag::TableRow{ .styling = html_node_styling(node) });
+			emit_tag(tag::TableRow{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_TD || tag_id == LXB_TAG_TH)
 		{
-			owner().sendTag(tag::TableCell{ .styling = html_node_styling(node) });
+			emit_tag(tag::TableCell{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_UL || tag_id == LXB_TAG_OL)
 		{
@@ -694,37 +696,37 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 				if (style_str.find("list-style: none") != std::string::npos)
 					style_type_none = true;
 			}
-			else if (tag_id == LXB_TAG_OL && m_state.turn_off_ol_enumeration)
+			else if (tag_id == LXB_TAG_OL && m_context_stack.top().turn_off_ol_enumeration)
 				style_type_none = true;
-			else if (tag_id == LXB_TAG_UL && m_state.turn_off_ul_enumeration)
+			else if (tag_id == LXB_TAG_UL && m_context_stack.top().turn_off_ul_enumeration)
 				style_type_none = true;
 			std::string list_type = style_type_none ? "none" : (tag_id == LXB_TAG_OL ? "decimal" : "disc");
-			owner().sendTag(tag::List{.type = list_type, .styling=html_node_styling(node)});
+			emit_tag(tag::List{.type = list_type, .styling=html_node_styling(node)});
 		}
 		else if (tag_id == LXB_TAG_BR)
 		{
-			m_state.last_char_in_inline_formatting_context = '\0';
-			owner().sendTag(tag::BreakLine{.styling=html_node_styling(node)});
+			m_context_stack.top().last_char_in_inline_formatting_context = '\0';
+			emit_tag(tag::BreakLine{.styling=html_node_styling(node)});
 		}
 		else if (tag_id == LXB_TAG_LI)
 		{
-			owner().sendTag(tag::ListItem{ .styling = html_node_styling(node) });
+			emit_tag(tag::ListItem{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_TITLE)
 		{
-			m_state.in_title = true;
+			m_context_stack.top().in_title = true;
 		}
 		else if (tag_id == LXB_TAG_SCRIPT || tag_id == LXB_TAG_IFRAME)
 		{
-			m_state.in_script = true;
+			m_context_stack.top().in_script = true;
 		}
 		else if (tag_id == LXB_TAG_B)
 		{
-			owner().sendTag(tag::Bold{ .styling = html_node_styling(node) });
+			emit_tag(tag::Bold{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_U)
 		{
-			owner().sendTag(tag::Underline{ .styling = html_node_styling(node) });
+			emit_tag(tag::Underline{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_META)
 		{
@@ -738,13 +740,13 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 				// dcterms - old OpenOffice.org
 				if (boost::iequals(name, "author") ||
 						boost::iequals(name, "dcterms.creator"))
-						m_state.meta.author = content;
+						m_context_stack.top().meta.author = content;
 				else if (boost::iequals(name, "changedby") ||
 						boost::iequals(name, "dcterms.contributor"))
 				{
 					// Multiple changedby meta tags are possible - LibreOffice 3.5 is an example
-					if (!m_state.meta.last_modified_by)
-						m_state.meta.last_modified_by = content;
+					if (!m_context_stack.top().meta.last_modified_by)
+						m_context_stack.top().meta.last_modified_by = content;
 				}
 				else if (boost::iequals(name, "created") ||
 						boost::iequals(name, "dcterms.issued"))
@@ -752,19 +754,19 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 					tm creation_date;
 					if (string_to_date(content, creation_date))
 					{
-						m_state.meta.creation_date = creation_date;
+						m_context_stack.top().meta.creation_date = creation_date;
 					}
 				}
 				else if (boost::iequals(name, "changed") ||
 						boost::iequals(name, "dcterms.modified"))
 				{
 					// Multiple changed meta tags are possible - LibreOffice 3.5 is an example
-					if (!m_state.meta.last_modification_date)
+					if (!m_context_stack.top().meta.last_modification_date)
 					{
 						tm last_modification_date;
 						if (string_to_date(content, last_modification_date))
 						{
-							m_state.meta.last_modification_date = last_modification_date;
+							m_context_stack.top().meta.last_modification_date = last_modification_date;
 						}
 					}
 				}
@@ -777,13 +779,12 @@ HTMLParser::HTMLParser()
 {
 }
 
-void
-HTMLParser::parse(const data_source& data)
+void HTMLParser::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using HTML parser.";
 	std::string content = data.string();
-	impl().parse_document(content);
-	sendTag(tag::CloseDocument{});
+	impl().parse_document(content, emit_tag);
+	emit_tag(tag::CloseDocument{});
 }
 
 void HTMLParser::skipCharsetDecoding()

@@ -25,7 +25,7 @@ class DOCWIRE_CORE_EXPORT MetaDataExporter: public ChainElement, public with_pim
 public:
   MetaDataExporter();
 
-  void process(Info& info) override;
+	virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
 
 	bool is_leaf() const override
 	{

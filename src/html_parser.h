@@ -28,7 +28,7 @@ class DOCWIRE_HTML_EXPORT HTMLParser : public Parser, public with_pimpl<HTMLPars
 
 	public:
 
-    void parse(const data_source& data) override;
+    	void parse(const data_source& data, const emission_callbacks& emit_tag) override;
 
 		const std::vector<mime_type> supported_mime_types() override
 		{

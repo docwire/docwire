@@ -40,7 +40,11 @@ public:
    * @param out_stream OutputChainElement stream. Parsing chain will be writing to this stream.
    */
   OutputChainElement(ref_or_owned<std::ostream> out_stream)
-    : m_out_stream{out_stream}
+    : m_out_obj{out_stream}
+  {}
+
+  OutputChainElement(ref_or_owned<std::vector<Tag>> out_vector)
+    : m_out_obj{out_vector}
   {}
 
   bool is_leaf() const override
@@ -48,10 +52,10 @@ public:
     return true;
   }
 
-  void process(Info& info) override;
+  virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
 
 private:
-  ref_or_owned<std::ostream> m_out_stream;
+  std::variant<ref_or_owned<std::ostream>, ref_or_owned<std::vector<Tag>>> m_out_obj;
 };
 
 inline ParsingChain operator|(ref_or_owned<ChainElement> element, ref_or_owned<std::ostream> stream)
@@ -62,6 +66,16 @@ inline ParsingChain operator|(ref_or_owned<ChainElement> element, ref_or_owned<s
 inline ParsingChain& operator|=(ParsingChain& chain, ref_or_owned<std::ostream> stream)
 {
   return chain |= OutputChainElement(stream);
+}
+
+inline ParsingChain operator|(ref_or_owned<ChainElement> element, ref_or_owned<std::vector<Tag>> vector)
+{
+  return element | OutputChainElement(vector);
+}
+
+inline ParsingChain& operator|=(ParsingChain& chain, ref_or_owned<std::vector<Tag>> vector)
+{
+  return chain |= OutputChainElement(vector);
 }
 
 } // namespace docwire

@@ -33,7 +33,7 @@ class DOCWIRE_CORE_EXPORT PlainTextExporter: public ChainElement, public with_pi
 public:
 	PlainTextExporter(eol_sequence eol = eol_sequence{"\n"}, link_formatter formatter = default_link_formatter);
 
-  void process(Info& info) override;
+	virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
 
 	bool is_leaf() const override
 	{

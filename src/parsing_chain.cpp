@@ -23,19 +23,7 @@ struct pimpl_impl<ParsingChain> : with_pimpl_owner<ParsingChain>
 {
   pimpl_impl(ParsingChain& owner, ref_or_owned<ChainElement> lhs_element, ref_or_owned<ChainElement> rhs_element)
     : with_pimpl_owner{owner}, m_lhs_element{lhs_element}, m_rhs_element{rhs_element}
-  {
-    m_lhs_element.get().set_chain(owner);
-    m_rhs_element.get().set_chain(owner);
-  }
-
-  ParsingChain& top_chain()
-  {
-    std::optional<std::reference_wrapper<ParsingChain>> chain = owner().chain();
-    if (chain)
-      return chain->get().top_chain();
-    else
-      return owner();
-  }
+  {}
 
   ref_or_owned<ChainElement> m_lhs_element;
   ref_or_owned<ChainElement> m_rhs_element;
@@ -47,44 +35,37 @@ ParsingChain::ParsingChain(ref_or_owned<ChainElement> lhs_element, ref_or_owned<
 
 ParsingChain::ParsingChain(ParsingChain&& other)
   : with_pimpl<ParsingChain>(std::move(static_cast<with_pimpl<ParsingChain>&>(other)))
-{
-  impl().m_lhs_element.get().set_chain(*this);
-  impl().m_rhs_element.get().set_chain(*this);
-}
+{}
 
 ParsingChain& ParsingChain::operator=(ParsingChain&& other)
 {
   with_pimpl<ParsingChain>::operator=(std::move(static_cast<with_pimpl<ParsingChain>&>(other)));
-  impl().m_lhs_element.get().set_chain(*this);
-  impl().m_rhs_element.get().set_chain(*this);
   return *this;
 }
 
-void ParsingChain::operator()(const Tag& tag)
+void ParsingChain::operator()(Tag&& tag)
 {
-  ChainElement::operator()(tag, [](const Tag&) { return continuation::proceed; });
+  operator()(std::move(tag),
+  {
+    [](Tag&&) { return continuation::proceed; },
+    [this](data_source&& data)
+    {
+      operator()(std::move(data));
+      return continuation::proceed;
+    }
+  });
 }
 
-void ParsingChain::process(Info &info)
+continuation ParsingChain::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
-  auto rhs_callback = [this](const Tag& tag)
+  auto lhs_callback = [this, &rhs_callbacks = emit_tag](Tag&& tag)
   {
-    Info info{tag};
-    emit(info);
-    if (info.cancel)
-      return continuation::stop;
-    else if (info.skip)
-      return continuation::skip;
-    else
-      return continuation::proceed;
+    return impl().m_rhs_element.get()(std::move(tag), rhs_callbacks);
   };
-  auto lhs_callback = [this, rhs_callback](const Tag& tag)
-  {
-    return impl().m_rhs_element.get()(tag, rhs_callback);
-  };
-  ChainElement::continuation continuation = impl().m_lhs_element.get()(info.tag, lhs_callback);
-  info.skip = continuation == continuation::skip;
-  info.cancel = continuation == continuation::stop;
+  return impl().m_lhs_element.get()( std::move(tag),
+    {
+      lhs_callback,
+      [emit_tag](data_source&& data) { return emit_tag.back(std::move(data)); } });
 }
 
 bool ParsingChain::is_leaf() const
@@ -100,11 +81,6 @@ bool ParsingChain::is_generator() const
 bool ParsingChain::is_complete() const
 {
   return is_generator() && is_leaf();
-}
-
-ParsingChain& ParsingChain::top_chain()
-{
-  return impl().top_chain();
 }
 
 ParsingChain operator|(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement> rhs)

@@ -27,7 +27,6 @@ class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT XLSParser : public Parser, public with_p
 	private:
 		friend pimpl_impl<XLSParser>;
 		using with_pimpl<XLSParser>::impl;
-		using with_pimpl<XLSParser>::renew_impl;
 
 	public:
 		XLSParser();
@@ -39,8 +38,8 @@ class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT XLSParser : public Parser, public with_p
 			mime_type{"application/vnd.ms-excel.template.macroenabled.12"}
 			};
 		};
-		void parse(const data_source& data) override;
-		std::string parse(ThreadSafeOLEStorage& storage);
+		void parse(const data_source& data, const emission_callbacks& emit_tag) override;
+		std::string parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag);
 };
 
 } // namespace docwire

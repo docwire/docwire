@@ -26,7 +26,6 @@ class DOCWIRE_IWORK_EXPORT IWorkParser : public Parser, public with_pimpl<IWorkP
 {
 	private:
 		using with_pimpl<IWorkParser>::impl;
-		using with_pimpl<IWorkParser>::renew_impl;
 		attributes::Metadata metaData(std::shared_ptr<std::istream> stream) const;
 
 	public:
@@ -43,7 +42,7 @@ class DOCWIRE_IWORK_EXPORT IWorkParser : public Parser, public with_pimpl<IWorkP
 			};
 		};
 
-		void parse(const data_source& data) override;
+		void parse(const data_source& data, const emission_callbacks& emit_tag) override;
 };
 
 } // namespace docwire

@@ -477,7 +477,7 @@ namespace
 	std::mutex converter_mutex;
 } // anonymous namespace
 
-void RTFParser::parse(const data_source& data)
+void RTFParser::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using RTF parser.";
 	UString text;
@@ -486,7 +486,7 @@ void RTFParser::parse(const data_source& data)
 	TextConverter* converter = NULL;
 	try
 	{
-		sendTag(tag::Document
+		emit_tag(tag::Document
 			{
 				.metadata = [this, &data]() { return metaData(data); }
 			});
@@ -510,7 +510,7 @@ void RTFParser::parse(const data_source& data)
 					UString fragment_text;
 					{
 						std::lock_guard<std::mutex> converter_mutex_lock(converter_mutex);
-						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter, [this](std::exception_ptr e) { sendTag(e); });
+						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter, [emit_tag](std::exception_ptr e) { emit_tag(e); });
 					}
 					switch (state.groups.top().destination)
 					{
@@ -538,7 +538,7 @@ void RTFParser::parse(const data_source& data)
 					destination_type destination = state.groups.top().destination;
 					state.groups.pop();
 					if (destination == destination_type::annotation && state.groups.top().destination != destination_type::annotation)
-						sendTag(tag::Comment{.author = state.author_of_next_annotation, .time = date_to_string(state.annotation_time), .comment = ustring_to_string(state.annotation_text)});
+						emit_tag(tag::Comment{.author = state.author_of_next_annotation, .time = date_to_string(state.annotation_time), .comment = ustring_to_string(state.annotation_text)});
 					else if (destination == destination_type::fldinst)
 					{
 					}
@@ -557,16 +557,16 @@ void RTFParser::parse(const data_source& data)
 								url = url.substr(0, url.size() - 1);
 							if (url.back() == '"')
 								url = url.substr(0, url.size() - 1);
-							sendTag(tag::Link{.url = url});
-							sendTag(tag::Text{.text = ustring_to_string(state.fldrslt_text)});
-							sendTag(tag::CloseLink{});
+							emit_tag(tag::Link{.url = url});
+							emit_tag(tag::Text{.text = ustring_to_string(state.fldrslt_text)});
+							emit_tag(tag::CloseLink{});
 						}
 					}
 					if (skip > state.groups.size() - 1)
 						skip = 0;
 					if (!text.isEmpty())
 					{
-						sendTag(tag::Text({.text = ustring_to_string(text)}));
+						emit_tag(tag::Text({.text = ustring_to_string(text)}));
 						text = "";
 					}
 					break;
@@ -601,7 +601,7 @@ void RTFParser::parse(const data_source& data)
 		if (converter != NULL)
 			delete converter;
 		converter = NULL;
-		sendTag(tag::CloseDocument{});
+		emit_tag(tag::CloseDocument{});
 	}
 	catch (std::bad_alloc& ba)
 	{

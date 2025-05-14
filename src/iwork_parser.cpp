@@ -12,11 +12,14 @@
 #include "iwork_parser.h"
 
 #include "error_tags.h"
+#include <stack>
 #include <stdlib.h>
 #include <iostream>
 #include "log.h"
 #include <stdio.h>
 #include <sstream>
+#include "scoped_stack_push.h"
+#include "tags.h"
 #include "throw_if.h"
 #include "zip_reader.h"
 #include "entities.h"
@@ -232,10 +235,26 @@ static std::string find_main_xml_file(const ZipReader& unzip)
 	throw make_error("None of the following files (index.xml, index.apxl, presentation.apxl) could be found.", errors::uninterpretable_data{});
 }
 
+namespace
+{
+
+struct context
+{
+	const emission_callbacks& emit_tag;
+	std::string m_xml_file;
+};
+
+} // anonymous namespace
+
 template<>
 struct pimpl_impl<IWorkParser> : pimpl_impl_base
 {
-	std::string m_xml_file;
+	std::stack<context> m_context_stack;
+
+	continuation emit_tag(Tag&& tag) const
+	{
+		return m_context_stack.top().emit_tag(std::move(tag));
+	}
 
 	class DataSource
 	{
@@ -1992,7 +2011,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 	void ReadMetadata(ZipReader& zipfile, attributes::Metadata& metadata, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 	{
-		DataSource xml_data_source(zipfile, m_xml_file);
+		DataSource xml_data_source(zipfile, m_context_stack.top().m_xml_file);
 		XmlReader xml_reader(xml_data_source);
 		IWorkMetadataContent metadata_content(xml_reader, metadata);
 
@@ -2038,7 +2057,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 	void parseIWork(ZipReader& zipfile, std::string& text)
 	{
-		DataSource xml_data_source(zipfile, m_xml_file);
+		DataSource xml_data_source(zipfile, m_context_stack.top().m_xml_file);
 		XmlReader xml_reader(xml_data_source);
 		IWorkContent iwork_content(xml_reader);
 
@@ -2076,10 +2095,10 @@ IWorkParser::IWorkParser()
 {
 }
 
-void IWorkParser::parse(const data_source& data)
+void IWorkParser::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using iWork parser.";
-	renew_impl();
+	scoped::stack_push<context> context_guard{impl().m_context_stack, {.emit_tag = emit_tag}};
 	ZipReader unzip{data};
 	try
 	{
@@ -2091,20 +2110,20 @@ void IWorkParser::parse(const data_source& data)
 	}
 	try
 	{
-		impl().m_xml_file = find_main_xml_file(unzip);
-		sendTag(tag::Document
+		impl().m_context_stack.top().m_xml_file = find_main_xml_file(unzip);
+		emit_tag(tag::Document
 			{
-				.metadata=[this, &unzip]()
+				.metadata=[this, &unzip, emit_tag]()
 				{
 					attributes::Metadata metadata;
-					impl().ReadMetadata(unzip, metadata, [this](std::exception_ptr e) { sendTag(e); });
+					impl().ReadMetadata(unzip, metadata, [emit_tag](std::exception_ptr e) { emit_tag(e); });
 					return metadata;
 				}
 			});
 		std::string text;
 		impl().parseIWork(unzip, text);
-		sendTag(tag::Text{.text=text});
-		sendTag(tag::CloseDocument{});
+		emit_tag(tag::Text{.text=text});
+		emit_tag(tag::CloseDocument{});
 	}
 	catch (const std::exception& ex)
 	{

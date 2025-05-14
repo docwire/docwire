@@ -27,7 +27,7 @@ class DOCWIRE_RTF_EXPORT RTFParser : public Parser
 
 	public:
 
-    	void parse(const data_source& data) override;
+    	void parse(const data_source& data, const emission_callbacks& emit_tag) override;
 
 		const std::vector<mime_type> supported_mime_types() override
 		{

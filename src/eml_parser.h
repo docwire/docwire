@@ -32,7 +32,7 @@ class DOCWIRE_MAIL_EXPORT EMLParser : public Parser, public with_pimpl<EMLParser
 
 	public:
 		EMLParser();
-		void parse(const data_source& data) override;
+		void parse(const data_source& data, const emission_callbacks& emit_tag) override;
 		const std::vector<mime_type> supported_mime_types() override
 		{
 			return { mime_type{"message/rfc822"} };

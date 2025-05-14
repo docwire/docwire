@@ -26,7 +26,7 @@ public:
 
   HtmlExporter();
 
-  void process(Info& info) override;
+	virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
 
 	bool is_leaf() const override
 	{

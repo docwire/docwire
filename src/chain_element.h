@@ -21,17 +21,6 @@ namespace docwire
 
 class ParsingChain;
 
-struct DOCWIRE_CORE_EXPORT Info
-{
-  Tag tag;
-  bool cancel = false; //!< cancel flag. If set true then parsing process will be stopped.
-  bool skip = false; //!< skip flag. If set true then tag will be skipped.
-
-  explicit Info(const Tag& tag)
-    : tag(tag)
-  {}
-};
-
 class DOCWIRE_CORE_EXPORT ChainElement : public with_pimpl<ChainElement>
 {
 public:
@@ -40,8 +29,7 @@ public:
   virtual ~ChainElement() = default;
   ChainElement& operator=(ChainElement&&) = default;
 
-  enum class continuation { proceed, skip, stop };
-  continuation operator()(const Tag& tag, std::function<continuation(const Tag&)> callback);
+  virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) = 0;
 
   /**
    * @brief Check if ChainElement is a leaf (last element which doesn't produce any tags). At this moment only Exporters are leafs.
@@ -50,18 +38,6 @@ public:
   virtual bool is_leaf() const = 0;
 
   virtual bool is_generator() const { return false; }
-
-  /**
-   * @brief Set parsing chain that this element belongs to
-   * @param chain
-   */
-  void set_chain(ParsingChain& chainElement);
-
-  std::optional<std::reference_wrapper<ParsingChain>> chain() const;
-
-protected:
-  void emit(Info &info) const;
-  virtual void process(Info &info) = 0;
 };
 
 }

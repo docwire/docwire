@@ -36,7 +36,7 @@ public:
     OCRParser(const std::vector<Language>& languages = {},
         ocr_timeout ocr_timeout_arg = {}, ocr_data_path ocr_data_path_arg = {});
 
-    void parse(const data_source& data) override;
+    void parse(const data_source& data, const emission_callbacks& emit_tag) override;
     const std::vector<mime_type> supported_mime_types() override
     {
         return {

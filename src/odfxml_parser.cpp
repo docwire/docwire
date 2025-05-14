@@ -19,10 +19,12 @@
 namespace docwire
 {
 
-class ODFXMLParser::CommandHandlersSet
+template<>
+struct pimpl_impl<ODFXMLParser> : with_pimpl_owner<ODFXMLParser>
 {
-	public:
-		static void onODFBody(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
+	pimpl_impl(ODFXMLParser& owner) : with_pimpl_owner{owner} {}
+
+		void onODFBody(XmlStream& xml_stream, XmlParseMode mode,
 							  const ZipReader* zipfile, std::string& text,
 							  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
@@ -32,22 +34,22 @@ class ODFXMLParser::CommandHandlersSet
 				return;
 			docwire_log(debug) << "ODF_BODY Command";
 			//we are inside body, we can disable adding text nodes
-			parser.disableText(false);
+			owner().disableText(false);
 		}
 
-		static void onODFObject(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
+		void onODFObject(XmlStream& xml_stream, XmlParseMode mode,
 								ZipReader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "ODF_OBJECT Command";
 			xml_stream.levelDown();
-			parser.disableText(true);
-			text += parser.parseXmlData(xml_stream, mode, zipfile);
-			parser.disableText(false);
+			owner().disableText(true);
+			text += owner().parseXmlData(xml_stream, mode, zipfile);
+			owner().disableText(false);
 			xml_stream.levelUp();
 		}
 
-		static void onODFBinaryData(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
+		void onODFBinaryData(XmlStream& xml_stream, XmlParseMode mode,
 									const ZipReader* zipfile, std::string& text,
 									bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
@@ -58,16 +60,27 @@ class ODFXMLParser::CommandHandlersSet
 
 ODFXMLParser::ODFXMLParser()
 {
-		registerODFOOXMLCommandHandler("body", &CommandHandlersSet::onODFBody);
-		registerODFOOXMLCommandHandler("object", &CommandHandlersSet::onODFObject);
-		registerODFOOXMLCommandHandler("binary-data", &CommandHandlersSet::onODFBinaryData);
+	registerODFOOXMLCommandHandler("body", [&impl=impl()](XmlStream& xml_stream, XmlParseMode mode, ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+	{
+		impl.onODFBody(xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
+	});
+	registerODFOOXMLCommandHandler("object", [&impl=impl()](XmlStream& xml_stream, XmlParseMode mode, ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+	{
+		impl.onODFObject(xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
+	});
+	registerODFOOXMLCommandHandler("binary-data", [&impl=impl()](XmlStream& xml_stream, XmlParseMode mode, ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+	{
+		impl.onODFBinaryData(xml_stream, mode, zipfile, text, children_processed, level_suffix, first_on_level);
+	});
 }
 
-void ODFXMLParser::parse(const data_source& data, XmlParseMode mode)
+void ODFXMLParser::parse(const data_source& data, XmlParseMode mode, const emission_callbacks& emit_tag)
 {
 	std::string xml_content = data.string();
 
-	trySendTag(tag::Document
+	CommonXMLDocumentParser::scoped_context_stack_push base_context_guard{*this, emit_tag};
+
+	emit_tag(tag::Document
 		{
 			.metadata = [this, &xml_content]()
 			{
@@ -88,7 +101,7 @@ void ODFXMLParser::parse(const data_source& data, XmlParseMode mode)
 	{
 		std::throw_with_nested(make_error("Extracting text failed"));
 	}
-	trySendTag(tag::CloseDocument{});
+	emit_tag(tag::CloseDocument{});
 }
 
 attributes::Metadata ODFXMLParser::metaData(const std::string& xml_content) const
@@ -115,10 +128,10 @@ attributes::Metadata ODFXMLParser::metaData(const std::string& xml_content) cons
 	return metadata;
 }
 
-void ODFXMLParser::parse(const data_source& data)
+void ODFXMLParser::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using ODFXML parser.";
-	parse(data, XmlParseMode::PARSE_XML);
+	parse(data, XmlParseMode::PARSE_XML, emit_tag);
 }
 
 } // namespace docwire

@@ -90,16 +90,13 @@ public:
     explicit detector(ref_or_owned<database> database_to_use = database{}, allow_multiple allow_multiple = {false})
         : m_database_to_use(database_to_use), m_allow_multiple{allow_multiple} {}
 
-    void process(Info& info) override
+    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override
     {
-        if (!std::holds_alternative<data_source>(info.tag))
-        {
-	        emit(info);
-		    return;
-	    }
-	    data_source& data = std::get<data_source>(info.tag);
+        if (!std::holds_alternative<data_source>(tag))
+            return emit_tag(std::move(tag));
+	    data_source& data = std::get<data_source>(tag);
         detect(data, m_database_to_use.get(), m_allow_multiple);
-        emit(info);
+        return emit_tag(std::move(tag));
     }
 
     bool is_leaf() const override

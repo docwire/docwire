@@ -22,17 +22,18 @@ class DOCWIRE_ODF_OOXML_EXPORT ODFOOXMLParser : public CommonXMLDocumentParser, 
 {
   private:
     using with_pimpl<ODFOOXMLParser>::impl;
+    friend pimpl_impl<ODFOOXMLParser>;
     class CommandHandlersSet;
     int lastOOXMLRowNum();
     void setLastOOXMLRowNum(int r);
     int lastOOXMLColNum();
     void setLastOOXMLColNum(int c);
-    void parse(const data_source& data, XmlParseMode mode);
+    void parse(const data_source& data, XmlParseMode mode, const emission_callbacks& emit_tag);
     attributes::Metadata metaData(ZipReader& zipfile) const;
 
 	public:
 
-    void parse(const data_source& data) override;
+    void parse(const data_source& data, const emission_callbacks& emit_tag) override;
 
     const std::vector<mime_type> supported_mime_types() override
     {

@@ -50,17 +50,13 @@ Post::Post(const std::string& url, const std::map<std::string, std::string> form
 {
 }
 
-void
-Post::process(Info& info)
+continuation Post::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 try
 {
-	if (!std::holds_alternative<data_source>(info.tag))
-	{
-		emit(info);
-		return;
-	}
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
 	docwire_log(debug) << "data_source received";
-	const data_source& data = std::get<data_source>(info.tag);
+	const data_source& data = std::get<data_source>(tag);
 	std::shared_ptr<std::istream> in_stream = data.istream();
 
 	curlpp::Easy request;
@@ -144,8 +140,7 @@ try
 	{
 		std::throw_with_nested(make_error("HTTP request failed", errors::network_failure{}));
 	}
-	Info new_info(data_source{seekable_stream_ptr{response_stream}});
-	emit(new_info);
+	return emit_tag(data_source{seekable_stream_ptr{response_stream}});
 }
 catch (const std::exception&)
 {

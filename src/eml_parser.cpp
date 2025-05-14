@@ -10,6 +10,7 @@
 /*********************************************************************************************************************************************/
 
 #include <algorithm>
+#include <stack>
 #include <string>
 
 #include "eml_parser.h"
@@ -21,6 +22,8 @@
 #include <mailio/message.hpp>
 #include <mailio/mime.hpp>
 #include "make_error.h"
+#include "scoped_stack_push.h"
+#include "tags.h"
 
 namespace docwire
 {
@@ -29,10 +32,31 @@ using mailio::mime;
 using mailio::message;
 using mailio::codec;
 
-template<>
-struct pimpl_impl<EMLParser> : with_pimpl_owner<EMLParser>
+namespace
 {
-	pimpl_impl(EMLParser& owner) : with_pimpl_owner{owner} {}
+
+struct context
+{
+	const emission_callbacks& emit_tag;
+};
+
+} // anonymous namespace
+
+template<>
+struct pimpl_impl<EMLParser> : pimpl_impl_base
+{
+	std::stack<context> m_context_stack;
+
+	continuation emit_tag(Tag&& tag) const
+	{
+		return m_context_stack.top().emit_tag(std::move(tag));
+	}
+
+	continuation emit_tag_back(data_source&& data) const
+	{
+		return m_context_stack.top().emit_tag.back(std::move(data));
+	}
+
 	void convertToUtf8(const std::string& charset, std::string& text) const
 	{
 		try
@@ -42,7 +66,7 @@ struct pimpl_impl<EMLParser> : with_pimpl_owner<EMLParser>
 		}
 		catch (std::exception&)
 		{
-			owner().sendTag(errors::make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", charset)));
+			emit_tag(errors::make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", charset)));
 		}
 	}
 
@@ -78,7 +102,7 @@ struct pimpl_impl<EMLParser> : with_pimpl_owner<EMLParser>
 			if (mime_entity.content_type().subtype == "html" || mime_entity.content_type().subtype == "xhtml")
 			{
 				docwire_log(debug) << "HTML content subtype detected";
-				owner().sendTag(data_source {
+				emit_tag_back(data_source {
 					plain, mime_type{"text/html"}, confidence::very_high});
 			}
 			else
@@ -86,16 +110,16 @@ struct pimpl_impl<EMLParser> : with_pimpl_owner<EMLParser>
 				if (skip_charset_decoding)
 				{
 					docwire_log(debug) << "Charset is specified and decoding is skipped";
-					owner().sendTag(tag::Text{.text = plain});
+					emit_tag(tag::Text{.text = plain});
 				}
 				else
 				{
 					docwire_log(debug) << "Charset is not specified";
-					owner().sendTag(data_source {
+					emit_tag_back(data_source {
 						plain, mime_type{"text/plain"}, confidence::very_high});
 				}
 			}
-			owner().sendTag(tag::Text{.text = "\n\n"});
+			emit_tag(tag::Text{.text = "\n\n"});
 			return;
 		}
 		else if (mime_entity.content_type().type != mime::media_type_t::MULTIPART)
@@ -105,14 +129,14 @@ struct pimpl_impl<EMLParser> : with_pimpl_owner<EMLParser>
 			std::string file_name = mime_entity.name();
 			docwire_log(debug) << "File name: " << file_name;
 			file_extension extension { std::filesystem::path{file_name} };
-			auto info = owner().sendTag(
+			auto result = emit_tag(
 				tag::Attachment{.name = file_name, .size = plain.length(), .extension = extension});
-			if(!info.skip)
+			if (result != continuation::skip)
 			{
-				owner().sendTag(data_source {
+				emit_tag_back(data_source {
 					plain, mime_type_from_mime_entity(mime_entity), confidence::very_high});
 			}
-			owner().sendTag(tag::CloseAttachment{});
+			emit_tag(tag::CloseAttachment{});
 		}
 		if (mime_entity.content_type().subtype == "alternative")
 		{
@@ -181,13 +205,13 @@ attributes::Metadata metaData(const message& mime_entity);
 
 } // anonymous namespace
 
-void
-EMLParser::parse(const data_source& data)
+void EMLParser::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log_func();
 	docwire_log(debug) << "Using EML parser.";
-	message mime_entity = parse_message(data, [this](std::exception_ptr e) { sendTag(e); });
-	sendTag(tag::Document
+	scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
+	message mime_entity = parse_message(data, [emit_tag](std::exception_ptr e) { emit_tag(e); });
+	emit_tag(tag::Document
 		{
 			.metadata = [&mime_entity]()
 			{
@@ -195,7 +219,7 @@ EMLParser::parse(const data_source& data)
 			}
 		});
 	impl().extractPlainText(mime_entity);
-	sendTag(tag::CloseDocument{});
+	emit_tag(tag::CloseDocument{});
 }
 
 namespace

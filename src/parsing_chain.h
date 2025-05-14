@@ -27,16 +27,15 @@ class DOCWIRE_CORE_EXPORT ParsingChain : public ChainElement, public with_pimpl<
     ParsingChain(ParsingChain&& chain);
     ParsingChain& operator=(ParsingChain&& chain);
 
-    void operator()(const Tag& tag);
+    void operator()(Tag&& tag);
 
     bool is_leaf() const override;
     bool is_generator() const override;
 
-    ParsingChain& top_chain();
     bool is_complete() const;
 
   protected:
-    void process(Info &info) override;
+    virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
 
   private:
     using with_pimpl<ParsingChain>::impl;

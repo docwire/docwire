@@ -16,6 +16,7 @@
 #include <leptonica/allheaders.h>
 #include <leptonica/array_internal.h>
 #include <leptonica/pix_internal.h>
+#include <stack>
 #include <tesseract/baseapi.h>
 #include <tesseract/ocrclass.h>
 
@@ -30,6 +31,7 @@
 #include <mutex>
 #include <numeric>
 #include "resource_path.h"
+#include "scoped_stack_push.h"
 #include "throw_if.h"
 
 namespace docwire
@@ -67,6 +69,11 @@ private:
 
 thread_local std::string leptonica_stderr_capturer::m_contents;
 
+struct context
+{
+    const emission_callbacks& emit_tag;
+};
+
 } // anonymous namespace
 
 template<>
@@ -76,13 +83,17 @@ struct pimpl_impl<OCRParser> : with_pimpl_owner<OCRParser>
     std::vector<Language> m_languages;
     ocr_timeout m_ocr_timeout;
     ocr_data_path m_ocr_data_path;
+    std::stack<context> m_context_stack;
+
+    continuation emit_tag(Tag&& tag) const
+    {
+        return m_context_stack.top().emit_tag(std::move(tag));
+    }
 
     static bool cancel (void* data, int words)
     {
-        auto impl = reinterpret_cast<pimpl_impl<OCRParser>*>(data);
-        Info info{tag::PleaseWait{}};
-        impl->owner().sendTag(info);
-        return info.cancel;
+        auto context_ptr = reinterpret_cast<context*>(data);
+        return context_ptr->emit_tag(tag::PleaseWait{}) == continuation::stop;
     }
 };  
 
@@ -273,7 +284,7 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
         monitor.set_deadline_msecs(*impl().m_ocr_timeout.v);
     }
     monitor.cancel = &pimpl_impl<OCRParser>::cancel;
-    monitor.cancel_this = reinterpret_cast<void*>(const_cast<pimpl_impl<OCRParser>*>(&(impl())));
+    monitor.cancel_this = reinterpret_cast<void*>(&impl().m_context_stack.top());
     api->Recognize(&monitor);
     auto txt = api->GetUTF8Text();
     std::string output{ txt };
@@ -281,13 +292,14 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     return output;
 }
 
-void OCRParser::parse(const data_source& data)
+void OCRParser::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
   docwire_log(debug) << "Using OCR parser.";
-  sendTag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
+  scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
+  emit_tag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
   std::string plain_text = parse(data, impl().m_languages.size() > 0 ? impl().m_languages : std::vector({ Language::eng }));
-  sendTag(tag::Text{.text = plain_text});
-  sendTag(tag::CloseDocument{});
+  emit_tag(tag::Text{.text = plain_text});
+  emit_tag(tag::CloseDocument{});
 }
 
 } // namespace docwire

@@ -15,6 +15,7 @@
 #include "chain_element.h"
 #include "content_type_by_signature.h"
 #include "ref_or_owned.h"
+#include "tags.h"
 
 /**
  * @brief Provides content type detection related functionality
@@ -91,16 +92,13 @@ public:
     detector(ref_or_owned<by_signature::database> signatures_db_to_use = by_signature::database{})
         : m_signatures_db_to_use(signatures_db_to_use) {}
 
-    void process(Info& info) override
+    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override
     {
-        if (!std::holds_alternative<data_source>(info.tag))
-        {
-	        emit(info);
-		    return;
-	    }
-	    data_source& data = std::get<data_source>(info.tag);
+        if (!std::holds_alternative<data_source>(tag))
+	        return emit_tag(std::move(tag));
+	    data_source& data = std::get<data_source>(tag);
         content_type::detect(data, m_signatures_db_to_use.get());
-        emit(info);
+        return emit_tag(std::move(tag));
     }
 
     bool is_leaf() const override

@@ -27,7 +27,6 @@ class DOCWIRE_XLSB_EXPORT XLSBParser : public Parser, public with_pimpl<XLSBPars
 	private:
 		friend pimpl_impl<XLSBParser>;
 		using with_pimpl<XLSBParser>::impl;
-		using with_pimpl<XLSBParser>::renew_impl;
 		attributes::Metadata metaData(ZipReader& unzip);
 
 	public:
@@ -36,7 +35,7 @@ class DOCWIRE_XLSB_EXPORT XLSBParser : public Parser, public with_pimpl<XLSBPars
 		{
 			return { mime_type{"application/vnd.ms-excel.sheet.binary.macroenabled.12"} };
 		};
-		void parse(const data_source& data) override;
+		void parse(const data_source& data, const emission_callbacks& emit_tag) override;
 };
 
 } // namespace docwire

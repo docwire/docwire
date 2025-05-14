@@ -14,6 +14,7 @@
 
 #include "parser.h"
 #include "pimpl.h"
+#include "tags.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -38,7 +39,6 @@ class CommonXMLDocumentParser: public Parser, public with_pimpl<CommonXMLDocumen
 	private:
 		friend pimpl_impl<CommonXMLDocumentParser>;
 		using with_pimpl<CommonXMLDocumentParser>::impl;
-		class CommandHandlersSet;
 
 	//public interface for derived classes (and its components)
 	public:
@@ -70,7 +70,7 @@ class CommonXMLDocumentParser: public Parser, public with_pimpl<CommonXMLDocumen
 
 		typedef std::vector<ODFOOXMLListStyle> ListStyleVector;
 
-  typedef std::function<void(CommonXMLDocumentParser& parser, XmlStream& xml_stream, XmlParseMode mode,
+		typedef std::function<void(XmlStream& xml_stream, XmlParseMode mode,
                                  ZipReader* zipfile, std::string& text,
                                  bool& children_processed, std::string& level_suffix, bool first_on_level)> CommandHandler;
 
@@ -123,12 +123,19 @@ class CommonXMLDocumentParser: public Parser, public with_pimpl<CommonXMLDocumen
 
 		void activeEmittingSignals(bool flag);
 
-		void trySendTag(const Tag& tag) const;
-		void send_error(const std::exception_ptr e) const;
-
 	//public interface
 	public:
 		CommonXMLDocumentParser();
+
+	protected:
+		class scoped_context_stack_push
+		{
+		public:
+			scoped_context_stack_push(CommonXMLDocumentParser& parser, const emission_callbacks& emit_tag);
+			~scoped_context_stack_push();
+		private:
+			CommonXMLDocumentParser& m_parser;
+		};
 };
 
 } // namespace docwire

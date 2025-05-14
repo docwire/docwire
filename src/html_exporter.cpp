@@ -28,30 +28,27 @@ struct pimpl_impl<HtmlExporter> : pimpl_impl_base
 HtmlExporter::HtmlExporter()
 {}
 
-void HtmlExporter::process(Info& info)
+continuation HtmlExporter::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
-	if (std::holds_alternative<std::exception_ptr>(info.tag))
-	{
-		emit(info);
-		return;
-	}
-	if (std::holds_alternative<tag::Document>(info.tag) || !impl().m_stream)
+	if (std::holds_alternative<std::exception_ptr>(tag))
+		return emit_tag(std::move(tag));
+	if (std::holds_alternative<tag::Document>(tag) || !impl().m_stream)
 	{
 		++impl().m_nested_docs_level;
 		if (impl().m_nested_docs_level == 1)
 			impl().m_stream = std::make_shared<std::stringstream>();
 	}
-	impl().m_writer.write_to(info.tag, *impl().m_stream);
-	if (std::holds_alternative<tag::CloseDocument>(info.tag))
+	impl().m_writer.write_to(tag, *impl().m_stream);
+	if (std::holds_alternative<tag::CloseDocument>(tag))
 	{
 		--impl().m_nested_docs_level;
 		if (impl().m_nested_docs_level == 0)
 		{
-			Info info(data_source{seekable_stream_ptr{impl().m_stream}});
-			emit(info);
+			emit_tag(data_source{seekable_stream_ptr{impl().m_stream}});
 			impl().m_stream.reset();
 		}
 	}
+	return continuation::proceed;
 }
 
 } // namespace docwire

@@ -27,8 +27,6 @@ class DOCWIRE_PDF_EXPORT PDFParser : public Parser, public with_pimpl<PDFParser>
 {
 	private:
 		using with_pimpl<PDFParser>::impl;
-		using with_pimpl<PDFParser>::renew_impl;
-		using with_pimpl<PDFParser>::destroy_impl;
 		friend pimpl_impl<PDFParser>;
 		attributes::Metadata metaData(const data_source& data);
 
@@ -36,7 +34,7 @@ class DOCWIRE_PDF_EXPORT PDFParser : public Parser, public with_pimpl<PDFParser>
 		PDFParser();
 		PDFParser(PDFParser&&) = default;
 		~PDFParser();
-		void parse(const data_source& data) override;
+		void parse(const data_source& data, const emission_callbacks& emit_tag) override;
 		const std::vector<mime_type> supported_mime_types() override
 		{
 			return { mime_type{"application/pdf"} };

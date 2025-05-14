@@ -742,19 +742,20 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::filesystem::path("1.pst") | content_type::detector{} |
   mail_parser{} | office_formats_parser{}
-    | [](Info &info) // Create an input from file path, parser and connect them to transformer
+    | [](Tag&& tag, const emission_callbacks& emit_tag) // Create an input from file path, parser and connect them to transformer
       {
-        if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
+        if (std::holds_alternative<tag::Mail>(tag)) // if current node is mail
         {
-          auto subject = std::get<tag::Mail>(info.tag).subject; // get the subject attribute
+          auto subject = std::get<tag::Mail>(tag).subject; // get the subject attribute
           if (subject) // if subject attribute exists
           {
             if (subject->find("Hello") != std::string::npos) // if subject contains "Hello"
             {
-              info.skip = true; // skip the current node
+              return continuation::skip; // skip the current node
             }
           }
         }
+        return emit_tag(std::move(tag));
       }
     | PlainTextExporter() // sets exporter to plain text
     | std::cout;
@@ -774,29 +775,31 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::filesystem::path("1.pst") | content_type::detector{} |
   mail_parser{} | office_formats_parser{} |
-    [](Info &info) // Create an input from file path, parser and connect them to transformer
+    [](Tag&& tag, const emission_callbacks& emit_tag) // Create an input from file path, parser and connect them to transformer
     {
-      if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
+      if (std::holds_alternative<tag::Mail>(tag)) // if current node is mail
       {
-        auto subject = std::get<tag::Mail>(info.tag).subject; // get the subject attribute
+        auto subject = std::get<tag::Mail>(tag).subject; // get the subject attribute
         if (subject) // if subject attribute exists
         {
           if (subject->find("Hello") != std::string::npos) // if subject contains "Hello"
           {
-            info.skip = true; // skip the current node
+            return continuation::skip; // skip the current node
           }
         }
       }
+      return emit_tag(std::move(tag));
     } |
-    [counter = 0, max_mails = 1](Info &info) mutable // Create a transformer and connect it to previous transformer
+    [counter = 0, max_mails = 1](Tag&& tag, const emission_callbacks& emit_tag) mutable // Create a transformer and connect it to previous transformer
     {
-      if (std::holds_alternative<tag::Mail>(info.tag)) // if current node is mail
+      if (std::holds_alternative<tag::Mail>(tag)) // if current node is mail
       {
         if (++counter > max_mails) // if counter is greater than max_mails
         {
-          info.cancel = true; // cancel the parsing process
+          return continuation::stop; // cancel the parsing process
         }
       }
+      return emit_tag(std::move(tag));
     } |
     PlainTextExporter() | // sets exporter to plain text
     std::cout;
