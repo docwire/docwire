@@ -10,6 +10,7 @@
 /*********************************************************************************************************************************************/
 
 #include "odfxml_parser.h"
+#include "data_source.h"
 
 #include <libxml/xmlreader.h>
 #include "log.h"
@@ -22,6 +23,8 @@ namespace docwire
 template<>
 struct pimpl_impl<ODFXMLParser> : with_pimpl_owner<ODFXMLParser>
 {
+	void parse(const data_source& data, XmlParseMode mode, const emission_callbacks& emit_tag);
+	attributes::Metadata extract_metadata(const std::string& xml_content) const;
 	pimpl_impl(ODFXMLParser& owner) : with_pimpl_owner{owner} {}
 
 		void onODFBody(XmlStream& xml_stream, XmlParseMode mode,
@@ -74,28 +77,27 @@ ODFXMLParser::ODFXMLParser()
 	});
 }
 
-void ODFXMLParser::parse(const data_source& data, XmlParseMode mode, const emission_callbacks& emit_tag)
+void pimpl_impl<ODFXMLParser>::parse(const data_source& data, XmlParseMode mode, const emission_callbacks& emit_tag)
 {
 	std::string xml_content = data.string();
-
-	CommonXMLDocumentParser::scoped_context_stack_push base_context_guard{*this, emit_tag};
+	auto base_context_guard = owner().create_base_context_guard(emit_tag);
 
 	emit_tag(tag::Document
 		{
 			.metadata = [this, &xml_content]()
 			{
-				return metaData(xml_content);
+				return extract_metadata(xml_content);
 			}
 		});
 
 	//according to the ODF specification, we must skip blank nodes. Otherwise output from flat xml will be messed up.
-	setXmlOptions(XML_PARSE_NOBLANKS);
-	//in the beggining of xml stream, there are some options which we do not want to parse
-	disableText(true);
+	owner().setXmlOptions(XML_PARSE_NOBLANKS);
+	//in the beginning of xml stream, there are some options which we do not want to parse
+	owner().disableText(true);
 	try
 	{
 		std::string text;
-		extractText(xml_content, mode, NULL, text);
+		owner().extractText(xml_content, mode, NULL, text); // Call owner's extractText
 	}
 	catch (const std::exception& e)
 	{
@@ -104,12 +106,12 @@ void ODFXMLParser::parse(const data_source& data, XmlParseMode mode, const emiss
 	emit_tag(tag::CloseDocument{});
 }
 
-attributes::Metadata ODFXMLParser::metaData(const std::string& xml_content) const
+attributes::Metadata pimpl_impl<ODFXMLParser>::extract_metadata(const std::string& xml_content) const
 {
 	docwire_log(debug) << "Extracting metadata.";
 	attributes::Metadata metadata;
 
-	parseODFMetadata(xml_content, metadata);
+	owner().parseODFMetadata(xml_content, metadata); // Call owner's parseODFMetadata
 	if (!metadata.page_count)
 	{
 		// If we are processing ODP use slide count as page count
@@ -128,10 +130,36 @@ attributes::Metadata ODFXMLParser::metaData(const std::string& xml_content) cons
 	return metadata;
 }
 
-void ODFXMLParser::parse(const data_source& data, const emission_callbacks& emit_tag)
+continuation ODFXMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted(); // General check on data_source
+
+	static const std::vector<mime_type> supported_mime_types = {
+		mime_type{"application/vnd.oasis.opendocument.text-flat-xml"},
+		mime_type{"application/vnd.oasis.opendocument.spreadsheet-flat-xml"},
+		mime_type{"application/vnd.oasis.opendocument.presentation-flat-xml"},
+		mime_type{"application/vnd.oasis.opendocument.graphics-flat-xml"}
+	};
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+	{
+		return emit_tag(std::move(tag));
+	}
+
 	docwire_log(debug) << "Using ODFXML parser.";
-	parse(data, XmlParseMode::PARSE_XML, emit_tag);
+	try
+	{
+		impl().parse(data, XmlParseMode::PARSE_XML, emit_tag);
+	}
+	catch (const std::exception& e)
+	{
+		std::throw_with_nested(make_error("ODF Flat XML parsing failed"));
+	}
+	return continuation::proceed;
 }
 
 } // namespace docwire

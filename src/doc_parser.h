@@ -13,27 +13,20 @@
 #define DOCWIRE_DOC_PARSER_H
 
 #include "ole_office_formats_export.h"
-#include "parser.h"
-#include <vector>
+#include "chain_element.h"
+#include "pimpl.h"
 
 namespace docwire
 {
-	class Metadata;
 
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT DOCParser : public Parser
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT DOCParser : public ChainElement, public with_pimpl<DOCParser>
 {
-	private:
-		friend class TextHandler;
-		friend class SubDocumentHandler;
-		friend class TableHandler;
-
-	public:
-    	void parse(const data_source& data, const emission_callbacks& emit_tag) override;
-
-		const std::vector<mime_type> supported_mime_types() override
-		{
-			return { mime_type{"application/msword"} };
-		}
+public:
+    DOCParser();
+    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+    bool is_leaf() const override { return false; }
+private:
+    using with_pimpl<DOCParser>::impl;
 };
 
 } // namespace docwire

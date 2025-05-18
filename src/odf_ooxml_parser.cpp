@@ -12,6 +12,7 @@
 #include "odf_ooxml_parser.h"
 
 #include "common_xml_document_parser.h"
+#include "data_source.h"
 #include "scoped_stack_push.h"
 #include "tags.h"
 #include "xml_fixer.h"
@@ -709,6 +710,42 @@ ODFOOXMLParser::parse(const data_source& data, const emission_callbacks& emit_ta
 	CommonXMLDocumentParser::scoped_context_stack_push base_context_guard{*this, emit_tag};
 	scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
 	parse(data, XmlParseMode::PARSE_XML, emit_tag);
+}
+
+continuation ODFOOXMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	static const std::vector<mime_type> supported_mime_types = {
+		mime_type{"application/vnd.oasis.opendocument.text"},
+		mime_type{"application/vnd.oasis.opendocument.spreadsheet"},
+		mime_type{"application/vnd.oasis.opendocument.presentation"},
+		mime_type{"application/vnd.oasis.opendocument.graphics"},
+		mime_type{"application/vnd.oasis.opendocument.text-template"},
+		mime_type{"application/vnd.oasis.opendocument.spreadsheet-template"},
+		mime_type{"application/vnd.oasis.opendocument.presentation-template"},
+		mime_type{"application/vnd.oasis.opendocument.graphics-template"},
+		mime_type{"application/vnd.oasis.opendocument.text-web"},
+		mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
+		mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+		mime_type{"application/vnd.openxmlformats-officedocument.presentationml.presentation"},
+		mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.template"},
+		mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.template"},
+		mime_type{"application/vnd.openxmlformats-officedocument.presentationml.template"},
+		mime_type{"application/vnd.openxmlformats-officedocument.presentationml.slideshow"}
+	};
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+	{
+		return emit_tag(std::move(tag));
+	}
+
+	parse(data, emit_tag); // Call the existing public parse method
+	return continuation::proceed;
 }
 
 } // namespace docwire

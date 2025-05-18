@@ -13,36 +13,21 @@
 #define DOCWIRE_IWORK_PARSER_H
 
 #include "iwork_export.h"
-#include "parser.h"
-#include "tags.h"
-#include <vector>
+#include "chain_element.h"
 
 namespace docwire
 {
 
-class Metadata;
-
-class DOCWIRE_IWORK_EXPORT IWorkParser : public Parser, public with_pimpl<IWorkParser>
+class DOCWIRE_IWORK_EXPORT IWorkParser : public ChainElement, public with_pimpl<IWorkParser>
 {
-	private:
-		using with_pimpl<IWorkParser>::impl;
-		attributes::Metadata metaData(std::shared_ptr<std::istream> stream) const;
-
 	public:
 		IWorkParser();
-		const std::vector<mime_type> supported_mime_types() override
-		{
-			return {
-			mime_type{"application/vnd.apple.pages"},
-			mime_type{"application/vnd.apple.numbers"},
-			mime_type{"application/vnd.apple.keynote"},
-			mime_type{"application/x-iwork-pages-sffpages"},
-			mime_type{"application/x-iwork-numbers-sffnumbers"},
-			mime_type{"application/x-iwork-keynote-sffkey"}
-			};
-		};
 
-		void parse(const data_source& data, const emission_callbacks& emit_tag) override;
+		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		bool is_leaf() const override { return false; }
+
+	private:
+		using with_pimpl<IWorkParser>::impl;
 };
 
 } // namespace docwire

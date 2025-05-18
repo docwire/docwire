@@ -14,9 +14,9 @@
 
 #include <string>
 
+#include "chain_element.h"
 #include "language.h"
 #include "ocr_export.h"
-#include "parser.h"
 #include "pimpl.h"
 
 namespace docwire
@@ -25,7 +25,7 @@ namespace docwire
 struct ocr_data_path { std::filesystem::path v; };
 struct ocr_timeout { std::optional<int32_t> v; };
 
-class DOCWIRE_OCR_EXPORT OCRParser : public Parser, public with_pimpl<OCRParser>
+class DOCWIRE_OCR_EXPORT OCRParser : public ChainElement, public with_pimpl<OCRParser>
 {
 private:
     using with_pimpl<OCRParser>::impl;
@@ -36,19 +36,9 @@ public:
     OCRParser(const std::vector<Language>& languages = {},
         ocr_timeout ocr_timeout_arg = {}, ocr_data_path ocr_data_path_arg = {});
 
-    void parse(const data_source& data, const emission_callbacks& emit_tag) override;
-    const std::vector<mime_type> supported_mime_types() override
-    {
-        return {
-        mime_type{"image/tiff"},
-        mime_type{"image/jpeg"},
-        mime_type{"image/bmp"},
-        mime_type{"image/x-ms-bmp"},
-        mime_type{"image/png"},
-        mime_type{"image/x-portable-anymap"},
-        mime_type{"image/webp"}
-        };
-    };
+    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+
+    bool is_leaf() const override { return false; }
 
 private:
     std::string parse(const data_source& data, const std::vector<Language>& languages);

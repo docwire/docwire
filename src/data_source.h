@@ -185,6 +185,9 @@ class DOCWIRE_CORE_EXPORT data_source
 				return confidence::none;
 		}
 
+		bool has_highest_confidence_mime_type_in(const std::vector<mime_type>& mts) const;
+		void assert_not_encrypted() const;
+
 		confidence mime_type_confidence(mime_type mt) const
 		{
     		auto mt_iter = mime_types.find(mt);

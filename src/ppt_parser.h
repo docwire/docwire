@@ -13,33 +13,20 @@
 #define DOCWIRE_PPT_PARSER_H
 
 #include "ole_office_formats_export.h"
-#include "parser.h"
+#include "chain_element.h"
 #include "tags.h"
-#include <vector>
 
 namespace docwire
 {
 
-struct Metadata;
 class ThreadSafeOLEStorage;
 
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT PPTParser : public Parser
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT PPTParser : public ChainElement
 {
-	private:
-		attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const emission_callbacks& emit_tag) const;
-
 	public:
 		PPTParser();
-		const std::vector<mime_type> supported_mime_types() override
-		{
-			return {
-			mime_type{"application/vnd.ms-powerpoint"},
-			mime_type{"application/vnd.ms-powerpoint.presentation.macroenabled.12"},
-			mime_type{"application/vnd.ms-powerpoint.template.macroenabled.12"},
-			mime_type{"application/vnd.ms-powerpoint.slideshow.macroenabled.12"}
-			};
-		};
-		void parse(const data_source& data, const emission_callbacks& emit_tag) override;
+		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		bool is_leaf() const override { return false; }
 };
 
 } // namespace docwire

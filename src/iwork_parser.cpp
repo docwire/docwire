@@ -11,6 +11,7 @@
 
 #include "iwork_parser.h"
 
+#include "data_source.h"
 #include "error_tags.h"
 #include <stack>
 #include <stdlib.h>
@@ -24,6 +25,7 @@
 #include "zip_reader.h"
 #include "entities.h"
 #include <map>
+#include "make_error.h"
 #include <list>
 #include <vector>
 #include <cmath>
@@ -249,6 +251,7 @@ struct context
 template<>
 struct pimpl_impl<IWorkParser> : pimpl_impl_base
 {
+	void parse(const data_source& data, const emission_callbacks& emit_tag);
 	std::stack<context> m_context_stack;
 
 	continuation emit_tag(Tag&& tag) const
@@ -2091,14 +2094,12 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 	}
 };
 
-IWorkParser::IWorkParser()
-{
-}
+IWorkParser::IWorkParser() = default;
 
-void IWorkParser::parse(const data_source& data, const emission_callbacks& emit_tag)
+void pimpl_impl<IWorkParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using iWork parser.";
-	scoped::stack_push<context> context_guard{impl().m_context_stack, {.emit_tag = emit_tag}};
+	scoped::stack_push<context> context_guard{m_context_stack, {.emit_tag = emit_tag}};
 	ZipReader unzip{data};
 	try
 	{
@@ -2110,18 +2111,18 @@ void IWorkParser::parse(const data_source& data, const emission_callbacks& emit_
 	}
 	try
 	{
-		impl().m_context_stack.top().m_xml_file = find_main_xml_file(unzip);
+		m_context_stack.top().m_xml_file = find_main_xml_file(unzip);
 		emit_tag(tag::Document
 			{
 				.metadata=[this, &unzip, emit_tag]()
 				{
 					attributes::Metadata metadata;
-					impl().ReadMetadata(unzip, metadata, [emit_tag](std::exception_ptr e) { emit_tag(e); });
+					ReadMetadata(unzip, metadata, [emit_tag](std::exception_ptr e) { emit_tag(e); });
 					return metadata;
 				}
 			});
 		std::string text;
-		impl().parseIWork(unzip, text);
+		parseIWork(unzip, text);
 		emit_tag(tag::Text{.text=text});
 		emit_tag(tag::CloseDocument{});
 	}
@@ -2130,5 +2131,33 @@ void IWorkParser::parse(const data_source& data, const emission_callbacks& emit_
 		std::throw_with_nested(make_error("Error parsing iWork main xml file"));
 	}
 }
+
+continuation IWorkParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	static const std::vector<mime_type> supported_mime_types = {
+		mime_type{"application/vnd.apple.pages"},
+		mime_type{"application/vnd.apple.numbers"},
+		mime_type{"application/vnd.apple.keynote"},
+		mime_type{"application/x-iwork-pages-sffpages"},
+		mime_type{"application/x-iwork-numbers-sffnumbers"},
+		mime_type{"application/x-iwork-keynote-sffkey"}
+	};
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+	{
+		return emit_tag(std::move(tag));
+	}
+
+	impl().parse(data, emit_tag);
+
+	return continuation::proceed;
+}
+
 
 } // namespace docwire

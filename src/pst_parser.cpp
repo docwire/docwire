@@ -9,6 +9,8 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include "pst_parser.h"
+
 #include "scoped_stack_push.h"
 #include "tags.h"
 #include <iomanip>
@@ -28,7 +30,6 @@ extern "C"
 #include "error_tags.h"
 #include "log.h"
 #include "misc.h"
-#include "pst_parser.h"
 #include "throw_if.h"
 
 namespace docwire
@@ -364,7 +365,7 @@ struct pimpl_impl<PSTParser> : pimpl_impl_base
 	std::stack<context> m_context_stack;
 	continuation emit_tag(Tag&& tag) const;
 	continuation emit_tag_back(data_source&& data) const;
-	void parse(std::shared_ptr<std::istream>) const;
+	void parse(std::shared_ptr<std::istream> stream) const;
 
   private:
     void parse_element(const char* buffer, size_t size, const std::string& extension="") const;
@@ -526,17 +527,36 @@ void pimpl_impl<PSTParser>::parse(std::shared_ptr<std::istream> stream) const
   libbfio_error_free(&bfio_error);
 }
 
-void
-PSTParser::parse(const data_source& data, const emission_callbacks& emit_tag)
-{
-	docwire_log(debug) << "Using PST parser.";
-  std::shared_ptr<std::istream> stream = data.istream();
-	scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
-	impl().parse(stream);
-}
+PSTParser::PSTParser() = default;
 
-PSTParser::PSTParser()
+continuation PSTParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
+    if (!std::holds_alternative<data_source>(tag))
+        return emit_tag(std::move(tag));
+
+    auto& data = std::get<data_source>(tag);
+    data.assert_not_encrypted();
+
+    static const std::vector<mime_type> local_supported_mimes = {
+        mime_type{"application/vnd.ms-outlook-pst"},
+        mime_type{"application/vnd.ms-outlook-ost"}
+    };
+
+    if (!data.has_highest_confidence_mime_type_in(local_supported_mimes))
+        return emit_tag(std::move(tag));
+
+    docwire_log(debug) << "Using PST parser.";
+    try
+    {
+        std::shared_ptr<std::istream> stream = data.istream();
+        scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
+        impl().parse(stream);
+    }
+    catch (const std::exception& e)
+    {
+        std::throw_with_nested(make_error("PST parsing failed"));
+    }
+    return continuation::proceed;
 }
 
 } // namespace docwire

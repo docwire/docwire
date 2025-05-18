@@ -11,6 +11,7 @@
 
 #include "xls_parser.h"
 
+#include "data_source.h"
 #include "error_tags.h"
 #include "log.h"
 #include <map>
@@ -100,6 +101,9 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 	{
 		return m_context_stack.top().emit_tag(std::move(tag));
 	}
+
+	void parse(const data_source& data, const emission_callbacks& emit_tag);
+	std::string parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag);
 
 	U16 getU16LittleEndian(std::vector<unsigned char>::const_iterator buffer)
 	{
@@ -877,34 +881,27 @@ XLSParser::XLSParser()
 {
 }
 
-void XLSParser::parse(const data_source& data, const emission_callbacks& emit_tag)
+void pimpl_impl<XLSParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
 	throw_if (!storage->isValid(), storage->getLastError());
 	emit_tag(tag::Document
 		{
-			.metadata = [emit_tag, &storage]()
+			.metadata = [this, emit_tag, &storage]()
 			{
-				try
-				{
-					attributes::Metadata meta;
-					parse_oshared_summary_info(*storage, meta, [emit_tag](std::exception_ptr e) { emit_tag(e); });
-					return meta;
-				}
-				catch (const std::exception& e)
-				{
-					std::throw_with_nested(make_error("parser_oshared_summary_info() failed"));
-				}
+				attributes::Metadata meta;
+				parse_oshared_summary_info(*storage, meta, [emit_tag](std::exception_ptr e) { emit_tag(e); });
+				return meta;
 			}
 		});
 	emit_tag(tag::Text{.text = parse(*storage, emit_tag)});
 	emit_tag(tag::CloseDocument{});
 }
 
-std::string XLSParser::parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag)
+std::string pimpl_impl<XLSParser>::parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using XLS parser.";
-	scoped::stack_push<context> context_guard{impl().m_context_stack, context{.emit_tag = emit_tag}};
+	scoped::stack_push<context> context_guard{m_context_stack, context{.emit_tag = emit_tag}};
 	try
 	{
 		std::lock_guard<std::mutex> parser_mutex_lock(parser_mutex);
@@ -912,20 +909,46 @@ std::string XLSParser::parse(ThreadSafeOLEStorage& storage, const emission_callb
 		std::string text;
 		if (workbook_reader != nullptr)
 		{
-			impl().parseXLS(*workbook_reader, text);
+			parseXLS(*workbook_reader, text);
 		}
 		else
 		{
 			std::unique_ptr<ThreadSafeOLEStreamReader> book_reader { static_cast<ThreadSafeOLEStreamReader*>(storage.createStreamReader("Book")) };
 			throw_if (book_reader == nullptr, storage.getLastError());
-			impl().parseXLS(*book_reader, text);
+			parseXLS(*book_reader, text);
 		}		
 		return text;
 	}
 	catch (const std::exception& e)
 	{
-		std::throw_with_nested(make_error("Error parsing XLS document"));
+		std::throw_with_nested(make_error("Error processing XLS OLE storage"));
 	}
+}
+
+continuation XLSParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted(); // This checks if the data_source itself is encrypted (e.g. encrypted ZIP)
+
+	static const std::vector<mime_type> supported_mime_types = {
+		mime_type{"application/vnd.ms-excel"},
+		mime_type{"application/vnd.ms-excel.sheet.macroenabled.12"},
+		mime_type{"application/vnd.ms-excel.template.macroenabled.12"}
+	};
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+		return emit_tag(std::move(tag));
+
+	impl().parse(data, emit_tag);
+	return continuation::proceed;
+}
+
+std::string XLSParser::parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag) // TODO: needs to be removed finally
+{
+	return impl().parse(storage, emit_tag);
 }
 
 } // namespace docwire

@@ -12,23 +12,17 @@
 #ifndef DOCWIRE_XML_PARSER_H
 #define DOCWIRE_XML_PARSER_H
 
-#include "parser.h"
+#include "chain_element.h"
 #include "xml_export.h"
 
 namespace docwire
 {
 
-class DOCWIRE_XML_EXPORT XMLParser : public Parser
+class DOCWIRE_XML_EXPORT XMLParser : public ChainElement
 {
 public:
-	void parse(const data_source& data, const emission_callbacks& emit_tag) override;
-	const std::vector<mime_type> supported_mime_types() override
-	{
-		return {
-		mime_type{"application/xml"},
-		mime_type{"text/xml"}
-		};
-	};
+	continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+	bool is_leaf() const override { return false; }
 };
 
 } // namespace docwire

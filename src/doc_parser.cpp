@@ -47,6 +47,12 @@ namespace
 	std::mutex parser_factory_mutex_2;
 } // anonymous namespace
 
+template<>
+struct pimpl_impl<DOCParser> : pimpl_impl_base
+{
+    void parse(const data_source& data, const emission_callbacks& emit_tag);
+};
+
 enum class TableState
 {
 	in_table,
@@ -583,7 +589,9 @@ class SubDocumentHandler : public wvWare::SubDocumentHandler
 		}
 };
 
-void DOCParser::parse(const data_source& data, const emission_callbacks& emit_tag)
+DOCParser::DOCParser() = default;
+
+void pimpl_impl<DOCParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using DOC parser.";
 
@@ -661,6 +669,32 @@ void DOCParser::parse(const data_source& data, const emission_callbacks& emit_ta
 	throw_if (!res, "parse() failed", errors::uninterpretable_data{});
 	text_handler.endOfDocument();
 	emit_tag(tag::CloseDocument{});
+}
+
+continuation DOCParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+    if (!std::holds_alternative<data_source>(tag))
+        return emit_tag(std::move(tag));
+
+    auto& data = std::get<data_source>(tag);
+    data.assert_not_encrypted();
+
+    static const std::vector<mime_type> supported_mime_types = {
+        mime_type{"application/msword"}
+    };
+
+    if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+        return emit_tag(std::move(tag));
+
+    try
+    {
+        impl().parse(data, emit_tag);
+    }
+    catch (const std::exception& e)
+    {
+        std::throw_with_nested(make_error("DOC parsing failed"));
+    }
+    return continuation::proceed;
 }
 
 } // namespace docwire

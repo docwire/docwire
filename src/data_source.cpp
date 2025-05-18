@@ -160,6 +160,19 @@ void read_seekable_stream_into_memory(std::shared_ptr<memory_buffer> buffer, std
 
 } // anonymous namespace
 
+bool data_source::has_highest_confidence_mime_type_in(const std::vector<mime_type>& mts) const
+{
+	std::optional<mime_type> mt = highest_confidence_mime_type();
+	throw_if(!mt, "Data source has no mime type", errors::uninterpretable_data{});
+	return std::find(mts.begin(), mts.end(), *mt) != mts.end();
+}
+
+void data_source::assert_not_encrypted() const
+{
+	bool is_encrypted = mime_type_confidence(mime_type { "application/encrypted" }) >= confidence::high;
+	throw_if(is_encrypted, errors::file_encrypted{});
+}
+
 void data_source::fill_memory_cache(std::optional<length_limit> limit) const
 {
 	std::visit(

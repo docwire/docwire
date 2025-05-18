@@ -24,6 +24,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include "charset_converter.h"
+#include "data_source.h"
 #include "log.h"
 #include "make_error.h"
 #include "misc.h"
@@ -333,6 +334,7 @@ struct pimpl_impl<HTMLParser> : pimpl_impl_base
 {
 	continuation emit_tag(Tag&& tag);
 	void parse_css(const std::string & m_style_text);
+	void parse(const data_source& data, const emission_callbacks& emit_tag);
 	void parse_document(const std::string& html_content, const emission_callbacks& emit_tag);
 	void process_node(const lxb_dom_node_t* node);
 	void process_text(const lxb_dom_node_t* node);
@@ -779,12 +781,40 @@ HTMLParser::HTMLParser()
 {
 }
 
-void HTMLParser::parse(const data_source& data, const emission_callbacks& emit_tag)
+void pimpl_impl<HTMLParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using HTML parser.";
 	std::string content = data.string();
-	impl().parse_document(content, emit_tag);
+	parse_document(content, emit_tag);
 	emit_tag(tag::CloseDocument{});
+}
+
+continuation HTMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	static const std::vector<mime_type> supported_mime_types = {
+		mime_type{"text/html"},
+		mime_type{"application/xhtml+xml"},
+		mime_type{"application/vnd.pwg-xhtml-print+xml"}
+	};
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+		return emit_tag(std::move(tag));
+
+	try
+	{
+		impl().parse(data, emit_tag);
+	}
+	catch (const std::exception& e)
+	{
+		std::throw_with_nested(make_error("HTML parsing failed"));
+	}
+	return continuation::proceed;
 }
 
 void HTMLParser::skipCharsetDecoding()

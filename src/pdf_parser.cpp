@@ -397,34 +397,61 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 				throw make_error("FPDF_LoadMemDocument() failed", FPDF_GetLastError(), errors::uninterpretable_data{});
 		}
 	}
+
+	attributes::Metadata metaData(const data_source& data);
+	void parse(const data_source& data, const emission_callbacks& emit_tag);
 };
 
 PDFParser::PDFParser() = default;
 
-PDFParser::~PDFParser() = default;
-
-attributes::Metadata PDFParser::metaData(const data_source& data)
+attributes::Metadata pimpl_impl<PDFParser>::metaData(const data_source& data)
 {
 	attributes::Metadata metadata;
-	impl().parseMetadata(metadata);
+	parseMetadata(metadata);
 	return metadata;
 }
 
-void
-PDFParser::parse(const data_source& data, const emission_callbacks& emit_tag)
+void pimpl_impl<PDFParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using PDF parser.";
-	scoped::stack_push<context> context_guard{impl().m_context_stack, {.emit_tag = emit_tag}};
-	impl().loadDocument(data);
+	scoped::stack_push<context> context_guard{m_context_stack, {.emit_tag = emit_tag}};
+	loadDocument(data);
 	emit_tag(tag::Document
 		{
 			.metadata = [this, &data]()
+
 			{
 				return metaData(data);
 			}
 		});
-	impl().parseText();
+	parseText();
 	emit_tag(tag::CloseDocument{});
+}
+
+continuation PDFParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	static const std::vector<mime_type> supported_mime_types = {
+		mime_type{"application/pdf"}
+	};
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+		return emit_tag(std::move(tag));
+
+	try
+	{
+		impl().parse(data, emit_tag);
+	}
+	catch (const std::exception& e)
+	{
+		std::throw_with_nested(make_error("PDF parsing failed"));
+	}
+	return continuation::proceed;
 }
 
 } // namespace docwire

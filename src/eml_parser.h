@@ -15,16 +15,13 @@
 #include "mail_export.h"
 #include <vector>
 
-#include "parser.h"
+#include "chain_element.h"
 #include "pimpl.h"
 
 namespace docwire
 {
 
-class Metadata;
-//class Attachment;
-
-class DOCWIRE_MAIL_EXPORT EMLParser : public Parser, public with_pimpl<EMLParser>
+class DOCWIRE_MAIL_EXPORT EMLParser : public ChainElement, public with_pimpl<EMLParser>
 {
 	private:
 		using with_pimpl<EMLParser>::impl;
@@ -32,11 +29,8 @@ class DOCWIRE_MAIL_EXPORT EMLParser : public Parser, public with_pimpl<EMLParser
 
 	public:
 		EMLParser();
-		void parse(const data_source& data, const emission_callbacks& emit_tag) override;
-		const std::vector<mime_type> supported_mime_types() override
-		{
-			return { mime_type{"message/rfc822"} };
-		};
+		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		bool is_leaf() const override { return false; }
 };
 
 } // namespace docwire

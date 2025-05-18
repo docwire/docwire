@@ -13,16 +13,15 @@
 #define DOCWIRE_XLS_PARSER_H
 
 #include "ole_office_formats_export.h"
-#include "parser.h"
-#include <string>
-#include <vector>
+#include "chain_element.h"
+#include "pimpl.h"
 
 namespace docwire
 {
 
 class ThreadSafeOLEStorage;
 
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT XLSParser : public Parser, public with_pimpl<XLSParser>
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT XLSParser : public ChainElement, public with_pimpl<XLSParser>
 {
 	private:
 		friend pimpl_impl<XLSParser>;
@@ -30,15 +29,8 @@ class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT XLSParser : public Parser, public with_p
 
 	public:
 		XLSParser();
-		const std::vector<mime_type> supported_mime_types() override
-		{
-			return {
-			mime_type{"application/vnd.ms-excel"},
-			mime_type{"application/vnd.ms-excel.sheet.macroenabled.12"},
-			mime_type{"application/vnd.ms-excel.template.macroenabled.12"}
-			};
-		};
-		void parse(const data_source& data, const emission_callbacks& emit_tag) override;
+		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		bool is_leaf() const override { return false; }
 		std::string parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag);
 };
 

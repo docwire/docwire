@@ -11,11 +11,13 @@
 
 #include "xlsb_parser.h"
 
+#include "data_source.h"
 #include "error_tags.h"
 #include "scoped_stack_push.h"
 #include "zip_reader.h"
 #include <iostream>
 #include "log.h"
+#include "make_error.h"
 #include <map>
 #include "misc.h"
 #include <sstream>
@@ -30,6 +32,8 @@ namespace docwire
 template<>
 struct pimpl_impl<XLSBParser> : pimpl_impl_base
 {
+	void parse(const data_source& data, const emission_callbacks& emit_tag);
+	attributes::Metadata metaData(ZipReader& unzip);
 	struct XLSBContent
 	{
 		class ErrorsCodes : public std::map<uint32_t, std::string>
@@ -578,7 +582,7 @@ struct pimpl_impl<XLSBParser> : pimpl_impl_base
 	{
 		docwire_log(debug) << "Extracting metadata.";
 		std::string data;
-		throw_if (!unzip.read("docProps/app.xml", &data), "Error reading docProps/app.xml");
+		throw_if (!unzip.read("docProps/app.xml", &data), "Error reading docProps/app.xml", errors::uninterpretable_data{});
 		if (data.find("<TitlesOfParts>") != std::string::npos && data.find("</TitlesOfParts>") != std::string::npos)
 		{
 			data.erase(data.find("</TitlesOfParts>"));
@@ -647,16 +651,14 @@ struct pimpl_impl<XLSBParser> : pimpl_impl_base
 
 };
 
-XLSBParser::XLSBParser()
-{
-}
+XLSBParser::XLSBParser() = default;
 
-attributes::Metadata XLSBParser::metaData(ZipReader& unzip)
+attributes::Metadata pimpl_impl<XLSBParser>::metaData(ZipReader& unzip)
 {
 	attributes::Metadata metadata;
 	try
 	{
-		impl().readMetadata(unzip, metadata);
+		readMetadata(unzip, metadata);
 	}
 	catch (const std::exception& e)
 	{
@@ -665,10 +667,10 @@ attributes::Metadata XLSBParser::metaData(ZipReader& unzip)
 	return metadata;
 }
 
-void XLSBParser::parse(const data_source& data, const emission_callbacks& emit_tag)
+void pimpl_impl<XLSBParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using XLSB parser.";
-	scoped::stack_push<pimpl_impl<XLSBParser>::context> context_guard{impl().m_context_stack, {emit_tag}};
+	scoped::stack_push<pimpl_impl<XLSBParser>::context> context_guard{m_context_stack, {emit_tag}};
 	std::string text;
 	ZipReader unzip{data};
 	try
@@ -687,7 +689,7 @@ void XLSBParser::parse(const data_source& data, const emission_callbacks& emit_t
 	}
 	try
 	{
-		impl().parseXLSB(unzip, text);
+		parseXLSB(unzip, text);
 	}
 	catch (const std::exception& e)
 	{
@@ -695,6 +697,25 @@ void XLSBParser::parse(const data_source& data, const emission_callbacks& emit_t
 	}
 	emit_tag(tag::Text{.text = text});
 	emit_tag(tag::CloseDocument{});
+}
+
+continuation XLSBParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	static const std::vector<mime_type> supported_mime_types = {
+		mime_type{"application/vnd.ms-excel.sheet.binary.macroenabled.12"}
+	};
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+		return emit_tag(std::move(tag));
+
+	impl().parse(data, emit_tag);
+	return continuation::proceed;
 }
 
 } // namespace docwire

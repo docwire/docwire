@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_COMMON_XML_PARSER_H
 #define DOCWIRE_COMMON_XML_PARSER_H
 
-#include "parser.h"
+#include "chain_element.h"
 #include "pimpl.h"
 #include "tags.h"
 #include <string>
@@ -34,7 +34,7 @@ enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
 	Child classes (ODFOOXMLParser and ODFXMLParser for now) may want to add or change handlers for some xml tags
 	(using registerODFOOXMLCommandHandler).
 **/
-class CommonXMLDocumentParser: public Parser, public with_pimpl<CommonXMLDocumentParser>
+class CommonXMLDocumentParser: public ChainElement, public with_pimpl<CommonXMLDocumentParser>
 {
 	private:
 		friend pimpl_impl<CommonXMLDocumentParser>;

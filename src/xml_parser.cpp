@@ -11,6 +11,9 @@
 
 #include "xml_parser.h"
 
+#include "data_source.h"
+#include "log.h"
+#include "make_error.h"
 #include "tags.h"
 #include "xml_stream.h"
 
@@ -55,13 +58,36 @@ void parseXmlData(const emission_callbacks& emit_tag, XmlStream& xml_stream)
 
 } // anonymous namespace
 
-void XMLParser::parse(const data_source& data, const emission_callbacks& emit_tag)
+continuation XMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
-	emit_tag(tag::Document{});
-	std::string xml_content = data.string();
-	XmlStream xml_stream(xml_content);
-	parseXmlData(emit_tag, xml_stream);
-	emit_tag(tag::CloseDocument{});
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	static const std::vector<mime_type> supported_mime_types = {
+		mime_type{"application/xml"},
+		mime_type{"text/xml"}
+	};
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+		return emit_tag(std::move(tag));
+
+	docwire_log(debug) << "Using XML parser.";
+	try
+	{
+		emit_tag(tag::Document{});
+		std::string xml_content = data.string();
+		XmlStream xml_stream(xml_content);
+		parseXmlData(emit_tag, xml_stream);
+		emit_tag(tag::CloseDocument{});
+	}
+	catch (const std::exception& e)
+	{
+		std::throw_with_nested(make_error("XML parsing failed"));
+	}
+	return continuation::proceed;
 }
 
 } // namespace docwire

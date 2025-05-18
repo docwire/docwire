@@ -16,31 +16,22 @@
 #include "mail_export.h"
 #include <vector>
 
-#include "parser.h"
+#include "chain_element.h"
 #include "pimpl.h"
 
 namespace docwire
 {
 
-class DOCWIRE_MAIL_EXPORT PSTParser : public Parser, public with_pimpl<PSTParser>
+class DOCWIRE_MAIL_EXPORT PSTParser : public ChainElement, public with_pimpl<PSTParser>
 {
 private:
   using with_pimpl<PSTParser>::impl;
   friend pimpl_impl<PSTParser>;
 
 public:
-
-  void parse(const data_source& data, const emission_callbacks& emit_tag) override;
-
-  const std::vector<mime_type> supported_mime_types() override
-  {
-    return {
-    mime_type{"application/vnd.ms-outlook-pst"},
-    mime_type{"application/vnd.ms-outlook-ost"}
-    };
-  };
-
   PSTParser();
+  continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+  bool is_leaf() const override { return false; }
 };
 
 } // namespace docwire

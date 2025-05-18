@@ -267,13 +267,14 @@ namespace
 			}
 		}
 	}
+
+	attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const emission_callbacks& emit_tag);
+
 };
 
-PPTParser::PPTParser()
-{
-}
+PPTParser::PPTParser() = default;
 
-void PPTParser::parse(const data_source& data, const emission_callbacks& emit_tag)
+void parse(const data_source& data, const emission_callbacks& emit_tag)
 {	
 	docwire_log(debug) << "Using PPT parser.";
 	try
@@ -283,7 +284,7 @@ void PPTParser::parse(const data_source& data, const emission_callbacks& emit_ta
 		assertFileIsNotEncrypted(*storage);
 		emit_tag(tag::Document
 			{
-				.metadata = [this, &storage, emit_tag]()
+				.metadata = [&storage, emit_tag]()
 				{
 						return metaData(storage, emit_tag);
 				}
@@ -323,7 +324,10 @@ void PPTParser::parse(const data_source& data, const emission_callbacks& emit_ta
 	}
 }
 
-attributes::Metadata PPTParser::metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const emission_callbacks& emit_tag) const
+namespace
+{
+
+attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const emission_callbacks& emit_tag)
 {
 	attributes::Metadata meta;
 		parse_oshared_summary_info(*storage, meta, [emit_tag](std::exception_ptr e) { emit_tag(e); });
@@ -344,6 +348,37 @@ attributes::Metadata PPTParser::metaData(const std::unique_ptr<ThreadSafeOLEStor
 			}
 		}
 		return meta;
+}
+
+} // anonymous namespace
+
+continuation PPTParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	static const std::vector<mime_type> supported_mime_types = {
+		mime_type{"application/vnd.ms-powerpoint"},
+		mime_type{"application/vnd.ms-powerpoint.presentation.macroenabled.12"},
+		mime_type{"application/vnd.ms-powerpoint.template.macroenabled.12"},
+		mime_type{"application/vnd.ms-powerpoint.slideshow.macroenabled.12"}
+	};
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+		return emit_tag(std::move(tag));
+
+	try
+	{
+		parse(data, emit_tag);
+	}
+	catch (const std::exception& e)
+	{
+		std::throw_with_nested(make_error("PPT parsing failed"));
+	}
+	return continuation::proceed;
 }
 
 } // namespace docwire

@@ -292,14 +292,30 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     return output;
 }
 
-void OCRParser::parse(const data_source& data, const emission_callbacks& emit_tag)
+continuation OCRParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
+    if (!std::holds_alternative<data_source>(tag))
+        return emit_tag(std::move(tag));
+    auto data = std::get<data_source>(tag);
+    data.assert_not_encrypted();
+    const std::vector<mime_type> supported_mime_types {
+        mime_type{"image/tiff"},
+        mime_type{"image/jpeg"},
+        mime_type{"image/bmp"},
+        mime_type{"image/x-ms-bmp"},
+        mime_type{"image/png"},
+        mime_type{"image/x-portable-anymap"},
+        mime_type{"image/webp"}
+    };
+    if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+        return emit_tag(std::move(tag));  
   docwire_log(debug) << "Using OCR parser.";
   scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
   emit_tag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
   std::string plain_text = parse(data, impl().m_languages.size() > 0 ? impl().m_languages : std::vector({ Language::eng }));
   emit_tag(tag::Text{.text = plain_text});
   emit_tag(tag::CloseDocument{});
+    return continuation::proceed;
 }
 
 } // namespace docwire

@@ -161,9 +161,7 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 	}
 };
 
-EMLParser::EMLParser()
-{
-}
+EMLParser::EMLParser() = default;
 
 namespace
 {
@@ -205,21 +203,42 @@ attributes::Metadata metaData(const message& mime_entity);
 
 } // anonymous namespace
 
-void EMLParser::parse(const data_source& data, const emission_callbacks& emit_tag)
+continuation EMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
 	docwire_log_func();
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	static const std::vector<mime_type> supported_mime_types = {
+		mime_type{"message/rfc822"}
+	};
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+		return emit_tag(std::move(tag));
+
 	docwire_log(debug) << "Using EML parser.";
-	scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
-	message mime_entity = parse_message(data, [emit_tag](std::exception_ptr e) { emit_tag(e); });
-	emit_tag(tag::Document
-		{
-			.metadata = [&mime_entity]()
+	try
+	{
+		scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
+		message mime_entity = parse_message(data, [emit_tag](std::exception_ptr e) { emit_tag(e); });
+		emit_tag(tag::Document
 			{
-				return metaData(mime_entity);
-			}
-		});
-	impl().extractPlainText(mime_entity);
-	emit_tag(tag::CloseDocument{});
+				.metadata = [&mime_entity]()
+				{
+					return metaData(mime_entity);
+				}
+			});
+		impl().extractPlainText(mime_entity);
+		emit_tag(tag::CloseDocument{});
+	}
+	catch (const std::exception& e)
+	{
+		std::throw_with_nested(make_error("EML parsing failed"));
+	}
+	return continuation::proceed;
 }
 
 namespace
