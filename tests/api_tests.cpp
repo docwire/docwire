@@ -434,7 +434,8 @@ INSTANTIATE_TEST_SUITE_P(
 		"multilang-chi_sim-fra-deu-eng.png",
 		"multilang-chi_tra-rus-jpn.png",
 		"multilang-spa-lat-grc.png",
-		"multilang-hin-san-swa-kor-eng.png"
+		"multilang-hin-san-swa-kor-eng.png",
+        "embedded_images.pdf"
                       ),
     [](const ::testing::TestParamInfo<MiscDocumentTest::ParamType>& info) {
         std::string file_name = info.param;
