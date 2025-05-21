@@ -12,7 +12,9 @@
 #include <memory>
 #include "html_writer.h"
 #include <map>
+#include "base64.h"
 #include "misc.h"
+#include "throw_if.h"
 #include <numeric>
 #include <sstream>
 
@@ -126,12 +128,21 @@ struct pimpl_impl<HtmlWriter> : pimpl_impl_base
 
   std::shared_ptr<TextElement> write_image(const tag::Image& image)
   {
-    HtmlAttrs attrs = styling_attributes(image);
-    attrs.insert(
+    HtmlAttrs attrs = styling_attributes(image.styling);
+    if (image.alt)
+        attrs.insert({"alt", *image.alt});
+    std::string src_value;
+    auto path_opt = image.source.path();
+    if (path_opt)
+        src_value = path_opt->string();
+    else
     {
-      { "src", image.src },
-      { "alt", image.alt.value_or("") }
-    });
+      auto image_mime_type = image.source.highest_confidence_mime_type();
+      throw_if (!image_mime_type);
+      std::string encoded_string = docwire::base64::encode(image.source.span());
+      src_value = "data:" + image_mime_type->v + ";base64," + encoded_string;
+    }
+    attrs.insert({"src", src_value});
     return tag_with_attributes("img", attrs);
   }
 

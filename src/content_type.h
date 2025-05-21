@@ -94,11 +94,24 @@ public:
 
     continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override
     {
-        if (!std::holds_alternative<data_source>(tag))
-	        return emit_tag(std::move(tag));
-	    data_source& data = std::get<data_source>(tag);
-        content_type::detect(data, m_signatures_db_to_use.get());
-        return emit_tag(std::move(tag));
+        try
+        {
+            if (std::holds_alternative<data_source>(tag))
+            {
+                data_source& data = std::get<data_source>(tag);
+                content_type::detect(data, m_signatures_db_to_use.get());
+            }
+            else if (std::holds_alternative<tag::Image>(tag))
+            {
+                data_source& data = std::get<tag::Image>(tag).source;
+                content_type::detect(data, m_signatures_db_to_use.get());
+            }
+        }
+        catch (const std::exception& e)
+        {
+            emit_tag(make_nested_ptr(std::current_exception(), DOCWIRE_MAKE_ERROR("Content type detection failed")));
+        }
+	    return emit_tag(std::move(tag));
     }
 
     bool is_leaf() const override

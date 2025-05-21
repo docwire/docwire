@@ -215,11 +215,30 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   std::shared_ptr<TextElement>
   write_image(const tag::Image& image)
   {
-    if (image.alt)
+    std::string text;
+    if (image.structured_content_streamer)
     {
-      return std::make_shared<TextElement>(*image.alt);
+      nested_writer writer{m_eol_sequence, m_format_link_opening, m_format_link_closing};  
+      image.structured_content_streamer.value()(
+        emission_callbacks
+        {
+          .further = [&](Tag&& tag)
+          {
+            writer.write(tag);
+            return continuation::proceed;
+          },
+          .back = [](Tag&&) -> continuation
+          {
+            return continuation::proceed;
+          }
+        });
+      text = writer.result_text();
     }
-    return std::make_shared<TextElement>("");
+    if (text.empty() && image.alt)
+    {
+      text = *image.alt;
+    }
+    return std::make_shared<TextElement>(text);
   }
 
   std::shared_ptr<TextElement>

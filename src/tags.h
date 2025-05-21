@@ -61,6 +61,10 @@ concept WithStyling = requires(T tag) {
 
 } // namespace attributes
 
+enum class continuation { proceed, skip, stop };
+struct emission_callbacks;
+using tag_sequence_streamer = std::function<continuation(const emission_callbacks&)>;
+
 namespace tag
 {
 
@@ -157,9 +161,10 @@ struct CloseLink {};
 
 struct Image
 {
-  std::string src;
+  data_source source;
   std::optional<std::string> alt;
   attributes::Styling styling;
+  std::optional<tag_sequence_streamer> structured_content_streamer;
 };
 
 struct Style
@@ -294,11 +299,10 @@ using Variant = std::variant<
 
 using Tag = tag::Variant;
 
-enum class continuation { proceed, skip, stop };
 struct emission_callbacks
 {
   std::function<continuation(Tag&&)> further;
-  std::function<continuation(data_source&&)> back;
+  std::function<continuation(Tag&&)> back;
   continuation operator()(Tag&& tag) const { return further(std::move(tag)); }
 };
 

@@ -15,6 +15,7 @@
 #include "chain_element.h"
 #include "content_type_export.h"
 #include "data_source.h"
+#include "make_error.h"
 #include "ref_or_owned.h"
 
 /**
@@ -92,10 +93,23 @@ public:
 
     continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override
     {
-        if (!std::holds_alternative<data_source>(tag))
-            return emit_tag(std::move(tag));
-	    data_source& data = std::get<data_source>(tag);
-        detect(data, m_database_to_use.get(), m_allow_multiple);
+        try
+        {
+            if (std::holds_alternative<data_source>(tag))
+            {
+                data_source& data = std::get<data_source>(tag);
+                detect(data, m_database_to_use.get(), m_allow_multiple);
+            }
+            else if (std::holds_alternative<tag::Image>(tag))
+            {
+                data_source& data = std::get<tag::Image>(tag).source;
+                detect(data, m_database_to_use.get(), m_allow_multiple);
+            }
+        }
+        catch (const std::exception& e)
+        {
+            emit_tag(make_nested_ptr(std::current_exception(), DOCWIRE_MAKE_ERROR("Content type detection by signature failed")));
+        }
         return emit_tag(std::move(tag));
     }
 

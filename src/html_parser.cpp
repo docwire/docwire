@@ -333,6 +333,7 @@ template<>
 struct pimpl_impl<HTMLParser> : pimpl_impl_base
 {
 	continuation emit_tag(Tag&& tag);
+	continuation emit_tag_back(Tag&& tag);
 	void parse_css(const std::string & m_style_text);
 	void parse(const data_source& data, const emission_callbacks& emit_tag);
 	void parse_document(const std::string& html_content, const emission_callbacks& emit_tag);
@@ -346,6 +347,11 @@ struct pimpl_impl<HTMLParser> : pimpl_impl_base
 continuation pimpl_impl<HTMLParser>::emit_tag(Tag&& tag)
 {
 	return m_context_stack.top().emit_tag(std::move(tag));
+}
+
+continuation pimpl_impl<HTMLParser>::emit_tag_back(Tag&& tag)
+{
+	return m_context_stack.top().emit_tag.back(std::move(tag));
 }
 
 void pimpl_impl<HTMLParser>::parse_css(const std::string & m_style_text)
@@ -670,7 +676,13 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 			const lxb_char_t* alt_attr = lxb_dom_element_get_attribute(const_cast<lxb_dom_element_t*>(element), (const lxb_char_t *)"alt", 3, nullptr);
 			if (alt_attr)
 				alt = std::string((const char*)alt_attr);
-			emit_tag(tag::Image{.src = src, .alt = alt, .styling = html_node_styling(node)});
+			tag::Image image
+			{
+				.source = data_source{std::filesystem::path{src}}, // TODO: handle data: urls
+				.alt = alt,
+				.styling = html_node_styling(node)
+			};
+			emit_tag_back(std::move(image));
 		}
 		else if (tag_id == LXB_TAG_TABLE)
 		{

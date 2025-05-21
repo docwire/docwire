@@ -1,7 +1,8 @@
 add_library(docwire_pdf SHARED pdf_parser.cpp)
 
 find_library(pdfium pdfium)
-target_link_libraries(docwire_pdf PRIVATE ${pdfium} docwire_core)
+find_package(Leptonica)
+target_link_libraries(docwire_pdf PRIVATE ${pdfium} ${Leptonica_LIBRARIES} docwire_core)
 
 install(TARGETS docwire_pdf EXPORT docwire_targets)
 if(MSVC)

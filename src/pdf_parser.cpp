@@ -14,6 +14,7 @@
 #include "error_tags.h"
 #include "log.h"
 #include "make_error.h"
+#include <leptonica/allheaders.h>
 #include <mutex>
 #include <pdfium/cpp/fpdf_scopers.h>
 #include <pdfium/fpdf_doc.h>
@@ -57,6 +58,98 @@ void parsePDFDate(tm& date, const std::string& str_date)
 	--date.tm_mon;
 }
 
+using pix_unique_ptr = std::unique_ptr<PIX, decltype([](PIX* pix) { pixDestroy(&pix); })>;
+using leptonica_data_ptr = std::unique_ptr<l_uint8, decltype(&lept_free)>;
+
+pix_unique_ptr create_pix_from_fpdf_bitmap(int width, int height, int stride, int format, const unsigned char* pixels, l_int32 horizontal_dpi, l_int32 vertical_dpi)
+{
+	docwire_log_func_with_args(width, height, stride, format);
+	pix_unique_ptr pix;
+
+	if (format == FPDFBitmap_Gray)
+	{
+		pix = pix_unique_ptr{pixCreate(width, height, 8)};
+		throw_if(!pix, "pixCreate failed for grayscale");
+		pixSetXRes(pix.get(), horizontal_dpi);
+		pixSetYRes(pix.get(), vertical_dpi);
+
+		l_uint32 wpl = pixGetWpl(pix.get());
+		l_uint32* pix_data = pixGetData(pix.get());
+		for (int y = 0; y < height; ++y)
+		{
+			l_uint32* line = pix_data + y * wpl;
+			const unsigned char* src_line = pixels + y * stride;
+			for (int x = 0; x < width; ++x)
+				SET_DATA_BYTE(line, x, src_line[x]);
+		}
+	}
+	else if (format == FPDFBitmap_BGR || format == FPDFBitmap_BGRx)
+	{
+		pix = pix_unique_ptr{pixCreate(width, height, 32)};
+		throw_if (!pix, "pixCreate failed for BGR/BGRx");
+		pixSetXRes(pix.get(), horizontal_dpi);
+		pixSetYRes(pix.get(), vertical_dpi);
+
+		int bytes_per_pixel = (format == FPDFBitmap_BGRx) ? 4 : 3;
+		l_uint32 wpl = pixGetWpl(pix.get());
+		l_uint32* pix_data = pixGetData(pix.get());
+		for (int y = 0; y < height; ++y)
+		{
+			const unsigned char* src_line = pixels + y * stride;
+			l_uint32* line = pix_data + y * wpl;
+			for (int x = 0; x < width; ++x)
+			{
+				l_uint8 b = src_line[x * bytes_per_pixel + 0];
+				l_uint8 g = src_line[x * bytes_per_pixel + 1];
+				l_uint8 r = src_line[x * bytes_per_pixel + 2];
+				l_uint32 rgba_pixel = 0;
+				throw_if(
+					composeRGBAPixel(r, g, b, 255, &rgba_pixel) != 0,
+					"composeRGBAPixel failed for BGR/BGRx pixel",
+					x, y
+				);
+				line[x] = rgba_pixel;
+			}
+		}
+	}
+	else if (format == FPDFBitmap_BGRA)
+	{
+		pix = pix_unique_ptr{pixCreate(width, height, 32)};
+		throw_if (!pix, "pixCreate failed for BGRA");
+		pixSetXRes(pix.get(), horizontal_dpi);
+		pixSetYRes(pix.get(), vertical_dpi);
+		pixSetSpp(pix.get(), 4);
+
+		l_uint32 wpl = pixGetWpl(pix.get());
+		l_uint32* pix_data = pixGetData(pix.get());
+
+		for (int y = 0; y < height; ++y)
+		{
+			const unsigned char* src_line = pixels + y * stride;
+			l_uint32* line = pix_data + y * wpl;
+			for (int x = 0; x < width; ++x)
+			{
+				l_uint8 b = src_line[x * 4 + 0];
+				l_uint8 g = src_line[x * 4 + 1];
+				l_uint8 r = src_line[x * 4 + 2];
+				l_uint8 a = src_line[x * 4 + 3];
+				l_uint32 rgba_pixel = 0;
+				throw_if(
+					composeRGBAPixel(r, g, b, a, &rgba_pixel) != 0,
+					"composeRGBAPixel failed for BGRA pixel",
+					x, y
+				);
+				line[x] = rgba_pixel;
+			}
+		}
+	}
+	else
+	{
+		throw make_error("Unsupported FPDFBitmap format for Pix creation", format, errors::uninterpretable_data{});
+	}
+	return pix;
+}
+
 using scoped_fpdf_document_with_custom_deleter = std::unique_ptr<
 		std::remove_pointer_t<FPDF_DOCUMENT>,
 		std::function<void(FPDF_DOCUMENT)>>;
@@ -77,6 +170,11 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 	continuation emit_tag(Tag&& tag)
 	{
 		return m_context_stack.top().emit_tag(std::move(tag));
+	}
+
+	continuation emit_tag_back(Tag&& tag)
+	{
+		return m_context_stack.top().emit_tag.back(std::move(tag));
 	}
 
 	FPDF_DOCUMENT pdf_document()
@@ -234,6 +332,7 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 				int object_count = FPDFPage_CountObjects(page.get());
 				throw_if (object_count < 0);
 				charset_converter conv("UTF-16LE", "UTF-8"); // Create converter *outside* the loops
+				bool stop_processing = false;
 				for (int i = 0; i < object_count; ++i)
 				{
     				FPDF_PAGEOBJECT object = FPDFPage_GetObject(page.get(), i);
@@ -274,12 +373,46 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
         				}
 						case FPDF_PAGEOBJ_IMAGE:
 						{
+							ScopedFPDFBitmap bitmap { FPDFImageObj_GetBitmap(object) };
+							int width = FPDFBitmap_GetWidth(bitmap.get());
+							int height = FPDFBitmap_GetHeight(bitmap.get());
+							int stride = FPDFBitmap_GetStride(bitmap.get());
+							const unsigned char* pixels = (const unsigned char*)FPDFBitmap_GetBuffer(bitmap.get());
+        					int format = FPDFBitmap_GetFormat(bitmap.get());
+
+							FPDF_IMAGEOBJ_METADATA image_metadata;
+							l_int32 h_res = 72; // Default DPI
+							l_int32 v_res = 72;   // Default DPI
+							if (FPDFImageObj_GetImageMetadata(object, page.get(), &image_metadata)) {
+								if (image_metadata.horizontal_dpi > 0.0f)
+									h_res = static_cast<l_int32>(image_metadata.horizontal_dpi);
+								if (image_metadata.vertical_dpi > 0.0f)
+									v_res = static_cast<l_int32>(image_metadata.vertical_dpi);
+							}
+
+            				pix_unique_ptr pix = create_pix_from_fpdf_bitmap(width, height, stride, format, pixels, h_res, v_res);
+			                l_uint8* png_data_raw = nullptr;
+            			    size_t png_size = 0;
+                			leptonica_data_ptr png_data(nullptr, lept_free);
+                			throw_if (pixWriteMemPng(&png_data_raw, &png_size, pix.get(), 0.0f) != 0);
+							throw_if (!png_data_raw);
+							throw_if (png_size <= 0);
+                    		png_data.reset(png_data_raw);
+							std::vector<std::byte> image_data;
+                    		image_data.resize(png_size);
+							memcpy(image_data.data(), png_data.get(), png_size);
+                			data_source image_source(std::move(image_data), mime_type { "image/png" }, confidence::highest);
+							tag::Image image{.source = image_source};
+							if (emit_tag_back(std::move(image)) == continuation::stop)
+								stop_processing = true;
 							break;
 						}
 						default:
 							break;
 					}
 				}
+				if (stop_processing)
+					break;
 				std::string single_page_text;
 				page_text.getText(single_page_text);
 				single_page_text += "\n\n";

@@ -48,9 +48,9 @@ void ParsingChain::operator()(Tag&& tag)
   operator()(std::move(tag),
   {
     [](Tag&&) { return continuation::proceed; },
-    [this](data_source&& data)
+    [this](Tag&& tag)
     {
-      operator()(std::move(data));
+      operator()(std::move(tag));
       return continuation::proceed;
     }
   });
@@ -65,7 +65,8 @@ continuation ParsingChain::operator()(Tag&& tag, const emission_callbacks& emit_
   return impl().m_lhs_element.get()( std::move(tag),
     {
       lhs_callback,
-      [emit_tag](data_source&& data) { return emit_tag.back(std::move(data)); } });
+      [emit_tag](Tag&& tag) { return emit_tag.back(std::move(tag)); }
+    });
 }
 
 bool ParsingChain::is_leaf() const

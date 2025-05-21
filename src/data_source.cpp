@@ -182,7 +182,7 @@ void data_source::fill_memory_cache(std::optional<length_limit> limit) const
 				if (!m_memory_cache)
 				{
 					m_path_stream = std::make_shared<std::ifstream>(source, std::ios::binary);
-					throw_if (!m_path_stream->good());
+					throw_if (!m_path_stream->good(), source);
 					m_memory_cache = std::make_shared<memory_buffer>(0);
 				}
 				read_seekable_stream_into_memory(m_memory_cache, m_stream_size, m_path_stream, limit);
