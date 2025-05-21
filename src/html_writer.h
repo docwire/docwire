@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_HTML_WRITER_H
 #define DOCWIRE_HTML_WRITER_H
 
-#include "core_export.h"
+#include "html_export.h"
 #include <iostream>
 
 #include "pimpl.h"
@@ -21,7 +21,7 @@
 namespace docwire
 {
 
-class DOCWIRE_CORE_EXPORT HtmlWriter : public Writer, public with_pimpl<HtmlWriter>
+class DOCWIRE_HTML_EXPORT HtmlWriter : public Writer, public with_pimpl<HtmlWriter>
 {
 public:
 

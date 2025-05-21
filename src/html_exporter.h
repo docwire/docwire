@@ -13,6 +13,7 @@
 #define DOCWIRE_HTML_EXPORTER_H
 
 #include "chain_element.h"
+#include "html_export.h"
 
 namespace docwire
 {
@@ -20,7 +21,7 @@ namespace docwire
 /**
  * @brief Exports data to HTML format.
  */
-class DOCWIRE_CORE_EXPORT HtmlExporter: public ChainElement, public with_pimpl<HtmlExporter>
+class DOCWIRE_HTML_EXPORT HtmlExporter: public ChainElement, public with_pimpl<HtmlExporter>
 {
 public:
 
