@@ -20,6 +20,19 @@
 namespace docwire
 {
 
+namespace
+{
+
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/vnd.oasis.opendocument.text-flat-xml"},
+	mime_type{"application/vnd.oasis.opendocument.spreadsheet-flat-xml"},
+	mime_type{"application/vnd.oasis.opendocument.presentation-flat-xml"},
+	mime_type{"application/vnd.oasis.opendocument.graphics-flat-xml"}
+};
+
+} // anonymous namespace
+	
 template<>
 struct pimpl_impl<ODFXMLParser> : with_pimpl_owner<ODFXMLParser>
 {
@@ -137,13 +150,6 @@ continuation ODFXMLParser::operator()(Tag&& tag, const emission_callbacks& emit_
 
 	auto& data = std::get<data_source>(tag);
 	data.assert_not_encrypted(); // General check on data_source
-
-	static const std::vector<mime_type> supported_mime_types = {
-		mime_type{"application/vnd.oasis.opendocument.text-flat-xml"},
-		mime_type{"application/vnd.oasis.opendocument.spreadsheet-flat-xml"},
-		mime_type{"application/vnd.oasis.opendocument.presentation-flat-xml"},
-		mime_type{"application/vnd.oasis.opendocument.graphics-flat-xml"}
-	};
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 	{

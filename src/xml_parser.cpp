@@ -56,6 +56,12 @@ void parseXmlData(const emission_callbacks& emit_tag, XmlStream& xml_stream)
 	}
 }
 
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/xml"},
+	mime_type{"text/xml"}
+};
+
 } // anonymous namespace
 
 continuation XMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
@@ -65,11 +71,6 @@ continuation XMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag
 
 	auto& data = std::get<data_source>(tag);
 	data.assert_not_encrypted();
-
-	static const std::vector<mime_type> supported_mime_types = {
-		mime_type{"application/xml"},
-		mime_type{"text/xml"}
-	};
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 		return emit_tag(std::move(tag));

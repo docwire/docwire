@@ -246,6 +246,16 @@ struct context
 	std::string m_xml_file;
 };
 
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/vnd.apple.pages"},
+	mime_type{"application/vnd.apple.numbers"},
+	mime_type{"application/vnd.apple.keynote"},
+	mime_type{"application/x-iwork-pages-sffpages"},
+	mime_type{"application/x-iwork-numbers-sffnumbers"},
+	mime_type{"application/x-iwork-keynote-sffkey"}
+};
+
 } // anonymous namespace
 
 template<>
@@ -2139,15 +2149,6 @@ continuation IWorkParser::operator()(Tag&& tag, const emission_callbacks& emit_t
 
 	auto& data = std::get<data_source>(tag);
 	data.assert_not_encrypted();
-
-	static const std::vector<mime_type> supported_mime_types = {
-		mime_type{"application/vnd.apple.pages"},
-		mime_type{"application/vnd.apple.numbers"},
-		mime_type{"application/vnd.apple.keynote"},
-		mime_type{"application/x-iwork-pages-sffpages"},
-		mime_type{"application/x-iwork-numbers-sffnumbers"},
-		mime_type{"application/x-iwork-keynote-sffkey"}
-	};
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 	{

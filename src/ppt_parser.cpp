@@ -350,6 +350,14 @@ attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& stora
 		return meta;
 }
 
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/vnd.ms-powerpoint"},
+	mime_type{"application/vnd.ms-powerpoint.presentation.macroenabled.12"},
+	mime_type{"application/vnd.ms-powerpoint.template.macroenabled.12"},
+	mime_type{"application/vnd.ms-powerpoint.slideshow.macroenabled.12"}
+};
+
 } // anonymous namespace
 
 continuation PPTParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
@@ -359,13 +367,6 @@ continuation PPTParser::operator()(Tag&& tag, const emission_callbacks& emit_tag
 
 	auto& data = std::get<data_source>(tag);
 	data.assert_not_encrypted();
-
-	static const std::vector<mime_type> supported_mime_types = {
-		mime_type{"application/vnd.ms-powerpoint"},
-		mime_type{"application/vnd.ms-powerpoint.presentation.macroenabled.12"},
-		mime_type{"application/vnd.ms-powerpoint.template.macroenabled.12"},
-		mime_type{"application/vnd.ms-powerpoint.slideshow.macroenabled.12"}
-	};
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 		return emit_tag(std::move(tag));

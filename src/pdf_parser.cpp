@@ -160,6 +160,11 @@ struct context
 	scoped_fpdf_document_with_custom_deleter pdf_document;
 };
 
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/pdf"}
+};
+
 } // unnamed namespace
 
 template<>
@@ -568,10 +573,6 @@ continuation PDFParser::operator()(Tag&& tag, const emission_callbacks& emit_tag
 
 	auto& data = std::get<data_source>(tag);
 	data.assert_not_encrypted();
-
-	static const std::vector<mime_type> supported_mime_types = {
-		mime_type{"application/pdf"}
-	};
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 		return emit_tag(std::move(tag));

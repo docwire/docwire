@@ -207,6 +207,17 @@ ocr_data_path default_tessdata_path()
     return ocr_data_path{def_tessdata_path};
 }
 
+const std::vector<mime_type> supported_mime_types
+{
+    mime_type{"image/tiff"},
+    mime_type{"image/jpeg"},
+    mime_type{"image/bmp"},
+    mime_type{"image/x-ms-bmp"},
+    mime_type{"image/png"},
+    mime_type{"image/x-portable-anymap"},
+    mime_type{"image/webp"}
+};
+
 } // anonymous namespace
 
 OCRParser::OCRParser(const std::vector<Language>& languages, ocr_timeout ocr_timeout, ocr_data_path ocr_data_path)
@@ -294,16 +305,6 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
 
 continuation OCRParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
-        static const std::vector<mime_type> supported_mime_types {
-        mime_type{"image/tiff"},
-        mime_type{"image/jpeg"},
-        mime_type{"image/bmp"},
-        mime_type{"image/x-ms-bmp"},
-        mime_type{"image/png"},
-        mime_type{"image/x-portable-anymap"},
-        mime_type{"image/webp"}
-    };
-
     auto process = [this](const data_source& data, const emission_callbacks& emit_tag) {
         docwire_log(debug) << "Using OCR parser.";
         scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};

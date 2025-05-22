@@ -90,6 +90,13 @@ struct context
 	int m_last_row, m_last_col;
 };
 
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/vnd.ms-excel"},
+	mime_type{"application/vnd.ms-excel.sheet.macroenabled.12"},
+	mime_type{"application/vnd.ms-excel.template.macroenabled.12"}
+};
+
 } // anonymous namespace
 
 template<>
@@ -932,12 +939,6 @@ continuation XLSParser::operator()(Tag&& tag, const emission_callbacks& emit_tag
 
 	auto& data = std::get<data_source>(tag);
 	data.assert_not_encrypted(); // This checks if the data_source itself is encrypted (e.g. encrypted ZIP)
-
-	static const std::vector<mime_type> supported_mime_types = {
-		mime_type{"application/vnd.ms-excel"},
-		mime_type{"application/vnd.ms-excel.sheet.macroenabled.12"},
-		mime_type{"application/vnd.ms-excel.template.macroenabled.12"}
-	};
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 		return emit_tag(std::move(tag));

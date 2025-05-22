@@ -327,6 +327,13 @@ struct context
 	char last_char_in_inline_formatting_context = '\0';
 };
 
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"text/html"},
+	mime_type{"application/xhtml+xml"},
+	mime_type{"application/vnd.pwg-xhtml-print+xml"}
+};
+
 } // unnamed namespace
 
 template<>
@@ -808,12 +815,6 @@ continuation HTMLParser::operator()(Tag&& tag, const emission_callbacks& emit_ta
 
 	auto& data = std::get<data_source>(tag);
 	data.assert_not_encrypted();
-
-	static const std::vector<mime_type> supported_mime_types = {
-		mime_type{"text/html"},
-		mime_type{"application/xhtml+xml"},
-		mime_type{"application/vnd.pwg-xhtml-print+xml"}
-	};
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 		return emit_tag(std::move(tag));

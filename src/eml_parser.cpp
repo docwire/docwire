@@ -194,6 +194,11 @@ message parse_message(const data_source& data, const std::function<void(std::exc
 	return mime_entity;
 }
 
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"message/rfc822"}
+};
+
 } // anonymous namespace
 
 namespace
@@ -211,10 +216,6 @@ continuation EMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag
 
 	auto& data = std::get<data_source>(tag);
 	data.assert_not_encrypted();
-
-	static const std::vector<mime_type> supported_mime_types = {
-		mime_type{"message/rfc822"}
-	};
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 		return emit_tag(std::move(tag));

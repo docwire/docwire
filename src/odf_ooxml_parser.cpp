@@ -59,6 +59,26 @@ struct context
 	int last_ooxml_row_num = 0;
 };
 
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/vnd.oasis.opendocument.text"},
+	mime_type{"application/vnd.oasis.opendocument.spreadsheet"},
+	mime_type{"application/vnd.oasis.opendocument.presentation"},
+	mime_type{"application/vnd.oasis.opendocument.graphics"},
+	mime_type{"application/vnd.oasis.opendocument.text-template"},
+	mime_type{"application/vnd.oasis.opendocument.spreadsheet-template"},
+	mime_type{"application/vnd.oasis.opendocument.presentation-template"},
+	mime_type{"application/vnd.oasis.opendocument.graphics-template"},
+	mime_type{"application/vnd.oasis.opendocument.text-web"},
+	mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
+	mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+	mime_type{"application/vnd.openxmlformats-officedocument.presentationml.presentation"},
+	mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.template"},
+	mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.template"},
+	mime_type{"application/vnd.openxmlformats-officedocument.presentationml.template"},
+	mime_type{"application/vnd.openxmlformats-officedocument.presentationml.slideshow"}
+};
+
 } // anonymous namespace
 
 template<>
@@ -719,25 +739,6 @@ continuation ODFOOXMLParser::operator()(Tag&& tag, const emission_callbacks& emi
 
 	auto& data = std::get<data_source>(tag);
 	data.assert_not_encrypted();
-
-	static const std::vector<mime_type> supported_mime_types = {
-		mime_type{"application/vnd.oasis.opendocument.text"},
-		mime_type{"application/vnd.oasis.opendocument.spreadsheet"},
-		mime_type{"application/vnd.oasis.opendocument.presentation"},
-		mime_type{"application/vnd.oasis.opendocument.graphics"},
-		mime_type{"application/vnd.oasis.opendocument.text-template"},
-		mime_type{"application/vnd.oasis.opendocument.spreadsheet-template"},
-		mime_type{"application/vnd.oasis.opendocument.presentation-template"},
-		mime_type{"application/vnd.oasis.opendocument.graphics-template"},
-		mime_type{"application/vnd.oasis.opendocument.text-web"},
-		mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
-		mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
-		mime_type{"application/vnd.openxmlformats-officedocument.presentationml.presentation"},
-		mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.template"},
-		mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.template"},
-		mime_type{"application/vnd.openxmlformats-officedocument.presentationml.template"},
-		mime_type{"application/vnd.openxmlformats-officedocument.presentationml.slideshow"}
-	};
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 	{
