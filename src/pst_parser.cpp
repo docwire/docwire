@@ -357,6 +357,12 @@ struct context
 	const emission_callbacks& emit_tag;
 };
 
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/vnd.ms-outlook-pst"},
+	mime_type{"application/vnd.ms-outlook-ost"}
+};
+
 } // anonymous namespace
 
 template<>
@@ -537,12 +543,7 @@ continuation PSTParser::operator()(Tag&& tag, const emission_callbacks& emit_tag
     auto& data = std::get<data_source>(tag);
     data.assert_not_encrypted();
 
-    static const std::vector<mime_type> local_supported_mimes = {
-        mime_type{"application/vnd.ms-outlook-pst"},
-        mime_type{"application/vnd.ms-outlook-ost"}
-    };
-
-    if (!data.has_highest_confidence_mime_type_in(local_supported_mimes))
+    if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
         return emit_tag(std::move(tag));
 
     docwire_log(debug) << "Using PST parser.";
