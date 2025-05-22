@@ -5,7 +5,7 @@ if(MSVC)
     target_compile_options(api_tests PRIVATE /bigobj)
 endif()
 target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr
-	docwire_fuzzy_match docwire_base64 docwire_content_type GTest::gtest_main GTest::gmock)
+	docwire_fuzzy_match docwire_base64 docwire_content_type GTest::gtest GTest::gmock)
 target_compile_definitions(api_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 
 find_package(Boost REQUIRED COMPONENTS json)

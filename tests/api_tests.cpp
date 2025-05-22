@@ -2153,3 +2153,9 @@ TEST(stringification, enums)
 {
     ASSERT_EQ(stringify(confidence::very_high), "very_high");
 }
+
+int main(int argc, char* argv[])
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
