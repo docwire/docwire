@@ -78,10 +78,20 @@ function(run_tests build_type)
 		COMMAND ${valgrind_command} ${CMAKE_CTEST_COMMAND}
 			-V
 			--no-tests=error
-			--label-regex is_api_test|is_example
+			--label-regex is_api_test
 			${additional_ctest_args}
 		WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}
-		LOGNAME test-${PORT}-${triplet_build_type}
+		LOGNAME test-api-${PORT}-${triplet_build_type}
+	)
+
+	vcpkg_execute_required_process(
+		COMMAND ${valgrind_command} ${CMAKE_CTEST_COMMAND}
+			-V
+			--no-tests=error
+			--label-regex is_example
+			${additional_ctest_args}
+		WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}
+		LOGNAME test-examples-${PORT}-${triplet_build_type}
 	)
 endfunction()
 
