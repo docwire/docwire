@@ -1,3 +1,31 @@
+## Version 2025.05.22
+
+This release introduces significant enhancements to PDF processing, including image extraction and OCR integration, alongside major internal refactorings that modernize the core data flow and parser architecture. It also includes several fixes related to thread safety, library linking, and testing infrastructure, particularly improving test discovery and execution on Windows.
+
+> From PDFs, images now take flight,  
+> Through refined chains, data flows bright.  
+> With steadier tests and safer threads,  
+> Docwire advances, new paths it treads.  
+> 🖼️🔗⚙️
+
+- **Features**
+  - **PDF Processing:** Added extraction of images from PDF files. Extracted images can now be processed by subsequent chain elements, including content type detection and OCR.
+  - **Writers:** Updated HTML and plain text writers to support image tags, including data URLs for embedded images and text derived from OCR.
+  - **Testing:** Implemented automatic tests for the new PDF image extraction and OCRing capabilities.
+
+- **Improvements**
+  - **Core Architecture:** Significantly refactored the data processing mechanism within chain elements. This modernizes the core data flow, enhances clarity on processing progression (continue, skip, stop), and allows more flexible tag emission, including parsers sending data back for reprocessing.
+  - **Parser Architecture:** Refactored parsers to directly implement `ChainElement` and utilize enhanced `data_source` checks, eliminating the `Parser` base class.
+  - **Testing & CI:** Enhanced CI by adding explicit runs of automatic test discovery to catch issues that `ctest` might silently ignore.
+  - **Testing & CI:** Improved error reporting in CI by separating the execution of API automatic tests from example runs.
+  - **Code Organization:** Moved `HTMLWriter` and `HTMLExporter` classes from `docwire_core` to the `docwire_html` library.
+
+- **Fixes**
+  - **Core:** Ensured thread-safe initialization of parser MIME type vectors, including a specific fix for `PSTParser`.
+  - **Testing:** Resolved test discovery issues on Windows by implementing a custom `main()` function for automatic tests instead of linking `gtest_main`.
+  - **Build:** Addressed linking issues with the `docwire_html` library.
+  - **Build:** Fixed `mailio` library linking to ensure compatibility with version 0.25.1 following a vcpkg upgrade.
+
 ## Version 2025.04.29
 
 This release marks a significant upgrade to PDF handling by replacing the PoDoFo library with Google's PDFium engine. This change aims to improve compatibility and resolve parsing issues encountered with various PDF documents. A substantial part of this release involved extensive stabilization work to ensure PDFium builds and integrates correctly across Windows (MSVC), MacOS, ARM64, and with Clang compilers. Subsequent fixes address runtime issues discovered in the PDF parser after the integration.
