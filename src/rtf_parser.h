@@ -12,33 +12,19 @@
 #ifndef DOCWIRE_RTF_PARSER_H
 #define DOCWIRE_RTF_PARSER_H
 
-#include "parser.h"
+#include "chain_element.h"
 #include "rtf_export.h"
 #include "tags.h"
-#include <vector>
 
 namespace docwire
 {
 
-class DOCWIRE_RTF_EXPORT RTFParser : public Parser
+class DOCWIRE_RTF_EXPORT RTFParser : public ChainElement
 {
-	private:
-		attributes::Metadata metaData(const data_source& data) const;
-
 	public:
-
-    	void parse(const data_source& data) override;
-
-		const std::vector<mime_type> supported_mime_types() override
-		{
-			return {
-			mime_type{"application/rtf"},
-			mime_type{"text/rtf"},
-			mime_type{"text/richtext"}
-			};
-		};
-
 		RTFParser();
+		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		bool is_leaf() const override { return false; }
 };
 
 } // namespace docwire

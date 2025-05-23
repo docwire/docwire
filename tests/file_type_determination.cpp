@@ -65,14 +65,15 @@ int main()
     std::filesystem::path{"test.zip"} |
     DecompressArchives{} |
     content_type::detector{} |
-    [](Info& tag_info)
+    [](Tag&& tag, const emission_callbacks& emit_tag)
     {
-      if (!std::holds_alternative<data_source>(tag_info.tag))
-        return;
-      data_source& data = std::get<data_source>(tag_info.tag);
+      if (!std::holds_alternative<data_source>(tag))
+        return emit_tag(std::move(tag));
+      data_source& data = std::get<data_source>(tag);
       std::optional<mime_type> mt = data.highest_confidence_mime_type();
       if (!mt || *mt != mime_type { "application/msword" })
-        tag_info.skip = true;
+        return continuation::skip;
+      return emit_tag(std::move(tag));
     } |
     office_formats_parser{} | // more parsers can be added
     PlainTextExporter() | out_stream;

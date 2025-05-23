@@ -16,6 +16,7 @@
 #include <leptonica/allheaders.h>
 #include <leptonica/array_internal.h>
 #include <leptonica/pix_internal.h>
+#include <stack>
 #include <tesseract/baseapi.h>
 #include <tesseract/ocrclass.h>
 
@@ -30,6 +31,7 @@
 #include <mutex>
 #include <numeric>
 #include "resource_path.h"
+#include "scoped_stack_push.h"
 #include "throw_if.h"
 
 namespace docwire
@@ -67,6 +69,11 @@ private:
 
 thread_local std::string leptonica_stderr_capturer::m_contents;
 
+struct context
+{
+    const emission_callbacks& emit_tag;
+};
+
 } // anonymous namespace
 
 template<>
@@ -76,13 +83,17 @@ struct pimpl_impl<OCRParser> : with_pimpl_owner<OCRParser>
     std::vector<Language> m_languages;
     ocr_timeout m_ocr_timeout;
     ocr_data_path m_ocr_data_path;
+    std::stack<context> m_context_stack;
+
+    continuation emit_tag(Tag&& tag) const
+    {
+        return m_context_stack.top().emit_tag(std::move(tag));
+    }
 
     static bool cancel (void* data, int words)
     {
-        auto impl = reinterpret_cast<pimpl_impl<OCRParser>*>(data);
-        Info info{tag::PleaseWait{}};
-        impl->owner().sendTag(info);
-        return info.cancel;
+        auto context_ptr = reinterpret_cast<context*>(data);
+        return context_ptr->emit_tag(tag::PleaseWait{}) == continuation::stop;
     }
 };  
 
@@ -196,6 +207,17 @@ ocr_data_path default_tessdata_path()
     return ocr_data_path{def_tessdata_path};
 }
 
+const std::vector<mime_type> supported_mime_types
+{
+    mime_type{"image/tiff"},
+    mime_type{"image/jpeg"},
+    mime_type{"image/bmp"},
+    mime_type{"image/x-ms-bmp"},
+    mime_type{"image/png"},
+    mime_type{"image/x-portable-anymap"},
+    mime_type{"image/webp"}
+};
+
 } // anonymous namespace
 
 OCRParser::OCRParser(const std::vector<Language>& languages, ocr_timeout ocr_timeout, ocr_data_path ocr_data_path)
@@ -273,7 +295,7 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
         monitor.set_deadline_msecs(*impl().m_ocr_timeout.v);
     }
     monitor.cancel = &pimpl_impl<OCRParser>::cancel;
-    monitor.cancel_this = reinterpret_cast<void*>(const_cast<pimpl_impl<OCRParser>*>(&(impl())));
+    monitor.cancel_this = reinterpret_cast<void*>(&impl().m_context_stack.top());
     api->Recognize(&monitor);
     auto txt = api->GetUTF8Text();
     std::string output{ txt };
@@ -281,13 +303,53 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     return output;
 }
 
-void OCRParser::parse(const data_source& data)
+continuation OCRParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
-  docwire_log(debug) << "Using OCR parser.";
-  sendTag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
-  std::string plain_text = parse(data, impl().m_languages.size() > 0 ? impl().m_languages : std::vector({ Language::eng }));
-  sendTag(tag::Text{.text = plain_text});
-  sendTag(tag::CloseDocument{});
+    auto process = [this](const data_source& data, const emission_callbacks& emit_tag) {
+        docwire_log(debug) << "Using OCR parser.";
+        scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
+        emit_tag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
+        std::string plain_text = parse(data, impl().m_languages.size() > 0 ? impl().m_languages : std::vector({ Language::eng }));
+        emit_tag(tag::Text{.text = plain_text});
+        emit_tag(tag::CloseDocument{});
+        return continuation::proceed;
+    };
+
+    if (std::holds_alternative<data_source>(tag))
+    {
+        const data_source& data = std::get<data_source>(tag);
+        data.assert_not_encrypted();
+        if (data.has_highest_confidence_mime_type_in(supported_mime_types))
+            return process(std::get<data_source>(tag), emit_tag);
+        else
+            return emit_tag(std::move(tag));
+    }
+    else if (std::holds_alternative<tag::Image>(tag))
+    {
+        tag::Image& image = std::get<tag::Image>(tag);
+        image.source.assert_not_encrypted();
+        if (!image.source.highest_confidence_mime_type().has_value())
+            return emit_tag(std::move(tag));
+        if (!image.source.has_highest_confidence_mime_type_in(supported_mime_types))
+            return emit_tag(std::move(tag));
+        docwire_log(debug) << "OCRParser: Setting up streamer for tag::Image.";
+        image.structured_content_streamer =
+            [process, data = image.source](const emission_callbacks& emit_tag) -> continuation
+            {
+                try
+                {
+                    return process(data, emit_tag);
+                }
+                catch (const std::exception&)
+                {
+                    emit_tag(make_nested_ptr(std::current_exception(), make_error("OCR processing of image failed")));
+                    return continuation::proceed;
+                }
+            };
+        return emit_tag(std::move(tag));
+    }
+    else
+        return emit_tag(std::move(tag));
 }
 
 } // namespace docwire

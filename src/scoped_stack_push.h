@@ -9,39 +9,37 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#ifndef DOCWIRE_SCOPED_STACK_PUSH_H
+#define DOCWIRE_SCOPED_STACK_PUSH_H
 
-#ifndef DOCWIRE_PARSER_H
-#define DOCWIRE_PARSER_H
+#include <stack>
 
-#include "chain_element.h"
-#include "tags.h"
-
-namespace docwire
+namespace docwire::scoped
 {
 
-/**
- * @brief Abstract class for all parsers
- */
-class DOCWIRE_CORE_EXPORT Parser : public ChainElement
+template <typename T>
+class stack_push
 {
 public:
+	stack_push(std::stack<T>& stack, const T& value) : m_stack(stack)
+	{
+		m_stack.push(value);
+	}
 
-  bool is_leaf() const override { return false; }
+	stack_push(std::stack<T>& stack, T&& value) : m_stack(stack)
+	{
+		m_stack.push(std::move(value));
+	}
 
-protected:
+	~stack_push()
+	{
+		m_stack.pop();
+	}
 
-  /**
-   * @brief Executes text parsing
-   */
-  virtual void parse(const data_source& data) = 0;
-
-  virtual const std::vector<mime_type> supported_mime_types() = 0;
-
-  void process(Info &info) override;
-
-  Info sendTag(const Tag& tag) const;
-  Info sendTag(const Info &info) const;
+private:
+	std::stack<T>& m_stack;
 };
 
 } // namespace docwire
-#endif //DOCWIRE_PARSER_H
+
+#endif

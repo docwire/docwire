@@ -121,7 +121,7 @@ inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::L
 
 inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Image& image)
 {
-	log_stream << docwire_log_streamable_obj(image, image.src, image.alt, image.styling);
+	log_stream << docwire_log_streamable_obj(image, image.alt, image.styling);
 	return log_stream;
 }
 

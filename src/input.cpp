@@ -16,15 +16,13 @@
 
 using namespace docwire;
 
-void InputChainElement::process(Info &info)
+continuation InputChainElement::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
   docwire_log_func();
-  if (std::holds_alternative<tag::start_processing>(info.tag))
-  {
-    docwire_log_var(m_data.get());
-    Info info{m_data.get()};
-    emit(info);
-  }
-  else
-    emit(info);
+	if (std::holds_alternative<tag::start_processing>(tag))
+	{
+		docwire_log_var(m_data.get());
+		return emit_tag(m_data.get());
+	}
+	return emit_tag(std::move(tag));
 }

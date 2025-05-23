@@ -13,14 +13,12 @@
 #define DOCWIRE_HTML_PARSER_H
 
 #include "html_export.h"
-#include <vector>
-#include "parser.h"
+#include "chain_element.h"
+#include "pimpl.h"
 
 namespace docwire
 {
-	class Metadata;
-
-class DOCWIRE_HTML_EXPORT HTMLParser : public Parser, public with_pimpl<HTMLParser>
+class DOCWIRE_HTML_EXPORT HTMLParser : public ChainElement, public with_pimpl<HTMLParser>
 {
 	private:
 		using with_pimpl<HTMLParser>::impl;
@@ -28,18 +26,9 @@ class DOCWIRE_HTML_EXPORT HTMLParser : public Parser, public with_pimpl<HTMLPars
 
 	public:
 
-    void parse(const data_source& data) override;
-
-		const std::vector<mime_type> supported_mime_types() override
-		{
-			return {
-			mime_type{"text/html"},
-			mime_type{"application/xhtml+xml"},
-			mime_type{"application/vnd.pwg-xhtml-print+xml"}
-			};
-		};
-
 		HTMLParser();
+		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		bool is_leaf() const override { return false; }
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).
 		void skipCharsetDecoding();
 };

@@ -28,6 +28,7 @@ struct pimpl_impl<TXTParser> : pimpl_impl_base
 		: m_parse_paragraphs{parse_paragraphs_arg}, m_parse_lines{parse_lines_arg} {}
 	parse_paragraphs m_parse_paragraphs;
 	parse_lines m_parse_lines;
+    void parse(const data_source& data, const emission_callbacks& emit_tag);
 };
 
 TXTParser::TXTParser(parse_paragraphs parse_paragraphs_arg, parse_lines parse_lines_arg)
@@ -69,9 +70,49 @@ std::string sequences_of_printable_characters(const std::string& text, size_t mi
 	return result;
 }
 
+const std::vector<mime_type> supported_mime_types =
+{
+    mime_type{"text/x-asm"},
+    mime_type{"text/asp"},
+    mime_type{"text/aspdotnet"},
+    mime_type{"text/x-basic"},
+    mime_type{"text/x-bat"},
+    mime_type{"text/x-c"},
+    mime_type{"text/x-cmake"},
+    mime_type{"text/x-csharp"},
+    mime_type{"text/css"},
+    mime_type{"text/csv"},
+    mime_type{"text/x-d"},
+    mime_type{"text/x-fortran"},
+    mime_type{"text/x-fsharp"},
+    mime_type{"text/x-go"},
+    mime_type{"text/x-c++hdr"},
+    mime_type{"text/html"},
+    mime_type{"text/x-java-source"},
+    mime_type{"application/javascript"},
+    mime_type{"text/javascript"},
+    mime_type{"application/json"},
+    mime_type{"text/x-jsp"},
+    mime_type{"text/x-lua"},
+    mime_type{"text/markdown"},
+    mime_type{"text/x-pascal"},
+    mime_type{"application/x-httpd-php"},
+    mime_type{"text/x-perl"},
+    mime_type{"text/x-python"},
+    mime_type{"text/x-rsrc"},
+    mime_type{"application/rss+xml"},
+    mime_type{"application/x-sh"},
+    mime_type{"application/x-tcl"},
+    mime_type{"text/plain"},
+    mime_type{"text/x-vbdotnet"},
+    mime_type{"text/x-vbscript"},
+    mime_type{"application/xml"},
+    mime_type{"text/yaml"}
+};
+
 } // anonymous namespace
 
-void TXTParser::parse(const data_source& data)
+void pimpl_impl<TXTParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using TXT parser.";
 	std::string text;
@@ -85,7 +126,7 @@ void TXTParser::parse(const data_source& data)
 		if (charset_detector == (csd_t)-1)
 		{
 			charset_detector = NULL;
-			sendTag(make_error_ptr("Could not create charset detector"));
+			emit_tag(make_error_ptr("Could not create charset detector"));
 			encoding = "UTF-8";
 		}
 		else
@@ -114,7 +155,7 @@ void TXTParser::parse(const data_source& data)
 			}
 			catch (std::exception&)
 			{
-				sendTag(make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", encoding)));
+				emit_tag(make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", encoding)));
 				if (converter)
 					delete converter;
 				converter = NULL;
@@ -139,9 +180,9 @@ void TXTParser::parse(const data_source& data)
 		charset_detector = NULL;
 		std::throw_with_nested(make_error("Error converting text to UTF-8"));
 	}
-	bool parse_paragraphs = impl().m_parse_paragraphs.v;
-	bool parse_lines = impl().m_parse_lines.v;
-	sendTag(tag::Document{});
+	bool parse_paragraphs = m_parse_paragraphs.v;
+	bool parse_lines = m_parse_lines.v;
+	emit_tag(tag::Document{});
 	if (parse_lines || parse_paragraphs)
 	{
 		std::string::size_type curr_pos = 0;
@@ -158,12 +199,12 @@ void TXTParser::parse(const data_source& data)
 			{
 				if (paragraph_state == outside_paragraph)
 				{
-					sendTag(tag::Paragraph{});
+					emit_tag(tag::Paragraph{});
 					paragraph_state = empty_paragraph;
 				}
 				if (line.empty())
 				{
-					sendTag(tag::CloseParagraph{});
+					emit_tag(tag::CloseParagraph{});
 					paragraph_state = outside_paragraph;
 				}
 				else
@@ -171,24 +212,24 @@ void TXTParser::parse(const data_source& data)
 					if (paragraph_state == filled_paragraph)
 					{
 						if (parse_lines)
-							sendTag(tag::BreakLine{});
+							emit_tag(tag::BreakLine{});
 						else
-							sendTag(tag::Text{.text = last_eol});
+							emit_tag(tag::Text{.text = last_eol});
 					}
-					sendTag(tag::Text{.text = line});
+					emit_tag(tag::Text{.text = line});
 					paragraph_state = filled_paragraph;
 				}
 			}
 			else
 			{
 				if (!line.empty())
-					sendTag(tag::Text{.text = line});
+					emit_tag(tag::Text{.text = line});
 				if (!eol.empty())
 				{
 					if (parse_lines)
-						sendTag(tag::BreakLine{});
+						emit_tag(tag::BreakLine{});
 					else
-						sendTag(tag::Text{.text = eol});
+						emit_tag(tag::Text{.text = eol});
 				}
 			}
 			if (eol.empty())
@@ -197,11 +238,33 @@ void TXTParser::parse(const data_source& data)
 			last_eol = eol;
 		}
 		if (parse_paragraphs && paragraph_state != outside_paragraph)
-			sendTag(tag::CloseParagraph{});
+			emit_tag(tag::CloseParagraph{});
 	}
 	else
-		sendTag(tag::Text{.text = text});
-	sendTag(tag::CloseDocument{});
+		emit_tag(tag::Text{.text = text});
+	emit_tag(tag::CloseDocument{});
+}
+
+continuation TXTParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+  if (!std::holds_alternative<data_source>(tag))
+    return emit_tag(std::move(tag));
+
+  auto& data = std::get<data_source>(tag);
+  data.assert_not_encrypted();
+
+  if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+    return emit_tag(std::move(tag));
+
+  try
+  {
+      impl().parse(data, emit_tag);
+  }
+  catch (const std::exception& e)
+  {
+    std::throw_with_nested(make_error("Parsing failed"));
+  }
+  return continuation::proceed;
 }
 
 } // namespace docwire

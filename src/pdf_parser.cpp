@@ -14,6 +14,7 @@
 #include "error_tags.h"
 #include "log.h"
 #include "make_error.h"
+#include <leptonica/allheaders.h>
 #include <mutex>
 #include <pdfium/cpp/fpdf_scopers.h>
 #include <pdfium/fpdf_doc.h>
@@ -21,8 +22,10 @@
 #include <pdfium/fpdf_text.h>
 #include <pdfium/fpdf_edit.h>
 #include <set>
+#include <stack>
 #include <stdlib.h>
 #include <string.h>
+#include "scoped_stack_push.h"
 #include "throw_if.h"
 #include <vector>
 #include <zlib.h>
@@ -34,7 +37,6 @@ namespace docwire
 namespace
 {
 	std::mutex pdfium_mutex;
-} // unnamed namespace
 
 void parsePDFDate(tm& date, const std::string& str_date)
 {
@@ -56,11 +58,134 @@ void parsePDFDate(tm& date, const std::string& str_date)
 	--date.tm_mon;
 }
 
-template<>
-struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
+using pix_unique_ptr = std::unique_ptr<PIX, decltype([](PIX* pix) { pixDestroy(&pix); })>;
+using leptonica_data_ptr = std::unique_ptr<l_uint8, decltype(&lept_free)>;
+
+pix_unique_ptr create_pix_from_fpdf_bitmap(int width, int height, int stride, int format, const unsigned char* pixels, l_int32 horizontal_dpi, l_int32 vertical_dpi)
 {
-	pimpl_impl(PDFParser& owner) : with_pimpl_owner{owner} {}
-	ScopedFPDFDocument m_pdf_document;
+	docwire_log_func_with_args(width, height, stride, format);
+	pix_unique_ptr pix;
+
+	if (format == FPDFBitmap_Gray)
+	{
+		pix = pix_unique_ptr{pixCreate(width, height, 8)};
+		throw_if(!pix, "pixCreate failed for grayscale");
+		pixSetXRes(pix.get(), horizontal_dpi);
+		pixSetYRes(pix.get(), vertical_dpi);
+
+		l_uint32 wpl = pixGetWpl(pix.get());
+		l_uint32* pix_data = pixGetData(pix.get());
+		for (int y = 0; y < height; ++y)
+		{
+			l_uint32* line = pix_data + y * wpl;
+			const unsigned char* src_line = pixels + y * stride;
+			for (int x = 0; x < width; ++x)
+				SET_DATA_BYTE(line, x, src_line[x]);
+		}
+	}
+	else if (format == FPDFBitmap_BGR || format == FPDFBitmap_BGRx)
+	{
+		pix = pix_unique_ptr{pixCreate(width, height, 32)};
+		throw_if (!pix, "pixCreate failed for BGR/BGRx");
+		pixSetXRes(pix.get(), horizontal_dpi);
+		pixSetYRes(pix.get(), vertical_dpi);
+
+		int bytes_per_pixel = (format == FPDFBitmap_BGRx) ? 4 : 3;
+		l_uint32 wpl = pixGetWpl(pix.get());
+		l_uint32* pix_data = pixGetData(pix.get());
+		for (int y = 0; y < height; ++y)
+		{
+			const unsigned char* src_line = pixels + y * stride;
+			l_uint32* line = pix_data + y * wpl;
+			for (int x = 0; x < width; ++x)
+			{
+				l_uint8 b = src_line[x * bytes_per_pixel + 0];
+				l_uint8 g = src_line[x * bytes_per_pixel + 1];
+				l_uint8 r = src_line[x * bytes_per_pixel + 2];
+				l_uint32 rgba_pixel = 0;
+				throw_if(
+					composeRGBAPixel(r, g, b, 255, &rgba_pixel) != 0,
+					"composeRGBAPixel failed for BGR/BGRx pixel",
+					x, y
+				);
+				line[x] = rgba_pixel;
+			}
+		}
+	}
+	else if (format == FPDFBitmap_BGRA)
+	{
+		pix = pix_unique_ptr{pixCreate(width, height, 32)};
+		throw_if (!pix, "pixCreate failed for BGRA");
+		pixSetXRes(pix.get(), horizontal_dpi);
+		pixSetYRes(pix.get(), vertical_dpi);
+		pixSetSpp(pix.get(), 4);
+
+		l_uint32 wpl = pixGetWpl(pix.get());
+		l_uint32* pix_data = pixGetData(pix.get());
+
+		for (int y = 0; y < height; ++y)
+		{
+			const unsigned char* src_line = pixels + y * stride;
+			l_uint32* line = pix_data + y * wpl;
+			for (int x = 0; x < width; ++x)
+			{
+				l_uint8 b = src_line[x * 4 + 0];
+				l_uint8 g = src_line[x * 4 + 1];
+				l_uint8 r = src_line[x * 4 + 2];
+				l_uint8 a = src_line[x * 4 + 3];
+				l_uint32 rgba_pixel = 0;
+				throw_if(
+					composeRGBAPixel(r, g, b, a, &rgba_pixel) != 0,
+					"composeRGBAPixel failed for BGRA pixel",
+					x, y
+				);
+				line[x] = rgba_pixel;
+			}
+		}
+	}
+	else
+	{
+		throw make_error("Unsupported FPDFBitmap format for Pix creation", format, errors::uninterpretable_data{});
+	}
+	return pix;
+}
+
+using scoped_fpdf_document_with_custom_deleter = std::unique_ptr<
+		std::remove_pointer_t<FPDF_DOCUMENT>,
+		std::function<void(FPDF_DOCUMENT)>>;
+
+struct context
+{
+	const emission_callbacks& emit_tag;
+	scoped_fpdf_document_with_custom_deleter pdf_document;
+};
+
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/pdf"}
+};
+
+} // unnamed namespace
+
+template<>
+struct pimpl_impl<PDFParser> : pimpl_impl_base
+{
+	std::stack<context> m_context_stack;
+
+	continuation emit_tag(Tag&& tag)
+	{
+		return m_context_stack.top().emit_tag(std::move(tag));
+	}
+
+	continuation emit_tag_back(Tag&& tag)
+	{
+		return m_context_stack.top().emit_tag.back(std::move(tag));
+	}
+
+	FPDF_DOCUMENT pdf_document()
+	{
+		return m_context_stack.top().pdf_document.get();
+	}
 
 		struct PageText
 		{
@@ -188,30 +313,31 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 	{
 		docwire_log_func();
 		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-		int page_count = FPDF_GetPageCount(m_pdf_document.get());
+		int page_count = FPDF_GetPageCount(pdf_document());
 		docwire_log_var(page_count);
 		for (size_t page_num = 0; page_num < page_count; page_num++)
 		{
 			docwire_log_var(page_num);
-			auto response = owner().sendTag(tag::Page{});
-			if (response.skip)
+			auto response = emit_tag(tag::Page{});
+			if (response == continuation::skip)
 			{
 				continue;
 			}
-			if (response.cancel)
+			else if (response == continuation::stop)
 			{
 				break;
 			}
 			try
 			{
 				PageText page_text;
-				ScopedFPDFPage page { FPDF_LoadPage(m_pdf_document.get(), page_num) };
+				ScopedFPDFPage page { FPDF_LoadPage(pdf_document(), page_num) };
 				throw_if(!page);
 				ScopedFPDFTextPage text_page { FPDFText_LoadPage(page.get()) };
 				throw_if(!text_page);
 				int object_count = FPDFPage_CountObjects(page.get());
 				throw_if (object_count < 0);
 				charset_converter conv("UTF-16LE", "UTF-8"); // Create converter *outside* the loops
+				bool stop_processing = false;
 				for (int i = 0; i < object_count; ++i)
 				{
     				FPDF_PAGEOBJECT object = FPDFPage_GetObject(page.get(), i);
@@ -252,22 +378,56 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
         				}
 						case FPDF_PAGEOBJ_IMAGE:
 						{
+							ScopedFPDFBitmap bitmap { FPDFImageObj_GetBitmap(object) };
+							int width = FPDFBitmap_GetWidth(bitmap.get());
+							int height = FPDFBitmap_GetHeight(bitmap.get());
+							int stride = FPDFBitmap_GetStride(bitmap.get());
+							const unsigned char* pixels = (const unsigned char*)FPDFBitmap_GetBuffer(bitmap.get());
+        					int format = FPDFBitmap_GetFormat(bitmap.get());
+
+							FPDF_IMAGEOBJ_METADATA image_metadata;
+							l_int32 h_res = 72; // Default DPI
+							l_int32 v_res = 72;   // Default DPI
+							if (FPDFImageObj_GetImageMetadata(object, page.get(), &image_metadata)) {
+								if (image_metadata.horizontal_dpi > 0.0f)
+									h_res = static_cast<l_int32>(image_metadata.horizontal_dpi);
+								if (image_metadata.vertical_dpi > 0.0f)
+									v_res = static_cast<l_int32>(image_metadata.vertical_dpi);
+							}
+
+            				pix_unique_ptr pix = create_pix_from_fpdf_bitmap(width, height, stride, format, pixels, h_res, v_res);
+			                l_uint8* png_data_raw = nullptr;
+            			    size_t png_size = 0;
+                			leptonica_data_ptr png_data(nullptr, lept_free);
+                			throw_if (pixWriteMemPng(&png_data_raw, &png_size, pix.get(), 0.0f) != 0);
+							throw_if (!png_data_raw);
+							throw_if (png_size <= 0);
+                    		png_data.reset(png_data_raw);
+							std::vector<std::byte> image_data;
+                    		image_data.resize(png_size);
+							memcpy(image_data.data(), png_data.get(), png_size);
+                			data_source image_source(std::move(image_data), mime_type { "image/png" }, confidence::highest);
+							tag::Image image{.source = image_source};
+							if (emit_tag_back(std::move(image)) == continuation::stop)
+								stop_processing = true;
 							break;
 						}
 						default:
 							break;
 					}
 				}
+				if (stop_processing)
+					break;
 				std::string single_page_text;
 				page_text.getText(single_page_text);
 				single_page_text += "\n\n";
-				auto response = owner().sendTag(tag::Text{single_page_text});
-				if (response.cancel)
+				auto response = emit_tag(tag::Text{single_page_text});
+				if (response == continuation::stop)
 				{
 					break;
 				}
-        		auto response2 = owner().sendTag(tag::ClosePage{});
-        		if (response2.cancel)
+        		auto response2 = emit_tag(tag::ClosePage{});
+        		if (response2 == continuation::stop)
         		{
           			break;
         		}
@@ -283,11 +443,11 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 	std::string get_meta_text(const std::string& tag)
 	{
 		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-		unsigned long buffer_size = FPDF_GetMetaText(m_pdf_document.get(), tag.c_str(), nullptr, 0);
+		unsigned long buffer_size = FPDF_GetMetaText(pdf_document(), tag.c_str(), nullptr, 0);
 		throw_if(buffer_size < 2);
 		std::vector<unsigned short> buffer(buffer_size);
 		charset_converter conv("UTF-16LE", "UTF-8");
-		unsigned long bytes_returned = FPDF_GetMetaText(m_pdf_document.get(), tag.c_str(), buffer.data(), buffer.size());
+		unsigned long bytes_returned = FPDF_GetMetaText(pdf_document(), tag.c_str(), buffer.data(), buffer.size());
 		throw_if(bytes_returned != buffer_size);
 		std::string utf8_text = conv.convert(std::string{
 			reinterpret_cast<const char*>(buffer.data()),
@@ -324,7 +484,7 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 			metadata.last_modification_date = modify_date_tm;
 		}
 		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-		metadata.page_count = FPDF_GetPageCount(m_pdf_document.get());
+		metadata.page_count = FPDF_GetPageCount(pdf_document());
 	}
 
 	void init_pdfium_once()
@@ -358,8 +518,16 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 		std::span<const std::byte> span = data.span();
 		init_pdfium_once();
 		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-		m_pdf_document = ScopedFPDFDocument { FPDF_LoadMemDocument(span.data(), span.size(), nullptr) };
-		if (!m_pdf_document)
+		m_context_stack.top().pdf_document = scoped_fpdf_document_with_custom_deleter
+			{
+				FPDF_LoadMemDocument(span.data(), span.size(), nullptr),
+				[&](FPDF_DOCUMENT doc)
+				{
+					std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
+					FPDF_CloseDocument(doc);
+				}
+			};
+		if (!pdf_document())
 		{
 			if (FPDF_GetLastError() == FPDF_ERR_PASSWORD)
 				throw make_error(errors::file_encrypted{});
@@ -367,47 +535,57 @@ struct pimpl_impl<PDFParser> : with_pimpl_owner<PDFParser>
 				throw make_error("FPDF_LoadMemDocument() failed", FPDF_GetLastError(), errors::uninterpretable_data{});
 		}
 	}
+
+	attributes::Metadata metaData(const data_source& data);
+	void parse(const data_source& data, const emission_callbacks& emit_tag);
 };
 
-PDFParser::PDFParser()
-	: with_pimpl<PDFParser>(nullptr)
-{
-	std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-	renew_impl();
-}
+PDFParser::PDFParser() = default;
 
-PDFParser::~PDFParser()
-{
-	std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-	destroy_impl();
-}
-
-attributes::Metadata PDFParser::metaData(const data_source& data)
+attributes::Metadata pimpl_impl<PDFParser>::metaData(const data_source& data)
 {
 	attributes::Metadata metadata;
-	impl().loadDocument(data);
-	impl().parseMetadata(metadata);
+	parseMetadata(metadata);
 	return metadata;
 }
 
-void
-PDFParser::parse(const data_source& data)
+void pimpl_impl<PDFParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using PDF parser.";
-	{
-		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
-		renew_impl();
-	}
-	sendTag(tag::Document
+	scoped::stack_push<context> context_guard{m_context_stack, {.emit_tag = emit_tag}};
+	loadDocument(data);
+	emit_tag(tag::Document
 		{
 			.metadata = [this, &data]()
+
 			{
 				return metaData(data);
 			}
 		});
-	impl().loadDocument(data);
-	impl().parseText();
-	sendTag(tag::CloseDocument{});
+	parseText();
+	emit_tag(tag::CloseDocument{});
+}
+
+continuation PDFParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+		return emit_tag(std::move(tag));
+
+	try
+	{
+		impl().parse(data, emit_tag);
+	}
+	catch (const std::exception& e)
+	{
+		std::throw_with_nested(make_error("PDF parsing failed"));
+	}
+	return continuation::proceed;
 }
 
 } // namespace docwire

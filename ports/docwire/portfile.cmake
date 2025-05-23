@@ -74,14 +74,36 @@ function(run_tests build_type)
 		set(additional_ctest_args --label-exclude uses_model_runner)
 	endif()
 
+	# Explicitly run api_tests for discovery to catch issues sometimes silently ignored by ctest
+	vcpkg_execute_required_process(
+		COMMAND ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}/tests/api_tests${CMAKE_EXECUTABLE_SUFFIX}
+			--gtest_list_tests
+		WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}
+		LOGNAME test-discovery-${PORT}-${triplet_build_type}
+		OUTPUT_VARIABLE discovery_stdout
+	)
+	if (NOT discovery_stdout MATCHES "DocumentTests")
+		message(FATAL_ERROR "Failed to discover tests")
+	endif()
+
 	vcpkg_execute_required_process(
 		COMMAND ${valgrind_command} ${CMAKE_CTEST_COMMAND}
 			-V
 			--no-tests=error
-			--label-regex is_api_test|is_example
+			--label-regex is_api_test
 			${additional_ctest_args}
 		WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}
-		LOGNAME test-${PORT}-${triplet_build_type}
+		LOGNAME test-api-${PORT}-${triplet_build_type}
+	)
+
+	vcpkg_execute_required_process(
+		COMMAND ${valgrind_command} ${CMAKE_CTEST_COMMAND}
+			-V
+			--no-tests=error
+			--label-regex is_example
+			${additional_ctest_args}
+		WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${triplet_build_type}
+		LOGNAME test-examples-${PORT}-${triplet_build_type}
 	)
 endfunction()
 

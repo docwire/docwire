@@ -12,6 +12,7 @@
 #include "rtf_parser.h"
 
 #include "data_stream.h"
+#include "data_source.h"
 #include "error_tags.h"
 #include "log.h"
 #include <map>
@@ -32,14 +33,13 @@ namespace docwire
 
 using namespace wvWare;
 
-RTFParser::RTFParser()
-{
-}
-
 #define RTFNAMEMAXLEN 32
 #define RTFARGSMAXLEN 64
 
-static long parseNumber(DataStream& data_stream)
+namespace
+{
+
+long parseNumber(DataStream& data_stream)
 {
 	int ch;
 	int count = 0;
@@ -198,7 +198,7 @@ struct RTFParserState
 	UString fldrslt_text;
 };
 
-static RTFCommand commandNameToEnum(char* name)
+RTFCommand commandNameToEnum(char* name)
 {
 	for (int i = 0; i < sizeof(rtf_commands) / sizeof(RTFStringCommand); i++)
 	{
@@ -208,7 +208,7 @@ static RTFCommand commandNameToEnum(char* name)
 	return RTF_UNKNOWN;
 }
 
-static bool parseCommand(DataStream& data_stream, RTFCommand& cmd, long int& arg)
+bool parseCommand(DataStream& data_stream, RTFCommand& cmd, long int& arg)
 {
 	char name[RTFNAMEMAXLEN + 1];
 
@@ -255,14 +255,14 @@ static bool parseCommand(DataStream& data_stream, RTFCommand& cmd, long int& arg
 	return true;
 }
 
-static std::string codepage_to_encoding(int codepage)
+std::string codepage_to_encoding(int codepage)
 {
 	char encoding[7];
 	snprintf(encoding, 7, "CP%i", codepage);
 	return encoding;
 }
 
-static std::string win_charset_to_encoding(long int win_charset)
+std::string win_charset_to_encoding(long int win_charset)
 {
 	long int codepage = 1250;
 	switch (win_charset)
@@ -290,7 +290,7 @@ static std::string win_charset_to_encoding(long int win_charset)
 	return codepage_to_encoding(codepage);
 }
 
-static void parse_dttm_time(int dttm, tm& tm)
+void parse_dttm_time(int dttm, tm& tm)
 {
 	tm.tm_sec = 0;
 	tm.tm_min = dttm & 0x0000003F;
@@ -304,7 +304,7 @@ static void parse_dttm_time(int dttm, tm& tm)
 	tm.tm_year = dttm & 0x000001FF;
 }
 
-static void execCommand(DataStream& data_stream, UString& text, int& skip, RTFParserState& state, RTFCommand cmd, long int arg,
+void execCommand(DataStream& data_stream, UString& text, int& skip, RTFParserState& state, RTFCommand cmd, long int arg,
 	TextConverter*& converter, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 {
 	switch (cmd)
@@ -472,12 +472,11 @@ static void execCommand(DataStream& data_stream, UString& text, int& skip, RTFPa
 	}
 }
 
-namespace
-{
-	std::mutex converter_mutex;
-} // anonymous namespace
+std::mutex converter_mutex;
 
-void RTFParser::parse(const data_source& data)
+attributes::Metadata extract_rtf_metadata(const data_source& data); // Forward declaration
+
+void parse_rtf_content(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using RTF parser.";
 	UString text;
@@ -486,9 +485,9 @@ void RTFParser::parse(const data_source& data)
 	TextConverter* converter = NULL;
 	try
 	{
-		sendTag(tag::Document
+		emit_tag(tag::Document
 			{
-				.metadata = [this, &data]() { return metaData(data); }
+				.metadata = [&data]() { return extract_rtf_metadata(data); }
 			});
 		char ch;
 		RTFParserState state;
@@ -510,7 +509,7 @@ void RTFParser::parse(const data_source& data)
 					UString fragment_text;
 					{
 						std::lock_guard<std::mutex> converter_mutex_lock(converter_mutex);
-						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter, [this](std::exception_ptr e) { sendTag(e); });
+						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter, [emit_tag](std::exception_ptr e) { emit_tag(e); });
 					}
 					switch (state.groups.top().destination)
 					{
@@ -538,7 +537,7 @@ void RTFParser::parse(const data_source& data)
 					destination_type destination = state.groups.top().destination;
 					state.groups.pop();
 					if (destination == destination_type::annotation && state.groups.top().destination != destination_type::annotation)
-						sendTag(tag::Comment{.author = state.author_of_next_annotation, .time = date_to_string(state.annotation_time), .comment = ustring_to_string(state.annotation_text)});
+						emit_tag(tag::Comment{.author = state.author_of_next_annotation, .time = date_to_string(state.annotation_time), .comment = ustring_to_string(state.annotation_text)});
 					else if (destination == destination_type::fldinst)
 					{
 					}
@@ -557,16 +556,16 @@ void RTFParser::parse(const data_source& data)
 								url = url.substr(0, url.size() - 1);
 							if (url.back() == '"')
 								url = url.substr(0, url.size() - 1);
-							sendTag(tag::Link{.url = url});
-							sendTag(tag::Text{.text = ustring_to_string(state.fldrslt_text)});
-							sendTag(tag::CloseLink{});
+							emit_tag(tag::Link{.url = url});
+							emit_tag(tag::Text{.text = ustring_to_string(state.fldrslt_text)});
+							emit_tag(tag::CloseLink{});
 						}
 					}
 					if (skip > state.groups.size() - 1)
 						skip = 0;
 					if (!text.isEmpty())
 					{
-						sendTag(tag::Text({.text = ustring_to_string(text)}));
+						emit_tag(tag::Text({.text = ustring_to_string(text)}));
 						text = "";
 					}
 					break;
@@ -601,7 +600,7 @@ void RTFParser::parse(const data_source& data)
 		if (converter != NULL)
 			delete converter;
 		converter = NULL;
-		sendTag(tag::CloseDocument{});
+		emit_tag(tag::CloseDocument{});
 	}
 	catch (std::bad_alloc& ba)
 	{
@@ -612,7 +611,7 @@ void RTFParser::parse(const data_source& data)
 	}
 }
 
-static bool parse_rtf_time(const std::string& s, tm& time)
+bool parse_rtf_time(const std::string& s, tm& time)
 {
 	time = tm();
 	size_t p2 = s.find("\\yr");
@@ -648,7 +647,7 @@ static bool parse_rtf_time(const std::string& s, tm& time)
 	return true;
 }
 
-attributes::Metadata RTFParser::metaData(const data_source& data) const
+attributes::Metadata extract_rtf_metadata(const data_source& data)
 {	
 	attributes::Metadata meta;
 	docwire_log(debug) << "Extracting metadata.";
@@ -710,6 +709,39 @@ attributes::Metadata RTFParser::metaData(const data_source& data) const
 		meta.word_count = word_count;
 	}
 	return meta;
+}
+
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/rtf"},
+	mime_type{"text/rtf"},
+	mime_type{"text/richtext"}
+};
+
+} // anonymous namespace
+
+RTFParser::RTFParser() = default;
+
+continuation RTFParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+		return emit_tag(std::move(tag));
+
+	try
+	{
+		parse_rtf_content(data, emit_tag);
+	}
+	catch (const std::exception& e)
+	{
+		std::throw_with_nested(make_error("RTF parsing failed"));
+	}
+	return continuation::proceed;
 }
 
 } // namespace docwire

@@ -51,6 +51,7 @@
 #include "post.h"
 #include "tags.h"
 #include "throw_if.h"
+#include "transformer_func.h"
 #include "txt_parser.h"
 #include "input.h"
 #include "log.h"
@@ -238,7 +239,7 @@ INSTANTIATE_TEST_SUITE_P(
       return name;
     });
 
-class CallbackTest : public ::testing::TestWithParam<std::tuple<const char*, const char*, NewNodeCallback>>
+class CallbackTest : public ::testing::TestWithParam<std::tuple<const char*, const char*, tag_transform_func>>
 {
 };
 
@@ -433,7 +434,8 @@ INSTANTIATE_TEST_SUITE_P(
 		"multilang-chi_sim-fra-deu-eng.png",
 		"multilang-chi_tra-rus-jpn.png",
 		"multilang-spa-lat-grc.png",
-		"multilang-hin-san-swa-kor-eng.png"
+		"multilang-hin-san-swa-kor-eng.png",
+        "embedded_images.pdf"
                       ),
     [](const ::testing::TestParamInfo<MiscDocumentTest::ParamType>& info) {
         std::string file_name = info.param;
@@ -604,14 +606,15 @@ TEST_P(MultiPageFilterTest, ReadFromPathTests)
     std::filesystem::path{file_name} |
         content_type::by_file_extension::detector{} |
         office_formats_parser{} | mail_parser{} | OCRParser{} |
-        [MAX_PAGES, counter = 0](Info &info) mutable
+        [MAX_PAGES, counter = 0](Tag&& tag, const emission_callbacks& emit_tag) mutable
         {
-            if (std::holds_alternative<tag::Page>(info.tag))
+            if (std::holds_alternative<tag::Page>(tag))
             {
                 ++counter;
                 if (counter > MAX_PAGES)
-                    info.cancel = true;
+                    return continuation::stop;
             }
+            return emit_tag(std::move(tag));
         } |
         PlainTextExporter() |
         output_stream;
@@ -1136,7 +1139,7 @@ void test_table_exporting(const std::string& expected)
     };
     for (auto tag: tags)
     {
-        parsing_chain(tag);
+        parsing_chain(std::move(tag));
     }
     ASSERT_EQ(output_stream.str(), expected);
 }
@@ -1238,7 +1241,7 @@ TEST(PlainTextExporter, eol_sequence_crlf)
     };
     for (auto tag: tags)
     {
-        parsing_chain(tag);
+        parsing_chain(std::move(tag));
     }
     ASSERT_EQ(output_stream.str(), "Line1\r\nLine2\r\n");
 }
@@ -1263,7 +1266,7 @@ TEST(PlainTextExporter, custom_link_formatting)
     };
     for (auto tag: tags)
     {
-        parsing_chain(tag);
+        parsing_chain(std::move(tag));
     }
     ASSERT_EQ(output_stream.str(), "(https://docwire.io)[DocWire SDK home page]\n");
 }
@@ -1507,7 +1510,6 @@ void PrintTo(const confidence& c, std::ostream* os)
 TEST(TXTParser, lines)
 {
     using namespace testing;
-    using namespace chaining;
     std::vector<Tag> tags;
     std::string test_input {"Line ends with LF\nLine ends with CR\rLine ends with CRLF\r\nLine without EOL"};
     docwire::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
@@ -1554,7 +1556,6 @@ TEST(TXTParser, lines)
 TEST(TXTParser, paragraphs)
 {
     using namespace testing;
-    using namespace chaining;
     std::vector<Tag> tags;
     docwire::data_source{
             std::string{"Paragraph 1 Line 1\nParagraph 1 Line 2\n\nParagraph 2 Line 1"},
@@ -1600,7 +1601,6 @@ TEST(TXTParser, paragraphs)
 TEST(HTMLParser, table)
 {
     using namespace testing;
-    using namespace chaining;
     std::vector<Tag> tags;
     docwire::data_source{std::string{
         "<table>"
@@ -1660,7 +1660,6 @@ TEST(HTMLParser, table)
 TEST(HTMLParser, whitespaces)
 {
     using namespace testing;
-    using namespace chaining;
     std::vector<Tag> tags;
     docwire::data_source{std::string{
         "<div>\n"
@@ -1706,7 +1705,6 @@ TEST(HTMLParser, whitespaces)
 TEST(HTMLParser, encoding)
 {
     using namespace testing;
-    using namespace chaining;
     std::vector<const char*> test_cases =
     {
         "<html><head><meta charset=\"cp1250\"></head><body><p>\xB9\x9C\xE6\xB3\xF3\xBF\xB3</p></body></html>",
@@ -1733,7 +1731,6 @@ TEST(HTMLParser, encoding)
 TEST(HTMLParser, lists)
 {
     using namespace testing;
-    using namespace chaining;
     std::vector<Tag> tags;
     docwire::data_source{std::string{
         "<ul>"
@@ -1783,7 +1780,6 @@ TEST(HTMLParser, lists)
 TEST(HTMLParser, misplaced_tags)
 {
     using namespace testing;
-    using namespace chaining;
     std::vector<Tag> tags;
     docwire::data_source{std::string{
         "<html>\n"
@@ -1829,7 +1825,6 @@ TEST(OCRParser, leptonica_stderr_capturer)
 {
     try
     {
-        using namespace chaining;
         data_source{std::string{"Incorrect image data"}, 
             mime_type{"image/jpeg"}, confidence::highest} |
             OCRParser{} | std::vector<Tag>{};
@@ -1909,38 +1904,6 @@ TEST(tuple_utils, last_element)
         tuple_utils::last_element(std::make_tuple(int{0}, float{1}, double{2}, std::string{"3"}, char{4})),
         char{4}
     );
-}
-
-TEST(chaining, set_chain_get_chain_top_chain)
-{
-    class TestChainElement : public ChainElement
-    {
-    protected:
-        bool is_leaf() const override { return false; }
-        void process(Info &info) override {}        
-    };
-
-    TestChainElement element0;
-    TestChainElement element1;
-    TestChainElement element2;
-    ASSERT_FALSE(element0.chain());
-    ASSERT_FALSE(element1.chain());
-    ASSERT_FALSE(element2.chain());
-    ParsingChain chain1{element1, element2};
-    element0.set_chain(chain1);
-    ASSERT_TRUE(element0.chain());
-    ASSERT_TRUE(element1.chain());
-    ASSERT_TRUE(element2.chain());
-    ASSERT_EQ(&element0.chain()->get(), &chain1);
-    ASSERT_EQ(&element1.chain()->get(), &chain1);
-    ASSERT_EQ(&element2.chain()->get(), &chain1);
-    ASSERT_EQ(&element0.chain()->get().top_chain(), &chain1);
-    ASSERT_EQ(&element1.chain()->get().top_chain(), &chain1);
-    ASSERT_EQ(&element2.chain()->get().top_chain(), &chain1);
-    TestChainElement element3;
-    ParsingChain chain2{chain1, element3};
-    ASSERT_EQ(&chain1.chain()->get(), &chain2);
-    ASSERT_EQ(&element1.chain()->get().top_chain(), &chain2);
 }
 
 TEST(chaining, val_temp_to_func_ref_one_arg_no_result)
@@ -2189,4 +2152,10 @@ TEST(content_type, xlsb)
 TEST(stringification, enums)
 {
     ASSERT_EQ(stringify(confidence::very_high), "very_high");
+}
+
+int main(int argc, char* argv[])
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

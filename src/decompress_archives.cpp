@@ -187,16 +187,12 @@ private:
 	}
 };
 
-void
-DecompressArchives::process(Info& info)
+continuation DecompressArchives::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
-	if (!std::holds_alternative<data_source>(info.tag))
-	{
-		emit(info);
-		return;
-	}
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
 	docwire_log(debug) << "data_source received";
-	const data_source& data = std::get<data_source>(info.tag);
+	const data_source& data = std::get<data_source>(tag);
 	auto is_supported = [](const file_extension& fe)
 	{
 		static const std::set<file_extension> supported_extensions { file_extension{".zip"}, file_extension{".tar"}, file_extension{".rar"}, file_extension{".gz"}, file_extension{".bz2"}, file_extension{".xz"} };
@@ -205,14 +201,13 @@ DecompressArchives::process(Info& info)
 	if (!data.file_extension() || !is_supported(*data.file_extension()))
 	{
 		docwire_log(debug) << "Filename extension shows it is not an supported archive, skipping.";
-		emit(info);
-		return;
+		return emit_tag(std::move(tag));
 	}
 	std::shared_ptr<std::istream> in_stream = data.istream();
 	try
 	{
 		docwire_log(debug) << "Decompressing archive";
-		ArchiveReader reader(*in_stream, [this](std::exception_ptr e) { Info info{e}; emit(info); });
+		ArchiveReader reader(*in_stream, [emit_tag](std::exception_ptr e) { emit_tag(e); });
 		for (ArchiveReader::Entry entry: reader)
 		{
 			std::string entry_name = entry.get_name();
@@ -222,8 +217,7 @@ DecompressArchives::process(Info& info)
 				docwire_log(debug) << "Skipping directory entry";
 				continue;
 			}
-			Info info(data_source{unseekable_stream_ptr{entry.create_stream()}, file_extension{std::filesystem::path{entry_name}}});
-			process(info);
+			(*this)(data_source{unseekable_stream_ptr{entry.create_stream()}, file_extension{std::filesystem::path{entry_name}}}, emit_tag);
 			docwire_log(debug) << "End of processing compressed file " << entry_name;
 		}
 		docwire_log(debug) << "Archive decompressed successfully";
@@ -232,6 +226,7 @@ DecompressArchives::process(Info& info)
 	{
 		std::throw_with_nested(make_error("Error processing archive"));
 	}
+	return continuation::proceed;
 }
 
 } // namespace docwire

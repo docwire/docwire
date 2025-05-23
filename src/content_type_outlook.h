@@ -16,6 +16,7 @@
 #include "content_type_export.h"
 #include "content_type_by_signature.h"
 #include "data_source.h"
+#include "tags.h"
 
 namespace docwire::content_type::outlook
 {
@@ -30,16 +31,13 @@ public:
     detector(ref_or_owned<by_signature::database> signatures_db_to_use = by_signature::database{})
         : m_signatures_db_to_use(signatures_db_to_use) {}
 
-    void process(Info& info) override
+    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override
     {
-        if (!std::holds_alternative<data_source>(info.tag))
-        {
-	        emit(info);
-		    return;
-	    }
-	    data_source& data = std::get<data_source>(info.tag);
+        if (!std::holds_alternative<data_source>(tag))
+	        return emit_tag(std::move(tag));
+	    data_source& data = std::get<data_source>(tag);
         detect(data);
-        emit(info);
+        return emit_tag(std::move(tag));
     }
 
     bool is_leaf() const override

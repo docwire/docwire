@@ -38,16 +38,13 @@ Transcribe::Transcribe(const std::string& api_key)
 	docwire_log_func();
 }
 
-void Transcribe::process(Info& info)
+continuation Transcribe::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
 	docwire_log_func();
-	if (!std::holds_alternative<data_source>(info.tag))
-	{
-		emit(info);
-		return;
-	}
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
 	docwire_log(debug) << "data_source received";
-	const data_source& data = std::get<data_source>(info.tag);
+	const data_source& data = std::get<data_source>(tag);
 	std::shared_ptr<std::istream> in_stream = data.istream();
 	auto response_stream = std::make_shared<std::ostringstream>();
 	try
@@ -58,12 +55,10 @@ void Transcribe::process(Info& info)
 	{
 		std::throw_with_nested(make_error("Error during transcription"));
 	}
-	Info doc_info(tag::Document{});
-	emit(doc_info);
-	Info text_info(tag::Text{response_stream->str()});
-	emit(text_info);
-	Info close_doc_info(tag::CloseDocument{});
-	emit(close_doc_info);
+	emit_tag(tag::Document{});
+	emit_tag(tag::Text{response_stream->str()});
+	emit_tag(tag::CloseDocument{});
+	return continuation::proceed;
 }
 
 } // namespace openai

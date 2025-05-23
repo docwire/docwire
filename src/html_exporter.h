@@ -13,6 +13,7 @@
 #define DOCWIRE_HTML_EXPORTER_H
 
 #include "chain_element.h"
+#include "html_export.h"
 
 namespace docwire
 {
@@ -20,13 +21,13 @@ namespace docwire
 /**
  * @brief Exports data to HTML format.
  */
-class DOCWIRE_CORE_EXPORT HtmlExporter: public ChainElement, public with_pimpl<HtmlExporter>
+class DOCWIRE_HTML_EXPORT HtmlExporter: public ChainElement, public with_pimpl<HtmlExporter>
 {
 public:
 
   HtmlExporter();
 
-  void process(Info& info) override;
+	virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
 
 	bool is_leaf() const override
 	{

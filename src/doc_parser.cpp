@@ -14,6 +14,7 @@
 #include "log.h"
 #include "misc.h"
 #include "nested_exception.h"
+#include "tags.h"
 #include "throw_if.h"
 #include "wv2/src/parser.h"
 #include "wv2/src/parser9x.h"
@@ -44,7 +45,19 @@ namespace
 {
 	std::mutex parser_factory_mutex_1;
 	std::mutex parser_factory_mutex_2;
+
+const std::vector<mime_type> supported_mime_types =
+{
+    mime_type{"application/msword"}
+};
+
 } // anonymous namespace
+
+template<>
+struct pimpl_impl<DOCParser> : pimpl_impl_base
+{
+    void parse(const data_source& data, const emission_callbacks& emit_tag);
+};
 
 enum class TableState
 {
@@ -272,7 +285,7 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 class TextHandler : public wvWare::TextHandler
 {
 	private:
-		const DOCParser* m_parent;
+		const emission_callbacks& m_emit_tag;
 		const wvWare::Parser* m_parser;
 		CurrentState* m_curr_state;
 		bool m_comments_parsed;
@@ -280,8 +293,8 @@ class TextHandler : public wvWare::TextHandler
 		U32 m_prev_par_fc;
 
 	public:
-		TextHandler(const DOCParser* parent, const wvWare::Parser* parser, CurrentState* curr_state)
-			: m_parent(parent), m_parser(parser), m_curr_state(curr_state), m_comments_parsed(false), m_prev_par_fc(0)
+		TextHandler(const emission_callbacks& emit_tag, const wvWare::Parser* parser, CurrentState* curr_state)
+			: m_emit_tag(emit_tag), m_parser(parser), m_curr_state(curr_state), m_comments_parsed(false), m_prev_par_fc(0)
 		{
 			m_curr_state = curr_state;
 		}
@@ -306,16 +319,16 @@ class TextHandler : public wvWare::TextHandler
 			{
 				if (m_curr_state->table_state.top() == TableState::in_table)
 				{
-					m_parent->sendTag(tag::CloseTable{});
+					m_emit_tag(tag::CloseTable{});
 					m_curr_state->table_state.pop();
 				}
 				else if (m_curr_state->table_state.top() == TableState::in_row)
 				{
-					m_parent->sendTag(tag::TableCell{});
+					m_emit_tag(tag::TableCell{});
 					m_curr_state->table_state.push(TableState::in_cell);
 				}
 			}
-			m_parent->sendTag(tag::Paragraph{});
+			m_emit_tag(tag::Paragraph{});
 			if (((Parser9x*)m_parser)->currentParagraph()->size() > 0)
 			{
 				if (m_comments_parsed)
@@ -325,18 +338,18 @@ class TextHandler : public wvWare::TextHandler
 					{
 						std::string comment_text = m_comments[i].text;
 						std::replace(comment_text.begin(), comment_text.end(), '\x0b', '\n');
-						m_parent->sendTag(tag::Comment{.author = m_comments[i].author, .comment = comment_text});
+						m_emit_tag(tag::Comment{.author = m_comments[i].author, .comment = comment_text});
 					}
 				}
 				else
 				{
 					try
 					{
-						parse_comments(m_parser, m_comments, [&](std::exception_ptr e) { m_parent->sendTag(e); });
+						parse_comments(m_parser, m_comments, [&](std::exception_ptr e) { m_emit_tag(e); });
 					}
 					catch (std::exception&)
 					{
-						m_parent->sendTag(errors::make_nested_ptr(std::current_exception(), make_error("Parsing comments failed.")));
+						m_emit_tag(errors::make_nested_ptr(std::current_exception(), make_error("Parsing comments failed.")));
 						m_comments.clear();
 					}
 					m_comments_parsed = true;
@@ -347,7 +360,7 @@ class TextHandler : public wvWare::TextHandler
 		void paragraphEnd()
 		{
 			docwire_log_func();
-			m_parent->sendTag(tag::CloseParagraph{});
+			m_emit_tag(tag::CloseParagraph{});
 			if (!((Parser9x*)m_parser)->currentParagraph()->empty())
 			{
 				m_prev_par_fc = ((Parser9x*)m_parser)->currentParagraph()->back().m_startFC;
@@ -365,7 +378,7 @@ class TextHandler : public wvWare::TextHandler
 			{
 				std::string t = ustring_to_string(text);
 				std::replace(t.begin(), t.end(), '\x0b', '\n');
-				m_parent->sendTag(tag::Text{.text = t});
+				m_emit_tag(tag::Text{.text = t});
 			}
 		}
 
@@ -395,12 +408,12 @@ class TextHandler : public wvWare::TextHandler
 				case FLT_EMBED:
 					docwire_log(debug) << "Embedded OLE object reference found.";
 					if (m_curr_state->obj_texts_iter == m_curr_state->obj_texts.end())
-						m_parent->sendTag(make_error_ptr("Unexpected OLE object reference."));
+						m_emit_tag(make_error_ptr("Unexpected OLE object reference."));
 					else
 					{
 						std::string obj_text = *m_curr_state->obj_texts_iter;
 						std::replace(obj_text.begin(), obj_text.end(), '\x0b', '\n');
-						m_parent->sendTag(tag::Text{.text = obj_text});
+						m_emit_tag(tag::Text{.text = obj_text});
 						m_curr_state->obj_texts_iter++;
 					}
 					break;
@@ -446,9 +459,9 @@ class TextHandler : public wvWare::TextHandler
 						UString hyperlink_url;
 						for (i = 1; i < params.length() && params[i] != '"'; i++)
 							hyperlink_url += UString(params[i]);
-						m_parent->sendTag(tag::Link{.url = ustring_to_string(hyperlink_url)});
-						m_parent->sendTag(tag::Text{.text = ustring_to_string(m_curr_state->field_value)});
-						m_parent->sendTag(tag::CloseLink{});
+						m_emit_tag(tag::Link{.url = ustring_to_string(hyperlink_url)});
+						m_emit_tag(tag::Text{.text = ustring_to_string(m_curr_state->field_value)});
+						m_emit_tag(tag::CloseLink{});
 					}
 					else
 						res_text = params + UString(" ") + m_curr_state->field_value;
@@ -460,7 +473,7 @@ class TextHandler : public wvWare::TextHandler
 			m_curr_state->field_part = FIELD_PART_NONE;
 			std::string t = ustring_to_string(res_text);
 			std::replace(t.begin(), t.end(), '\x0b', '\n');
-			m_parent->sendTag(tag::Text{.text = t});
+			m_emit_tag(tag::Text{.text = t});
 		}
 
 		void endOfDocument()
@@ -472,7 +485,7 @@ class TextHandler : public wvWare::TextHandler
 					{
 						std::string comment_text = m_comments[i].text;
 						std::replace(comment_text.begin(), comment_text.end(), '\x0b', '\n');
-						m_parent->sendTag(tag::Comment{.author = m_comments[i].author, .comment = comment_text});
+						m_emit_tag(tag::Comment{.author = m_comments[i].author, .comment = comment_text});
 					}
 		}
 };
@@ -480,12 +493,12 @@ class TextHandler : public wvWare::TextHandler
 class TableHandler : public wvWare::TableHandler
 {
 	private:
-		const DOCParser* m_parent;
+		const emission_callbacks& m_emit_tag;
 		CurrentState& m_current_state;
 
 	public:
-		TableHandler(const DOCParser* parent, CurrentState& current_state)
-			: m_parent(parent), m_current_state(current_state)
+		TableHandler(const emission_callbacks& emit_tag, CurrentState& current_state)
+			: m_emit_tag(emit_tag), m_current_state(current_state)
 		{
 		}
 
@@ -494,11 +507,11 @@ class TableHandler : public wvWare::TableHandler
 			docwire_log_func();
 			if (m_current_state.table_state.empty() || m_current_state.table_state.top() == TableState::in_cell)
 			{
-				m_parent->sendTag(tag::Table{});
+				m_emit_tag(tag::Table{});
 				m_current_state.table_state.push(TableState::in_table);
 			}
 			throw_if (m_current_state.table_state.top() != TableState::in_table, errors::uninterpretable_data{});
-			m_parent->sendTag(tag::TableRow{});
+			m_emit_tag(tag::TableRow{});
 			m_current_state.table_state.push(TableState::in_row);
 		}
 
@@ -508,11 +521,11 @@ class TableHandler : public wvWare::TableHandler
 			throw_if (m_current_state.table_state.empty(), errors::uninterpretable_data{});
 			if (m_current_state.table_state.top() == TableState::in_cell)
 			{
-				m_parent->sendTag(tag::CloseTableCell{});
+				m_emit_tag(tag::CloseTableCell{});
 				m_current_state.table_state.pop();
 			}
 			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row, errors::uninterpretable_data{});
-			m_parent->sendTag(tag::CloseTableRow{});
+			m_emit_tag(tag::CloseTableRow{});
 			m_current_state.table_state.pop();
 		}
 
@@ -520,7 +533,7 @@ class TableHandler : public wvWare::TableHandler
 		{
 			docwire_log_func();
 			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row, errors::uninterpretable_data{});
-			m_parent->sendTag(tag::TableCell{});
+			m_emit_tag(tag::TableCell{});
 			m_current_state.table_state.push(TableState::in_cell);
 		}
 
@@ -529,11 +542,11 @@ class TableHandler : public wvWare::TableHandler
 			docwire_log_func();
 			if (!m_current_state.table_state.empty() && m_current_state.table_state.top() == TableState::in_table)
 			{
-				m_parent->sendTag(tag::CloseTable{});
+				m_emit_tag(tag::CloseTable{});
 				m_current_state.table_state.pop();
 			}
 			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_cell, errors::uninterpretable_data{});
-			m_parent->sendTag(tag::CloseTableCell{});
+			m_emit_tag(tag::CloseTableCell{});
 			m_current_state.table_state.pop();
 		}
 };
@@ -541,12 +554,12 @@ class TableHandler : public wvWare::TableHandler
 class SubDocumentHandler : public wvWare::SubDocumentHandler
 {
 	private:
-		const DOCParser* m_parent;
+		const emission_callbacks& m_emit_tag;
 		CurrentHeaderFooter* m_curr_header_footer;
 	
 	public:
-		SubDocumentHandler(const DOCParser* parent, CurrentHeaderFooter* curr_header_footer)
-			: m_parent(parent), m_curr_header_footer(curr_header_footer)
+		SubDocumentHandler(const emission_callbacks& emit_tag, CurrentHeaderFooter* curr_header_footer)
+			: m_emit_tag(emit_tag), m_curr_header_footer(curr_header_footer)
 		{
 		}
 
@@ -559,13 +572,13 @@ class SubDocumentHandler : public wvWare::SubDocumentHandler
 				case HeaderData::HeaderEven:
 				case HeaderData::HeaderFirst:
 					m_curr_header_footer->in_header = true;
-					m_parent->sendTag(tag::Header{});
+					m_emit_tag(tag::Header{});
 					break;
 				case HeaderData::FooterOdd:
 				case HeaderData::FooterEven:
 				case HeaderData::FooterFirst:
 					m_curr_header_footer->in_footer = true;
-					m_parent->sendTag(tag::Footer{});
+					m_emit_tag(tag::Footer{});
 					break;
 			}
 		}
@@ -574,15 +587,17 @@ class SubDocumentHandler : public wvWare::SubDocumentHandler
 		{
 			docwire_log_func();
 			if (m_curr_header_footer->in_header)
-				m_parent->sendTag(tag::CloseHeader{});
+				m_emit_tag(tag::CloseHeader{});
 			if (m_curr_header_footer->in_footer)
-				m_parent->sendTag(tag::CloseFooter{});
+				m_emit_tag(tag::CloseFooter{});
 			m_curr_header_footer->in_header = false;
 			m_curr_header_footer->in_footer = false;
 		}
 };
 
-void DOCParser::parse(const data_source& data)
+DOCParser::DOCParser() = default;
+
+void pimpl_impl<DOCParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using DOC parser.";
 
@@ -590,12 +605,12 @@ void DOCParser::parse(const data_source& data)
 	docwire_log(debug) << "Opening stream as OLE storage to parse all embedded objects in supported formats.";
 	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
 	throw_if (!storage->isValid(), storage->getLastError(), errors::uninterpretable_data{});
-	sendTag(tag::Document
+	emit_tag(tag::Document
 		{
-			.metadata = [this, &storage]()
+			.metadata = [this, &storage, emit_tag]()
 			{
 				attributes::Metadata meta;
-				parse_oshared_summary_info(*storage, meta, [&](std::exception_ptr e) { sendTag(e); });
+				parse_oshared_summary_info(*storage, meta, [emit_tag](std::exception_ptr e) { emit_tag(e); });
 				return meta;
 			}
 		});
@@ -620,11 +635,11 @@ void DOCParser::parse(const data_source& data)
 					try
 					{
 						XLSParser xls{};
-						obj_text = xls.parse(*storage);
+						obj_text = xls.parse(*storage, emit_tag);
 					}
 					catch (const std::exception&)
 					{
-						sendTag(errors::make_nested_ptr(std::current_exception(), make_error("Error while parsing embedded MS Excel workbook.")));
+						emit_tag(errors::make_nested_ptr(std::current_exception(), make_error("Error while parsing embedded MS Excel workbook.")));
 					}
 				}
 				storage->leaveDirectory();
@@ -648,18 +663,40 @@ void DOCParser::parse(const data_source& data)
 	throw_if (!parser, "Error while creating parser");
 	throw_if (!parser->isOk() && parser->fib().fEncrypted, errors::file_encrypted{});
 	throw_if (!parser->isOk(), "Error while creating parser", errors::uninterpretable_data{});
-	TextHandler text_handler(this, parser, &curr_state);
+	TextHandler text_handler(emit_tag, parser, &curr_state);
 	parser->setTextHandler(&text_handler);
-	TableHandler table_handler(this, curr_state);
+	TableHandler table_handler(emit_tag, curr_state);
 	parser->setTableHandler(&table_handler);
-	SubDocumentHandler sub_document_handler(this, &curr_state.header_footer);
+	SubDocumentHandler sub_document_handler(emit_tag, &curr_state.header_footer);
 	parser->setSubDocumentHandler(&sub_document_handler);
 	cerr_redirection.redirect();
 	bool res = parser->parse();
 	cerr_redirection.restore();
 	throw_if (!res, "parse() failed", errors::uninterpretable_data{});
 	text_handler.endOfDocument();
-	sendTag(tag::CloseDocument{});
+	emit_tag(tag::CloseDocument{});
+}
+
+continuation DOCParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+    if (!std::holds_alternative<data_source>(tag))
+        return emit_tag(std::move(tag));
+
+    auto& data = std::get<data_source>(tag);
+    data.assert_not_encrypted();
+
+    if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+        return emit_tag(std::move(tag));
+
+    try
+    {
+        impl().parse(data, emit_tag);
+    }
+    catch (const std::exception& e)
+    {
+        std::throw_with_nested(make_error("DOC parsing failed"));
+    }
+    return continuation::proceed;
 }
 
 } // namespace docwire

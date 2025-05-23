@@ -11,13 +11,17 @@
 
 #include "xlsb_parser.h"
 
+#include "data_source.h"
 #include "error_tags.h"
+#include "scoped_stack_push.h"
 #include "zip_reader.h"
 #include <iostream>
 #include "log.h"
+#include "make_error.h"
 #include <map>
 #include "misc.h"
 #include <sstream>
+#include <stack>
 #include <stdint.h>
 #include "throw_if.h"
 #include <vector>
@@ -25,10 +29,21 @@
 namespace docwire
 {
 
-template<>
-struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
+namespace
 {
-	pimpl_impl(XLSBParser& owner) : with_pimpl_owner{owner} {}
+
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/vnd.ms-excel.sheet.binary.macroenabled.12"}
+};
+
+} // anonymous namespace
+
+template<>
+struct pimpl_impl<XLSBParser> : pimpl_impl_base
+{
+	void parse(const data_source& data, const emission_callbacks& emit_tag);
+	attributes::Metadata metaData(ZipReader& unzip);
 	struct XLSBContent
 	{
 		class ErrorsCodes : public std::map<uint32_t, std::string>
@@ -63,7 +78,22 @@ struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
 		}
 	};
 
-	XLSBContent m_xlsb_content;
+	struct context
+	{
+		const emission_callbacks& emit_tag;
+		XLSBContent xlsb_content;
+	};
+	std::stack<context> m_context_stack;
+
+	continuation emit_tag(Tag&& tag)
+	{
+		return m_context_stack.top().emit_tag(std::move(tag));
+	}
+
+	XLSBContent& xlsb_content()
+	{
+		return m_context_stack.top().xlsb_content;
+	}
 
 	class XLSBReader
 	{
@@ -270,7 +300,7 @@ struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
 					xlsb_reader.skipBytes(4);
 					uint32_t strings_count = 0;
 					xlsb_reader.readUint32(strings_count);
-					m_xlsb_content.m_shared_strings.reserve(strings_count);
+					xlsb_content().m_shared_strings.reserve(strings_count);
 				}
 				catch (const std::exception& e)
 				{
@@ -282,8 +312,8 @@ struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
 			{
 				try
 				{
-					m_xlsb_content.m_shared_strings.push_back(std::string());
-					std::string* new_string = &m_xlsb_content.m_shared_strings[m_xlsb_content.m_shared_strings.size() - 1];
+					xlsb_content().m_shared_strings.push_back(std::string());
+					std::string* new_string = &xlsb_content().m_shared_strings[xlsb_content().m_shared_strings.size() - 1];
 					xlsb_reader.readRichStr(*new_string);
 				}
 				catch (const std::exception& e)
@@ -299,15 +329,15 @@ struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
 	{
 		uint32_t column;
 		xlsb_reader.readUint32(column);
-		if (m_xlsb_content.m_current_column > 0)
+		if (xlsb_content().m_current_column > 0)
 			text += "	";
-		while (column > m_xlsb_content.m_current_column)
+		while (column > xlsb_content().m_current_column)
 		{
 			text += "	";
-			++m_xlsb_content.m_current_column;
+			++xlsb_content().m_current_column;
 		}
 		xlsb_reader.skipBytes(4);
-		m_xlsb_content.m_current_column = column + 1;
+		xlsb_content().m_current_column = column + 1;
 	}
 
 	void parseRecordForWorksheets(XLSBReader& xlsb_reader, XLSBReader::Record& record, std::string& text)
@@ -334,7 +364,7 @@ struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
 					parseColumn(xlsb_reader, text);
 					uint32_t value;
 					xlsb_reader.readUint8(value);
-					text += m_xlsb_content.m_error_codes[value];
+					text += xlsb_content().m_error_codes[value];
 				}
 				catch (const std::exception& e)
 				{
@@ -397,10 +427,10 @@ struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
 			{
 				try
 				{
-					xlsb_reader.readUint32(m_xlsb_content.m_row_start);
-					xlsb_reader.readUint32(m_xlsb_content.m_row_end);
-					xlsb_reader.readUint32(m_xlsb_content.m_col_start);
-					xlsb_reader.readUint32(m_xlsb_content.m_col_end);
+					xlsb_reader.readUint32(xlsb_content().m_row_start);
+					xlsb_reader.readUint32(xlsb_content().m_row_end);
+					xlsb_reader.readUint32(xlsb_content().m_col_start);
+					xlsb_reader.readUint32(xlsb_content().m_col_end);
 				}
 				catch (const std::exception& e)
 				{
@@ -414,10 +444,10 @@ struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
 				{
 					uint32_t row;
 					xlsb_reader.readUint32(row);
-					for (int i = m_xlsb_content.m_current_row; i < row; ++i)
+					for (int i = xlsb_content().m_current_row; i < row; ++i)
 						text += "\n";
-					m_xlsb_content.m_current_row = row;
-					m_xlsb_content.m_current_column = 0;
+					xlsb_content().m_current_row = row;
+					xlsb_content().m_current_column = 0;
 				}
 				catch (const std::exception& e)
 				{
@@ -453,10 +483,10 @@ struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
 					parseColumn(xlsb_reader, text);
 					uint32_t str_index;
 					xlsb_reader.readUint32(str_index);
-					if (str_index >= m_xlsb_content.m_shared_strings.size())
-						owner().sendTag(make_error_ptr("Detected reference to string that does not exist", str_index, m_xlsb_content.m_shared_strings.size()));
+					if (str_index >= xlsb_content().m_shared_strings.size())
+						emit_tag(make_error_ptr("Detected reference to string that does not exist", str_index, xlsb_content().m_shared_strings.size()));
 					else
-						text += m_xlsb_content.m_shared_strings[str_index];
+						text += xlsb_content().m_shared_strings[str_index];
 				}
 				catch (const std::exception& e)
 				{
@@ -562,7 +592,7 @@ struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
 	{
 		docwire_log(debug) << "Extracting metadata.";
 		std::string data;
-		throw_if (!unzip.read("docProps/app.xml", &data), "Error reading docProps/app.xml");
+		throw_if (!unzip.read("docProps/app.xml", &data), "Error reading docProps/app.xml", errors::uninterpretable_data{});
 		if (data.find("<TitlesOfParts>") != std::string::npos && data.find("</TitlesOfParts>") != std::string::npos)
 		{
 			data.erase(data.find("</TitlesOfParts>"));
@@ -631,16 +661,14 @@ struct pimpl_impl<XLSBParser> : with_pimpl_owner<XLSBParser>
 
 };
 
-XLSBParser::XLSBParser()
-{
-}
+XLSBParser::XLSBParser() = default;
 
-attributes::Metadata XLSBParser::metaData(ZipReader& unzip)
+attributes::Metadata pimpl_impl<XLSBParser>::metaData(ZipReader& unzip)
 {
 	attributes::Metadata metadata;
 	try
 	{
-		impl().readMetadata(unzip, metadata);
+		readMetadata(unzip, metadata);
 	}
 	catch (const std::exception& e)
 	{
@@ -649,16 +677,16 @@ attributes::Metadata XLSBParser::metaData(ZipReader& unzip)
 	return metadata;
 }
 
-void XLSBParser::parse(const data_source& data)
+void pimpl_impl<XLSBParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	docwire_log(debug) << "Using XLSB parser.";
-	renew_impl();
+	scoped::stack_push<pimpl_impl<XLSBParser>::context> context_guard{m_context_stack, {emit_tag}};
 	std::string text;
 	ZipReader unzip{data};
 	try
 	{
 		unzip.open();
-		sendTag(tag::Document
+		emit_tag(tag::Document
 			{
 				.metadata = [this, &unzip]() { return metaData(unzip); }
 			});
@@ -671,14 +699,29 @@ void XLSBParser::parse(const data_source& data)
 	}
 	try
 	{
-		impl().parseXLSB(unzip, text);
+		parseXLSB(unzip, text);
 	}
 	catch (const std::exception& e)
 	{
 		std::throw_with_nested(make_error("Error parsing XLSB"));
 	}
-	sendTag(tag::Text{.text = text});
-	sendTag(tag::CloseDocument{});
+	emit_tag(tag::Text{.text = text});
+	emit_tag(tag::CloseDocument{});
+}
+
+continuation XLSBParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+		return emit_tag(std::move(tag));
+
+	impl().parse(data, emit_tag);
+	return continuation::proceed;
 }
 
 } // namespace docwire

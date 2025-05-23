@@ -99,20 +99,16 @@ std::string post_request(const std::string& query, const std::string& api_key)
 
 } // anonymous namespace
 
-void TextToSpeech::process(Info& info)
+continuation TextToSpeech::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
 	docwire_log_func();
-	if (!std::holds_alternative<data_source>(info.tag))
-	{
-		emit(info);
-		return;
-	}
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
 	docwire_log(debug) << "data_source received";
-	const data_source& data = std::get<data_source>(info.tag);
+	const data_source& data = std::get<data_source>(tag);
 	std::string data_str = data.string();
 	std::string content = post_request(prepare_query(data_str, impl().m_model, impl().m_voice), impl().m_api_key);
-	Info new_info(data_source{content});
-	emit(new_info);
+	return emit_tag(data_source{content});
 }
 
 } // namespace openai

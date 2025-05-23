@@ -14,32 +14,27 @@
 
 #include "common_xml_document_parser.h"
 #include "odf_ooxml_export.h"
+#include "pimpl.h"
 
 namespace docwire
 {
 
-class DOCWIRE_ODF_OOXML_EXPORT ODFXMLParser : public CommonXMLDocumentParser
+class DOCWIRE_ODF_OOXML_EXPORT ODFXMLParser : public CommonXMLDocumentParser, public with_pimpl<ODFXMLParser>
 {
 	private:
-		class CommandHandlersSet;
-		attributes::Metadata metaData(const std::string& xml_content) const;
-		void parse(const data_source& data, XmlParseMode mode);
+		using with_pimpl<ODFXMLParser>::impl;
+		friend pimpl_impl<ODFXMLParser>;
+
+	protected:
+		CommonXMLDocumentParser::scoped_context_stack_push create_base_context_guard(const emission_callbacks& emit_tag)
+		{
+			return CommonXMLDocumentParser::scoped_context_stack_push{*this, emit_tag};
+		}
 
 	public:
-
-    void parse(const data_source& data) override;
-
-		const std::vector<mime_type> supported_mime_types() override
-		{
-			return {
-			mime_type{"application/vnd.oasis.opendocument.text-flat-xml"},
-			mime_type{"application/vnd.oasis.opendocument.spreadsheet-flat-xml"},
-			mime_type{"application/vnd.oasis.opendocument.presentation-flat-xml"},
-			mime_type{"application/vnd.oasis.opendocument.graphics-flat-xml"}
-			};
-		};
-
 		ODFXMLParser();
+		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		bool is_leaf() const override { return false; }
 };
 
 } // namespace docwire

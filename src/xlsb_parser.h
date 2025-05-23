@@ -12,9 +12,8 @@
 #ifndef DOCWIRE_XLSB_PARSER_H
 #define DOCWIRE_XLSB_PARSER_H
 
-#include "parser.h"
+#include "chain_element.h"
 #include "tags.h"
-#include <vector>
 #include "xlsb_export.h"
 
 namespace docwire
@@ -22,21 +21,16 @@ namespace docwire
 
 class ZipReader;
 
-class DOCWIRE_XLSB_EXPORT XLSBParser : public Parser, public with_pimpl<XLSBParser>
+class DOCWIRE_XLSB_EXPORT XLSBParser : public ChainElement, public with_pimpl<XLSBParser>
 {
 	private:
 		friend pimpl_impl<XLSBParser>;
 		using with_pimpl<XLSBParser>::impl;
-		using with_pimpl<XLSBParser>::renew_impl;
-		attributes::Metadata metaData(ZipReader& unzip);
 
 	public:
 		XLSBParser();
-		const std::vector<mime_type> supported_mime_types() override
-		{
-			return { mime_type{"application/vnd.ms-excel.sheet.binary.macroenabled.12"} };
-		};
-		void parse(const data_source& data) override;
+		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		bool is_leaf() const override { return false; }
 };
 
 } // namespace docwire

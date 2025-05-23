@@ -267,13 +267,14 @@ namespace
 			}
 		}
 	}
+
+	attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const emission_callbacks& emit_tag);
+
 };
 
-PPTParser::PPTParser()
-{
-}
+PPTParser::PPTParser() = default;
 
-void PPTParser::parse(const data_source& data)
+void parse(const data_source& data, const emission_callbacks& emit_tag)
 {	
 	docwire_log(debug) << "Using PPT parser.";
 	try
@@ -281,9 +282,12 @@ void PPTParser::parse(const data_source& data)
 		std::unique_ptr<ThreadSafeOLEStorage> storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
 		throw_if (!storage->isValid(), "Error opening stream as OLE container");
 		assertFileIsNotEncrypted(*storage);
-		sendTag(tag::Document
+		emit_tag(tag::Document
 			{
-				.metadata = [this, &storage]() { return metaData(storage); }
+				.metadata = [&storage, emit_tag]()
+				{
+						return metaData(storage, emit_tag);
+				}
 			});
 		std::string text;
 		std::vector<std::string> dirs;
@@ -301,17 +305,17 @@ void PPTParser::parse(const data_source& data)
 				{
 					std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("Text_Content") };
 					throw_if (reader == NULL, storage->getLastError(), std::make_pair("stream_path", "Text_Content"));
-					parseOldPPT(*storage, *reader, text, [this](std::exception_ptr e) { sendTag(e); });
-					sendTag(tag::Text{.text = text});
+					parseOldPPT(*storage, *reader, text, [emit_tag](std::exception_ptr e) { emit_tag(e); });
+					emit_tag(tag::Text{.text = text});
 					return;
 				}
 			}
 		}
 		std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("PowerPoint Document") };
 		throw_if (reader == NULL, storage->getLastError(), std::make_pair("stream_path", "PowerPoint Document"));
-		parsePPT(*reader, text, [&](std::exception_ptr e) { sendTag(e); });
-		sendTag(tag::Text{.text = text});
-		sendTag(tag::CloseDocument{});
+		parsePPT(*reader, text, [emit_tag](std::exception_ptr e) { emit_tag(e); });
+		emit_tag(tag::Text{.text = text});
+		emit_tag(tag::CloseDocument{});
 		return;
 	}
 	catch (const std::exception& e)
@@ -320,10 +324,13 @@ void PPTParser::parse(const data_source& data)
 	}
 }
 
-attributes::Metadata PPTParser::metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage) const
+namespace
+{
+
+attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const emission_callbacks& emit_tag)
 {
 	attributes::Metadata meta;
-		parse_oshared_summary_info(*storage, meta, [this](std::exception_ptr e) { sendTag(e); });
+		parse_oshared_summary_info(*storage, meta, [emit_tag](std::exception_ptr e) { emit_tag(e); });
 		// If page count not found use slide count as page count
 		if (!meta.page_count)
 		{
@@ -337,10 +344,42 @@ attributes::Metadata PPTParser::metaData(const std::unique_ptr<ThreadSafeOLEStor
 			}
 			catch (const std::exception& e)
 			{
-				sendTag(std::current_exception());
+				emit_tag(std::current_exception());
 			}
 		}
 		return meta;
+}
+
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/vnd.ms-powerpoint"},
+	mime_type{"application/vnd.ms-powerpoint.presentation.macroenabled.12"},
+	mime_type{"application/vnd.ms-powerpoint.template.macroenabled.12"},
+	mime_type{"application/vnd.ms-powerpoint.slideshow.macroenabled.12"}
+};
+
+} // anonymous namespace
+
+continuation PPTParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+		return emit_tag(std::move(tag));
+
+	try
+	{
+		parse(data, emit_tag);
+	}
+	catch (const std::exception& e)
+	{
+		std::throw_with_nested(make_error("PPT parsing failed"));
+	}
+	return continuation::proceed;
 }
 
 } // namespace docwire

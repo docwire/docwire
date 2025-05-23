@@ -17,30 +17,26 @@ namespace docwire
 template<>
 struct pimpl_impl<TransformerFunc> : with_pimpl_owner<TransformerFunc>
 {
-  pimpl_impl(TransformerFunc& owner, NewNodeCallback transformer_function)
+  pimpl_impl(TransformerFunc& owner, tag_transform_func transformer_function)
     : with_pimpl_owner{owner}, m_transformer_function(transformer_function)
   {}
 
-  void transform(Info &info) const
+  continuation transform(Tag&& tag, const emission_callbacks& emit_tag) const
   {
-    m_transformer_function(info);
-    if (!info.cancel && !info.skip)
-    {
-      owner().emit(info);
-    }
+    return m_transformer_function(std::move(tag), emit_tag);
   }
 
-  NewNodeCallback m_transformer_function;
+  tag_transform_func m_transformer_function;
 };
 
-TransformerFunc::TransformerFunc(NewNodeCallback transformer_function)
+TransformerFunc::TransformerFunc(tag_transform_func transformer_function)
   : with_pimpl<TransformerFunc>(transformer_function)
 {
 }
 
-void TransformerFunc::process(Info& info)
+continuation TransformerFunc::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
-  impl().transform(info);
+  return impl().transform(std::move(tag), emit_tag);
 }
 
 } // namespace docwire

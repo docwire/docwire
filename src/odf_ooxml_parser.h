@@ -22,41 +22,23 @@ class DOCWIRE_ODF_OOXML_EXPORT ODFOOXMLParser : public CommonXMLDocumentParser, 
 {
   private:
     using with_pimpl<ODFOOXMLParser>::impl;
+    friend pimpl_impl<ODFOOXMLParser>;
     class CommandHandlersSet;
     int lastOOXMLRowNum();
     void setLastOOXMLRowNum(int r);
     int lastOOXMLColNum();
     void setLastOOXMLColNum(int c);
-    void parse(const data_source& data, XmlParseMode mode);
+    void parse(const data_source& data, XmlParseMode mode, const emission_callbacks& emit_tag);
     attributes::Metadata metaData(ZipReader& zipfile) const;
 
 	public:
 
-    void parse(const data_source& data) override;
+    void parse(const data_source& data, const emission_callbacks& emit_tag);
 
-    const std::vector<mime_type> supported_mime_types() override
-    {
-      return {
-      mime_type{"application/vnd.oasis.opendocument.text"},
-      mime_type{"application/vnd.oasis.opendocument.spreadsheet"},
-      mime_type{"application/vnd.oasis.opendocument.presentation"},
-      mime_type{"application/vnd.oasis.opendocument.graphics"},
-      mime_type{"application/vnd.oasis.opendocument.text-template"},
-      mime_type{"application/vnd.oasis.opendocument.spreadsheet-template"},
-      mime_type{"application/vnd.oasis.opendocument.presentation-template"},
-      mime_type{"application/vnd.oasis.opendocument.graphics-template"},
-      mime_type{"application/vnd.oasis.opendocument.text-web"},
-      mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
-      mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
-      mime_type{"application/vnd.openxmlformats-officedocument.presentationml.presentation"},
-      mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.template"},
-      mime_type{"application/vnd.openxmlformats-officedocument.spreadsheetml.template"},
-      mime_type{"application/vnd.openxmlformats-officedocument.presentationml.template"},
-      mime_type{"application/vnd.openxmlformats-officedocument.presentationml.slideshow"},
-      };
-    };
 
     ODFOOXMLParser();
+    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+    bool is_leaf() const override { return false; }
 };
 
 } // namespace docwire

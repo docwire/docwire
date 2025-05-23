@@ -11,6 +11,7 @@
 
 #include "xls_parser.h"
 
+#include "data_source.h"
 #include "error_tags.h"
 #include "log.h"
 #include <map>
@@ -22,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "scoped_stack_push.h"
 #include "throw_if.h"
 #include "wv2/src/textconverter.h"
 #include "wv2/src/utilities.h"
@@ -39,7 +41,6 @@ namespace
 {
 	std::mutex xls_converter_mutex;
 	std::mutex parser_mutex;
-} // anonymous namespace
 
 enum RecordType
 {
@@ -65,17 +66,18 @@ enum RecordType
 	XLS_EOF = 0x0A
 };
 
-template<>
-struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
+enum BiffVersion { BIFF2, BIFF3, BIFF4, BIFF5, BIFF8 };
+
+struct XFRecord
 {
-	pimpl_impl(XLSParser& owner) : with_pimpl_owner{owner} {}
+	short int num_format_id;
+};
+
+struct context
+{
+	const emission_callbacks& emit_tag;
 	std::string m_codepage = "cp1251";
-	enum BiffVersion { BIFF2, BIFF3, BIFF4, BIFF5, BIFF8 };
 	BiffVersion m_biff_version;
-	struct XFRecord
-	{
-		short int num_format_id;
-	};
 	std::vector<XFRecord> m_xf_records;
 	double m_date_shift;
 	std::vector<std::string> m_shared_string_table;
@@ -86,6 +88,29 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 	int m_last_string_formula_col;
 	std::set<int> m_defined_num_format_ids;
 	int m_last_row, m_last_col;
+};
+
+const std::vector<mime_type> supported_mime_types =
+{
+	mime_type{"application/vnd.ms-excel"},
+	mime_type{"application/vnd.ms-excel.sheet.macroenabled.12"},
+	mime_type{"application/vnd.ms-excel.template.macroenabled.12"}
+};
+
+} // anonymous namespace
+
+template<>
+struct pimpl_impl<XLSParser> : pimpl_impl_base
+{
+	std::stack<context> m_context_stack;
+	
+	continuation emit_tag(Tag&& tag)
+	{
+		return m_context_stack.top().emit_tag(std::move(tag));
+	}
+
+	void parse(const data_source& data, const emission_callbacks& emit_tag);
+	std::string parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag);
 
 	U16 getU16LittleEndian(std::vector<unsigned char>::const_iterator buffer)
 	{
@@ -126,13 +151,13 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 	std::string getStandardDateFormat(int xf_index)
 	{
 		static StandardDateFormats formats;
-		if (xf_index >= m_xf_records.size())
+		if (xf_index >= m_context_stack.top().m_xf_records.size())
 		{
-			owner().sendTag(make_error_ptr("Incorrect format code", xf_index));
+			emit_tag(make_error_ptr("Incorrect format code", xf_index));
 			return "";
 		}
-		int num_format_id = m_xf_records[xf_index].num_format_id;
-		if (m_defined_num_format_ids.count(num_format_id))
+		int num_format_id = m_context_stack.top().m_xf_records[xf_index].num_format_id;
+		if (m_context_stack.top().m_defined_num_format_ids.count(num_format_id))
 			return "";
 		StandardDateFormats::iterator i = formats.find(num_format_id);
 		if (i == formats.end())
@@ -143,7 +168,7 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 
 	std::string xlsDateToString(double xls_date, std::string date_fmt)
 	{
-		time_t time = rint((xls_date - m_date_shift) * 86400);
+		time_t time = rint((xls_date - m_context_stack.top().m_date_shift) * 86400);
 		char buffer[128];
     struct tm time_buffer;
 		strftime(buffer, 127, date_fmt.c_str(), thread_safe_gmtime(&time, time_buffer));
@@ -211,7 +236,7 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 		{
 			size_t diff = record_pos - record_sizes[record_index];
 			if (diff > 0)
-				owner().sendTag(make_error_ptr("XLUnicodeString starts after record boundary", diff));
+				emit_tag(make_error_ptr("XLUnicodeString starts after record boundary", diff));
 			record_pos = diff;
 			record_index++;
 		}
@@ -226,7 +251,7 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 		// warning TODO: Add support for record 0x0004 (in BIFF2).
 		if (src_end - *src < 2)
 		{
-			owner().sendTag(make_error_ptr("Unexpected end of buffer."));
+			emit_tag(make_error_ptr("Unexpected end of buffer."));
 			*src = src_end;
 			return "";
 		}
@@ -235,12 +260,12 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 		record_pos += 2;
 		if (src_end - *src < 1)
 		{
-			owner().sendTag(make_error_ptr("Unexpected end of buffer."));
+			emit_tag(make_error_ptr("Unexpected end of buffer."));
 			*src = src_end;
 			return "";
 		}
 		int flags = 0;
-		if (m_biff_version >= BIFF8)
+		if (m_context_stack.top().m_biff_version >= BIFF8)
 		{
 			flags = **src;
 			*src += 1;
@@ -253,7 +278,7 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			docwire_log(debug) << "Rich text flag enabled.";
 			if (src_end - *src < 2)
 			{
-				owner().sendTag(make_error_ptr("Unexpected end of buffer."));
+				emit_tag(make_error_ptr("Unexpected end of buffer."));
 				*src = src_end;
 				return "";
 			}
@@ -266,7 +291,7 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			docwire_log(debug) << "Asian flag enabled.";
 			if (src_end - *src < 4)
 			{
-				owner().sendTag(make_error_ptr("Unexpected end of buffer."));
+				emit_tag(make_error_ptr("Unexpected end of buffer."));
 				*src = src_end;
 				return "";
 			}
@@ -285,12 +310,12 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 		{
 			if (s >= src_end)
 			{
-				owner().sendTag(make_error_ptr("Unexpected end of buffer."));
+				emit_tag(make_error_ptr("Unexpected end of buffer."));
 				*src = src_end;
 				return dest;
 			}
 			if (record_pos > record_sizes[record_index])
-				owner().sendTag(make_error_ptr("Record boundary crossed.", record_pos, record_sizes[record_index]));
+				emit_tag(make_error_ptr("Record boundary crossed.", record_pos, record_sizes[record_index]));
 			if (record_pos == record_sizes[record_index])
 			{
 				docwire_log(debug) << "Record boundary reached.";
@@ -302,12 +327,12 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 				// from 8‑bit characters to 16‑bit characters and vice versa.
 				if (s >= src_end)
 				{
-					owner().sendTag(make_error_ptr("Unexpected end of buffer."));
+					emit_tag(make_error_ptr("Unexpected end of buffer."));
 					*src = src_end;
 					return dest;
 				}
 				if ((*s) != 0 && (*s) != 1)
-					owner().sendTag(make_error_ptr("Incorrect XLUnicodeString flag.", *s));
+					emit_tag(make_error_ptr("Incorrect XLUnicodeString flag.", *s));
 				char_size = ((*s) & 0x01) ? 2 : 1;
 				if (char_size == 2)
 				{
@@ -321,7 +346,7 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			{
 				if (src_end - *src < 2)
 				{
-					owner().sendTag(make_error_ptr("Unexpected end of buffer."));
+					emit_tag(make_error_ptr("Unexpected end of buffer."));
 					*src = src_end;
 					return dest;
 				}
@@ -335,7 +360,7 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 					s += 2;
 					if (src_end - *src < 2)
 					{
-						owner().sendTag(make_error_ptr("Unexpected end of buffer."));
+						emit_tag(make_error_ptr("Unexpected end of buffer."));
 						*src = src_end;
 						return dest;
 					}
@@ -348,15 +373,15 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			{
 				if (s >= src_end)
 				{
-					owner().sendTag(make_error_ptr("Unexpected end of buffer."));
+					emit_tag(make_error_ptr("Unexpected end of buffer."));
 					*src = src_end;
 					return dest;
 				}
 				std::string c2(1, *s);
-				if (m_codepage != "ASCII")
+				if (m_context_stack.top().m_codepage != "ASCII")
 				{
 					std::lock_guard<std::mutex> xls_converter_mutex_lock(xls_converter_mutex);
-					TextConverter tc(m_codepage);
+					TextConverter tc(m_context_stack.top().m_codepage);
 					dest += ustring_to_string(tc.convert(c2));
 				}
 				else
@@ -374,32 +399,32 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 		docwire_log(debug) << "Parsing shared string table.";
 		if (sst_buf.size() < 8)
 		{
-			owner().sendTag(make_error_ptr("Error while parsing shared string table. Buffer must contain at least 8 bytes.", sst_buf.size()));
+			emit_tag(make_error_ptr("Error while parsing shared string table. Buffer must contain at least 8 bytes.", sst_buf.size()));
 			return;
 		}
 		int sst_size = getS32LittleEndian(sst_buf.begin() + 4);
 		std::vector<unsigned char>::const_iterator src = sst_buf.begin() + 8;
 		size_t record_index = 0;
 		size_t record_pos = 8;
-		while (src < sst_buf.end() && m_shared_string_table.size() <= sst_size)
-			m_shared_string_table.push_back(parseXLUnicodeString(&src, sst_buf.end(), m_shared_string_table_record_sizes, record_index, record_pos));
+		while (src < sst_buf.end() && m_context_stack.top().m_shared_string_table.size() <= sst_size)
+		m_context_stack.top().m_shared_string_table.push_back(parseXLUnicodeString(&src, sst_buf.end(), m_context_stack.top().m_shared_string_table_record_sizes, record_index, record_pos));
 	}	
 
 	std::string cellText(int row, int col, const std::string& s)
 	{
 		std::string r;
-		while (row > m_last_row)
+		while (row > m_context_stack.top().m_last_row)
 		{
 			r += "\n";
-			++m_last_row;
-			m_last_col = 0;
+			++m_context_stack.top().m_last_row;
+			m_context_stack.top().m_last_col = 0;
 		}
-		if (col > 0 && col <= m_last_col)
+		if (col > 0 && col <= m_context_stack.top().m_last_col)
 			r += "\t";
-		while (col > m_last_col)
+		while (col > m_context_stack.top().m_last_col)
 		{
 			r += "\t";
-			++m_last_col;
+			++m_context_stack.top().m_last_col;
 		}
 		r += s;
 		return r;
@@ -408,15 +433,15 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 	void processRecord(int rec_type, const std::vector<unsigned char>& rec, std::string& text)
 	{
 		docwire_log(debug) << hex() << "record" << rec_type;
-		if (rec_type != XLS_CONTINUE && m_prev_rec_type == XLS_SST)
-			parseSharedStringTable(m_shared_string_table_buf);
+		if (rec_type != XLS_CONTINUE && m_context_stack.top().m_prev_rec_type == XLS_SST)
+			parseSharedStringTable(m_context_stack.top().m_shared_string_table_buf);
 		switch (rec_type)
 		{
 			case XLS_BLANK:
 			{
 				if (rec.size() < 4)
 				{
-					owner().sendTag(make_error_ptr("Record is too short. XLS_BLANK must be 4 bytes in length", rec.size()));
+					emit_tag(make_error_ptr("Record is too short. XLS_BLANK must be 4 bytes in length", rec.size()));
 					break;
 				}
 				int row = getU16LittleEndian(rec.begin());
@@ -426,8 +451,8 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			}
 			case XLS_BOF:
 			{
-				m_last_row = 0;
-				m_last_col = 0;
+				m_context_stack.top().m_last_row = 0;
+				m_context_stack.top().m_last_col = 0;
 				// warning TODO: Check for stream type, ignore charts, or make it configurable
 				// warning TODO: Mark beginning of sheet (configurable)
 				break;
@@ -440,24 +465,24 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 					if (codepage == 1200)
 						break;
 					else if (codepage == 367)
-						m_codepage = "ASCII";
+						m_context_stack.top().m_codepage = "ASCII";
 					else
-						m_codepage = "cp" + int2string(codepage);
+						m_context_stack.top().m_codepage = "cp" + int2string(codepage);
 				}
 				break;
 			}
 			case XLS_CONTINUE:
 			{
-				if (m_prev_rec_type != XLS_SST)
+				if (m_context_stack.top().m_prev_rec_type != XLS_SST)
 					return; // do not change m_prev_rec_type
-				m_shared_string_table_buf.reserve(m_shared_string_table_buf.size() + rec.size());
-				m_shared_string_table_buf.insert(m_shared_string_table_buf.end(), rec.begin(), rec.begin() + rec.size());
-				m_shared_string_table_record_sizes.push_back(rec.size());
-				docwire_log(debug) << "XLS_CONTINUE record for XLS_SST found. Index: " << m_shared_string_table_record_sizes.size() - 1 << ", size:" << rec.size() << ".";
+				m_context_stack.top().m_shared_string_table_buf.reserve(m_context_stack.top().m_shared_string_table_buf.size() + rec.size());
+				m_context_stack.top().m_shared_string_table_buf.insert(m_context_stack.top().m_shared_string_table_buf.end(), rec.begin(), rec.begin() + rec.size());
+				m_context_stack.top().m_shared_string_table_record_sizes.push_back(rec.size());
+				docwire_log(debug) << "XLS_CONTINUE record for XLS_SST found. Index: " << m_context_stack.top().m_shared_string_table_record_sizes.size() - 1 << ", size:" << rec.size() << ".";
 				return;
 			}
 			case XLS_DATE_1904:
-				m_date_shift = 24107.0; 
+				m_context_stack.top().m_date_shift = 24107.0; 
 				break;
 			case XLS_EOF:
 			{
@@ -489,29 +514,29 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			{
 				if (rec.size() < 2)
 				{
-					owner().sendTag(make_error_ptr("Record is too short. XLS_FORMAT must be 2 bytes in length", rec.size()));
+					emit_tag(make_error_ptr("Record is too short. XLS_FORMAT must be 2 bytes in length", rec.size()));
 					break;
 				}
 				int num_format_id = getU16LittleEndian(rec.begin());
-				m_defined_num_format_ids.insert(num_format_id);
+				m_context_stack.top().m_defined_num_format_ids.insert(num_format_id);
 				break;
 			}
 			case XLS_FORMULA:
 			{
 				if (rec.size() < 14)
 				{
-					owner().sendTag(make_error_ptr("Record is too short. XLS_FORMULA must be 14 bytes in length", rec.size()));
+					emit_tag(make_error_ptr("Record is too short. XLS_FORMULA must be 14 bytes in length", rec.size()));
 					break;
 				}
-				m_last_string_formula_row = -1;
+				m_context_stack.top().m_last_string_formula_row = -1;
 				int row = getU16LittleEndian(rec.begin());
 				int col = getU16LittleEndian(rec.begin()+2);
 				if (((unsigned char)rec[12] == 0xFF) && (unsigned char)rec[13] == 0xFF)
 				{
 					if (rec[6] == 0)
 					{
-						m_last_string_formula_row = row;
-						m_last_string_formula_col = col;
+						m_context_stack.top().m_last_string_formula_row = row;
+						m_context_stack.top().m_last_string_formula_col = col;
 					}
 					else if (rec[6] == 1)
 					{
@@ -532,7 +557,7 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			{
 				if (rec.size() < 9)
 				{
-					owner().sendTag(make_error_ptr("Record is too short. XLS_INTEGER_CELL must be 9 bytes in length", rec.size()));
+					emit_tag(make_error_ptr("Record is too short. XLS_INTEGER_CELL must be 9 bytes in length", rec.size()));
 					break;
 				}
 				int row = getU16LittleEndian(rec.begin());
@@ -545,10 +570,10 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			{
 				if (rec.size() < 6)
 				{
-					owner().sendTag(make_error_ptr("Record is too short. XLS_LABEL and XLS_RSTRING must be at least 6 bytes in length", rec.size()));
+					emit_tag(make_error_ptr("Record is too short. XLS_LABEL and XLS_RSTRING must be at least 6 bytes in length", rec.size()));
 					break;
 				}
-				m_last_string_formula_row = -1;
+				m_context_stack.top().m_last_string_formula_row = -1;
 				int row = getU16LittleEndian(rec.begin()); 
 				int col = getU16LittleEndian(rec.begin() + 2);
 				std::vector<unsigned char>::const_iterator src=rec.begin() + 6;
@@ -563,27 +588,27 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			{
 				if (rec.size() < 8)
 				{
-					owner().sendTag(make_error_ptr("Record is too short. XLS_LABEL_SST must be at least 8 bytes in length", rec.size()));
+					emit_tag(make_error_ptr("Record is too short. XLS_LABEL_SST must be at least 8 bytes in length", rec.size()));
 					break;
 				}
-				m_last_string_formula_row = -1;
+				m_context_stack.top().m_last_string_formula_row = -1;
 				int row = getU16LittleEndian(rec.begin()); 
 				int col = getU16LittleEndian(rec.begin() + 2);
 				int sst_index = getU16LittleEndian(rec.begin() + 6);
-				if (sst_index >= m_shared_string_table.size() || sst_index < 0)
+				if (sst_index >= m_context_stack.top().m_shared_string_table.size() || sst_index < 0)
 				{
-					owner().sendTag(make_error_ptr("Incorrect SST index.", sst_index, m_shared_string_table.size()));
+					emit_tag(make_error_ptr("Incorrect SST index.", sst_index, m_context_stack.top().m_shared_string_table.size()));
 					return;
 				}
 				else
-					text += cellText(row, col, m_shared_string_table[sst_index]);
+					text += cellText(row, col, m_context_stack.top().m_shared_string_table[sst_index]);
 				break;
 			}
 			case XLS_MULBLANK:
 			{
 				if (rec.size() < 4)
 				{
-					owner().sendTag(make_error_ptr("Record is too short. XLS_MULBLANK must be at least 4 bytes in length", rec.size()));
+					emit_tag(make_error_ptr("Record is too short. XLS_MULBLANK must be at least 4 bytes in length", rec.size()));
 					break;
 				}
 				int row = getU16LittleEndian(rec.begin());
@@ -597,17 +622,17 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			{
 				if (rec.size() < 4)
 				{
-					owner().sendTag(make_error_ptr("Record is too short. XLS_MULRK must be at least 4 bytes in length", rec.size()));
+					emit_tag(make_error_ptr("Record is too short. XLS_MULRK must be at least 4 bytes in length", rec.size()));
 					break;
 				}
-				m_last_string_formula_row = -1;
+				m_context_stack.top().m_last_string_formula_row = -1;
 				int row = getU16LittleEndian(rec.begin());
 				int start_col = getU16LittleEndian(rec.begin() + 2);
 				int end_col = getU16LittleEndian(rec.begin() + rec.size() - 2);
 				int min_size = 4 + 6 * (end_col - start_col + 1);
 				if (rec.size() < min_size)
 				{
-					owner().sendTag(make_error_ptr("Record is too short. XLS_MULRK has its minimum size.", min_size, rec.size()));
+					emit_tag(make_error_ptr("Record is too short. XLS_MULRK has its minimum size.", min_size, rec.size()));
 					break;
 				}
 				for (int offset = 4, col = start_col; col <= end_col; offset += 6, col++)
@@ -624,10 +649,10 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			{
 				if (rec.size() < 14)
 				{
-					owner().sendTag(make_error_ptr("Record is too short. XLS_NUMBER (or record of number 0x03, 0x103, 0x303) must be at least 14 bytes in length", rec.size()));
+					emit_tag(make_error_ptr("Record is too short. XLS_NUMBER (or record of number 0x03, 0x103, 0x303) must be at least 14 bytes in length", rec.size()));
 					break;
 				}
-				m_last_string_formula_row = -1;
+				m_context_stack.top().m_last_string_formula_row = -1;
 				int row = getU16LittleEndian(rec.begin());
 				int col = getU16LittleEndian(rec.begin() + 2);
 				text += cellText(row, col, parseXNum(rec.begin() + 6, getU16LittleEndian(rec.begin() + 4)));
@@ -637,10 +662,10 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			{
 				if (rec.size() < 10)
 				{
-					owner().sendTag(make_error_ptr("Record is too short. XLS_RK must be at least 10 bytes in length", rec.size()));
+					emit_tag(make_error_ptr("Record is too short. XLS_RK must be at least 10 bytes in length", rec.size()));
 					break;
 				}
-				m_last_string_formula_row = -1;
+				m_context_stack.top().m_last_string_formula_row = -1;
 				int row = getU16LittleEndian(rec.begin());
 				int col = getU16LittleEndian(rec.begin() + 2);
 				int xf_index = getU16LittleEndian(rec.begin() + 4);
@@ -649,26 +674,26 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			}
 			case XLS_SST:
 			{
-				m_shared_string_table_buf.clear();
-				m_shared_string_table_record_sizes.clear();
-				m_shared_string_table.clear();
-				m_shared_string_table_buf.reserve(rec.size());
-				m_shared_string_table_buf.insert(m_shared_string_table_buf.end(), rec.begin(), rec.begin() + rec.size());
-				m_shared_string_table_record_sizes.push_back(rec.size());
+				m_context_stack.top().m_shared_string_table_buf.clear();
+				m_context_stack.top().m_shared_string_table_record_sizes.clear();
+				m_context_stack.top().m_shared_string_table.clear();
+				m_context_stack.top().m_shared_string_table_buf.reserve(rec.size());
+				m_context_stack.top().m_shared_string_table_buf.insert(m_context_stack.top().m_shared_string_table_buf.end(), rec.begin(), rec.begin() + rec.size());
+				m_context_stack.top().m_shared_string_table_record_sizes.push_back(rec.size());
 				break;
 			}
 			case XLS_STRING:
 			{
 				std::vector<unsigned char>::const_iterator src = rec.begin();
-				if (m_last_string_formula_row < 0) {
-					owner().sendTag(make_error_ptr("String record without preceeding string formula."));
+				if (m_context_stack.top().m_last_string_formula_row < 0) {
+					emit_tag(make_error_ptr("String record without preceeding string formula."));
 					break;
 				}
 				std::vector<size_t> sizes;
 				sizes.push_back(rec.size());
 				size_t record_index = 0;
 				size_t record_pos = 0;
-				text += cellText(m_last_string_formula_row, m_last_string_formula_col, parseXLUnicodeString(&src, rec.end(), sizes, record_index, record_pos));
+				text += cellText(m_context_stack.top().m_last_string_formula_row, m_context_stack.top().m_last_string_formula_col, parseXLUnicodeString(&src, rec.end(), sizes, record_index, record_pos));
 				break;
 			}
 			case XLS_XF:
@@ -676,31 +701,31 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 			{
 				if (rec.size() < 4)
 				{
-					owner().sendTag(make_error_ptr("Record is too short. XLS_XF (or record of number 0x43) must be at least 4 bytes in length", rec.size()));
+					emit_tag(make_error_ptr("Record is too short. XLS_XF (or record of number 0x43) must be at least 4 bytes in length", rec.size()));
 					break;
 				}
 				XFRecord xf_record;
 				xf_record.num_format_id = getU16LittleEndian(rec.begin() + 2);
-				m_xf_records.push_back(xf_record);
+				m_context_stack.top().m_xf_records.push_back(xf_record);
 					break;
 			} 
 		}
-		m_prev_rec_type = rec_type;
+		m_context_stack.top().m_prev_rec_type = rec_type;
 	}  
 
-	void parseXLS(ThreadSafeOLEStreamReader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+	void parseXLS(ThreadSafeOLEStreamReader& reader, std::string& text)
 	{
-		m_xf_records.clear();
-		m_date_shift = 25569.0;
-		m_shared_string_table.clear();
-		m_shared_string_table_buf.clear();
-		m_shared_string_table_record_sizes.clear();
-		m_prev_rec_type = 0;
+		m_context_stack.top().m_xf_records.clear();
+		m_context_stack.top().m_date_shift = 25569.0;
+		m_context_stack.top().m_shared_string_table.clear();
+		m_context_stack.top().m_shared_string_table_buf.clear();
+		m_context_stack.top().m_shared_string_table_record_sizes.clear();
+		m_context_stack.top().m_prev_rec_type = 0;
 		int m_last_string_formula_row = -1;
 		int m_last_string_formula_col = -1;
-		m_defined_num_format_ids.clear();
-		m_last_row = 0;
-		m_last_col = 0;
+		m_context_stack.top().m_defined_num_format_ids.clear();
+		m_context_stack.top().m_last_row = 0;
+		m_context_stack.top().m_last_col = 0;
 
 		std::vector<unsigned char> rec;
 		bool read_status = true;
@@ -762,30 +787,30 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 								docwire_log(debug) << "Detected BIFF8 version";
 								rec.resize(8);
 								read_status = reader.read(&*rec.begin(), 8);
-								m_biff_version = BIFF8;
+								m_context_stack.top().m_biff_version = BIFF8;
 								bof_struct_size = 16;
 							}
 							else
 							{
 								docwire_log(debug) << "Detected BIFF5 version";
-								m_biff_version = BIFF5;
+								m_context_stack.top().m_biff_version = BIFF5;
 								bof_struct_size = 8;
 							}
 							break;
 						}
 						case BOF_BIFF_3:
 							docwire_log(debug) << "Detected BIFF3 version";
-							m_biff_version = BIFF3;
+							m_context_stack.top().m_biff_version = BIFF3;
 							bof_struct_size = 6;
 							break;
 						case BOF_BIFF_4:
 							docwire_log(debug) << "Detected BIFF4 version";
-							m_biff_version = BIFF4;
+							m_context_stack.top().m_biff_version = BIFF4;
 							bof_struct_size = 6;
 							break;
 						default:
 							docwire_log(debug) << "Detected BIFF2 version";
-							m_biff_version = BIFF2;
+							m_context_stack.top().m_biff_version = BIFF2;
 							bof_struct_size = 4;
 					}
 					rec.resize(rec_len - (bof_struct_size - 4));
@@ -815,7 +840,7 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 				if (text.length() == 0)
 					std::throw_with_nested(make_error("Type of record could not be read"));
 				else
-					non_fatal_error_handler(errors::make_nested_ptr(std::current_exception(), make_error("Type of record could not be read")));
+					emit_tag(errors::make_nested_ptr(std::current_exception(), make_error("Type of record could not be read")));
 				break;
 			}
 			if (oleEof(reader))
@@ -833,7 +858,7 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 				if (text.length() == 0)
 					std::throw_with_nested(make_error("Length of record could not be read"));
 				else
-					non_fatal_error_handler(errors::make_nested_ptr(std::current_exception(), make_error("Length of record could not be read")));
+					emit_tag(errors::make_nested_ptr(std::current_exception(), make_error("Length of record could not be read")));
 				break;
 			}
 			if (rec_len > 0)
@@ -841,7 +866,7 @@ struct pimpl_impl<XLSParser> : with_pimpl_owner<XLSParser>
 				rec.resize(rec_len);
 				read_status = reader.read(&*rec.begin(), rec_len);
 				if (!read_status)
-					non_fatal_error_handler(make_error_ptr("Error while reading next record", reader.getLastError()));
+					emit_tag(make_error_ptr("Error while reading next record", reader.getLastError()));
 			}
 			else
 				rec.clear();
@@ -863,35 +888,27 @@ XLSParser::XLSParser()
 {
 }
 
-void XLSParser::parse(const data_source& data)
+void pimpl_impl<XLSParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
 {
 	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
 	throw_if (!storage->isValid(), storage->getLastError());
-	sendTag(tag::Document
+	emit_tag(tag::Document
 		{
-			.metadata = [this, &storage]()
+			.metadata = [this, emit_tag, &storage]()
 			{
-				try
-				{
-					attributes::Metadata meta;
-					parse_oshared_summary_info(*storage, meta, [&](std::exception_ptr e) { sendTag(e); });
-					return meta;
-				}
-				catch (const std::exception& e)
-				{
-					std::throw_with_nested(make_error("parser_oshared_summary_info() failed"));
-				}
+				attributes::Metadata meta;
+				parse_oshared_summary_info(*storage, meta, [emit_tag](std::exception_ptr e) { emit_tag(e); });
+				return meta;
 			}
 		});
-	sendTag(tag::Text{.text = parse(*storage)});
-	sendTag(tag::CloseDocument{});
+	emit_tag(tag::Text{.text = parse(*storage, emit_tag)});
+	emit_tag(tag::CloseDocument{});
 }
 
-std::string XLSParser::parse(ThreadSafeOLEStorage& storage)
+std::string pimpl_impl<XLSParser>::parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag)
 {
-	renew_impl();
 	docwire_log(debug) << "Using XLS parser.";
-
+	scoped::stack_push<context> context_guard{m_context_stack, context{.emit_tag = emit_tag}};
 	try
 	{
 		std::lock_guard<std::mutex> parser_mutex_lock(parser_mutex);
@@ -899,20 +916,40 @@ std::string XLSParser::parse(ThreadSafeOLEStorage& storage)
 		std::string text;
 		if (workbook_reader != nullptr)
 		{
-			impl().parseXLS(*workbook_reader, text, [this](std::exception_ptr e) { sendTag(e); });
+			parseXLS(*workbook_reader, text);
 		}
 		else
 		{
 			std::unique_ptr<ThreadSafeOLEStreamReader> book_reader { static_cast<ThreadSafeOLEStreamReader*>(storage.createStreamReader("Book")) };
 			throw_if (book_reader == nullptr, storage.getLastError());
-			impl().parseXLS(*book_reader, text, [this](std::exception_ptr e) { sendTag(e); });
+			parseXLS(*book_reader, text);
 		}		
 		return text;
 	}
 	catch (const std::exception& e)
 	{
-		std::throw_with_nested(make_error("Error parsing XLS document"));
+		std::throw_with_nested(make_error("Error processing XLS OLE storage"));
 	}
+}
+
+continuation XLSParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+{
+	if (!std::holds_alternative<data_source>(tag))
+		return emit_tag(std::move(tag));
+
+	auto& data = std::get<data_source>(tag);
+	data.assert_not_encrypted(); // This checks if the data_source itself is encrypted (e.g. encrypted ZIP)
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
+		return emit_tag(std::move(tag));
+
+	impl().parse(data, emit_tag);
+	return continuation::proceed;
+}
+
+std::string XLSParser::parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag) // TODO: needs to be removed finally
+{
+	return impl().parse(storage, emit_tag);
 }
 
 } // namespace docwire

@@ -386,12 +386,11 @@ int main(int argc, char* argv[])
 		chain |= openai::TextToSpeech(api_key, model, voice);
 	}
 
-	chain |= [](Info& info)
-	{
-		if (!std::holds_alternative<std::exception_ptr>(info.tag))
-			return;
-		std::clog << "[WARNING] " <<
-			errors::diagnostic_message(std::get<std::exception_ptr>(info.tag)) << std::endl;
+	chain |= [](Tag&& tag, const emission_callbacks& emit_tag) -> continuation {
+		if (std::holds_alternative<std::exception_ptr>(tag))
+			std::clog << "[WARNING] " <<
+				errors::diagnostic_message(std::get<std::exception_ptr>(tag)) << std::endl;
+		return emit_tag(std::move(tag));
 	};
 
 	try
