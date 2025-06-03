@@ -203,8 +203,8 @@ int main(int argc, char* argv[])
 
 	docwire_log_vars(use_stream, file_name);
 	auto chain = use_stream ?
-		(std::ifstream{file_name, std::ios_base::binary} | DecompressArchives()) :
-		(std::filesystem::path{file_name} | DecompressArchives());
+		(std::ifstream{file_name, std::ios_base::binary} | content_type::detector{}) :
+		(std::filesystem::path{file_name} | content_type::detector{});
 
 	if (vm.count("openai-transcribe"))
 	{
@@ -219,7 +219,7 @@ int main(int argc, char* argv[])
 			threshold_arg.v = vm["ocr-confidence-threshold"].as<float>();
 		}
 		chain |=
-			content_type::detector{} |
+			DecompressArchives{} |
 			office_formats_parser{} | mail_parser{} | OCRParser{vm["language"].as<std::vector<Language>>(), threshold_arg};
 		if (vm.count("max_nodes_number"))
 		{

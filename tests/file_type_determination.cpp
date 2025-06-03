@@ -63,8 +63,8 @@ int main()
 
     // Perform file type determination on all files within a zip and selectively performing document conversion based on the returned file types
     std::filesystem::path{"test.zip"} |
-    DecompressArchives{} |
     content_type::detector{} |
+    DecompressArchives{} |
     [](Tag&& tag, const emission_callbacks& emit_tag)
     {
       if (!std::holds_alternative<data_source>(tag))
@@ -82,8 +82,8 @@ int main()
     
     // ... or
     std::filesystem::path{"test.zip"} |
-    DecompressArchives{} |
     content_type::detector{} |
+    DecompressArchives{} |
     DOCParser{} | // other formats will be skipped
     PlainTextExporter() | out_stream;
     assert(out_stream.str() == expected_output_2);

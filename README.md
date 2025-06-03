@@ -406,7 +406,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   try
   {
-    std::filesystem::path("test.zip") | DecompressArchives() | content_type::detector{} | office_formats_parser{} | OCRParser{} | PlainTextExporter() | std::cout;
+    std::filesystem::path("test.zip") | content_type::detector{} | DecompressArchives{} | office_formats_parser{} | OCRParser{} | PlainTextExporter() | std::cout;
   }
   catch (const std::exception& e)
   {

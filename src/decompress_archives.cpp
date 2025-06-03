@@ -13,21 +13,33 @@
 
 #include <archive.h>
 #include <archive_entry.h>
+#include "data_source.h"
 #include <filesystem>
 #include "log.h"
-#include <set>
 #include "throw_if.h"
+#include <vector>
 
 namespace docwire
 {
 
-DecompressArchives::DecompressArchives()
+namespace
 {
-}
 
-DecompressArchives::DecompressArchives(const DecompressArchives &other)
+const std::vector<mime_type> supported_mime_types =
 {
-}
+	mime_type{"application/zip-compressed"},
+	mime_type{"application/x-zip-compressed"},
+    mime_type{"application/zip"},	
+    mime_type{"application/x-tar"},
+	mime_type{"application/x-rar-compressed"},
+    mime_type{"application/vnd.rar"},
+    mime_type{"application/gzip"},
+    mime_type{"application/x-gzip"},
+    mime_type{"application/x-bzip2"},
+    mime_type{"application/x-xz"}
+};
+
+} // anonymous namespace
 
 class ArchiveReader
 {
@@ -191,36 +203,40 @@ continuation DecompressArchives::operator()(Tag&& tag, const emission_callbacks&
 {
 	if (!std::holds_alternative<data_source>(tag))
 		return emit_tag(std::move(tag));
-	docwire_log(debug) << "data_source received";
-	const data_source& data = std::get<data_source>(tag);
-	auto is_supported = [](const file_extension& fe)
-	{
-		static const std::set<file_extension> supported_extensions { file_extension{".zip"}, file_extension{".tar"}, file_extension{".rar"}, file_extension{".gz"}, file_extension{".bz2"}, file_extension{".xz"} };
-		return supported_extensions.count(fe) > 0;
-	};
-	if (!data.file_extension() || !is_supported(*data.file_extension()))
-	{
-		docwire_log(debug) << "Filename extension shows it is not an supported archive, skipping.";
+	
+	data_source& data = std::get<data_source>(tag);
+	data.assert_not_encrypted();
+
+	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 		return emit_tag(std::move(tag));
-	}
+
+	docwire_log(debug) << "Using archives parser.";
 	std::shared_ptr<std::istream> in_stream = data.istream();
+
 	try
 	{
-		docwire_log(debug) << "Decompressing archive";
-		ArchiveReader reader(*in_stream, [emit_tag](std::exception_ptr e) { emit_tag(e); });
+		ArchiveReader reader(*in_stream, [&emit_tag](std::exception_ptr e) { emit_tag(e); });
+
 		for (ArchiveReader::Entry entry: reader)
 		{
 			std::string entry_name = entry.get_name();
-			docwire_log(debug) << "Processing compressed file " << entry_name;
+			docwire_log(debug) << "Processing archive entry: " << entry_name;
+
 			if (entry.is_dir())
 			{
 				docwire_log(debug) << "Skipping directory entry";
 				continue;
 			}
-			(*this)(data_source{unseekable_stream_ptr{entry.create_stream()}, file_extension{std::filesystem::path{entry_name}}}, emit_tag);
-			docwire_log(debug) << "End of processing compressed file " << entry_name;
+
+			data_source entry_data_source{
+				unseekable_stream_ptr{entry.create_stream()}, 
+				file_extension{std::filesystem::path{entry_name}}
+			};
+			if (emit_tag.back(std::move(entry_data_source)) == continuation::stop)
+				return continuation::stop;
+			docwire_log(debug) << "Finished processing archive entry: " << entry_name;
 		}
-		docwire_log(debug) << "Archive decompressed successfully";
+		docwire_log(debug) << "Successfully processed all entries for archive.";
 	}
 	catch (const std::exception& e)
 	{

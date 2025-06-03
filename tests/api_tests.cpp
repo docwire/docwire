@@ -364,8 +364,8 @@ TEST_P(MiscDocumentTest, ParseFromPathTest)
     try
     {
         std::filesystem::path{file_name} |
-            DecompressArchives() |
             content_type::detector{} |
+            DecompressArchives{} |
             office_formats_parser{} | mail_parser{} | OCRParser{langs} |
             PlainTextExporter() |
             output_stream;
