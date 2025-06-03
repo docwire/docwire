@@ -73,13 +73,13 @@ foreach(example IN ITEMS handling_errors_and_warnings file_type_determination)
 	set_property(TEST ${example} PROPERTY LABELS "is_example")
 endforeach()
 
-foreach(ext IN ITEMS doc pdf png)
+foreach(file IN ITEMS 1.doc 1.pdf basic_ocr-eng.png)
 	add_test(
-		NAME cli_${ext}
-		COMMAND ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/docwire tests/1.${ext}
+		NAME cli_${file}
+		COMMAND ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/docwire tests/${file}
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} # ensure CLI is running correctly outside build directory
 	)
-	set_property(TEST cli_${ext} PROPERTY LABELS "is_after_installation_test")
+	set_property(TEST cli_${file} PROPERTY LABELS "is_after_installation_test")
 endforeach()
 
 message(STATUS "Adding integration test" ${VCPKG_TARGET_TRIPLET} ${VCPKG_DEFAULT_TRIPLET})
