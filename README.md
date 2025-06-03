@@ -830,9 +830,8 @@ By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, use
 
 - [ubuntu-24.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)
 - [ubuntu-22.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
-- [ubuntu-20.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2004-Readme.md) with gcc upgraded to version 11
+- [windows-2025](https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md)
 - [windows-2022](https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md)
-- [windows-2019](https://github.com/actions/runner-images/blob/main/images/windows/Windows2019-Readme.md)
 - [macos-15](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md)
 - [macos-14](https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md)
 - [macos-13](https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md)
