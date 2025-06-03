@@ -307,7 +307,7 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
     api->Recognize(&monitor);
 
     // Iterate through results and emit tags: Block -> Paragraph -> Line -> Word
-    const float confidence_threshold = impl().m_ocr_confidence_threshold.v.value_or(80.0f);
+    const float confidence_threshold = impl().m_ocr_confidence_threshold.v.value_or(75.0f);
 
     tesseract::ResultIterator* rit = api->GetIterator();
     if (!rit) {

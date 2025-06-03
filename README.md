@@ -1163,7 +1163,7 @@ Unlock the power of OpenAI with the following options:
 ### Additional Options
 
 - **&ndash;&ndash;language <lang> (default: eng)**: Set the document language(s) for OCR as ISO 639-3 identifiers like: spa, fra, deu, rus, chi_sim, chi_tra etc. More than 100 languages are supported. Multiple languages can be enabled.
-- **&ndash;&ndash;ocr-confidence-threshold <value> (default: 0.8)**: Set the OCR confidence threshold (0-100). Words with confidence below this will be excluded.
+- **&ndash;&ndash;ocr-confidence-threshold <value> (default: 75)**: Set the OCR confidence threshold (0-100). Words with confidence below this will be excluded.
 - **&ndash;&ndash;use-stream <yes|no> (default: 0)**: Pass the file stream to the SDK instead of the filename.
 - **&ndash;&ndash;min_creation_time <timestamp>**: Filter emails by minimum creation time (currently applicable only to emails in PST/OST files).
 - **&ndash;&ndash;max_creation_time <timestamp>**: Filter emails by maximum creation time (currently applicable only to emails in PST/OST files).
