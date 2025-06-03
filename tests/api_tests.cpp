@@ -174,12 +174,6 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(1, 9, "numbers"),
         std::make_tuple(1, 9, "key"),
         std::make_tuple(1, 9, "html"),
-        std::make_tuple(1, 6, "bmp"),
-        std::make_tuple(1, 6, "jpg"),
-        std::make_tuple(1, 6, "jpeg"),
-        std::make_tuple(1, 6, "png"),
-        std::make_tuple(1, 6, "tiff"),
-        std::make_tuple(1, 6, "webp"),
         std::make_tuple(1, 1, "pst")
                       ),
     [](const ::testing::TestParamInfo<DocumentTests::ParamType>& info) {
@@ -317,7 +311,7 @@ INSTANTIATE_TEST_SUITE_P(
         "1.docx", "2.docx", "3.docx", "4.docx", "5.docx", "6.docx", "7.docx", "8.docx", "9.docx", "10.docx",
         "1.doc", "2.doc", "3.doc", "4.doc", "5.doc", "6.doc", "7.doc", "8.doc", "9.doc",
         "1.html", "2.html", "3.html", "4.html", "5.html", "6.html", "7.html", "8.html", "9.html",
-        "first.eml"
+        "first.eml", "basic_ocr-eng.png", "paragraphs-eng.png"
                       ),
     [](const ::testing::TestParamInfo<HTMLWriterTest::ParamType>& info) {
         std::string file_name = info.param;
@@ -347,7 +341,12 @@ TEST_P(MiscDocumentTest, ParseFromPathTest)
 
     // WHEN
     std::vector<Language> langs;
-	if (file_name.find(".png") != std::string::npos)
+	if (file_name.find(".png") != std::string::npos ||
+		file_name.find(".bmp") != std::string::npos ||
+		file_name.find(".jpg") != std::string::npos ||
+		file_name.find(".jpeg") != std::string::npos ||
+		file_name.find(".tiff") != std::string::npos ||
+		file_name.find(".webp") != std::string::npos)
 	{
 		std::vector<std::string> fn_parts;
 		boost::split(fn_parts, file_name, boost::is_any_of("-."));
@@ -431,6 +430,16 @@ INSTANTIATE_TEST_SUITE_P(
         "test.tar.bz2",
         "test.tar.xz",
         "test.rar",
+        "basic_ocr-eng.bmp",
+        "basic_ocr-eng.jpg",
+        "basic_ocr-eng.jpeg",
+        "basic_ocr-eng.png",
+        "basic_ocr-eng.tiff",
+        "basic_ocr-eng.webp",
+        "75dpi-eng.png",
+        "white_on_black-pol.png",
+        "diacritical_marks-pol.png",
+        "paragraphs-eng.png",
 		"multilang-chi_sim-fra-deu-eng.png",
 		"multilang-chi_tra-rus-jpn.png",
 		"multilang-spa-lat-grc.png",
@@ -562,12 +571,6 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(1, 9, "numbers"),
         std::make_tuple(1, 9, "key"),
         std::make_tuple(1, 9, "html"),
-        std::make_tuple(1, 6, "bmp"),
-        std::make_tuple(1, 6, "jpg"),
-        std::make_tuple(1, 6, "jpeg"),
-        std::make_tuple(1, 6, "png"),
-        std::make_tuple(1, 6, "tiff"),
-        std::make_tuple(1, 6, "webp"),
         std::make_tuple(1, 1, "pst")
                       ),
     [](const ::testing::TestParamInfo<MultithreadedTest::ParamType>& info) {

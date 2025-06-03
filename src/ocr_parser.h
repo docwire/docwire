@@ -22,6 +22,7 @@
 namespace docwire
 {
 
+struct ocr_confidence_threshold { std::optional<float> v; };
 struct ocr_data_path { std::filesystem::path v; };
 struct ocr_timeout { std::optional<int32_t> v; };
 
@@ -34,14 +35,16 @@ private:
 public:
 
     OCRParser(const std::vector<Language>& languages = {},
-        ocr_timeout ocr_timeout_arg = {}, ocr_data_path ocr_data_path_arg = {});
+        ocr_confidence_threshold ocr_confidence_threshold_arg = {},
+        ocr_timeout ocr_timeout_arg = {},
+        ocr_data_path ocr_data_path_arg = {});
 
     continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
 
     bool is_leaf() const override { return false; }
 
 private:
-    std::string parse(const data_source& data, const std::vector<Language>& languages);
+    void parse(const data_source& data, const std::vector<Language>& languages);
 };
 
 } // namespace docwire
