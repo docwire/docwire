@@ -32,7 +32,7 @@
 #include "gtest/gtest.h"
 #include <string_view>
 #include <tuple>
-#include "decompress_archives.h"
+#include "archives_parser.h"
 #include <fstream>
 #include "html_exporter.h"
 #include "language.h"
@@ -365,7 +365,7 @@ TEST_P(MiscDocumentTest, ParseFromPathTest)
     {
         std::filesystem::path{file_name} |
             content_type::detector{} |
-            DecompressArchives{} |
+            archives_parser{} |
             office_formats_parser{} | mail_parser{} | OCRParser{langs} |
             PlainTextExporter() |
             output_stream;

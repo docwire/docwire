@@ -4,7 +4,7 @@ add_library(docwire_core SHARED
     entities.cpp
     error.cpp
     error_tags.cpp
-    decompress_archives.cpp
+    archives_parser.cpp
     log.cpp
     misc.cpp
     thread_safe_ole_storage.cpp

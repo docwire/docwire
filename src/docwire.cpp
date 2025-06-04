@@ -16,7 +16,7 @@
 #include "classify.h"
 #include "content_type.h"
 #include "csv_exporter.h"
-#include "decompress_archives.h"
+#include "archives_parser.h"
 #include "detect_sentiment.h"
 #include "exception_utils.h"
 #include "extract_entities.h"
@@ -219,7 +219,7 @@ int main(int argc, char* argv[])
 			threshold_arg.v = vm["ocr-confidence-threshold"].as<float>();
 		}
 		chain |=
-			DecompressArchives{} |
+			archives_parser{} |
 			office_formats_parser{} | mail_parser{} | OCRParser{vm["language"].as<std::vector<Language>>(), threshold_arg};
 		if (vm.count("max_nodes_number"))
 		{

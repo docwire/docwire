@@ -9,15 +9,15 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DECOMPRESS_ARCHIVES_H
-#define DOCWIRE_DECOMPRESS_ARCHIVES_H
+#ifndef DOCWIRE_ARCHIVES_PARSER_H
+#define DOCWIRE_ARCHIVES_PARSER_H
 
 #include "chain_element.h"
 
 namespace docwire
 {
 
-class DOCWIRE_CORE_EXPORT DecompressArchives : public ChainElement
+class DOCWIRE_CORE_EXPORT archives_parser : public ChainElement
 {
 public:
 
@@ -37,4 +37,4 @@ public:
 
 } // namespace docwire
 
-#endif //DOCWIRE_DECOMPRESS_ARCHIVES_H
+#endif // DOCWIRE_ARCHIVES_PARSER_H

@@ -9,7 +9,7 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "decompress_archives.h"
+#include "archives_parser.h"
 
 #include <archive.h>
 #include <archive_entry.h>
@@ -199,7 +199,7 @@ private:
 	}
 };
 
-continuation DecompressArchives::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation archives_parser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
 	if (!std::holds_alternative<data_source>(tag))
 		return emit_tag(std::move(tag));

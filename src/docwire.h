@@ -21,7 +21,7 @@
 #include "content_type_odf_flat.h"
 #include "content_type_outlook.h"
 #include "content_type_xlsb.h"
-#include "decompress_archives.h"
+#include "archives_parser.h"
 #include "detect_sentiment.h"
 #include "exception_utils.h"
 #include "find.h"
