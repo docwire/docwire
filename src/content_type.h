@@ -30,6 +30,7 @@ namespace docwire::content_type
  * - By file extension
  * - By file signature
  * - HTML content detection
+ * - ASP content detection
  * - iWork content detection
  * - ODF Flat format detection
  * - Outlook format detection
@@ -44,6 +45,7 @@ namespace docwire::content_type
  * @see content_type::by_file_extension::detect
  * @see content_type::by_signature::detect
  * @see content_type::html::detect
+ * @see content_type::asp::detect
  * @see content_type::iwork::detect
  * @see content_type::odf_flat::detect
  * @see content_type::outlook::detect
@@ -60,6 +62,7 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const by_signature::d
  * - By file extension
  * - By file signature
  * - HTML content detection
+ * - ASP content detection
  * - iWork content detection
  * - ODF Flat format detection
  * - Outlook format detection
@@ -70,6 +73,7 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const by_signature::d
  * @see content_type::by_file_extension::detector
  * @see content_type::by_signature::detector
  * @see content_type::html::detector
+ * @see content_type::asp::detector
  * @see content_type::iwork::detector
  * @see content_type::odf_flat::detector
  * @see content_type::outlook::detector

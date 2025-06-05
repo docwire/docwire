@@ -9,29 +9,37 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "content_type.h"
+#ifndef DOCWIRE_CONTENT_TYPE_ASP_H
+#define DOCWIRE_CONTENT_TYPE_ASP_H
 
-#include "content_type_asp.h"
-#include "content_type_by_file_extension.h"
-#include "content_type_html.h"
-#include "content_type_iwork.h"
-#include "content_type_odf_flat.h"
-#include "content_type_outlook.h"
-#include "content_type_xlsb.h"
+#include "chain_element.h"
+#include "content_type_export.h"
+#include "data_source.h"
+#include "tags.h"
 
-namespace docwire::content_type
+namespace docwire::content_type::asp
 {
 
-void detect(data_source& data, const by_signature::database& signatures_db_to_use)
-{
-    content_type::by_file_extension::detect(data);
-    content_type::by_signature::detect(data, signatures_db_to_use);
-    content_type::asp::detect(data);
-    content_type::html::detect(data);
-    content_type::iwork::detect(data);
-    content_type::odf_flat::detect(data);
-    content_type::outlook::detect(data, signatures_db_to_use);
-    content_type::xlsb::detect(data);
-}
+DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
-} // namespace docwire::content_type
+class detector : public ChainElement
+{
+public:
+    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override
+    {
+        if (!std::holds_alternative<data_source>(tag))
+	        return emit_tag(std::move(tag));
+	    data_source& data = std::get<data_source>(tag);
+        detect(data);
+        return emit_tag(std::move(tag));
+    }
+
+    bool is_leaf() const override
+	{
+		return false;
+	}
+};
+
+} // namespace docwire::content_type::asp
+
+#endif // DOCWIRE_CONTENT_TYPE_ASP
