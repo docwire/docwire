@@ -4,7 +4,7 @@ add_executable(api_tests api_tests.cpp)
 if(MSVC)
     target_compile_options(api_tests PRIVATE /bigobj)
 endif()
-target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr
+target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_archives
 	docwire_fuzzy_match docwire_base64 docwire_content_type GTest::gtest GTest::gmock)
 target_compile_definitions(api_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 
@@ -43,7 +43,7 @@ while (TRUE)
 	add_executable(example_${n} ${example_file})
 	target_include_directories(example_${n} PUBLIC ../src)
 	target_link_libraries(example_${n} PRIVATE docwire_core docwire_office_formats docwire_mail
-		docwire_ocr docwire_local_ai docwire_openai docwire_fuzzy_match docwire_content_type)
+		docwire_ocr docwire_archives docwire_local_ai docwire_openai docwire_fuzzy_match docwire_content_type)
 	string(FIND "${code_block}" "OPENAI_API_KEY" openai_api_key_pos)
 	if (openai_api_key_pos EQUAL -1 OR NOT "$ENV{OPENAI_API_KEY}" STREQUAL "")
 		message(STATUS "Adding test example_${n}")
@@ -68,7 +68,7 @@ foreach(example IN ITEMS handling_errors_and_warnings file_type_determination)
 	add_executable(${example} ${example}.cpp)
 	target_include_directories(${example} PUBLIC ../src)
 	target_link_libraries(${example} PRIVATE docwire_core docwire_office_formats docwire_mail
-		docwire_ocr docwire_local_ai docwire_fuzzy_match docwire_content_type)
+		docwire_ocr docwire_archives docwire_local_ai docwire_fuzzy_match docwire_content_type)
 	add_test(NAME ${example} COMMAND ${example})
 	set_property(TEST ${example} PROPERTY LABELS "is_example")
 endforeach()

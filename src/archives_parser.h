@@ -12,12 +12,13 @@
 #ifndef DOCWIRE_ARCHIVES_PARSER_H
 #define DOCWIRE_ARCHIVES_PARSER_H
 
+#include "archives_export.h"
 #include "chain_element.h"
 
 namespace docwire
 {
 
-class DOCWIRE_CORE_EXPORT archives_parser : public ChainElement
+class DOCWIRE_ARCHIVES_EXPORT archives_parser : public ChainElement
 {
 public:
 
