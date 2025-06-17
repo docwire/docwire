@@ -11,6 +11,7 @@
 
 #include "pdf_parser.h"
 
+#include <cmath>
 #include "error_tags.h"
 #include "log.h"
 #include "make_error.h"
@@ -26,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "scoped_stack_push.h"
+#include "tags.h"
 #include "throw_if.h"
 #include <vector>
 #include <zlib.h>
@@ -165,8 +167,78 @@ const std::vector<mime_type> supported_mime_types =
 	mime_type{"application/pdf"}
 };
 
-} // unnamed namespace
+using PageElementVariant = std::variant<tag::Text, tag::Image>;
 
+// Helper to get a characteristic height for an element, prioritizing font_size for text.
+double get_element_characteristic_height(const PageElementVariant& element_variant) {
+    return std::visit([](const auto& el) -> double {
+        double h = 10.0; // Default height if no other info
+        if constexpr (std::is_same_v<std::decay_t<decltype(el)>, tag::Text>) {
+            if (el.font_size && *el.font_size > 0) {
+                h = *el.font_size; // Prioritize font_size for text
+            } else if (el.position.height && *el.position.height > 0) {
+                h = *el.position.height;
+            }
+        } else if constexpr (std::is_same_v<std::decay_t<decltype(el)>, tag::Image>) {
+            if (el.position.height && *el.position.height > 0) {
+                h = *el.position.height;
+            }
+        }
+        return std::max(1.0, h); // Ensure at least 1.0
+    }, element_variant);
+}
+
+struct PageElementVariantComparator
+{
+	bool operator()(const PageElementVariant& lhs, const PageElementVariant& rhs) const
+	{
+		auto get_y = [](const auto& el) -> std::optional<double> {
+			return el.position.y;
+		};
+		auto get_x = [](const auto& el) -> std::optional<double> {
+			return el.position.x;
+		};
+
+		std::optional<double> y_lhs_opt = std::visit(get_y, lhs);
+		std::optional<double> y_rhs_opt = std::visit(get_y, rhs);
+
+		if (!y_lhs_opt && !y_rhs_opt) return false; 
+		if (!y_lhs_opt) return false; 
+		if (!y_rhs_opt) return true;  
+
+		// Calculate an adaptive y_tolerance
+		double h_lhs = get_element_characteristic_height(lhs);
+		double h_rhs = get_element_characteristic_height(rhs);
+		// Use a fraction of the max characteristic height. 40% seems like a reasonable starting point.
+		// This means their bottom y-coordinates can differ by up to this amount.
+		double adaptive_y_tolerance = std::max(h_lhs, h_rhs) * 0.40;
+		adaptive_y_tolerance = std::max(2.0, adaptive_y_tolerance); // Ensure a minimum absolute tolerance
+
+		if (std::abs(*y_lhs_opt - *y_rhs_opt) > adaptive_y_tolerance) {
+			return *y_lhs_opt > *y_rhs_opt; // Higher Y (more top on page) comes first
+		}
+
+		std::optional<double> x_lhs_opt = std::visit(get_x, lhs);
+		std::optional<double> x_rhs_opt = std::visit(get_x, rhs);
+
+		if (!x_lhs_opt && !x_rhs_opt) return false;
+		if (!x_lhs_opt) return false;
+		if (!x_rhs_opt) return true;
+
+		return *x_lhs_opt < *x_rhs_opt; // Then left-to-right
+	}
+};
+
+bool ends_with_whitespace(const std::string& s) {
+	return !s.empty() && std::isspace(static_cast<unsigned char>(s.back()));
+}
+	
+bool begins_with_whitespace(const std::string& s) {
+	return !s.empty() && std::isspace(static_cast<unsigned char>(s.front()));
+}
+
+} // anonymous namespace
+	
 template<>
 struct pimpl_impl<PDFParser> : pimpl_impl_base
 {
@@ -186,128 +258,6 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 	{
 		return m_context_stack.top().pdf_document.get();
 	}
-
-		struct PageText
-		{
-			struct TextElement
-			{
-				std::string m_text;
-				double m_x, m_y, m_width, m_height;
-				double m_space_size;
-
-				TextElement(double x, double y, double w, double h, double space_size, const std::string& text)
-				{
-					docwire_log_func_with_args(x, y, w, h, space_size, text);
-					// warning TODO: We have position and size for each string. We can use those values to improve parser
-					m_x = correctSize(x);
-					m_y = correctSize(y);
-					m_text = text;
-					m_width = correctSize(w);
-					m_height = correctSize(h);
-					m_space_size = space_size;
-				}
-
-				double correctSize(double value)
-				{
-					//file may be corrupted, we should set some maximum values.
-					// warning TODO: Check MediaBox entry (defines page area)
-					if (value < 0)
-						value = 0.0;
-					if (value > 5000)
-						value = 5000;
-					return value;
-				}
-
-				bool operator == (const TextElement& compared) const
-				{
-					return compared.m_y == m_y && compared.m_x == m_x;
-				}
-
-				bool operator < (const TextElement& compared) const
-				{
-					if (abs(int(m_y - compared.m_y)) > 4.0)	//tolerace
-					{
-						return m_y > compared.m_y;
-					}
-					return m_x < compared.m_x;
-				}
-
-				bool operator > (const TextElement& compared) const
-				{
-					if (abs(int(m_y - compared.m_y)) > 4.0) //tolerace
-					{
-						return m_y < compared.m_y;
-					}
-					return m_x > compared.m_x;
-				}
-
-				void log_to_record_stream(log_record_stream& s) const
-				{
-					s << docwire_log_streamable_obj(*this, m_text, m_x, m_y, m_width, m_height, m_space_size);
-				}
-			};
-
-			std::multiset<TextElement> m_text_elements;
-
-			void getText(std::string& output)
-			{
-				// warning TODO: For now we are sorting strings using their x and y positions. Maybe we should implement better algorithms.
-				std::multiset<TextElement>::iterator it = m_text_elements.begin();
-				bool first = true;
-				double x_end, y, x_begin;
-				while (it != m_text_elements.end())
-				{
-					docwire_log_var(*it);
-					//some minimum values for new line and space. Calculated experimentally
-					double new_line_size = (*it).m_height * 0.75 < 4.0 ? 4.0 : (*it).m_height * 0.75;
-
-          double horizontal_lines_separator_size = (*it).m_height;
-					docwire_log_vars(new_line_size, horizontal_lines_separator_size, first);
-					if (!first)
-					{
-						double dx = (*it).m_x - x_end;
-						double dy = y - ((*it).m_y + (*it).m_height / 2);
-						docwire_log_vars(dx, dy);
-
-						if (dy >= new_line_size)
-						{
-							while (dy >= new_line_size)
-							{
-								docwire_log(debug) << "New line because of y position difference" << docwire_log_streamable_vars(dy, new_line_size);
-								output += '\n';
-								dy -= new_line_size;
-							}
-						}
-						else if ((*it).m_x < x_begin)	//force new line
-						{
-							docwire_log(debug) << "New line because of x position difference" << docwire_log_streamable_vars(it->m_x, x_begin);
-							output += '\n';
-						}
-						else if (dx >= (*it).m_space_size)
-						{
-						  if (dx > horizontal_lines_separator_size)
-						  {
-						    output += "\t\t\t\t";
-						  }
-						  else if (dx >= (*it).m_space_size)
-						  {
-						    output += ' ';
-						  }
-						}
-					}
-					output += (*it).m_text;
-					first = false;
-					x_begin = (*it).m_x;
-					x_end = x_begin + (*it).m_width;
-					y = (*it).m_y + (*it).m_height / 2;
-					++it;
-				}
-			}
-
-			PageText()
-			{
-			}
-		};
 
 	void parseText()
 	{
@@ -329,13 +279,14 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 			}
 			try
 			{
-				PageText page_text;
+				std::multiset<PageElementVariant, PageElementVariantComparator> page_elements;
 				ScopedFPDFPage page { FPDF_LoadPage(pdf_document(), page_num) };
 				throw_if(!page);
-				ScopedFPDFTextPage text_page { FPDFText_LoadPage(page.get()) };
-				throw_if(!text_page);
+				// text_page is only needed for FPDFTextObj_GetText, so load it if/when a text object is found.
+				ScopedFPDFTextPage text_page { nullptr };
+
 				int object_count = FPDFPage_CountObjects(page.get());
-				throw_if (object_count < 0);
+				throw_if (object_count < 0, "FPDFPage_CountObjects returned negative count");
 				charset_converter conv("UTF-16LE", "UTF-8"); // Create converter *outside* the loops
 				bool stop_processing = false;
 				for (int i = 0; i < object_count; ++i)
@@ -347,33 +298,48 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 					{
         				case FPDF_PAGEOBJ_TEXT:
         				{
+							if (!text_page) { // Load text_page on demand
+								text_page.reset(FPDFText_LoadPage(page.get()));
+								throw_if(!text_page, "FPDFText_LoadPage failed");
+							}
 							unsigned long buffer_size = FPDFTextObj_GetText(object, text_page.get(), nullptr, 0);
-            				throw_if(buffer_size < 2);
-                			std::vector<unsigned short> buffer(buffer_size);
-                			unsigned long bytes_returned = FPDFTextObj_GetText(object, text_page.get(), buffer.data(), buffer.size());
-                			throw_if(bytes_returned != buffer_size);
-                    		std::string utf8_text = conv.convert(std::string{
-                        		reinterpret_cast<const char*>(buffer.data()),
-                        		buffer_size - sizeof(unsigned short) // Exclude NULL terminator
-                    		});
+            				std::string utf8_text;
+							if (buffer_size > 0) { // FPDFTextObj_GetText needs at least 2 bytes for empty string (null terminator)
+                				std::vector<unsigned short> buffer(buffer_size / sizeof(unsigned short)); // buffer_size is in bytes
+                				unsigned long bytes_returned = FPDFTextObj_GetText(object, text_page.get(), buffer.data(), buffer_size);
+                				throw_if(bytes_returned > buffer_size || (bytes_returned == 0 && buffer_size >0) , "FPDFTextObj_GetText failed to retrieve text or returned unexpected size");
+                    			if (bytes_returned > 0) { // bytes_returned includes the null terminator(s)
+									utf8_text = conv.convert(std::string{
+										reinterpret_cast<const char*>(buffer.data()),
+										bytes_returned - sizeof(unsigned short) // Exclude UTF-16LE NULL terminator
+									});
+								}
+							}
 
 							float left, bottom, right, top;
 							throw_if(!FPDFPageObj_GetBounds(object, &left, &bottom, &right, &top));
 
-							float space_size = 0.0f; // Default space size if calculation fails
+							float font_size_val = 0.0f;
 							FPDF_FONT font = FPDFTextObj_GetFont(object);
 							if (font)
 							{
-								float font_size;
-								if (FPDFTextObj_GetFontSize(object, &font_size) && font_size > 0)
-            						space_size = font_size / 3.0f;
-								else
+								if (!FPDFTextObj_GetFontSize(object, &font_size_val) || font_size_val <= 0) {
             						docwire_log(warning) << "Failed to get font size for text object.";
+									font_size_val = 10.0f; // Default if not found
+								}
     						}
 							else
         						docwire_log(warning) << "Failed to get font for text object.";
-							PageText::TextElement new_element(left, bottom, right - left, top - bottom, space_size, utf8_text);
-							page_text.m_text_elements.insert(new_element);
+							page_elements.insert(tag::Text{
+								.text = utf8_text,
+								.position = {
+									.x = std::optional<double>{static_cast<double>(left)},
+									.y = std::optional<double>{static_cast<double>(bottom)},
+									.width = std::optional<double>{static_cast<double>(right - left)},
+									.height = std::optional<double>{static_cast<double>(top - bottom)}
+								},
+								.font_size = static_cast<double>(font_size_val)
+							});
             				break;
         				}
 						case FPDF_PAGEOBJ_IMAGE:
@@ -407,25 +373,154 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
                     		image_data.resize(png_size);
 							memcpy(image_data.data(), png_data.get(), png_size);
                 			data_source image_source(std::move(image_data), mime_type { "image/png" }, confidence::highest);
-							tag::Image image{.source = image_source};
-							if (emit_tag_back(std::move(image)) == continuation::stop)
-								stop_processing = true;
+
+							float left, bottom, right, top;
+							throw_if(!FPDFPageObj_GetBounds(object, &left, &bottom, &right, &top));
+							page_elements.insert(tag::Image{
+                                .source = std::move(image_source),
+                                .alt = std::nullopt, // PDFium does not easily provide this for FPDF_PAGEOBJ_IMAGE
+                                .position = {
+                                    .x = std::optional<double>{static_cast<double>(left)},
+                                    .y = std::optional<double>{static_cast<double>(bottom)},
+                                    .width = std::optional<double>{static_cast<double>(right - left)},
+                                    .height = std::optional<double>{static_cast<double>(top - bottom)}
+                                }
+                            });
 							break;
 						}
 						default:
 							break;
 					}
+					if (stop_processing) break;
 				}
 				if (stop_processing)
 					break;
-				std::string single_page_text;
-				page_text.getText(single_page_text);
-				single_page_text += "\n\n";
-				auto response = emit_tag(tag::Text{single_page_text});
-				if (response == continuation::stop)
+
+				const PageElementVariant* prev_element_variant = nullptr;
+				for (const auto& element : page_elements)
 				{
-					break;
+					if (prev_element_variant)
+					{
+						std::visit(
+							[&](const auto& prev_el_concrete) {
+								std::visit(
+									[&](const auto& current_el_concrete) {
+										// Ensure all elements have necessary positional attributes
+										if (!prev_el_concrete.position.y || !prev_el_concrete.position.height ||
+											!prev_el_concrete.position.x || !prev_el_concrete.position.width ||
+											!current_el_concrete.position.y || !current_el_concrete.position.height ||
+											!current_el_concrete.position.x) {
+											// If either element lacks position info, skip detailed spacing logic.
+											return;
+										}
+
+										double prev_y_center = *prev_el_concrete.position.y + *prev_el_concrete.position.height / 2.0;
+										double current_y_center = *current_el_concrete.position.y + *current_el_concrete.position.height / 2.0;
+										double y_diff = prev_y_center - current_y_center;
+
+										// Helper to determine a reasonable space threshold based on element properties
+										auto get_space_threshold = [](const auto& el) -> double {
+											double threshold_val = 2.0; // Default small threshold if other properties are missing
+											if constexpr (std::is_same_v<std::decay_t<decltype(el)>, tag::Text>) {
+												if (el.font_size && *el.font_size > 0) {
+													threshold_val = *el.font_size / 3.5; // Approx 1/3.5 of font size
+												} else if (el.position.height && *el.position.height > 0) {
+													threshold_val = *el.position.height / 3.0; // Approx 1/3 of height as fallback
+												}
+											} else if constexpr (std::is_same_v<std::decay_t<decltype(el)>, tag::Image>) {
+												if (el.position.height && *el.position.height > 0) {
+													threshold_val = *el.position.height / 4.0; // Heuristic for images
+												}
+											}
+											return std::max(1.0, threshold_val); // Ensure threshold is at least 1.0pt
+										};
+
+										auto get_effective_line_height = [](const auto& el) -> double {
+											double h = 10.0; // Default height
+											if constexpr (std::is_same_v<std::decay_t<decltype(el)>, tag::Text>) {
+												if (el.font_size && *el.font_size > 0) h = *el.font_size;
+												else if (el.position.height && *el.position.height > 0) h = *el.position.height;
+											} else if constexpr (std::is_same_v<std::decay_t<decltype(el)>, tag::Image>) {
+												if (el.position.height && *el.position.height > 0) h = *el.position.height;
+											}
+											return std::max(1.0, h); // Ensure at least 1.0
+										};
+
+										double prev_eff_h = get_effective_line_height(prev_el_concrete);
+										double curr_eff_h = get_effective_line_height(current_el_concrete);
+										double max_relevant_line_height = std::max(prev_eff_h, curr_eff_h);
+										
+										// Threshold for needing at least one newline
+										double single_newline_threshold = max_relevant_line_height * 0.65;
+
+										if (y_diff > single_newline_threshold) {
+											int num_newlines_to_emit = static_cast<int>(std::round(y_diff / max_relevant_line_height));
+											if (num_newlines_to_emit < 1) num_newlines_to_emit = 1;
+											for (int k = 0; k < num_newlines_to_emit; ++k) {
+												if (emit_tag(tag::BreakLine{}) == continuation::stop) { stop_processing = true; break; }
+											}
+										} else if (*current_el_concrete.position.x < *prev_el_concrete.position.x && std::abs(y_diff) < single_newline_threshold) {
+											if (emit_tag(tag::BreakLine{}) == continuation::stop) { stop_processing = true; }
+										} else if (std::holds_alternative<tag::Text>(*prev_element_variant) && std::holds_alternative<tag::Text>(element)) {
+											const auto& prev_text_el = std::get<tag::Text>(*prev_element_variant);
+											const auto& current_text_el = std::get<tag::Text>(element);
+											// Ensure necessary fields have values
+											if (!prev_text_el.position.x || !prev_text_el.position.width || !current_text_el.position.x) return;
+
+											double space_threshold = get_space_threshold(current_text_el); // Base threshold on current element
+											double x_gap = *current_text_el.position.x - (*prev_text_el.position.x + *prev_text_el.position.width);
+											if (x_gap > space_threshold &&
+												!ends_with_whitespace(prev_text_el.text) &&
+												!begins_with_whitespace(current_text_el.text)) {
+												if (emit_tag(tag::Text{" "}) == continuation::stop) { stop_processing = true; }
+											}
+										} else if (prev_element_variant->index() != element.index() && std::abs(y_diff) < single_newline_threshold) {
+											// Different types (Text and Image) on the same visual line
+											// Ensure necessary fields have values
+											if (!prev_el_concrete.position.x || !prev_el_concrete.position.width ||
+												!current_el_concrete.position.x) {
+												return;
+											}
+											// Use the threshold of the preceding element to decide if a space is needed
+											double space_threshold = get_space_threshold(prev_el_concrete);
+											double x_gap = *current_el_concrete.position.x - (*prev_el_concrete.position.x + *prev_el_concrete.position.width);
+											if (x_gap > space_threshold) {
+												bool add_space_flag = true;
+												// Check if previous element is Text and ends with space
+												if constexpr (std::is_same_v<std::decay_t<decltype(prev_el_concrete)>, tag::Text>) {
+													if (ends_with_whitespace(prev_el_concrete.text)) {
+														add_space_flag = false;
+													}
+												}
+												// Check if current element is Text and begins with space (only if not already forbidden)
+												if (add_space_flag) {
+													if constexpr (std::is_same_v<std::decay_t<decltype(current_el_concrete)>, tag::Text>) {
+														if (begins_with_whitespace(current_el_concrete.text)) {
+															add_space_flag = false;
+														}
+													}
+												}
+												if (add_space_flag) {
+													if (emit_tag(tag::Text{" "}) == continuation::stop) { stop_processing = true; }
+												}
+											}
+										}
+									}, element
+								);
+							}, *prev_element_variant
+						);
+						if (stop_processing) break;
+					}
+
+					std::visit([&](auto&& concrete_element) {
+						if (emit_tag(std::move(concrete_element)) == continuation::stop) { stop_processing = true; }
+					}, PageElementVariant{element}); // Copy to move from const multiset element
+
+					if (stop_processing) break;
+					prev_element_variant = &element;
 				}
+				if (stop_processing) break;
+
         		auto response2 = emit_tag(tag::ClosePage{});
         		if (response2 == continuation::stop)
         		{

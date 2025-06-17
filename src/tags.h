@@ -59,6 +59,16 @@ concept WithStyling = requires(T tag) {
   {tag.styling} -> std::convertible_to<Styling>;
 };
 
+/**
+ * @brief Represents the geometric position and dimensions of an element.
+ */
+struct Position
+{
+	std::optional<double> x;            ///< Optional x-coordinate of the bottom-left corner.
+	std::optional<double> y;            ///< Optional y-coordinate of the bottom-left corner.
+	std::optional<double> width;        ///< Optional width of the element.
+	std::optional<double> height;       ///< Optional height of the element.
+};
 } // namespace attributes
 
 enum class continuation { proceed, skip, stop };
@@ -149,6 +159,8 @@ struct CloseCaption {};
 struct Text
 {
   std::string text;
+  attributes::Position position; ///< Positional attributes.
+  std::optional<double> font_size;    ///< Optional font size of the text.
 };
 
 struct Link
@@ -162,7 +174,8 @@ struct CloseLink {};
 struct Image
 {
   data_source source;
-  std::optional<std::string> alt;
+  std::optional<std::string> alt;     ///< Optional alternative text for the image.
+  attributes::Position position; ///< Positional attributes.
   attributes::Styling styling;
   std::optional<tag_sequence_streamer> structured_content_streamer;
 };
