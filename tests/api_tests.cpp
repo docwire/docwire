@@ -567,7 +567,7 @@ TEST(Http, Post)
     ASSERT_TRUE(output_val.is_object());
     ASSERT_TRUE(output_val.as_object()["headers"].is_object());
     ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-type"].as_string().c_str(), "application/json");
-    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-length"].as_string().c_str(), "46");
+    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["transfer-encoding"].as_string().c_str(), "chunked");
     ASSERT_STREQ(output_val.as_object()["data"].as_string().c_str(), "<http://www.silvercoders.com/>hyperlink test\n\n");
 }
 
