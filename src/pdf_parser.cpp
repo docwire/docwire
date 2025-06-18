@@ -17,6 +17,9 @@
 #include "make_error.h"
 #include <leptonica/allheaders.h>
 #include <mutex>
+#ifdef _WIN32
+	#define NOMINMAX
+#endif
 #include <pdfium/cpp/fpdf_scopers.h>
 #include <pdfium/fpdf_doc.h>
 #include <pdfium/fpdfview.h>
