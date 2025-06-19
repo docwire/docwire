@@ -16,7 +16,7 @@
 #include "classify.h"
 #include "content_type.h"
 #include "csv_exporter.h"
-#include "decompress_archives.h"
+#include "archives_parser.h"
 #include "detect_sentiment.h"
 #include "exception_utils.h"
 #include "extract_entities.h"
@@ -134,6 +134,12 @@ int main(int argc, char* argv[])
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
 		("openai-image-detail", po::value<openai::ImageDetail>()->default_value(openai::ImageDetail::automatic), enum_names_str<openai::ImageDetail>().c_str())
 		("language", po::value<std::vector<Language>>()->default_value({Language::eng}, "eng"), "Set the document language(s) for OCR as ISO 639-3 identifiers like: spa, fra, deu, rus, chi_sim, chi_tra etc. More than 100 languages are supported. Multiple languages can be enabled.")
+		("ocr-confidence-threshold", po::value<float>()->notifier([](float val) {
+			if (val < 0.0f || val > 100.0f) {
+				throw po::validation_error(po::validation_error::invalid_option_value,
+					"ocr-confidence-threshold", std::to_string(val));
+			}
+		}), "Set the OCR confidence threshold (0-100). Words with confidence below this will be excluded.")
 		("local-processing", po::value<bool>(&local_processing)->default_value(true), "process documents locally including OCR")
 		("use-stream", po::value<bool>(&use_stream)->default_value(false), "pass file stream to SDK instead of filename")
 		("min_creation_time", po::value<unsigned int>(), "filter emails by min creation time")
@@ -197,8 +203,8 @@ int main(int argc, char* argv[])
 
 	docwire_log_vars(use_stream, file_name);
 	auto chain = use_stream ?
-		(std::ifstream{file_name, std::ios_base::binary} | DecompressArchives()) :
-		(std::filesystem::path{file_name} | DecompressArchives());
+		(std::ifstream{file_name, std::ios_base::binary} | content_type::detector{}) :
+		(std::filesystem::path{file_name} | content_type::detector{});
 
 	if (vm.count("openai-transcribe"))
 	{
@@ -207,9 +213,14 @@ int main(int argc, char* argv[])
 	}
 	else if (local_processing)
 	{
+		ocr_confidence_threshold threshold_arg{};
+		if (vm.count("ocr-confidence-threshold"))
+		{
+			threshold_arg.v = vm["ocr-confidence-threshold"].as<float>();
+		}
 		chain |=
-			content_type::detector{} |
-			office_formats_parser{} | mail_parser{} | OCRParser{vm["language"].as<std::vector<Language>>()};
+			archives_parser{} |
+			office_formats_parser{} | mail_parser{} | OCRParser{vm["language"].as<std::vector<Language>>(), threshold_arg};
 		if (vm.count("max_nodes_number"))
 		{
 			chain |= StandardFilter::filterByMaxNodeNumber(vm["max_nodes_number"].as<unsigned int>());

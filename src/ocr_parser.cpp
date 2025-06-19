@@ -32,6 +32,7 @@
 #include <numeric>
 #include "resource_path.h"
 #include "scoped_stack_push.h"
+#include <tesseract/resultiterator.h>
 #include "throw_if.h"
 
 namespace docwire
@@ -81,6 +82,7 @@ struct pimpl_impl<OCRParser> : with_pimpl_owner<OCRParser>
 {
     pimpl_impl(OCRParser& owner) : with_pimpl_owner{owner} {}
     std::vector<Language> m_languages;
+    ocr_confidence_threshold m_ocr_confidence_threshold;
     ocr_timeout m_ocr_timeout;
     ocr_data_path m_ocr_data_path;
     std::stack<context> m_context_stack;
@@ -220,14 +222,18 @@ const std::vector<mime_type> supported_mime_types
 
 } // anonymous namespace
 
-OCRParser::OCRParser(const std::vector<Language>& languages, ocr_timeout ocr_timeout, ocr_data_path ocr_data_path)
+OCRParser::OCRParser(const std::vector<Language>& languages,
+                     ocr_confidence_threshold ocr_confidence_threshold_arg,
+                     ocr_timeout ocr_timeout_arg,
+                     ocr_data_path ocr_data_path_arg)
 {
     impl().m_languages = languages;
-    impl().m_ocr_timeout = ocr_timeout;
-    impl().m_ocr_data_path = ocr_data_path.v.empty() ? default_tessdata_path() : ocr_data_path;
+    impl().m_ocr_confidence_threshold = ocr_confidence_threshold_arg;
+    impl().m_ocr_timeout = ocr_timeout_arg;
+    impl().m_ocr_data_path = ocr_data_path_arg.v.empty() ? default_tessdata_path() : ocr_data_path_arg;
 }
 
-std::string OCRParser::parse(const data_source& data, const std::vector<Language>& languages)
+void OCRParser::parse(const data_source& data, const std::vector<Language>& languages)
 {
     tessAPIWrapper api{ nullptr, tessAPIDeleter };
     try
@@ -296,11 +302,92 @@ std::string OCRParser::parse(const data_source& data, const std::vector<Language
     }
     monitor.cancel = &pimpl_impl<OCRParser>::cancel;
     monitor.cancel_this = reinterpret_cast<void*>(&impl().m_context_stack.top());
+
+    // Recognize the image
     api->Recognize(&monitor);
-    auto txt = api->GetUTF8Text();
-    std::string output{ txt };
-    delete[] txt;
-    return output;
+
+    // Iterate through results and emit tags: Block -> Paragraph -> Line -> Word
+    const float confidence_threshold = impl().m_ocr_confidence_threshold.v.value_or(75.0f);
+
+    std::unique_ptr<tesseract::ResultIterator> rit(api->GetIterator());
+    if (!rit) {
+        docwire_log(error) << "Tesseract GetIterator() returned null.";
+        return;
+    }
+
+    rit->Begin(); // Start at page level
+    do { // Iterate Blocks (RIL_BLOCK)
+        // TODO: Add styling attributes from rit->BoundingBox(RIL_BLOCK, ...) if needed
+        impl().emit_tag(tag::Section{});
+
+        do { // Iterate Paragraphs (RIL_PARA) within the current Block
+            // TODO: Add styling attributes from rit->BoundingBox(RIL_PARA, ...) if needed
+            impl().emit_tag(tag::Paragraph{});
+            bool current_line_had_high_confidence_text = false; // Used for BreakLine logic
+
+            do { // Iterate TextLines (RIL_TEXTLINE) within the current Paragraph
+                current_line_had_high_confidence_text = false; // Reset for each new line
+                bool previous_word_on_line_was_high_confidence = false; // For spacing between words
+
+                do { // Iterate Words (RIL_WORD) within the current TextLine
+                    const char* word_chars = rit->GetUTF8Text(tesseract::RIL_WORD);
+                    std::string current_word_str;
+                    if (word_chars)
+                    {
+                        current_word_str = word_chars;
+                        delete[] word_chars; // Tesseract requires freeing this
+                        boost::algorithm::trim(current_word_str);
+                    }
+                    if (!current_word_str.empty()) {
+                        float conf = rit->Confidence(tesseract::RIL_WORD);
+                        if (conf >= confidence_threshold) {
+                            if (previous_word_on_line_was_high_confidence) {
+                                impl().emit_tag(tag::Text{" "}); // Add space before the current word
+                            }
+                            impl().emit_tag(tag::Text{current_word_str});
+                            current_line_had_high_confidence_text = true;
+                            previous_word_on_line_was_high_confidence = true;
+                        } else {
+                            previous_word_on_line_was_high_confidence = false; // Reset if low-confidence word encountered
+                        }
+                    } else { // Word was null (word_chars == nullptr) or became empty after trim
+                        // This represents a break in the flow of actual text words,
+                        // so reset the flag to prevent a space before the next actual word.
+                        previous_word_on_line_was_high_confidence = false;
+                    }
+
+                    // Regardless of word content, if the iterator is at the last word
+                    // of the current structural RIL_TEXTLINE, break this word loop.
+                    if (rit->IsAtFinalElement(tesseract::RIL_TEXTLINE, tesseract::RIL_WORD)) {
+                        break;
+                    }
+                } while (rit->Next(tesseract::RIL_WORD)); // Attempt to advance to the next word
+
+                // End of TextLine processing
+                if (current_line_had_high_confidence_text) {
+                    // Add BreakLine if not the last line of the current paragraph
+                    if (!rit->IsAtFinalElement(tesseract::RIL_PARA, tesseract::RIL_TEXTLINE)) {
+                        // TODO: Add styling attributes from rit->BoundingBox(RIL_TEXTLINE, ...) to BreakLine if needed
+                        impl().emit_tag(tag::BreakLine{});
+                    }
+                }
+                // Check if this was the last line in the current paragraph before trying to advance to the next line.
+                if (rit->IsAtFinalElement(tesseract::RIL_PARA, tesseract::RIL_TEXTLINE)) {
+                    break; // Break from RIL_TEXTLINE loop; Next(RIL_PARA) will be called.
+                }
+            } while (rit->Next(tesseract::RIL_TEXTLINE)); // Advances to next line in this paragraph
+
+            // End of Paragraph processing
+            impl().emit_tag(tag::CloseParagraph{});
+            // Check if this was the last paragraph in the current block before trying to advance to the next paragraph.
+            if (rit->IsAtFinalElement(tesseract::RIL_BLOCK, tesseract::RIL_PARA)) {
+                break; // Break from RIL_PARA loop; Next(RIL_BLOCK) will be called.
+            }
+        } while (rit->Next(tesseract::RIL_PARA)); // Advances to next paragraph in this block
+
+        // End of Block processing
+        impl().emit_tag(tag::CloseSection{});
+    } while (rit->Next(tesseract::RIL_BLOCK)); // Advances to next block on the page
 }
 
 continuation OCRParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
@@ -309,8 +396,7 @@ continuation OCRParser::operator()(Tag&& tag, const emission_callbacks& emit_tag
         docwire_log(debug) << "Using OCR parser.";
         scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
         emit_tag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
-        std::string plain_text = parse(data, impl().m_languages.size() > 0 ? impl().m_languages : std::vector({ Language::eng }));
-        emit_tag(tag::Text{.text = plain_text});
+        parse(data, impl().m_languages.size() > 0 ? impl().m_languages : std::vector({ Language::eng }));
         emit_tag(tag::CloseDocument{});
         return continuation::proceed;
     };

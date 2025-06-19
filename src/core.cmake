@@ -4,7 +4,6 @@ add_library(docwire_core SHARED
     entities.cpp
     error.cpp
     error_tags.cpp
-    decompress_archives.cpp
     log.cpp
     misc.cpp
     thread_safe_ole_storage.cpp
@@ -38,12 +37,11 @@ find_package(Boost REQUIRED COMPONENTS filesystem system json)
 find_package(magic_enum CONFIG REQUIRED)
 find_library(unzip unzip REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(LibArchive REQUIRED)
 find_package(unofficial-curlpp CONFIG REQUIRED)
 find_package(Iconv REQUIRED)
 target_link_libraries(docwire_core PRIVATE
     docwire_wv2 Boost::filesystem Boost::system Boost::json magic_enum::magic_enum ${unzip}
-    ZLIB::ZLIB LibArchive::LibArchive unofficial::curlpp::curlpp Iconv::Iconv)
+    ZLIB::ZLIB unofficial::curlpp::curlpp Iconv::Iconv)
 target_link_libraries(docwire_core PUBLIC magic_enum::magic_enum)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(docwire_core PRIVATE dl)

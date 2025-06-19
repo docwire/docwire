@@ -406,7 +406,7 @@ int main(int argc, char* argv[])
   using namespace docwire;
   try
   {
-    std::filesystem::path("test.zip") | DecompressArchives() | content_type::detector{} | office_formats_parser{} | OCRParser{} | PlainTextExporter() | std::cout;
+    std::filesystem::path("test.zip") | content_type::detector{} | archives_parser{} | office_formats_parser{} | OCRParser{} | PlainTextExporter() | std::cout;
   }
   catch (const std::exception& e)
   {
@@ -830,9 +830,8 @@ By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, use
 
 - [ubuntu-24.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)
 - [ubuntu-22.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
-- [ubuntu-20.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2004-Readme.md) with gcc upgraded to version 11
+- [windows-2025](https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md)
 - [windows-2022](https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md)
-- [windows-2019](https://github.com/actions/runner-images/blob/main/images/windows/Windows2019-Readme.md)
 - [macos-15](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md)
 - [macos-14](https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md)
 - [macos-13](https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md)
@@ -1163,6 +1162,7 @@ Unlock the power of OpenAI with the following options:
 ### Additional Options
 
 - **&ndash;&ndash;language <lang> (default: eng)**: Set the document language(s) for OCR as ISO 639-3 identifiers like: spa, fra, deu, rus, chi_sim, chi_tra etc. More than 100 languages are supported. Multiple languages can be enabled.
+- **&ndash;&ndash;ocr-confidence-threshold <value> (default: 75)**: Set the OCR confidence threshold (0-100). Words with confidence below this will be excluded.
 - **&ndash;&ndash;use-stream <yes|no> (default: 0)**: Pass the file stream to the SDK instead of the filename.
 - **&ndash;&ndash;min_creation_time <timestamp>**: Filter emails by minimum creation time (currently applicable only to emails in PST/OST files).
 - **&ndash;&ndash;max_creation_time <timestamp>**: Filter emails by maximum creation time (currently applicable only to emails in PST/OST files).

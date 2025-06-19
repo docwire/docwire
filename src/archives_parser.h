@@ -9,44 +9,33 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OCR_PARSER_H
-#define DOCWIRE_OCR_PARSER_H
+#ifndef DOCWIRE_ARCHIVES_PARSER_H
+#define DOCWIRE_ARCHIVES_PARSER_H
 
-#include <string>
-
+#include "archives_export.h"
 #include "chain_element.h"
-#include "language.h"
-#include "ocr_export.h"
-#include "pimpl.h"
 
 namespace docwire
 {
 
-struct ocr_confidence_threshold { std::optional<float> v; };
-struct ocr_data_path { std::filesystem::path v; };
-struct ocr_timeout { std::optional<int32_t> v; };
-
-class DOCWIRE_OCR_EXPORT OCRParser : public ChainElement, public with_pimpl<OCRParser>
+class DOCWIRE_ARCHIVES_EXPORT archives_parser : public ChainElement
 {
-private:
-    using with_pimpl<OCRParser>::impl;
-    friend pimpl_impl<OCRParser>;
-
 public:
 
-    OCRParser(const std::vector<Language>& languages = {},
-        ocr_confidence_threshold ocr_confidence_threshold_arg = {},
-        ocr_timeout ocr_timeout_arg = {},
-        ocr_data_path ocr_data_path_arg = {});
+	/**
+	* @brief Executes transform operation for given node data.
+	* @see docwire::Tag
+	* @param tag
+	* @param callback
+	*/
+	virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
 
-    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
-
-    bool is_leaf() const override { return false; }
-
-private:
-    void parse(const data_source& data, const std::vector<Language>& languages);
+	bool is_leaf() const override
+	{
+		return false;
+	}
 };
 
 } // namespace docwire
 
-#endif // DOCWIRE_OCR_PARSER_H
+#endif // DOCWIRE_ARCHIVES_PARSER_H

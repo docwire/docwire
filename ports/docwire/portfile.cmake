@@ -82,7 +82,7 @@ function(run_tests build_type)
 		LOGNAME test-discovery-${PORT}-${triplet_build_type}
 		OUTPUT_VARIABLE discovery_stdout
 	)
-	if (NOT discovery_stdout MATCHES "DocumentTests")
+	if (NOT discovery_stdout MATCHES "DocumentParsingTests")
 		message(FATAL_ERROR "Failed to discover tests")
 	endif()
 

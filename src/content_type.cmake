@@ -1,5 +1,6 @@
 add_library(docwire_content_type SHARED
     content_type.cpp
+    content_type_asp.cpp
     content_type_html.cpp
     content_type_iwork.cpp
     content_type_odf_flat.cpp

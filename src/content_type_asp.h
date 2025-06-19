@@ -9,44 +9,37 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OCR_PARSER_H
-#define DOCWIRE_OCR_PARSER_H
-
-#include <string>
+#ifndef DOCWIRE_CONTENT_TYPE_ASP_H
+#define DOCWIRE_CONTENT_TYPE_ASP_H
 
 #include "chain_element.h"
-#include "language.h"
-#include "ocr_export.h"
-#include "pimpl.h"
+#include "content_type_export.h"
+#include "data_source.h"
+#include "tags.h"
 
-namespace docwire
+namespace docwire::content_type::asp
 {
 
-struct ocr_confidence_threshold { std::optional<float> v; };
-struct ocr_data_path { std::filesystem::path v; };
-struct ocr_timeout { std::optional<int32_t> v; };
+DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
-class DOCWIRE_OCR_EXPORT OCRParser : public ChainElement, public with_pimpl<OCRParser>
+class detector : public ChainElement
 {
-private:
-    using with_pimpl<OCRParser>::impl;
-    friend pimpl_impl<OCRParser>;
-
 public:
+    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override
+    {
+        if (!std::holds_alternative<data_source>(tag))
+	        return emit_tag(std::move(tag));
+	    data_source& data = std::get<data_source>(tag);
+        detect(data);
+        return emit_tag(std::move(tag));
+    }
 
-    OCRParser(const std::vector<Language>& languages = {},
-        ocr_confidence_threshold ocr_confidence_threshold_arg = {},
-        ocr_timeout ocr_timeout_arg = {},
-        ocr_data_path ocr_data_path_arg = {});
-
-    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
-
-    bool is_leaf() const override { return false; }
-
-private:
-    void parse(const data_source& data, const std::vector<Language>& languages);
+    bool is_leaf() const override
+	{
+		return false;
+	}
 };
 
-} // namespace docwire
+} // namespace docwire::content_type::asp
 
-#endif // DOCWIRE_OCR_PARSER_H
+#endif // DOCWIRE_CONTENT_TYPE_ASP
