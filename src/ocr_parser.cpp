@@ -309,7 +309,7 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
     // Iterate through results and emit tags: Block -> Paragraph -> Line -> Word
     const float confidence_threshold = impl().m_ocr_confidence_threshold.v.value_or(75.0f);
 
-    tesseract::ResultIterator* rit = api->GetIterator();
+    std::unique_ptr<tesseract::ResultIterator> rit(api->GetIterator());
     if (!rit) {
         docwire_log(error) << "Tesseract GetIterator() returned null.";
         return;
@@ -388,8 +388,6 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
         // End of Block processing
         impl().emit_tag(tag::CloseSection{});
     } while (rit->Next(tesseract::RIL_BLOCK)); // Advances to next block on the page
-
-    delete rit;
 }
 
 continuation OCRParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
