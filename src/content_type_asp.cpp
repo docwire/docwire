@@ -25,13 +25,13 @@ void detect(data_source& data)
         initial_content.find("<%@control") != std::string::npos || // case-insensitive common practice
         initial_content.find("runat=\"server\"") != std::string::npos || // Common in ASP.NET server controls
         initial_content.find("<script language=\"C#\" runat=\"server\">") != std::string::npos || // C# script block
-        initial_content.find("<script language=\"VB\" runat=\"server\">") != std::string::npos) // VB.NET script block
+        initial_content.find("<script language=\"VB\" runat=\"server\">") != std::string::npos || // VB.NET script block
+        initial_content.find("<%#") != std::string::npos) // ASP.NET data-binding expression
     {
         data.add_mime_type(mime_type{"text/aspdotnet"}, confidence::highest);
     }
     else if (initial_content.find("<%") != std::string::npos || // Generic ASP/PHP/JSP open tag, but common in classic ASP
         initial_content.find("<%=") != std::string::npos || // ASP expression
-        initial_content.find("<%#") != std::string::npos || // ASP.NET data-binding, but can appear in files treated as classic if not full .NET
         initial_content.find("<!-- #include") != std::string::npos) // Server-Side Include (SSI), often used with ASP
     {
         data.add_mime_type(mime_type{"text/asp"}, confidence::highest);
