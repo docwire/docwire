@@ -1,3 +1,38 @@
+## Version 2025.06.19
+
+Version 2025.06.19 introduces notable advancements to DocWire SDK, featuring significant upgrades to OCR capabilities, greatly improved precision in PDF document handling including richer positional metadata, and a modernized approach to archive processing. This release also includes expanded content type support, refined text output, and strengthened build and testing infrastructure, providing developers with enhanced data extraction tools, more reliable document analysis, and an improved development workflow. **Please note: Support for the deprecated windows-2019 GitHub runners has been removed from our CI/CD pipeline. If this change impacts your workflow, please contact us for assistance.**
+
+
+> OCR's vision, sharp and newly bright,  
+> PDF layouts, now a clearer sight.  
+> Archives rebuilt, with structure firm and new,  
+> DocWire advances, steady, strong, and true!  
+> ✨📄🔬🏗️
+
+- **Features**
+  - **Significant OCR Enhancements:**
+	- **Structured OCR Output with Positional Data:** The `OCRParser` now provides a more detailed, structured output. It recognizes and emits not only text with its positional attributes (x, y, width, height) but also identifies document elements like paragraphs, sections, and lines. This significantly enhances data extraction capabilities, allowing for better preservation of the original document layout and enabling more sophisticated content analysis.
+	- **Configurable OCR Confidence:** Users can now set a custom confidence threshold (0-100) for OCR results, allowing for a better balance between accuracy and the volume of extracted text by filtering out low-confidence words.
+  - **Enhanced PDF Parsing & Positional Metadata:**
+    - The `PDFParser` has been refactored for **position-based element sorting**. This significantly improves the accuracy of text flow and element placement, providing more precise positional metadata (x, y, width, height) for extracted text and images within PDF documents. This leads to a more faithful representation of the original layout.
+  - **Expanded Format Support:**
+	- **ASP & ASP.NET Content Type Detection:** DocWire now includes specialized detection for Active Server Pages (ASP) and ASP.NET content, increasing its versatility with web-based file formats.
+  - **Modernized Archive Handling:**
+	- **New `docwire_archives` Library:** Archive processing has been comprehensively refactored and moved into a new, dedicated `docwire_archives` library. This architectural improvement enhances modularity, maintainability, and performance for archive-related operations.
+
+- **Improvements**
+  - **Improved Archive Detection:**
+	- Archive format identification is now more robust and standardized by leveraging **MIME types for detection**.
+  - **Refined Plain Text Output:** Improved handling of page breaks in the plain text exporter for clearer document separation and better readability.
+  - **Updated CI & Testing Environment:**
+	- The continuous integration pipeline now utilizes **windows-2025 GitHub runners** (replacing the deprecated `windows-2019` runner) and has **restored ASAN sanitizer tests on Windows**, contributing to code reliability.
+    - Automated tests (including `http::Post`, document parsing, and CLI OCR tests) have been updated to further enhance test coverage and consistency.
+  - **Documentation Enhancements:** Updated project documentation to reflect new features, API changes, and supported platforms, alongside specific corrections to module dependencies in 3rdparty components.
+
+- **Fixes**
+  - **Build (Windows):** Added the `NOMINMAX` preprocessor definition for Windows builds. This resolves macro conflicts between standard Windows headers (e.g., `windows.h`) and the PDFium library, preventing compilation issues.
+  - **Output Formatting:** Corrected spacing and line break logic in OCR and PDF outputs for improved readability and layout fidelity.
+
 ## Version 2025.05.22
 
 This release introduces significant enhancements to PDF processing, including image extraction and OCR integration, alongside major internal refactorings that modernize the core data flow and parser architecture. It also includes several fixes related to thread safety, library linking, and testing infrastructure, particularly improving test discovery and execution on Windows.
