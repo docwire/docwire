@@ -63,18 +63,16 @@ std::string model_to_string(Model model)
 {
 	switch (model)
 	{
-		case Model::gpt35_turbo: return "gpt-3.5-turbo";
-		case Model::gpt35_turbo_0125: return "gpt-3.5-turbo-0125";
-		case Model::gpt35_turbo_1106: return "gpt-3.5-turbo-1106";
-		case Model::gpt4: return "gpt-4";
-		case Model::gpt4_0613: return "gpt-4-0613";
-		case Model::gpt4_32k: return "gpt-4-32k";
-		case Model::gpt4_32k_0613: return "gpt-4-32k-0613";
-		case Model::gpt4_turbo_preview: return "gpt-4-turbo-preview";
-		case Model::gpt4_0125_preview: return "gpt-4-0125-preview";
-		case Model::gpt4_1106_preview: return "gpt-4-1106-preview";
-		case Model::gpt4_vision_preview: return "gpt-4-vision-preview";
-		case Model::gpt4_1106_vision_preview: return "gpt-4-1106-vision-preview";
+		case Model::chatgpt_4o_latest: return "chatgpt-4o-latest";
+		case Model::gpt_41: return "gpt-4.1";
+		case Model::gpt_41_mini: return "gpt-4.1-mini";
+		case Model::gpt_41_nano: return "gpt-4.1-nano";
+		case Model::gpt_4o: return "gpt-4o";
+		case Model::gpt_4o_mini: return "gpt-4o-mini";
+		case Model::o3: return "o3";
+		case Model::o3_pro: return "o3-pro";
+		case Model::o3_mini: return "o3-mini";
+		case Model::o4_mini: return "o4-mini";
 		default: return "?";
 	}
 }
@@ -98,11 +96,6 @@ std::string prepare_query(const std::string& system_msg, UserMsgType user_msg_ty
 	boost::json::object query
 	{
 		{ "model", model_to_string(model) },
-		{ "max_tokens",
-			model == Model::gpt4_vision_preview ?
-				1024 :
-				boost::json::value(nullptr)
-		},
 		{ "messages", boost::json::array
 			{
 				boost::json::object {{ "role", "system" }, {"content", system_msg}},

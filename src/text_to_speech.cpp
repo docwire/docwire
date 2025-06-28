@@ -50,8 +50,9 @@ std::string model_to_string(TextToSpeech::Model model)
 {
 	switch (model)
 	{
-		case TextToSpeech::Model::tts1: return "tts-1";
-		case TextToSpeech::Model::tts1_hd: return "tts-1-hd";
+		case TextToSpeech::Model::gpt_4o_mini_tts: return "gpt-4o-mini-tts";
+		case TextToSpeech::Model::tts_1: return "tts-1";
+		case TextToSpeech::Model::tts_1_hd: return "tts-1-hd";
 		default: return "?";
 	}
 }

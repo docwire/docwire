@@ -22,7 +22,7 @@ namespace openai
 class DOCWIRE_OPENAI_EXPORT AnalyzeData : public Chat
 {
 public:
-	AnalyzeData(const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
+	AnalyzeData(const std::string& api_key, Model model = Model::gpt_4o, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
 };
 
 } // namespace openai

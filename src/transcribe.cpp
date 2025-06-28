@@ -25,18 +25,36 @@ namespace docwire
 template<>
 struct pimpl_impl<openai::Transcribe> : pimpl_impl_base
 {
-	pimpl_impl(const std::string& api_key) : m_api_key(api_key) {}
+	pimpl_impl(const std::string& api_key, openai::Transcribe::Model model)
+		: m_api_key(api_key), m_model(model) {}
 	std::string m_api_key;
+	openai::Transcribe::Model m_model;
 };
 
 namespace openai
 {
 
-Transcribe::Transcribe(const std::string& api_key)
-	: with_pimpl<Transcribe>(api_key)
+Transcribe::Transcribe(const std::string& api_key, Model model)
+	: with_pimpl<Transcribe>(api_key, model)
 {
 	docwire_log_func();
 }
+
+namespace
+{
+
+std::string model_to_string(Transcribe::Model model)
+{
+	switch (model)
+	{
+		case Transcribe::Model::gpt_4o_transcribe: return "gpt-4o-transcribe";
+		case Transcribe::Model::gpt_4o_mini_transcribe: return "gpt-4o-mini-transcribe";
+		case Transcribe::Model::whisper_1: return "whisper-1";
+		default: return "?";
+	}
+}
+
+} // anonymous namespace
 
 continuation Transcribe::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
@@ -49,7 +67,7 @@ continuation Transcribe::operator()(Tag&& tag, const emission_callbacks& emit_ta
 	auto response_stream = std::make_shared<std::ostringstream>();
 	try
 	{
-		in_stream | http::Post("https://api.openai.com/v1/audio/transcriptions", {{"model", "whisper-1"}, {"response_format", "text"}}, "file", DefaultFileName("audio.mp3"), impl().m_api_key) | response_stream;
+		in_stream | http::Post("https://api.openai.com/v1/audio/transcriptions", {{"model", model_to_string(impl().m_model)}, {"response_format", "text"}}, "file", DefaultFileName("audio.mp3"), impl().m_api_key) | response_stream;
 	}
 	catch (const std::exception& e)
 	{

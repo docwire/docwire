@@ -23,7 +23,12 @@ namespace openai
 class DOCWIRE_OPENAI_EXPORT Transcribe : public ChainElement, public with_pimpl<Transcribe>
 {
 public:
-	Transcribe(const std::string& api_key);
+	enum class Model
+	{
+		gpt_4o_transcribe, gpt_4o_mini_transcribe, whisper_1
+	};
+
+	Transcribe(const std::string& api_key, Model model = Model::gpt_4o_transcribe);
 
 	/**
 	* @brief Executes transform operation for given node data.

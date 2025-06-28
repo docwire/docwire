@@ -128,8 +128,9 @@ int main(int argc, char* argv[])
 		("openai-text-to-speech", "convert text to speech via OpenAI")
 		("openai-transcribe", "convert speech to text (transcribe) via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
-		("openai-model", po::value<openai::Model>()->default_value(openai::Model::gpt35_turbo), enum_names_str<openai::Model>().c_str())
-		("openai-tts-model", po::value<openai::TextToSpeech::Model>()->default_value(openai::TextToSpeech::Model::tts1), enum_names_str<openai::TextToSpeech::Model>().c_str())
+		("openai-model", po::value<openai::Model>()->default_value(openai::Model::gpt_4o), enum_names_str<openai::Model>().c_str())
+		("openai-tts-model", po::value<openai::TextToSpeech::Model>()->default_value(openai::TextToSpeech::Model::gpt_4o_mini_tts), enum_names_str<openai::TextToSpeech::Model>().c_str())
+		("openai-transcribe-model", po::value<openai::Transcribe::Model>()->default_value(openai::Transcribe::Model::gpt_4o_transcribe), enum_names_str<openai::Transcribe::Model>().c_str())
 		("openai-voice", po::value<openai::TextToSpeech::Voice>()->default_value(openai::TextToSpeech::Voice::alloy), enum_names_str<openai::TextToSpeech::Voice>().c_str())
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
 		("openai-image-detail", po::value<openai::ImageDetail>()->default_value(openai::ImageDetail::automatic), enum_names_str<openai::ImageDetail>().c_str())
@@ -209,7 +210,8 @@ int main(int argc, char* argv[])
 	if (vm.count("openai-transcribe"))
 	{
 		std::string api_key = vm["openai-key"].as<std::string>();
-		chain |= openai::Transcribe(api_key) | PlainTextExporter();
+		openai::Transcribe::Model model = vm["openai-transcribe-model"].as<openai::Transcribe::Model>();
+		chain |= openai::Transcribe(api_key, model) | PlainTextExporter();
 	}
 	else if (local_processing)
 	{
