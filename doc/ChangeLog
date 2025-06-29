@@ -1,3 +1,29 @@
+## Version 2025.06.29
+
+This release introduces a major update to the integrated OpenAI functionalities, adding support for the latest models like GPT-4o and retiring older ones. It also enhances dependency management by replacing a custom library port with a standard one, and improves the intelligence of several AI-powered features through better prompting.
+
+> The old models fade, a starlit past,  
+> New constellations, brighter and vast.  
+> With prompts refined and logic so keen,  
+> A cleaner build, a powerful scene.  
+> ✨🤖🔧
+
+- **Features**
+  - **Expanded OpenAI Model Support:** Integrated support for the latest generation of OpenAI models, including `gpt-4o`, `gpt-4o-mini`, `gpt-4.1`, and the `o3` family. This provides access to state-of-the-art AI capabilities for all relevant features.
+  - **Granular Model Selection for Transcription and TTS:**
+    - Users can now select specific models for audio transcription, with new options like `gpt-4o-transcribe` and `gpt-4o-mini-transcribe`, in addition to `whisper-1`.
+    - Added new Text-to-Speech models, including `gpt-4o-mini-tts`, and set it as the new default for higher quality voice generation.
+
+- **Improvements**
+  - **Modernized Dependency Management:** Replaced the custom `unzip` vcpkg port with the standard `minizip` port, simplifying the build process and improving maintainability.
+  - **Enhanced AI Prompting:** Significantly improved the system prompts for the `Classify` and `Find` features to yield more precise and consistently formatted results from the language models.
+  - **Updated Default Model:** The default model for most OpenAI operations has been updated to `gpt-4o` to leverage its improved intelligence, speed, and cost-effectiveness.
+  - **Robust Example Tests:** Updated examples in the documentation to use fuzzy string matching for assertions, making tests more resilient to minor variations in AI-generated text.
+
+- **Refactor**
+  - **API Modernization:** Removed support for deprecated and legacy OpenAI models (e.g., `gpt-3.5-turbo`, `gpt-4-turbo-preview`) to streamline the API and focus on current-generation models.
+  - **Transcription Component:** Refactored the `openai::Transcribe` component to allow model selection, making it more flexible and future-proof.
+
 ## Version 2025.06.19
 
 Version 2025.06.19 introduces notable advancements to DocWire SDK, featuring significant upgrades to OCR capabilities, greatly improved precision in PDF document handling including richer positional metadata, and a modernized approach to archive processing. This release also includes expanded content type support, refined text output, and strengthened build and testing infrastructure, providing developers with enhanced data extraction tools, more reliable document analysis, and an improved development workflow. **Please note: Support for the deprecated windows-2019 GitHub runners has been removed from our CI/CD pipeline. If this change impacts your workflow, please contact us for assistance.**
