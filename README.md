@@ -1155,7 +1155,7 @@ Unlock the power of OpenAI with the following options:
 - **&ndash;&ndash;openai-text-to-speech**: Convert text to speech via OpenAI
 - **&ndash;&ndash;openai-transcribe**: Convert speech to text (transcribe) via OpenAI
 - **&ndash;&ndash;openai-key <key>**: OpenAI API key.
-- **&ndash;&ndash;openai-model <model>** (default: gpt_4o): Choose the OpenAI model. Available models are: chatgpt_4o_latest, gpt_41, gpt_41_2025_04_14, gpt_41_mini, gpt_41_mini_2025_04_14, gpt_41_nano, gpt_41_nano_2025_04_14, gpt_4o, gpt_4o_2024_05_13, gpt_4o_2024_08_06, gpt_4o_2024_11_20, gpt_4o_mini, gpt_4o_mini_2024_07_18, o3, o3_2025_04_16, o3_pro, o3_pro_2025_06_10, o3_mini, o3_mini_2025_01_31, o4_mini, o4_mini_2025_04_16.
+- **&ndash;&ndash;openai-model <model>** (default: gpt_4o): Choose the OpenAI model. Available models are: chatgpt_4o_latest, gpt_41, gpt_41_mini, gpt_41_nano, gpt_4o, gpt_4o_mini, o3, o3_pro, o3_mini, o4_mini.
 - **&ndash;&ndash;openai-temperature <temp>**: Force specified temperature for OpenAI prompts.
 - **&ndash;&ndash;openai-image-detail <detail>**: Force specified image detail parameter for OpenAI image prompts. Available options are: low, high and automatic.
 - **&ndash;&ndash;openai-tts-model <model>** (default: gpt_4o_mini_tts): Choose the TTS model. Available models are: gpt_4o_mini_tts, tts_1, tts_1_hd.
