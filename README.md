@@ -223,7 +223,7 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
     - Chat: Conduct chat-based interactions and conversations with text input and image input.
     - TextToSpeech: Perform written text into spoken words (voice) conversion (TTS).
     - Transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
-   Supports multiple Open AI LLM models: chatgpt-4o-latest, gpt-4.1, gpt-4.1-2025-04-14, gpt-4.1-mini, gpt-4.1-mini-2025-04-14, gpt-4.1-nano, gpt-4.1-nano-2025-04-14, gpt-4o, gpt-4o-2024-05-13, gpt-4o-2024-08-06, gpt-4o-2024-11-20, gpt-4o-mini, gpt-4o-mini-2024-07-18, o3, o3-2025-04-16, o3-pro, o3-pro-2025-06-10, o3-mini, o3-mini-2025-01-31, o4-mini, o4-mini-2025-04-16, gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1, gpt-4o-transcribe, tts-1, tts-1-hd. More are coming.
+   Supports multiple Open AI LLM models: chatgpt-4o-latest, gpt-4.1, gpt-4.1-mini, gpt-4.1-mini, gpt-4.1-nano, gpt-4o, gpt-4o-mini, o3, o3-pro, o3-mini, o4-mini, gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1, gpt-4o-transcribe, tts-1, tts-1-hd. More are coming.
 
 - **Incremental parsing** returning data as soon as they are available
 
