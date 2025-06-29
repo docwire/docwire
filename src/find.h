@@ -22,7 +22,7 @@ namespace openai
 class DOCWIRE_OPENAI_EXPORT Find : public Chat
 {
 public:
-	Find(const std::string& what, const std::string& api_key, Model model = Model::gpt35_turbo, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
+	Find(const std::string& what, const std::string& api_key, Model model = Model::gpt_4o, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
 };
 
 } // namespace openai

@@ -223,7 +223,7 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
     - Chat: Conduct chat-based interactions and conversations with text input and image input.
     - TextToSpeech: Perform written text into spoken words (voice) conversion (TTS).
     - Transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
-   Supports multiple Open AI LLM models: gpt-3.5-turbo, gpt-3.5-turbo-0125, gpt-3.5-turbo-1106, gpt-4, gpt-4-0613, gpt-4-32k, gpt-4-32k-0613, gpt-4-turbo-preview (world events up to December 2023, 128k context window that can fit more than 300 pages of text in a single prompt), gpt-4-0125-preview, gpt-4-1106-preview, gpt-4-vision-preview (with ability to understand images), gpt-4-1106-vision-preview, whisper-1, tts-1. More are coming.
+   Supports multiple Open AI LLM models: chatgpt-4o-latest, gpt-4.1, gpt-4.1-mini, gpt-4.1-mini, gpt-4.1-nano, gpt-4o, gpt-4o-mini, o3, o3-pro, o3-mini, o4-mini, gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1, gpt-4o-transcribe, tts-1, tts-1-hd. More are coming.
 
 - **Incremental parsing** returning data as soon as they are available
 
@@ -518,7 +518,7 @@ int main(int argc, char* argv[])
     std::cerr << errors::diagnostic_message(e) << std::endl;
     return 1;
   }
-  assert(out_stream.str() == "El procesamiento de datos se refiere a las actividades realizadas en datos crudos para convertirlos en información significativa. Implica recolectar, organizar, analizar e interpretar datos para extraer ideas útiles y apoyar la toma de decisiones. Esto puede incluir tareas como ordenar, filtrar, resumir y transformar datos a través de varios métodos computacionales y estadísticos. El procesamiento de datos es esencial en varios campos, incluyendo negocios, ciencia y tecnología, ya que permite a las organizaciones obtener conocimientos valiosos de grandes conjuntos de datos, tomar decisiones informadas y mejorar la eficiencia general.\n");
+  assert(fuzzy_match::ratio(out_stream.str(), "El procesamiento de datos se refiere a las actividades realizadas sobre datos en bruto para convertirlos en información significativa. Implica la recopilación, organización, análisis e interpretación de datos para extraer conocimientos útiles y apoyar la toma de decisiones. Esto puede incluir tareas como clasificar, filtrar, resumir y transformar datos mediante diversos métodos computacionales y estadísticos. El procesamiento de datos es esencial en varios campos, incluyendo los negocios, la ciencia y la tecnología, ya que permite a las organizaciones derivar conocimientos valiosos de grandes conjuntos de datos, tomar decisiones informadas y mejorar la eficiencia general.\n") > 80);
   return 0;
 }
 ```
@@ -550,7 +550,7 @@ int main(int argc, char* argv[])
 }
 ```
 
-Detect sentiment of document in any format (Office, PDF, mail, etc) using newest GPT-4 Turbo model with 128K context:
+Detect sentiment of document in any format (Office, PDF, mail, etc) using OpenAI service:
 
 ```cpp
 #include "docwire.h"
@@ -562,7 +562,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("1.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_turbo_preview) | std::cout;
+    std::filesystem::path("1.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | openai::DetectSentiment(std::getenv("OPENAI_API_KEY")) | std::cout;
   }
   catch (const std::exception& e)
   {
@@ -624,25 +624,28 @@ int main(int argc, char* argv[])
 }
 ```
 
-Make a text summary of voice recording (e.g. mp3 file with meeting recording) in two steps: convert voice to text using Whisper-1 model and summarize text using GPT model:
+Make a text summary of voice recording (e.g. mp3 file with meeting recording) in two steps: convert voice to text and summarize text using OpenAI services:
 
 ```cpp
 #include "docwire.h"
 #include <cassert>
+#include <sstream>
 
 int main(int argc, char* argv[])
 {
   using namespace docwire;
+  std::stringstream out_stream;
 
   try
   {
-    std::filesystem::path("data_processing_definition.mp3") | openai::Transcribe(std::getenv("OPENAI_API_KEY")) | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | std::cout;
+    std::filesystem::path("data_processing_definition.mp3") | openai::Transcribe(std::getenv("OPENAI_API_KEY")) | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | out_stream;
   }
   catch (const std::exception& e)
   {
     std::cerr << errors::diagnostic_message(e) << std::endl;
     return 1;
   }
+  assert(fuzzy_match::ratio(out_stream.str(), "Data processing involves converting raw data into meaningful information by collecting, organizing, analyzing, and interpreting it. This process includes tasks like sorting, filtering, summarizing, and transforming data using computational and statistical methods. It is crucial in fields like business, science, and technology, as it helps organizations extract valuable insights from large datasets, make informed decisions, and enhance efficiency.\n") > 80);
 
   return 0;
 }
@@ -688,15 +691,14 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("scene_1.png") | openai::Find("car", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | out_stream;
-    std::filesystem::path("scene_1.png") | openai::Find("person", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | out_stream;
-    std::filesystem::path("scene_1.png") | openai::Find("running", std::getenv("OPENAI_API_KEY"), openai::Model::gpt4_vision_preview, 0, openai::ImageDetail::low) | out_stream;
+    std::filesystem::path("scene_1.png") | openai::Find("tree", std::getenv("OPENAI_API_KEY")) | out_stream;
   }
   catch (const std::exception& e)
   {
     std::cerr << errors::diagnostic_message(e) << std::endl;
     return 1;
   }
+  assert(fuzzy_match::ratio(out_stream.str(), "2\n- A tree is located on the left side of the image near the people.\n- Another tree is in the background near the center of the image.\n") > 80);
 
   return 0;
 }
@@ -1153,10 +1155,11 @@ Unlock the power of OpenAI with the following options:
 - **&ndash;&ndash;openai-text-to-speech**: Convert text to speech via OpenAI
 - **&ndash;&ndash;openai-transcribe**: Convert speech to text (transcribe) via OpenAI
 - **&ndash;&ndash;openai-key <key>**: OpenAI API key.
-- **&ndash;&ndash;openai-model <model>** (default: gpt35_turbo): Choose the OpenAI model. Available models are: gpt35_turbo, gpt35_turbo_0125, gpt35_turbo_1106, gpt4, gpt4_0613, gpt4_32k, gpt4_32k_0613, gpt4_turbo_preview, gpt4_0125_preview, gpt4_1106_preview, gpt4_vision_preview and gpt4_1106_vision_preview.
+- **&ndash;&ndash;openai-model <model>** (default: gpt_4o): Choose the OpenAI model. Available models are: chatgpt_4o_latest, gpt_41, gpt_41_mini, gpt_41_nano, gpt_4o, gpt_4o_mini, o3, o3_pro, o3_mini, o4_mini.
 - **&ndash;&ndash;openai-temperature <temp>**: Force specified temperature for OpenAI prompts.
 - **&ndash;&ndash;openai-image-detail <detail>**: Force specified image detail parameter for OpenAI image prompts. Available options are: low, high and automatic.
-- **&ndash;&ndash;openai-tts-model <model>** (default: tts1): Choose the TTS model. Available models are: tts1, tts1_hd.
+- **&ndash;&ndash;openai-tts-model <model>** (default: gpt_4o_mini_tts): Choose the TTS model. Available models are: gpt_4o_mini_tts, tts_1, tts_1_hd.
+- **&ndash;&ndash;openai-transcribe-model <model>** (default: gpt_4o_transcribe): Choose the transcribe model. Available models are: gpt_4o_transcribe, gpt_4o_mini_transcribe, whisper_1.
 - **&ndash;&ndash;openai-voice <voice>** (default: alloy): Choose voice for text to speech conversion. Available voices are: alloy, echo, fable, onyx, nova, shimmer.
 
 ### Additional Options

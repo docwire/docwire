@@ -26,7 +26,7 @@ class DOCWIRE_OPENAI_EXPORT TextToSpeech : public ChainElement, public with_pimp
 public:
 	enum class Model
 	{
-		tts1, tts1_hd
+		gpt_4o_mini_tts, tts_1, tts_1_hd
 	};
 
 	enum class Voice
@@ -34,7 +34,7 @@ public:
 		alloy, echo, fable, onyx, nova, shimmer
 	};
 
-	TextToSpeech(const std::string& api_key, Model model = Model::tts1, Voice voice = Voice::alloy);
+	TextToSpeech(const std::string& api_key, Model model = Model::gpt_4o_mini_tts, Voice voice = Voice::alloy);
 
 	/**
 	* @brief Executes transform operation for given node data.
