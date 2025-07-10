@@ -23,6 +23,7 @@
 #include "content_type_xlsb.h"
 #include "archives_parser.h"
 #include "detect_sentiment.h"
+#include "embed.h"
 #include "exception_utils.h"
 #include "find.h"
 #include "fuzzy_match.h"

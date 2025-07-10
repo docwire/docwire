@@ -3,6 +3,7 @@ add_library(docwire_openai SHARED
     chat.cpp
     classify.cpp
     detect_sentiment.cpp
+    embed.cpp
     extract_entities.cpp
     extract_keywords.cpp
     find.cpp
