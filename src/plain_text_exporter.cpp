@@ -49,7 +49,7 @@ continuation PlainTextExporter::operator()(Tag&& tag, const emission_callbacks& 
 		--impl().m_nested_docs_level;
 		if (impl().m_nested_docs_level == 0)
 		{
-			emit_tag(data_source{seekable_stream_ptr{impl().m_stream}, file_extension{".txt"}});
+			emit_tag(data_source{seekable_stream_ptr{impl().m_stream}, mime_type{"text/plain"}, confidence::highest});
 			impl().m_stream.reset();
 		}
 	}

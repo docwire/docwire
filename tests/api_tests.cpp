@@ -1913,6 +1913,32 @@ TEST(content_type, by_file_extension)
     ));
 }
 
+TEST(content_type, to_extension)
+{
+    using namespace docwire::content_type::by_file_extension;
+    using docwire::mime_type;
+
+    // Test a common case where multiple extensions exist for one mime type.
+    // The first one in the list should be chosen, which is .txt for text/plain.
+    auto txt_ext = to_extension(mime_type{"text/plain"});
+    ASSERT_TRUE(txt_ext.has_value());
+    ASSERT_EQ(txt_ext->string(), ".txt");
+
+    // Test a standard, unambiguous mime type.
+    auto pdf_ext = to_extension(mime_type{"application/pdf"});
+    ASSERT_TRUE(pdf_ext.has_value());
+    ASSERT_EQ(pdf_ext->string(), ".pdf");
+
+    // Test another common office format.
+    auto docx_ext = to_extension(mime_type{"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+    ASSERT_TRUE(docx_ext.has_value());
+    ASSERT_EQ(docx_ext->string(), ".docx");
+
+    // Test a non-existent mime type.
+    auto non_existent_ext = to_extension(mime_type{"application/x-non-existent"});
+    ASSERT_FALSE(non_existent_ext.has_value());
+}
+
 TEST(content_type, by_signature)
 {
     auto prepare_data = []()

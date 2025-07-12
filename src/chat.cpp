@@ -148,12 +148,6 @@ std::string parse_response(const std::string& response)
 	}
 }
 
-bool has_txt_extension(const file_extension& extension)
-{
-	docwire_log_func_with_args(extension);
-	return extension == file_extension{".txt"};
-}
-
 } // anonymous namespace
 
 continuation Chat::operator()(Tag&& tag, const emission_callbacks& emit_tag)
@@ -165,21 +159,26 @@ continuation Chat::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 	const data_source& data = std::get<data_source>(tag);
 	UserMsgType user_msg_type;
 	std::string data_str;
-	if (data.file_extension() && has_txt_extension(*data.file_extension()))
+	if (data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}))
 	{
-		docwire_log(debug) << "Filename extension shows it is a text file.";
+		docwire_log(debug) << "Highest confidence MIME type is text/plain.";
 		user_msg_type = UserMsgType::text;
 		data_str = data.string();
 	}
-	else
+	else if (data.has_highest_confidence_mime_type_in({mime_type{"image/jpeg"}, mime_type{"image/png"}, mime_type{"image/gif"}, mime_type{"image/webp"}}))
 	{
-		docwire_log(debug) << "Filename extension shows it is not a text file. Let's assume it is an image.";
+		docwire_log(debug) << "Highest confidence MIME type is image/jpeg, image/png, image/gif or image/webp.";
 		user_msg_type = UserMsgType::image_url;
 		std::span<const std::byte> input_data = data.span();
 		std::string base64Encoded = base64::encode(input_data);
 		docwire_log_var(base64Encoded);
 		data_str = std::string{"data:image/*;base64,"} + base64Encoded;
 	}
+	else
+	{
+		throw make_error("Unsupported MIME type for OpenAI Chat", data.highest_confidence_mime_type()->v, errors::program_logic{});
+	}
+
 	std::string content = parse_response(post_request(prepare_query(impl().m_system_message, user_msg_type, data_str, impl().m_model, impl().m_temperature, impl().m_image_detail), impl().m_api_key)) + '\n';
 	return emit_tag(data_source{content});
 }
