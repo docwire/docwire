@@ -1309,14 +1309,24 @@ const std::vector<std::pair<const char*, const char*>> file_extension_to_mime_ty
 	{".wsf", "application/xml"}
 };
 
+const std::unordered_multimap<std::string, std::string> file_extension_to_mime_type(
+	file_extension_to_mime_type_list.begin(),
+	file_extension_to_mime_type_list.end()
+);
+
+const std::unordered_map<std::string, std::string> mime_type_to_file_extension = []{
+	std::unordered_map<std::string, std::string> reverse_map;
+	for (const auto& pair : file_extension_to_mime_type_list) {
+		// just take the first one, don't overwrite if one already exists
+		reverse_map.try_emplace(pair.second, pair.first);
+	}
+	return reverse_map;
+}();
+
 } // anonymous namespace
 
 void detect(data_source& data)
 {
-	static const std::unordered_multimap<std::string, std::string> file_extension_to_mime_type(
-		file_extension_to_mime_type_list.begin(),
-		file_extension_to_mime_type_list.end()
-	);
 	if (!data.file_extension() || data.highest_mime_type_confidence() >= confidence::high)
 		return;
 	auto range = file_extension_to_mime_type.equal_range(data.file_extension()->string());
@@ -1330,15 +1340,6 @@ void detect(data_source& data)
 
 std::optional<file_extension> to_extension(const mime_type& mt)
 {
-	static const std::unordered_map<std::string, std::string> mime_type_to_file_extension = []{
-		std::unordered_map<std::string, std::string> reverse_map;
-		for (const auto& pair : file_extension_to_mime_type_list) {
-			// just take the first one, don't overwrite if one already exists
-			reverse_map.try_emplace(pair.second, pair.first);
-		}
-		return reverse_map;
-	}();
-
 	auto it = mime_type_to_file_extension.find(mt.v);
 	if (it != mime_type_to_file_extension.end())
 	{
