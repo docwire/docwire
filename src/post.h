@@ -13,6 +13,7 @@
 #define DOCWIRE_HTTP_POST_H
 
 #include "chain_element.h"
+#include "http_export.h"
 #include <filesystem>
 #include <map>
 
@@ -29,7 +30,7 @@ struct DefaultFileName
 namespace http
 {
 
-class DOCWIRE_CORE_EXPORT Post : public ChainElement, public with_pimpl<Post>
+class DOCWIRE_HTTP_EXPORT Post : public ChainElement, public with_pimpl<Post>
 {
 public:
 	Post(const std::string& url, const std::string& oauth2_bearer_token = "");
