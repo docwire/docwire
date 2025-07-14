@@ -105,7 +105,7 @@ DocWire SDK transcends being a mere successor; it's a quantum leap in addressing
 - **Integration with Advanced NLP Libraries**: To further support the development of AI and NLP applications, DocWire SDK will integrate with advanced NLP libraries, providing out-of-the-box support for common NLP tasks such as tokenization, part-of-speech tagging, named entity recognition, and sentiment analysis. This integration will streamline the workflow for developers, allowing them to preprocess and analyze text within the same framework used for data extraction.
 - **Support for Custom AI Model Deployment**: As AI models become increasingly specialized, there is a need for frameworks that can accommodate custom model deployment. DocWire SDK will offer support for integrating custom-trained AI models, enabling developers to leverage their proprietary algorithms within the data processing pipeline. This will facilitate a seamless transition from model training to deployment, ensuring that developers can maximize the performance and accuracy of their AI applications.
 
-- **Embeddings Extraction Interface**: Introduce an interface within DocWire SDK that simplifies the process of extracting embeddings from document elements. This interface will allow developers to plug in their preferred embedding models and obtain embeddings directly from the SDK's output.
+- **Embeddings Extraction Interface**: Extend existing interface within DocWire SDK that simplifies the process of extracting embeddings from document elements. This interface will allow developers to plug in their preferred embedding models and obtain embeddings directly from the SDK's output.
 
 - **Embeddings-Based Retrieval**: Develop functionalities that leverage embeddings for document retrieval, enabling applications such as RAG to efficiently find and utilize relevant document segments based on semantic similarity.
 
@@ -202,6 +202,7 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
     - XLSX and more are coming: Additional export formats for diverse use cases.
 
 - **Fast and accurate file format detection**: Leveraging file signatures, file name extensions, content analysis, and MIME type recognition, the DocWire SDK automatically detects the format of any file. This ensures that the appropriate parser is selected for processing. With its ability to identify various formats, DocWire SDK serves as a versatile tool for numerous file processing tasks. For more information, see the following functions and classes: [content_type::detector](https://docwire.readthedocs.io/en/latest/classdocwire_1_1content__type_1_1detector.html) and [content_type::detect](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1content__type.html#ab8fcce329158e74aed1c402df93fa4e4). [You can find example how to perform file type detection (with or without document processing) here](https://docwire.readthedocs.io/en/latest/file_type_determination_8cpp-example.html).
+Additionally, the SDK provides functionality to convert a MIME type back to a file extension via `content_type::by_file_extension::to_extension`, which can be useful in scenarios where a file name is needed.
 
 - **Build-in powerful flan-t5-large model**: This state-of-the-art transformer-based model is designed for a wide range of natural language processing tasks, including text translation, question answering, summarization, text generation, and more. It has been trained on a diverse range of data sources and can handle complex linguistic phenomena such as word order, syntax, and semantics. The model's versatility and ability to perform multiple tasks make it a valuable addition to the DocWire SDK, allowing developers to leverage its capabilities for a variety of NLP tasks within their applications. **The build-in model is optimized to run with descent speed on lower-end desktops and mobile devices without GPU acceleration and consuming less than 1 GB of memory**
 
@@ -223,7 +224,9 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
     - Chat: Conduct chat-based interactions and conversations with text input and image input.
     - TextToSpeech: Perform written text into spoken words (voice) conversion (TTS).
     - Transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
-   Supports multiple Open AI LLM models: chatgpt-4o-latest, gpt-4.1, gpt-4.1-mini, gpt-4.1-mini, gpt-4.1-nano, gpt-4o, gpt-4o-mini, o3, o3-pro, o3-mini, o4-mini, gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1, gpt-4o-transcribe, tts-1, tts-1-hd. More are coming.
+    - embed: Generate embedding of text via OpenAI.
+   
+   Supports multiple Open AI LLM models: chatgpt-4o-latest, gpt-4.1, gpt-4.1-mini, gpt-4.1-mini, gpt-4.1-nano, gpt-4o, gpt-4o-mini, o3, o3-pro, o3-mini, o4-mini, gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1, gpt-4o-transcribe, tts-1, tts-1-hd, text-embedding-3-small, text-embedding-3-large, text-embedding-ada-002. More are coming.
 
 - **Incremental parsing** returning data as soon as they are available
 
@@ -235,9 +238,9 @@ By focusing on these R&D goals, DocWire SDK aims to solve significant problems f
 
 - **Semantic Chunking**: Group related content using the SDK's chunking feature to create contextually rich embeddings that capture the nuances of the document's structure.
 
-- **Integration with Embedding Models**: Once the data is preprocessed and structured, integrate with your choice of embedding models, such as word2vec, GloVe, or BERT, to generate embeddings that can be used in various NLP tasks.
+- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1openai_1_1embed.html) or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT, to generate embeddings that can be used in various NLP tasks.
 
-- **Enhancing AI/NLP Pipelines**: Embeddings obtained from DocWire SDK-prepared data can be used to enhance AI/NLP pipelines, enabling more accurate and context-aware applications such as document classification, sentiment analysis, and information retrieval.
+- **Enhancing AI/NLP Pipelines**: Embeddings obtained from DocWire SDK can be used to enhance AI/NLP pipelines, enabling more accurate and context-aware applications such as document classification, sentiment analysis, and information retrieval.
 
 - **Advanced Document Chunking**: DocWire SDK introduces sophisticated chunking capabilities, leveraging metadata and document elements to partition documents into smaller, semantically coherent parts. This feature is invaluable for applications such as Retrieval Augmented Generation (RAG), where the ability to process and retrieve information from specific document segments can significantly enhance the performance of AI models. By understanding the structure and semantics of each document, DocWire SDK can intelligently divide content into meaningful units, preserving the context and coherence necessary for high-quality AI interactions.
 
@@ -691,7 +694,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("scene_1.png") | openai::Find("tree", std::getenv("OPENAI_API_KEY")) | out_stream;
+    std::filesystem::path("scene_1.png") | content_type::detector{} | openai::Find("tree", std::getenv("OPENAI_API_KEY")) | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -699,6 +702,34 @@ int main(int argc, char* argv[])
     return 1;
   }
   assert(fuzzy_match::ratio(out_stream.str(), "2\n- A tree is located on the left side of the image near the people.\n- Another tree is in the background near the center of the image.\n") > 80);
+
+  return 0;
+}
+```
+
+Create embedding for document in any format (Office, PDF, mail, etc) using OpenAI service:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+  std::vector<Tag> out_tags;
+
+  try
+  {
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | openai::embed(std::getenv("OPENAI_API_KEY")) | out_tags;
+    assert(out_tags.size() == 1);
+    assert(std::holds_alternative<tag::embedding>(out_tags[0]));
+    auto embedding = std::get<tag::embedding>(out_tags[0]);
+    assert(embedding.values.size() == 1536);
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
 
   return 0;
 }
@@ -1153,12 +1184,14 @@ Unlock the power of OpenAI with the following options:
 - **&ndash;&ndash;openai-translate-to <language>**: Language to translate text and images to via OpenAI.
 - **&ndash;&ndash;openai-find <what>**: Find specified phrase, object or event in text and images via OpenAI.
 - **&ndash;&ndash;openai-text-to-speech**: Convert text to speech via OpenAI
+- **&ndash;&ndash;openai-embed**: Generate embedding of text via OpenAI
 - **&ndash;&ndash;openai-transcribe**: Convert speech to text (transcribe) via OpenAI
 - **&ndash;&ndash;openai-key <key>**: OpenAI API key.
 - **&ndash;&ndash;openai-model <model>** (default: gpt_4o): Choose the OpenAI model. Available models are: chatgpt_4o_latest, gpt_41, gpt_41_mini, gpt_41_nano, gpt_4o, gpt_4o_mini, o3, o3_pro, o3_mini, o4_mini.
 - **&ndash;&ndash;openai-temperature <temp>**: Force specified temperature for OpenAI prompts.
 - **&ndash;&ndash;openai-image-detail <detail>**: Force specified image detail parameter for OpenAI image prompts. Available options are: low, high and automatic.
 - **&ndash;&ndash;openai-tts-model <model>** (default: gpt_4o_mini_tts): Choose the TTS model. Available models are: gpt_4o_mini_tts, tts_1, tts_1_hd.
+- **&ndash;&ndash;openai-embed-model <model>** (default: text_embedding_3_small): Choose the embedding model. Available models are: text_embedding_3_small, text_embedding_3_large, text_embedding_ada_002.
 - **&ndash;&ndash;openai-transcribe-model <model>** (default: gpt_4o_transcribe): Choose the transcribe model. Available models are: gpt_4o_transcribe, gpt_4o_mini_transcribe, whisper_1.
 - **&ndash;&ndash;openai-voice <voice>** (default: alloy): Choose voice for text to speech conversion. Available voices are: alloy, echo, fable, onyx, nova, shimmer.
 
@@ -1235,6 +1268,14 @@ Find objects or events in image using GPT model:
 docwire --openai-find car --local-processing=off image.jpg
 docwire --openai-find person --local-processing=off image.jpg
 docwire --openai-find running --local-processing=off image.jpg
+```
+
+#### Embeddings generation for advanced AI applications
+
+Generate embedding of document using OpenAI service for advanced AI applications like Retrieval Augmented Generation (RAG), semantic search, and document clustering.
+
+```bash
+docwire --openai-embed data_processing_definition.doc
 ```
 
 Happy Document Processing with DocWire CLI!

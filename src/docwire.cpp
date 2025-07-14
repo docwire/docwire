@@ -18,6 +18,7 @@
 #include "csv_exporter.h"
 #include "archives_parser.h"
 #include "detect_sentiment.h"
+#include "embed.h"
 #include "exception_utils.h"
 #include "extract_entities.h"
 #include "extract_keywords.h"
@@ -126,10 +127,12 @@ int main(int argc, char* argv[])
 		("openai-translate-to", po::value<std::string>(), "language to translate text and images to via OpenAI")
 		("openai-find", po::value<std::string>(), "find phrase, object or event in text and images via OpenAI")
 		("openai-text-to-speech", "convert text to speech via OpenAI")
+		("openai-embed", "generate embedding of text via OpenAI")
 		("openai-transcribe", "convert speech to text (transcribe) via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
 		("openai-model", po::value<openai::Model>()->default_value(openai::Model::gpt_4o), enum_names_str<openai::Model>().c_str())
 		("openai-tts-model", po::value<openai::TextToSpeech::Model>()->default_value(openai::TextToSpeech::Model::gpt_4o_mini_tts), enum_names_str<openai::TextToSpeech::Model>().c_str())
+		("openai-embed-model", po::value<openai::embed::model>()->default_value(openai::embed::model::text_embedding_3_small), enum_names_str<openai::embed::model>().c_str())
 		("openai-transcribe-model", po::value<openai::Transcribe::Model>()->default_value(openai::Transcribe::Model::gpt_4o_transcribe), enum_names_str<openai::Transcribe::Model>().c_str())
 		("openai-voice", po::value<openai::TextToSpeech::Voice>()->default_value(openai::TextToSpeech::Voice::alloy), enum_names_str<openai::TextToSpeech::Voice>().c_str())
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
@@ -397,6 +400,29 @@ int main(int argc, char* argv[])
 		openai::TextToSpeech::Model model = vm["openai-tts-model"].as<openai::TextToSpeech::Model>();
 		openai::TextToSpeech::Voice voice = vm["openai-voice"].as<openai::TextToSpeech::Voice>();
 		chain |= openai::TextToSpeech(api_key, model, voice);
+	}
+
+	if (vm.count("openai-embed"))
+	{
+		std::string api_key = vm["openai-key"].as<std::string>();
+		openai::embed::model model = vm["openai-embed-model"].as<openai::embed::model>();
+		chain |= openai::embed(api_key, model);
+		chain |= [](Tag&& tag, const emission_callbacks& emit_tag) -> continuation {
+			if (std::holds_alternative<tag::embedding>(tag))
+			{
+				const auto& embedding_vec = std::get<tag::embedding>(tag).values;
+				std::string embedding_str = "[";
+				for (size_t i = 0; i < embedding_vec.size(); ++i)
+				{
+					embedding_str += std::to_string(embedding_vec[i]);
+					if (i < embedding_vec.size() - 1)
+						embedding_str += ", ";
+				}
+				embedding_str += "]";
+				return emit_tag(data_source{embedding_str});
+			}
+			return emit_tag(std::move(tag));
+		};
 	}
 
 	chain |= [](Tag&& tag, const emission_callbacks& emit_tag) -> continuation {

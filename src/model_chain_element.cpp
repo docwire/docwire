@@ -23,7 +23,7 @@ continuation model_chain_element::operator()(Tag&& tag, const emission_callbacks
 		return emit_tag(std::move(tag));
 
 	const data_source& data = std::get<data_source>(tag);
-	throw_if (data.file_extension() && *data.file_extension() != file_extension{".txt"}, errors::program_logic{});
+	throw_if (!data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}), errors::program_logic{});
 	std::string input = m_prompt + "\n" + data.string();
 	std::string output = m_model_runner->process(input);
 

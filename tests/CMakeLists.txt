@@ -5,7 +5,7 @@ if(MSVC)
     target_compile_options(api_tests PRIVATE /bigobj)
 endif()
 target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_archives
-	docwire_fuzzy_match docwire_base64 docwire_content_type GTest::gtest GTest::gmock)
+	docwire_fuzzy_match docwire_base64 docwire_content_type docwire_http GTest::gtest GTest::gmock)
 target_compile_definitions(api_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 
 find_package(Boost REQUIRED COMPONENTS json)
@@ -43,7 +43,8 @@ while (TRUE)
 	add_executable(example_${n} ${example_file})
 	target_include_directories(example_${n} PUBLIC ../src)
 	target_link_libraries(example_${n} PRIVATE docwire_core docwire_office_formats docwire_mail
-		docwire_ocr docwire_archives docwire_local_ai docwire_openai docwire_fuzzy_match docwire_content_type)
+		docwire_ocr docwire_archives docwire_local_ai docwire_openai docwire_fuzzy_match docwire_content_type
+		docwire_http)
 	string(FIND "${code_block}" "OPENAI_API_KEY" openai_api_key_pos)
 	if (openai_api_key_pos EQUAL -1 OR NOT "$ENV{OPENAI_API_KEY}" STREQUAL "")
 		message(STATUS "Adding test example_${n}")

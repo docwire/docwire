@@ -9,51 +9,51 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "plain_text_exporter.h"
+#ifndef DOCWIRE_OPENAI_EMBED_H
+#define DOCWIRE_OPENAI_EMBED_H
 
-#include "plain_text_writer.h"
-#include <sstream>
+#include "chain_element.h"
+#include "openai_export.h"
+#include "tags.h"
 
 namespace docwire
 {
-
-template<>
-struct pimpl_impl<PlainTextExporter> : pimpl_impl_base
+namespace openai
 {
-	pimpl_impl(eol_sequence eol_sequence, link_formatter link_formatter)
-		: m_writer{eol_sequence.v, link_formatter.format_opening, link_formatter.format_closing}
-	{}
 
-	std::shared_ptr<std::stringstream> m_stream;
-	PlainTextWriter m_writer;
-	int m_nested_docs_level { 0 };
+class DOCWIRE_OPENAI_EXPORT embed : public ChainElement, public with_pimpl<embed>
+{
+public:
+	enum class model
+	{
+		/// text-embedding-3-small: A new third generation embedding model, is OpenAI recommended default for most use cases.
+		text_embedding_3_small,
+		/// text-embedding-3-large: A larger and more powerful third generation embedding model, is OpenAI best performing embedding model.
+		text_embedding_3_large,
+		/// text-embedding-ada-002: Older generation of OpenAI's embedding model.
+		text_embedding_ada_002,
+	};
+
+	embed(const std::string& api_key, model model = model::text_embedding_3_small);
+
+	/**
+	* @brief Executes transform operation for given node data.
+	* @see docwire::Tag
+	* @param tag
+	* @param callback
+	*/
+	continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+
+	bool is_leaf() const override
+	{
+		return false;
+	}
+
+private:
+	using with_pimpl<embed>::impl;
 };
 
-PlainTextExporter::PlainTextExporter(eol_sequence eol_sequence, link_formatter link_formatter)
-	: with_pimpl<PlainTextExporter>(eol_sequence, link_formatter)
-{}
-
-continuation PlainTextExporter::operator()(Tag&& tag, const emission_callbacks& emit_tag)
-{
-	if (std::holds_alternative<std::exception_ptr>(tag))
-		return emit_tag(std::move(tag));
-	if (std::holds_alternative<tag::Document>(tag) || !impl().m_stream)
-	{
-		++impl().m_nested_docs_level;
-		if (impl().m_nested_docs_level == 1)
-			impl().m_stream = std::make_shared<std::stringstream>();
-	}
-	impl().m_writer.write_to(tag, *impl().m_stream);
-	if (std::holds_alternative<tag::CloseDocument>(tag))
-	{
-		--impl().m_nested_docs_level;
-		if (impl().m_nested_docs_level == 0)
-		{
-			emit_tag(data_source{seekable_stream_ptr{impl().m_stream}, mime_type{"text/plain"}, confidence::highest});
-			impl().m_stream.reset();
-		}
-	}
-	return continuation::proceed;
-}
-
+} // namespace openai
 } // namespace docwire
+
+#endif //DOCWIRE_OPENAI_EMBED_H

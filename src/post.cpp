@@ -11,6 +11,7 @@
 
 #include "post.h"
 
+#include "content_type_by_file_extension.h"
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
 #include <curlpp/Infos.hpp>
@@ -100,6 +101,13 @@ try
 				std::shared_ptr<std::string> m_buffer;
 		};
 		std::optional<file_extension> extension = data.file_extension();
+		if (!extension)
+		{
+			if (auto mt = data.highest_confidence_mime_type())
+			{
+				extension = content_type::by_file_extension::to_extension(*mt);
+			}
+		}
 		FileName file_name { !extension ? impl().m_default_file_name.v : std::filesystem::path{std::string{"file"} + extension->string()} };
 		parts.push_back(new FileBuffer(impl().m_pipe_field_name, file_name, std::make_shared<std::string>(data_stream.str())));
 		request.setOpt(new curlpp::options::HttpPost(parts));

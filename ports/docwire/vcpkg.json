@@ -115,6 +115,9 @@
 		},
 		{
 			"name": "libmagic"
+		},
+		{
+			"name": "libxml2"
 		}
 	]
 }

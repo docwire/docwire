@@ -252,6 +252,11 @@ struct Document
 
 struct CloseDocument { };
 
+struct embedding
+{
+  std::vector<double> values;
+};
+
 struct start_processing {};
 
 using Variant = std::variant<
@@ -304,6 +309,7 @@ using Variant = std::variant<
   data_source,
   Document,
   CloseDocument,
+  embedding,
   start_processing,
   std::exception_ptr
 >;

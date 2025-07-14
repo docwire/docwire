@@ -35,6 +35,16 @@ namespace docwire::content_type::by_file_extension
 DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
 /**
+* @brief Converts a mime type to a file extension.
+*
+* @param mt The mime type to convert.
+* @return An optional file_extension. Returns std::nullopt if no mapping is found.
+*
+* @see file_extension_to_mime_type
+*/
+DOCWIRE_CONTENT_TYPE_EXPORT std::optional<file_extension> to_extension(const mime_type& mt);
+
+/**
 * @brief Detector chain element
 *
 * This class represents a chain element that detects and assigns content types to data sources using file extension.
