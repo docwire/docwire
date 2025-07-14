@@ -1,3 +1,28 @@
+## Version 2025.07.14
+
+This release introduces a significant new capability by adding support for OpenAI text embeddings. It also features a major refactoring that modularizes the HTTP client into its own library, and enhances the robustness of AI components by switching from file extension checks to MIME type-based content identification.
+
+> A whisper of meaning, in numbers cast,  
+> New dimensions open, built to last.  
+> For search and reason, a powerful key,  
+> Unlocking knowledge for all to see.  
+> ✨🔢🧠🔍
+
+- **Features**
+  - **OpenAI Embeddings Support:** Added a new `openai::embed` chain element to generate text embeddings using OpenAI's models (`text-embedding-3-small`, `text-embedding-3-large`, `text-embedding-ada-002`). This includes corresponding CLI options (`--openai-embed`, `--openai-embed-model`) and extensive documentation with examples.
+  - **MIME Type to File Extension Conversion:** Introduced a new utility function, `content_type::by_file_extension::to_extension`, to convert MIME types back to their common file extensions, improving interoperability.
+
+- **Improvements**
+  - **Robust Content Handling in AI Components:** AI components like `openai::Chat` and `local_ai::model_chain_element` now rely on MIME types (`text/plain`, `image/*`) instead of file extensions for more accurate content identification.
+  - **Enhanced `http::Post` Robustness:** The `http::Post` component can now automatically determine the file extension from the MIME type if it's not explicitly provided in the `data_source`.
+
+- **Refactor**
+  - **Modular HTTP Client:** The `http::Post` class has been moved from `docwire_core` to a new, dedicated `docwire_http` library to improve modularity.
+
+- **Fixes**
+  - **Build (Windows):** Fixed a build failure on Windows by explicitly adding `libxml2` as a direct dependency in the vcpkg port.
+  - **Documentation:** Corrected a minor paragraph formatting issue in `README.md`.
+
 ## Version 2025.06.29
 
 This release introduces a major update to the integrated OpenAI functionalities, adding support for the latest models like GPT-4o and retiring older ones. It also enhances dependency management by replacing a custom library port with a standard one, and improves the intelligence of several AI-powered features through better prompting.
