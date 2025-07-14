@@ -225,6 +225,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
     - TextToSpeech: Perform written text into spoken words (voice) conversion (TTS).
     - Transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
     - embed: Generate embedding of text via OpenAI.
+   
    Supports multiple Open AI LLM models: chatgpt-4o-latest, gpt-4.1, gpt-4.1-mini, gpt-4.1-mini, gpt-4.1-nano, gpt-4o, gpt-4o-mini, o3, o3-pro, o3-mini, o4-mini, gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1, gpt-4o-transcribe, tts-1, tts-1-hd, text-embedding-3-small, text-embedding-3-large, text-embedding-ada-002. More are coming.
 
 - **Incremental parsing** returning data as soon as they are available
