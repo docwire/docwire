@@ -49,8 +49,10 @@
 #include "output.h"
 #include "plain_text_exporter.h"
 #include "post.h"
+#include "resource_path.h"
 #include "tags.h"
 #include "throw_if.h"
+#include "tokenizer.h"
 #include "transformer_func.h"
 #include "txt_parser.h"
 #include "input.h"
@@ -2074,6 +2076,29 @@ TEST(content_type, xlsb)
 TEST(stringification, enums)
 {
     ASSERT_EQ(stringify(confidence::very_high), "very_high");
+}
+
+TEST(tokenizer, flan_t5)
+{
+    docwire::local_ai::tokenizer tokenizer { resource_path("flan-t5-large-ct2-int8") };
+
+    // Test case for an empty input string. It should return only the end of sequence token.
+    ASSERT_THAT(tokenizer.tokenize(""),
+        ::testing::ElementsAre("</s>"));
+    ASSERT_EQ(tokenizer.detokenize(std::vector<std::string>{""}), "");
+
+    // Simple case with common words.
+    ASSERT_THAT(tokenizer.tokenize("test input"),
+        ::testing::ElementsAre("▁test", "▁input", "</s>"));
+    // Detokenization should correctly join the tokens back into the original string.
+    ASSERT_EQ(tokenizer.detokenize(std::vector<std::string>{"▁test", "▁input"}), "test input");
+
+    // A more complex sentence to show subword tokenization.
+    // "Tokenization" is likely not in the vocabulary as a single unit and will be split.
+    // The exact tokenization depends on the vocabulary learned in spiece.model.
+    ASSERT_THAT(tokenizer.tokenize("Tokenization is useful."),
+        ::testing::ElementsAre("▁To", "ken", "ization", "▁is", "▁useful", ".", "</s>"));
+    ASSERT_EQ(tokenizer.detokenize(std::vector<std::string>{"▁To", "ken", "ization", "▁is", "▁useful", "."}), "Tokenization is useful.");
 }
 
 int main(int argc, char* argv[])

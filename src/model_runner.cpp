@@ -15,78 +15,15 @@
 #include <ctranslate2/translator.h>
 #include "error_tags.h"
 #include "log.h"
-#include <onmt/Tokenizer.h>
-#include <optional>
 #include "resource_path.h"
 #include "throw_if.h"
+#include "tokenizer.h"
 
 namespace docwire
 {
 
 namespace
 {
-    struct tokenizer_config
-    {
-        tokenizer_config(const std::filesystem::path& model_data_path)
-        {
-            try
-            {
-                std::ifstream ifs(model_data_path.string() + "/tokenizer_config.json");
-                const auto tokenizer_config = boost::json::parse(ifs).as_object();
-                tokenizer_class = tokenizer_config.at("tokenizer_class").as_string().c_str();
-                if (std::filesystem::exists(model_data_path / "spiece.model"))
-                    tokenizer_model_path = model_data_path / "spiece.model";
-                if (tokenizer_config.contains("eos_token"))
-                    eos_token = tokenizer_config.at("eos_token").as_string().c_str();
-            }
-            catch (const std::exception& e)
-            {
-                std::throw_with_nested(make_error(model_data_path));
-            }
-        }
-        std::string tokenizer_class;
-        std::filesystem::path tokenizer_model_path;
-        std::optional<std::string> eos_token;
-    };
-
-    class tokenizer
-    {
-    public:
-        tokenizer(const std::filesystem::path& model_data_path)
-            : tokenizer(tokenizer_config(model_data_path))
-        {}
-
-        tokenizer(const tokenizer_config& tokenizer_config)
-            : m_tokenizer_config(tokenizer_config), m_tokenizer(create_tokenizer(tokenizer_config))
-        {}
-
-        std::vector<std::string> tokenize(const std::string& input)
-        {
-            docwire_log_func();
-            std::vector<std::string> input_tokens;
-            m_tokenizer.tokenize(input.c_str(), input_tokens);
-            docwire_log_var(input_tokens);
-            if (m_tokenizer_config.eos_token)
-                input_tokens.push_back(*m_tokenizer_config.eos_token);
-            return input_tokens;
-        }
-        std::string detokenize(const std::vector<std::string>& output_tokens)
-        {
-            docwire_log_func();
-            return m_tokenizer.detokenize(output_tokens).c_str();
-        }
-    private:
-        onmt::Tokenizer create_tokenizer(const tokenizer_config& tokenizer_config)
-        {
-            throw_if(tokenizer_config.tokenizer_class != "T5Tokenizer",
-                "Unsupported tokenizer class",
-                tokenizer_config.tokenizer_class, errors::uninterpretable_data{});
-            return onmt::Tokenizer(onmt::Tokenizer::Mode::None, onmt::Tokenizer::Flags::SentencePieceModel, tokenizer_config.tokenizer_model_path.string());
-        }
-
-        onmt::Tokenizer m_tokenizer;
-	    tokenizer_config m_tokenizer_config;
-    };
 
 std::filesystem::path default_model_path()
 {
@@ -102,7 +39,7 @@ template<>
 struct pimpl_impl<local_ai::model_runner> : pimpl_impl_base
 {
 	ctranslate2::Translator m_translator;
-	tokenizer m_tokenizer;
+	local_ai::tokenizer m_tokenizer;
 
     pimpl_impl(const std::filesystem::path& model_data_path)
         : m_translator(ctranslate2::models::ModelLoader{model_data_path.string()}),
