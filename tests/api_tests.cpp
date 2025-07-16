@@ -567,7 +567,8 @@ TEST(Http, Post)
     ASSERT_TRUE(output_val.is_object());
     ASSERT_TRUE(output_val.as_object()["headers"].is_object());
     ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-type"].as_string().c_str(), "application/json");
-    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["transfer-encoding"].as_string().c_str(), "chunked");
+    ASSERT_THAT(std::string{output_val.as_object()["headers"].as_object()["user-agent"].as_string()},
+                ::testing::StartsWith("DocWire SDK/"));
     ASSERT_STREQ(output_val.as_object()["data"].as_string().c_str(), "<http://www.silvercoders.com/>hyperlink test\n\n");
 }
 
