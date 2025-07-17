@@ -12,11 +12,11 @@
 #include "tokenizer.h"
 
 #include <boost/json.hpp>
-#include <ctranslate2/translator.h>
 #include "error_tags.h"
+#include <fstream>
 #include "log.h"
-#include <onmt/Tokenizer.h>
 #include <optional>
+#include <sentencepiece_processor.h>
 #include "throw_if.h"
 
 namespace docwire
@@ -54,7 +54,7 @@ struct tokenizer_config
 template<>
 struct pimpl_impl<local_ai::tokenizer> : pimpl_impl_base
 {
-    onmt::Tokenizer m_tokenizer;
+    sentencepiece::SentencePieceProcessor m_processor;
     tokenizer_config m_tokenizer_config;
 
     pimpl_impl(const std::filesystem::path& model_data_path)
@@ -62,15 +62,12 @@ struct pimpl_impl<local_ai::tokenizer> : pimpl_impl_base
     {}
 
     pimpl_impl(const tokenizer_config& tokenizer_config)
-        : m_tokenizer_config(tokenizer_config), m_tokenizer(create_tokenizer(tokenizer_config))
-    {}
-
-    onmt::Tokenizer create_tokenizer(const tokenizer_config& tokenizer_config)
+        : m_tokenizer_config(tokenizer_config)
     {
         throw_if(tokenizer_config.tokenizer_class != "T5Tokenizer",
             "Unsupported tokenizer class",
             tokenizer_config.tokenizer_class, errors::uninterpretable_data{});
-        return onmt::Tokenizer(onmt::Tokenizer::Mode::None, onmt::Tokenizer::Flags::SentencePieceModel, tokenizer_config.tokenizer_model_path.string());
+        throw_if(!m_processor.Load(tokenizer_config.tokenizer_model_path.string()).ok(), errors::uninterpretable_data{});
     }
 };
 
@@ -85,7 +82,7 @@ std::vector<std::string> tokenizer::tokenize(const std::string& input)
 {
     docwire_log_func();
     std::vector<std::string> input_tokens;
-    impl().m_tokenizer.tokenize(input.c_str(), input_tokens);
+    throw_if(!impl().m_processor.Encode(input, &input_tokens).ok(), errors::uninterpretable_data{});
     docwire_log_var(input_tokens);
     if (impl().m_tokenizer_config.eos_token)
         input_tokens.push_back(*impl().m_tokenizer_config.eos_token);
@@ -95,7 +92,9 @@ std::vector<std::string> tokenizer::tokenize(const std::string& input)
 std::string tokenizer::detokenize(const std::vector<std::string>& output_tokens)
 {
     docwire_log_func();
-    return impl().m_tokenizer.detokenize(output_tokens).c_str();
+    std::string output;
+    throw_if(!impl().m_processor.Decode(output_tokens, &output).ok(), errors::uninterpretable_data{});
+    return output;
 }
 
 } // namespace local_ai

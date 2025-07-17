@@ -102,7 +102,7 @@
 			"name": "ctranslate2"
 		},
 		{
-			"name": "opennmt-tokenizer"
+			"name": "sentencepiece"
 		},
 		{
 			"name": "flan-t5-large-ct2-int8"

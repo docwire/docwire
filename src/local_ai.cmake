@@ -2,8 +2,8 @@ add_library(docwire_local_ai SHARED model_chain_element.cpp model_runner.cpp tok
 
 find_package(Boost REQUIRED COMPONENTS filesystem system json)
 find_package(ctranslate2 CONFIG REQUIRED)
-find_library(opennmt_tokenizer OpenNMTTokenizer REQUIRED)
-target_link_libraries(docwire_local_ai PRIVATE docwire_core Boost::filesystem Boost::json CTranslate2::ctranslate2 ${opennmt_tokenizer})
+find_library(sentencepiece_LIBRARIES sentencepiece REQUIRED)
+target_link_libraries(docwire_local_ai PRIVATE docwire_core Boost::filesystem Boost::json CTranslate2::ctranslate2 ${sentencepiece_LIBRARIES})
 
 install(TARGETS docwire_local_ai EXPORT docwire_targets)
 if(MSVC)
