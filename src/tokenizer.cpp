@@ -89,6 +89,17 @@ std::vector<std::string> tokenizer::tokenize(const std::string& input)
     return input_tokens;
 }
 
+std::vector<int> tokenizer::encode(const std::string& input)
+{
+    docwire_log_func();
+    std::vector<int> input_ids;
+    throw_if(!impl().m_processor.Encode(input, &input_ids).ok(), errors::uninterpretable_data{});
+    docwire_log_var(input_ids);
+    if (impl().m_tokenizer_config.eos_token)
+        input_ids.push_back(impl().m_processor.eos_id());
+    return input_ids;
+}
+
 std::string tokenizer::detokenize(const std::vector<std::string>& output_tokens)
 {
     docwire_log_func();

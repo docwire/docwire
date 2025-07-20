@@ -2085,11 +2085,15 @@ TEST(tokenizer, flan_t5)
     // Test case for an empty input string. It should return only the end of sequence token.
     ASSERT_THAT(tokenizer.tokenize(""),
         ::testing::ElementsAre("</s>"));
+    ASSERT_THAT(tokenizer.encode(""),
+        ::testing::ElementsAre(1));
     ASSERT_EQ(tokenizer.detokenize(std::vector<std::string>{""}), "");
 
     // Simple case with common words.
     ASSERT_THAT(tokenizer.tokenize("test input"),
         ::testing::ElementsAre("▁test", "▁input", "</s>"));
+    ASSERT_THAT(tokenizer.encode("test input"),
+        ::testing::ElementsAre(794, 3785, 1));
     // Detokenization should correctly join the tokens back into the original string.
     ASSERT_EQ(tokenizer.detokenize(std::vector<std::string>{"▁test", "▁input"}), "test input");
 
@@ -2098,6 +2102,8 @@ TEST(tokenizer, flan_t5)
     // The exact tokenization depends on the vocabulary learned in spiece.model.
     ASSERT_THAT(tokenizer.tokenize("Tokenization is useful."),
         ::testing::ElementsAre("▁To", "ken", "ization", "▁is", "▁useful", ".", "</s>"));
+    ASSERT_THAT(tokenizer.encode("Tokenization is useful."),
+        ::testing::ElementsAre(304, 2217, 1707, 19, 1934, 5, 1));
     ASSERT_EQ(tokenizer.detokenize(std::vector<std::string>{"▁To", "ken", "ization", "▁is", "▁useful", "."}), "Tokenization is useful.");
 }
 

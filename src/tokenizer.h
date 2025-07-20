@@ -28,6 +28,8 @@ public:
 
     std::vector<std::string> tokenize(const std::string& input);
 
+    std::vector<int> encode(const std::string& input);
+
     std::string detokenize(const std::vector<std::string>& output_tokens);
 };
 
