@@ -9,31 +9,54 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "model_chain_element.h"
+#include "local_ai_embed.h"
 
 #include "error_tags.h"
 #include "resource_path.h"
+#include "tags.h"
 #include "throw_if.h"
 
-namespace docwire::local_ai
+namespace docwire
 {
 
-model_chain_element::model_chain_element(const std::string& prompt)
-	: docwire::local_ai::model_chain_element(prompt, std::make_shared<model_runner>(resource_path("flan-t5-large-ct2-int8")))
+template<>
+struct pimpl_impl<local_ai::embed> : pimpl_impl_base
+{
+    std::shared_ptr<local_ai::model_runner> m_model_runner;
+    std::string m_prefix;
+
+    pimpl_impl(std::shared_ptr<local_ai::model_runner> model_runner, std::string prefix)
+        : m_model_runner(std::move(model_runner)), m_prefix(std::move(prefix))
+    {}
+};
+
+namespace local_ai
+{
+
+const std::string embed::e5_passage_prefix = "passage: ";
+const std::string embed::e5_query_prefix = "query: ";
+
+embed::embed(std::shared_ptr<model_runner> model_runner, std::string prefix)
+    : with_pimpl<embed>(std::move(model_runner), std::move(prefix))
 {}
 
-continuation model_chain_element::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+embed::embed(std::string prefix)
+    : with_pimpl<embed>(std::make_shared<model_runner>(resource_path("multilingual-e5-small-ct2-int8")), std::move(prefix))
+{}
+
+continuation embed::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 {
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+    if (!std::holds_alternative<data_source>(tag))
+        return emit_tag(std::move(tag));
 
-	const data_source& data = std::get<data_source>(tag);
-	throw_if (!data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}), errors::program_logic{});
-	std::string input = m_prompt + "\n" + data.string();
-	std::string output = m_model_runner->process(input);
+    const data_source& data = std::get<data_source>(tag);
+    throw_if(!data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}), "Input for local_ai::embed must be text/plain", errors::program_logic{});
+    std::string data_str = data.string();
 
-	emit_tag(data_source{output});
-	return continuation::proceed;
+    std::string prefixed_input = impl().m_prefix + data_str;
+    std::vector<double> embedding_vector = impl().m_model_runner->embed(prefixed_input);
+    return emit_tag(tag::embedding{std::move(embedding_vector)});
 }
 
-} // namespace docwire::local_ai
+} // namespace local_ai
+} // namespace docwire

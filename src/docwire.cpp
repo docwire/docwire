@@ -19,6 +19,7 @@
 #include "archives_parser.h"
 #include "detect_sentiment.h"
 #include "embed.h"
+#include "local_ai_embed.h"
 #include "exception_utils.h"
 #include "extract_entities.h"
 #include "extract_keywords.h"
@@ -35,6 +36,7 @@
 #include "output.h"
 #include "plain_text_exporter.h"
 #include "post.h"
+#include "resource_path.h"
 #include "standard_filter.h"
 #include "summarize.h"
 #include "text_to_speech.h"
@@ -116,6 +118,7 @@ int main(int argc, char* argv[])
 		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
 		("http-post", po::value<std::string>(), "url to process data via http post")
 		("local-ai-prompt", po::value<std::string>(), "prompt to process text via local AI model")
+		("local-ai-embed", po::value<std::string>()->implicit_value(""), "generate embedding of text via local AI model. Optional argument is a prefix (e.g. \"passage: \" or \"query: \").")
 		("local-ai-model", po::value<std::string>(), "path to local AI model data (build-in default model is used if not specified)")
 		("openai-chat", po::value<std::string>(), "prompt to process text and images via OpenAI")
 		("openai-extract-entities", "extract entities from text and images via OpenAI")
@@ -370,10 +373,44 @@ int main(int argc, char* argv[])
 
 			auto model_runner = vm.count("local-ai-model") ?
 				std::make_shared<local_ai::model_runner>(vm["local-ai-model"].as<std::string>()) :
-				std::make_shared<local_ai::model_runner>();
+				std::make_shared<local_ai::model_runner>(resource_path("flan-t5-large-ct2-int8"));
 			
 			chain |=
 				local_ai::model_chain_element(prompt, model_runner);
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << "Error: " << errors::diagnostic_message(e) << std::endl;
+			return 1;
+		}
+	}
+
+	if (vm.count("local-ai-embed"))
+	{
+		try
+		{
+			std::string prefix = vm["local-ai-embed"].as<std::string>();
+			auto model_runner = vm.count("local-ai-model") ?
+				std::make_shared<local_ai::model_runner>(vm["local-ai-model"].as<std::string>()) :
+				std::make_shared<local_ai::model_runner>(resource_path("multilingual-e5-small-ct2-int8"));
+			
+			chain |= local_ai::embed(model_runner, prefix);
+			chain |= [](Tag&& tag, const emission_callbacks& emit_tag) -> continuation {
+				if (std::holds_alternative<tag::embedding>(tag))
+				{
+					const auto& embedding_vec = std::get<tag::embedding>(tag).values;
+					std::string embedding_str = "[";
+					for (size_t i = 0; i < embedding_vec.size(); ++i)
+					{
+						embedding_str += std::to_string(embedding_vec[i]);
+						if (i < embedding_vec.size() - 1)
+							embedding_str += ", ";
+					}
+					embedding_str += "]";
+					return emit_tag(data_source{embedding_str});
+				}
+				return emit_tag(std::move(tag));
+			};
 		}
 		catch(const std::exception& e)
 		{

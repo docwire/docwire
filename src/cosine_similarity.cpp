@@ -9,49 +9,36 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
-#define DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
+#include "cosine_similarity.h"
 
-#include "local_ai_export.h"
-#include "pimpl.h"
-#include <filesystem>
-#include <vector>
-#include <string>
+#include <cmath>
+#include "error_tags.h"
+#include "throw_if.h"
 
-namespace docwire::local_ai
+namespace docwire
 {
 
-/**
- * @brief Class representing the AI model loaded to memory.
- *
- * Constructor loads model to memory and makes it ready for usage.
- * Destructor frees memory used by model.
- * It is important not to duplicate the object because memory consumption can be high.
- */
-class DOCWIRE_LOCAL_AI_EXPORT model_runner : public with_pimpl<model_runner>
+double cosine_similarity(const std::vector<double>& a, const std::vector<double>& b)
 {
-public:
-    /**
-     * @brief Constructor. Loads model to memory.
-     * @param model_data_path Path to the folder containing model files.
-     */
-    model_runner(const std::filesystem::path& model_data_path);
+  throw_if(a.size() != b.size(), "Vectors must have the same size", errors::program_logic{});
+  double dot_product = 0.0;
+  double norm_a = 0.0;
+  double norm_b = 0.0;
+  for (size_t i = 0; i < a.size(); ++i)
+  {
+    dot_product += a[i] * b[i];
+    norm_a += a[i] * a[i];
+    norm_b += b[i] * b[i];
+  }
 
-    /**
-     * @brief Process input text using the model.
-     * @param input Text to process.
-     * @return Processed text.
-     */
-    std::string process(const std::string& input);
+  // Use a practical epsilon for the squared norm to check for zero vectors.
+  // This threshold is aligned with the one used for L2 normalization in
+  // model_runner.cpp (1e-6f). The squared value is 1e-12.
+  // Returning 0.0 is a common and practical approach, implying orthogonality.
+  constexpr double zero_vector_threshold_sq = 1e-12;
+  if (norm_a < zero_vector_threshold_sq || norm_b < zero_vector_threshold_sq)
+    return 0.0;
+  return dot_product / (std::sqrt(norm_a) * std::sqrt(norm_b));
+}
 
-    /**
-     * @brief Create embedding for the input text using the model.
-     * @param input Text to process.
-     * @return Vector of embedding values.
-     */
-    std::vector<double> embed(const std::string& input);
-};
-
-} // namespace docwire::local_ai
-
-#endif // DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
+} // namespace docwire

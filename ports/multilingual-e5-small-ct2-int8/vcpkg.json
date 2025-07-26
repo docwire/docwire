@@ -1,0 +1,7 @@
+{
+	"name": "multilingual-e5-small-ct2-int8",
+	"version-date": "2024-12-16",
+	"description": "multilingual-e5-small-ct2-int8",
+	"homepage": "https://huggingface.co/jncraton/multilingual-e5-small-ct2-int8",
+	"license": "MIT"
+}
