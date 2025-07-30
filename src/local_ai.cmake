@@ -5,7 +5,12 @@ find_package(ctranslate2 CONFIG REQUIRED)
 find_library(sentencepiece_LIBRARIES sentencepiece REQUIRED)
 if(MSVC)
     find_package(absl CONFIG REQUIRED)
-    list(APPEND sentencepiece_LIBRARIES absl::absl)
+    list(APPEND sentencepiece_LIBRARIES
+        absl::strings
+        absl::flags
+        absl::flags_parse
+        absl::log
+        absl::check)
 endif()
 target_link_libraries(docwire_local_ai PRIVATE docwire_core Boost::filesystem Boost::json CTranslate2::ctranslate2 ${sentencepiece_LIBRARIES})
 
