@@ -759,20 +759,29 @@ int main(int argc, char* argv[])
     docwire::data_source{std::string{"What is data processing?"}, mime_type{"text/plain"}, confidence::highest} | local_ai::embed(local_ai::embed::e5_query_prefix) | similar_query_tags;
     assert(similar_query_tags.size() == 1 && std::holds_alternative<tag::embedding>(similar_query_tags[0]));
     auto similar_query_embedding = std::get<tag::embedding>(similar_query_tags[0]);
-    // 3. Create an embedding for a dissimilar query
+    // 3. Create an embedding for a partially related query
+    std::vector<Tag> partial_query_tags;
+    docwire::data_source{std::string{"How can data analysis improve business efficiency?"}, mime_type{"text/plain"}, confidence::highest} | local_ai::embed(local_ai::embed::e5_query_prefix) | partial_query_tags;
+    assert(partial_query_tags.size() == 1 && std::holds_alternative<tag::embedding>(partial_query_tags[0]));
+    auto partial_query_embedding = std::get<tag::embedding>(partial_query_tags[0]);
+    // 4. Create an embedding for a dissimilar query
     std::vector<Tag> dissimilar_query_tags;
     docwire::data_source{std::string{"What is the best C++ IDE?"}, mime_type{"text/plain"}, confidence::highest} | local_ai::embed(local_ai::embed::e5_query_prefix) | dissimilar_query_tags;
     assert(dissimilar_query_tags.size() == 1 && std::holds_alternative<tag::embedding>(dissimilar_query_tags[0]));
     auto dissimilar_query_embedding = std::get<tag::embedding>(dissimilar_query_tags[0]);
-    // 4. Calculate and check similarities.
-    // For asymmetric search (query vs. passage), the E5 model is trained to produce
-    // high scores for relevant pairs and low scores for dissimilar pairs.
+    // 5. Calculate and check similarities.
     double sim = cosine_similarity(passage_embedding.values, similar_query_embedding.values);
     std::cout << "Similarity (passage, similar_query): " << sim << std::endl;
+    double partial_sim = cosine_similarity(passage_embedding.values, partial_query_embedding.values);
+    std::cout << "Similarity (passage, partial_query): " << partial_sim << std::endl;
     double dissim = cosine_similarity(passage_embedding.values, dissimilar_query_embedding.values);
     std::cout << "Similarity (passage, dissimilar_query): " << dissim << std::endl;
-    assert(sim > 0.8); // Similar query should have high similarity
-    assert(dissim < 0.5); // Dissimilar query should have low similarity
+    // Check that the scores are within expected ranges.
+    assert(sim > 0.9 && sim < 1.0);
+    assert(partial_sim > 0.8 && partial_sim < 0.9);
+    assert(dissim > 0.7 && dissim < 0.8);
+    // The most important check is the relative order of the scores.
+    assert(sim > partial_sim && partial_sim > dissim);
   }
   catch (const std::exception& e)
   {

@@ -102,17 +102,34 @@ struct pimpl_impl<local_ai::model_runner> : pimpl_impl_base
         // 2. Forward through the encoder
         std::future<ctranslate2::EncoderForwardOutput> future = encoder.forward_batch_async(tokens_batch);
         ctranslate2::EncoderForwardOutput encoder_output = future.get();
-        const ctranslate2::StorageView& last_hidden_state = encoder_output.last_hidden_state;
+        ctranslate2::StorageView& last_hidden_state = encoder_output.last_hidden_state;
 
-        // 3. Pool the result (mean pooling) using the optimized CTranslate2 operator.
+        // 3. Pool the result (mean pooling).
+        // To correctly handle padding, we must pool only over the actual tokens.
+        // The number of tokens is known before encoding, from the tokenizer output.
+        // We create a new view of the hidden state that is "shrunk" to the
+        // actual sequence length. This assumes a batch size of 1.
+        const size_t batch_size = tokens_batch.size();
+        throw_if(batch_size != 1, "Embedding function currently supports only batch size 1", errors::program_logic{});
+        const size_t actual_length = tokens_batch[0].size();
+        const size_t hidden_size = last_hidden_state.dim(-1);
+
+        // Create a new StorageView with the effective shape. This creates a view
+        // into the existing buffer without copying data.
+        // We must cast the dimensions to int64_t to avoid a narrowing conversion error,
+        // as the StorageView shape constructor expects signed integers.
+        ctranslate2::StorageView effective_hidden_state({1, static_cast<int64_t>(actual_length), static_cast<int64_t>(hidden_size)},
+                                                        last_hidden_state.data<float>(),
+                                                        last_hidden_state.device());
         ctranslate2::StorageView pooled_result;
-        ctranslate2::ops::Mean(1)(last_hidden_state, pooled_result);
+        ctranslate2::ops::Mean(1)(effective_hidden_state, pooled_result);
 
         // 4. Manually perform L2 normalization.
         // This is required for sentence-transformer models like E5.
-        const float* pooled_data = pooled_result.to(ctranslate2::DataType::FLOAT32).data<float>();
+        const ctranslate2::StorageView pooled_result_float = pooled_result.to(ctranslate2::DataType::FLOAT32);
+        const float* pooled_data = pooled_result_float.data<float>();
         // Convert to double-precision vector *before* normalization to maintain accuracy.
-        std::vector<double> embedding_values(pooled_data, pooled_data + pooled_result.size());
+        std::vector<double> embedding_values(pooled_data, pooled_data + pooled_result_float.size());
 
         double l2_norm_val = 0.0;
         for (double val : embedding_values) {
