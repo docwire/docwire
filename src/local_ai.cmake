@@ -11,6 +11,8 @@ if(MSVC)
         absl::flags_parse
         absl::log
         absl::check)
+    find_package(protobuf CONFIG REQUIRED)
+    list(APPEND sentencepiece_LIBRARIES protobuf::libprotobuf-lite)
 endif()
 target_link_libraries(docwire_local_ai PRIVATE docwire_core Boost::filesystem Boost::json CTranslate2::ctranslate2 ${sentencepiece_LIBRARIES})
 
