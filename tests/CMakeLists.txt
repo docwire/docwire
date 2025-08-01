@@ -21,7 +21,7 @@ include(GoogleTest)
 
 gtest_discover_tests(api_tests
         DISCOVERY_MODE PRE_TEST
-        DISCOVERY_TIMEOUT 30
+        DISCOVERY_TIMEOUT 60
 		PROPERTIES LABELS "is_api_test"
 )
 
