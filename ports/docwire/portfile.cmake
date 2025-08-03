@@ -70,8 +70,8 @@ function(run_tests build_type)
 	endif()
 
 	set(additional_ctest_args "")
-	if (VCPKG_TARGET_IS_LINUX AND (THREAD_SANITIZER OR MEMCHECK_ENABLED OR HELGRIND_ENABLED))
-		message(STATUS "Skipping tests that use model runner (Thread Sanitizer or Helgrind) on Linux")
+	if (VCPKG_TARGET_IS_LINUX AND (THREAD_SANITIZER OR MEMCHECK_ENABLED OR HELGRIND_ENABLED OR CALLGRIND_ENABLED))
+		message(STATUS "Skipping tests that use model runner (Thread Sanitizer or Memcheck or Helgrind or Callgrind) on Linux")
 		set(additional_ctest_args --label-exclude uses_model_runner)
 	endif()
 
