@@ -36,10 +36,14 @@
    fun:_Unwind_RaiseException
 }
 {
-   Abseil Flags static init
+   Abseil Flags static initialization
    Memcheck:Leak
    match-leak-kinds: possible
    fun:_Znwm
    ...
-   fun:_ZN4absl12lts_2025012714flags_internal13FlagRegistrarIiLb1EEC1ERNS1_4FlagIiEEPKc
+   fun:_ZN4absl12lts_2025012714flags_internal23RegisterCommandLineFlagERNS0_15CommandLineFlagEPKc
+   ...
+   fun:call_init
+   fun:_dl_init
+   ...
 }
