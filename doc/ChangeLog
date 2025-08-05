@@ -1,3 +1,42 @@
+## Version 2025.08.05
+
+This release introduces a major new feature: local, offline AI-powered text embeddings. By integrating the `multilingual-e5-small` model, DocWire can now generate high-quality vector representations for text in over 100 languages, enabling advanced NLP tasks like semantic search and RAG. This update also includes a significant dependency modernization, replacing `OpenNMT-Tokenizer` with Google's `SentencePiece`, and numerous build and stability fixes, particularly for MSVC and Valgrind.
+
+> A new dimension, in vectors bright,  
+> Where words find place, and meanings take flight.  
+> With models sharp and logic so keen,  
+> A deeper understanding, clearly seen.  
+> From text to numbers, a seamless art,  
+> DocWire now reads the document's heart.  
+> ✨🧠🔢
+
+- **Features**
+  - **Local AI Embeddings:** Introduced a powerful new `local_ai::embed` chain element to generate high-quality, multilingual text embeddings using the `multilingual-e5-small` model. This enables advanced NLP tasks like semantic search, RAG, and text clustering to be performed entirely offline.
+  - **Cosine Similarity Function:** Added a `cosine_similarity` utility function to calculate the similarity between two embedding vectors, making it easy to compare documents and queries.
+  - **Public Tokenizer API:** The `local_ai::tokenizer` class, now powered by Google's SentencePiece, is exposed as a public API. It includes an `encode()` method to convert text into token IDs, supporting different tokenizer models like `T5Tokenizer` and `XLMRobertaTokenizer`.
+
+- **Improvements**
+  - **Unified Model Runner:** The `local_ai::model_runner` has been enhanced to dynamically load and manage both sequence-to-sequence (`Translator`) and encoder-only (`Encoder`) models, enabling it to handle both text generation and embedding tasks within a single class.
+  - **Advanced Pooling and Normalization:** Implemented mean pooling over token outputs and L2 normalization for the embedding model to ensure high-quality, standardized vectors as required by models like E5.
+  - **Simplified AI Chain Element:** Added a new convenience constructor to `local_ai::model_chain_element` that uses a default model, simplifying its usage in common scenarios.
+  - **CLI Enhancements:** The command-line interface now supports embedding generation via the `--local-ai-embed` option.
+
+- **Refactor**
+  - **Dependency Modernization:** Replaced the `OpenNMT-Tokenizer` dependency with a direct integration of Google's `SentencePiece` library, reducing complexity and aligning with modern NLP tooling.
+
+- **Fixes**
+  - **Build (MSVC):** Resolved Address Sanitizer (ASan) linking errors on MSVC by adding `_DISABLE_STRING_ANNOTATION` and `_DISABLE_VECTOR_ANNOTATION` definitions.
+  - **Build (CI):** Increased CI timeouts for Valgrind-based sanitizers (`memcheck`, `helgrind`, `callgrind`) to prevent premature job termination.
+  - **Build (CI):** Disabled resource-intensive local AI tests when running under Callgrind to ensure CI stability.
+  - **Build (Valgrind):** Added suppressions for known memory leaks in the Abseil library to clean up Valgrind reports.
+
+- **Documentation**
+  - **New Embedding Example:** Added a comprehensive example to `README.md` demonstrating how to generate embeddings for a document and multiple queries, and then calculate their cosine similarity.
+
+- **Tests**
+  - Added unit tests for the new `local_ai::tokenizer` to validate its behavior with both `flan-t5` and `multilingual-e5` models.
+  - The new local AI embedding example from `README.md` is now compiled and executed as part of the automated test suite.
+
 ## Version 2025.07.14
 
 This release introduces a significant new capability by adding support for OpenAI text embeddings. It also features a major refactoring that modularizes the HTTP client into its own library, and enhances the robustness of AI components by switching from file extension checks to MIME type-based content identification.
