@@ -9,49 +9,30 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
-#define DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
+#ifndef DOCWIRE_COSINE_SIMILARITY_H
+#define DOCWIRE_COSINE_SIMILARITY_H
 
-#include "local_ai_export.h"
-#include "pimpl.h"
-#include <filesystem>
+#include "core_export.h"
 #include <vector>
-#include <string>
 
-namespace docwire::local_ai
+namespace docwire
 {
 
 /**
- * @brief Class representing the AI model loaded to memory.
+ * @brief Calculates the cosine similarity between two vectors.
  *
- * Constructor loads model to memory and makes it ready for usage.
- * Destructor frees memory used by model.
- * It is important not to duplicate the object because memory consumption can be high.
+ * This function computes the cosine similarity between two double-precision
+ * floating-point vectors. The vectors must have the same size.
+ *
+ * @param a The first vector.
+ * @param b The second vector.
+ * @return The cosine similarity, a value in the range [-1, 1].
+ *         - 1: The vectors have the same orientation (maximum similarity, e.g. "a fast car" and "a quick automobile").
+ *         - 0: The vectors are orthogonal (no similarity, e.g. "a fast car" and "the theory of relativity").
+ *         - -1: The vectors have opposite orientations (maximum dissimilarity, e.g. "a wonderful day" and "a terrible day").
+ *         Returns 0.0 if either vector has a magnitude close to zero.
  */
-class DOCWIRE_LOCAL_AI_EXPORT model_runner : public with_pimpl<model_runner>
-{
-public:
-    /**
-     * @brief Constructor. Loads model to memory.
-     * @param model_data_path Path to the folder containing model files.
-     */
-    model_runner(const std::filesystem::path& model_data_path);
+DOCWIRE_CORE_EXPORT double cosine_similarity(const std::vector<double>& a, const std::vector<double>& b);
 
-    /**
-     * @brief Process input text using the model.
-     * @param input Text to process.
-     * @return Processed text.
-     */
-    std::string process(const std::string& input);
-
-    /**
-     * @brief Create embedding for the input text using the model.
-     * @param input Text to process.
-     * @return Vector of embedding values.
-     */
-    std::vector<double> embed(const std::string& input);
-};
-
-} // namespace docwire::local_ai
-
-#endif // DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
+} // namespace docwire
+#endif // DOCWIRE_COSINE_SIMILARITY_H

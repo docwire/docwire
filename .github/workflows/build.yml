@@ -75,7 +75,7 @@ jobs:
             sanitizer: callgrind
     name: ${{ matrix.triplet }}-${{ matrix.os }}${{ matrix.sanitizer != '' && format('-{0}-sanitizer', matrix.sanitizer) || '' }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 300
+    timeout-minutes: ${{ (matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind') && 360 || 300 }}
     steps:
       - name: "Checkout source code"
         uses: actions/checkout@v4

@@ -1,5 +1,6 @@
 add_library(docwire_core SHARED
     charset_converter.cpp
+    cosine_similarity.cpp
     data_source.cpp
     entities.cpp
     error.cpp

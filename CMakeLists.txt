@@ -33,6 +33,16 @@ if (ADDRESS_SANITIZER)
 		message(STATUS "Address sanitizer enabled")
 		add_compile_options(-fsanitize=address)
 		add_link_options(-fsanitize=address)
+		if (MSVC)
+			# This is the fix for LNK2038 errors when linking ASan-enabled code
+			# against non-ASan dependencies (like those from vcpkg).
+			# It prevents MSVC from changing the layout of std::string and std::vector,
+			# thus maintaining ABI compatibility.
+			add_compile_definitions(
+				_DISABLE_STRING_ANNOTATION=1
+				_DISABLE_VECTOR_ANNOTATION=1
+			)
+		endif()
 		message(STATUS "ASAN_OPTIONS environment variable: $ENV{ASAN_OPTIONS}")
 	elseif (MSVC)
 		message(WARNING "Address sanitizer is not enabled in release mode for MSVC version less than 17.4 due to known issues")

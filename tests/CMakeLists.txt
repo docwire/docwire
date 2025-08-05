@@ -5,7 +5,8 @@ if(MSVC)
     target_compile_options(api_tests PRIVATE /bigobj)
 endif()
 target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_archives
-	docwire_fuzzy_match docwire_base64 docwire_content_type docwire_http GTest::gtest GTest::gmock)
+	docwire_fuzzy_match docwire_base64 docwire_content_type docwire_http docwire_local_ai docwire_openai
+	GTest::gtest GTest::gmock)
 target_compile_definitions(api_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 
 find_package(Boost REQUIRED COMPONENTS json)
@@ -20,7 +21,7 @@ include(GoogleTest)
 
 gtest_discover_tests(api_tests
         DISCOVERY_MODE PRE_TEST
-        DISCOVERY_TIMEOUT 30
+        DISCOVERY_TIMEOUT 60
 		PROPERTIES LABELS "is_api_test"
 )
 
@@ -49,8 +50,9 @@ while (TRUE)
 	if (openai_api_key_pos EQUAL -1 OR NOT "$ENV{OPENAI_API_KEY}" STREQUAL "")
 		message(STATUS "Adding test example_${n}")
 		add_test(NAME example_${n} COMMAND example_${n})
-		string(FIND "${code_block}" "model_runner" model_runner_pos)
-		if (NOT model_runner_pos EQUAL -1)
+		string(FIND "${code_block}" "local_ai::model_chain_element" model_chain_element_pos)
+		string(FIND "${code_block}" "local_ai::embed" embed_pos)
+		if (NOT model_chain_element_pos EQUAL -1 OR NOT embed_pos EQUAL -1)
 			message(STATUS "Labeling test example_${n} as uses_model_runner")
 			set_property(TEST example_${n} PROPERTY LABELS "is_example;uses_model_runner")
 		else()

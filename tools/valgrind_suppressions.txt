@@ -35,3 +35,15 @@
    obj:/usr/lib/x86_64-linux-gnu/libgcc_s.so.1
    fun:_Unwind_RaiseException
 }
+{
+   Abseil Flags static initialization
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:_Znwm
+   ...
+   fun:_ZN4absl12lts_2025012714flags_internal23RegisterCommandLineFlagERNS0_15CommandLineFlagEPKc
+   ...
+   fun:call_init
+   fun:_dl_init
+   ...
+}

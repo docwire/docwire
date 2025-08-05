@@ -206,6 +206,8 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Build-in powerful flan-t5-large model**: This state-of-the-art transformer-based model is designed for a wide range of natural language processing tasks, including text translation, question answering, summarization, text generation, and more. It has been trained on a diverse range of data sources and can handle complex linguistic phenomena such as word order, syntax, and semantics. The model's versatility and ability to perform multiple tasks make it a valuable addition to the DocWire SDK, allowing developers to leverage its capabilities for a variety of NLP tasks within their applications. **The build-in model is optimized to run with descent speed on lower-end desktops and mobile devices without GPU acceleration and consuming less than 1 GB of memory**
 
+- **Build-in powerful multilingual-e5-small model**: This powerful and efficient multilingual text embedding model is designed to generate high-quality vector representations (embeddings) for text in over 100 languages. These embeddings are crucial for a wide range of NLP tasks, including semantic search, retrieval-augmented generation (RAG), text clustering, and similarity comparison. The `multilingual-e5-small` model is optimized for performance, making it suitable for applications where both speed and accuracy are important.
+
 - **Support for running locally more powerful AI models using ctranslate2 technology**: This technology is designed to be highly scalable and efficient on CPU and GPU, enabling efficient deployment of language models on resource-constrained devices. Quantization allows maintaining accuracy with smaller model sizes making it suitable for desktop and mobile applications. Parallel and asynchronous execution enables efficient utilization of hardware resources.
 
 - **Equipped with a high-grade, scriptable, and trainable local OCR** that has LSTM neural networks-based character recognition OCR capabilities in more than 100 languages and multiple languages in single picture.
@@ -238,7 +240,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Semantic Chunking**: Group related content using the SDK's chunking feature to create contextually rich embeddings that capture the nuances of the document's structure.
 
-- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1openai_1_1embed.html) or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT, to generate embeddings that can be used in various NLP tasks.
+- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1openai_1_1embed.html) or [local_ai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1local__ai_1_1embed.html) or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT, to generate embeddings that can be used in various NLP tasks.
 
 - **Enhancing AI/NLP Pipelines**: Embeddings obtained from DocWire SDK can be used to enhance AI/NLP pipelines, enabling more accurate and context-aware applications such as document classification, sentiment analysis, and information retrieval.
 
@@ -434,7 +436,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("document_processing_market_trends.odt") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Classify to one of the following categories and answer with exact category name: agreement, invoice, report, legal, user manual, other:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+    std::filesystem::path("document_processing_market_trends.odt") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Classify to one of the following categories and answer with exact category name: agreement, invoice, report, legal, user manual, other:\n\n") | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -488,7 +490,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Translate to spanish:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Translate to spanish:\n\n") | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -540,7 +542,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Detect sentiment:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Detect sentiment:\n\n") | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -591,7 +593,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Write a short summary for this text:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Write a short summary for this text:\n\n") | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -668,7 +670,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Find sentence about \"data convertion\" in the following text:\n\n", std::make_shared<local_ai::model_runner>()) | out_stream;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Find sentence about \"data convertion\" in the following text:\n\n") | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -724,6 +726,62 @@ int main(int argc, char* argv[])
     assert(std::holds_alternative<tag::embedding>(out_tags[0]));
     auto embedding = std::get<tag::embedding>(out_tags[0]);
     assert(embedding.values.size() == 1536);
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << errors::diagnostic_message(e) << std::endl;
+    return 1;
+  }
+
+  return 0;
+}
+```
+
+Create embedding for document in any format (Office, PDF, mail, etc) using build-in local AI model, create embeddings for two queries and calculate similarity:
+
+```cpp
+#include "docwire.h"
+
+int main(int argc, char* argv[])
+{
+  using namespace docwire;
+
+  try
+  {
+    // 1. Create an embedding for the document (passage) using the default prefix
+    std::vector<Tag> passage_tags;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::embed(local_ai::embed::e5_passage_prefix) | passage_tags;
+    assert(passage_tags.size() == 1 && std::holds_alternative<tag::embedding>(passage_tags[0]));
+    auto passage_embedding = std::get<tag::embedding>(passage_tags[0]);
+    assert(passage_embedding.values.size() == 384);
+    // 2. Create an embedding for a similar query using the query prefix
+    std::vector<Tag> similar_query_tags;
+    docwire::data_source{std::string{"What is data processing?"}, mime_type{"text/plain"}, confidence::highest} | local_ai::embed(local_ai::embed::e5_query_prefix) | similar_query_tags;
+    assert(similar_query_tags.size() == 1 && std::holds_alternative<tag::embedding>(similar_query_tags[0]));
+    auto similar_query_embedding = std::get<tag::embedding>(similar_query_tags[0]);
+    // 3. Create an embedding for a partially related query
+    std::vector<Tag> partial_query_tags;
+    docwire::data_source{std::string{"How can data analysis improve business efficiency?"}, mime_type{"text/plain"}, confidence::highest} | local_ai::embed(local_ai::embed::e5_query_prefix) | partial_query_tags;
+    assert(partial_query_tags.size() == 1 && std::holds_alternative<tag::embedding>(partial_query_tags[0]));
+    auto partial_query_embedding = std::get<tag::embedding>(partial_query_tags[0]);
+    // 4. Create an embedding for a dissimilar query
+    std::vector<Tag> dissimilar_query_tags;
+    docwire::data_source{std::string{"What is the best C++ IDE?"}, mime_type{"text/plain"}, confidence::highest} | local_ai::embed(local_ai::embed::e5_query_prefix) | dissimilar_query_tags;
+    assert(dissimilar_query_tags.size() == 1 && std::holds_alternative<tag::embedding>(dissimilar_query_tags[0]));
+    auto dissimilar_query_embedding = std::get<tag::embedding>(dissimilar_query_tags[0]);
+    // 5. Calculate and check similarities.
+    double sim = cosine_similarity(passage_embedding.values, similar_query_embedding.values);
+    std::cout << "Similarity (passage, similar_query): " << sim << std::endl;
+    double partial_sim = cosine_similarity(passage_embedding.values, partial_query_embedding.values);
+    std::cout << "Similarity (passage, partial_query): " << partial_sim << std::endl;
+    double dissim = cosine_similarity(passage_embedding.values, dissimilar_query_embedding.values);
+    std::cout << "Similarity (passage, dissimilar_query): " << dissim << std::endl;
+    // Check that the scores are within expected ranges.
+    assert(sim > 0.9 && sim < 1.0);
+    assert(partial_sim > 0.8 && partial_sim < 0.9);
+    assert(dissim > 0.7 && dissim < 0.8);
+    // The most important check is the relative order of the scores.
+    assert(sim > partial_sim && partial_sim > dissim);
   }
   catch (const std::exception& e)
   {
@@ -1168,6 +1226,7 @@ docwire [options] file_name
 Process data securely using offline AI models with the following options:
 
 - **&ndash;&ndash;local-ai-prompt <prompt>**: prompt to process text via local AI model
+- **&ndash;&ndash;local-ai-embed <prefix>**: generate embedding of text via local AI model. Optional argument is a prefix (e.g. "passage: " or "query: ")
 - **&ndash;&ndash;local-ai-model <path>**: path to local AI model data (build-in default model is used if not specified)
 
 ### OpenAI Integration
@@ -1226,6 +1285,12 @@ docwire --output_type html document.docx
 
 ```bash
 docwire --local-ai-prompt "What is the conclusion of the following document?" data_processing_definition.doc
+```
+
+### Secure offline AI embedding generation
+
+```bash
+docwire --local-ai-embed "passage: " data_processing_definition.doc
 ```
 
 #### Leveraging OpenAI for Intelligent Document Analysis

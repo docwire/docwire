@@ -12,88 +12,46 @@
 #include "model_runner.h"
 
 #include <boost/json.hpp>
+#include <cmath>
+#include <ctranslate2/encoder.h>
+#include <ctranslate2/ops/mean.h>
 #include <ctranslate2/translator.h>
 #include "error_tags.h"
 #include "log.h"
-#include <onmt/Tokenizer.h>
-#include <optional>
-#include "resource_path.h"
 #include "throw_if.h"
+#include "tokenizer.h"
+#include <variant>
 
 namespace docwire
 {
 
 namespace
 {
-    struct tokenizer_config
-    {
-        tokenizer_config(const std::filesystem::path& model_data_path)
-        {
-            try
-            {
-                std::ifstream ifs(model_data_path.string() + "/tokenizer_config.json");
-                const auto tokenizer_config = boost::json::parse(ifs).as_object();
-                tokenizer_class = tokenizer_config.at("tokenizer_class").as_string().c_str();
-                if (std::filesystem::exists(model_data_path / "spiece.model"))
-                    tokenizer_model_path = model_data_path / "spiece.model";
-                if (tokenizer_config.contains("eos_token"))
-                    eos_token = tokenizer_config.at("eos_token").as_string().c_str();
-            }
-            catch (const std::exception& e)
-            {
-                std::throw_with_nested(make_error(model_data_path));
-            }
-        }
-        std::string tokenizer_class;
-        std::filesystem::path tokenizer_model_path;
-        std::optional<std::string> eos_token;
-    };
 
-    class tokenizer
-    {
-    public:
-        tokenizer(const std::filesystem::path& model_data_path)
-            : tokenizer(tokenizer_config(model_data_path))
-        {}
-
-        tokenizer(const tokenizer_config& tokenizer_config)
-            : m_tokenizer_config(tokenizer_config), m_tokenizer(create_tokenizer(tokenizer_config))
-        {}
-
-        std::vector<std::string> tokenize(const std::string& input)
-        {
-            docwire_log_func();
-            std::vector<std::string> input_tokens;
-            m_tokenizer.tokenize(input.c_str(), input_tokens);
-            docwire_log_var(input_tokens);
-            if (m_tokenizer_config.eos_token)
-                input_tokens.push_back(*m_tokenizer_config.eos_token);
-            return input_tokens;
-        }
-        std::string detokenize(const std::vector<std::string>& output_tokens)
-        {
-            docwire_log_func();
-            return m_tokenizer.detokenize(output_tokens).c_str();
-        }
-    private:
-        onmt::Tokenizer create_tokenizer(const tokenizer_config& tokenizer_config)
-        {
-            throw_if(tokenizer_config.tokenizer_class != "T5Tokenizer",
-                "Unsupported tokenizer class",
-                tokenizer_config.tokenizer_class, errors::uninterpretable_data{});
-            return onmt::Tokenizer(onmt::Tokenizer::Mode::None, onmt::Tokenizer::Flags::SentencePieceModel, tokenizer_config.tokenizer_model_path.string());
-        }
-
-        onmt::Tokenizer m_tokenizer;
-	    tokenizer_config m_tokenizer_config;
-    };
-
-std::filesystem::path default_model_path()
+std::variant<ctranslate2::Translator, ctranslate2::Encoder> load_model(const std::filesystem::path& model_data_path)
 {
-    std::filesystem::path def_model_path = resource_path("flan-t5-large-ct2-int8");
-    throw_if (!std::filesystem::exists(def_model_path),
-        "Default model path does not exist", def_model_path, errors::program_corrupted{});
-    return def_model_path;
+    try
+    {
+        docwire_log(info) << "Attempting to load model as Translator: " << model_data_path;
+        return std::variant<ctranslate2::Translator, ctranslate2::Encoder>{
+            std::in_place_type<ctranslate2::Translator>,
+            ctranslate2::models::ModelLoader{model_data_path.string()}};
+    }
+    catch (const std::exception& translator_error)
+    {
+        docwire_log(warning) << "Failed to load model as Translator, trying as Encoder. " << translator_error;
+        try
+        {
+            docwire_log(info) << "Attempting to load model as Encoder: " << model_data_path;
+            return std::variant<ctranslate2::Translator, ctranslate2::Encoder>{
+                std::in_place_type<ctranslate2::Encoder>,
+                ctranslate2::models::ModelLoader{model_data_path.string()}};
+        }
+        catch (const std::exception& encoder_error)
+        {
+            std::throw_with_nested(make_error("Failed to load model as either Translator or Encoder", model_data_path, errors::program_corrupted{}));
+        }
+    }
 }
 
 } // anonymous namespace
@@ -101,17 +59,19 @@ std::filesystem::path default_model_path()
 template<>
 struct pimpl_impl<local_ai::model_runner> : pimpl_impl_base
 {
-	ctranslate2::Translator m_translator;
-	tokenizer m_tokenizer;
+	std::variant<ctranslate2::Translator, ctranslate2::Encoder> m_model;
+	local_ai::tokenizer m_tokenizer;
 
     pimpl_impl(const std::filesystem::path& model_data_path)
-        : m_translator(ctranslate2::models::ModelLoader{model_data_path.string()}),
+        : m_model(load_model(model_data_path)),
           m_tokenizer(model_data_path)
     {}
 
     std::vector<std::string> process(const std::vector<std::string>& input_tokens)
     {
         docwire_log_func();
+        throw_if(!std::holds_alternative<ctranslate2::Translator>(m_model), "Model is not a Translator, cannot process.", errors::program_logic{});
+        auto& translator = std::get<ctranslate2::Translator>(m_model);
         ctranslate2::TranslationOptions options{};
 		options.max_decoding_length = 1024;
 		options.sampling_temperature = 0.0;
@@ -122,21 +82,75 @@ struct pimpl_impl<local_ai::model_runner> : pimpl_impl_base
             docwire_log_var(step_result.token);
 			return false;
 		};
-		auto results = m_translator.translate_batch_async({ input_tokens }, options);
+		auto results = translator.translate_batch_async({ input_tokens }, options);
         throw_if (results.size() != 1, "Unexpected number of results", results.size(), errors::program_logic{});
         auto result = results[0].get();
         throw_if (result.hypotheses.size() != 1, "Unexpected number of hypotheses", result.hypotheses.size(), errors::program_logic{});
         auto hypothesis = result.hypotheses[0];
         return hypothesis;
     }
+
+    std::vector<double> embed(const std::string& input)
+    {
+        docwire_log_func();
+        throw_if(!std::holds_alternative<ctranslate2::Encoder>(m_model), "Model is not an Encoder, cannot embed.", errors::program_logic{});
+        auto& encoder = std::get<ctranslate2::Encoder>(m_model);
+
+        // 1. Tokenize
+        std::vector<std::vector<std::string>> tokens_batch = { m_tokenizer.tokenize(input) };
+
+        // 2. Forward through the encoder
+        std::future<ctranslate2::EncoderForwardOutput> future = encoder.forward_batch_async(tokens_batch);
+        ctranslate2::EncoderForwardOutput encoder_output = future.get();
+        ctranslate2::StorageView& last_hidden_state = encoder_output.last_hidden_state;
+
+        // 3. Pool the result (mean pooling).
+        // To correctly handle padding, we must pool only over the actual tokens.
+        // The number of tokens is known before encoding, from the tokenizer output.
+        // We create a new view of the hidden state that is "shrunk" to the
+        // actual sequence length. This assumes a batch size of 1.
+        const size_t batch_size = tokens_batch.size();
+        throw_if(batch_size != 1, "Embedding function currently supports only batch size 1", errors::program_logic{});
+        const size_t actual_length = tokens_batch[0].size();
+        const size_t hidden_size = last_hidden_state.dim(-1);
+
+        // Create a new StorageView with the effective shape. This creates a view
+        // into the existing buffer without copying data.
+        // We must cast the dimensions to int64_t to avoid a narrowing conversion error,
+        // as the StorageView shape constructor expects signed integers.
+        ctranslate2::StorageView effective_hidden_state({1, static_cast<int64_t>(actual_length), static_cast<int64_t>(hidden_size)},
+                                                        last_hidden_state.data<float>(),
+                                                        last_hidden_state.device());
+        ctranslate2::StorageView pooled_result;
+        ctranslate2::ops::Mean(1)(effective_hidden_state, pooled_result);
+
+        // 4. Manually perform L2 normalization.
+        // This is required for sentence-transformer models like E5.
+        const ctranslate2::StorageView pooled_result_float = pooled_result.to(ctranslate2::DataType::FLOAT32);
+        const float* pooled_data = pooled_result_float.data<float>();
+        // Convert to double-precision vector *before* normalization to maintain accuracy.
+        std::vector<double> embedding_values(pooled_data, pooled_data + pooled_result_float.size());
+
+        double l2_norm_val = 0.0;
+        for (double val : embedding_values) {
+            l2_norm_val += val * val;
+        }
+        l2_norm_val = std::sqrt(l2_norm_val);
+
+        // Use a small epsilon to avoid division by zero.
+        // This threshold is consistent with the one in cosine_similarity.
+        if (l2_norm_val > 1e-6) {
+            for (double& val : embedding_values) {
+                val /= l2_norm_val;
+            }
+        }
+
+        return embedding_values;
+    }
 };
 
 namespace local_ai
 {
-
-model_runner::model_runner()
-    : model_runner(default_model_path())
-{}
 
 model_runner::model_runner(const std::filesystem::path& model_data_path)
     : with_pimpl(model_data_path)
@@ -147,6 +161,11 @@ std::string model_runner::process(const std::string& input)
     std::vector<std::string> input_tokens = impl().m_tokenizer.tokenize(input);
     std::vector<std::string> output_tokens = impl().process(input_tokens);
     return impl().m_tokenizer.detokenize(output_tokens);
+}
+
+std::vector<double> model_runner::embed(const std::string& input)
+{
+    return impl().embed(input);
 }
 
 } // namespace local_ai

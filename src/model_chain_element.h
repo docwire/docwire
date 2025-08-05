@@ -41,6 +41,16 @@ public:
 	{}
 
 	/**
+	 * @brief Construct a model chain element with a default model runner.
+	 *
+	 * This constructor initializes the model chain element with a default
+	 * `model_runner` configured to use the `flan-t5-large-ct2-int8` model.
+	 *
+	 * @param prompt The prompt to append to the input text.
+	 */
+	model_chain_element(const std::string& prompt);
+
+	/**
 	 * @brief Process the input.
 	 *
 	 * If the input is not a data source, emit the input and return. If the
