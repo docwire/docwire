@@ -55,7 +55,6 @@ class LibXml2InitAndCleanup
 		LibXml2InitAndCleanup()
 		{
 			xmlInitParser();
-			xmlGetGlobalState(); // Immediately creating global state. Creating it later by xmlReaderForMemory or other functions causes false-positive memory leak reports.
 		}
 
 		~LibXml2InitAndCleanup()
@@ -79,11 +78,11 @@ class LibXml2InitAndCleanup
  */
 static std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> make_xml_text_reader_safely(const std::string& xml, int xml_parse_options)
 {
-	// xmlParserInit() is called both from LibXml2InitAndCleanup and from xmlReaderForMemory.
-	// libxml2 can be initialized and deinitialized multiple times because it checkes the value of
-	// internal xmlParserInitialized flag but thread-sanitizers show that it's not thread-safe.
+	// libxml2 requires one-time initialization via xmlInitParser(). While functions like
+	// xmlReaderForMemory can trigger this initialization implicitly, that is not thread-safe.
+	// We explicitly call xmlInitParser() within a lock to ensure safe, one-time initialization.
 	std::lock_guard<std::mutex> xml_parser_init_mutex_lock(xml_parser_init_mutex);
-	// Init libxml2 immediately, but cleanup at application exit not to interfere with other threads or
+	// Init libxml2 on first use, but cleanup at application exit not to interfere with other threads or
 	// other code that uses libxml2.
 	static LibXml2InitAndCleanup init_and_cleanup{};
 	return std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)>(
