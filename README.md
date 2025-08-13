@@ -629,7 +629,7 @@ int main(int argc, char* argv[])
 }
 ```
 
-Make a text summary of voice recording (e.g. mp3 file with meeting recording) in two steps: convert voice to text and summarize text using OpenAI services:
+Make a text summary of voice recording (e.g. mp3 file with meeting recording) in two steps: convert voice to text and summarize text using OpenAI services (with non-default model selected):
 
 ```cpp
 #include "docwire.h"
@@ -643,7 +643,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.mp3") | openai::Transcribe(std::getenv("OPENAI_API_KEY")) | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY")) | out_stream;
+    std::filesystem::path("data_processing_definition.mp3") | openai::Transcribe(std::getenv("OPENAI_API_KEY")) | PlainTextExporter() | openai::Summarize(std::getenv("OPENAI_API_KEY"), openai::Model::gpt_4o) | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -683,7 +683,7 @@ int main(int argc, char* argv[])
 }
 ```
 
-Find phrases, objects and events in text or image using GPT model:
+Find phrases, objects and events in text or image using GPT model (with non-default model selected):
 
 ```cpp
 #include "docwire.h"
@@ -696,7 +696,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("scene_1.png") | content_type::detector{} | openai::Find("tree", std::getenv("OPENAI_API_KEY")) | out_stream;
+    std::filesystem::path("scene_1.png") | content_type::detector{} | openai::Find("tree", std::getenv("OPENAI_API_KEY"), openai::Model::gpt_4o) | out_stream;
   }
   catch (const std::exception& e)
   {
@@ -1246,7 +1246,7 @@ Unlock the power of OpenAI with the following options:
 - **&ndash;&ndash;openai-embed**: Generate embedding of text via OpenAI
 - **&ndash;&ndash;openai-transcribe**: Convert speech to text (transcribe) via OpenAI
 - **&ndash;&ndash;openai-key <key>**: OpenAI API key.
-- **&ndash;&ndash;openai-model <model>** (default: gpt_4o): Choose the OpenAI model. Available models are: chatgpt_4o_latest, gpt_41, gpt_41_mini, gpt_41_nano, gpt_4o, gpt_4o_mini, o3, o3_pro, o3_mini, o4_mini.
+- **&ndash;&ndash;openai-model <model>** (default: gpt_5): Choose the OpenAI model. Available models are: gpt_5, gpt_5_mini, gpt_5_nano, gpt_5_chat_latest, gpt_41, gpt_41_mini, gpt_41_nano, gpt_4o, gpt_4o_mini, o3, o3_pro, o3_deep_research, o3_mini, o4_mini, o4_mini_deep_research.
 - **&ndash;&ndash;openai-temperature <temp>**: Force specified temperature for OpenAI prompts.
 - **&ndash;&ndash;openai-image-detail <detail>**: Force specified image detail parameter for OpenAI image prompts. Available options are: low, high and automatic.
 - **&ndash;&ndash;openai-tts-model <model>** (default: gpt_4o_mini_tts): Choose the TTS model. Available models are: gpt_4o_mini_tts, tts_1, tts_1_hd.

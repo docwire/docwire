@@ -26,9 +26,15 @@ namespace openai
  */
 enum class Model
 {
-	/// ChatGPT-4o: GPT-4o model used in ChatGPT
-	chatgpt_4o_latest,
-	/// GPT-4.1: Flagship GPT model for complex tasks
+	/// GPT-5: The best model for coding and agentic tasks across domains
+	gpt_5,
+	/// GPT-5 mini: A faster, cost-efficient version of GPT-5 for well-defined tasks
+	gpt_5_mini,
+	/// GPT-5 nano: Fastest, most cost-efficient version of GPT-5
+	gpt_5_nano,
+	/// GPT-5 Chat: GPT-5 model used in ChatGPT
+	gpt_5_chat_latest,
+	/// GPT-4.1: Fast, highly intelligent model with largest context window
 	gpt_41,
 	/// GPT-4.1 mini: Balanced for intelligence, speed, and cost
 	gpt_41_mini,
@@ -42,10 +48,14 @@ enum class Model
 	o3,
 	/// o3-pro: Version of o3 with more compute for better responses
 	o3_pro,
+	/// o3-deep-research: OpenAI most powerful deep research model
+	o3_deep_research,
 	/// o3-mini: A small model alternative to o3
 	o3_mini,
 	/// o4-mini: Faster, more affordable reasoning model
 	o4_mini,
+	/// o4-mini-deep-research: Faster, more affordable deep research model
+	o4_mini_deep_research
 };
 
 enum class ImageDetail
@@ -56,7 +66,7 @@ enum class ImageDetail
 class DOCWIRE_OPENAI_EXPORT Chat : public ChainElement, public with_pimpl<Chat>
 {
 public:
-	Chat(const std::string& system_message, const std::string& api_key, Model model = Model::gpt_4o, float temperature = 0.7, ImageDetail image_detail = ImageDetail::automatic);
+	Chat(const std::string& system_message, const std::string& api_key, Model model = Model::gpt_5, float temperature = 0.7, ImageDetail image_detail = ImageDetail::automatic);
 
 	/**
 	* @brief Executes transform operation for given node data.
