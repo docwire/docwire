@@ -22,7 +22,7 @@ namespace openai
 class DOCWIRE_OPENAI_EXPORT TranslateTo : public Chat
 {
 public:
-	TranslateTo(const std::string& language, const std::string& api_key, Model model = Model::gpt_4o, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
+	TranslateTo(const std::string& language, const std::string& api_key, Model model = Model::gpt_5, float temperature = 0.0f, ImageDetail image_detail = ImageDetail::automatic);
 };
 
 } // namespace openai

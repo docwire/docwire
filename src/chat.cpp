@@ -63,7 +63,10 @@ std::string model_to_string(Model model)
 {
 	switch (model)
 	{
-		case Model::chatgpt_4o_latest: return "chatgpt-4o-latest";
+		case Model::gpt_5: return "gpt-5";
+		case Model::gpt_5_mini: return "gpt-5-mini";
+		case Model::gpt_5_nano: return "gpt-5-nano";
+		case Model::gpt_5_chat_latest: return "gpt-5-chat-latest";
 		case Model::gpt_41: return "gpt-4.1";
 		case Model::gpt_41_mini: return "gpt-4.1-mini";
 		case Model::gpt_41_nano: return "gpt-4.1-nano";
@@ -71,9 +74,11 @@ std::string model_to_string(Model model)
 		case Model::gpt_4o_mini: return "gpt-4o-mini";
 		case Model::o3: return "o3";
 		case Model::o3_pro: return "o3-pro";
+		case Model::o3_deep_research: return "o3-deep-research";
 		case Model::o3_mini: return "o3-mini";
 		case Model::o4_mini: return "o4-mini";
-		default: return "?";
+		case Model::o4_mini_deep_research: return "o4-mini-deep-research";
+		default: throw make_error("Unexpected model value", model, errors::program_logic{});
 	}
 }
 
@@ -114,7 +119,7 @@ std::string prepare_query(const std::string& system_msg, UserMsgType user_msg_ty
 				}}
 			}
 		},
-		{ "temperature", temperature }
+		{ "temperature", model == Model::gpt_5 || model == Model::gpt_5_mini || model == Model::gpt_5_nano ? 1 : temperature }
 	};
 	return boost::json::serialize(query);
 }
@@ -126,6 +131,7 @@ std::string post_request(const std::string& query, const std::string& api_key)
 	try
 	{
 		std::stringstream { query } | http::Post("https://api.openai.com/v1/chat/completions", api_key) | response_stream;
+		// TODO: some models require Responses API instead
 	}
 	catch (const std::exception& e)
 	{

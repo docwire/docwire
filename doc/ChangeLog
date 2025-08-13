@@ -1,3 +1,25 @@
+## Version 2025.08.13
+
+This release marks a major milestone by integrating full support for OpenAI's newly released `gpt-5` family of models. To reflect this significant advancement in AI, `gpt_5` is now the default model for all OpenAI operations, ensuring users have immediate access to state-of-the-art capabilities. The release also includes minor code quality improvements.
+
+> The future's here, no longer a dream,  
+> GPT-5 joins the DocWire stream.  
+> A new default, intelligent and vast,  
+> On foundations of quality, built to last.  
+> ✨🤖🚀
+
+- **Features**
+  - **New OpenAI Model Support:** Added support for the next-generation `gpt-5` family of models (`gpt-5`, `gpt_5_mini`, `gpt_5_nano`, `gpt_5_chat_latest`) and new research-focused models (`o3_deep_research`, `o4_mini_deep_research`).
+
+- **Improvements**
+  - **Updated Default AI Model:** The default model for all OpenAI operations has been updated to `gpt_5`, leveraging the new state-of-the-art capabilities.
+  - **Updated XML parser initialization:** Remove call to deprecated xmlGetGlobalState() for modern libxml2 compatibility.
+  - **Robust Model Handling:** The OpenAI model selection logic now throws an exception for unknown or unsupported models, improving error reporting.
+  - **Code Quality:** Several single-argument constructors in AI-related chain elements (`AnalyzeData`, `ExtractEntities`, `Summarize`) have been marked `explicit` to prevent unintended implicit conversions.
+
+- **Documentation**
+  - **Updated README:** The `README.md` file has been updated to reflect the new default model and the expanded list of available OpenAI models for both chat and CLI usage. Examples were updated to use non-default models to showcase flexibility.
+
 ## Version 2025.08.05
 
 This release introduces a major new feature: local, offline AI-powered text embeddings. By integrating the `multilingual-e5-small` model, DocWire can now generate high-quality vector representations for text in over 100 languages, enabling advanced NLP tasks like semantic search and RAG. This update also includes a significant dependency modernization, replacing `OpenNMT-Tokenizer` with Google's `SentencePiece`, and numerous build and stability fixes, particularly for MSVC and Valgrind.
