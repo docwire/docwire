@@ -11,6 +11,7 @@
 
 #include "output.h"
 
+#include "data_source.h"
 #include "error_tags.h"
 #include "ref_or_owned.h"
 #include "throw_if.h"
@@ -18,19 +19,19 @@
 namespace docwire
 {
 
-continuation OutputChainElement::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation OutputChainElement::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (std::holds_alternative<std::exception_ptr>(tag))
-		return emit_tag(std::move(tag));
+	if (msg->is<std::exception_ptr>())
+		return emit_message(std::move(msg));
 	if (std::holds_alternative<ref_or_owned<std::ostream>>(m_out_obj))
 	{
-		throw_if (!std::holds_alternative<data_source>(tag),
-			"Only data_source tags are supported", errors::program_logic{});
-		std::shared_ptr<std::istream> in_stream = std::get<data_source>(tag).istream();
+		throw_if (!msg->is<data_source>(),
+			"Only data_source elements are supported", errors::program_logic{});
+		std::shared_ptr<std::istream> in_stream = msg->get<data_source>().istream();
 		std::get<ref_or_owned<std::ostream>>(m_out_obj).get() << in_stream->rdbuf();
 	}
 	else
-		std::get<ref_or_owned<std::vector<Tag>>>(m_out_obj).get().push_back(std::move(tag));
+		std::get<ref_or_owned<std::vector<message_ptr>>>(m_out_obj).get().push_back(std::move(msg));
 	return continuation::proceed;
 }
 

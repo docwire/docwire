@@ -14,7 +14,6 @@
 #define DOCWIRE_PST_PARSER_H
 
 #include "mail_export.h"
-#include <vector>
 
 #include "chain_element.h"
 #include "pimpl.h"
@@ -30,7 +29,7 @@ private:
 
 public:
   PSTParser();
-  continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+  continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
   bool is_leaf() const override { return false; }
 };
 

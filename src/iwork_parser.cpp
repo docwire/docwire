@@ -10,8 +10,9 @@
 /*********************************************************************************************************************************************/
 
 #include "iwork_parser.h"
-
+#include "attributes.h"
 #include "data_source.h"
+#include "document_elements.h"
 #include "error_tags.h"
 #include <stack>
 #include <stdlib.h>
@@ -20,7 +21,6 @@
 #include <stdio.h>
 #include <sstream>
 #include "scoped_stack_push.h"
-#include "tags.h"
 #include "throw_if.h"
 #include "zip_reader.h"
 #include "entities.h"
@@ -242,7 +242,7 @@ namespace
 
 struct context
 {
-	const emission_callbacks& emit_tag;
+	const message_callbacks& emit_message;
 	std::string m_xml_file;
 };
 
@@ -261,12 +261,13 @@ const std::vector<mime_type> supported_mime_types =
 template<>
 struct pimpl_impl<IWorkParser> : pimpl_impl_base
 {
-	void parse(const data_source& data, const emission_callbacks& emit_tag);
+	void parse(const data_source& data, const message_callbacks& emit_message);
 	std::stack<context> m_context_stack;
 
-	continuation emit_tag(Tag&& tag) const
+	template <typename T>
+	continuation emit_message(T&& object) const
 	{
-		return m_context_stack.top().emit_tag(std::move(tag));
+		return m_context_stack.top().emit_message(std::forward<T>(object));
 	}
 
 	class DataSource
@@ -2106,10 +2107,10 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 IWorkParser::IWorkParser() = default;
 
-void pimpl_impl<IWorkParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
+void pimpl_impl<IWorkParser>::parse(const data_source& data, const message_callbacks& emit_message)
 {
 	docwire_log(debug) << "Using iWork parser.";
-	scoped::stack_push<context> context_guard{m_context_stack, {.emit_tag = emit_tag}};
+	scoped::stack_push<context> context_guard{m_context_stack, {.emit_message = emit_message}};
 	ZipReader unzip{data};
 	try
 	{
@@ -2122,19 +2123,19 @@ void pimpl_impl<IWorkParser>::parse(const data_source& data, const emission_call
 	try
 	{
 		m_context_stack.top().m_xml_file = find_main_xml_file(unzip);
-		emit_tag(tag::Document
+		emit_message(document::Document
 			{
-				.metadata=[this, &unzip, emit_tag]()
+				.metadata=[this, &unzip, emit_message]()
 				{
 					attributes::Metadata metadata;
-					ReadMetadata(unzip, metadata, [emit_tag](std::exception_ptr e) { emit_tag(e); });
+					ReadMetadata(unzip, metadata, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
 					return metadata;
 				}
 			});
 		std::string text;
 		parseIWork(unzip, text);
-		emit_tag(tag::Text{.text=text});
-		emit_tag(tag::CloseDocument{});
+		emit_message(document::Text{.text = text});
+		emit_message(document::CloseDocument{});
 	}
 	catch (const std::exception& ex)
 	{
@@ -2142,20 +2143,20 @@ void pimpl_impl<IWorkParser>::parse(const data_source& data, const emission_call
 	}
 }
 
-continuation IWorkParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation IWorkParser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 
-	auto& data = std::get<data_source>(tag);
+	auto& data = msg->get<data_source>();
 	data.assert_not_encrypted();
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 	{
-		return emit_tag(std::move(tag));
+		return emit_message(std::move(msg));
 	}
 
-	impl().parse(data, emit_tag);
+	impl().parse(data, emit_message);
 
 	return continuation::proceed;
 }

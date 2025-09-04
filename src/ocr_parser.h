@@ -12,15 +12,25 @@
 #ifndef DOCWIRE_OCR_PARSER_H
 #define DOCWIRE_OCR_PARSER_H
 
-#include <string>
-
 #include "chain_element.h"
+#include <cstdint>
+#include "data_source.h"
+#include <filesystem>
 #include "language.h"
 #include "ocr_export.h"
+#include <optional>
 #include "pimpl.h"
+#include <vector>
 
 namespace docwire
 {
+
+namespace ocr
+{
+
+struct PleaseWait {};
+
+} // namespace ocr
 
 struct ocr_confidence_threshold { std::optional<float> v; };
 struct ocr_data_path { std::filesystem::path v; };
@@ -39,7 +49,7 @@ public:
         ocr_timeout ocr_timeout_arg = {},
         ocr_data_path ocr_data_path_arg = {});
 
-    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
     bool is_leaf() const override { return false; }
 

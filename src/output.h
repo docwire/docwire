@@ -13,8 +13,12 @@
 #define DOCWIRE_OUTPUT_H
 
 #include "chain_element.h"
+#include <concepts>
+#include <ostream>
 #include "parsing_chain.h"
 #include <type_traits>
+#include <variant>
+#include <vector>
 
 namespace docwire
 {
@@ -43,7 +47,7 @@ public:
     : m_out_obj{out_stream}
   {}
 
-  OutputChainElement(ref_or_owned<std::vector<Tag>> out_vector)
+  OutputChainElement(ref_or_owned<std::vector<message_ptr>> out_vector)
     : m_out_obj{out_vector}
   {}
 
@@ -52,10 +56,10 @@ public:
     return true;
   }
 
-  virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+  virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
 private:
-  std::variant<ref_or_owned<std::ostream>, ref_or_owned<std::vector<Tag>>> m_out_obj;
+  std::variant<ref_or_owned<std::ostream>, ref_or_owned<std::vector<message_ptr>>> m_out_obj;
 };
 
 inline ParsingChain operator|(ref_or_owned<ChainElement> element, ref_or_owned<std::ostream> stream)
@@ -68,12 +72,12 @@ inline ParsingChain& operator|=(ParsingChain& chain, ref_or_owned<std::ostream> 
   return chain |= OutputChainElement(stream);
 }
 
-inline ParsingChain operator|(ref_or_owned<ChainElement> element, ref_or_owned<std::vector<Tag>> vector)
+inline ParsingChain operator|(ref_or_owned<ChainElement> element, ref_or_owned<std::vector<message_ptr>> vector)
 {
   return element | OutputChainElement(vector);
 }
 
-inline ParsingChain& operator|=(ParsingChain& chain, ref_or_owned<std::vector<Tag>> vector)
+inline ParsingChain& operator|=(ParsingChain& chain, ref_or_owned<std::vector<message_ptr>> vector)
 {
   return chain |= OutputChainElement(vector);
 }

@@ -13,6 +13,7 @@
 #define DOCWIRE_PLAIN_TEXT_EXPORTER_H
 
 #include "chain_element.h"
+#include "document_elements.h"
 
 namespace docwire
 {
@@ -21,8 +22,8 @@ struct eol_sequence { std::string v; };
 
 struct link_formatter
 {
-	std::function<std::string(const tag::Link&)> format_opening;
-	std::function<std::string(const tag::CloseLink&)> format_closing;
+	std::function<std::string(const document::Link&)> format_opening;
+	std::function<std::string(const document::CloseLink&)> format_closing;
 };
 
 /**
@@ -33,7 +34,7 @@ class DOCWIRE_CORE_EXPORT PlainTextExporter: public ChainElement, public with_pi
 public:
 	PlainTextExporter(eol_sequence eol = eol_sequence{"\n"}, link_formatter formatter = default_link_formatter);
 
-	virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
 	bool is_leaf() const override
 	{
@@ -43,11 +44,11 @@ public:
 private:
 	inline static const link_formatter default_link_formatter =
 	{
-		.format_opening = [](const tag::Link& link)
+		.format_opening = [](const document::Link& link)
 		{
 			return link.url ? "<" + *link.url + ">" : "";
 		},
-		.format_closing = [](const tag::CloseLink&)
+		.format_closing = [](const document::CloseLink&)
 		{
 			return "";
 		}

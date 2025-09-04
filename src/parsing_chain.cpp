@@ -11,8 +11,7 @@
 
 #include "chain_element.h"
 #include "pimpl.h"
-#include "tags.h"
-#include <functional>
+#include "message.h"
 #include "parsing_chain.h"
 
 namespace docwire
@@ -43,29 +42,29 @@ ParsingChain& ParsingChain::operator=(ParsingChain&& other)
   return *this;
 }
 
-void ParsingChain::operator()(Tag&& tag)
+void ParsingChain::operator()(message_ptr msg)
 {
-  operator()(std::move(tag),
+  operator()(std::move(msg),
   {
-    [](Tag&&) { return continuation::proceed; },
-    [this](Tag&& tag)
+    [](message_ptr) { return continuation::proceed; },
+    [this](message_ptr msg)
     {
-      operator()(std::move(tag));
+      operator()(std::move(msg));
       return continuation::proceed;
     }
   });
 }
 
-continuation ParsingChain::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation ParsingChain::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-  auto lhs_callback = [this, &rhs_callbacks = emit_tag](Tag&& tag)
+  auto lhs_callback = [this, &rhs_callbacks = emit_message](message_ptr msg)
   {
-    return impl().m_rhs_element.get()(std::move(tag), rhs_callbacks);
+    return impl().m_rhs_element.get()(std::move(msg), rhs_callbacks);
   };
-  return impl().m_lhs_element.get()( std::move(tag),
+  return impl().m_lhs_element.get()( std::move(msg),
     {
       lhs_callback,
-      [emit_tag](Tag&& tag) { return emit_tag.back(std::move(tag)); }
+      [emit_message](message_ptr msg) { return emit_message.back(std::move(msg)); }
     });
 }
 
@@ -89,7 +88,7 @@ ParsingChain operator|(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement
   ParsingChain chain{lhs, rhs};
   if (chain.is_complete())
   {
-    chain(tag::start_processing{});
+    chain(std::make_shared<message<pipeline::start_processing>>(pipeline::start_processing{}));
   }
   return chain;
 }

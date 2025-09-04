@@ -17,7 +17,7 @@
 #include "make_error.h"
 #include "output.h"
 #include "post.h"
-#include "tags.h"
+#include "ai_elements.h"
 #include "throw_if.h"
 #include <sstream>
 
@@ -107,15 +107,15 @@ std::vector<double> parse_response(const std::string& response)
 
 } // anonymous namespace
 
-continuation embed::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation embed::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
-	const data_source& data = std::get<data_source>(tag);
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
+	const data_source& data = msg->get<data_source>();
 	throw_if (!data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}), errors::program_logic{});
 	std::string data_str = data.string();
 	std::vector<double> embedding_vector = parse_response(post_request(prepare_query(data_str, impl().m_model), impl().m_api_key));
-	return emit_tag(tag::embedding{std::move(embedding_vector)});
+	return emit_message(ai::embedding{std::move(embedding_vector)});
 }
 
 } // namespace openai

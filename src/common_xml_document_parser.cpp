@@ -9,19 +9,19 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "common_xml_document_parser.h"
+#include "common_xml_document_parser.h" 
 
-#include "tags.h"
 #include "zip_reader.h"
 #include <libxml/xmlreader.h>
 #include <functional>
+#include <type_traits>
 #include <stack>
-#include <variant>
 #include "log.h"
 #include "make_error.h"
 #include "misc.h"
 #include "xml_stream.h"
 #include "xml_fixer.h"
+#include "document_elements.h"
 
 namespace docwire
 {
@@ -31,12 +31,12 @@ namespace
 
 struct context
 {
-	const emission_callbacks& emit_tag;
+	const message_callbacks& emit_message;
 	bool is_bold = false;
 	bool is_italic = false;
 	bool is_underline = false;
 	bool space_preserve = false;
-	bool stop_emmit_signals = false;
+	bool stop_emit_signals = false;
 	size_t m_list_depth = 0;
 	std::map<std::string, CommonXMLDocumentParser::ListStyleVector> m_list_styles;
 	std::map<int, CommonXMLDocumentParser::Comment> m_comments;
@@ -97,14 +97,15 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 	int m_xml_options;
   	std::stack<context> m_context_stack;
 
-	continuation emit_tag(Tag&& tag) const
+	template <typename T>
+	continuation emit_message(T&& object) const
 	{
-		if (!m_context_stack.top().stop_emmit_signals || std::holds_alternative<std::exception_ptr>(tag))
-			return m_context_stack.top().emit_tag(std::move(tag));
+        if (!m_context_stack.top().stop_emit_signals || std::is_same_v<std::decay_t<T>, std::exception_ptr>)
+			return m_context_stack.top().emit_message(std::forward<T>(object));
 		else
 			return continuation::proceed;
 	}
-	
+
 	void reset_format()
 	{
 		m_context_stack.top().is_bold = false;
@@ -123,15 +124,15 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 
     if (m_context_stack.top().is_underline)
     {
-    	emit_tag(tag::CloseUnderline{});
+    	emit_message(document::CloseUnderline{});
     }
     if (m_context_stack.top().is_italic)
     {
-    	emit_tag(tag::CloseItalic{});
+    	emit_message(document::CloseItalic{});
     }
     if (m_context_stack.top().is_bold)
     {
-    	emit_tag(tag::CloseBold{});
+    	emit_message(document::CloseBold{});
     }
     reset_format();
   }
@@ -147,15 +148,15 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 
 		if (m_context_stack.top().is_underline)
 		{
-			emit_tag(tag::CloseUnderline{});
+			emit_message(document::CloseUnderline{});
 		}
 		if (m_context_stack.top().is_italic)
 		{
-			emit_tag(tag::CloseItalic{});
+			emit_message(document::CloseItalic{});
 		}
 		if (m_context_stack.top().is_bold)
 		{
-			emit_tag(tag::CloseBold{});
+			emit_message(document::CloseBold{});
 		}
 		reset_format();
 	}
@@ -169,15 +170,15 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
     owner().parseXmlData(xml_stream, mode, zipfile);
     if (m_context_stack.top().is_bold)
     {
-    	emit_tag(tag::Bold{});
+    	emit_message(document::Bold{});
     }
     if (m_context_stack.top().is_italic)
     {
-    	emit_tag(tag::Italic{});
+    	emit_message(document::Italic{});
     }
     if (m_context_stack.top().is_underline)
     {
-    	emit_tag(tag::Underline{});
+    	emit_message(document::Underline{});
     }
     xml_stream.levelUp();
     children_processed = true;
@@ -188,13 +189,13 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
-    emit_tag(tag::Paragraph{});
+    emit_message(document::Paragraph{});
     docwire_log(debug) << "ODFOOXML_PARA command.";
     xml_stream.levelDown();
     text += owner().parseXmlData(xml_stream, mode, zipfile) + '\n';
     xml_stream.levelUp();
     children_processed = true;
-    emit_tag(tag::CloseParagraph{});
+    emit_message(document::CloseParagraph{});
   }
 
   void onODFOOXMLText(XmlStream& xml_stream, XmlParseMode mode,
@@ -209,7 +210,7 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
       children_processed = true;
       std::string s{content};
       if (m_context_stack.top().space_preserve || !std::all_of(s.begin(), s.end(), [](auto c){return isspace(static_cast<unsigned char>(c));}))
-        emit_tag(tag::Text{.text = s});
+        emit_message(document::Text{.text = s});
     }
   }
 
@@ -218,13 +219,13 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
-    emit_tag(tag::Table{});
+    emit_message(document::Table{});
     docwire_log(debug) << "onOOXMLTable command.";
     xml_stream.levelDown();
     text += owner().parseXmlData(xml_stream, mode, zipfile);
     xml_stream.levelUp();
     children_processed = true;
-    emit_tag(tag::CloseTable{});
+    emit_message(document::CloseTable{});
   }
 
   void onOOXMLTableRow(XmlStream& xml_stream, XmlParseMode mode,
@@ -232,13 +233,13 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
                        bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
-    emit_tag(tag::TableRow{});
+    emit_message(document::TableRow{});
     docwire_log(debug) << "onOOXMLTableRow command.";
     xml_stream.levelDown();
     text += owner().parseXmlData(xml_stream, mode, zipfile);
     xml_stream.levelUp();
     children_processed = true;
-    emit_tag(tag::CloseTableRow{});
+    emit_message(document::CloseTableRow{});
   }
 
   void onODFOOXMLTableColumn(XmlStream& xml_stream, XmlParseMode mode,
@@ -246,13 +247,13 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
                        bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     reset_format();
-    emit_tag(tag::TableCell{});
+    emit_message(document::TableCell{});
     docwire_log(debug) << "onODFOOXMLTableColumn command.";
     xml_stream.levelDown();
     text += owner().parseXmlData(xml_stream, mode, zipfile);
     xml_stream.levelUp();
     children_processed = true;
-    emit_tag(tag::CloseTableCell{});
+    emit_message(document::CloseTableCell{});
   }
 
   void onODFOOXMLTextTag(XmlStream& xml_stream, XmlParseMode mode,
@@ -327,8 +328,8 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			docwire_log(debug) << "ODFOOXML_TAB command.";
-			text += "\t";
-			emit_tag(tag::Text{.text = "\t"});
+			text += "\t"; 
+			emit_message(document::Text{.text = "\t"});
 		}
 
 	void onODFOOXMLSpace(XmlStream& xml_stream, XmlParseMode mode,
@@ -344,7 +345,7 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 			{
 				text += " ";
 			}
-			emit_tag(tag::Text{.text = std::string(count, ' ')});
+			emit_message(document::Text{.text = std::string(count, ' ')});
 		}
 
 	void onODFUrl(XmlStream& xml_stream, XmlParseMode mode,
@@ -353,13 +354,13 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 		{
 			docwire_log(debug) << "ODF_URL command.";
 			std::string mlink = xml_stream.attribute("href");
-			emit_tag(tag::Link{.url = mlink});
+			emit_message(document::Link{.url = mlink});
 			xml_stream.levelDown();
 			std::string text_link = owner().parseXmlData(xml_stream, mode, zipfile);
 			text += formatUrl(mlink, text_link);
 			xml_stream.levelUp();
 			children_processed = true;
-			emit_tag(tag::CloseLink{});
+			emit_message(document::CloseLink{});
 		}
 
 	void onODFOOXMLListStyle(XmlStream& xml_stream, XmlParseMode mode,
@@ -404,7 +405,7 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 			if (owner().getListDepth() <= 10 && !style_name.empty() && owner().getListStyles().find(style_name) != owner().getListStyles().end())
 				list_style = owner().getListStyles()[style_name].at(owner().getListDepth() - 1);
 			std::string list_type = (list_style == CommonXMLDocumentParser::number ? "decimal" : "disc");
-			emit_tag(tag::List{.type = list_type});
+			emit_message(document::List{.type = list_type});
 
 			xml_stream.levelDown();
 			while (xml_stream)
@@ -417,11 +418,11 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 				}
 				else if (xml_stream)
 				{
-					emit_tag(tag::ListItem{});
+					emit_message(document::ListItem{});
 					list_vector.push_back(owner().parseXmlData(xml_stream, mode, zipfile));
 				}
 
-				emit_tag(tag::CloseListItem{});
+				emit_message(document::CloseListItem{});
 
 				xml_stream.levelUp();
 				xml_stream.next();
@@ -434,11 +435,11 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 				if (list_vector.size() > 0)
 				{
 					text += "\n";
-					emit_tag(tag::BreakLine{});
+					emit_message(document::BreakLine{});
 				}
 			}
 			owner().getListDepth()--;
-			emit_tag(tag::CloseList{});
+			emit_message(document::CloseList{});
 			if (list_style == CommonXMLDocumentParser::number)
 				text += formatNumberedList(list_vector);
 			else
@@ -452,36 +453,36 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 		{
 			svector cell_vector;
 			std::vector<svector> row_vector;
-			docwire_log(debug) << "ODF_TABLE command.";
-			emit_tag(tag::Table{});
+			docwire_log(debug) << "ODF_TABLE command."; 
+			emit_message(document::Table{});
 			xml_stream.levelDown();
 			while (xml_stream)
 			{
 				if (xml_stream.name() == "table-row")
 				{
 					xml_stream.levelDown();
-					cell_vector.clear();
-					emit_tag(tag::TableRow{});
+					cell_vector.clear(); 
+					emit_message(document::TableRow{});
 					while (xml_stream)
 					{
 						if (xml_stream.name() == "table-cell")
 						{
-							emit_tag(tag::TableCell{});
+							emit_message(document::TableCell{});
 							xml_stream.levelDown();
 							cell_vector.push_back(owner().parseXmlData(xml_stream, mode, zipfile));
 							xml_stream.levelUp();
-							emit_tag(tag::CloseTableCell{});
+							emit_message(document::CloseTableCell{});
 						}
 						xml_stream.next();
 					}
 					row_vector.push_back(cell_vector);
 					xml_stream.levelUp();
-					emit_tag(tag::CloseTableRow{});
+					emit_message(document::CloseTableRow{});
 				}
 				xml_stream.next();
 			}
 			xml_stream.levelUp();
-			emit_tag(tag::CloseTable{});
+			emit_message(document::CloseTable{});
 			text += formatTable(row_vector);
 			children_processed = true;
 		}
@@ -528,7 +529,7 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 				xml_stream.next();
 			}
 			xml_stream.levelUp();
-			emit_tag(tag::Comment{.author = creator, .time = date, .comment = content});
+			emit_message(document::Comment{.author = creator, .time = date, .comment = content});
 			text += owner().formatComment(creator, date, content);
 			children_processed = true;
 		}
@@ -539,7 +540,7 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 		{
 			docwire_log(debug) << "ODF_LINE_BREAK command.";
 			text += "\n";
-			emit_tag(tag::BreakLine{});
+			emit_message(document::BreakLine{});
 		}
 
 	void onODFHeading(XmlStream& xml_stream, XmlParseMode mode,
@@ -563,7 +564,7 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 			std::string content;
 			if (!zipfile->read(content_fn, &content))
 			{
-				emit_tag(make_error_ptr("Error reading file", content_fn));
+				emit_message(make_error_ptr("Error reading file", content_fn));
 				return;
 			}
 			std::string object_text;
@@ -573,7 +574,7 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 			}
 			catch (const std::exception&)
 			{
-				emit_tag(make_nested_ptr(std::current_exception(), make_error("Error parsing file", content_fn)));
+				emit_message(make_nested_ptr(std::current_exception(), make_error("Error parsing file", content_fn)));
 			}
 			text += object_text;
 		}
@@ -581,7 +582,7 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
 
 void CommonXMLDocumentParser::activeEmittingSignals(bool flag)
 {
-	impl().m_context_stack.top().stop_emmit_signals = !flag;
+	impl().m_context_stack.top().stop_emit_signals = !flag;
 }
 
 void CommonXMLDocumentParser::registerODFOOXMLCommandHandler(const std::string& xml_tag, CommandHandler handler)
@@ -779,10 +780,10 @@ int CommonXMLDocumentParser::getXmlOptions() const
 	return impl().m_xml_options;
 }
 
-CommonXMLDocumentParser::scoped_context_stack_push::scoped_context_stack_push(CommonXMLDocumentParser& parser, const emission_callbacks& emit_tag)
+CommonXMLDocumentParser::scoped_context_stack_push::scoped_context_stack_push(CommonXMLDocumentParser& parser, const message_callbacks& emit_message)
 	: m_parser{parser}
 {
-	m_parser.impl().m_context_stack.push({emit_tag});
+	m_parser.impl().m_context_stack.push({emit_message});
 }
 
 CommonXMLDocumentParser::scoped_context_stack_push::~scoped_context_stack_push()

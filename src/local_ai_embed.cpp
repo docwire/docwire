@@ -11,10 +11,13 @@
 
 #include "local_ai_embed.h"
 
+#include "ai_elements.h"
+#include "data_source.h"
 #include "error_tags.h"
 #include "resource_path.h"
-#include "tags.h"
+#include <string>
 #include "throw_if.h"
+#include <vector>
 
 namespace docwire
 {
@@ -44,18 +47,18 @@ embed::embed(std::string prefix)
     : with_pimpl<embed>(std::make_shared<model_runner>(resource_path("multilingual-e5-small-ct2-int8")), std::move(prefix))
 {}
 
-continuation embed::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation embed::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-    if (!std::holds_alternative<data_source>(tag))
-        return emit_tag(std::move(tag));
+    if (!msg->is<data_source>())
+        return emit_message(std::move(msg));
 
-    const data_source& data = std::get<data_source>(tag);
+    const data_source& data = msg->get<data_source>();
     throw_if(!data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}), "Input for local_ai::embed must be text/plain", errors::program_logic{});
     std::string data_str = data.string();
 
     std::string prefixed_input = impl().m_prefix + data_str;
     std::vector<double> embedding_vector = impl().m_model_runner->embed(prefixed_input);
-    return emit_tag(tag::embedding{std::move(embedding_vector)});
+    return emit_message(ai::embedding{std::move(embedding_vector)});
 }
 
 } // namespace local_ai

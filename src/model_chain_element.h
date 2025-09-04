@@ -25,7 +25,7 @@ namespace docwire::local_ai
  * This class is a chain element that takes a prompt and a model runner. It
  * processes the input by appending the prompt to the input text and then
  * passing the text to the model runner. The output of the model runner is
- * then emitted as a new Tag object.
+ * then emitted as a new message_ptr object.
  */
 class DOCWIRE_LOCAL_AI_EXPORT model_chain_element : public ChainElement
 {
@@ -56,11 +56,12 @@ public:
 	 * If the input is not a data source, emit the input and return. If the
 	 * input is a data source, append the prompt to the input text and then
 	 * pass the text to the model runner. The output of the model runner is
-	 * then emitted as a new Tag object.
+	 * then emitted as a new message_ptr object.
 	 *
-	 * @param tag The input tag object to process.
+	 * @param msg The input message to process.
+	 * @param emit_message Callback used to emit derived messages downstream.
 	 */
-	continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
 	/**
 	 * @brief Check if the model chain element is a leaf.

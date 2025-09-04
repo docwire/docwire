@@ -29,9 +29,9 @@ class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT XLSParser : public ChainElement, public 
 
 	public:
 		XLSParser();
-		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
-		std::string parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag);
+		std::string parse(ThreadSafeOLEStorage& storage, const message_callbacks& emit_message);
 };
 
 } // namespace docwire

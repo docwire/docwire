@@ -11,6 +11,7 @@
 
 #include "rtf_parser.h"
 
+#include "document_elements.h"
 #include "data_stream.h"
 #include "data_source.h"
 #include "error_tags.h"
@@ -299,7 +300,7 @@ void parse_dttm_time(int dttm, tm& tm)
 	dttm >>= 5;
 	tm.tm_mday = dttm & 0x0000001F;
 	dttm >>= 5;
-	tm.tm_mon = dttm & 0x0000000F - 1;
+	tm.tm_mon = (dttm & 0x0000000F) - 1;
 	dttm >>= 4;
 	tm.tm_year = dttm & 0x000001FF;
 }
@@ -476,7 +477,7 @@ std::mutex converter_mutex;
 
 attributes::Metadata extract_rtf_metadata(const data_source& data); // Forward declaration
 
-void parse_rtf_content(const data_source& data, const emission_callbacks& emit_tag)
+void parse_rtf_content(const data_source& data, const message_callbacks& emit_message)
 {
 	docwire_log(debug) << "Using RTF parser.";
 	UString text;
@@ -485,7 +486,7 @@ void parse_rtf_content(const data_source& data, const emission_callbacks& emit_t
 	TextConverter* converter = NULL;
 	try
 	{
-		emit_tag(tag::Document
+		emit_message(document::Document
 			{
 				.metadata = [&data]() { return extract_rtf_metadata(data); }
 			});
@@ -509,7 +510,7 @@ void parse_rtf_content(const data_source& data, const emission_callbacks& emit_t
 					UString fragment_text;
 					{
 						std::lock_guard<std::mutex> converter_mutex_lock(converter_mutex);
-						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter, [emit_tag](std::exception_ptr e) { emit_tag(e); });
+						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
 					}
 					switch (state.groups.top().destination)
 					{
@@ -537,7 +538,7 @@ void parse_rtf_content(const data_source& data, const emission_callbacks& emit_t
 					destination_type destination = state.groups.top().destination;
 					state.groups.pop();
 					if (destination == destination_type::annotation && state.groups.top().destination != destination_type::annotation)
-						emit_tag(tag::Comment{.author = state.author_of_next_annotation, .time = date_to_string(state.annotation_time), .comment = ustring_to_string(state.annotation_text)});
+						emit_message(document::Comment{.author = state.author_of_next_annotation, .time = date_to_string(state.annotation_time), .comment = ustring_to_string(state.annotation_text)});
 					else if (destination == destination_type::fldinst)
 					{
 					}
@@ -550,22 +551,32 @@ void parse_rtf_content(const data_source& data, const emission_callbacks& emit_t
 							if (space_pos == std::string::npos)
 								space_pos = fldinst_text.size();
 							std::string url = fldinst_text.substr(10, space_pos - 10);
-							if (url.front() == '"')
-								url = url.substr(1);
-							if (url.back() == ' ')
-								url = url.substr(0, url.size() - 1);
-							if (url.back() == '"')
-								url = url.substr(0, url.size() - 1);
-							emit_tag(tag::Link{.url = url});
-							emit_tag(tag::Text{.text = ustring_to_string(state.fldrslt_text)});
-							emit_tag(tag::CloseLink{});
+
+							// Trim leading whitespace.
+							url.erase(0, url.find_first_not_of(" \t\n\r\f\v"));
+
+							// Trim one leading quote.
+							if (url.starts_with('"')) {
+								url.erase(0, 1);
+							}
+
+							// Trim trailing whitespace and quotes.
+							if (auto pos = url.find_last_not_of(" \t\n\r\f\v\""); pos != std::string::npos) {
+								url.erase(pos + 1);
+							} else {
+								url.clear();
+							}
+
+							emit_message(document::Link{.url = url});
+							emit_message(document::Text{.text = ustring_to_string(state.fldrslt_text)});
+							emit_message(document::CloseLink{});
 						}
 					}
 					if (skip > state.groups.size() - 1)
 						skip = 0;
 					if (!text.isEmpty())
 					{
-						emit_tag(tag::Text({.text = ustring_to_string(text)}));
+						emit_message(document::Text({.text = ustring_to_string(text)}));
 						text = "";
 					}
 					break;
@@ -600,7 +611,7 @@ void parse_rtf_content(const data_source& data, const emission_callbacks& emit_t
 		if (converter != NULL)
 			delete converter;
 		converter = NULL;
-		emit_tag(tag::CloseDocument{});
+		emit_message(document::CloseDocument{});
 	}
 	catch (std::bad_alloc& ba)
 	{
@@ -722,20 +733,20 @@ const std::vector<mime_type> supported_mime_types =
 
 RTFParser::RTFParser() = default;
 
-continuation RTFParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation RTFParser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 
-	auto& data = std::get<data_source>(tag);
+	auto& data = msg->get<data_source>();
 	data.assert_not_encrypted();
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
-		return emit_tag(std::move(tag));
+		return emit_message(std::move(msg));
 
 	try
 	{
-		parse_rtf_content(data, emit_tag);
+		parse_rtf_content(data, emit_message);
 	}
 	catch (const std::exception& e)
 	{

@@ -15,6 +15,7 @@
 #include "chain_element.h"
 #include "content_type_export.h"
 #include "data_source.h"
+#include "document_elements.h"
 #include "make_error.h"
 #include "ref_or_owned.h"
 
@@ -91,26 +92,26 @@ public:
     explicit detector(ref_or_owned<database> database_to_use = database{}, allow_multiple allow_multiple = {false})
         : m_database_to_use(database_to_use), m_allow_multiple{allow_multiple} {}
 
-    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override
     {
         try
         {
-            if (std::holds_alternative<data_source>(tag))
+            if (msg->is<data_source>())
             {
-                data_source& data = std::get<data_source>(tag);
+                data_source& data = msg->get<data_source>();
                 detect(data, m_database_to_use.get(), m_allow_multiple);
             }
-            else if (std::holds_alternative<tag::Image>(tag))
+            else if (msg->is<document::Image>())
             {
-                data_source& data = std::get<tag::Image>(tag).source;
+                data_source& data = msg->get<document::Image>().source;
                 detect(data, m_database_to_use.get(), m_allow_multiple);
             }
         }
         catch (const std::exception& e)
         {
-            emit_tag(make_nested_ptr(std::current_exception(), DOCWIRE_MAKE_ERROR("Content type detection by signature failed")));
+            emit_message(make_nested_ptr(std::current_exception(), DOCWIRE_MAKE_ERROR("Content type detection by signature failed")));
         }
-        return emit_tag(std::move(tag));
+        return emit_message(std::move(msg));
     }
 
     bool is_leaf() const override

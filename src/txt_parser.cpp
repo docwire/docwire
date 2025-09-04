@@ -13,6 +13,7 @@
 
 #include "charsetdetect.h"
 #include "charset_converter.h"
+#include "document_elements.h"
 #include "log.h"
 #include "make_error.h"
 #include "pimpl.h"
@@ -28,7 +29,7 @@ struct pimpl_impl<TXTParser> : pimpl_impl_base
 		: m_parse_paragraphs{parse_paragraphs_arg}, m_parse_lines{parse_lines_arg} {}
 	parse_paragraphs m_parse_paragraphs;
 	parse_lines m_parse_lines;
-    void parse(const data_source& data, const emission_callbacks& emit_tag);
+    void parse(const data_source& data, const message_callbacks& emit_message);
 };
 
 TXTParser::TXTParser(parse_paragraphs parse_paragraphs_arg, parse_lines parse_lines_arg)
@@ -112,7 +113,7 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-void pimpl_impl<TXTParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
+void pimpl_impl<TXTParser>::parse(const data_source& data, const message_callbacks& emit_message)
 {
 	docwire_log(debug) << "Using TXT parser.";
 	std::string text;
@@ -126,7 +127,7 @@ void pimpl_impl<TXTParser>::parse(const data_source& data, const emission_callba
 		if (charset_detector == (csd_t)-1)
 		{
 			charset_detector = NULL;
-			emit_tag(make_error_ptr("Could not create charset detector"));
+			emit_message(make_error_ptr("Could not create charset detector"));
 			encoding = "UTF-8";
 		}
 		else
@@ -155,7 +156,7 @@ void pimpl_impl<TXTParser>::parse(const data_source& data, const emission_callba
 			}
 			catch (std::exception&)
 			{
-				emit_tag(make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", encoding)));
+				emit_message(make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", encoding)));
 				if (converter)
 					delete converter;
 				converter = NULL;
@@ -182,7 +183,7 @@ void pimpl_impl<TXTParser>::parse(const data_source& data, const emission_callba
 	}
 	bool parse_paragraphs = m_parse_paragraphs.v;
 	bool parse_lines = m_parse_lines.v;
-	emit_tag(tag::Document{});
+	emit_message(document::Document{});
 	if (parse_lines || parse_paragraphs)
 	{
 		std::string::size_type curr_pos = 0;
@@ -199,12 +200,12 @@ void pimpl_impl<TXTParser>::parse(const data_source& data, const emission_callba
 			{
 				if (paragraph_state == outside_paragraph)
 				{
-					emit_tag(tag::Paragraph{});
+					emit_message(document::Paragraph{});
 					paragraph_state = empty_paragraph;
 				}
 				if (line.empty())
 				{
-					emit_tag(tag::CloseParagraph{});
+					emit_message(document::CloseParagraph{});
 					paragraph_state = outside_paragraph;
 				}
 				else
@@ -212,24 +213,24 @@ void pimpl_impl<TXTParser>::parse(const data_source& data, const emission_callba
 					if (paragraph_state == filled_paragraph)
 					{
 						if (parse_lines)
-							emit_tag(tag::BreakLine{});
+							emit_message(document::BreakLine{});
 						else
-							emit_tag(tag::Text{.text = last_eol});
+							emit_message(document::Text{.text = last_eol});
 					}
-					emit_tag(tag::Text{.text = line});
+					emit_message(document::Text{.text = line});
 					paragraph_state = filled_paragraph;
 				}
 			}
 			else
 			{
 				if (!line.empty())
-					emit_tag(tag::Text{.text = line});
+					emit_message(document::Text{.text = line});
 				if (!eol.empty())
 				{
 					if (parse_lines)
-						emit_tag(tag::BreakLine{});
+						emit_message(document::BreakLine{});
 					else
-						emit_tag(tag::Text{.text = eol});
+						emit_message(document::Text{.text = eol});
 				}
 			}
 			if (eol.empty())
@@ -238,27 +239,27 @@ void pimpl_impl<TXTParser>::parse(const data_source& data, const emission_callba
 			last_eol = eol;
 		}
 		if (parse_paragraphs && paragraph_state != outside_paragraph)
-			emit_tag(tag::CloseParagraph{});
+			emit_message(document::CloseParagraph{});
 	}
 	else
-		emit_tag(tag::Text{.text = text});
-	emit_tag(tag::CloseDocument{});
+		emit_message(document::Text{.text = text});
+	emit_message(document::CloseDocument{});
 }
 
-continuation TXTParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation TXTParser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-  if (!std::holds_alternative<data_source>(tag))
-    return emit_tag(std::move(tag));
+  if (!msg->is<data_source>())
+    return emit_message(std::move(msg));
 
-  auto& data = std::get<data_source>(tag);
+  auto& data = msg->get<data_source>();
   data.assert_not_encrypted();
 
   if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
-    return emit_tag(std::move(tag));
+    return emit_message(std::move(msg));
 
   try
   {
-      impl().parse(data, emit_tag);
+      impl().parse(data, emit_message);
   }
   catch (const std::exception& e)
   {

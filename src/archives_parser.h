@@ -24,11 +24,11 @@ public:
 
 	/**
 	* @brief Executes transform operation for given node data.
-	* @see docwire::Tag
-	* @param tag
-	* @param callback
+	* @see docwire::message_ptr
+	* @param msg incoming message
+	* @param emit_message callback to emit messages
 	*/
-	virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
 	bool is_leaf() const override
 	{

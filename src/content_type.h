@@ -15,7 +15,6 @@
 #include "chain_element.h"
 #include "content_type_by_signature.h"
 #include "ref_or_owned.h"
-#include "tags.h"
 
 /**
  * @brief Provides content type detection related functionality
@@ -96,26 +95,26 @@ public:
     detector(ref_or_owned<by_signature::database> signatures_db_to_use = by_signature::database{})
         : m_signatures_db_to_use(signatures_db_to_use) {}
 
-    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override
     {
         try
         {
-            if (std::holds_alternative<data_source>(tag))
+            if (msg->is<data_source>())
             {
-                data_source& data = std::get<data_source>(tag);
+                data_source& data = msg->get<data_source>();
                 content_type::detect(data, m_signatures_db_to_use.get());
             }
-            else if (std::holds_alternative<tag::Image>(tag))
+            else if (msg->is<document::Image>())
             {
-                data_source& data = std::get<tag::Image>(tag).source;
+                data_source& data = msg->get<document::Image>().source;
                 content_type::detect(data, m_signatures_db_to_use.get());
             }
         }
         catch (const std::exception& e)
         {
-            emit_tag(make_nested_ptr(std::current_exception(), DOCWIRE_MAKE_ERROR("Content type detection failed")));
+            emit_message(make_nested_ptr(std::current_exception(), DOCWIRE_MAKE_ERROR("Content type detection failed")));
         }
-	    return emit_tag(std::move(tag));
+	    return emit_message(std::move(msg));
     }
 
     bool is_leaf() const override

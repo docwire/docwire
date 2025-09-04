@@ -25,7 +25,7 @@ class DOCWIRE_CORE_EXPORT CsvExporter: public ChainElement, public with_pimpl<Cs
 public:
 	CsvExporter();
 
-	virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
 	bool is_leaf() const override
 	{

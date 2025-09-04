@@ -14,7 +14,6 @@
 
 #include "chain_element.h"
 #include "rtf_export.h"
-#include "tags.h"
 
 namespace docwire
 {
@@ -23,7 +22,7 @@ class DOCWIRE_RTF_EXPORT RTFParser : public ChainElement
 {
 	public:
 		RTFParser();
-		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 };
 

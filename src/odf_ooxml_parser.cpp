@@ -13,8 +13,8 @@
 
 #include "common_xml_document_parser.h"
 #include "data_source.h"
+#include "document_elements.h"
 #include "scoped_stack_push.h"
-#include "tags.h"
 #include "xml_fixer.h"
 #include "zip_reader.h"
 #include "error_tags.h"
@@ -54,7 +54,7 @@ namespace
 
 struct context
 {
-	const emission_callbacks& emit_tag;
+	const message_callbacks& emit_message;
 	int last_ooxml_col_num = 0;
 	int last_ooxml_row_num = 0;
 };
@@ -88,9 +88,10 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 
 	std::stack<context> m_context_stack;
 
-	continuation emit_tag(Tag&& tag) const
+	template <typename T>
+	continuation emit_message(T&& object) const
 	{
-		return m_context_stack.top().emit_tag(std::move(tag));
+		return m_context_stack.top().emit_message(std::forward<T>(object));
 	}
 
 		static void onOOXMLAttribute(XmlStream& xml_stream, XmlParseMode mode,
@@ -117,8 +118,8 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 				int empty_rows_count = row_num - expected_row_num;
 				for (int i = 0; i < empty_rows_count; i++)
 				{
-					emit_tag(tag::TableRow{});
-					emit_tag(tag::CloseTableRow{});
+					emit_message(document::TableRow{});
+					emit_message(document::CloseTableRow{});
 				}
 			}
 			p.setLastOOXMLRowNum(row_num);
@@ -128,11 +129,11 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 			// we accept when row id attribute is incorrect or missing
 			p.setLastOOXMLRowNum(expected_row_num);
 		}
-      emit_tag(tag::TableRow{});
+      emit_message(document::TableRow{});
       xml_stream.levelDown();
       text += owner().parseXmlData(xml_stream, mode, zipfile);
       xml_stream.levelUp();
-      emit_tag(tag::CloseTableRow{});
+      emit_message(document::CloseTableRow{});
     }
 
 	void onOOXMLSheetData(XmlStream& xml_stream, XmlParseMode mode,
@@ -141,11 +142,11 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
   {
 	  ODFOOXMLParser& p = owner();
 	  p.setLastOOXMLRowNum(0);
-    emit_tag(tag::Table{});
+    emit_message(document::Table{});
     xml_stream.levelDown();
     text += p.parseXmlData(xml_stream, mode, zipfile);
     xml_stream.levelUp();
-    emit_tag(tag::CloseTable{});
+    emit_message(document::CloseTable{});
   }
 
 	void onOOXMLCell(XmlStream& xml_stream, XmlParseMode mode,
@@ -181,8 +182,8 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 					int empty_cols_count = col_num - expected_col_num;
 					for (int i = 0; i < empty_cols_count; i++)
 					{
-						emit_tag(tag::TableCell{});
-						emit_tag(tag::CloseTableCell{});
+						emit_message(document::TableCell{});
+						emit_message(document::CloseTableCell{});
 					}
 				}
 				p.setLastOOXMLColNum(col_num);
@@ -190,9 +191,9 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 			else
 			{
 				// we accept when cell address attribute is incorrect or missing
-				p.setLastOOXMLRowNum(expected_col_num);
+				p.setLastOOXMLColNum(expected_col_num);
 			}
-			emit_tag(tag::TableCell{});
+			emit_message(document::TableCell{});
 			if (xml_stream.attribute("t") == "s")
 			{
 				xml_stream.levelDown();
@@ -203,7 +204,7 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 				if (shared_string_index < p.getSharedStrings().size())
 				{
 					text += p.getSharedStrings()[shared_string_index].m_text;
-					emit_tag(tag::Text{.text = p.getSharedStrings()[shared_string_index].m_text});
+					emit_message(document::Text{.text = p.getSharedStrings()[shared_string_index].m_text});
 				}
 			}
 			else
@@ -212,7 +213,7 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
     			text += p.parseXmlData(xml_stream, mode, zipfile);
 				xml_stream.levelUp();
 			}
-			emit_tag(tag::CloseTableCell{});
+			emit_message(document::CloseTableCell{});
 			level_suffix = "\n";
 			children_processed = true;
 		}
@@ -237,10 +238,10 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 			{
 				const ODFOOXMLParser::Comment& c = owner().getComments()[comment_id];
 				text += owner().formatComment(c.m_author, c.m_time, c.m_text);
-				emit_tag(tag::Comment{.author = c.m_author, .time = c.m_time, .comment = c.m_text});
+				emit_message(document::Comment{.author = c.m_author, .time = c.m_time, .comment = c.m_text});
 			}
 			else
-				emit_tag(make_error_ptr("Comment not found, skipping", comment_id));
+				emit_message(make_error_ptr("Comment not found, skipping", comment_id));
 		}
 
 	void onOOXMLHyperlink(XmlStream& xml_stream, XmlParseMode mode,
@@ -252,16 +253,16 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 			if (owner().getRelationships().count(rid))
 			{
 				const ODFOOXMLParser::Relationship& r = owner().getRelationships()[rid];
-				emit_tag(tag::Link{.url = r.m_target});
+				emit_message(document::Link{.url = r.m_target});
 				xml_stream.levelDown();
 				std::string link_text = owner().parseXmlData(xml_stream, mode, zipfile);
 				xml_stream.levelUp();
 				children_processed = true;
 				text += formatUrl(r.m_target, link_text);
-				emit_tag(tag::CloseLink{});
+				emit_message(document::CloseLink{});
 			}
 			else
-				emit_tag(make_error_ptr("Relationship not found, skipping", rid));
+				emit_message(make_error_ptr("Relationship not found, skipping", rid));
 		}
 
 		static void onOOXMLInstrtext(XmlStream& xml_stream, XmlParseMode mode,
@@ -301,7 +302,7 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 		docwire_log(debug) << "OOXML_BREAK command.";
 		text += "\n";
 
-		emit_tag(tag::BreakLine{});
+		emit_message(document::BreakLine{});
 	}
 
 	void assertODFFileIsNotEncrypted(ZipReader& zipfile) const
@@ -387,7 +388,7 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 		}
 	}
 
-	void readStyles(ZipReader& zipfile, XmlParseMode mode, const emission_callbacks& emit_tag)
+	void readStyles(ZipReader& zipfile, XmlParseMode mode, const message_callbacks& emit_message)
 	{
 		std::string content;
 		throw_if (!zipfile.read("styles.xml", &content), "Error reading styles.xml");
@@ -479,7 +480,7 @@ void ODFOOXMLParser::setLastOOXMLColNum(int c)
 	impl().m_context_stack.top().last_ooxml_col_num = c;
 }
 
-void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode, const emission_callbacks& emit_tag)
+void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode, const message_callbacks& emit_message)
 {
 	ZipReader zipfile{data};
 	try
@@ -494,7 +495,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode, const emi
 		{
 			std::throw_with_nested(make_error("Invalid file structure"));
 		}
-		emit_tag(tag::Document{.metadata=[this, &zipfile](){ return metaData(zipfile);}});
+		emit_message(document::Document{.metadata=[this, &zipfile](){ return metaData(zipfile);}});
 	//according to the ODF specification, we must skip blank nodes. Otherwise output may be messed up.
 	if (main_file_name == "content.xml")
 	{
@@ -509,7 +510,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode, const emi
 		}
 		catch (const std::exception&)
 		{
-			emit_tag(make_nested_ptr(std::current_exception(), make_error("Error parsing comments.")));
+			emit_message(make_nested_ptr(std::current_exception(), make_error("Error parsing comments.")));
 		}
 	}
 	if (zipfile.exists("word/_rels/document.xml.rels"))
@@ -520,11 +521,11 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode, const emi
 		}
 		catch (const std::exception&)
 		{
-			emit_tag(make_nested_ptr(std::current_exception(), make_error("Error parsing relationships.")));
+			emit_message(make_nested_ptr(std::current_exception(), make_error("Error parsing relationships.")));
 		}
 	}
 	if (zipfile.exists("styles.xml"))
-		impl().readStyles(zipfile, mode, emit_tag);
+		impl().readStyles(zipfile, mode, emit_message);
 	string content;
 	if (main_file_name == "ppt/presentation.xml")
 	{
@@ -611,7 +612,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode, const emi
 			std::throw_with_nested(make_error(main_file_name));
 		}
 	}
-	emit_tag(tag::CloseDocument{});
+	emit_message(document::CloseDocument{});
 	}
 	catch (const std::exception& e)
 	{
@@ -724,28 +725,28 @@ attributes::Metadata ODFOOXMLParser::metaData(ZipReader& zipfile) const
 }
 
 void
-ODFOOXMLParser::parse(const data_source& data, const emission_callbacks& emit_tag)
+ODFOOXMLParser::parse(const data_source& data, const message_callbacks& emit_message)
 {
 	docwire_log(debug) << "Using ODF/OOXML parser.";
-	CommonXMLDocumentParser::scoped_context_stack_push base_context_guard{*this, emit_tag};
-	scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
-	parse(data, XmlParseMode::PARSE_XML, emit_tag);
+	CommonXMLDocumentParser::scoped_context_stack_push base_context_guard{*this, emit_message};
+	scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_message}};
+	parse(data, XmlParseMode::PARSE_XML, emit_message);
 }
 
-continuation ODFOOXMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation ODFOOXMLParser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 
-	auto& data = std::get<data_source>(tag);
+	auto& data = msg->get<data_source>();
 	data.assert_not_encrypted();
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 	{
-		return emit_tag(std::move(tag));
+		return emit_message(std::move(msg));
 	}
 
-	parse(data, emit_tag); // Call the existing public parse method
+	parse(data, emit_message); // Call the existing public parse method
 	return continuation::proceed;
 }
 

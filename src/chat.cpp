@@ -21,7 +21,6 @@
 #include "make_error.h"
 #include "output.h"
 #include "post.h"
-#include "tags.h"
 #include <sstream>
 
 namespace docwire
@@ -156,13 +155,13 @@ std::string parse_response(const std::string& response)
 
 } // anonymous namespace
 
-continuation Chat::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation Chat::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	docwire_log_func();
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 	docwire_log(debug) << "data_source received";
-	const data_source& data = std::get<data_source>(tag);
+	const data_source& data = msg->get<data_source>();
 	UserMsgType user_msg_type;
 	std::string data_str;
 	if (data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}))
@@ -186,7 +185,7 @@ continuation Chat::operator()(Tag&& tag, const emission_callbacks& emit_tag)
 	}
 
 	std::string content = parse_response(post_request(prepare_query(impl().m_system_message, user_msg_type, data_str, impl().m_model, impl().m_temperature, impl().m_image_detail), impl().m_api_key)) + '\n';
-	return emit_tag(data_source{content});
+	return emit_message(data_source{content});
 }
 
 } // namespace openai

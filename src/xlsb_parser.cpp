@@ -11,7 +11,9 @@
 
 #include "xlsb_parser.h"
 
+#include "attributes.h"
 #include "data_source.h"
+#include "document_elements.h"
 #include "error_tags.h"
 #include "scoped_stack_push.h"
 #include "zip_reader.h"
@@ -42,7 +44,7 @@ const std::vector<mime_type> supported_mime_types =
 template<>
 struct pimpl_impl<XLSBParser> : pimpl_impl_base
 {
-	void parse(const data_source& data, const emission_callbacks& emit_tag);
+	void parse(const data_source& data, const message_callbacks& emit_message);
 	attributes::Metadata metaData(ZipReader& unzip);
 	struct XLSBContent
 	{
@@ -80,14 +82,15 @@ struct pimpl_impl<XLSBParser> : pimpl_impl_base
 
 	struct context
 	{
-		const emission_callbacks& emit_tag;
+		const message_callbacks& emit_message;
 		XLSBContent xlsb_content;
 	};
 	std::stack<context> m_context_stack;
 
-	continuation emit_tag(Tag&& tag)
+	template <typename T>
+	continuation emit_message(T&& object) const
 	{
-		return m_context_stack.top().emit_tag(std::move(tag));
+		return m_context_stack.top().emit_message(std::forward<T>(object));
 	}
 
 	XLSBContent& xlsb_content()
@@ -484,7 +487,7 @@ struct pimpl_impl<XLSBParser> : pimpl_impl_base
 					uint32_t str_index;
 					xlsb_reader.readUint32(str_index);
 					if (str_index >= xlsb_content().m_shared_strings.size())
-						emit_tag(make_error_ptr("Detected reference to string that does not exist", str_index, xlsb_content().m_shared_strings.size()));
+						emit_message(make_error_ptr("Detected reference to string that does not exist", str_index, xlsb_content().m_shared_strings.size()));
 					else
 						text += xlsb_content().m_shared_strings[str_index];
 				}
@@ -677,16 +680,16 @@ attributes::Metadata pimpl_impl<XLSBParser>::metaData(ZipReader& unzip)
 	return metadata;
 }
 
-void pimpl_impl<XLSBParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
+void pimpl_impl<XLSBParser>::parse(const data_source& data, const message_callbacks& emit_message)
 {
 	docwire_log(debug) << "Using XLSB parser.";
-	scoped::stack_push<pimpl_impl<XLSBParser>::context> context_guard{m_context_stack, {emit_tag}};
+	scoped::stack_push<pimpl_impl<XLSBParser>::context> context_guard{m_context_stack, {emit_message}};
 	std::string text;
 	ZipReader unzip{data};
 	try
 	{
 		unzip.open();
-		emit_tag(tag::Document
+		emit_message(document::Document
 			{
 				.metadata = [this, &unzip]() { return metaData(unzip); }
 			});
@@ -705,22 +708,22 @@ void pimpl_impl<XLSBParser>::parse(const data_source& data, const emission_callb
 	{
 		std::throw_with_nested(make_error("Error parsing XLSB"));
 	}
-	emit_tag(tag::Text{.text = text});
-	emit_tag(tag::CloseDocument{});
+	emit_message(document::Text{.text = text});
+	emit_message(document::CloseDocument{});
 }
 
-continuation XLSBParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation XLSBParser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 
-	auto& data = std::get<data_source>(tag);
+	auto& data = msg->get<data_source>();
 	data.assert_not_encrypted();
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
-		return emit_tag(std::move(tag));
+		return emit_message(std::move(msg));
 
-	impl().parse(data, emit_tag);
+	impl().parse(data, emit_message);
 	return continuation::proceed;
 }
 
