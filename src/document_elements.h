@@ -9,76 +9,20 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#ifndef DOCWIRE_DOCUMENT_ELEMENTS_H
+#define DOCWIRE_DOCUMENT_ELEMENTS_H
 
-#ifndef DOCWIRE_TAGS_H
-#define DOCWIRE_TAGS_H
-
-#include <ctime>
+#include "attributes.h"
 #include "data_source.h"
+#include "message.h"
 #include <functional>
 #include <optional>
-#include <variant>
-#include <vector>
+#include <string>
 
 namespace docwire
 {
-
-namespace attributes
+namespace document
 {
-
-struct Styling
-{
-  std::vector<std::string> classes;
-  std::string id;
-  std::string style;  
-};
-
-struct Email
-{
-  std::string from;
-	tm date;
-  std::optional<std::string> to;
-	std::optional<std::string> subject;
-  std::optional<std::string> reply_to;
-  std::optional<std::string> sender;
-};
-
-struct Metadata
-{
-  std::optional<std::string> author;
-  std::optional<tm> creation_date;
-  std::optional<std::string> last_modified_by;
-  std::optional<tm> last_modification_date;
-  std::optional<size_t> page_count;
-  std::optional<size_t> word_count;
-  std::optional<attributes::Email> email_attrs;
-};
-
-template<class T>
-concept WithStyling = requires(T tag) {
-  {tag.styling} -> std::convertible_to<Styling>;
-};
-
-/**
- * @brief Represents the geometric position and dimensions of an element.
- */
-struct Position
-{
-	std::optional<double> x;            ///< Optional x-coordinate of the bottom-left corner.
-	std::optional<double> y;            ///< Optional y-coordinate of the bottom-left corner.
-	std::optional<double> width;        ///< Optional width of the element.
-	std::optional<double> height;       ///< Optional height of the element.
-};
-} // namespace attributes
-
-enum class continuation { proceed, skip, stop };
-struct emission_callbacks;
-using tag_sequence_streamer = std::function<continuation(const emission_callbacks&)>;
-
-namespace tag
-{
-
-struct PleaseWait {};
 
 struct Paragraph
 {
@@ -126,7 +70,6 @@ struct Underline
 };
 
 struct CloseUnderline {};
-
 
 struct Table
 {
@@ -177,7 +120,7 @@ struct Image
   std::optional<std::string> alt;     ///< Optional alternative text for the image.
   attributes::Position position; ///< Positional attributes.
   attributes::Styling styling;
-  std::optional<tag_sequence_streamer> structured_content_streamer;
+  std::optional<message_sequence_streamer> structured_content_streamer;
 };
 
 struct Style
@@ -206,35 +149,6 @@ struct CloseHeader {};
 struct Footer {};
 struct CloseFooter {};
 
-struct Mail
-{
-  std::optional<std::string> subject;
-  std::optional<uint32_t> date;
-  std::optional<int> level;
-};
-
-struct CloseMail {};
-
-struct MailBody {};
-struct CloseMailBody { };
-
-struct Attachment
-{
-  std::optional<std::string> name;
-  size_t size;
-  std::optional<file_extension> extension;
-};
-
-struct CloseAttachment { };
-
-struct Folder
-{
-  std::optional<std::string> name;
-  std::optional<int> level;
-};
-
-struct CloseFolder { };
-
 struct Comment
 {
   std::optional<std::string> author;
@@ -252,79 +166,7 @@ struct Document
 
 struct CloseDocument { };
 
-struct embedding
-{
-  std::vector<double> values;
-};
-
-struct start_processing {};
-
-using Variant = std::variant<
-  PleaseWait,
-  Paragraph,
-  CloseParagraph,
-  Section,
-  CloseSection,
-  Span,
-  CloseSpan,
-  BreakLine,
-  Bold,
-  CloseBold,
-  Italic,
-  CloseItalic,
-  Underline,
-  CloseUnderline,
-  Table,
-  CloseTable,
-  Caption,
-  CloseCaption,
-  TableRow,
-  CloseTableRow,
-  TableCell,
-  CloseTableCell,
-  Text,
-  Link,
-  CloseLink,
-  Image,
-  Style,
-  List,
-  CloseList,
-  ListItem,
-  CloseListItem,
-  Header,
-  CloseHeader,
-  Footer,
-  CloseFooter,
-  Mail,
-  CloseMail,
-  MailBody,
-  CloseMailBody,
-  Attachment,
-  CloseAttachment,
-  Folder,
-  CloseFolder,
-  Comment,
-  Page,
-  ClosePage,
-  data_source,
-  Document,
-  CloseDocument,
-  embedding,
-  start_processing,
-  std::exception_ptr
->;
-
-}
-
-using Tag = tag::Variant;
-
-struct emission_callbacks
-{
-  std::function<continuation(Tag&&)> further;
-  std::function<continuation(Tag&&)> back;
-  continuation operator()(Tag&& tag) const { return further(std::move(tag)); }
-};
-
+} // namespace document
 } // namespace docwire
 
-#endif //DOCWIRE_TAGS_H
+#endif // DOCWIRE_DOCUMENT_ELEMENTS_H

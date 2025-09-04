@@ -11,6 +11,7 @@
 
 #include "ppt_parser.h"
 
+#include "document_elements.h"
 #include "error_tags.h"
 #include "log.h"
 #include <math.h>
@@ -268,13 +269,13 @@ namespace
 		}
 	}
 
-	attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const emission_callbacks& emit_tag);
+	attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const message_callbacks& emit_message);
 
 };
 
 PPTParser::PPTParser() = default;
 
-void parse(const data_source& data, const emission_callbacks& emit_tag)
+void parse(const data_source& data, const message_callbacks& emit_message)
 {	
 	docwire_log(debug) << "Using PPT parser.";
 	try
@@ -282,11 +283,11 @@ void parse(const data_source& data, const emission_callbacks& emit_tag)
 		std::unique_ptr<ThreadSafeOLEStorage> storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
 		throw_if (!storage->isValid(), "Error opening stream as OLE container");
 		assertFileIsNotEncrypted(*storage);
-		emit_tag(tag::Document
+		emit_message(document::Document
 			{
-				.metadata = [&storage, emit_tag]()
+				.metadata = [&storage, emit_message]()
 				{
-						return metaData(storage, emit_tag);
+						return metaData(storage, emit_message);
 				}
 			});
 		std::string text;
@@ -305,17 +306,17 @@ void parse(const data_source& data, const emission_callbacks& emit_tag)
 				{
 					std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("Text_Content") };
 					throw_if (reader == NULL, storage->getLastError(), std::make_pair("stream_path", "Text_Content"));
-					parseOldPPT(*storage, *reader, text, [emit_tag](std::exception_ptr e) { emit_tag(e); });
-					emit_tag(tag::Text{.text = text});
+					parseOldPPT(*storage, *reader, text, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
+					emit_message(document::Text{.text = text});
 					return;
 				}
 			}
 		}
 		std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("PowerPoint Document") };
 		throw_if (reader == NULL, storage->getLastError(), std::make_pair("stream_path", "PowerPoint Document"));
-		parsePPT(*reader, text, [emit_tag](std::exception_ptr e) { emit_tag(e); });
-		emit_tag(tag::Text{.text = text});
-		emit_tag(tag::CloseDocument{});
+		parsePPT(*reader, text, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
+		emit_message(document::Text{.text = text});
+		emit_message(document::CloseDocument{});
 		return;
 	}
 	catch (const std::exception& e)
@@ -327,10 +328,10 @@ void parse(const data_source& data, const emission_callbacks& emit_tag)
 namespace
 {
 
-attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const emission_callbacks& emit_tag)
+attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const message_callbacks& emit_message)
 {
 	attributes::Metadata meta;
-		parse_oshared_summary_info(*storage, meta, [emit_tag](std::exception_ptr e) { emit_tag(e); });
+		parse_oshared_summary_info(*storage, meta, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
 		// If page count not found use slide count as page count
 		if (!meta.page_count)
 		{
@@ -344,7 +345,7 @@ attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& stora
 			}
 			catch (const std::exception& e)
 			{
-				emit_tag(std::current_exception());
+				emit_message(std::current_exception());
 			}
 		}
 		return meta;
@@ -360,20 +361,20 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-continuation PPTParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation PPTParser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 
-	auto& data = std::get<data_source>(tag);
+	auto& data = msg->get<data_source>();
 	data.assert_not_encrypted();
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
-		return emit_tag(std::move(tag));
+		return emit_message(std::move(msg));
 
 	try
 	{
-		parse(data, emit_tag);
+		parse(data, emit_message);
 	}
 	catch (const std::exception& e)
 	{

@@ -24,13 +24,13 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
 class detector : public ChainElement
 {
 public:
-    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override
     {
-        if (!std::holds_alternative<data_source>(tag))
-            return emit_tag(std::move(tag));
-	    data_source& data = std::get<data_source>(tag);
+        if (!msg->is<data_source>())
+            return emit_message(std::move(msg));
+	    data_source& data = msg->get<data_source>();
         detect(data);
-        return emit_tag(std::move(tag));
+        return emit_message(std::move(msg));
     }
 
     bool is_leaf() const override

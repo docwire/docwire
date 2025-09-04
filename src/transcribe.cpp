@@ -12,6 +12,7 @@
 #include "transcribe.h"
 
 #include <boost/json.hpp>
+#include "document_elements.h"
 #include "input.h"
 #include "log.h"
 #include "make_error.h"
@@ -56,13 +57,13 @@ std::string model_to_string(Transcribe::Model model)
 
 } // anonymous namespace
 
-continuation Transcribe::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation Transcribe::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	docwire_log_func();
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 	docwire_log(debug) << "data_source received";
-	const data_source& data = std::get<data_source>(tag);
+	const data_source& data = msg->get<data_source>();
 	std::shared_ptr<std::istream> in_stream = data.istream();
 	auto response_stream = std::make_shared<std::ostringstream>();
 	try
@@ -73,10 +74,11 @@ continuation Transcribe::operator()(Tag&& tag, const emission_callbacks& emit_ta
 	{
 		std::throw_with_nested(make_error("Error during transcription"));
 	}
-	emit_tag(tag::Document{});
-	emit_tag(tag::Text{response_stream->str()});
-	emit_tag(tag::CloseDocument{});
-	return continuation::proceed;
+    auto cont = emit_message(document::Document{});
+    if (cont == continuation::stop) return cont;
+    cont = emit_message(document::Text{response_stream->str()});
+    if (cont == continuation::stop) return cont;
+    return emit_message(document::CloseDocument{});
 }
 
 } // namespace openai

@@ -33,7 +33,7 @@ public:
     : m_data{data}
   {}
 
-  virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+  virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
   bool is_leaf() const override { return false; }
   bool is_generator() const override { return true; }
 

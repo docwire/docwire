@@ -26,14 +26,14 @@ class DOCWIRE_ODF_OOXML_EXPORT ODFXMLParser : public CommonXMLDocumentParser, pu
 		friend pimpl_impl<ODFXMLParser>;
 
 	protected:
-		CommonXMLDocumentParser::scoped_context_stack_push create_base_context_guard(const emission_callbacks& emit_tag)
+		CommonXMLDocumentParser::scoped_context_stack_push create_base_context_guard(const message_callbacks& emit_message)
 		{
-			return CommonXMLDocumentParser::scoped_context_stack_push{*this, emit_tag};
+			return CommonXMLDocumentParser::scoped_context_stack_push{*this, emit_message};
 		}
 
 	public:
 		ODFXMLParser();
-		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 };
 

@@ -28,7 +28,7 @@ public:
    * @param tag data from callback
    * @param stream output stream
    */
-  void write_to(const Tag& tag, std::ostream &stream) override;
+  void write_to(const message_ptr& msg, std::ostream &stream) override;
 };
 } // namespace docwire
 

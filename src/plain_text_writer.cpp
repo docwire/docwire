@@ -9,12 +9,16 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include <boost/container/flat_map.hpp>
 #include <iostream>
 #include <iomanip>
 #include <ctime>
 #include <cassert>
 #include <sstream>
+#include <typeindex>
 
+#include "mail_elements.h"
+#include "document_elements.h"
 #include "plain_text_writer.h"
 #include "error_tags.h"
 #include "misc.h"
@@ -22,12 +26,13 @@
 
 namespace docwire
 {
+
 class Cell
 {
 public:
   Cell(std::string eol_sequence,
-    std::function<std::string(const tag::Link&)> format_link_opening,
-    std::function<std::string(const tag::CloseLink&)> format_link_closing)
+    std::function<std::string(const document::Link&)> format_link_opening,
+    std::function<std::string(const document::CloseLink&)> format_link_closing)
   : writer(eol_sequence, format_link_opening, format_link_closing)
   {}
 
@@ -48,10 +53,10 @@ public:
       lines.push_back(result.substr(prev_pos));
   }
 
-  void write(const Tag& tag)
+  void write(const message_ptr& msg)
   {
     std::stringstream stream;
-    writer.write_to(tag, stream);
+    writer.write_to(msg, stream);
     write(stream.str());
     stream.str(std::string());
   }
@@ -89,15 +94,15 @@ public:
 class nested_writer
 {
 public:
-  nested_writer(std::string eol_sequence,
-    std::function<std::string(const tag::Link&)> format_link_opening,
-    std::function<std::string(const tag::CloseLink&)> format_link_closing)
+  nested_writer(std::string eol_sequence, 
+    std::function<std::string(const document::Link&)> format_link_opening,
+    std::function<std::string(const document::CloseLink&)> format_link_closing)
   : m_writer(eol_sequence, format_link_opening, format_link_closing)
   {}
 
-  void write(const Tag& tag)
+  void write(const message_ptr& msg)
   {
-    m_writer.write_to(tag, m_stream);
+    m_writer.write_to(msg, m_stream);
   }
 
   std::string result_text() const
@@ -112,6 +117,51 @@ public:
 template<>
 struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
 {
+  using handler_func = std::function<std::shared_ptr<TextElement>(const message_ptr&)>;
+  const boost::container::flat_map<std::type_index, handler_func> m_handlers;
+
+  pimpl_impl(const std::string& eol_sequence,
+      std::function<std::string(const document::Link&)> format_link_opening,
+      std::function<std::string(const document::CloseLink&)> format_link_closing)
+    : m_handlers{
+        {typeid(mail::Mail), [this](const message_ptr& msg) { return write_mail(msg->get<mail::Mail>()); }},
+        {typeid(mail::Attachment), [this](const message_ptr& msg) { return write_attachment(msg->get<mail::Attachment>()); }},
+        {typeid(mail::Folder), [this](const message_ptr& msg) { return write_folder(msg->get<mail::Folder>()); }},
+        {typeid(document::Text), [this](const message_ptr& msg) { return write_text(msg->get<document::Text>()); }},
+        {typeid(mail::CloseMailBody), [this](const message_ptr& msg) { return write_close_mail_body(msg->get<mail::CloseMailBody>()); }},
+        {typeid(mail::CloseAttachment), [this](const message_ptr& msg) { return write_close_attachment(msg->get<mail::CloseAttachment>()); }},
+        {typeid(document::BreakLine), [this](const message_ptr& msg) { return write_new_line(msg->get<document::BreakLine>()); }},
+        {typeid(document::CloseParagraph), [this](const message_ptr& msg) { return write_new_paragraph(msg->get<document::CloseParagraph>()); }},
+        {typeid(document::CloseSection), [this](const message_ptr& msg) { return write_new_paragraph(document::CloseParagraph()); }},
+        {typeid(document::Table), [this](const message_ptr& msg) { return turn_on_table_mode(msg->get<document::Table>()); }},
+        {typeid(document::CloseTable), [this](const message_ptr& msg) { return turn_off_table_mode(msg->get<document::CloseTable>()); }},
+        {typeid(document::Link), [this](const message_ptr& msg) { return std::make_shared<TextElement>(m_format_link_opening(msg->get<document::Link>())); }},
+        {typeid(document::CloseLink), [this](const message_ptr& msg) { return std::make_shared<TextElement>(m_format_link_closing(msg->get<document::CloseLink>())); }},
+        {typeid(document::Image), [this](const message_ptr& msg) { return write_image(msg->get<document::Image>()); }},
+        {typeid(document::List), [this](const message_ptr& msg) { return write_list(msg->get<document::List>()); }},
+        {typeid(document::CloseList), [this](const message_ptr& msg) { return write_close_list(msg->get<document::CloseList>()); }},
+        {typeid(document::ListItem), [this](const message_ptr& msg) { return write_list_item(msg->get<document::ListItem>()); }},
+        {typeid(document::CloseListItem), [this](const message_ptr& msg) { return write_close_list_item(msg->get<document::CloseListItem>()); }},
+        {typeid(document::Header), [this](const message_ptr& msg) { return write_header(msg->get<document::Header>()); }},
+        {typeid(document::CloseHeader), [this](const message_ptr& msg) { return write_close_header(msg->get<document::CloseHeader>()); }},
+        {typeid(document::Footer), [this](const message_ptr& msg) { return write_footer(msg->get<document::Footer>()); }},
+        {typeid(document::CloseFooter), [this](const message_ptr& msg) { return write_close_footer(msg->get<document::CloseFooter>()); }},
+        {typeid(document::Comment), [this](const message_ptr& msg) { return write_comment(msg->get<document::Comment>()); }},
+        {typeid(document::ClosePage), [this](const message_ptr& msg) { return write_close_page(msg->get<document::ClosePage>()); }},
+        {typeid(document::Document), [this](const message_ptr& msg) {
+            m_nested_docs_counter++;
+            return std::shared_ptr<TextElement>();
+        }},
+        {typeid(document::CloseDocument), [this](const message_ptr& msg) {
+            m_nested_docs_counter--;
+            return m_nested_docs_counter == 0 ? write_close_document(msg->get<document::CloseDocument>()) : std::shared_ptr<TextElement>();
+        }},
+    },
+    m_eol_sequence(eol_sequence),
+    m_format_link_opening(format_link_opening),
+    m_format_link_closing(format_link_closing)
+  {}
+
   std::string timestampToString(unsigned int timestamp)
   {
     std::time_t temp = timestamp;
@@ -132,7 +182,7 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   }
 
   std::shared_ptr<TextElement>
-  write_mail(const tag::Mail& mail)
+  write_mail(const mail::Mail& mail)
   {
     std::string text = "";
     if (mail.level)
@@ -152,7 +202,7 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   }
 
   std::shared_ptr<TextElement>
-  write_attachment(const tag::Attachment& attachment)
+  write_attachment(const mail::Attachment& attachment)
   {
     std::string text = "attachment: " + m_eol_sequence + m_eol_sequence;
     if (attachment.name)
@@ -163,7 +213,7 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   }
 
   std::shared_ptr<TextElement>
-  write_folder(const tag::Folder& folder)
+  write_folder(const mail::Folder& folder)
   {
     std::string text = "";
     if (folder.level)
@@ -179,31 +229,31 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   }
 
   std::shared_ptr<TextElement>
-  write_text(const tag::Text& text)
+  write_text(const document::Text& text)
   {
     return std::make_shared<TextElement>(text.text);
   }
 
   std::shared_ptr<TextElement>
-  write_close_mail_body(const tag::CloseMailBody&)
+  write_close_mail_body(const mail::CloseMailBody&)
   {
     return std::make_shared<TextElement>(m_eol_sequence);
   }
 
   std::shared_ptr<TextElement>
-  write_close_attachment(const tag::CloseAttachment&)
+  write_close_attachment(const mail::CloseAttachment&)
   {
     return std::make_shared<TextElement>(m_eol_sequence);
   }
 
   std::shared_ptr<TextElement>
-  write_new_line(const tag::BreakLine&)
+  write_new_line(const document::BreakLine&)
   {
     return std::make_shared<TextElement>(m_eol_sequence);
   }
 
   std::shared_ptr<TextElement>
-  write_new_paragraph(const tag::CloseParagraph&)
+  write_new_paragraph(const document::CloseParagraph&)
   {
     if (list_mode)
     {
@@ -213,21 +263,21 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   }
 
   std::shared_ptr<TextElement>
-  write_image(const tag::Image& image)
+  write_image(const document::Image& image)
   {
     std::string text;
     if (image.structured_content_streamer)
     {
       nested_writer writer{m_eol_sequence, m_format_link_opening, m_format_link_closing};  
       image.structured_content_streamer.value()(
-        emission_callbacks
+        message_callbacks
         {
-          .further = [&](Tag&& tag)
+          .m_further = [&](message_ptr msg)
           {
-            writer.write(tag);
+            writer.write(msg);
             return continuation::proceed;
           },
-          .back = [](Tag&&) -> continuation
+          .m_back = [](message_ptr) -> continuation
           {
             return continuation::proceed;
           }
@@ -242,19 +292,19 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   }
 
   std::shared_ptr<TextElement>
-  turn_on_table_mode(const tag::Table&)
+  turn_on_table_mode(const document::Table&)
   {
     return std::make_shared<TextElement>("");
   }
 
   std::shared_ptr<TextElement>
-  turn_off_table_mode(const tag::CloseTable&)
+  turn_off_table_mode(const document::CloseTable&)
   {
     return std::make_shared<TextElement>("");
   }
 
   std::shared_ptr<TextElement>
-  write_list(const tag::List& list)
+  write_list(const document::List& list)
   {
     list_mode = true;
     list_counter = 1;
@@ -263,7 +313,7 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   }
 
   std::shared_ptr<TextElement>
-  write_close_list(const tag::CloseList&)
+  write_close_list(const document::CloseList&)
   {
     list_mode = false;
     list_counter = 1;
@@ -271,7 +321,7 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   }
 
   std::shared_ptr<TextElement>
-  write_list_item(const tag::ListItem&)
+  write_list_item(const document::ListItem&)
   {
     if (list_type == "none")
       return std::make_shared<TextElement>("");
@@ -284,14 +334,14 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   }
 
   std::shared_ptr<TextElement>
-  write_close_list_item(const tag::CloseListItem&)
+  write_close_list_item(const document::CloseListItem&)
   {
     ++list_counter;
     return std::make_shared<TextElement>(m_eol_sequence);
   }
 
 	std::shared_ptr<TextElement>
-	write_comment(const tag::Comment& comment)
+	write_comment(const document::Comment& comment)
 	{
 		std::string text = m_eol_sequence + "[[[";
 		if (comment.author)
@@ -315,53 +365,44 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
 		return std::make_shared<TextElement>(text);
 	}
 
-	std::shared_ptr<TextElement> write_header(const tag::Header&)
+	std::shared_ptr<TextElement> write_header(const document::Header&)
 	{
 		header_mode = true;
 		return std::make_shared<TextElement>("");
 	}
 
-	std::shared_ptr<TextElement> write_close_header(const tag::CloseHeader&)
+	std::shared_ptr<TextElement> write_close_header(const document::CloseHeader&)
 	{
 		header_mode = false;
 		return std::make_shared<TextElement>(m_eol_sequence);
 	}
 
-	std::shared_ptr<TextElement> write_footer(const tag::Footer&)
+	std::shared_ptr<TextElement> write_footer(const document::Footer&)
 	{
 		footer_mode = true;
 		footer_stream.str("");
 		return std::make_shared<TextElement>("");
 	}
 
-	std::shared_ptr<TextElement> write_close_footer(const tag::CloseFooter&)
+	std::shared_ptr<TextElement> write_close_footer(const document::CloseFooter&)
 	{
 		footer_mode = false;
 		return std::make_shared<TextElement>("");
 	}
 
 	std::shared_ptr<TextElement>
-	write_close_page(const tag::ClosePage&)
+	write_close_page(const document::ClosePage&)
 	{
 		return std::make_shared<TextElement>(m_eol_sequence);
 	}
 
-	std::shared_ptr<TextElement> write_close_document(const tag::CloseDocument&)
+	std::shared_ptr<TextElement> write_close_document(const document::CloseDocument&)
 	{
 		std::string footer = footer_stream.str();
 		if (!footer.empty())
 			footer += m_eol_sequence;
 		return std::make_shared<TextElement>(m_eol_sequence + footer);
 	}
-
-  pimpl_impl(const std::string& eol_sequence,
-      std::function<std::string(const tag::Link&)> format_link_opening,
-      std::function<std::string(const tag::CloseLink&)> format_link_closing)
-    : m_eol_sequence(eol_sequence),
-      m_format_link_opening(format_link_opening),
-      m_format_link_closing(format_link_closing)
-  {
-  }
 
   std::string add_shift(int count)
   {
@@ -424,75 +465,75 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
 
   std::string create_table()
   {
-    for (unsigned int i = 0; i < tags.size(); ++i)
+    for (unsigned int i = 0; i < msgs.size(); ++i)
     {
-      if (std::holds_alternative<tag::Table>(tags[i]))
+      if (msgs[i]->is<document::Table>())
       {
         std::stringstream ss;
         PlainTextWriter writer{m_eol_sequence, m_format_link_opening, m_format_link_closing};
-        int open_table_tags = 1;
-        writer.write_to(tags[i], ss);
+        int open_table_msgs = 1;
+        writer.write_to(msgs[i], ss);
         do
         {
-          writer.write_to(tags[++i], ss);
-          if (std::holds_alternative<tag::Table>(tags[i]))
-            open_table_tags++;
-          else if (std::holds_alternative<tag::CloseTable>(tags[i]))
-            open_table_tags--;
+          writer.write_to(msgs[++i], ss);
+          if (msgs[i]->is<document::Table>())
+            open_table_msgs++;
+          else if (msgs[i]->is<document::CloseTable>())
+            open_table_msgs--;
         }
-        while (open_table_tags > 0);
+        while (open_table_msgs > 0);
         throw_if (table.empty(), "Table inside table without rows", errors::program_logic{});
         throw_if (table.back().empty(), "Table inside table row without cells", errors::program_logic{});
         table.back().back().write(ss.str());
       }
-      else if (std::holds_alternative<tag::Caption>(tags[i]))
+      else if (msgs[i]->is<document::Caption>())
       {
         throw_if (table_caption_mode, "Table caption inside table caption", errors::program_logic{});
         throw_if (table_caption_writer, "Second caption inside table", errors::program_logic{});
         table_caption_mode = true;
         table_caption_writer = nested_writer{m_eol_sequence, m_format_link_opening, m_format_link_closing};
       }
-      else if (std::holds_alternative<tag::CloseCaption>(tags[i]))
+      else if (msgs[i]->is<document::CloseCaption>())
       {
         throw_if (!table_caption_mode, "Close caption outside table caption", errors::program_logic{});
         table_caption_mode = false;
       }
-      else if (std::holds_alternative<tag::TableRow>(tags[i]))
+      else if (msgs[i]->is<document::TableRow>())
       {
         table.push_back({});
       }
-      else if (std::holds_alternative<tag::TableCell>(tags[i]))
+      else if (msgs[i]->is<document::TableCell>())
       {
         throw_if (table.empty(), "Cell inside table without rows", errors::program_logic{});
         table.back().push_back(Cell{m_eol_sequence, m_format_link_opening, m_format_link_closing});
       }
-      else if (!std::holds_alternative<tag::CloseTableRow>(tags[i]) && !std::holds_alternative<tag::CloseTableCell>(tags[i]))
+      else if (!msgs[i]->is<document::CloseTableRow>() && !msgs[i]->is<document::CloseTableCell>())
       {
         if (table_caption_mode)
         {
-          table_caption_writer->write(tags[i]);
+          table_caption_writer->write(msgs[i]);
         }
         else
         {
           throw_if (table.empty(), "Cell content inside table without rows", errors::program_logic{});
           throw_if (table.back().empty(), "Cell content inside table row without cells", errors::program_logic{});
-          table.back().back().write(tags[i]);
+          table.back().back().write(msgs[i]);
         }
       }
     }
     return render_table();
   }
 
-  void write_to(const Tag& tag, std::ostream &stream)
+  void write_to(const message_ptr& msg, std::ostream &stream)
   {
-    if (std::holds_alternative<tag::CloseTable>(tag))
+    if (msg->is<document::CloseTable>())
     {
       level--;
 
       if (level == 0)
       {
         stream << create_table();
-        tags.clear();
+        msgs.clear();
         table.clear();
         table_caption_mode = false;
         table_caption_writer.reset();
@@ -502,59 +543,32 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
 
     if (level > 0)
     {
-      tags.push_back(tag);
+      msgs.push_back(msg);
     }
 
-    if (std::holds_alternative<tag::Table>(tag))
+    if (msg->is<document::Table>())
     {
       level++;
     }
 
     if (level == 0)
     {
-      auto text_element = std::visit(
-        overloaded
-        {
-          [this](const tag::Mail& tag){return write_mail(tag);},
-          [this](const tag::Attachment& tag){return write_attachment(tag);},
-          [this](const tag::Folder& tag){return write_folder(tag);},
-          [this](const tag::Text& tag){return write_text(tag);},
-          [this](const tag::CloseMailBody& tag){return write_close_mail_body(tag);},
-          [this](const tag::CloseAttachment& tag){return write_close_attachment(tag);},
-          [this](const tag::BreakLine& tag){return write_new_line(tag);},
-          [this](const tag::CloseParagraph& tag){return write_new_paragraph(tag);},
-          [this](const tag::CloseSection& tag){return write_new_paragraph(tag::CloseParagraph());},
-          [this](const tag::Table& tag){return turn_on_table_mode(tag);},
-          [this](const tag::CloseTable& tag){return turn_off_table_mode(tag);},
-          [this](const tag::Link& tag){return std::make_shared<TextElement>(m_format_link_opening(tag));},
-          [this](const tag::CloseLink& tag){return std::make_shared<TextElement>(m_format_link_closing(tag));},
-          [this](const tag::Image& tag){return write_image(tag);},
-          [this](const tag::List& tag){return write_list(tag);},
-          [this](const tag::CloseList& tag){return write_close_list(tag);},
-          [this](const tag::ListItem& tag){return write_list_item(tag);},
-          [this](const tag::CloseListItem& tag){return write_close_list_item(tag);},
-          [this](const tag::Header& tag){return write_header(tag);},
-          [this](const tag::CloseHeader& tag){return write_close_header(tag);},
-          [this](const tag::Footer& tag){return write_footer(tag);},
-          [this](const tag::CloseFooter& tag){return write_close_footer(tag);},
-          [this](const tag::Comment& tag){return write_comment(tag);},
-          [this](const tag::ClosePage& tag){return write_close_page(tag);},
-          [this](const tag::Document& tag) { m_nested_docs_counter++; return std::shared_ptr<TextElement>(); },
-          [this](const tag::CloseDocument& tag) { m_nested_docs_counter--; return m_nested_docs_counter == 0 ? write_close_document(tag) : std::shared_ptr<TextElement>(); },
-          [](const auto&) {return std::shared_ptr<TextElement>{};}
-        },
-	      tag
-      );
+      auto it = m_handlers.find(std::type_index(msg->object_type()));
+      std::shared_ptr<TextElement> text_element;
+      if (it != m_handlers.end())
+      {
+        text_element = it->second(msg);
+      }
       if (text_element)
         text_element->write_to(footer_mode ? footer_stream : stream);
     }
   }
 
   std::string m_eol_sequence;
-  std::function<std::string(const tag::Link&)> m_format_link_opening;
-  std::function<std::string(const tag::CloseLink&)> m_format_link_closing;
+  std::function<std::string(const document::Link&)> m_format_link_opening;
+  std::function<std::string(const document::CloseLink&)> m_format_link_closing;
   int level { 0 };
-  std::vector<Tag> tags;
+  std::vector<message_ptr> msgs;
   std::string list_type;
   int list_counter;
   bool list_mode{ false };
@@ -568,16 +582,16 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
 };
 
 PlainTextWriter::PlainTextWriter(const std::string& eol_sequence,
-  std::function<std::string(const tag::Link&)> format_link_opening,
-  std::function<std::string(const tag::CloseLink&)> format_link_closing)
+  std::function<std::string(const document::Link&)> format_link_opening,
+  std::function<std::string(const document::CloseLink&)> format_link_closing)
     : with_pimpl<PlainTextWriter>(eol_sequence, format_link_opening, format_link_closing)
 {
 }
 
 void
-PlainTextWriter::write_to(const Tag& tag, std::ostream &stream)
+PlainTextWriter::write_to(const message_ptr& msg, std::ostream &stream)
 {
-  impl().write_to(tag, stream);
+  impl().write_to(msg, stream);
 }
 
 const std::string PlainTextWriter::eol_sequence() const

@@ -11,6 +11,7 @@
 
 #include "meta_data_exporter.h"
 
+#include "document_elements.h"
 #include "meta_data_writer.h"
 #include <sstream>
 
@@ -27,16 +28,16 @@ struct pimpl_impl<MetaDataExporter> : pimpl_impl_base
 MetaDataExporter::MetaDataExporter()
 {}
 
-continuation MetaDataExporter::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation MetaDataExporter::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (std::holds_alternative<std::exception_ptr>(tag))
-		return emit_tag(std::move(tag));
-	if (std::holds_alternative<tag::Document>(tag) || !impl().m_stream)
+	if (msg->is<std::exception_ptr>())
+		return emit_message(std::move(msg));
+	if (msg->is<document::Document>() || !impl().m_stream)
 		impl().m_stream = std::make_shared<std::stringstream>();
-	impl().m_writer.write_to(tag, *impl().m_stream);
-	if (std::holds_alternative<tag::CloseDocument>(tag))
+	impl().m_writer.write_to(msg, *impl().m_stream);
+	if (msg->is<document::CloseDocument>())
 	{
-		emit_tag(data_source{seekable_stream_ptr{impl().m_stream}});
+		emit_message(data_source{seekable_stream_ptr{impl().m_stream}});
 		impl().m_stream.reset();
 	}
 	return continuation::proceed;

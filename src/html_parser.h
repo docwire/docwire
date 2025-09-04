@@ -27,7 +27,7 @@ class DOCWIRE_HTML_EXPORT HTMLParser : public ChainElement, public with_pimpl<HT
 	public:
 
 		HTMLParser();
-		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).
 		void skipCharsetDecoding();

@@ -11,8 +11,9 @@
 
 #include "pst_parser.h"
 
+#include "document_elements.h"
+#include "mail_elements.h"
 #include "scoped_stack_push.h"
-#include "tags.h"
 #include <iomanip>
 #include <ctime>
 
@@ -354,7 +355,7 @@ namespace
 
 struct context
 {
-	const emission_callbacks& emit_tag;
+	const message_callbacks& emit_message;
 };
 
 const std::vector<mime_type> supported_mime_types =
@@ -369,8 +370,19 @@ template<>
 struct pimpl_impl<PSTParser> : pimpl_impl_base
 {
 	std::stack<context> m_context_stack;
-	continuation emit_tag(Tag&& tag) const;
-	continuation emit_tag_back(data_source&& data) const;
+
+	template <typename T>
+	continuation emit_message(T&& object) const
+	{
+		return m_context_stack.top().emit_message(std::forward<T>(object));
+	}
+
+	template <typename T>
+	continuation emit_message_back(T&& object) const
+	{
+		return m_context_stack.top().emit_message.back(std::forward<T>(object));
+	}
+
 	void parse(std::shared_ptr<std::istream> stream) const;
 
   private:
@@ -378,28 +390,18 @@ struct pimpl_impl<PSTParser> : pimpl_impl_base
     void parse_internal(const Folder& root, int deep, unsigned int &mail_counter) const;
 };
 
-continuation pimpl_impl<PSTParser>::emit_tag(Tag&& tag) const
-{
-	return m_context_stack.top().emit_tag(std::move(tag));
-}
-
-continuation pimpl_impl<PSTParser>::emit_tag_back(data_source&& data) const
-{
-	return m_context_stack.top().emit_tag.back(std::move(data));
-}
-
 void pimpl_impl<PSTParser>::parse_internal(const Folder& root, int deep, unsigned int &mail_counter) const
 {
 	for (int i = 0; i < root.getSubFolderNumber(); ++i)
 	{
 		auto sub_folder = root.getSubFolder(i);
-    auto result = emit_tag(tag::Folder{.name = sub_folder.getName(), .level = deep});
+    auto result = emit_message(mail::Folder{.name = sub_folder.getName(), .level = deep});
     if (result == continuation::skip)
     {
       continue;
     }
     parse_internal(sub_folder, deep + 1, mail_counter);
-	emit_tag(tag::CloseFolder{});
+	emit_message(mail::CloseFolder{});
 	}
 	for (int i = 0; i < root.getMessageNumber(); ++i)
 	{
@@ -408,31 +410,31 @@ void pimpl_impl<PSTParser>::parse_internal(const Folder& root, int deep, unsigne
     auto html_text = message.getTextAsHtml();
     if(html_text)
     {
-      auto result = emit_tag(tag::Mail{.subject = message.getName(), .date = message.getCreationDate(), .level = deep});
+      auto result = emit_message(mail::Mail{.subject = message.getName(), .date = message.getCreationDate(), .level = deep});
       if (result == continuation::skip)
       {
         continue;
       }
-      emit_tag(tag::MailBody{});
-      emit_tag_back(data_source{*html_text, mime_type { "text/html" }, confidence::very_high});
+      emit_message(mail::MailBody{});
+      emit_message_back(data_source{*html_text, mime_type { "text/html" }, confidence::very_high});
       ++mail_counter;
-      emit_tag(tag::CloseMailBody{});
+      emit_message(mail::CloseMailBody{});
     }
 
 		auto attachments = message.getAttachments();
     for (auto &attachment : attachments)
     {
       file_extension extension { std::filesystem::path{attachment.m_name} };
-      auto result = emit_tag(
-        tag::Attachment{.name = attachment.m_name, .size = attachment.m_size, .extension = extension});
+      auto result = emit_message(
+        mail::Attachment{.name = attachment.m_name, .size = attachment.m_size, .extension = extension});
       if (result == continuation::skip)
       {
         continue;
       }
-      emit_tag_back(data_source{std::string((const char*)attachment.m_raw_data.get(), attachment.m_size), extension});
-      emit_tag(tag::CloseAttachment{});
+      emit_message_back(data_source{std::string((const char*)attachment.m_raw_data.get(), attachment.m_size), extension});
+      emit_message(mail::CloseAttachment{});
     }
-	emit_tag(tag::CloseMail{});
+	emit_message(mail::CloseMail{});
 	}
 }
 
@@ -515,9 +517,9 @@ void pimpl_impl<PSTParser>::parse(std::shared_ptr<std::istream> stream) const
 	libpff_file_get_root_folder(file, &root, &error);
 	Folder root_folder(std::move(root));
   unsigned int mail_counter = 0;
-	emit_tag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
+	emit_message(document::Document{.metadata = []() { return attributes::Metadata{}; }});
   parse_internal(root_folder, 0, mail_counter);
-	emit_tag(tag::CloseDocument{});
+	emit_message(document::CloseDocument{});
 
   if (file)
   {
@@ -535,22 +537,22 @@ void pimpl_impl<PSTParser>::parse(std::shared_ptr<std::istream> stream) const
 
 PSTParser::PSTParser() = default;
 
-continuation PSTParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation PSTParser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-    if (!std::holds_alternative<data_source>(tag))
-        return emit_tag(std::move(tag));
+    if (!msg->is<data_source>())
+        return emit_message(std::move(msg));
 
-    auto& data = std::get<data_source>(tag);
+    auto& data = msg->get<data_source>();
     data.assert_not_encrypted();
 
     if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
-        return emit_tag(std::move(tag));
+        return emit_message(std::move(msg));
 
     docwire_log(debug) << "Using PST parser.";
     try
     {
         std::shared_ptr<std::istream> stream = data.istream();
-        scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
+        scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_message}};
         impl().parse(stream);
     }
     catch (const std::exception& e)

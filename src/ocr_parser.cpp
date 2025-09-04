@@ -11,8 +11,8 @@
 
 #include "ocr_parser.h"
 
+#include "document_elements.h"
 #include "error_tags.h"
-
 #include <leptonica/allheaders.h>
 #include <leptonica/array_internal.h>
 #include <leptonica/pix_internal.h>
@@ -72,7 +72,7 @@ thread_local std::string leptonica_stderr_capturer::m_contents;
 
 struct context
 {
-    const emission_callbacks& emit_tag;
+    const message_callbacks& emit_message;
 };
 
 } // anonymous namespace
@@ -87,15 +87,16 @@ struct pimpl_impl<OCRParser> : with_pimpl_owner<OCRParser>
     ocr_data_path m_ocr_data_path;
     std::stack<context> m_context_stack;
 
-    continuation emit_tag(Tag&& tag) const
-    {
-        return m_context_stack.top().emit_tag(std::move(tag));
-    }
+    template <typename T>
+	continuation emit_message(T&& object) const
+	{
+		return m_context_stack.top().emit_message(std::forward<T>(object));
+	}
 
     static bool cancel (void* data, int words)
     {
         auto context_ptr = reinterpret_cast<context*>(data);
-        return context_ptr->emit_tag(tag::PleaseWait{}) == continuation::stop;
+        return context_ptr->emit_message(ocr::PleaseWait{}) == continuation::stop;
     }
 };  
 
@@ -306,7 +307,7 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
     // Recognize the image
     api->Recognize(&monitor);
 
-    // Iterate through results and emit tags: Block -> Paragraph -> Line -> Word
+    // Iterate through results and emit messages: Block -> Paragraph -> Line -> Word
     const float confidence_threshold = impl().m_ocr_confidence_threshold.v.value_or(75.0f);
 
     std::unique_ptr<tesseract::ResultIterator> rit(api->GetIterator());
@@ -318,11 +319,11 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
     rit->Begin(); // Start at page level
     do { // Iterate Blocks (RIL_BLOCK)
         // TODO: Add styling attributes from rit->BoundingBox(RIL_BLOCK, ...) if needed
-        impl().emit_tag(tag::Section{});
+        impl().emit_message(document::Section{});
 
         do { // Iterate Paragraphs (RIL_PARA) within the current Block
             // TODO: Add styling attributes from rit->BoundingBox(RIL_PARA, ...) if needed
-            impl().emit_tag(tag::Paragraph{});
+            impl().emit_message(document::Paragraph{});
             bool current_line_had_high_confidence_text = false; // Used for BreakLine logic
 
             do { // Iterate TextLines (RIL_TEXTLINE) within the current Paragraph
@@ -342,9 +343,9 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
                         float conf = rit->Confidence(tesseract::RIL_WORD);
                         if (conf >= confidence_threshold) {
                             if (previous_word_on_line_was_high_confidence) {
-                                impl().emit_tag(tag::Text{" "}); // Add space before the current word
+                                impl().emit_message(document::Text{" "}); // Add space before the current word
                             }
-                            impl().emit_tag(tag::Text{current_word_str});
+                            impl().emit_message(document::Text{current_word_str});
                             current_line_had_high_confidence_text = true;
                             previous_word_on_line_was_high_confidence = true;
                         } else {
@@ -368,7 +369,7 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
                     // Add BreakLine if not the last line of the current paragraph
                     if (!rit->IsAtFinalElement(tesseract::RIL_PARA, tesseract::RIL_TEXTLINE)) {
                         // TODO: Add styling attributes from rit->BoundingBox(RIL_TEXTLINE, ...) to BreakLine if needed
-                        impl().emit_tag(tag::BreakLine{});
+                        impl().emit_message(document::BreakLine{});
                     }
                 }
                 // Check if this was the last line in the current paragraph before trying to advance to the next line.
@@ -378,7 +379,7 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
             } while (rit->Next(tesseract::RIL_TEXTLINE)); // Advances to next line in this paragraph
 
             // End of Paragraph processing
-            impl().emit_tag(tag::CloseParagraph{});
+            impl().emit_message(document::CloseParagraph{});
             // Check if this was the last paragraph in the current block before trying to advance to the next paragraph.
             if (rit->IsAtFinalElement(tesseract::RIL_BLOCK, tesseract::RIL_PARA)) {
                 break; // Break from RIL_PARA loop; Next(RIL_BLOCK) will be called.
@@ -386,56 +387,56 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
         } while (rit->Next(tesseract::RIL_PARA)); // Advances to next paragraph in this block
 
         // End of Block processing
-        impl().emit_tag(tag::CloseSection{});
+        impl().emit_message(document::CloseSection{});
     } while (rit->Next(tesseract::RIL_BLOCK)); // Advances to next block on the page
 }
 
-continuation OCRParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation OCRParser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-    auto process = [this](const data_source& data, const emission_callbacks& emit_tag) {
+    auto process = [this](const data_source& data, const message_callbacks& emit_message) {
         docwire_log(debug) << "Using OCR parser.";
-        scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
-        emit_tag(tag::Document{.metadata = []() { return attributes::Metadata{}; }});
+        scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_message}};
+        emit_message(document::Document{.metadata = []() { return attributes::Metadata{}; }});
         parse(data, impl().m_languages.size() > 0 ? impl().m_languages : std::vector({ Language::eng }));
-        emit_tag(tag::CloseDocument{});
+        emit_message(document::CloseDocument{});
         return continuation::proceed;
     };
 
-    if (std::holds_alternative<data_source>(tag))
+    if (msg->is<data_source>())
     {
-        const data_source& data = std::get<data_source>(tag);
+        const data_source& data = msg->get<data_source>();
         data.assert_not_encrypted();
         if (data.has_highest_confidence_mime_type_in(supported_mime_types))
-            return process(std::get<data_source>(tag), emit_tag);
+            return process(msg->get<data_source>(), emit_message);
         else
-            return emit_tag(std::move(tag));
+            return emit_message(std::move(msg));
     }
-    else if (std::holds_alternative<tag::Image>(tag))
+    else if (msg->is<document::Image>())
     {
-        tag::Image& image = std::get<tag::Image>(tag);
+        document::Image& image = msg->get<document::Image>();
         image.source.assert_not_encrypted();
         if (!image.source.highest_confidence_mime_type().has_value())
-            return emit_tag(std::move(tag));
+            return emit_message(std::move(msg));
         if (!image.source.has_highest_confidence_mime_type_in(supported_mime_types))
-            return emit_tag(std::move(tag));
-        docwire_log(debug) << "OCRParser: Setting up streamer for tag::Image.";
+            return emit_message(std::move(msg));
+        docwire_log(debug) << "OCRParser: Setting up streamer for document::Image.";
         image.structured_content_streamer =
-            [process, data = image.source](const emission_callbacks& emit_tag) -> continuation
+            [process, data = image.source](const message_callbacks& emit_message) -> continuation
             {
                 try
                 {
-                    return process(data, emit_tag);
+                    return process(data, emit_message);
                 }
                 catch (const std::exception&)
                 {
-                    emit_tag(make_nested_ptr(std::current_exception(), make_error("OCR processing of image failed")));
+                    emit_message(make_nested_ptr(std::current_exception(), make_error("OCR processing of image failed")));
                     return continuation::proceed;
                 }
             };
-        return emit_tag(std::move(tag));
+        return emit_message(std::move(msg));
     }
     else
-        return emit_tag(std::move(tag));
+        return emit_message(std::move(msg));
 }
 
 } // namespace docwire

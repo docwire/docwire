@@ -9,16 +9,18 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOG_TAGS_H
-#define DOCWIRE_LOG_TAGS_H
+#ifndef DOCWIRE_LOG_MESSAGES_H
+#define DOCWIRE_LOG_MESSAGES_H
 
+#include "attributes.h"
+#include "document_elements.h"
 #include "log.h"
 #include "log_ctime.h" // IWYU pragma: keep
 #include "log_data_source.h" // IWYU pragma: keep
 #include "log_empty_struct.h" // IWYU pragma: keep
 #include "log_exception.h" // IWYU pragma: keep
-#include "log_variant.h" // IWYU pragma: keep
-#include "tags.h"
+#include "log_variant.h" // IWYU pragma: keep 
+#include "mail_elements.h"
 
 namespace docwire
 {
@@ -41,137 +43,137 @@ inline log_record_stream& operator<<(log_record_stream& log_stream, const attrib
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Paragraph& paragraph)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Paragraph& paragraph)
 {
 	log_stream << docwire_log_streamable_obj(paragraph, paragraph.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Section& section)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Section& section)
 {
 	log_stream << docwire_log_streamable_obj(section, section.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Span& span)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Span& span)
 {
 	log_stream << docwire_log_streamable_obj(span, span.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::BreakLine& break_line)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::BreakLine& break_line)
 {
 	log_stream << docwire_log_streamable_obj(break_line, break_line.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Bold& bold)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Bold& bold)
 {
 	log_stream << docwire_log_streamable_obj(bold, bold.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Italic& italic)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Italic& italic)
 {
 	log_stream << docwire_log_streamable_obj(italic, italic.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Underline& underline)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Underline& underline)
 {
 	log_stream << docwire_log_streamable_obj(underline, underline.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Table& table)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Table& table)
 {
 	log_stream << docwire_log_streamable_obj(table, table.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Caption& caption)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Caption& caption)
 {
 	log_stream << docwire_log_streamable_obj(caption, caption.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::TableRow& table_row)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::TableRow& table_row)
 {
 	log_stream << docwire_log_streamable_obj(table_row, table_row.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::TableCell& table_cell)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::TableCell& table_cell)
 {
 	log_stream << docwire_log_streamable_obj(table_cell, table_cell.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Text& text)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Text& text)
 {
 	log_stream << docwire_log_streamable_obj(text, text.text);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Link& link)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Link& link)
 {
 	log_stream << docwire_log_streamable_obj(link, link.url, link.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Image& image)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Image& image)
 {
 	log_stream << docwire_log_streamable_obj(image, image.alt, image.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Style& style)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Style& style)
 {
 	log_stream << docwire_log_streamable_obj(style, style.css_text);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::List& list)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::List& list)
 {
 	log_stream << docwire_log_streamable_obj(list, list.type, list.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::ListItem& list_item)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::ListItem& list_item)
 {
 	log_stream << docwire_log_streamable_obj(list_item, list_item.styling);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Mail& mail)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const mail::Mail& mail)
 {
 	log_stream << docwire_log_streamable_obj(mail, mail.subject, mail.date, mail.level);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Attachment& attachment)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const mail::Attachment& attachment)
 {
 	log_stream << docwire_log_streamable_obj(attachment, attachment.name, attachment.size);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Folder& folder)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const mail::Folder& folder)
 {
 	log_stream << docwire_log_streamable_obj(folder, folder.name, folder.level);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Comment& comment)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Comment& comment)
 {
 	log_stream << docwire_log_streamable_obj(comment, comment.author, comment.time, comment.comment);
 	return log_stream;
 }
 
-inline log_record_stream& operator<<(log_record_stream& log_stream, const tag::Document& document)
+inline log_record_stream& operator<<(log_record_stream& log_stream, const document::Document& document)
 {
 	return log_stream;
 }
 
 } // namespace docwire
 
-#endif // DOCWIRE_LOG_TAGS_H
+#endif // DOCWIRE_LOG_MESSAGES_H

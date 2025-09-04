@@ -32,8 +32,8 @@
 #include <set>
 #include "pimpl.h"
 #include "scoped_stack_push.h"
-#include "tags.h"
-#include "throw_if.h"
+#include "throw_if.h" 
+#include "document_elements.h"
 
 namespace docwire
 {
@@ -312,7 +312,7 @@ void fix_dom(lxb_dom_node_t* node)
 
 struct context
 {
-	const emission_callbacks& emit_tag;
+	const message_callbacks& emit_message;
 	bool turn_off_ul_enumeration = false;
 	bool turn_off_ol_enumeration = false;
 	bool head_parsed = false;
@@ -339,27 +339,27 @@ const std::vector<mime_type> supported_mime_types =
 template<>
 struct pimpl_impl<HTMLParser> : pimpl_impl_base
 {
-	continuation emit_tag(Tag&& tag);
-	continuation emit_tag_back(Tag&& tag);
+	template <typename T>
+	continuation emit_message(T&& object) const
+	{
+		return m_context_stack.top().emit_message(std::forward<T>(object));
+	}
+
+	template <typename T>
+	continuation emit_message_back(T&& object) const
+	{
+		return m_context_stack.top().emit_message.back(std::forward<T>(object));
+	}
+
 	void parse_css(const std::string & m_style_text);
-	void parse(const data_source& data, const emission_callbacks& emit_tag);
-	void parse_document(const std::string& html_content, const emission_callbacks& emit_tag);
+	void parse(const data_source& data, const message_callbacks& emit_message);
+	void parse_document(const std::string& html_content, const message_callbacks& emit_message);
 	void process_node(const lxb_dom_node_t* node);
 	void process_text(const lxb_dom_node_t* node);
 	void process_tag(const lxb_dom_node_t* node, bool is_closing = false);
 	bool m_skip_decoding = false;
 	std::stack<context> m_context_stack;
 };
-
-continuation pimpl_impl<HTMLParser>::emit_tag(Tag&& tag)
-{
-	return m_context_stack.top().emit_tag(std::move(tag));
-}
-
-continuation pimpl_impl<HTMLParser>::emit_tag_back(Tag&& tag)
-{
-	return m_context_stack.top().emit_tag.back(std::move(tag));
-}
 
 void pimpl_impl<HTMLParser>::parse_css(const std::string & m_style_text)
 {
@@ -420,7 +420,7 @@ void pimpl_impl<HTMLParser>::parse_css(const std::string & m_style_text)
 	}
 }
 
-void pimpl_impl<HTMLParser>::parse_document(const std::string& html_content_arg, const emission_callbacks& emit_tag)
+void pimpl_impl<HTMLParser>::parse_document(const std::string& html_content_arg, const message_callbacks& emit_message)
 {
 	std::string html_content = html_content_arg;
 	if (!m_skip_decoding)
@@ -431,11 +431,11 @@ void pimpl_impl<HTMLParser>::parse_document(const std::string& html_content_arg,
 		}
 		catch (std::exception&)
 		{
-			emit_tag(make_nested_ptr(std::current_exception(), make_error("Error ensuring HTML is encoded in UTF-8")));
+			emit_message(make_nested_ptr(std::current_exception(), make_error("Error ensuring HTML is encoded in UTF-8")));
 		}
 	}
 
-	scoped::stack_push<context> context_guard{m_context_stack, context{emit_tag}};
+	scoped::stack_push<context> context_guard{m_context_stack, context{emit_message}};
 
 	lxb_html_document_t* document = lxb_html_document_create();
 	throw_if(document == nullptr, "lxb_html_document_create failed");
@@ -448,7 +448,7 @@ void pimpl_impl<HTMLParser>::parse_document(const std::string& html_content_arg,
 	lxb_dom_node_t* head = lxb_dom_interface_node(lxb_html_document_head_element(document));
 	parse_css((const char*)lxb_dom_node_text_content(head, nullptr));
 
-	emit_tag(tag::Document
+	emit_message(document::Document
 		{
 			.metadata = [this, head]()
 			{
@@ -571,52 +571,52 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 		}
 		if (!m_context_stack.top().buffered_text.empty())
 		{
-			emit_tag(tag::Text{.text = m_context_stack.top().buffered_text});
+			emit_message(document::Text{.text = m_context_stack.top().buffered_text});
 			m_context_stack.top().buffered_text = "";
 		}
 	}
-    // All html elements that will emit tag::Paragraph (as we do not have H1 etc)
+    // All html elements that will emit document::Paragraph (as we do not have H1 etc)
 	std::set<lxb_tag_id_t> paragraph_elements = { LXB_TAG_H1, LXB_TAG_H2, LXB_TAG_H3, LXB_TAG_H4, LXB_TAG_H5, LXB_TAG_H6, LXB_TAG_P };	
     if (is_closing)
     {
 		if (tag_id == LXB_TAG_STYLE)
 		{
 			m_context_stack.top().in_style = false;
-			if (!m_context_stack.top().in_metadata)
-				emit_tag(tag::Style{.css_text = m_context_stack.top().style_text});
+			if (!m_context_stack.top().in_metadata) 
+				emit_message(document::Style{.css_text = m_context_stack.top().style_text});
 			m_context_stack.top().style_text.clear();
 		}
 		else if (paragraph_elements.contains(tag_id))
 		{
-			emit_tag(tag::CloseParagraph{});
+			emit_message(document::CloseParagraph{});
 		}
 		else if (tag_id == LXB_TAG_DIV)
 		{
-			emit_tag(tag::CloseSection{});
+			emit_message(document::CloseSection{});
 		}
 		else if (tag_id == LXB_TAG_SPAN)
 		{
-			emit_tag(tag::CloseSpan{});
+			emit_message(document::CloseSpan{});
 		}
 		else if (tag_id == LXB_TAG_A)
 		{
-			emit_tag(tag::CloseLink{});
+			emit_message(document::CloseLink{});
 		}
 		else if (tag_id == LXB_TAG_TABLE)
 		{
-			emit_tag(tag::CloseTable{});
+			emit_message(document::CloseTable{});
 		}
 		else if (tag_id == LXB_TAG_CAPTION)
 		{
-			emit_tag(tag::CloseCaption{});
+			emit_message(document::CloseCaption{});
 		}
 		else if (tag_id == LXB_TAG_TR)
 		{
-			emit_tag(tag::CloseTableRow{});
+			emit_message(document::CloseTableRow{});
 		}
 		else if (tag_id == LXB_TAG_TD || tag_id == LXB_TAG_TH)
 		{
-			emit_tag(tag::CloseTableCell{});
+			emit_message(document::CloseTableCell{});
 		}
 		else if (tag_id == LXB_TAG_TITLE)
 		{
@@ -628,19 +628,19 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 		}
 		else if (tag_id == LXB_TAG_UL || tag_id == LXB_TAG_OL)
 		{
-			emit_tag(tag::CloseList{});
+			emit_message(document::CloseList{});
 		}
 		else if (tag_id == LXB_TAG_LI)
 		{
-			emit_tag(tag::CloseListItem{});
+			emit_message(document::CloseListItem{});
 		}
 		else if (tag_id == LXB_TAG_B)
 		{
-			emit_tag(tag::CloseBold{});
+			emit_message(document::CloseBold{});
 		}
 		else if (tag_id == LXB_TAG_U)
 		{
-			emit_tag(tag::CloseUnderline{});
+			emit_message(document::CloseUnderline{});
 		}
     }
     else
@@ -651,15 +651,15 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 		}
 		else if (paragraph_elements.contains(tag_id))
 		{
-			emit_tag(tag::Paragraph{ .styling = html_node_styling(node) });
+			emit_message(document::Paragraph{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_DIV)
 		{
-			emit_tag(tag::Section{ .styling = html_node_styling(node) });
+			emit_message(document::Section{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_SPAN)
 		{
-			emit_tag(tag::Span{ .styling = html_node_styling(node) });
+			emit_message(document::Span{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_A)
 		{
@@ -671,7 +671,7 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 				if (url[0] == '#' || url.find("javascript") == 0)
 					url = "";
 			}
-			emit_tag(tag::Link{ .url = url, .styling = html_node_styling(node) });
+			emit_message(document::Link{ .url = url, .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_IMG)
 		{
@@ -683,29 +683,29 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 			const lxb_char_t* alt_attr = lxb_dom_element_get_attribute(const_cast<lxb_dom_element_t*>(element), (const lxb_char_t *)"alt", 3, nullptr);
 			if (alt_attr)
 				alt = std::string((const char*)alt_attr);
-			tag::Image image
+			document::Image image
 			{
 				.source = data_source{std::filesystem::path{src}}, // TODO: handle data: urls
 				.alt = alt,
 				.styling = html_node_styling(node)
 			};
-			emit_tag_back(std::move(image));
+			emit_message_back(std::move(image));
 		}
 		else if (tag_id == LXB_TAG_TABLE)
 		{
-			emit_tag(tag::Table{ .styling = html_node_styling(node) });
+			emit_message(document::Table{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_CAPTION)
 		{
-			emit_tag(tag::Caption{ .styling = html_node_styling(node) });
+			emit_message(document::Caption{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_TR)
 		{
-			emit_tag(tag::TableRow{ .styling = html_node_styling(node) });
+			emit_message(document::TableRow{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_TD || tag_id == LXB_TAG_TH)
 		{
-			emit_tag(tag::TableCell{ .styling = html_node_styling(node) });
+			emit_message(document::TableCell{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_UL || tag_id == LXB_TAG_OL)
 		{
@@ -722,16 +722,16 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 			else if (tag_id == LXB_TAG_UL && m_context_stack.top().turn_off_ul_enumeration)
 				style_type_none = true;
 			std::string list_type = style_type_none ? "none" : (tag_id == LXB_TAG_OL ? "decimal" : "disc");
-			emit_tag(tag::List{.type = list_type, .styling=html_node_styling(node)});
+			emit_message(document::List{.type = list_type, .styling=html_node_styling(node)});
 		}
 		else if (tag_id == LXB_TAG_BR)
 		{
 			m_context_stack.top().last_char_in_inline_formatting_context = '\0';
-			emit_tag(tag::BreakLine{.styling=html_node_styling(node)});
+			emit_message(document::BreakLine{.styling=html_node_styling(node)});
 		}
 		else if (tag_id == LXB_TAG_LI)
 		{
-			emit_tag(tag::ListItem{ .styling = html_node_styling(node) });
+			emit_message(document::ListItem{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_TITLE)
 		{
@@ -743,11 +743,11 @@ void pimpl_impl<HTMLParser>::process_tag(const lxb_dom_node_t* node, bool is_clo
 		}
 		else if (tag_id == LXB_TAG_B)
 		{
-			emit_tag(tag::Bold{ .styling = html_node_styling(node) });
+			emit_message(document::Bold{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_U)
 		{
-			emit_tag(tag::Underline{ .styling = html_node_styling(node) });
+			emit_message(document::Underline{ .styling = html_node_styling(node) });
 		}
 		else if (tag_id == LXB_TAG_META)
 		{
@@ -800,28 +800,28 @@ HTMLParser::HTMLParser()
 {
 }
 
-void pimpl_impl<HTMLParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
+void pimpl_impl<HTMLParser>::parse(const data_source& data, const message_callbacks& emit_message)
 {
 	docwire_log(debug) << "Using HTML parser.";
 	std::string content = data.string();
-	parse_document(content, emit_tag);
-	emit_tag(tag::CloseDocument{});
+	parse_document(content, emit_message);
+	emit_message(document::CloseDocument{});
 }
 
-continuation HTMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation HTMLParser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 
-	auto& data = std::get<data_source>(tag);
+	auto& data = msg->get<data_source>();
 	data.assert_not_encrypted();
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
-		return emit_tag(std::move(tag));
+		return emit_message(std::move(msg));
 
 	try
 	{
-		impl().parse(data, emit_tag);
+		impl().parse(data, emit_message);
 	}
 	catch (const std::exception& e)
 	{

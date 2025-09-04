@@ -17,6 +17,8 @@
 
 #include "pimpl.h"
 #include "writer.h"
+#include "message.h"
+#include "document_elements.h"
 
 namespace docwire
 {
@@ -25,15 +27,15 @@ class DOCWIRE_CORE_EXPORT PlainTextWriter : public Writer, public with_pimpl<Pla
 {
 public:
   PlainTextWriter(const std::string& eol_sequence,
-    std::function<std::string(const tag::Link&)> format_link_opening,
-    std::function<std::string(const tag::CloseLink&)> format_link_closing);
+    std::function<std::string(const document::Link&)> format_link_opening,
+    std::function<std::string(const document::CloseLink&)> format_link_closing);
 
   /**
    * @brief Converts text from callback to plain text format.
-   * @param tag data from callback
+   * @param msg data from callback
    * @param stream output stream
    */
-  void write_to(const Tag& tag, std::ostream &stream) override;
+  void write_to(const message_ptr& msg, std::ostream &stream) override;
 
   const std::string eol_sequence() const;
 };

@@ -25,10 +25,10 @@ class DOCWIRE_CORE_EXPORT CsvWriter : public Writer
 public:
   /**
    * @brief Converts text from callback to CSV format
-   * @param tag data from callback
+   * @param msg data from callback
    * @param stream output stream
    */
-  void write_to(const Tag& tag, std::ostream &stream) override;
+  void write_to(const message_ptr& msg, std::ostream &stream) override;
 
 private:
   bool m_in_table { false };

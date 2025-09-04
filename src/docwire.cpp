@@ -9,6 +9,7 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#include "ai_elements.h"
 #include <boost/program_options.hpp>
 #include <memory>
 #include <fstream>
@@ -395,10 +396,10 @@ int main(int argc, char* argv[])
 				std::make_shared<local_ai::model_runner>(resource_path("multilingual-e5-small-ct2-int8"));
 			
 			chain |= local_ai::embed(model_runner, prefix);
-			chain |= [](Tag&& tag, const emission_callbacks& emit_tag) -> continuation {
-				if (std::holds_alternative<tag::embedding>(tag))
+			chain |= [](message_ptr msg, const message_callbacks& emit_message) -> continuation {
+				if (msg->is<ai::embedding>())
 				{
-					const auto& embedding_vec = std::get<tag::embedding>(tag).values;
+					const auto& embedding_vec = msg->get<ai::embedding>().values;
 					std::string embedding_str = "[";
 					for (size_t i = 0; i < embedding_vec.size(); ++i)
 					{
@@ -407,9 +408,9 @@ int main(int argc, char* argv[])
 							embedding_str += ", ";
 					}
 					embedding_str += "]";
-					return emit_tag(data_source{embedding_str});
+					return emit_message(data_source{embedding_str});
 				}
-				return emit_tag(std::move(tag));
+				return emit_message(std::move(msg));
 			};
 		}
 		catch(const std::exception& e)
@@ -444,10 +445,10 @@ int main(int argc, char* argv[])
 		std::string api_key = vm["openai-key"].as<std::string>();
 		openai::embed::model model = vm["openai-embed-model"].as<openai::embed::model>();
 		chain |= openai::embed(api_key, model);
-		chain |= [](Tag&& tag, const emission_callbacks& emit_tag) -> continuation {
-			if (std::holds_alternative<tag::embedding>(tag))
+		chain |= [](message_ptr msg, const message_callbacks& emit_message) -> continuation {
+			if (msg->is<ai::embedding>())
 			{
-				const auto& embedding_vec = std::get<tag::embedding>(tag).values;
+				const auto& embedding_vec = msg->get<ai::embedding>().values;
 				std::string embedding_str = "[";
 				for (size_t i = 0; i < embedding_vec.size(); ++i)
 				{
@@ -456,17 +457,17 @@ int main(int argc, char* argv[])
 						embedding_str += ", ";
 				}
 				embedding_str += "]";
-				return emit_tag(data_source{embedding_str});
+				return emit_message(data_source{embedding_str});
 			}
-			return emit_tag(std::move(tag));
+			return emit_message(std::move(msg));
 		};
 	}
 
-	chain |= [](Tag&& tag, const emission_callbacks& emit_tag) -> continuation {
-		if (std::holds_alternative<std::exception_ptr>(tag))
+	chain |= [](message_ptr msg, const message_callbacks& emit_message) -> continuation {
+		if (msg->is<std::exception_ptr>())
 			std::clog << "[WARNING] " <<
-				errors::diagnostic_message(std::get<std::exception_ptr>(tag)) << std::endl;
-		return emit_tag(std::move(tag));
+				errors::diagnostic_message(msg->get<std::exception_ptr>()) << std::endl;
+		return emit_message(std::move(msg));
 	};
 
 	try

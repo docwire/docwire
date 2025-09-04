@@ -13,7 +13,9 @@
 #define DOCWIRE_WRITER_H
 
 #include "core_export.h"
-#include "tags.h"
+#include "message.h"
+#include <ostream>
+#include <string>
 
 namespace docwire
 {
@@ -40,10 +42,10 @@ class DOCWIRE_CORE_EXPORT Writer
 public:
   /**
    * @brief writes data from callback to the specific output stream
-   * @param tag data from callback
+   * @param msg data from callback
    * @param stream output stream
    */
-  virtual void write_to(const Tag& tag, std::ostream &stream) = 0;
+  virtual void write_to(const message_ptr& msg, std::ostream &stream) = 0;
 };
 
 } // namespace docwire

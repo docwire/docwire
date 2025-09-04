@@ -10,9 +10,10 @@
 /*********************************************************************************************************************************************/
 
 #include "odfxml_parser.h"
-#include "data_source.h"
 
+#include "data_source.h"
 #include <libxml/xmlreader.h>
+#include "document_elements.h"
 #include "log.h"
 #include "make_error.h"
 #include "xml_stream.h"
@@ -36,7 +37,7 @@ const std::vector<mime_type> supported_mime_types =
 template<>
 struct pimpl_impl<ODFXMLParser> : with_pimpl_owner<ODFXMLParser>
 {
-	void parse(const data_source& data, XmlParseMode mode, const emission_callbacks& emit_tag);
+	void parse(const data_source& data, XmlParseMode mode, const message_callbacks& emit_message);
 	attributes::Metadata extract_metadata(const std::string& xml_content) const;
 	pimpl_impl(ODFXMLParser& owner) : with_pimpl_owner{owner} {}
 
@@ -90,12 +91,12 @@ ODFXMLParser::ODFXMLParser()
 	});
 }
 
-void pimpl_impl<ODFXMLParser>::parse(const data_source& data, XmlParseMode mode, const emission_callbacks& emit_tag)
+void pimpl_impl<ODFXMLParser>::parse(const data_source& data, XmlParseMode mode, const message_callbacks& emit_message)
 {
 	std::string xml_content = data.string();
-	auto base_context_guard = owner().create_base_context_guard(emit_tag);
+	auto base_context_guard = owner().create_base_context_guard(emit_message);
 
-	emit_tag(tag::Document
+	emit_message(document::Document
 		{
 			.metadata = [this, &xml_content]()
 			{
@@ -116,7 +117,7 @@ void pimpl_impl<ODFXMLParser>::parse(const data_source& data, XmlParseMode mode,
 	{
 		std::throw_with_nested(make_error("Extracting text failed"));
 	}
-	emit_tag(tag::CloseDocument{});
+	emit_message(document::CloseDocument{});
 }
 
 attributes::Metadata pimpl_impl<ODFXMLParser>::extract_metadata(const std::string& xml_content) const
@@ -143,23 +144,23 @@ attributes::Metadata pimpl_impl<ODFXMLParser>::extract_metadata(const std::strin
 	return metadata;
 }
 
-continuation ODFXMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation ODFXMLParser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 
-	auto& data = std::get<data_source>(tag);
+	auto& data = msg->get<data_source>();
 	data.assert_not_encrypted(); // General check on data_source
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 	{
-		return emit_tag(std::move(tag));
+		return emit_message(std::move(msg));
 	}
 
 	docwire_log(debug) << "Using ODFXML parser.";
 	try
 	{
-		impl().parse(data, XmlParseMode::PARSE_XML, emit_tag);
+		impl().parse(data, XmlParseMode::PARSE_XML, emit_message);
 	}
 	catch (const std::exception& e)
 	{

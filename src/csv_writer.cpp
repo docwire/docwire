@@ -10,46 +10,37 @@
 /*********************************************************************************************************************************************/
 
 #include "csv_writer.h"
+#include "document_elements.h"
 
 namespace docwire
 {
-
-void
-CsvWriter::write_to(const Tag& tag, std::ostream &stream)
-{
-  if (!m_in_table && !std::holds_alternative<tag::Table>(tag))
+ 
+void CsvWriter::write_to(const message_ptr &msg, std::ostream &stream) {
+  if (!m_in_table && !msg->is<document::Table>())
     return;
-  return std::visit(
-    overloaded {
-      [&](const tag::Table&) {
-        m_in_table = true;
-      },
-      [&](const tag::CloseTable&) {
-        m_in_table = false;
-      },
-      [&](const tag::CloseTableRow&) {
-        if (!m_curr_line.empty())
-        {
-          stream << m_curr_line[0];
-          for (auto cell = m_curr_line.cbegin() + 1; cell != m_curr_line.cend(); ++cell)
-          {
-            stream << ',' << *cell;
-          }
-        }
-        stream << "\r\n";
-        m_curr_line.clear();
-      },
-      [&](const tag::CloseTableCell&) {
-        m_curr_line.push_back(m_curr_cell);
-        m_curr_cell = "";
-      },
-      [&](const tag::Text& tag) {
-        m_curr_cell += tag.text;
-      },
-      [&](const auto&) {}
-    },
-	  tag
-  );
+  if (msg->is<document::Table>())
+    m_in_table = true;
+  else if (msg->is<document::CloseTable>())
+    m_in_table = false;
+  else if (msg->is<document::CloseTableRow>())
+  {
+    if (!m_curr_line.empty()) {
+      stream << m_curr_line[0];
+      for (auto cell = m_curr_line.cbegin() + 1; cell != m_curr_line.cend();
+           ++cell) {
+        stream << ',' << *cell;
+      }
+    }
+    stream << "\r\n";
+    m_curr_line.clear();
+  }
+  else if (msg->is<document::CloseTableCell>())
+  {
+    m_curr_line.push_back(m_curr_cell);
+    m_curr_cell = "";
+  }
+  else if (msg->is<document::Text>())
+    m_curr_cell += msg->get<document::Text>().text;
 }
 
 } // namespace docwire

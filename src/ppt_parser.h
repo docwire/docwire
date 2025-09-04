@@ -14,7 +14,6 @@
 
 #include "ole_office_formats_export.h"
 #include "chain_element.h"
-#include "tags.h"
 
 namespace docwire
 {
@@ -25,7 +24,7 @@ class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT PPTParser : public ChainElement
 {
 	public:
 		PPTParser();
-		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 };
 
