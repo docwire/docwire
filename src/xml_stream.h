@@ -18,11 +18,12 @@
 
 namespace docwire
 {
-
 class DOCWIRE_XML_EXPORT XmlStream : public with_pimpl<XmlStream>
 {
 	public:
-		XmlStream(const std::string& xml, int xml_parse_options = 0);
+		struct no_blanks { bool v = false; };
+
+		XmlStream(const std::string& xml, no_blanks no_blanks = {false});
 		operator bool();
 		void next();
 		void levelDown();

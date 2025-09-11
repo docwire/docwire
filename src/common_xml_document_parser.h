@@ -15,6 +15,7 @@
 #include "attributes.h"
 #include "chain_element.h"
 #include "pimpl.h"
+#include "xml_stream.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -23,7 +24,6 @@ namespace docwire
 {
 	class ZipReader;
 	class Metadata;
-	class XmlStream;
 
 enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
 
@@ -113,13 +113,13 @@ class CommonXMLDocumentParser: public ChainElement, public with_pimpl<CommonXMLD
 		bool disabledText() const;
 
 		///gets options which has been set for XmlStream object. (xmlParserOption from libxml2)
-		int getXmlOptions() const;
+		XmlStream::no_blanks no_blanks() const;
 
 		///disables modifying text data inside method onUnregisteredCommand
 		void disableText(bool disable);
 
 		///sets options for XmlStream objects. (xmlParserOption from libxml2)
-		void setXmlOptions(int options);
+		void set_no_blanks(XmlStream::no_blanks no_blanks);
 
 		void activeEmittingSignals(bool flag);
 

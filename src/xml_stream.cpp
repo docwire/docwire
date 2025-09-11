@@ -35,6 +35,15 @@ namespace
 
 std::mutex xml_parser_init_mutex;
 
+static int to_libxml_parse_options(XmlStream::no_blanks no_blanks_option)
+{
+	int libxml_options = 0;
+	if (no_blanks_option.v)
+		libxml_options |= XML_PARSE_NOBLANKS;
+
+	return libxml_options;
+}
+
 /**
  * @brief Class for managing the initialization and cleanup of the libxml2 parser.
  * 
@@ -76,7 +85,7 @@ class LibXml2InitAndCleanup
  *
  * @return A unique pointer to an xmlTextReader object. Ownership is transferred to the caller.
  */
-static std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> make_xml_text_reader_safely(const std::string& xml, int xml_parse_options)
+static std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> make_xml_text_reader_safely(const std::string& xml, XmlStream::no_blanks no_blanks_option)
 {
 	// libxml2 requires one-time initialization via xmlInitParser(). While functions like
 	// xmlReaderForMemory can trigger this initialization implicitly, that is not thread-safe.
@@ -85,9 +94,9 @@ static std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> make_xml_tex
 	// Init libxml2 on first use, but cleanup at application exit not to interfere with other threads or
 	// other code that uses libxml2.
 	static LibXml2InitAndCleanup init_and_cleanup{};
+	const int final_options = to_libxml_parse_options(no_blanks_option) | XML_PARSE_NOERROR | XML_PARSE_NOWARNING;
 	return std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)>(
-		xmlReaderForMemory(xml.c_str(), xml.length(), NULL, NULL,
-			xml_parse_options | XML_PARSE_NOERROR | XML_PARSE_NOWARNING),
+		xmlReaderForMemory(xml.c_str(), xml.length(), NULL, NULL, final_options),
 		&xmlFreeTextReader);
 }
 
@@ -104,8 +113,8 @@ struct pimpl_impl<XmlStream> : pimpl_impl_base
 	std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> m_reader;
 	int m_curr_depth;
 
-	pimpl_impl(const std::string& xml, int xml_parse_options)
-		: m_reader(make_xml_text_reader_safely(xml, xml_parse_options))
+	pimpl_impl(const std::string& xml, XmlStream::no_blanks no_blanks_option)
+		: m_reader(make_xml_text_reader_safely(xml, no_blanks_option))
 	{
 		throw_if (m_reader == NULL, "Cannot initialize xmlTextReader");
 		throw_if (!read_next(), "Cannot initialize xmlTextReader");
@@ -135,8 +144,8 @@ struct pimpl_impl<XmlStream> : pimpl_impl_base
 	}
 };
 
-XmlStream::XmlStream(const std::string &xml, int xml_parse_options)
-	: with_pimpl(xml, xml_parse_options)
+XmlStream::XmlStream(const std::string &xml, no_blanks no_blanks_option)
+	: with_pimpl(xml, no_blanks_option)
 {
 }
 

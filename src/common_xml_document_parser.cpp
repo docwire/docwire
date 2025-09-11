@@ -12,7 +12,6 @@
 #include "common_xml_document_parser.h" 
 
 #include "zip_reader.h"
-#include <libxml/xmlreader.h>
 #include <functional>
 #include <type_traits>
 #include <stack>
@@ -94,7 +93,7 @@ struct pimpl_impl<CommonXMLDocumentParser> : with_pimpl_owner<CommonXMLDocumentP
   }
 
 	std::map<std::string, CommonXMLDocumentParser::CommandHandler> m_command_handlers;
-	int m_xml_options;
+	XmlStream::no_blanks m_no_blanks = {false};
   	std::stack<context> m_context_stack;
 
 	template <typename T>
@@ -656,7 +655,7 @@ void CommonXMLDocumentParser::extractText(const std::string& xml_contents, XmlPa
 		 xml = xml_contents;
 	try
 	{
-		XmlStream xml_stream(xml, getXmlOptions());
+		XmlStream xml_stream(xml, no_blanks());
 		text = parseXmlData(xml_stream, mode, zipfile);
 	}
 	catch (const std::exception& e)
@@ -669,7 +668,7 @@ void CommonXMLDocumentParser::parseODFMetadata(const std::string &xml_content, a
 {
 	try
 	{
-		XmlStream xml_stream(xml_content, XML_PARSE_NOBLANKS);
+		XmlStream xml_stream(xml_content, XmlStream::no_blanks{true});
 		xml_stream.levelDown();
 		while (xml_stream)
 		{
@@ -764,20 +763,18 @@ void CommonXMLDocumentParser::disableText(bool disable)
 	impl().m_context_stack.top().m_disabled_text = disable;
 }
 
-void CommonXMLDocumentParser::setXmlOptions(int options)
+void CommonXMLDocumentParser::set_no_blanks(XmlStream::no_blanks no_blanks)
 {
-	impl().m_xml_options = options;
+	impl().m_no_blanks = no_blanks;
 }
 
 CommonXMLDocumentParser::CommonXMLDocumentParser()
 {
-		
-		impl().m_xml_options = 0;
 }
 
-int CommonXMLDocumentParser::getXmlOptions() const
+XmlStream::no_blanks CommonXMLDocumentParser::no_blanks() const
 {
-	return impl().m_xml_options;
+	return impl().m_no_blanks;
 }
 
 CommonXMLDocumentParser::scoped_context_stack_push::scoped_context_stack_push(CommonXMLDocumentParser& parser, const message_callbacks& emit_message)

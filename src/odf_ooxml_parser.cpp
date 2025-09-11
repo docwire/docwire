@@ -18,7 +18,6 @@
 #include "xml_fixer.h"
 #include "zip_reader.h"
 #include "error_tags.h"
-#include <libxml2/libxml/xmlreader.h>
 #include "log.h"
 #include <map>
 #include "misc.h"
@@ -328,7 +327,7 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 			xml = content;
 		try
 		{
-			XmlStream xml_stream(xml, owner().getXmlOptions());
+			XmlStream xml_stream(xml, owner().no_blanks());
 			xml_stream.levelDown();
 			while (xml_stream)
 			{
@@ -368,7 +367,7 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 			xml = content;
 		try
 		{
-			XmlStream xml_stream(xml, owner().getXmlOptions());
+			XmlStream xml_stream(xml, owner().no_blanks());
 			xml_stream.levelDown();
 			while (xml_stream)
 			{
@@ -402,7 +401,7 @@ struct pimpl_impl<ODFOOXMLParser> : with_pimpl_owner<ODFOOXMLParser>
 			xml = content;
 		try
 		{
-			XmlStream xml_stream(xml, owner().getXmlOptions());
+			XmlStream xml_stream(xml, owner().no_blanks());
 			owner().parseXmlData(xml_stream, mode, &zipfile);
 		}
 		catch (const std::exception& e)
@@ -500,7 +499,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode, const mes
 	if (main_file_name == "content.xml")
 	{
 		impl().assertODFFileIsNotEncrypted(zipfile);
-		setXmlOptions(XML_PARSE_NOBLANKS);
+		set_no_blanks(XmlStream::no_blanks{true});
 	}
 	if (zipfile.exists("word/comments.xml"))
 	{
@@ -564,7 +563,7 @@ void ODFOOXMLParser::parse(const data_source& data, XmlParseMode mode, const mes
 				throw_if(mode == STRIP_XML, "Stripping XML is not possible for xlsx files", errors::program_logic{});
 			try
 			{
-				XmlStream xml_stream(xml, getXmlOptions());
+				XmlStream xml_stream(xml, no_blanks());
 				xml_stream.levelDown();
 				while (xml_stream)
 				{
@@ -645,7 +644,7 @@ attributes::Metadata ODFOOXMLParser::metaData(ZipReader& zipfile) const
 		throw_if (!zipfile.read("docProps/core.xml", &core_xml), "Error reading XML file from ZIP file", std::make_pair("file_name", "docProps/core.xml"));
 		try
 		{
-			XmlStream xml_stream(core_xml, getXmlOptions());
+			XmlStream xml_stream(core_xml, no_blanks());
 			xml_stream.levelDown();
 			while (xml_stream)
 			{
@@ -677,7 +676,7 @@ attributes::Metadata ODFOOXMLParser::metaData(ZipReader& zipfile) const
 		throw_if (!zipfile.read("docProps/app.xml", &app_xml), "Error reading XML file from ZIP file", std::make_pair("file_name", "docProps/app.xml"));
 		try
 		{
-			XmlStream app_stream(app_xml, getXmlOptions());
+			XmlStream app_stream(app_xml, no_blanks());
 			app_stream.levelDown();
 			while (app_stream)
 			{

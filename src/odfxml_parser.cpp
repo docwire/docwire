@@ -12,7 +12,6 @@
 #include "odfxml_parser.h"
 
 #include "data_source.h"
-#include <libxml/xmlreader.h>
 #include "document_elements.h"
 #include "log.h"
 #include "make_error.h"
@@ -105,7 +104,7 @@ void pimpl_impl<ODFXMLParser>::parse(const data_source& data, XmlParseMode mode,
 		});
 
 	//according to the ODF specification, we must skip blank nodes. Otherwise output from flat xml will be messed up.
-	owner().setXmlOptions(XML_PARSE_NOBLANKS);
+	owner().set_no_blanks(XmlStream::no_blanks{true});
 	//in the beginning of xml stream, there are some options which we do not want to parse
 	owner().disableText(true);
 	try
