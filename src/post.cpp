@@ -121,8 +121,14 @@ try
 			in_stream->read(buf, static_cast<std::streamsize>(size * nitems));
 			return in_stream->gcount();
 		}));
+		request.setOpt(curlpp::options::InfileSize(data.span().size()));
 		request.setOpt(curlpp::options::Upload(true));
-		request.setOpt<curlpp::options::HttpHeader>({"Content-Type: application/json"});
+		std::string content_type_header = "Content-Type: application/octet-stream";
+		if (auto mt = data.highest_confidence_mime_type())
+		{
+			content_type_header = "Content-Type: " + mt->v;
+		}
+		request.setOpt<curlpp::options::HttpHeader>({content_type_header});
 	}
 	request.setOpt<curlpp::options::Encoding>("gzip");
 	if (!impl().m_oauth2_bearer_token.empty())

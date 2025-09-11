@@ -1,9 +1,13 @@
 add_library(docwire_http SHARED
+    http_server.cpp
     post.cpp
 )
 
 find_package(unofficial-curlpp CONFIG REQUIRED)
-target_link_libraries(docwire_http PRIVATE docwire_core docwire_content_type unofficial::curlpp::curlpp)
+block(SCOPE_FOR VARIABLES)
+    find_package(Drogon CONFIG REQUIRED)
+endblock()
+target_link_libraries(docwire_http PRIVATE docwire_core docwire_content_type unofficial::curlpp::curlpp Drogon::Drogon)
 
 install(TARGETS docwire_http EXPORT docwire_targets)
 if(MSVC)

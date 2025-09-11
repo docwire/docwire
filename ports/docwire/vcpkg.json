@@ -58,6 +58,9 @@
 			"name": "boost-program-options"
 		},
 		{
+			"name": "drogon"
+		},
+		{
 			"name": "magic-enum"
 		},
 		{

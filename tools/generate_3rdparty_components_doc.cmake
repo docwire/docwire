@@ -293,6 +293,8 @@ function(license_description_from_license_id license_id out_var)
 	set(license_desc_ICU "Nonrestrictive open source license that is suitable for use with both commercial software and with other open source or free software.")
 	# reuse description. LGPL-2.1 introduced only updates and clarifications
 	set(license_desc_LGPL-2.0 ${license_desc_LGPL-2.1})
+	#
+	set(license_desc_MIT-CMU "A permissive license from Carnegie Mellon University that allows redistribution and use in source and binary forms, with or without modification, provided that the copyright notice, this list of conditions and the following disclaimer are retained.")
 	if (DEFINED license_desc_${license_id})
 		set(${out_var} ${license_desc_${license_id}} PARENT_SCOPE)
 		return()

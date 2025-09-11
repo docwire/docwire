@@ -57,6 +57,8 @@
 #include "input.h"
 #include "log.h"
 #include "lru_memory_cache.h"
+#include "http_server.h"
+#include <chrono>
 
 template <typename T>
 class MessagePtrWithMatcher {
@@ -605,7 +607,7 @@ TEST(Http, Post)
 	value output_val = parse(output_stream.str());
     ASSERT_TRUE(output_val.is_object());
     ASSERT_TRUE(output_val.as_object()["headers"].is_object());
-    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-type"].as_string().c_str(), "application/json");
+    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-type"].as_string().c_str(), "text/plain");
     ASSERT_THAT(std::string{output_val.as_object()["headers"].as_object()["user-agent"].as_string()},
                 ::testing::StartsWith("DocWire SDK/"));
     ASSERT_STREQ(output_val.as_object()["data"].as_string().c_str(), "<http://www.silvercoders.com/>hyperlink test\n\n");
@@ -637,6 +639,78 @@ TEST(Http, PostForm)
     ASSERT_TRUE(output_val.as_object()["files"].is_object());
     ASSERT_STREQ(output_val.as_object()["files"].as_object()["file.txt"].as_string().c_str(), "data:application/octet-stream;base64,PGh0dHA6Ly93d3cuc2lsdmVyY29kZXJzLmNvbS8+aHlwZXJsaW5rIHRlc3QKCg==");
 }
+
+TEST(Http, ServerAndPost)
+{
+    // GIVEN
+    const http::address addr{"127.0.0.1"};
+    const http::port port{8080}; // Assuming this port is free
+    const std::string url = "http://" + addr.v + ":" + std::to_string(port.v) + "/test";
+ 
+    // A factory that creates a pipeline to parse office documents and then append " processed".
+    auto factory = []() -> ParsingChain {
+        return office_formats_parser{} | PlainTextExporter{} | [](message_ptr msg, const message_callbacks& emit_message) {
+            if (msg->is<data_source>()) {
+                auto original_text = msg->get<data_source>().string();
+                return emit_message(data_source{original_text + " processed", mime_type{"text/plain"}, confidence::highest});
+            }
+            return emit_message(std::move(msg));
+        };
+    };
+ 
+    http::server::pipeline_factory_map factories;
+    factories["/test"] = factory;
+    http::server server(addr, port, std::move(factories));
+    std::thread server_thread([&server]() {
+        try {
+            server();
+        } catch (const std::exception& e) {
+            ADD_FAILURE() << "Server thread threw an exception: " << e.what();
+        }
+    });
+ 
+    // Give the server a moment to start up.
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+ 
+    // WHEN
+    std::ostringstream response_stream;
+    std::string expected_response_body;
+    try
+    {
+        // The expected response is the parsed text of the document, with " processed" appended.
+        std::ostringstream expected_text_stream;
+        std::filesystem::path{"1.doc"} | content_type::by_file_extension::detector{} |
+        office_formats_parser{} | PlainTextExporter() | expected_text_stream;
+        expected_response_body = expected_text_stream.str() + " processed";
+    }
+    catch(const std::exception & e)
+    {
+        FAIL() << "Generating expected response threw an exception: " << errors::diagnostic_message(e);
+    }
+
+    try
+    {
+        // Post the raw document to the server. The server's pipeline will handle parsing.
+        std::filesystem::path{"1.doc"} |
+        content_type::by_file_extension::detector{} | // Set mime type for the client to send
+        http::Post(url) |
+        response_stream;
+    }
+    catch(const std::exception & e)
+    {
+        FAIL() << "Client pipeline threw an exception: " << errors::diagnostic_message(e);
+    }
+ 
+    // THEN
+    EXPECT_EQ(response_stream.str(), expected_response_body);
+ 
+    // CLEANUP
+    server.stop();
+    if (server_thread.joinable()) {
+        server_thread.join();
+    }
+}
+
 
 TEST (errors, throwing)
 {
