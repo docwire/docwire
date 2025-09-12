@@ -15,6 +15,7 @@
 #include "ole_office_formats_export.h"
 #include "chain_element.h"
 #include "pimpl.h"
+#include <string>
 
 namespace docwire
 {
