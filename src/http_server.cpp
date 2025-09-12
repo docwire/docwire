@@ -19,8 +19,10 @@
 #include "input.h"
 #include "output.h"
 #include "make_error.h"
+#include <memory>
 #include <mutex>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/container/flat_map.hpp>
 
 namespace docwire
 {
@@ -83,11 +85,18 @@ void server::operator()()
 
 		for (const auto& [path, factory] : impl().m_factories)
 		{
-			auto handler = [factory = factory](const drogon::HttpRequestPtr& req, DrogonCallback&& callback)
+			auto handler = [path, factory = factory](const drogon::HttpRequestPtr& req, DrogonCallback&& callback)
 			{
 				try
 				{
-					thread_local ParsingChain request_pipeline = factory();
+					// A thread-local cache of pipelines, keyed by path. This ensures that each
+					// thread has its own cache, and within that cache, each registered URL
+					// path has its own unique pipeline instance.
+					thread_local boost::container::flat_map<std::string, std::unique_ptr<ParsingChain>> pipelines;
+					auto& pipeline_ptr = pipelines[path];
+					if (!pipeline_ptr)
+						pipeline_ptr = std::make_unique<ParsingChain>(factory());
+					ParsingChain& request_pipeline = *pipeline_ptr;
 
 					auto response_messages = std::make_shared<std::vector<message_ptr>>();
 
