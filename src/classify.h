@@ -14,6 +14,7 @@
 
 #include "chat.h"
 #include <set>
+#include <string>
 
 namespace docwire
 {

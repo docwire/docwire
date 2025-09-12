@@ -13,6 +13,7 @@
 #define DOCWIRE_OPENAI_ANALYZE_DATA_H
 
 #include "chat.h"
+#include <string>
 
 namespace docwire
 {
