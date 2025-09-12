@@ -166,7 +166,7 @@ void server::operator()()
 			};
 
 			// For now, we register the handler for POST requests. This could be made configurable.
-			drogon::app().registerHandlerViaRegex(path, handler, {drogon::Post});
+			drogon::app().registerHandlerViaRegex(path, std::move(handler), {drogon::Post});
 		}
 		docwire_log(info) << "Starting HTTP server on " << impl().m_addr << ":" << impl().m_port;
 		drogon::app().run();
