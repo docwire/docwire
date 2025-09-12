@@ -89,7 +89,9 @@ std::string post_request(const std::string& query, const std::string& api_key)
 	std::ostringstream response_stream{};
 	try
 	{
-		std::stringstream{ query } | http::Post("https://api.openai.com/v1/audio/speech", api_key) | response_stream;
+		data_source{query, mime_type{"application/json"}, confidence::highest} |
+			http::Post("https://api.openai.com/v1/audio/speech", api_key) |
+			response_stream;
 	}
 	catch (const std::exception& e)
 	{
