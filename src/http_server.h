@@ -16,9 +16,9 @@
 #include "pimpl.h"
 #include "parsing_chain.h"
 #include <cstdint>
-#include <map>
 #include <string>
 #include <functional>
+#include <variant>
 
 namespace docwire::http
 {
@@ -28,6 +28,20 @@ struct port { uint16_t v; };
 struct thread_num { size_t v; };
 struct cert_path { std::string v; };
 struct key_path { std::string v; };
+using error_handler_func = std::function<void(std::exception_ptr)>;
+struct error_handler { error_handler_func v = [](std::exception_ptr){}; };
+
+/**
+ * @brief A wrapper for a regex route pattern.
+ *
+ * This struct is used to explicitly mark a route path as a regular expression.
+ */
+struct regex_path
+{
+    std::string pattern_string;
+
+    explicit regex_path(std::string s) : pattern_string(std::move(s)) {}
+};
 
 /**
  * @brief A standalone HTTP server that processes requests using a user-provided pipeline.
@@ -42,17 +56,18 @@ class DOCWIRE_HTTP_EXPORT server : public with_pimpl<server>
 public:
 	/// A factory function that creates a `ParsingChain` for processing a request.
 	using pipeline_factory = std::function<ParsingChain()>;
-	/// A map from a URL path regex to a pipeline factory.
-	using pipeline_factory_map = std::map<std::string, pipeline_factory>;
+	/// A list of routes, where each route is a path (string or regex) mapped to a pipeline factory.
+	using route_list = std::vector<std::pair<std::variant<std::string, regex_path>, pipeline_factory>>;
 	
 	/**
 	 * @brief Construct a new HTTP server object
 	 * @param addr The address to listen on (e.g., "0.0.0.0")
 	 * @param port The port to listen on
-	 * @param factories A map from a URL path regex to a function that creates a `ParsingChain` to process requests.
+	 * @param routes A list of routes, where each route path can be a simple string or a `docwire::http::regex_path`.
 	 * @param thread_num The number of threads for the server (0 for default)
+	 * @param handler A function to call for handling server errors.
 	 */
-	server(address addr, port port, pipeline_factory_map factories, thread_num thread_num = {0});
+	server(address addr, port port, route_list routes, thread_num thread_num = {0}, error_handler handler = {});
 	
 	/**
 	 * @brief Construct a new HTTPS server object
@@ -60,11 +75,14 @@ public:
 	 * @param port The port to listen on
 	 * @param cert_path Path to the SSL certificate file
 	 * @param key_path Path to the SSL private key file
-	 * @param factories A map from a URL path regex to a function that creates a `ParsingChain` to process requests.
+	 * @param routes A list of routes, where each route path can be a simple string or a `docwire::http::regex_path`.
 	 * @param thread_num The number of threads for the server
+	 * @param handler A function to call for handling server errors.
 	 */
-	server(address addr, port port, cert_path cert_path, key_path key_path, pipeline_factory_map factories, thread_num thread_num = {0});
+	server(address addr, port port, cert_path cert_path, key_path key_path, route_list routes, thread_num thread_num = {0}, error_handler handler = {});
 	~server();
+	server(server&&);
+	server& operator=(server&&);
 
 	/**
 	 * @brief Starts the server and blocks the current thread.

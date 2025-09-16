@@ -640,6 +640,42 @@ TEST(Http, PostForm)
     ASSERT_STREQ(output_val.as_object()["files"].as_object()["file.txt"].as_string().c_str(), "data:application/octet-stream;base64,PGh0dHA6Ly93d3cuc2lsdmVyY29kZXJzLmNvbS8+aHlwZXJsaW5rIHRlc3QKCg==");
 }
 
+namespace {
+// RAII helper to start a server in a thread and ensure it's stopped on scope exit.
+struct ScopedServer {
+    http::server server;
+    std::thread server_thread;
+
+    // Takes server by value to move it into the member.
+    explicit ScopedServer(http::server s)
+        : server(std::move(s)),
+          server_thread([this]() {
+              try {
+                  this->server();
+              } catch (const std::exception& e) {
+                  // Exceptions in the server thread are test failures.
+                  // The server is not expected to throw after successful startup.
+                  FAIL() << "Server thread threw an unexpected exception: " << errors::diagnostic_message(e);
+              }
+          })
+    {
+        // Give the server a moment to start up.
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    ~ScopedServer() {
+        server.stop();
+        if (server_thread.joinable()) {
+            server_thread.join();
+        }
+    }
+
+    // ScopedServer is non-copyable because it owns a std::thread.
+    ScopedServer(const ScopedServer&) = delete;
+    ScopedServer& operator=(const ScopedServer&) = delete;
+};
+} // namespace
+
 TEST(Http, ServerAndPost)
 {
     // GIVEN
@@ -657,22 +693,11 @@ TEST(Http, ServerAndPost)
             return emit_message(std::move(msg));
         };
     };
+
+    http::server::route_list routes;
+    routes.push_back({"/test", factory});
+    ScopedServer server_runner{http::server(addr, port, std::move(routes))};
  
-    http::server::pipeline_factory_map factories;
-    factories["/test"] = factory;
-    http::server server(addr, port, std::move(factories));
-    std::thread server_thread([&server]() {
-        try {
-            server();
-        } catch (const std::exception& e) {
-            ADD_FAILURE() << "Server thread threw an exception: " << e.what();
-        }
-    });
- 
-    // Give the server a moment to start up.
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
- 
-    // WHEN
     std::ostringstream response_stream;
     std::string expected_response_body;
     try
@@ -701,16 +726,99 @@ TEST(Http, ServerAndPost)
         FAIL() << "Client pipeline threw an exception: " << errors::diagnostic_message(e);
     }
  
-    // THEN
     EXPECT_EQ(response_stream.str(), expected_response_body);
- 
-    // CLEANUP
-    server.stop();
-    if (server_thread.joinable()) {
-        server_thread.join();
+}
+
+TEST(Http, ServerErrorHandling)
+{
+    const http::address addr{"127.0.0.1"};
+    const http::port port{8081}; // An arbitrary port for the test
+
+    // 1. Start a server to occupy the port.
+    ScopedServer occupying_server_runner{http::server(addr, port, {})};
+
+    // 2. Create an error handler that fails the test if it's called for a startup error.
+    auto test_error_handler = [](std::exception_ptr) {
+        FAIL() << "Error handler should not be called for fatal startup errors.";
+    };
+
+    // 3. Instantiate the server-under-test with the now-occupied port.
+    http::server server_under_test(addr, port, {}, http::thread_num{1}, http::error_handler{test_error_handler});
+
+    // 4. Attempt to start the server. It should throw an exception, which we can inspect.
+    try
+    {
+        server_under_test();
+        FAIL() << "Expected server startup to throw an exception.";
+    }
+    catch(const std::exception& e)
+    {
+        // The diagnostic message should contain information about the bind failure.
+        EXPECT_THAT(errors::diagnostic_message(e), ::testing::HasSubstr("bind"));
     }
 }
 
+TEST(Http, ServerNonFatalError)
+{
+    const http::address addr{"127.0.0.1"};
+    const http::port port{8082}; // Use a different port to avoid conflicts
+
+    // 1. Create an error handler that uses a promise to signal it was called.
+    std::promise<std::string> error_promise;
+    std::future<std::string> error_future = error_promise.get_future();
+    auto test_error_handler = [&](std::exception_ptr eptr) {
+        try {
+            if (eptr) std::rethrow_exception(eptr);
+        } catch(const std::exception& e) {
+            try {
+                error_promise.set_value(errors::diagnostic_message(e));
+            } catch (const std::future_error&) {
+                // This is expected if the handler is called multiple times.
+                // The first error is the one we care about.
+            }
+        }
+    };
+
+    // 2. Create factories for an error-producing pipeline and a successful one.
+    http::server::route_list routes;
+    routes.push_back({"/error", []() -> ParsingChain {
+        return TransformerFunc{[](message_ptr, const message_callbacks& emit_message) -> continuation {
+            return emit_message(make_error_ptr("Error from pipeline processing"));
+        }} | [](message_ptr msg, const message_callbacks& emit_message) {
+            return emit_message(std::move(msg));
+        };
+    }});
+    routes.push_back({"/success", []() -> ParsingChain {
+        return TransformerFunc{[](message_ptr msg, const message_callbacks& emit_message) {
+            return emit_message(std::move(msg));
+        }} | [](message_ptr msg, const message_callbacks& emit_message)
+        {
+            return emit_message(std::move(msg));
+        };
+    }});
+
+    // 3. Instantiate and start the server.
+    ScopedServer server_runner{http::server(addr, port, std::move(routes), http::thread_num{1}, http::error_handler{test_error_handler})};
+
+    // 4. Make a request to the error-producing endpoint. This should trigger the error handler and throw on the client side.
+    ASSERT_THROW(
+        {
+            docwire::data_source{std::string_view{"some data"}} | http::Post("http://" + addr.v + ":" + std::to_string(port.v) + "/error") | std::ostringstream{};
+        },
+        std::exception
+    );
+
+    // 5. Make a request to the successful endpoint to ensure the server is still running.
+    std::ostringstream success_response_stream;
+    ASSERT_NO_THROW({
+        docwire::data_source{std::string_view{"success data"}} | http::Post("http://" + addr.v + ":" + std::to_string(port.v) + "/success") | success_response_stream;
+    });
+
+    // 6. Verify the error handler was called and that the server is still running.
+    ASSERT_EQ(error_future.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+    EXPECT_THAT(error_future.get(), ::testing::HasSubstr("Error from pipeline processing"));
+    EXPECT_EQ(success_response_stream.str(), "success data");
+}
 
 TEST (errors, throwing)
 {
