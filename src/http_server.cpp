@@ -221,24 +221,27 @@ class http_session
     };
 
     beast::flat_buffer m_buffer;
-    http_beast::request<http_beast::string_body> m_req;
+    std::shared_ptr<http_beast::request_parser<http_beast::string_body>> m_parser;
     std::shared_ptr<void> m_res;
     send_lambda m_lambda;
     std::shared_ptr<std::vector<http::compiled_route>> m_routes;
     std::shared_ptr<error_handler_func> m_error_handler;
+    uint64_t m_body_limit;
 
 protected:
-    explicit http_session(std::shared_ptr<std::vector<http::compiled_route>> routes, std::shared_ptr<error_handler_func> handler)
-        : m_lambda(derived()), m_routes(std::move(routes)), m_error_handler(std::move(handler))
+    explicit http_session(std::shared_ptr<std::vector<http::compiled_route>> routes, std::shared_ptr<error_handler_func> handler, uint64_t body_limit)
+        : m_lambda(derived()), m_routes(std::move(routes)), m_error_handler(std::move(handler)), m_body_limit(body_limit)
     {}
 
     Derived& derived() { return static_cast<Derived&>(*this); }
 
     void do_read()
     {
-        m_req = {};
+        m_parser = std::make_shared<http_beast::request_parser<http_beast::string_body>>();
+        m_parser->body_limit(m_body_limit);
+
         beast::get_lowest_layer(stream()).expires_after(std::chrono::seconds(30));
-        http_beast::async_read(stream(), m_buffer, m_req,
+        http_beast::async_read(stream(), m_buffer, *m_parser,
             beast::bind_front_handler(
                 &http_session::on_read,
                 derived().shared_from_this()));
@@ -259,7 +262,7 @@ protected:
             m_lambda(std::move(msg));
         };
 
-        handle_request_impl(std::move(m_req), sender, m_routes, m_error_handler);
+        handle_request_impl(m_parser->release(), sender, m_routes, m_error_handler);
     }
 
     void on_write(bool close, beast::error_code ec, std::size_t bytes_transferred)
@@ -294,8 +297,8 @@ class plain_http_session
 {
     beast::tcp_stream m_stream;
 public:
-    plain_http_session(beast::tcp_stream&& stream, std::shared_ptr<std::vector<http::compiled_route>> routes, std::shared_ptr<error_handler_func> handler)
-        : http_session<plain_http_session>(std::move(routes), std::move(handler)), m_stream(std::move(stream)) {}
+    plain_http_session(beast::tcp_stream&& stream, std::shared_ptr<std::vector<http::compiled_route>> routes, std::shared_ptr<error_handler_func> handler, uint64_t body_limit)
+        : http_session<plain_http_session>(std::move(routes), std::move(handler), body_limit), m_stream(std::move(stream)) {}
     void run() { do_read(); }
     void do_close()
     {
@@ -316,8 +319,8 @@ class ssl_http_session
 {
     beast::ssl_stream<beast::tcp_stream> m_stream;
 public:
-    ssl_http_session(tcp::socket&& socket, ssl::context& ctx, std::shared_ptr<std::vector<http::compiled_route>> routes, std::shared_ptr<error_handler_func> handler)
-        : http_session<ssl_http_session>(std::move(routes), std::move(handler)), m_stream(std::move(socket), ctx) {}
+    ssl_http_session(tcp::socket&& socket, ssl::context& ctx, std::shared_ptr<std::vector<http::compiled_route>> routes, std::shared_ptr<error_handler_func> handler, uint64_t body_limit)
+        : http_session<ssl_http_session>(std::move(routes), std::move(handler), body_limit), m_stream(std::move(socket), ctx) {}
 
     void run()
     {
@@ -352,10 +355,11 @@ class listener : public std::enable_shared_from_this<listener>
     std::optional<std::reference_wrapper<ssl::context>> m_ssl_ctx;
     std::shared_ptr<std::vector<http::compiled_route>> m_routes;
     std::shared_ptr<error_handler_func> m_error_handler;
+    uint64_t m_body_limit;
 
 public:
-    listener(net::io_context& ioc, tcp::endpoint endpoint, std::optional<std::reference_wrapper<ssl::context>> ssl_ctx, std::shared_ptr<std::vector<http::compiled_route>> routes, std::shared_ptr<error_handler_func> handler)
-        : m_ioc(ioc), m_acceptor(net::make_strand(ioc)), m_ssl_ctx(ssl_ctx), m_routes(std::move(routes)), m_error_handler(std::move(handler))
+    listener(net::io_context& ioc, tcp::endpoint endpoint, std::optional<std::reference_wrapper<ssl::context>> ssl_ctx, std::shared_ptr<std::vector<http::compiled_route>> routes, std::shared_ptr<error_handler_func> handler, uint64_t body_limit)
+        : m_ioc(ioc), m_acceptor(net::make_strand(ioc)), m_ssl_ctx(ssl_ctx), m_routes(std::move(routes)), m_error_handler(std::move(handler)), m_body_limit(body_limit)
     {
         beast::error_code ec;
         m_acceptor.open(endpoint.protocol(), ec);
@@ -382,9 +386,9 @@ private:
         else
         {
             if (m_ssl_ctx)
-                std::make_shared<ssl_http_session>(std::move(socket), m_ssl_ctx->get(), m_routes, m_error_handler)->run();
+                std::make_shared<ssl_http_session>(std::move(socket), m_ssl_ctx->get(), m_routes, m_error_handler, m_body_limit)->run();
             else
-                std::make_shared<plain_http_session>(beast::tcp_stream(std::move(socket)), m_routes, m_error_handler)->run();
+                std::make_shared<plain_http_session>(beast::tcp_stream(std::move(socket)), m_routes, m_error_handler, m_body_limit)->run();
         }
         do_accept();
     }
@@ -398,8 +402,8 @@ private:
 template<>
 struct pimpl_impl<http::server> : pimpl_impl_base
 {
-	pimpl_impl(http::address addr, http::port port, http::server::route_list routes, http::thread_num thread_num, http::cert_path cert_path, http::key_path key_path, http::error_handler handler)
-		: m_addr(addr.v), m_port(port.v), m_cert_path(cert_path.v), m_key_path(key_path.v), m_error_handler(std::make_shared<http::error_handler_func>(std::move(handler.v))), m_ioc(thread_num.v > 0 ? thread_num.v : std::thread::hardware_concurrency())
+	pimpl_impl(http::address addr, http::port port, http::server::route_list routes, http::thread_num thread_num, http::cert_path cert_path, http::key_path key_path, http::error_handler handler, http::body_limit limit)
+		: m_addr(addr.v), m_port(port.v), m_cert_path(cert_path.v), m_key_path(key_path.v), m_error_handler(std::make_shared<http::error_handler_func>(std::move(handler.v))), m_ioc(thread_num.v > 0 ? thread_num.v : std::thread::hardware_concurrency()), m_body_limit(limit.v)
 	{
         m_thread_num = thread_num.v > 0 ? thread_num.v : std::thread::hardware_concurrency();
 
@@ -450,7 +454,7 @@ struct pimpl_impl<http::server> : pimpl_impl_base
         std::optional<std::reference_wrapper<http::ssl::context>> ssl_ctx_ref;
         if (m_ssl_ctx) ssl_ctx_ref.emplace(*m_ssl_ctx);
 
-        std::make_shared<http::listener>(m_ioc, http::tcp::endpoint{address, m_port}, ssl_ctx_ref, m_routes, m_error_handler)->run();
+        std::make_shared<http::listener>(m_ioc, http::tcp::endpoint{address, m_port}, ssl_ctx_ref, m_routes, m_error_handler, m_body_limit)->run();
 
         // Create a pool of m_thread_num - 1 worker threads. The main thread will be the m_thread_num-th worker.
         m_threads.reserve(m_thread_num > 1 ? m_thread_num - 1 : 0);
@@ -478,6 +482,7 @@ struct pimpl_impl<http::server> : pimpl_impl_base
 	std::string m_addr;
 	uint16_t m_port;
 	size_t m_thread_num;
+	uint64_t m_body_limit;
 	std::string m_cert_path;
 	std::string m_key_path;
 	std::shared_ptr<std::vector<http::compiled_route>> m_routes;
@@ -488,12 +493,12 @@ struct pimpl_impl<http::server> : pimpl_impl_base
 };
 
 namespace http {
-server::server(address addr, port port, route_list routes, thread_num thread_num, error_handler handler)
-	: with_pimpl<server>(addr, port, std::move(routes), thread_num, cert_path{""}, key_path{""}, std::move(handler))
+server::server(address addr, port port, route_list routes, thread_num thread_num, error_handler handler, body_limit limit)
+	: with_pimpl<server>(addr, port, std::move(routes), thread_num, cert_path{""}, key_path{""}, std::move(handler), limit)
 {}
 
-server::server(address addr, port port, cert_path cert_path, key_path key_path, route_list routes, thread_num thread_num, error_handler handler)
-	: with_pimpl<server>(addr, port, std::move(routes), thread_num, cert_path, key_path, std::move(handler))
+server::server(address addr, port port, cert_path cert_path, key_path key_path, route_list routes, thread_num thread_num, error_handler handler, body_limit limit)
+	: with_pimpl<server>(addr, port, std::move(routes), thread_num, cert_path, key_path, std::move(handler), limit)
 {}
 
 server::~server() = default;

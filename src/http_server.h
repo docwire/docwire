@@ -29,6 +29,7 @@ struct port { uint16_t v; };
 struct thread_num { size_t v; };
 struct cert_path { std::string v; };
 struct key_path { std::string v; };
+struct body_limit { uint64_t v; };
 using error_handler_func = std::function<void(std::exception_ptr)>;
 struct error_handler { error_handler_func v = [](std::exception_ptr){}; };
 
@@ -67,8 +68,9 @@ public:
 	 * @param routes A list of routes, where each route path can be a simple string or a `docwire::http::regex_path`.
 	 * @param thread_num The number of threads for the server (0 for default)
 	 * @param handler A function to call for handling server errors.
+	 * @param limit The maximum size of the request body in bytes. Defaults to 1 GiB.
 	 */
-	server(address addr, port port, route_list routes, thread_num thread_num = {0}, error_handler handler = {});
+	server(address addr, port port, route_list routes, thread_num thread_num = {0}, error_handler handler = {}, body_limit limit = {1024 * 1024 * 1024});
 	
 	/**
 	 * @brief Construct a new HTTPS server object
@@ -79,8 +81,9 @@ public:
 	 * @param routes A list of routes, where each route path can be a simple string or a `docwire::http::regex_path`.
 	 * @param thread_num The number of threads for the server
 	 * @param handler A function to call for handling server errors.
+	 * @param limit The maximum size of the request body in bytes. Defaults to 1 GiB.
 	 */
-	server(address addr, port port, cert_path cert_path, key_path key_path, route_list routes, thread_num thread_num = {0}, error_handler handler = {});
+	server(address addr, port port, cert_path cert_path, key_path key_path, route_list routes, thread_num thread_num = {0}, error_handler handler = {}, body_limit limit = {1024 * 1024 * 1024});
 	~server();
 	server(server&&);
 	server& operator=(server&&);
