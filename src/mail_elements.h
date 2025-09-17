@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <cstdint>
 #include "file_extension.h"
+#include "core_export.h"
 #include <optional>
 #include <string>
 
@@ -23,34 +24,34 @@ namespace docwire
 namespace mail
 {
 
-struct Mail
+struct DOCWIRE_CORE_EXPORT Mail
 {
   std::optional<std::string> subject;
   std::optional<std::uint32_t> date;
   std::optional<int> level;
 };
 
-struct CloseMail {};
+struct DOCWIRE_CORE_EXPORT CloseMail {};
 
-struct MailBody {};
-struct CloseMailBody { };
+struct DOCWIRE_CORE_EXPORT MailBody {};
+struct DOCWIRE_CORE_EXPORT CloseMailBody { };
 
-struct Attachment
+struct DOCWIRE_CORE_EXPORT Attachment
 {
   std::optional<std::string> name;
   std::size_t size;
   std::optional<file_extension> extension;
 };
 
-struct CloseAttachment { };
+struct DOCWIRE_CORE_EXPORT CloseAttachment { };
 
-struct Folder
+struct DOCWIRE_CORE_EXPORT Folder
 {
   std::optional<std::string> name;
   std::optional<int> level;
 };
 
-struct CloseFolder { };
+struct DOCWIRE_CORE_EXPORT CloseFolder { };
 
 } // namespace mail
 } // namespace docwire
