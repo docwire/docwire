@@ -7,7 +7,7 @@ find_package(unofficial-curlpp CONFIG REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenSSL REQUIRED)
 
-target_compile_definitions(docwire_http PUBLIC BOOST_ASIO_NO_DEPRECATED)
+target_compile_definitions(docwire_http PRIVATE BOOST_ASIO_NO_DEPRECATED)
 target_link_libraries(docwire_http PRIVATE docwire_core docwire_content_type unofficial::curlpp::curlpp Boost::system OpenSSL::SSL OpenSSL::Crypto)
 
 install(TARGETS docwire_http EXPORT docwire_targets)
