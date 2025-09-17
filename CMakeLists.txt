@@ -2,12 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for VSCode CLangd extension
 
-if(MSVC)
-    # This is necessary for some translation units which use heavily templated libraries and
-	# can exceed the default object file size limit.
-    add_compile_options(/bigobj)
-endif()
-
 # Get version from ChangeLog and store it in DOCWIRE_VERSION and SIMPLE_DOCWIRE_VERSION
 function(extract_version)
 	file(READ "${CMAKE_CURRENT_SOURCE_DIR}/doc/ChangeLog" changelog_text)
@@ -29,6 +23,14 @@ extract_version()
 
 project(docwire VERSION ${SIMPLE_DOCWIRE_VERSION} LANGUAGES CXX C)
 message(STATUS "Build docwire: ${DOCWIRE_VERSION}")
+
+if(MSVC)
+    # This is necessary for some translation units which use heavily templated libraries and
+	# can exceed the default object file size limit.
+    add_compile_options(/bigobj)
+    # Target Windows 7 and later to ensure API compatibility and silence compiler warnings.
+    add_compile_definitions(_WIN32_WINNT=0x0601)
+endif()
 
 option(DOCWIRE_DOC "Compile Documentation" ON)
 option(DOCWIRE_TRACE "Enable Tracing" OFF)
