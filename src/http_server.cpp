@@ -63,6 +63,139 @@ struct compiled_route
 
 namespace {
 
+http_beast::response<http_beast::string_body> server_error(const http_beast::request<http_beast::string_body>& req, beast::string_view what)
+{
+    http_beast::response<http_beast::string_body> res{http_beast::status::internal_server_error, req.version()};
+    res.set(http_beast::field::server, BOOST_BEAST_VERSION_STRING);
+    res.set(http_beast::field::content_type, "text/plain");
+    res.keep_alive(req.keep_alive());
+    res.body() = std::string(what);
+    res.prepare_payload();
+    return res;
+}
+
+http_beast::response<http_beast::string_body> not_found(const http_beast::request<http_beast::string_body>& req, beast::string_view target)
+{
+    http_beast::response<http_beast::string_body> res{http_beast::status::not_found, req.version()};
+    res.set(http_beast::field::server, BOOST_BEAST_VERSION_STRING);
+    res.set(http_beast::field::content_type, "text/html");
+    res.keep_alive(req.keep_alive());
+    res.body() = "The resource '" + std::string(target) + "' was not found.";
+    res.prepare_payload();
+    return res;
+}
+
+void handle_request_impl(
+    http_beast::request<http_beast::string_body>&& req,
+    const std::function<void(http_beast::response<http_beast::string_body>&&)>& send,
+    std::shared_ptr<std::vector<http::compiled_route>> routes,
+    std::shared_ptr<error_handler_func> error_handler)
+{
+    if(req.method() != http_beast::verb::post)
+    {
+        http_beast::response<http_beast::string_body> res{http_beast::status::bad_request, req.version()};
+        res.set(http_beast::field::server, BOOST_BEAST_VERSION_STRING);
+        res.set(http_beast::field::content_type, "text/html");
+        res.keep_alive(req.keep_alive());
+        res.body() = "Unknown HTTP-method. Only POST is supported.";
+        res.prepare_payload();
+        return send(std::move(res));
+    }
+
+    beast::string_view target_sv = req.target();
+    auto query_pos = target_sv.find('?');
+    if(query_pos != beast::string_view::npos)
+        target_sv.remove_suffix(target_sv.size() - query_pos);
+    std::string target(target_sv);
+
+    server::pipeline_factory factory;
+    std::string path_regex_str;
+
+    for (const auto& route : *routes) {
+        bool match = false;
+        if (route.pattern)
+        {
+            match = std::regex_match(target, *route.pattern);
+        }
+        else
+        {
+            match = (target == route.path_key);
+        }
+
+        if (match) {
+            factory = route.factory;
+            path_regex_str = route.path_key;
+            break;
+        }
+    }
+
+    if (!factory) {
+        return send(not_found(req, req.target()));
+    }
+
+    try
+    {
+        thread_local boost::container::flat_map<std::string, std::unique_ptr<ParsingChain>> pipelines;
+        auto& pipeline_ptr = pipelines[path_regex_str];
+        if (!pipeline_ptr)
+            pipeline_ptr = std::make_unique<ParsingChain>(factory());
+        ParsingChain& request_pipeline = *pipeline_ptr;
+
+        auto response_messages = std::make_shared<std::vector<message_ptr>>();
+
+        auto request_body = req.body();
+        auto request_data_source = data_source(std::string(request_body));
+        auto content_type_header = req[http_beast::field::content_type];
+        if (!content_type_header.empty())
+        {
+            auto semicolon_pos = content_type_header.find(';');
+            beast::string_view media_type_sv = (semicolon_pos != std::string::npos)
+                ? content_type_header.substr(0, semicolon_pos)
+                : content_type_header;
+            std::string media_type_str(media_type_sv);
+            boost::algorithm::trim(media_type_str);
+            if (!media_type_str.empty())
+                request_data_source.add_mime_type(mime_type{media_type_str}, confidence::high);
+        }
+
+        InputChainElement{std::move(request_data_source)} | request_pipeline | OutputChainElement{response_messages};
+
+        if (response_messages->empty())
+        {
+            return send(server_error(req, "Error: The processing pipeline did not produce any output message."));
+        }
+
+        message_ptr last_msg = response_messages->back();
+        if (last_msg->is<data_source>())
+        {
+            const auto& response_data = last_msg->get<data_source>();
+            http_beast::response<http_beast::string_body> res{http_beast::status::ok, req.version()};
+            res.set(http_beast::field::server, BOOST_BEAST_VERSION_STRING);
+            if (auto mt = response_data.highest_confidence_mime_type())
+                res.set(http_beast::field::content_type, mt->v);
+            else
+                res.set(http_beast::field::content_type, "text/plain");
+            res.body() = response_data.string();
+            res.prepare_payload();
+            return send(std::move(res));
+        }
+        else if (last_msg->is<std::exception_ptr>())
+        {
+            (*error_handler)(last_msg->get<std::exception_ptr>());
+            return send(server_error(req, "Pipeline Error: " + errors::diagnostic_message(last_msg->get<std::exception_ptr>())));
+        }
+        else
+        {
+            return send(server_error(req, "Error: The processing pipeline produced an unsupported message type as output."));
+        }
+    }
+    catch (const std::exception& e)
+    {
+        (*error_handler)(std::current_exception());
+        send(server_error(req, "Internal Server Error: " + errors::diagnostic_message(e)));
+    }
+}
+
 template<class Derived>
 class http_session
 {
@@ -121,7 +254,12 @@ protected:
             report_error(ec, "http_beast::async_read() failed");
             return do_close();
         }
-        handle_request(std::move(m_req), m_lambda);
+
+        auto sender = [this](http_beast::response<http_beast::string_body>&& msg) {
+            m_lambda(std::move(msg));
+        };
+
+        handle_request_impl(std::move(m_req), sender, m_routes, m_error_handler);
     }
 
     void on_write(bool close, beast::error_code ec, std::size_t bytes_transferred)
@@ -146,139 +284,7 @@ protected:
     {
         if(ec == net::ssl::error::stream_truncated || ec == http_beast::error::end_of_stream)
             return;
-    
         (*m_error_handler)(make_error_ptr(what, ec));
-    }
-
-
-private:
-    http_beast::response<http_beast::string_body> server_error(beast::string_view what)
-    {
-        http_beast::response<http_beast::string_body> res{http_beast::status::internal_server_error, m_req.version()};
-        res.set(http_beast::field::server, BOOST_BEAST_VERSION_STRING);
-        res.set(http_beast::field::content_type, "text/plain");
-        res.keep_alive(m_req.keep_alive());
-        res.body() = std::string(what);
-        res.prepare_payload();
-        return res;
-    }
-
-    http_beast::response<http_beast::string_body> not_found(beast::string_view target)
-    {
-        http_beast::response<http_beast::string_body> res{http_beast::status::not_found, m_req.version()};
-        res.set(http_beast::field::server, BOOST_BEAST_VERSION_STRING);
-        res.set(http_beast::field::content_type, "text/html");
-        res.keep_alive(m_req.keep_alive());
-        res.body() = "The resource '" + std::string(target) + "' was not found.";
-        res.prepare_payload();
-        return res;
-    }
-
-    void handle_request(http_beast::request<http_beast::string_body>&& req, send_lambda& send)
-    {
-        if(req.method() != http_beast::verb::post)
-        {
-            http_beast::response<http_beast::string_body> res{http_beast::status::bad_request, req.version()};
-            res.set(http_beast::field::server, BOOST_BEAST_VERSION_STRING);
-            res.set(http_beast::field::content_type, "text/html");
-            res.keep_alive(req.keep_alive());
-            res.body() = "Unknown HTTP-method. Only POST is supported.";
-            res.prepare_payload();
-            return send(std::move(res));
-        }
-
-        beast::string_view target_sv = req.target();
-        auto query_pos = target_sv.find('?');
-        if(query_pos != beast::string_view::npos)
-            target_sv.remove_suffix(target_sv.size() - query_pos);
-        std::string target(target_sv);
-
-        server::pipeline_factory factory;
-        std::string path_regex_str;
-
-        for (const auto& route : *m_routes) {
-            bool match = false;
-            if (route.pattern)
-            {
-                match = std::regex_match(target, *route.pattern);
-            }
-            else
-            {
-                match = (target == route.path_key);
-            }
-
-            if (match) {
-                factory = route.factory;
-                path_regex_str = route.path_key;
-                break;
-            }
-        }
-
-        if (!factory) {
-            return send(not_found(req.target()));
-        }
-
-        try
-        {
-            thread_local boost::container::flat_map<std::string, std::unique_ptr<ParsingChain>> pipelines;
-            auto& pipeline_ptr = pipelines[path_regex_str];
-            if (!pipeline_ptr)
-                pipeline_ptr = std::make_unique<ParsingChain>(factory());
-            ParsingChain& request_pipeline = *pipeline_ptr;
-
-            auto response_messages = std::make_shared<std::vector<message_ptr>>();
-
-            auto request_body = req.body();
-            auto request_data_source = data_source(std::string(request_body));
-            auto content_type_header = req[http_beast::field::content_type];
-            if (!content_type_header.empty())
-            {
-                auto semicolon_pos = content_type_header.find(';');
-                beast::string_view media_type_sv = (semicolon_pos != std::string::npos)
-                    ? content_type_header.substr(0, semicolon_pos)
-                    : content_type_header;
-                std::string media_type_str(media_type_sv);
-                boost::algorithm::trim(media_type_str);
-                if (!media_type_str.empty())
-                    request_data_source.add_mime_type(mime_type{media_type_str}, confidence::high);
-            }
-
-            InputChainElement{std::move(request_data_source)} | request_pipeline | OutputChainElement{response_messages};
-
-            if (response_messages->empty())
-            {
-                return send(server_error("Error: The processing pipeline did not produce any output message."));
-            }
-
-            message_ptr last_msg = response_messages->back();
-            if (last_msg->is<data_source>())
-            {
-                const auto& response_data = last_msg->get<data_source>();
-                http_beast::response<http_beast::string_body> res{http_beast::status::ok, req.version()};
-                res.set(http_beast::field::server, BOOST_BEAST_VERSION_STRING);
-                if (auto mt = response_data.highest_confidence_mime_type())
-                    res.set(http_beast::field::content_type, mt->v);
-                else
-                    res.set(http_beast::field::content_type, "text/plain");
-                res.body() = response_data.string();
-                res.prepare_payload();
-                return send(std::move(res));
-            }
-            else if (last_msg->is<std::exception_ptr>())
-            {
-                (*m_error_handler)(last_msg->get<std::exception_ptr>());
-                return send(server_error("Pipeline Error: " + errors::diagnostic_message(last_msg->get<std::exception_ptr>())));
-            }
-            else
-            {
-                return send(server_error("Error: The processing pipeline produced an unsupported message type as output."));
-            }
-        }
-        catch (const std::exception& e)
-        {
-            (*m_error_handler)(std::current_exception());
-            send(server_error("Internal Server Error: " + errors::diagnostic_message(e)));
-        }
     }
 };
 
