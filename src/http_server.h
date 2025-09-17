@@ -19,6 +19,7 @@
 #include <string>
 #include <functional>
 #include <variant>
+#include <vector>
 
 namespace docwire::http
 {
