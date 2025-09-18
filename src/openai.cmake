@@ -13,7 +13,7 @@ add_library(docwire_openai SHARED
     translate_to.cpp)
 
 find_package(Boost REQUIRED COMPONENTS json)
-target_link_libraries(docwire_openai PRIVATE docwire_base64 docwire_core docwire_http Boost::json)
+target_link_libraries(docwire_openai PRIVATE docwire_base64 docwire_core docwire_ai docwire_http Boost::json)
 
 install(TARGETS docwire_openai EXPORT docwire_targets)
 if(MSVC)
