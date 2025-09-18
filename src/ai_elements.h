@@ -12,13 +12,13 @@
 #ifndef DOCWIRE_AI_ELEMENTS_H
 #define DOCWIRE_AI_ELEMENTS_H
 
-#include "local_ai_export.h"
+#include "ai_export.h"
 #include <vector>
 
 namespace docwire::ai
 {
 
-struct DOCWIRE_LOCAL_AI_EXPORT embedding
+struct DOCWIRE_AI_EXPORT embedding
 {
   std::vector<double> values;
 };
