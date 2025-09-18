@@ -9,6 +9,11 @@ file(GENERATE OUTPUT ${EMPTY_SOURCE} CONTENT "
 ")
 add_library(docwire_ai SHARED ${EMPTY_SOURCE})
 
+target_compile_features(docwire_ai PUBLIC cxx_std_20)
+if(MSVC)
+    target_compile_options(docwire_ai PUBLIC /Zc:__cplusplus /Zc:preprocessor)
+endif()
+
 # Enable access to SDK headers
 target_include_directories(docwire_ai PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> # during building headers are in the source tree
