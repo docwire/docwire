@@ -40,8 +40,7 @@
    Memcheck:Leak
    match-leak-kinds: possible
    fun:_Znwm
-   ...
-   fun:_ZN4absl12lts_2025012714flags_internal23RegisterCommandLineFlagERNS0_15CommandLineFlagEPKc
+   fun:_ZN4absl*14flags_internal*RegisterCommandLineFlag*
    ...
    fun:call_init
    fun:_dl_init
