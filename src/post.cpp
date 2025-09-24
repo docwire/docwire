@@ -146,7 +146,7 @@ try
     }
 	catch (curlpp::RuntimeError &e)
 	{
-		std::throw_with_nested(make_error("HTTP request failed", errors::network_failure{}));
+		throw errors::make_nested(e, make_error("HTTP request failed", errors::network_failure{}));
 	}
 	return emit_message(data_source{seekable_stream_ptr{response_stream}});
 }
