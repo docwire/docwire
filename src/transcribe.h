@@ -34,7 +34,7 @@ public:
 	/**
 	* @brief Executes transform operation for given node data.
 	* @see docwire::message_ptr
-	* @param tag
+	* @param msg
 	* @param emit_message
 	*/
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
