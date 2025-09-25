@@ -1,9 +1,6 @@
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(api_tests api_tests.cpp)
-if(MSVC)
-    target_compile_options(api_tests PRIVATE /bigobj)
-endif()
 target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_archives
 	docwire_fuzzy_match docwire_base64 docwire_content_type docwire_http docwire_local_ai docwire_openai
 	GTest::gtest GTest::gmock)
@@ -44,8 +41,8 @@ while (TRUE)
 	add_executable(example_${n} ${example_file})
 	target_include_directories(example_${n} PUBLIC ../src)
 	target_link_libraries(example_${n} PRIVATE docwire_core docwire_office_formats docwire_mail
-		docwire_ocr docwire_archives docwire_local_ai docwire_openai docwire_fuzzy_match docwire_content_type
-		docwire_http)
+		docwire_ocr docwire_archives docwire_ai docwire_local_ai docwire_openai docwire_fuzzy_match
+		docwire_content_type docwire_http)
 	string(FIND "${code_block}" "OPENAI_API_KEY" openai_api_key_pos)
 	if (openai_api_key_pos EQUAL -1 OR NOT "$ENV{OPENAI_API_KEY}" STREQUAL "")
 		message(STATUS "Adding test example_${n}")

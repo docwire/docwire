@@ -13,6 +13,7 @@
 #define DOCWIRE_ODFOOXML_PARSER_H
 
 #include "common_xml_document_parser.h"
+#include "data_source.h"
 #include "odf_ooxml_export.h"
 
 namespace docwire
@@ -28,16 +29,16 @@ class DOCWIRE_ODF_OOXML_EXPORT ODFOOXMLParser : public CommonXMLDocumentParser, 
     void setLastOOXMLRowNum(int r);
     int lastOOXMLColNum();
     void setLastOOXMLColNum(int c);
-    void parse(const data_source& data, XmlParseMode mode, const emission_callbacks& emit_tag);
+    void parse(const data_source& data, XmlParseMode mode, const message_callbacks& emit_message);
     attributes::Metadata metaData(ZipReader& zipfile) const;
 
 	public:
 
-    void parse(const data_source& data, const emission_callbacks& emit_tag);
+    void parse(const data_source& data, const message_callbacks& emit_message);
 
 
     ODFOOXMLParser();
-    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
     bool is_leaf() const override { return false; }
 };
 

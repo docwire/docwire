@@ -11,18 +11,19 @@
 
 #include "input.h"
 
+#include "parsing_chain.h"
 #include "log.h"
 #include "log_data_source.h" // IWYU pragma: keep
 
 using namespace docwire;
 
-continuation InputChainElement::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation InputChainElement::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
   docwire_log_func();
-	if (std::holds_alternative<tag::start_processing>(tag))
+	if (msg->is<pipeline::start_processing>())
 	{
 		docwire_log_var(m_data.get());
-		return emit_tag(m_data.get());
+		return emit_message(std::move(m_data.get()));
 	}
-	return emit_tag(std::move(tag));
+	return emit_message(std::move(msg));
 }

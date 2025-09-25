@@ -14,7 +14,7 @@
 
 #include "core_export.h"
 #include "pimpl.h"
-#include "tags.h"
+#include "message.h"
 
 namespace docwire
 {
@@ -29,10 +29,10 @@ public:
   virtual ~ChainElement() = default;
   ChainElement& operator=(ChainElement&&) = default;
 
-  virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) = 0;
+  virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) = 0;
 
   /**
-   * @brief Check if ChainElement is a leaf (last element which doesn't produce any tags). At this moment only Exporters are leafs.
+   * @brief Check if ChainElement is a leaf (last element which doesn't produce any messages). At this moment only Exporters are leafs.
    * @return true if leaf
    */
   virtual bool is_leaf() const = 0;

@@ -13,10 +13,15 @@
 #include "html_writer.h"
 #include <map>
 #include "base64.h"
+#include <boost/container/flat_map.hpp>
+#include "error_tags.h"
 #include "misc.h"
 #include "throw_if.h"
 #include <numeric>
+#include "document_elements.h"
 #include <sstream>
+#include <typeindex>
+#include <functional>
 
 namespace docwire
 {
@@ -88,9 +93,59 @@ struct pimpl_impl<HtmlWriter> : pimpl_impl_base
 {
   bool m_header_is_open { false };
   int m_nested_docs_counter { 0 };
+  using handler_func = std::function<std::shared_ptr<TextElement>(const message_ptr&)>;
+  const boost::container::flat_map<std::type_index, handler_func> m_handlers;
+
+  pimpl_impl()
+    : m_handlers{
+        {typeid(document::Paragraph), [](const message_ptr& msg) { return tag_with_attributes("p", styling_attributes(msg->get<document::Paragraph>())); }},
+        {typeid(document::CloseParagraph), [](const message_ptr&) { return std::make_shared<TextElement>("</p>"); }},
+        {typeid(document::Section), [](const message_ptr& msg) { return tag_with_attributes("div", styling_attributes(msg->get<document::Section>())); }},
+        {typeid(document::CloseSection), [](const message_ptr&) { return std::make_shared<TextElement>("</div>"); }},
+        {typeid(document::Span), [](const message_ptr& msg) { return tag_with_attributes("span", styling_attributes(msg->get<document::Span>())); }},
+        {typeid(document::CloseSpan), [](const message_ptr&) { return std::make_shared<TextElement>("</span>"); }},
+        {typeid(document::Bold), [](const message_ptr& msg) { return tag_with_attributes("b", styling_attributes(msg->get<document::Bold>())); }},
+        {typeid(document::CloseBold), [](const message_ptr&) { return std::make_shared<TextElement>("</b>"); }},
+        {typeid(document::Italic), [](const message_ptr& msg) { return tag_with_attributes("i", styling_attributes(msg->get<document::Italic>())); }},
+        {typeid(document::CloseItalic), [](const message_ptr&) { return std::make_shared<TextElement>("</i>"); }},
+        {typeid(document::Underline), [](const message_ptr& msg) { return tag_with_attributes("u", styling_attributes(msg->get<document::Underline>())); }},
+        {typeid(document::CloseUnderline), [](const message_ptr&) { return std::make_shared<TextElement>("</u>"); }},
+        {typeid(document::Table), [](const message_ptr& msg) { return tag_with_attributes("table", styling_attributes(msg->get<document::Table>())); }},
+        {typeid(document::CloseTable), [](const message_ptr&) { return std::make_shared<TextElement>("</table>"); }},
+        {typeid(document::TableRow), [](const message_ptr& msg) { return tag_with_attributes("tr", styling_attributes(msg->get<document::TableRow>())); }},
+        {typeid(document::CloseTableRow), [](const message_ptr&) { return std::make_shared<TextElement>("</tr>"); }},
+        {typeid(document::TableCell), [](const message_ptr& msg) { return tag_with_attributes("td", styling_attributes(msg->get<document::TableCell>())); }},
+        {typeid(document::CloseTableCell), [](const message_ptr&) { return std::make_shared<TextElement>("</td>"); }},
+        {typeid(document::Caption), [](const message_ptr& msg) { return tag_with_attributes("caption", styling_attributes(msg->get<document::Caption>())); }},
+        {typeid(document::CloseCaption), [](const message_ptr&) { return std::make_shared<TextElement>("</caption>"); }},
+        {typeid(document::BreakLine), [](const message_ptr& msg) { return tag_with_attributes("br", styling_attributes(msg->get<document::BreakLine>())); }},
+        {typeid(document::Text), [](const message_ptr& msg) { return std::make_shared<TextElement>(encoded(msg->get<document::Text>().text)); }},
+        {typeid(document::Link), [this](const message_ptr& msg) { return this->write_link(msg->get<document::Link>()); }},
+        {typeid(document::CloseLink), [](const message_ptr&) { return std::make_shared<TextElement>("</a>"); }},
+        {typeid(document::Image), [this](const message_ptr& msg) { return this->write_image(msg->get<document::Image>()); }},
+        {typeid(document::List), [this](const message_ptr& msg) { return this->write_list(msg->get<document::List>()); }},
+        {typeid(document::CloseList), [](const message_ptr&) { return std::make_shared<TextElement>("</ul>"); }},
+        {typeid(document::ListItem), [](const message_ptr&) { return std::make_shared<TextElement>("<li>"); }},
+        {typeid(document::CloseListItem), [](const message_ptr&) { return std::make_shared<TextElement>("</li>"); }},
+        {typeid(document::Header), [](const message_ptr&) { return std::make_shared<TextElement>("<header>"); }},
+        {typeid(document::CloseHeader), [](const message_ptr&) { return std::make_shared<TextElement>("</header>"); }},
+        {typeid(document::Footer), [](const message_ptr&) { return std::make_shared<TextElement>("<footer>"); }},
+        {typeid(document::CloseFooter), [](const message_ptr&) { return std::make_shared<TextElement>("</footer>"); }},
+        {typeid(document::Document), [this](const message_ptr& msg) {
+            this->m_nested_docs_counter++;
+            return this->m_nested_docs_counter == 1 ? this->write_open_header(msg->get<document::Document>()) : std::shared_ptr<TextElement>();
+        }},
+        {typeid(document::CloseDocument), [this](const message_ptr& msg) {
+            throw_if(this->m_nested_docs_counter <= 0, errors::program_logic{});
+            this->m_nested_docs_counter--;
+            return this->m_nested_docs_counter == 0 ? this->write_footer() : std::shared_ptr<TextElement>();
+        }},
+        {typeid(document::Style), [this](const message_ptr& msg) { return this->write_style(msg->get<document::Style>()); }},
+    }
+  {}
 
   std::shared_ptr<TextElement>
-  write_open_header(const tag::Document& document)
+  write_open_header(const document::Document& document)
   {
     std::string header = {"<!DOCTYPE html>\n"
            "<html>\n"
@@ -118,7 +173,7 @@ struct pimpl_impl<HtmlWriter> : pimpl_impl_base
     return std::make_shared<TextElement>(footer);
   }
 
-  std::shared_ptr<TextElement> write_link(const tag::Link& link)
+  std::shared_ptr<TextElement> write_link(const document::Link& link)
   {
     HtmlAttrs attrs = styling_attributes(link);
     if (link.url)
@@ -126,7 +181,7 @@ struct pimpl_impl<HtmlWriter> : pimpl_impl_base
     return tag_with_attributes("a", attrs);
   }
 
-  std::shared_ptr<TextElement> write_image(const tag::Image& image)
+  std::shared_ptr<TextElement> write_image(const document::Image& image)
   {
     HtmlAttrs attrs = styling_attributes(image.styling);
     if (image.alt)
@@ -146,7 +201,7 @@ struct pimpl_impl<HtmlWriter> : pimpl_impl_base
     return tag_with_attributes("img", attrs);
   }
 
-  std::shared_ptr<TextElement> write_list(const tag::List& list)
+  std::shared_ptr<TextElement> write_list(const document::List& list)
   {
     HtmlAttrs attrs = styling_attributes(list);
     std::string orig_style = attrs.count("style") ? attrs["style"] + "; " : "";
@@ -157,7 +212,7 @@ struct pimpl_impl<HtmlWriter> : pimpl_impl_base
     return tag_with_attributes("ul", attrs);
   }
 
-  std::shared_ptr<TextElement> write_style(const tag::Style& style)
+  std::shared_ptr<TextElement> write_style(const document::Style& style)
   {
     return std::make_shared<TextElement>(
         "<style type=\"text/css\">" + style.css_text + "</style>\n"/* : ""*/);
@@ -186,61 +241,30 @@ struct pimpl_impl<HtmlWriter> : pimpl_impl_base
     return std::make_shared<TextElement>(meta);
   }
 
-  void write_to(const Tag& tag, std::ostream &stream)
+  void write_to(const message_ptr& msg, std::ostream &stream)
   {
-    if (!std::holds_alternative<tag::Style>(tag) && !std::holds_alternative<tag::Document>(tag) && !std::holds_alternative<tag::CloseDocument>(tag) && m_header_is_open)
+    // Define a whitelist of message types that can appear in the <head> section.
+    // Any other message type will cause the header to be closed and the body to be opened.
+    bool is_header_content = msg->is<document::Style>() || msg->is<document::Document>();
+    if (!is_header_content && m_header_is_open)
       write_close_header_open_body()->write_to(stream);
-    std::shared_ptr<TextElement> text_element = std::visit(overloaded {
-      [](const tag::Paragraph& tag) { return tag_with_attributes("p", styling_attributes(tag)); },
-      [](const tag::CloseParagraph& tag) { return std::make_shared<TextElement>("</p>"); },
-      [](const tag::Section& tag) { return tag_with_attributes("div", styling_attributes(tag)); },
-      [](const tag::CloseSection& tag) { return std::make_shared<TextElement>("</div>"); },
-      [](const tag::Span& tag) { return tag_with_attributes("span", styling_attributes(tag)); },
-      [](const tag::CloseSpan& tag) { return std::make_shared<TextElement>("</span>"); },
-      [](const tag::Bold& tag) { return tag_with_attributes("b", styling_attributes(tag)); },
-      [](const tag::CloseBold& tag) { return std::make_shared<TextElement>("</b>"); },
-      [](const tag::Italic& tag) { return tag_with_attributes("i", styling_attributes(tag)); },
-      [](const tag::CloseItalic& tag) { return std::make_shared<TextElement>("</i>"); },
-      [](const tag::Underline& tag) { return tag_with_attributes("u", styling_attributes(tag)); },
-      [](const tag::CloseUnderline& tag) { return std::make_shared<TextElement>("</u>"); },
-      [](const tag::Table& tag) { return tag_with_attributes("table", styling_attributes(tag)); },
-      [](const tag::CloseTable& tag) { return std::make_shared<TextElement>("</table>"); },
-      [](const tag::TableRow& tag) { return tag_with_attributes("tr", styling_attributes(tag)); },
-      [](const tag::CloseTableRow& tag) { return std::make_shared<TextElement>("</tr>"); },
-      [](const tag::TableCell& tag) { return tag_with_attributes("td", styling_attributes(tag)); },
-      [](const tag::CloseTableCell& tag) { return std::make_shared<TextElement>("</td>"); },
-      [](const tag::Caption& tag) { return tag_with_attributes("caption", styling_attributes(tag)); },
-      [](const tag::CloseCaption& tag) { return std::make_shared<TextElement>("</caption>"); },
-      [](const tag::BreakLine& tag) { return tag_with_attributes("br", styling_attributes(tag)); },
-      [](const tag::Text& tag) { return std::make_shared<TextElement>(tag.text); },
-      [this](const tag::Link& tag) { return write_link(tag); },
-      [](const tag::CloseLink& tag) { return std::make_shared<TextElement>("</a>"); },
-      [this](const tag::Image& tag) { return write_image(tag); },
-      [this](const tag::List& tag) { return write_list(tag); },
-      [](const tag::CloseList& tag) { return std::make_shared<TextElement>("</ul>"); },
-      [](const tag::ListItem& tag) { return std::make_shared<TextElement>("<li>"); },
-      [](const tag::CloseListItem& tag) { return std::make_shared<TextElement>("</li>"); },
-      [](const tag::Header& tag) { return std::make_shared<TextElement>("<header>"); },
-      [](const tag::CloseHeader& tag) { return std::make_shared<TextElement>("</header>"); },
-      [](const tag::Footer& tag) { return std::make_shared<TextElement>("<footer>"); },
-      [](const tag::CloseFooter& tag) { return std::make_shared<TextElement>("</footer>"); },
-      [this](const tag::Document& tag) { m_nested_docs_counter++; return m_nested_docs_counter == 1 ? write_open_header(tag) : std::shared_ptr<TextElement>(); },
-      [this](const tag::CloseDocument& tag) { m_nested_docs_counter--; return m_nested_docs_counter == 0 ? write_footer() : std::shared_ptr<TextElement>(); },
-      [this](const tag::Style& tag) { return write_style(tag); },
-      [](const auto&) { return std::shared_ptr<TextElement>(); }
-    }, tag);
+
+    auto it = m_handlers.find(std::type_index(msg->object_type()));
+    std::shared_ptr<TextElement> text_element = (it != m_handlers.end())
+                                                    ? it->second(msg)
+                                                    : std::shared_ptr<TextElement>();
     if (text_element)
       text_element->write_to(stream);
   }
 };
 
 HtmlWriter::HtmlWriter()
-{
-}
+  : with_pimpl<HtmlWriter>()
+{}
 
-void HtmlWriter::write_to(const Tag& tag, std::ostream &stream)
+void HtmlWriter::write_to(const message_ptr& msg, std::ostream &stream)
 {
-	impl().write_to(tag, stream);
+	impl().write_to(msg, stream);
 }
 
 } // namespace docwire

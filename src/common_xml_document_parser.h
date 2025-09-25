@@ -12,9 +12,10 @@
 #ifndef DOCWIRE_COMMON_XML_PARSER_H
 #define DOCWIRE_COMMON_XML_PARSER_H
 
+#include "attributes.h"
 #include "chain_element.h"
 #include "pimpl.h"
-#include "tags.h"
+#include "xml_stream.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -23,7 +24,6 @@ namespace docwire
 {
 	class ZipReader;
 	class Metadata;
-	class XmlStream;
 
 enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
 
@@ -113,13 +113,13 @@ class CommonXMLDocumentParser: public ChainElement, public with_pimpl<CommonXMLD
 		bool disabledText() const;
 
 		///gets options which has been set for XmlStream object. (xmlParserOption from libxml2)
-		int getXmlOptions() const;
+		XmlStream::no_blanks no_blanks() const;
 
 		///disables modifying text data inside method onUnregisteredCommand
 		void disableText(bool disable);
 
 		///sets options for XmlStream objects. (xmlParserOption from libxml2)
-		void setXmlOptions(int options);
+		void set_no_blanks(XmlStream::no_blanks no_blanks);
 
 		void activeEmittingSignals(bool flag);
 
@@ -131,7 +131,7 @@ class CommonXMLDocumentParser: public ChainElement, public with_pimpl<CommonXMLD
 		class scoped_context_stack_push
 		{
 		public:
-			scoped_context_stack_push(CommonXMLDocumentParser& parser, const emission_callbacks& emit_tag);
+			scoped_context_stack_push(CommonXMLDocumentParser& parser, const message_callbacks& emit_message);
 			~scoped_context_stack_push();
 		private:
 			CommonXMLDocumentParser& m_parser;

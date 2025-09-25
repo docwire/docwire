@@ -12,6 +12,7 @@
 #include <optional>
 #include "misc.h"
 
+#include "document_elements.h"
 #include "meta_data_writer.h"
 
 namespace docwire
@@ -73,11 +74,11 @@ write_meta_data(const attributes::Metadata& metadata)
 }
 
 void
-MetaDataWriter::write_to(const Tag& tag, std::ostream &file)
+MetaDataWriter::write_to(const message_ptr& msg, std::ostream &file)
 {
-  if (std::holds_alternative<tag::Document>(tag))
+  if (msg->is<document::Document>())
   {
-    write_meta_data(std::get<tag::Document>(tag).metadata())->write_to(file);
+    write_meta_data(msg->get<document::Document>().metadata())->write_to(file);
   }
 }
 

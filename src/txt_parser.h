@@ -29,7 +29,7 @@ class DOCWIRE_PLAIN_TEXT_EXPORT TXTParser : public ChainElement, public with_pim
 		parse_paragraphs parse_paragraphs_arg = parse_paragraphs{true},
 		parse_lines parse_lines_arg = parse_lines{true});
     
-    continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
     bool is_leaf() const override { return false; }
 
 private:

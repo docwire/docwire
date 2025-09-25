@@ -20,6 +20,11 @@
 namespace docwire
 {
 
+namespace pipeline
+{
+struct start_processing {};
+} // namespace pipeline
+
 class DOCWIRE_CORE_EXPORT ParsingChain : public ChainElement, public with_pimpl<ParsingChain>
 {
   public:
@@ -27,7 +32,7 @@ class DOCWIRE_CORE_EXPORT ParsingChain : public ChainElement, public with_pimpl<
     ParsingChain(ParsingChain&& chain);
     ParsingChain& operator=(ParsingChain&& chain);
 
-    void operator()(Tag&& tag);
+    void operator()(message_ptr msg);
 
     bool is_leaf() const override;
     bool is_generator() const override;
@@ -35,7 +40,7 @@ class DOCWIRE_CORE_EXPORT ParsingChain : public ChainElement, public with_pimpl<
     bool is_complete() const;
 
   protected:
-    virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+    virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
   private:
     using with_pimpl<ParsingChain>::impl;

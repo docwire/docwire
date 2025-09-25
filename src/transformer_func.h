@@ -20,7 +20,7 @@
 namespace docwire
 {
 
-using tag_transform_func = std::function<continuation(Tag&&, const emission_callbacks& emit_tag)>;
+using message_transform_func = std::function<continuation(message_ptr, const message_callbacks& emit_message)>;
 
 /**
  * @brief Wraps single function (tag_transform_func) into ChainElement object
@@ -31,15 +31,15 @@ public:
   /**
    * @param transformer_function callback function, which will be called in transform().
    */
-  TransformerFunc(tag_transform_func transformer_function);
+  TransformerFunc(message_transform_func transformer_function);
 
 	/**
-	* @brief Executes transform operation for given node data.
-	* @see docwire::Tag
-	* @param tag
-	* @param callback
-	*/
-	virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+	 * @brief Executes transform on the given message.
+	 * @see docwire::message_ptr
+	 * @param msg Incoming message.
+	 * @param emit_message Callback to emit downstream messages.
+	 */
+	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
   bool is_leaf() const override
   {
@@ -53,7 +53,7 @@ private:
 
 template <typename T>
 requires (
-  std::is_convertible_v<T, tag_transform_func> &&
+  std::is_convertible_v<T, message_transform_func> &&
   !std::is_base_of_v<ChainElement, std::remove_cvref_t<T>>
 )
 ParsingChain operator|(ref_or_owned<ChainElement> element, T func)
@@ -63,7 +63,7 @@ ParsingChain operator|(ref_or_owned<ChainElement> element, T func)
 
 template <typename T>
 requires (
-  std::is_convertible_v<T, tag_transform_func> &&
+  std::is_convertible_v<T, message_transform_func> &&
   !std::is_base_of_v<ChainElement, std::remove_cvref_t<T>>
 )
 ParsingChain& operator|=(ParsingChain& chain, T func)

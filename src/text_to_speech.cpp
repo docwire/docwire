@@ -89,7 +89,9 @@ std::string post_request(const std::string& query, const std::string& api_key)
 	std::ostringstream response_stream{};
 	try
 	{
-		std::stringstream{ query } | http::Post("https://api.openai.com/v1/audio/speech", api_key) | response_stream;
+		data_source{query, mime_type{"application/json"}, confidence::highest} |
+			http::Post("https://api.openai.com/v1/audio/speech", api_key) |
+			response_stream;
 	}
 	catch (const std::exception& e)
 	{
@@ -100,16 +102,16 @@ std::string post_request(const std::string& query, const std::string& api_key)
 
 } // anonymous namespace
 
-continuation TextToSpeech::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation TextToSpeech::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	docwire_log_func();
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 	docwire_log(debug) << "data_source received";
-	const data_source& data = std::get<data_source>(tag);
+	const data_source& data = msg->get<data_source>();
 	std::string data_str = data.string();
 	std::string content = post_request(prepare_query(data_str, impl().m_model, impl().m_voice), impl().m_api_key);
-	return emit_tag(data_source{content});
+	return emit_message(data_source{content});
 }
 
 } // namespace openai

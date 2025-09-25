@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04, windows-2022, windows-2025, macos-13, macos-14, macos-15]
+        os: [ubuntu-22.04, ubuntu-24.04, windows-2022, windows-2025, macos-14, macos-15]
         triplet: [x64-linux-dynamic, x64-windows, x64-osx-dynamic, arm64-osx-dynamic]
         sanitizer: ["", "asan", "tsan"]
         exclude:
@@ -44,12 +44,6 @@ jobs:
           - os: windows-2025
             triplet: x64-osx-dynamic
           - os: windows-2025
-            triplet: arm64-osx-dynamic
-          - os: macos-13
-            triplet: x64-linux-dynamic
-          - os: macos-13
-            triplet: x64-windows
-          - os: macos-13
             triplet: arm64-osx-dynamic
           - os: macos-14
             triplet: x64-linux-dynamic

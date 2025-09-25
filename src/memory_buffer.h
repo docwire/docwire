@@ -15,6 +15,7 @@
 #include <cstring>
 #include <memory>
 #include <span>
+#include <algorithm>
 
 /**
   * @brief Represents a memory buffer with direct access to its data.
@@ -58,7 +59,7 @@ public:
     void resize(size_t new_size)
     {
       std::unique_ptr<std::byte[]> new_buffer = std::make_unique<std::byte[]>(new_size);
-      std::memcpy(new_buffer.get(), m_buffer.get(), std::min(m_size, new_size));
+      std::memcpy(new_buffer.get(), m_buffer.get(), (std::min)(m_size, new_size));
       m_buffer = std::move(new_buffer);
       m_size = new_size;
     }

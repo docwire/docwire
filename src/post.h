@@ -30,19 +30,22 @@ struct DefaultFileName
 namespace http
 {
 
+struct ssl_verify_peer { bool v; };
+
 class DOCWIRE_HTTP_EXPORT Post : public ChainElement, public with_pimpl<Post>
 {
 public:
-	Post(const std::string& url, const std::string& oauth2_bearer_token = "");
-	Post(const std::string& url, const std::map<std::string, std::string> form, const std::string& pipe_field_name, const DefaultFileName& default_file_name, const std::string& oauth2_bearer_token = "");
+	Post(const std::string& url, const std::string& oauth2_bearer_token = "", ssl_verify_peer ssl_verify_peer_v = {true});
+	Post(const std::string& url, const std::map<std::string, std::string>& form, const std::string& pipe_field_name, const DefaultFileName& default_file_name, const std::string& oauth2_bearer_token = "", ssl_verify_peer ssl_verify_peer_v = {true});
 
 	/**
-	* @brief Executes transform operation for given node data.
-	* @see docwire::Tag
-	* @param tag
-	* @param callback
-	*/
-	virtual continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+	 * @brief Executes transform for the given message; consumes msg.
+	 * @see docwire::message_ptr
+	 * @see docwire::message_callbacks
+	 * @param msg Message to process.
+	 * @param emit_message Emission callbacks for produced messages.
+	 */
+	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
 	bool is_leaf() const override
 	{

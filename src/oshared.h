@@ -12,8 +12,10 @@
 #ifndef DOCWIRE_OSHARED_H
 #define DOCWIRE_OSHARED_H
 
+#include "attributes.h"
+#include <exception>
+#include <functional>
 #include <string>
-#include "tags.h"
 
 namespace docwire
 {

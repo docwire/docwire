@@ -21,7 +21,7 @@ namespace docwire
 class DOCWIRE_XML_EXPORT XMLParser : public ChainElement
 {
 public:
-	continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 	bool is_leaf() const override { return false; }
 };
 

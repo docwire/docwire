@@ -10,16 +10,19 @@
 /*********************************************************************************************************************************************/
 
 #include "standard_filter.h"
+
+#include "mail_elements.h"
+
 namespace docwire
 {
 
-tag_transform_func StandardFilter::filterByFolderName(const std::vector<std::string> &names)
+message_transform_func StandardFilter::filterByFolderName(const std::vector<std::string> &names)
 {  
-  return [names](Tag&& tag, const emission_callbacks& emit_tag) -> continuation
+  return [names](message_ptr msg, const message_callbacks& emit_message) -> continuation
   {
-    if (!std::holds_alternative<tag::Folder>(tag))
-      return emit_tag(std::move(tag));
-    auto folder_name = std::get<tag::Folder>(tag).name;
+    if (!msg->is<mail::Folder>())
+      return emit_message(std::move(msg));
+    auto folder_name = msg->get<mail::Folder>().name;
     if (folder_name)
     {
       if (!std::any_of(names.begin(), names.end(), [&folder_name](const std::string &name){return (*folder_name) == name;}))
@@ -27,19 +30,19 @@ tag_transform_func StandardFilter::filterByFolderName(const std::vector<std::str
         return continuation::skip;
       }
     }
-    return emit_tag(std::move(tag));
+    return emit_message(std::move(msg));
   };
 }
 
-tag_transform_func StandardFilter::filterByAttachmentType(const std::vector<file_extension>& types)
+message_transform_func StandardFilter::filterByAttachmentType(const std::vector<file_extension>& types)
 {
-  return [types](Tag&& tag, const emission_callbacks& emit_tag) -> continuation
+  return [types](message_ptr msg, const message_callbacks& emit_message) -> continuation
   {
-    if (!std::holds_alternative<tag::Attachment>(tag))
-      return emit_tag(std::move(tag));
-    if (!std::get<tag::Attachment>(tag).extension)
-      return emit_tag(std::move(tag));
-    auto attachment_type = std::get<tag::Attachment>(tag).extension;
+    if (!msg->is<mail::Attachment>())
+      return emit_message(std::move(msg));
+    if (!msg->is<mail::Attachment>() || !msg->get<mail::Attachment>().extension)
+      return emit_message(std::move(msg));
+    auto attachment_type = msg->get<mail::Attachment>().extension;
     if (attachment_type)
     {
       if (!std::any_of(types.begin(), types.end(), [&attachment_type](const file_extension& type){ return (*attachment_type) == type; }))
@@ -47,17 +50,17 @@ tag_transform_func StandardFilter::filterByAttachmentType(const std::vector<file
         return continuation::skip;
       }
     }
-    return emit_tag(std::move(tag));
+    return emit_message(std::move(msg));
   };
 }
 
-tag_transform_func StandardFilter::filterByMailMinCreationTime(unsigned int min_time)
+message_transform_func StandardFilter::filterByMailMinCreationTime(unsigned int min_time)
 {
-  return [min_time](Tag&& tag, const emission_callbacks& emit_tag) -> continuation
+  return [min_time](message_ptr msg, const message_callbacks& emit_message) -> continuation
   {
-	  if (!std::holds_alternative<tag::Mail>(tag))
-		  return emit_tag(std::move(tag));
-	  auto mail_creation_time = std::get<tag::Mail>(tag).date;
+	  if (!msg->is<mail::Mail>())
+		  return emit_message(std::move(msg));
+	  auto mail_creation_time = msg->get<mail::Mail>().date;
 	  if (mail_creation_time)
 	  {
 		  if (*mail_creation_time < min_time)
@@ -65,17 +68,17 @@ tag_transform_func StandardFilter::filterByMailMinCreationTime(unsigned int min_
 			  return continuation::skip;
 		  }
 	  }
-	  return emit_tag(std::move(tag));
+	  return emit_message(std::move(msg));
   };
 }
 
-tag_transform_func StandardFilter::filterByMailMaxCreationTime(unsigned int max_time)
+message_transform_func StandardFilter::filterByMailMaxCreationTime(unsigned int max_time)
 {
-	return [max_time](Tag&& tag, const emission_callbacks& emit_tag) -> continuation
+	return [max_time](message_ptr msg, const message_callbacks& emit_message) -> continuation
 	{
-		if (!std::holds_alternative<tag::Mail>(tag))
-			return emit_tag(std::move(tag));
-		auto mail_creation_time = std::get<tag::Mail>(tag).date;
+		if (!msg->is<mail::Mail>())
+			return emit_message(std::move(msg));
+		auto mail_creation_time = msg->get<mail::Mail>().date;
 		if (mail_creation_time)
 		{
 			if (*mail_creation_time > max_time)
@@ -83,19 +86,19 @@ tag_transform_func StandardFilter::filterByMailMaxCreationTime(unsigned int max_
 				return continuation::skip;
 			}
 		}
-		return emit_tag(std::move(tag));
+		return emit_message(std::move(msg));
 	};
 }
 
-tag_transform_func StandardFilter::filterByMaxNodeNumber(unsigned int max_nodes_arg)
+message_transform_func StandardFilter::filterByMaxNodeNumber(unsigned int max_nodes_arg)
 {
-  return [max_nodes = max_nodes_arg, node_no = 0](Tag&& tag, const emission_callbacks& emit_tag) mutable -> continuation
+  return [max_nodes = max_nodes_arg, node_no = 0](message_ptr msg, const message_callbacks& emit_message) mutable -> continuation
   {
 	  if (node_no++ == max_nodes)
 	  {
 		  return continuation::stop;
 	  }
-	  return emit_tag(std::move(tag));
+	  return emit_message(std::move(msg));
   };
 }
 

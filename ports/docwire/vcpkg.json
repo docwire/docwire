@@ -58,6 +58,9 @@
 			"name": "boost-program-options"
 		},
 		{
+			"name": "cpp-httplib"
+		},
+		{
 			"name": "magic-enum"
 		},
 		{
@@ -94,9 +97,6 @@
 		},
 		{
 			"name": "tessdata-fast"
-		},
-		{
-			"name": "curlpp"
 		},
 		{
 			"name": "ctranslate2"

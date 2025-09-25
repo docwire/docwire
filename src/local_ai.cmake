@@ -14,7 +14,7 @@ if(MSVC)
     find_package(protobuf CONFIG REQUIRED)
     list(APPEND sentencepiece_LIBRARIES protobuf::libprotobuf-lite)
 endif()
-target_link_libraries(docwire_local_ai PRIVATE docwire_core Boost::filesystem Boost::json CTranslate2::ctranslate2 ${sentencepiece_LIBRARIES})
+target_link_libraries(docwire_local_ai PRIVATE docwire_core docwire_ai Boost::filesystem Boost::json CTranslate2::ctranslate2 ${sentencepiece_LIBRARIES})
 
 install(TARGETS docwire_local_ai EXPORT docwire_targets)
 if(MSVC)

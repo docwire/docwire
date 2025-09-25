@@ -50,7 +50,6 @@
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "resource_path.h"
-#include "tags.h"
 #include "throw_if.h"
 #include "tokenizer.h"
 #include "transformer_func.h"
@@ -58,6 +57,45 @@
 #include "input.h"
 #include "log.h"
 #include "lru_memory_cache.h"
+#include "http_server.h"
+
+template <typename T>
+class MessagePtrWithMatcher {
+public:
+    explicit MessagePtrWithMatcher(const testing::Matcher<const T&>& sub_matcher)
+        : sub_matcher_(sub_matcher) {}
+
+    void DescribeTo(std::ostream* os) const {
+        *os << "is a message_ptr with a value of type " << typeid(T).name() << " that ";
+        sub_matcher_.DescribeTo(os);
+    }
+
+    void DescribeNegationTo(std::ostream* os) const {
+        *os << "is not a message_ptr with a value of type " << typeid(T).name() << " that ";
+        sub_matcher_.DescribeTo(os);
+    }
+
+    bool MatchAndExplain(const docwire::message_ptr& msg, testing::MatchResultListener* listener) const {
+        if (!msg) {
+            *listener << "which is a null pointer";
+            return false;
+        }
+        if (!msg->is<T>()) {
+            *listener << "which holds a value of type " << msg->object_type().name();
+            return false;
+        }
+        const T& value = msg->get<T>();
+        return sub_matcher_.MatchAndExplain(value, listener);
+    }
+
+private:
+    const testing::Matcher<const T&> sub_matcher_;
+};
+
+template <typename T>
+testing::PolymorphicMatcher<MessagePtrWithMatcher<T>> MessagePtrWith(const testing::Matcher<const T&>& sub_matcher) {
+    return testing::MakePolymorphicMatcher(MessagePtrWithMatcher<T>(sub_matcher));
+}
 
 void escape_test_name(std::string& str)
 {
@@ -259,7 +297,7 @@ INSTANTIATE_TEST_SUITE_P(
       return name;
     });
 
-class CallbackTest : public ::testing::TestWithParam<std::tuple<const char*, const char*, tag_transform_func>>
+class CallbackTest : public ::testing::TestWithParam<std::tuple<const char*, const char*, message_transform_func>>
 {
 };
 
@@ -503,15 +541,15 @@ TEST_P(MultiPageFilterTest, ReadFromPathTests)
     std::filesystem::path{file_name} |
         content_type::by_file_extension::detector{} |
         office_formats_parser{} | mail_parser{} | OCRParser{} |
-        [MAX_PAGES, counter = 0](Tag&& tag, const emission_callbacks& emit_tag) mutable
+        [MAX_PAGES, counter = 0](message_ptr msg, const message_callbacks& emit_message) mutable
         {
-            if (std::holds_alternative<tag::Page>(tag))
+            if (msg->is<document::Page>())
             {
                 ++counter;
                 if (counter > MAX_PAGES)
                     return continuation::stop;
             }
-            return emit_tag(std::move(tag));
+            return emit_message(std::move(msg));
         } |
         PlainTextExporter() |
         output_stream;
@@ -568,7 +606,7 @@ TEST(Http, Post)
 	value output_val = parse(output_stream.str());
     ASSERT_TRUE(output_val.is_object());
     ASSERT_TRUE(output_val.as_object()["headers"].is_object());
-    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-type"].as_string().c_str(), "application/json");
+    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-type"].as_string().c_str(), "text/plain");
     ASSERT_THAT(std::string{output_val.as_object()["headers"].as_object()["user-agent"].as_string()},
                 ::testing::StartsWith("DocWire SDK/"));
     ASSERT_STREQ(output_val.as_object()["data"].as_string().c_str(), "<http://www.silvercoders.com/>hyperlink test\n\n");
@@ -593,13 +631,128 @@ TEST(Http, PostForm)
     ASSERT_TRUE(output_val.as_object()["headers"].is_object());
     ASSERT_THAT(std::string{output_val.as_object()["headers"].as_object()["content-type"].as_string()},
                 ::testing::StartsWith("multipart/form-data; boundary="));
-    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-length"].as_string().c_str(), "458");
+    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-length"].as_string().c_str(), "454");
     ASSERT_TRUE(output_val.as_object()["form"].is_object());
     ASSERT_STREQ(output_val.as_object()["form"].as_object()["field1"].as_string().c_str(), "value1");
     ASSERT_STREQ(output_val.as_object()["form"].as_object()["field2"].as_string().c_str(), "value2");
     ASSERT_TRUE(output_val.as_object()["files"].is_object());
     ASSERT_STREQ(output_val.as_object()["files"].as_object()["file.txt"].as_string().c_str(), "data:application/octet-stream;base64,PGh0dHA6Ly93d3cuc2lsdmVyY29kZXJzLmNvbS8+aHlwZXJsaW5rIHRlc3QKCg==");
 }
+
+namespace {
+// RAII helper to start a server in a thread and ensure it's stopped on scope exit.
+struct ScopedServer {
+    http::server server;
+    std::thread server_thread;
+
+    // Takes server by value to move it into the member.
+    explicit ScopedServer(http::server s)
+        : server(std::move(s)),
+          server_thread([this]() {
+              try {
+                  this->server();
+              } catch (const std::exception& e) {
+                  // Exceptions in the server thread are test failures.
+                  // The server is not expected to throw after successful startup.
+                  FAIL() << "Server thread threw an unexpected exception: " << errors::diagnostic_message(e);
+              }
+          })
+    {
+        server.wait_until_ready();
+    }
+
+    ~ScopedServer() {
+        server.stop();
+        if (server_thread.joinable()) {
+            server_thread.join();
+        }
+    }
+};
+} // namespace
+class HttpServerTest : public ::testing::Test {
+protected:
+    const http::address addr{"127.0.0.1"};
+    const std::string route_path = "/test";
+
+    void run_server_test(const http::port& port, bool is_https)
+    {
+        const std::string url = (is_https ? "https://" : "http://") + addr.v + ":" + std::to_string(port.v) + route_path;
+
+        http::server server = is_https ?
+            http::server(addr, port, http::generate_self_signed_cert(addr.v, "US", "DocWire Test"), create_routes()) :
+            http::server(addr, port, create_routes());
+
+        ScopedServer server_runner{std::move(server)};
+    
+        std::ostringstream response_stream;
+        std::string expected_response_body;
+        const std::filesystem::path doc_path{"1.doc"};
+        try
+        {
+            std::ostringstream expected_text_stream;
+            data_source{doc_path} | content_type::by_file_extension::detector{} |
+            office_formats_parser{} | PlainTextExporter() | expected_text_stream;
+            expected_response_body = expected_text_stream.str() + " processed";
+        }
+        catch(const std::exception & e)
+        {
+            FAIL() << "Generating expected response threw an exception: " << errors::diagnostic_message(e);
+        }
+
+        try
+        {
+            if (is_https) {
+                data_source{doc_path} | content_type::by_file_extension::detector{} |
+                    http::Post(url, "", http::ssl_verify_peer{false}) | response_stream;
+            } else {
+                data_source{doc_path} | content_type::by_file_extension::detector{} |
+                    http::Post(url) | response_stream;
+            }
+        }
+        catch (const std::exception& e)
+        {
+            FAIL() << "Client pipeline threw an exception: " << errors::diagnostic_message(e);
+        }
+    
+        EXPECT_EQ(response_stream.str(), expected_response_body);
+    }
+
+    http::server::pipeline_factory create_pipeline_factory() {
+        return []() -> ParsingChain {
+            return office_formats_parser{} | PlainTextExporter{} | [](message_ptr msg, const message_callbacks& emit_message) {
+                if (msg->is<data_source>()) {
+                    auto original_text = msg->get<data_source>().string();
+                    return emit_message(data_source{original_text + " processed", mime_type{"text/plain"}, confidence::highest});
+                }
+                return emit_message(std::move(msg));
+            };
+        };
+    }
+
+    http::server::route_list create_routes() {
+        http::server::route_list routes;
+        routes.push_back({route_path, create_pipeline_factory()});
+        return routes;
+    }
+};
+
+TEST_F(HttpServerTest, ServerAndPost)
+{
+    run_server_test({8080}, false);
+}
+
+TEST_F(HttpServerTest, HttpsServerAndPost)
+{
+    try
+    {
+        run_server_test({8083}, true);
+    }
+    catch (const std::exception& e)
+    {
+        FAIL() << "Exception thrown: " << errors::diagnostic_message(e);
+    }
+}
+
 
 TEST (errors, throwing)
 {
@@ -988,56 +1141,68 @@ TEST(DataSource, increamental_seekable_stream_ptr)
     test_data_source_incremental<seekable_stream_ptr>();
 }
 
+namespace
+{
+template<typename... T>
+std::vector<docwire::message_ptr> make_message_vector(T&&... args)
+{
+    std::vector<docwire::message_ptr> vec;
+    vec.reserve(sizeof...(args));
+    (vec.push_back(std::make_shared<docwire::message<std::decay_t<T>>>(std::forward<T>(args))), ...);
+    return vec;
+}
+} // anonymous namespace
+
 template<typename Exporter>
 void test_table_exporting(const std::string& expected)
 {
     std::ostringstream output_stream{};
     auto parsing_chain = Exporter{} | output_stream;
-    std::vector<Tag> tags
+    auto msgs = make_message_vector
+    (
+        document::Document{},
+        document::Table{},
+        document::Caption{},
+        document::Text{.text = "Table caption"},
+        document::CloseCaption{},
+        document::TableRow{},
+        document::TableCell{},
+        document::Text{.text = "Header 1"},
+        document::CloseTableCell{},
+        document::TableCell{},
+        document::Text{.text = "Header 2"},
+        document::CloseTableCell{},
+        document::CloseTableRow{},
+        document::TableRow{},
+        document::TableCell{},
+        document::Text{.text = "Row 1 Cell 1"},
+        document::CloseTableCell{},
+        document::TableCell{},
+        document::Text{.text = "Row 1 Cell 2"},
+        document::CloseTableCell{},
+        document::CloseTableRow{},
+        document::TableRow{},
+        document::TableCell{},
+        document::Text{.text = "Row 2 Cell 1"},
+        document::CloseTableCell{},
+        document::TableCell{},
+        document::Text{.text = "Row 2 Cell 2"},
+        document::CloseTableCell{},
+        document::CloseTableRow{},
+        document::TableRow{},
+        document::TableCell{},
+        document::Text{.text = "Footer 1"},
+        document::CloseTableCell{},
+        document::TableCell{},
+        document::Text{.text = "Footer 2"},
+        document::CloseTableCell{},
+        document::CloseTableRow{},
+        document::CloseTable{},
+        document::CloseDocument{}
+    );
+    for (auto& msg : msgs)
     {
-        tag::Document{},
-        tag::Table{},
-        tag::Caption{},
-        tag::Text{.text = "Table caption"},
-        tag::CloseCaption{},
-        tag::TableRow{},
-        tag::TableCell{},
-        tag::Text{.text = "Header 1"},
-        tag::CloseTableCell{},
-        tag::TableCell{},
-        tag::Text{.text = "Header 2"},
-        tag::CloseTableCell{},
-        tag::CloseTableRow{},
-        tag::TableRow{},
-        tag::TableCell{},
-        tag::Text{.text = "Row 1 Cell 1"},
-        tag::CloseTableCell{},
-        tag::TableCell{},
-        tag::Text{.text = "Row 1 Cell 2"},
-        tag::CloseTableCell{},
-        tag::CloseTableRow{},
-        tag::TableRow{},
-        tag::TableCell{},
-        tag::Text{.text = "Row 2 Cell 1"},
-        tag::CloseTableCell{},
-        tag::TableCell{},
-        tag::Text{.text = "Row 2 Cell 2"},
-        tag::CloseTableCell{},
-        tag::CloseTableRow{},
-        tag::TableRow{},
-        tag::TableCell{},
-        tag::Text{.text = "Footer 1"},
-        tag::CloseTableCell{},
-        tag::TableCell{},
-        tag::Text{.text = "Footer 2"},
-        tag::CloseTableCell{},
-        tag::CloseTableRow{},
-        tag::CloseTable{},
-        tag::CloseDocument{}
-    };
-    for (auto tag: tags)
-    {
-        parsing_chain(std::move(tag));
+        parsing_chain(std::move(msg));
     }
     ASSERT_EQ(output_stream.str(), expected);
 }
@@ -1129,17 +1294,17 @@ TEST(PlainTextExporter, eol_sequence_crlf)
     PlainTextExporter exporter{eol_sequence{"\r\n"}};
     std::ostringstream output_stream{};
     auto parsing_chain = exporter | output_stream;
-    std::vector<Tag> tags
+    std::vector<message_ptr> msgs = make_message_vector
+    (
+        document::Document{},
+        document::Text{.text = "Line1"},
+        document::BreakLine{},
+        document::Text{.text = "Line2"},
+        document::CloseDocument{}
+    );
+    for (auto& msg : msgs)
     {
-        tag::Document{},
-        tag::Text{.text = "Line1"},
-        tag::BreakLine{},
-        tag::Text{.text = "Line2"},
-        tag::CloseDocument{}
-    };
-    for (auto tag: tags)
-    {
-        parsing_chain(std::move(tag));
+        parsing_chain(std::move(msg));
     }
     ASSERT_EQ(output_stream.str(), "Line1\r\nLine2\r\n");
 }
@@ -1149,22 +1314,22 @@ TEST(PlainTextExporter, custom_link_formatting)
     PlainTextExporter exporter(
         eol_sequence{"\n"},
         link_formatter{
-            .format_opening = [](const tag::Link& link){ return (link.url ? "(" + *link.url + ")" : "") + "["; },
-            .format_closing = [](const tag::CloseLink& link){ return "]"; }
+            .format_opening = [](const document::Link& link){ return (link.url ? "(" + *link.url + ")" : "") + "["; },
+            .format_closing = [](const document::CloseLink& link){ return "]"; }
         });
     std::ostringstream output_stream{};
     auto parsing_chain = exporter | output_stream;
-    std::vector<Tag> tags
+    std::vector<message_ptr> msgs = make_message_vector
+    (
+        document::Document{},
+        document::Link{.url = "https://docwire.io"},
+        document::Text{.text = "DocWire SDK home page"},
+        document::CloseLink{},
+        document::CloseDocument{}
+    );
+    for (auto msg: msgs)
     {
-        tag::Document{},
-        tag::Link{.url = "https://docwire.io"},
-        tag::Text{.text = "DocWire SDK home page"},
-        tag::CloseLink{},
-        tag::CloseDocument{}
-    };
-    for (auto tag: tags)
-    {
-        parsing_chain(std::move(tag));
+        parsing_chain(std::move(msg));
     }
     ASSERT_EQ(output_stream.str(), "(https://docwire.io)[DocWire SDK home page]\n");
 }
@@ -1380,7 +1545,7 @@ TEST(fuzzy_match, ratio)
     ASSERT_EQ(docwire::fuzzy_match::ratio("hello", "helll"), 80.0);
 }
 
-namespace docwire::tag
+namespace docwire::document
 {
 
 void PrintTo(const Text& text, std::ostream* os)
@@ -1408,98 +1573,98 @@ void PrintTo(const confidence& c, std::ostream* os)
 TEST(TXTParser, lines)
 {
     using namespace testing;
-    std::vector<Tag> tags;
+    std::vector<message_ptr> msgs;
     std::string test_input {"Line ends with LF\nLine ends with CR\rLine ends with CRLF\r\nLine without EOL"};
     docwire::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
-        TXTParser{} | tags;
-    ASSERT_THAT(tags, testing::ElementsAre(
-        VariantWith<tag::Document>(_),
-        VariantWith<tag::Paragraph>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line ends with LF"))),
-        VariantWith<tag::BreakLine>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line ends with CR"))),
-        VariantWith<tag::BreakLine>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line ends with CRLF"))),
-        VariantWith<tag::BreakLine>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line without EOL"))),
-        VariantWith<tag::CloseParagraph>(_),
-        VariantWith<tag::CloseDocument>(_)
+        TXTParser{} | msgs;
+    ASSERT_THAT(msgs, testing::ElementsAre(
+        MessagePtrWith<document::Document>(_),
+        MessagePtrWith<document::Paragraph>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Line ends with LF"))),
+        MessagePtrWith<document::BreakLine>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Line ends with CR"))),
+        MessagePtrWith<document::BreakLine>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Line ends with CRLF"))),
+        MessagePtrWith<document::BreakLine>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Line without EOL"))),
+        MessagePtrWith<document::CloseParagraph>(_),
+        MessagePtrWith<document::CloseDocument>(_)
     ));
-    tags.clear();
+    msgs.clear();
     docwire::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
-        TXTParser{parse_paragraphs{true}, parse_lines{false}} | tags;
-    ASSERT_THAT(tags, testing::ElementsAre(
-        VariantWith<tag::Document>(_),
-        VariantWith<tag::Paragraph>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line ends with LF"))),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("\n"))),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line ends with CR"))),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("\r"))),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line ends with CRLF"))),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("\r\n"))),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line without EOL"))),
-        VariantWith<tag::CloseParagraph>(_),
-        VariantWith<tag::CloseDocument>(_)
+        TXTParser{parse_paragraphs{true}, parse_lines{false}} | msgs;
+    ASSERT_THAT(msgs, testing::ElementsAre(
+        MessagePtrWith<document::Document>(_),
+        MessagePtrWith<document::Paragraph>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Line ends with LF"))),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("\n"))),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Line ends with CR"))),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("\r"))),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Line ends with CRLF"))),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("\r\n"))),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Line without EOL"))),
+        MessagePtrWith<document::CloseParagraph>(_),
+        MessagePtrWith<document::CloseDocument>(_)
     ));
-    tags.clear();
+    msgs.clear();
     docwire::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
-        TXTParser{parse_paragraphs{false}, parse_lines{false}} | tags;
-    ASSERT_THAT(tags, testing::ElementsAre(
-        VariantWith<tag::Document>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq(test_input))),
-        VariantWith<tag::CloseDocument>(_)
+        TXTParser{parse_paragraphs{false}, parse_lines{false}} | msgs;
+    ASSERT_THAT(msgs, testing::ElementsAre(
+        MessagePtrWith<document::Document>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq(test_input))),
+        MessagePtrWith<document::CloseDocument>(_)
     ));
 }
 
 TEST(TXTParser, paragraphs)
 {
     using namespace testing;
-    std::vector<Tag> tags;
+    std::vector<message_ptr> msgs;
     docwire::data_source{
             std::string{"Paragraph 1 Line 1\nParagraph 1 Line 2\n\nParagraph 2 Line 1"},
             mime_type{"text/plain"}, confidence::highest} |
-        TXTParser{} | tags;
-    ASSERT_THAT(tags, testing::ElementsAre(
-        VariantWith<tag::Document>(_),
-        VariantWith<tag::Paragraph>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph 1 Line 1"))),
-        VariantWith<tag::BreakLine>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph 1 Line 2"))),
-        VariantWith<tag::CloseParagraph>(_),
-        VariantWith<tag::Paragraph>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph 2 Line 1"))),
-        VariantWith<tag::CloseParagraph>(_),
-        VariantWith<tag::CloseDocument>(_)
+        TXTParser{} | msgs;
+    ASSERT_THAT(msgs, testing::ElementsAre(
+        MessagePtrWith<document::Document>(_),
+        MessagePtrWith<document::Paragraph>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Paragraph 1 Line 1"))),
+        MessagePtrWith<document::BreakLine>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Paragraph 1 Line 2"))),
+        MessagePtrWith<document::CloseParagraph>(_),
+        MessagePtrWith<document::Paragraph>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Paragraph 2 Line 1"))),
+        MessagePtrWith<document::CloseParagraph>(_),
+        MessagePtrWith<document::CloseDocument>(_)
     ));
-    tags.clear();
+    msgs.clear();
     docwire::data_source{std::string{"\nLine\n"}, mime_type{"text/plain"}, confidence::highest} |
-        TXTParser{} | tags;
-    ASSERT_THAT(tags, testing::ElementsAre(
-        VariantWith<tag::Document>(_),
-        VariantWith<tag::Paragraph>(_),
-        VariantWith<tag::CloseParagraph>(_),
-        VariantWith<tag::Paragraph>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line"))),
-        VariantWith<tag::CloseParagraph>(_),
-        VariantWith<tag::CloseDocument>(_)
+        TXTParser{} | msgs;
+    ASSERT_THAT(msgs, testing::ElementsAre(
+        MessagePtrWith<document::Document>(_),
+        MessagePtrWith<document::Paragraph>(_),
+        MessagePtrWith<document::CloseParagraph>(_),
+        MessagePtrWith<document::Paragraph>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Line"))),
+        MessagePtrWith<document::CloseParagraph>(_),
+        MessagePtrWith<document::CloseDocument>(_)
     ));
-    tags.clear();
+    msgs.clear();
     docwire::data_source{std::string{"\nLine\n"}, mime_type{"text/plain"}, confidence::highest} |
         TXTParser{parse_paragraphs{false}} |
-        tags;
-    ASSERT_THAT(tags, testing::ElementsAre(
-        VariantWith<tag::Document>(_),
-        VariantWith<tag::BreakLine>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Line"))),
-        VariantWith<tag::BreakLine>(_),
-        VariantWith<tag::CloseDocument>(_)
+        msgs;
+    ASSERT_THAT(msgs, testing::ElementsAre(
+        MessagePtrWith<document::Document>(_),
+        MessagePtrWith<document::BreakLine>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Line"))),
+        MessagePtrWith<document::BreakLine>(_),
+        MessagePtrWith<document::CloseDocument>(_)
     ));    
 }
 
 TEST(HTMLParser, table)
 {
     using namespace testing;
-    std::vector<Tag> tags;
+    std::vector<message_ptr> msgs;
     docwire::data_source{std::string{
         "<table>"
             "<caption>Table caption</caption>"
@@ -1511,54 +1676,54 @@ TEST(HTMLParser, table)
             "<tfoot><tr><td>Footer 1</td><td>Footer 2</td></tr></tfoot>"
         "</table>"},
         mime_type{"text/html"}, confidence::highest} |
-        HTMLParser{} | tags;
-    ASSERT_THAT(tags, testing::ElementsAre(
-        VariantWith<tag::Document>(_),
-        VariantWith<tag::Table>(_),
-        VariantWith<tag::Caption>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Table caption"))),
-        VariantWith<tag::CloseCaption>(_),
-        VariantWith<tag::TableRow>(_),
-        VariantWith<tag::TableCell>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Header 1"))),
-        VariantWith<tag::CloseTableCell>(_),
-        VariantWith<tag::TableCell>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Header 2"))),
-        VariantWith<tag::CloseTableCell>(_),
-        VariantWith<tag::CloseTableRow>(_),
-        VariantWith<tag::TableRow>(_),
-        VariantWith<tag::TableCell>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Row 1 Cell 1"))),
-        VariantWith<tag::CloseTableCell>(_),
-        VariantWith<tag::TableCell>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Row 1 Cell 2"))),
-        VariantWith<tag::CloseTableCell>(_),
-        VariantWith<tag::CloseTableRow>(_),
-        VariantWith<tag::TableRow>(_),
-        VariantWith<tag::TableCell>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Row 2 Cell 1"))),
-        VariantWith<tag::CloseTableCell>(_),
-        VariantWith<tag::TableCell>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Row 2 Cell 2"))),
-        VariantWith<tag::CloseTableCell>(_),
-        VariantWith<tag::CloseTableRow>(_),
-        VariantWith<tag::TableRow>(_),
-        VariantWith<tag::TableCell>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Footer 1"))),
-        VariantWith<tag::CloseTableCell>(_),
-        VariantWith<tag::TableCell>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Footer 2"))),
-        VariantWith<tag::CloseTableCell>(_),
-        VariantWith<tag::CloseTableRow>(_),
-        VariantWith<tag::CloseTable>(_),
-        VariantWith<tag::CloseDocument>(_)
+        HTMLParser{} | msgs;
+    ASSERT_THAT(msgs, testing::ElementsAre(
+        MessagePtrWith<document::Document>(_),
+        MessagePtrWith<document::Table>(_),
+        MessagePtrWith<document::Caption>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Table caption"))),
+        MessagePtrWith<document::CloseCaption>(_),
+        MessagePtrWith<document::TableRow>(_),
+        MessagePtrWith<document::TableCell>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Header 1"))),
+        MessagePtrWith<document::CloseTableCell>(_),
+        MessagePtrWith<document::TableCell>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Header 2"))),
+        MessagePtrWith<document::CloseTableCell>(_),
+        MessagePtrWith<document::CloseTableRow>(_),
+        MessagePtrWith<document::TableRow>(_),
+        MessagePtrWith<document::TableCell>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Row 1 Cell 1"))),
+        MessagePtrWith<document::CloseTableCell>(_),
+        MessagePtrWith<document::TableCell>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Row 1 Cell 2"))),
+        MessagePtrWith<document::CloseTableCell>(_),
+        MessagePtrWith<document::CloseTableRow>(_),
+        MessagePtrWith<document::TableRow>(_),
+        MessagePtrWith<document::TableCell>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Row 2 Cell 1"))),
+        MessagePtrWith<document::CloseTableCell>(_),
+        MessagePtrWith<document::TableCell>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Row 2 Cell 2"))),
+        MessagePtrWith<document::CloseTableCell>(_),
+        MessagePtrWith<document::CloseTableRow>(_),
+        MessagePtrWith<document::TableRow>(_),
+        MessagePtrWith<document::TableCell>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Footer 1"))),
+        MessagePtrWith<document::CloseTableCell>(_),
+        MessagePtrWith<document::TableCell>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Footer 2"))),
+        MessagePtrWith<document::CloseTableCell>(_),
+        MessagePtrWith<document::CloseTableRow>(_),
+        MessagePtrWith<document::CloseTable>(_),
+        MessagePtrWith<document::CloseDocument>(_)
     ));
 }
 
 TEST(HTMLParser, whitespaces)
 {
     using namespace testing;
-    std::vector<Tag> tags;
+    std::vector<message_ptr> msgs;
     docwire::data_source{std::string{
         "<div>\n"
             "\t <p> Paragraph </p> \n"
@@ -1572,31 +1737,31 @@ TEST(HTMLParser, whitespaces)
                 "\t</tr>\n"
         "</table>\n"},
         mime_type{"text/html"}, confidence::highest} |
-        HTMLParser{} | tags;    
-    ASSERT_THAT(tags, testing::ElementsAre(
-        VariantWith<tag::Document>(_),
-        VariantWith<tag::Section>(_),
-        VariantWith<tag::Paragraph>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph"))),
-        VariantWith<tag::CloseParagraph>(_),
-        VariantWith<tag::Paragraph>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph with many spaces"))),
-        VariantWith<tag::CloseParagraph>(_),
-        VariantWith<tag::Paragraph>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Paragraph\xC2\xA0with\xC2\xA0non-breaking\xC2\xA0spaces"))),
-        VariantWith<tag::CloseParagraph>(_),
-        VariantWith<tag::CloseSection>(_),
-        VariantWith<tag::Table>(_),
-        VariantWith<tag::Caption>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Table caption"))),
-        VariantWith<tag::CloseCaption>(_),
-        VariantWith<tag::TableRow>(_),
-        VariantWith<tag::TableCell>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Table cell"))),
-        VariantWith<tag::CloseTableCell>(_),
-        VariantWith<tag::CloseTableRow>(_),
-        VariantWith<tag::CloseTable>(_),
-        VariantWith<tag::CloseDocument>(_)
+        HTMLParser{} | msgs;
+    ASSERT_THAT(msgs, testing::ElementsAre(
+        MessagePtrWith<document::Document>(_),
+        MessagePtrWith<document::Section>(_),
+        MessagePtrWith<document::Paragraph>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Paragraph"))),
+        MessagePtrWith<document::CloseParagraph>(_),
+        MessagePtrWith<document::Paragraph>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Paragraph with many spaces"))),
+        MessagePtrWith<document::CloseParagraph>(_),
+        MessagePtrWith<document::Paragraph>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Paragraph\xC2\xA0with\xC2\xA0non-breaking\xC2\xA0spaces"))),
+        MessagePtrWith<document::CloseParagraph>(_),
+        MessagePtrWith<document::CloseSection>(_),
+        MessagePtrWith<document::Table>(_),
+        MessagePtrWith<document::Caption>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Table caption"))),
+        MessagePtrWith<document::CloseCaption>(_),
+        MessagePtrWith<document::TableRow>(_),
+        MessagePtrWith<document::TableCell>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Table cell"))),
+        MessagePtrWith<document::CloseTableCell>(_),
+        MessagePtrWith<document::CloseTableRow>(_),
+        MessagePtrWith<document::CloseTable>(_),
+        MessagePtrWith<document::CloseDocument>(_)
     ));
 }
 
@@ -1612,16 +1777,16 @@ TEST(HTMLParser, encoding)
     };
     for (const auto& html_content : test_cases)
     {
-        std::vector<Tag> tags;
+        std::vector<message_ptr> msgs;
         docwire::data_source{std::string{html_content},
             mime_type{"text/html"}, confidence::highest} |
-            HTMLParser{} | tags;
-        ASSERT_THAT(tags, testing::ElementsAre(
-            VariantWith<tag::Document>(_),
-            VariantWith<tag::Paragraph>(_),
-            VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("ąśćłóżł"))),
-            VariantWith<tag::CloseParagraph>(_),
-            VariantWith<tag::CloseDocument>(_)
+            HTMLParser{} | msgs;
+        ASSERT_THAT(msgs, testing::ElementsAre(
+            MessagePtrWith<document::Document>(_),
+            MessagePtrWith<document::Paragraph>(_),
+            MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("ąśćłóżł"))),
+            MessagePtrWith<document::CloseParagraph>(_),
+            MessagePtrWith<document::CloseDocument>(_)
         ));
     }
 }
@@ -1629,7 +1794,7 @@ TEST(HTMLParser, encoding)
 TEST(HTMLParser, lists)
 {
     using namespace testing;
-    std::vector<Tag> tags;
+    std::vector<message_ptr> msgs;
     docwire::data_source{std::string{
         "<ul>"
             "<li>Item 1</li>"
@@ -1644,41 +1809,41 @@ TEST(HTMLParser, lists)
             "<li>Item 6</li>"
         "</ul>"},
         mime_type{"text/html"}, confidence::highest} |
-        HTMLParser{} | tags;
-    ASSERT_THAT(tags, testing::ElementsAre(
-        VariantWith<tag::Document>(_),
-        VariantWith<tag::List>(testing::Field(&tag::List::type, StrEq("disc"))),
-        VariantWith<tag::ListItem>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Item 1"))),
-        VariantWith<tag::CloseListItem>(_),
-        VariantWith<tag::ListItem>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Item 2"))),
-        VariantWith<tag::CloseListItem>(_),
-        VariantWith<tag::CloseList>(_),
-        VariantWith<tag::List>(testing::Field(&tag::List::type, StrEq("decimal"))),
-        VariantWith<tag::ListItem>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Item 3"))),
-        VariantWith<tag::CloseListItem>(_),
-        VariantWith<tag::ListItem>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Item 4"))),
-        VariantWith<tag::CloseListItem>(_),
-        VariantWith<tag::CloseList>(_),
-        VariantWith<tag::List>(testing::Field(&tag::List::type, StrEq("none"))),
-        VariantWith<tag::ListItem>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Item 5"))),
-        VariantWith<tag::CloseListItem>(_),
-        VariantWith<tag::ListItem>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("Item 6"))),
-        VariantWith<tag::CloseListItem>(_),
-        VariantWith<tag::CloseList>(_),
-        VariantWith<tag::CloseDocument>(_)
+        HTMLParser{} | msgs;
+    ASSERT_THAT(msgs, testing::ElementsAre(
+        MessagePtrWith<document::Document>(_),
+        MessagePtrWith<document::List>(testing::Field(&document::List::type, StrEq("disc"))),
+        MessagePtrWith<document::ListItem>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Item 1"))),
+        MessagePtrWith<document::CloseListItem>(_),
+        MessagePtrWith<document::ListItem>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Item 2"))),
+        MessagePtrWith<document::CloseListItem>(_),
+        MessagePtrWith<document::CloseList>(_),
+        MessagePtrWith<document::List>(testing::Field(&document::List::type, StrEq("decimal"))),
+        MessagePtrWith<document::ListItem>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Item 3"))),
+        MessagePtrWith<document::CloseListItem>(_),
+        MessagePtrWith<document::ListItem>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Item 4"))),
+        MessagePtrWith<document::CloseListItem>(_),
+        MessagePtrWith<document::CloseList>(_),
+        MessagePtrWith<document::List>(testing::Field(&document::List::type, StrEq("none"))),
+        MessagePtrWith<document::ListItem>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Item 5"))),
+        MessagePtrWith<document::CloseListItem>(_),
+        MessagePtrWith<document::ListItem>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("Item 6"))),
+        MessagePtrWith<document::CloseListItem>(_),
+        MessagePtrWith<document::CloseList>(_),
+        MessagePtrWith<document::CloseDocument>(_)
     ));
 }
 
 TEST(HTMLParser, misplaced_tags)
 {
     using namespace testing;
-    std::vector<Tag> tags;
+    std::vector<message_ptr> msgs;
     docwire::data_source{std::string{
         "<html>\n"
         "\t<body>\n"
@@ -1693,29 +1858,29 @@ TEST(HTMLParser, misplaced_tags)
         "\t</body>\n"
         "</html>\n"},
         mime_type{"text/html"}, confidence::highest} |
-        HTMLParser{} | tags;
-    ASSERT_THAT(tags, testing::ElementsAre(
-        VariantWith<tag::Document>(_),
-        VariantWith<tag::Paragraph>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("paragraph1"))),
-        VariantWith<tag::CloseParagraph>(_),
-        VariantWith<tag::Paragraph>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("paragraph2"))),
-        VariantWith<tag::CloseParagraph>(_),
-        VariantWith<tag::Style>(testing::Field(&tag::Style::css_text, StrEq("css content"))),
-        VariantWith<tag::Table>(_),
-        VariantWith<tag::TableRow>(_),
-        VariantWith<tag::TableCell>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("cell1"))),
-        VariantWith<tag::CloseTableCell>(_),
-        VariantWith<tag::CloseTableRow>(_),
-        VariantWith<tag::TableRow>(_),
-        VariantWith<tag::TableCell>(_),
-        VariantWith<tag::Text>(testing::Field(&tag::Text::text, StrEq("cell2"))),
-        VariantWith<tag::CloseTableCell>(_),
-        VariantWith<tag::CloseTableRow>(_),
-        VariantWith<tag::CloseTable>(_),
-        VariantWith<tag::CloseDocument>(_)
+        HTMLParser{} | msgs;
+    ASSERT_THAT(msgs, testing::ElementsAre(
+        MessagePtrWith<document::Document>(_),
+        MessagePtrWith<document::Paragraph>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("paragraph1"))),
+        MessagePtrWith<document::CloseParagraph>(_),
+        MessagePtrWith<document::Paragraph>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("paragraph2"))),
+        MessagePtrWith<document::CloseParagraph>(_),
+        MessagePtrWith<document::Style>(testing::Field(&document::Style::css_text, StrEq("css content"))),
+        MessagePtrWith<document::Table>(_),
+        MessagePtrWith<document::TableRow>(_),
+        MessagePtrWith<document::TableCell>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("cell1"))),
+        MessagePtrWith<document::CloseTableCell>(_),
+        MessagePtrWith<document::CloseTableRow>(_),
+        MessagePtrWith<document::TableRow>(_),
+        MessagePtrWith<document::TableCell>(_),
+        MessagePtrWith<document::Text>(testing::Field(&document::Text::text, StrEq("cell2"))),
+        MessagePtrWith<document::CloseTableCell>(_),
+        MessagePtrWith<document::CloseTableRow>(_),
+        MessagePtrWith<document::CloseTable>(_),
+        MessagePtrWith<document::CloseDocument>(_)
     ));
 }
 
@@ -1725,7 +1890,7 @@ TEST(OCRParser, leptonica_stderr_capturer)
     {
         data_source{std::string{"Incorrect image data"}, 
             mime_type{"image/jpeg"}, confidence::highest} |
-            OCRParser{} | std::vector<Tag>{};
+            OCRParser{} | std::vector<message_ptr>{};
         FAIL() << "OCRParser should have thrown an exception";
     }
     catch (const std::exception& e)
@@ -2147,4 +2312,88 @@ int main(int argc, char* argv[])
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
+}
+
+TEST(Http, ServerErrorHandling)
+{
+    // Using an invalid address is a reliable way to test startup error handling
+    // without race conditions from port occupation or dependency on user privileges.
+    const http::address addr{"invalid-address-for-testing"};
+    const http::port port{8081};
+
+    // Create an error handler that fails the test if it's called for a startup error.
+    auto test_error_handler = [](std::exception_ptr) {
+        FAIL() << "Error handler should not be called for fatal startup errors.";
+    };
+
+    // Instantiate the server-under-test with the invalid address.
+    http::server server_under_test(addr, port, {}, http::thread_num{1}, http::error_handler{test_error_handler});
+
+    // Attempt to start the server. It should throw an exception because it cannot bind.
+    try
+    {
+        server_under_test();
+        FAIL() << "Expected server startup to throw an exception.";
+    }
+    catch(const std::exception& e)
+    {
+        // The diagnostic message should contain information about the bind failure.
+        EXPECT_THAT(errors::diagnostic_message(e), ::testing::HasSubstr("bind"));
+    }
+}
+
+TEST(Http, ServerNonFatalError)
+{
+    const http::address addr{"127.0.0.1"};
+    const http::port port{8082}; // Use a different port to avoid conflicts
+
+    // 1. Create an error handler that uses a promise to signal it was called.
+    std::mutex error_mutex;
+    std::exception_ptr error;
+    auto test_error_handler = [&](std::exception_ptr eptr) {
+        std::lock_guard<std::mutex> lock(error_mutex);
+        error = eptr;
+    };
+
+    // 2. Create factories for an error-producing pipeline and a successful one.
+    http::server::route_list routes;
+    routes.push_back({"/error", []() -> ParsingChain {
+        return TransformerFunc{[](message_ptr, const message_callbacks& emit_message) -> continuation {
+            return emit_message(make_error_ptr("Error from pipeline processing"));
+        }} | [](message_ptr msg, const message_callbacks& emit_message) {
+            return emit_message(std::move(msg));
+        };
+    }});
+    routes.push_back({"/success", []() -> ParsingChain {
+        return TransformerFunc{[](message_ptr msg, const message_callbacks& emit_message) {
+            return emit_message(std::move(msg));
+        }} | [](message_ptr msg, const message_callbacks& emit_message)
+        {
+            return emit_message(std::move(msg));
+        };
+    }});
+
+    // 3. Instantiate and start the server.
+    ScopedServer server_runner{http::server(addr, port, std::move(routes), http::thread_num{1}, http::error_handler{test_error_handler})};
+
+    // 4. Make a request to the error-producing endpoint. This should trigger the error handler and throw on the client side.
+    ASSERT_THROW(
+        {
+            docwire::data_source{std::string_view{"some data"}} | http::Post("http://" + addr.v + ":" + std::to_string(port.v) + "/error") | std::ostringstream{};
+        },
+        std::exception
+    );
+
+    // 5. Make a request to the successful endpoint to ensure the server is still running.
+    std::ostringstream success_response_stream;
+    ASSERT_NO_THROW({
+        docwire::data_source{std::string_view{"success data"}} | http::Post("http://" + addr.v + ":" + std::to_string(port.v) + "/success") | success_response_stream;
+    });
+
+    // 6. Verify the error handler was called and that the server is still running.
+    {
+        std::lock_guard<std::mutex> lock(error_mutex);
+        ASSERT_THAT(errors::diagnostic_message(error), ::testing::HasSubstr("test"));
+    }
+    EXPECT_EQ(success_response_stream.str(), "success data");
 }

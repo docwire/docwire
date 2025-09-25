@@ -32,9 +32,18 @@
 template <typename T1, typename T2>
 struct docwire::stringifier<std::pair<T1, T2>>
 {
-	std::string operator()(const std::pair<T1, T2>& pair)
+	std::string operator()(const std::pair<T1, T2>& pair) const
 	{
 		return stringify(pair.first) + ": " + stringify(pair.second);
+	}
+};
+
+template <>
+struct docwire::stringifier<std::exception>
+{
+	std::string operator()(const std::exception& e) const
+	{
+		return e.what();
 	}
 };
 

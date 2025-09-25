@@ -214,6 +214,8 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - HTTP::Post transformer: Facilitate **seamless communication with external HTTP APIs or services**, enabling data exchange and integration with external systems.
 
+- HTTP Server: **Host your own data processing pipelines as HTTP services easily**. The built-in `http::server` allows you to expose any processing pipeline as an HTTP endpoint, enabling you to build powerful microservices for data processing.
+
 - **Integration with OpenAI API for most advanced NLP tasks**, including transformers like:
     - TranslateTo: Translate text or image to different languages.
     - Summarize: Generate summarized content from longer texts or description of images.
@@ -717,14 +719,14 @@ Create embedding for document in any format (Office, PDF, mail, etc) using OpenA
 int main(int argc, char* argv[])
 {
   using namespace docwire;
-  std::vector<Tag> out_tags;
+  std::vector<message_ptr> out_msgs;
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | openai::embed(std::getenv("OPENAI_API_KEY")) | out_tags;
-    assert(out_tags.size() == 1);
-    assert(std::holds_alternative<tag::embedding>(out_tags[0]));
-    auto embedding = std::get<tag::embedding>(out_tags[0]);
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | openai::embed(std::getenv("OPENAI_API_KEY")) | out_msgs;
+    assert(out_msgs.size() == 1);
+    assert(out_msgs[0]->is<ai::embedding>());
+    auto embedding = out_msgs[0]->get<ai::embedding>();
     assert(embedding.values.size() == 1536);
   }
   catch (const std::exception& e)
@@ -749,26 +751,26 @@ int main(int argc, char* argv[])
   try
   {
     // 1. Create an embedding for the document (passage) using the default prefix
-    std::vector<Tag> passage_tags;
-    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::embed(local_ai::embed::e5_passage_prefix) | passage_tags;
-    assert(passage_tags.size() == 1 && std::holds_alternative<tag::embedding>(passage_tags[0]));
-    auto passage_embedding = std::get<tag::embedding>(passage_tags[0]);
+    std::vector<message_ptr> passage_msgs;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::embed(local_ai::embed::e5_passage_prefix) | passage_msgs;
+    assert(passage_msgs.size() == 1 && passage_msgs[0]->is<ai::embedding>());
+    auto passage_embedding = passage_msgs[0]->get<ai::embedding>();
     assert(passage_embedding.values.size() == 384);
     // 2. Create an embedding for a similar query using the query prefix
-    std::vector<Tag> similar_query_tags;
-    docwire::data_source{std::string{"What is data processing?"}, mime_type{"text/plain"}, confidence::highest} | local_ai::embed(local_ai::embed::e5_query_prefix) | similar_query_tags;
-    assert(similar_query_tags.size() == 1 && std::holds_alternative<tag::embedding>(similar_query_tags[0]));
-    auto similar_query_embedding = std::get<tag::embedding>(similar_query_tags[0]);
+    std::vector<message_ptr> similar_query_msgs;
+    docwire::data_source{std::string{"What is data processing?"}, mime_type{"text/plain"}, confidence::highest} | local_ai::embed(local_ai::embed::e5_query_prefix) | similar_query_msgs;
+    assert(similar_query_msgs.size() == 1 && similar_query_msgs[0]->is<ai::embedding>());
+    auto similar_query_embedding = similar_query_msgs[0]->get<ai::embedding>();
     // 3. Create an embedding for a partially related query
-    std::vector<Tag> partial_query_tags;
-    docwire::data_source{std::string{"How can data analysis improve business efficiency?"}, mime_type{"text/plain"}, confidence::highest} | local_ai::embed(local_ai::embed::e5_query_prefix) | partial_query_tags;
-    assert(partial_query_tags.size() == 1 && std::holds_alternative<tag::embedding>(partial_query_tags[0]));
-    auto partial_query_embedding = std::get<tag::embedding>(partial_query_tags[0]);
+    std::vector<message_ptr> partial_query_msgs;
+    docwire::data_source{std::string{"How can data analysis improve business efficiency?"}, mime_type{"text/plain"}, confidence::highest} | local_ai::embed(local_ai::embed::e5_query_prefix) | partial_query_msgs;
+    assert(partial_query_msgs.size() == 1 && partial_query_msgs[0]->is<ai::embedding>());
+    auto partial_query_embedding = partial_query_msgs[0]->get<ai::embedding>();
     // 4. Create an embedding for a dissimilar query
-    std::vector<Tag> dissimilar_query_tags;
-    docwire::data_source{std::string{"What is the best C++ IDE?"}, mime_type{"text/plain"}, confidence::highest} | local_ai::embed(local_ai::embed::e5_query_prefix) | dissimilar_query_tags;
-    assert(dissimilar_query_tags.size() == 1 && std::holds_alternative<tag::embedding>(dissimilar_query_tags[0]));
-    auto dissimilar_query_embedding = std::get<tag::embedding>(dissimilar_query_tags[0]);
+    std::vector<message_ptr> dissimilar_query_msgs;
+    docwire::data_source{std::string{"What is the best C++ IDE?"}, mime_type{"text/plain"}, confidence::highest} | local_ai::embed(local_ai::embed::e5_query_prefix) | dissimilar_query_msgs;
+    assert(dissimilar_query_msgs.size() == 1 && dissimilar_query_msgs[0]->is<ai::embedding>());
+    auto dissimilar_query_embedding = dissimilar_query_msgs[0]->get<ai::embedding>();
     // 5. Calculate and check similarities.
     double sim = cosine_similarity(passage_embedding.values, similar_query_embedding.values);
     std::cout << "Similarity (passage, similar_query): " << sim << std::endl;
@@ -833,11 +835,11 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::filesystem::path("1.pst") | content_type::detector{} |
   mail_parser{} | office_formats_parser{}
-    | [](Tag&& tag, const emission_callbacks& emit_tag) // Create an input from file path, parser and connect them to transformer
+    | [](message_ptr msg, const message_callbacks& emit_message) // Create an input from file path, parser and connect them to transformer
       {
-        if (std::holds_alternative<tag::Mail>(tag)) // if current node is mail
+        if (msg->is<mail::Mail>()) // if current node is mail
         {
-          auto subject = std::get<tag::Mail>(tag).subject; // get the subject attribute
+          auto subject = msg->get<mail::Mail>().subject; // get the subject attribute
           if (subject) // if subject attribute exists
           {
             if (subject->find("Hello") != std::string::npos) // if subject contains "Hello"
@@ -846,7 +848,7 @@ int main(int argc, char* argv[])
             }
           }
         }
-        return emit_tag(std::move(tag));
+        return emit_message(std::move(msg));
       }
     | PlainTextExporter() // sets exporter to plain text
     | std::cout;
@@ -856,7 +858,7 @@ int main(int argc, char* argv[])
 
 ![Example flow](doc/images/example_flow.png)
 
-Joining transformers to filter out emails (eg. from Outlook PST mailbox) with subject "Hello" and limit the number of mails to 10:
+Joining transformers to filter out emails (eg. from Outlook PST mailbox) with subject "Hello" and limit the number of mails to 3:
 
 ```cpp
 #include "docwire.h"
@@ -866,11 +868,11 @@ int main(int argc, char* argv[])
   using namespace docwire;
   std::filesystem::path("1.pst") | content_type::detector{} |
   mail_parser{} | office_formats_parser{} |
-    [](Tag&& tag, const emission_callbacks& emit_tag) // Create an input from file path, parser and connect them to transformer
+    [](message_ptr msg, const message_callbacks& emit_message) // Create an input from file path, parser and connect them to transformer
     {
-      if (std::holds_alternative<tag::Mail>(tag)) // if current node is mail
+      if (msg->is<mail::Mail>()) // if current node is mail
       {
-        auto subject = std::get<tag::Mail>(tag).subject; // get the subject attribute
+        auto subject = msg->get<mail::Mail>().subject; // get the subject attribute
         if (subject) // if subject attribute exists
         {
           if (subject->find("Hello") != std::string::npos) // if subject contains "Hello"
@@ -879,18 +881,18 @@ int main(int argc, char* argv[])
           }
         }
       }
-      return emit_tag(std::move(tag));
+      return emit_message(std::move(msg));
     } |
-    [counter = 0, max_mails = 1](Tag&& tag, const emission_callbacks& emit_tag) mutable // Create a transformer and connect it to previous transformer
+    [counter = 0, max_mails = 3](message_ptr msg, const message_callbacks& emit_message) mutable // Create a transformer and connect it to previous transformer
     {
-      if (std::holds_alternative<tag::Mail>(tag)) // if current node is mail
+      if (msg->is<mail::Mail>()) // if current node is mail
       {
         if (++counter > max_mails) // if counter is greater than max_mails
         {
           return continuation::stop; // cancel the parsing process
         }
       }
-      return emit_tag(std::move(tag));
+      return emit_message(std::move(msg));
     } |
     PlainTextExporter() | // sets exporter to plain text
     std::cout;

@@ -11,7 +11,10 @@
 
 #include "plain_text_exporter.h"
 
+#include "document_elements.h"
+#include "error_tags.h"
 #include "plain_text_writer.h"
+#include "throw_if.h"
 #include <sstream>
 
 namespace docwire
@@ -33,23 +36,24 @@ PlainTextExporter::PlainTextExporter(eol_sequence eol_sequence, link_formatter l
 	: with_pimpl<PlainTextExporter>(eol_sequence, link_formatter)
 {}
 
-continuation PlainTextExporter::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation PlainTextExporter::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (std::holds_alternative<std::exception_ptr>(tag))
-		return emit_tag(std::move(tag));
-	if (std::holds_alternative<tag::Document>(tag) || !impl().m_stream)
+	if (msg->is<std::exception_ptr>())
+		return emit_message(std::move(msg));
+	if (msg->is<document::Document>() || !impl().m_stream)
 	{
 		++impl().m_nested_docs_level;
 		if (impl().m_nested_docs_level == 1)
 			impl().m_stream = std::make_shared<std::stringstream>();
 	}
-	impl().m_writer.write_to(tag, *impl().m_stream);
-	if (std::holds_alternative<tag::CloseDocument>(tag))
+	impl().m_writer.write_to(msg, *impl().m_stream);
+	if (msg->is<document::CloseDocument>())
 	{
+		throw_if(impl().m_nested_docs_level <= 0, errors::program_logic{});
 		--impl().m_nested_docs_level;
 		if (impl().m_nested_docs_level == 0)
 		{
-			emit_tag(data_source{seekable_stream_ptr{impl().m_stream}, mime_type{"text/plain"}, confidence::highest});
+			emit_message(data_source{seekable_stream_ptr{impl().m_stream}, mime_type{"text/plain"}, confidence::highest});
 			impl().m_stream.reset();
 		}
 	}

@@ -13,6 +13,7 @@
 #define DOCWIRE_DOCWIRE_H
 
 // IWYU pragma: begin_exports
+#include "ai_elements.h"
 #include "classify.h"
 #include "content_type.h"
 #include "content_type_by_file_extension.h"
@@ -31,6 +32,7 @@
 #include "input.h"
 #include "local_ai_embed.h"
 #include "output.h"
+#include "mail_elements.h"
 #include "mail_parser.h"
 #include "model_chain_element.h"
 #include "ocr_parser.h"

@@ -9,34 +9,66 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "transformer_func.h"
+#ifndef DOCWIRE_ATTRIBUTES_H
+#define DOCWIRE_ATTRIBUTES_H
+
+#include <concepts>
+#include <cstddef>
+#include <ctime>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace docwire
 {
-
-template<>
-struct pimpl_impl<TransformerFunc> : with_pimpl_owner<TransformerFunc>
+namespace attributes
 {
-  pimpl_impl(TransformerFunc& owner, message_transform_func transformer_function)
-    : with_pimpl_owner{owner}, m_transformer_function(transformer_function)
-  {}
 
-  continuation transform(message_ptr msg, const message_callbacks& emit_message) const
-  {
-    return m_transformer_function(std::move(msg), emit_message);
-  }
-
-  message_transform_func m_transformer_function;
+struct Styling
+{
+  std::vector<std::string> classes;
+  std::string id;
+  std::string style;  
 };
 
-TransformerFunc::TransformerFunc(message_transform_func transformer_function)
-  : with_pimpl<TransformerFunc>(transformer_function)
+struct Email
 {
-}
+  std::string from;
+	tm date;
+  std::optional<std::string> to;
+	std::optional<std::string> subject;
+  std::optional<std::string> reply_to;
+  std::optional<std::string> sender;
+};
 
-continuation TransformerFunc::operator()(message_ptr msg, const message_callbacks& emit_message)
+struct Metadata
 {
-  return impl().transform(std::move(msg), emit_message);
-}
+  std::optional<std::string> author;
+  std::optional<tm> creation_date;
+  std::optional<std::string> last_modified_by;
+  std::optional<tm> last_modification_date;
+  std::optional<size_t> page_count;
+  std::optional<size_t> word_count;
+  std::optional<Email> email_attrs;
+};
 
+template<class T>
+concept WithStyling = requires(T tag) {
+  {tag.styling} -> std::convertible_to<Styling>;
+};
+
+/**
+ * @brief Represents the geometric position and dimensions of an element.
+ */
+struct Position
+{
+	std::optional<double> x;            ///< Optional x-coordinate of the bottom-left corner.
+	std::optional<double> y;            ///< Optional y-coordinate of the bottom-left corner.
+	std::optional<double> width;        ///< Optional width of the element.
+	std::optional<double> height;       ///< Optional height of the element.
+};
+
+} // namespace attributes
 } // namespace docwire
+
+#endif // DOCWIRE_ATTRIBUTES_H

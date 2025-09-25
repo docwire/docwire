@@ -13,15 +13,15 @@ int main(int argc, char* argv[])
       content_type::by_file_extension::detector{} |
       office_formats_parser{} |
       PlainTextExporter() |
-      [](Tag&& tag, const emission_callbacks& emit_tag)
+      [](message_ptr msg, const message_callbacks& emit_message)
 	    {
-	      if (std::holds_alternative<std::exception_ptr>(tag))
+	      if (msg->is<std::exception_ptr>())
         {
 		      std::clog << "[WARNING] " <<
-            errors::diagnostic_message(std::get<std::exception_ptr>(tag)) <<
+            errors::diagnostic_message(msg->get<std::exception_ptr>()) <<
             std::endl;
         }
-        return emit_tag(std::move(tag));
+        return emit_message(std::move(msg));
 	    } |
       out_stream;
   }

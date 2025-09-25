@@ -9,34 +9,20 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "transformer_func.h"
+#ifndef DOCWIRE_AI_ELEMENTS_H
+#define DOCWIRE_AI_ELEMENTS_H
 
-namespace docwire
+#include "ai_export.h"
+#include <vector>
+
+namespace docwire::ai
 {
 
-template<>
-struct pimpl_impl<TransformerFunc> : with_pimpl_owner<TransformerFunc>
+struct DOCWIRE_AI_EXPORT embedding
 {
-  pimpl_impl(TransformerFunc& owner, message_transform_func transformer_function)
-    : with_pimpl_owner{owner}, m_transformer_function(transformer_function)
-  {}
-
-  continuation transform(message_ptr msg, const message_callbacks& emit_message) const
-  {
-    return m_transformer_function(std::move(msg), emit_message);
-  }
-
-  message_transform_func m_transformer_function;
+  std::vector<double> values;
 };
 
-TransformerFunc::TransformerFunc(message_transform_func transformer_function)
-  : with_pimpl<TransformerFunc>(transformer_function)
-{
-}
+} // namespace docwire::ai
 
-continuation TransformerFunc::operator()(message_ptr msg, const message_callbacks& emit_message)
-{
-  return impl().transform(std::move(msg), emit_message);
-}
-
-} // namespace docwire
+#endif // DOCWIRE_AI_ELEMENTS_H

@@ -199,23 +199,23 @@ private:
 	}
 };
 
-continuation archives_parser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation archives_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 	
-	data_source& data = std::get<data_source>(tag);
+	data_source& data = msg->get<data_source>();
 	data.assert_not_encrypted();
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
-		return emit_tag(std::move(tag));
+		return emit_message(std::move(msg));
 
 	docwire_log(debug) << "Using archives parser.";
 	std::shared_ptr<std::istream> in_stream = data.istream();
 
 	try
 	{
-		ArchiveReader reader(*in_stream, [&emit_tag](std::exception_ptr e) { emit_tag(e); });
+		ArchiveReader reader(*in_stream, [&emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
 
 		for (ArchiveReader::Entry entry: reader)
 		{
@@ -232,7 +232,7 @@ continuation archives_parser::operator()(Tag&& tag, const emission_callbacks& em
 				unseekable_stream_ptr{entry.create_stream()}, 
 				file_extension{std::filesystem::path{entry_name}}
 			};
-			if (emit_tag.back(std::move(entry_data_source)) == continuation::stop)
+			if (emit_message.back(std::move(entry_data_source)) == continuation::stop)
 				return continuation::stop;
 			docwire_log(debug) << "Finished processing archive entry: " << entry_name;
 		}

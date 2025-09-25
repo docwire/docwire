@@ -16,20 +16,20 @@
 #include "eml_parser.h"
 
 #include "charset_converter.h"
+#include "mail_elements.h"
 #include "data_source.h"
+#include "document_elements.h"
 #include <iostream>
 #include "log.h"
 #include <mailio/message.hpp>
 #include <mailio/mime.hpp>
 #include "make_error.h"
 #include "scoped_stack_push.h"
-#include "tags.h"
 
 namespace docwire
 {
 
 using mailio::mime;
-using mailio::message;
 using mailio::codec;
 
 namespace
@@ -37,7 +37,7 @@ namespace
 
 struct context
 {
-	const emission_callbacks& emit_tag;
+	const message_callbacks& emit_message;
 };
 
 } // anonymous namespace
@@ -47,14 +47,16 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 {
 	std::stack<context> m_context_stack;
 
-	continuation emit_tag(Tag&& tag) const
+	template <typename T>
+	continuation emit_message(T&& object) const
 	{
-		return m_context_stack.top().emit_tag(std::move(tag));
+		return m_context_stack.top().emit_message(std::forward<T>(object));
 	}
 
-	continuation emit_tag_back(data_source&& data) const
+	template <typename T>
+	continuation emit_message_back(T&& object) const
 	{
-		return m_context_stack.top().emit_tag.back(std::move(data));
+		return m_context_stack.top().emit_message.back(std::forward<T>(object));
 	}
 
 	void convertToUtf8(const std::string& charset, std::string& text) const
@@ -66,7 +68,7 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 		}
 		catch (std::exception&)
 		{
-			emit_tag(errors::make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", charset)));
+			emit_message(errors::make_nested_ptr(std::current_exception(), make_error("Cannot convert text to UTF-8", charset)));
 		}
 	}
 
@@ -102,7 +104,7 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 			if (mime_entity.content_type().subtype == "html" || mime_entity.content_type().subtype == "xhtml")
 			{
 				docwire_log(debug) << "HTML content subtype detected";
-				emit_tag_back(data_source {
+				emit_message_back(data_source {
 					plain, mime_type{"text/html"}, confidence::very_high});
 			}
 			else
@@ -110,16 +112,16 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 				if (skip_charset_decoding)
 				{
 					docwire_log(debug) << "Charset is specified and decoding is skipped";
-					emit_tag(tag::Text{.text = plain});
+					emit_message(document::Text{.text = plain});
 				}
 				else
 				{
 					docwire_log(debug) << "Charset is not specified";
-					emit_tag_back(data_source {
+					emit_message_back(data_source {
 						plain, mime_type{"text/plain"}, confidence::very_high});
 				}
 			}
-			emit_tag(tag::Text{.text = "\n\n"});
+			emit_message(document::Text{.text = "\n\n"});
 			return;
 		}
 		else if (mime_entity.content_type().type != mime::media_type_t::MULTIPART)
@@ -129,14 +131,13 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 			std::string file_name = mime_entity.name();
 			docwire_log(debug) << "File name: " << file_name;
 			file_extension extension { std::filesystem::path{file_name} };
-			auto result = emit_tag(
-				tag::Attachment{.name = file_name, .size = plain.length(), .extension = extension});
+			auto result = emit_message(mail::Attachment{.name = file_name, .size = plain.length(), .extension = extension});
 			if (result != continuation::skip)
 			{
-				emit_tag_back(data_source {
+				emit_message_back(data_source {
 					plain, mime_type_from_mime_entity(mime_entity), confidence::very_high});
 			}
-			emit_tag(tag::CloseAttachment{});
+			emit_message(mail::CloseAttachment{});
 		}
 		if (mime_entity.content_type().subtype == "alternative")
 		{
@@ -173,10 +174,10 @@ void normalize_line(std::string& line)
 		line.pop_back();
 }
 
-message parse_message(const data_source& data, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+mailio::message parse_message(const data_source& data, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 {
 	std::shared_ptr<std::istream> stream = data.istream();
-	message mime_entity;
+	mailio::message mime_entity;
 	mime_entity.line_policy(codec::line_len_policy_t::NONE);
 	try {
 		std::string line;
@@ -204,28 +205,28 @@ const std::vector<mime_type> supported_mime_types =
 namespace
 {
 
-attributes::Metadata metaData(const message& mime_entity);
+attributes::Metadata metaData(const mailio::message& mime_entity);
 
 } // anonymous namespace
 
-continuation EMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation EMLParser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	docwire_log_func();
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 
-	auto& data = std::get<data_source>(tag);
+	auto& data = msg->get<data_source>();
 	data.assert_not_encrypted();
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
-		return emit_tag(std::move(tag));
+		return emit_message(std::move(msg));
 
 	docwire_log(debug) << "Using EML parser.";
 	try
 	{
-		scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_tag}};
-		message mime_entity = parse_message(data, [emit_tag](std::exception_ptr e) { emit_tag(e); });
-		emit_tag(tag::Document
+		scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_message}};
+		mailio::message mime_entity = parse_message(data, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
+		emit_message(document::Document
 			{
 				.metadata = [&mime_entity]()
 				{
@@ -233,7 +234,7 @@ continuation EMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag
 				}
 			});
 		impl().extractPlainText(mime_entity);
-		emit_tag(tag::CloseDocument{});
+		emit_message(document::CloseDocument{});
 	}
 	catch (const std::exception& e)
 	{
@@ -245,7 +246,7 @@ continuation EMLParser::operator()(Tag&& tag, const emission_callbacks& emit_tag
 namespace
 {
 
-attributes::Metadata metaData(const message& mime_entity)
+attributes::Metadata metaData(const mailio::message& mime_entity)
 {
 	attributes::Metadata metadata;
 	metadata.author = mime_entity.from_to_string();

@@ -15,8 +15,7 @@
 #include "chain_element.h"
 #include "pdf_export.h"
 #include "pimpl.h"
-#include "tags.h"
-#include <vector>
+#include "message.h"
 
 namespace docwire
 {
@@ -28,7 +27,7 @@ class DOCWIRE_PDF_EXPORT PDFParser : public ChainElement, public with_pimpl<PDFP
 
 	public:
 		PDFParser();
-		continuation operator()(Tag&& tag, const emission_callbacks& emit_tag) override;
+		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 };
 

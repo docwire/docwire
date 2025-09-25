@@ -11,6 +11,7 @@
 
 #include "model_chain_element.h"
 
+#include "data_source.h"
 #include "error_tags.h"
 #include "resource_path.h"
 #include "throw_if.h"
@@ -22,18 +23,17 @@ model_chain_element::model_chain_element(const std::string& prompt)
 	: docwire::local_ai::model_chain_element(prompt, std::make_shared<model_runner>(resource_path("flan-t5-large-ct2-int8")))
 {}
 
-continuation model_chain_element::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation model_chain_element::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 
-	const data_source& data = std::get<data_source>(tag);
+	const data_source& data = msg->get<data_source>();
 	throw_if (!data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}), errors::program_logic{});
 	std::string input = m_prompt + "\n" + data.string();
 	std::string output = m_model_runner->process(input);
 
-	emit_tag(data_source{output});
-	return continuation::proceed;
+	return emit_message(data_source{std::move(output)});
 }
 
 } // namespace docwire::local_ai

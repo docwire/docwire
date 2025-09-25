@@ -12,6 +12,7 @@
 #include "xls_parser.h"
 
 #include "data_source.h"
+#include "document_elements.h"
 #include "error_tags.h"
 #include "log.h"
 #include <map>
@@ -75,7 +76,7 @@ struct XFRecord
 
 struct context
 {
-	const emission_callbacks& emit_tag;
+	const message_callbacks& emit_message;
 	std::string m_codepage = "cp1251";
 	BiffVersion m_biff_version;
 	std::vector<XFRecord> m_xf_records;
@@ -104,13 +105,14 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 {
 	std::stack<context> m_context_stack;
 	
-	continuation emit_tag(Tag&& tag)
+	template <typename T>
+	continuation emit_message(T&& object) const
 	{
-		return m_context_stack.top().emit_tag(std::move(tag));
+		return m_context_stack.top().emit_message(std::forward<T>(object));
 	}
 
-	void parse(const data_source& data, const emission_callbacks& emit_tag);
-	std::string parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag);
+	void parse(const data_source& data, const message_callbacks& emit_message);
+	std::string parse(ThreadSafeOLEStorage& storage, const message_callbacks& emit_message);
 
 	U16 getU16LittleEndian(std::vector<unsigned char>::const_iterator buffer)
 	{
@@ -153,7 +155,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 		static StandardDateFormats formats;
 		if (xf_index >= m_context_stack.top().m_xf_records.size())
 		{
-			emit_tag(make_error_ptr("Incorrect format code", xf_index));
+			emit_message(make_error_ptr("Incorrect format code", xf_index));
 			return "";
 		}
 		int num_format_id = m_context_stack.top().m_xf_records[xf_index].num_format_id;
@@ -236,7 +238,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 		{
 			size_t diff = record_pos - record_sizes[record_index];
 			if (diff > 0)
-				emit_tag(make_error_ptr("XLUnicodeString starts after record boundary", diff));
+				emit_message(make_error_ptr("XLUnicodeString starts after record boundary", diff));
 			record_pos = diff;
 			record_index++;
 		}
@@ -251,7 +253,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 		// warning TODO: Add support for record 0x0004 (in BIFF2).
 		if (src_end - *src < 2)
 		{
-			emit_tag(make_error_ptr("Unexpected end of buffer."));
+			emit_message(make_error_ptr("Unexpected end of buffer."));
 			*src = src_end;
 			return "";
 		}
@@ -260,7 +262,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 		record_pos += 2;
 		if (src_end - *src < 1)
 		{
-			emit_tag(make_error_ptr("Unexpected end of buffer."));
+			emit_message(make_error_ptr("Unexpected end of buffer."));
 			*src = src_end;
 			return "";
 		}
@@ -278,7 +280,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			docwire_log(debug) << "Rich text flag enabled.";
 			if (src_end - *src < 2)
 			{
-				emit_tag(make_error_ptr("Unexpected end of buffer."));
+				emit_message(make_error_ptr("Unexpected end of buffer."));
 				*src = src_end;
 				return "";
 			}
@@ -291,7 +293,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			docwire_log(debug) << "Asian flag enabled.";
 			if (src_end - *src < 4)
 			{
-				emit_tag(make_error_ptr("Unexpected end of buffer."));
+				emit_message(make_error_ptr("Unexpected end of buffer."));
 				*src = src_end;
 				return "";
 			}
@@ -310,12 +312,12 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 		{
 			if (s >= src_end)
 			{
-				emit_tag(make_error_ptr("Unexpected end of buffer."));
+				emit_message(make_error_ptr("Unexpected end of buffer."));
 				*src = src_end;
 				return dest;
 			}
 			if (record_pos > record_sizes[record_index])
-				emit_tag(make_error_ptr("Record boundary crossed.", record_pos, record_sizes[record_index]));
+				emit_message(make_error_ptr("Record boundary crossed.", record_pos, record_sizes[record_index]));
 			if (record_pos == record_sizes[record_index])
 			{
 				docwire_log(debug) << "Record boundary reached.";
@@ -327,12 +329,12 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 				// from 8‑bit characters to 16‑bit characters and vice versa.
 				if (s >= src_end)
 				{
-					emit_tag(make_error_ptr("Unexpected end of buffer."));
+					emit_message(make_error_ptr("Unexpected end of buffer."));
 					*src = src_end;
 					return dest;
 				}
 				if ((*s) != 0 && (*s) != 1)
-					emit_tag(make_error_ptr("Incorrect XLUnicodeString flag.", *s));
+					emit_message(make_error_ptr("Incorrect XLUnicodeString flag.", *s));
 				char_size = ((*s) & 0x01) ? 2 : 1;
 				if (char_size == 2)
 				{
@@ -346,7 +348,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (src_end - *src < 2)
 				{
-					emit_tag(make_error_ptr("Unexpected end of buffer."));
+					emit_message(make_error_ptr("Unexpected end of buffer."));
 					*src = src_end;
 					return dest;
 				}
@@ -360,7 +362,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 					s += 2;
 					if (src_end - *src < 2)
 					{
-						emit_tag(make_error_ptr("Unexpected end of buffer."));
+						emit_message(make_error_ptr("Unexpected end of buffer."));
 						*src = src_end;
 						return dest;
 					}
@@ -373,7 +375,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (s >= src_end)
 				{
-					emit_tag(make_error_ptr("Unexpected end of buffer."));
+					emit_message(make_error_ptr("Unexpected end of buffer."));
 					*src = src_end;
 					return dest;
 				}
@@ -399,7 +401,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 		docwire_log(debug) << "Parsing shared string table.";
 		if (sst_buf.size() < 8)
 		{
-			emit_tag(make_error_ptr("Error while parsing shared string table. Buffer must contain at least 8 bytes.", sst_buf.size()));
+			emit_message(make_error_ptr("Error while parsing shared string table. Buffer must contain at least 8 bytes.", sst_buf.size()));
 			return;
 		}
 		int sst_size = getS32LittleEndian(sst_buf.begin() + 4);
@@ -441,7 +443,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (rec.size() < 4)
 				{
-					emit_tag(make_error_ptr("Record is too short. XLS_BLANK must be 4 bytes in length", rec.size()));
+					emit_message(make_error_ptr("Record is too short. XLS_BLANK must be 4 bytes in length", rec.size()));
 					break;
 				}
 				int row = getU16LittleEndian(rec.begin());
@@ -514,7 +516,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (rec.size() < 2)
 				{
-					emit_tag(make_error_ptr("Record is too short. XLS_FORMAT must be 2 bytes in length", rec.size()));
+					emit_message(make_error_ptr("Record is too short. XLS_FORMAT must be 2 bytes in length", rec.size()));
 					break;
 				}
 				int num_format_id = getU16LittleEndian(rec.begin());
@@ -525,7 +527,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (rec.size() < 14)
 				{
-					emit_tag(make_error_ptr("Record is too short. XLS_FORMULA must be 14 bytes in length", rec.size()));
+					emit_message(make_error_ptr("Record is too short. XLS_FORMULA must be 14 bytes in length", rec.size()));
 					break;
 				}
 				m_context_stack.top().m_last_string_formula_row = -1;
@@ -557,7 +559,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (rec.size() < 9)
 				{
-					emit_tag(make_error_ptr("Record is too short. XLS_INTEGER_CELL must be 9 bytes in length", rec.size()));
+					emit_message(make_error_ptr("Record is too short. XLS_INTEGER_CELL must be 9 bytes in length", rec.size()));
 					break;
 				}
 				int row = getU16LittleEndian(rec.begin());
@@ -570,7 +572,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (rec.size() < 6)
 				{
-					emit_tag(make_error_ptr("Record is too short. XLS_LABEL and XLS_RSTRING must be at least 6 bytes in length", rec.size()));
+					emit_message(make_error_ptr("Record is too short. XLS_LABEL and XLS_RSTRING must be at least 6 bytes in length", rec.size()));
 					break;
 				}
 				m_context_stack.top().m_last_string_formula_row = -1;
@@ -588,7 +590,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (rec.size() < 8)
 				{
-					emit_tag(make_error_ptr("Record is too short. XLS_LABEL_SST must be at least 8 bytes in length", rec.size()));
+					emit_message(make_error_ptr("Record is too short. XLS_LABEL_SST must be at least 8 bytes in length", rec.size()));
 					break;
 				}
 				m_context_stack.top().m_last_string_formula_row = -1;
@@ -597,7 +599,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 				int sst_index = getU16LittleEndian(rec.begin() + 6);
 				if (sst_index >= m_context_stack.top().m_shared_string_table.size() || sst_index < 0)
 				{
-					emit_tag(make_error_ptr("Incorrect SST index.", sst_index, m_context_stack.top().m_shared_string_table.size()));
+					emit_message(make_error_ptr("Incorrect SST index.", sst_index, m_context_stack.top().m_shared_string_table.size()));
 					return;
 				}
 				else
@@ -608,7 +610,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (rec.size() < 4)
 				{
-					emit_tag(make_error_ptr("Record is too short. XLS_MULBLANK must be at least 4 bytes in length", rec.size()));
+					emit_message(make_error_ptr("Record is too short. XLS_MULBLANK must be at least 4 bytes in length", rec.size()));
 					break;
 				}
 				int row = getU16LittleEndian(rec.begin());
@@ -622,7 +624,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (rec.size() < 4)
 				{
-					emit_tag(make_error_ptr("Record is too short. XLS_MULRK must be at least 4 bytes in length", rec.size()));
+					emit_message(make_error_ptr("Record is too short. XLS_MULRK must be at least 4 bytes in length", rec.size()));
 					break;
 				}
 				m_context_stack.top().m_last_string_formula_row = -1;
@@ -632,7 +634,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 				int min_size = 4 + 6 * (end_col - start_col + 1);
 				if (rec.size() < min_size)
 				{
-					emit_tag(make_error_ptr("Record is too short. XLS_MULRK has its minimum size.", min_size, rec.size()));
+					emit_message(make_error_ptr("Record is too short. XLS_MULRK has its minimum size.", min_size, rec.size()));
 					break;
 				}
 				for (int offset = 4, col = start_col; col <= end_col; offset += 6, col++)
@@ -649,7 +651,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (rec.size() < 14)
 				{
-					emit_tag(make_error_ptr("Record is too short. XLS_NUMBER (or record of number 0x03, 0x103, 0x303) must be at least 14 bytes in length", rec.size()));
+					emit_message(make_error_ptr("Record is too short. XLS_NUMBER (or record of number 0x03, 0x103, 0x303) must be at least 14 bytes in length", rec.size()));
 					break;
 				}
 				m_context_stack.top().m_last_string_formula_row = -1;
@@ -662,7 +664,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (rec.size() < 10)
 				{
-					emit_tag(make_error_ptr("Record is too short. XLS_RK must be at least 10 bytes in length", rec.size()));
+					emit_message(make_error_ptr("Record is too short. XLS_RK must be at least 10 bytes in length", rec.size()));
 					break;
 				}
 				m_context_stack.top().m_last_string_formula_row = -1;
@@ -686,7 +688,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				std::vector<unsigned char>::const_iterator src = rec.begin();
 				if (m_context_stack.top().m_last_string_formula_row < 0) {
-					emit_tag(make_error_ptr("String record without preceeding string formula."));
+					emit_message(make_error_ptr("String record without preceeding string formula."));
 					break;
 				}
 				std::vector<size_t> sizes;
@@ -701,7 +703,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			{
 				if (rec.size() < 4)
 				{
-					emit_tag(make_error_ptr("Record is too short. XLS_XF (or record of number 0x43) must be at least 4 bytes in length", rec.size()));
+					emit_message(make_error_ptr("Record is too short. XLS_XF (or record of number 0x43) must be at least 4 bytes in length", rec.size()));
 					break;
 				}
 				XFRecord xf_record;
@@ -840,7 +842,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 				if (text.length() == 0)
 					std::throw_with_nested(make_error("Type of record could not be read"));
 				else
-					emit_tag(errors::make_nested_ptr(std::current_exception(), make_error("Type of record could not be read")));
+					emit_message(errors::make_nested_ptr(std::current_exception(), make_error("Type of record could not be read")));
 				break;
 			}
 			if (oleEof(reader))
@@ -858,7 +860,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 				if (text.length() == 0)
 					std::throw_with_nested(make_error("Length of record could not be read"));
 				else
-					emit_tag(errors::make_nested_ptr(std::current_exception(), make_error("Length of record could not be read")));
+					emit_message(errors::make_nested_ptr(std::current_exception(), make_error("Length of record could not be read")));
 				break;
 			}
 			if (rec_len > 0)
@@ -866,7 +868,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 				rec.resize(rec_len);
 				read_status = reader.read(&*rec.begin(), rec_len);
 				if (!read_status)
-					emit_tag(make_error_ptr("Error while reading next record", reader.getLastError()));
+					emit_message(make_error_ptr("Error while reading next record", reader.getLastError()));
 			}
 			else
 				rec.clear();
@@ -888,27 +890,27 @@ XLSParser::XLSParser()
 {
 }
 
-void pimpl_impl<XLSParser>::parse(const data_source& data, const emission_callbacks& emit_tag)
+void pimpl_impl<XLSParser>::parse(const data_source& data, const message_callbacks& emit_message)
 {
 	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
 	throw_if (!storage->isValid(), storage->getLastError());
-	emit_tag(tag::Document
+	emit_message(document::Document
 		{
-			.metadata = [this, emit_tag, &storage]()
+			.metadata = [this, emit_message, &storage]()
 			{
 				attributes::Metadata meta;
-				parse_oshared_summary_info(*storage, meta, [emit_tag](std::exception_ptr e) { emit_tag(e); });
+				parse_oshared_summary_info(*storage, meta, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
 				return meta;
 			}
 		});
-	emit_tag(tag::Text{.text = parse(*storage, emit_tag)});
-	emit_tag(tag::CloseDocument{});
+	emit_message(document::Text{.text = parse(*storage, emit_message)});
+	emit_message(document::CloseDocument{});
 }
 
-std::string pimpl_impl<XLSParser>::parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag)
+std::string pimpl_impl<XLSParser>::parse(ThreadSafeOLEStorage& storage, const message_callbacks& emit_message)
 {
 	docwire_log(debug) << "Using XLS parser.";
-	scoped::stack_push<context> context_guard{m_context_stack, context{.emit_tag = emit_tag}};
+	scoped::stack_push<context> context_guard{m_context_stack, context{.emit_message = emit_message}};
 	try
 	{
 		std::lock_guard<std::mutex> parser_mutex_lock(parser_mutex);
@@ -932,24 +934,24 @@ std::string pimpl_impl<XLSParser>::parse(ThreadSafeOLEStorage& storage, const em
 	}
 }
 
-continuation XLSParser::operator()(Tag&& tag, const emission_callbacks& emit_tag)
+continuation XLSParser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (!std::holds_alternative<data_source>(tag))
-		return emit_tag(std::move(tag));
+	if (!msg->is<data_source>())
+		return emit_message(std::move(msg));
 
-	auto& data = std::get<data_source>(tag);
+	auto& data = msg->get<data_source>();
 	data.assert_not_encrypted(); // This checks if the data_source itself is encrypted (e.g. encrypted ZIP)
 
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
-		return emit_tag(std::move(tag));
+		return emit_message(std::move(msg));
 
-	impl().parse(data, emit_tag);
+	impl().parse(data, emit_message);
 	return continuation::proceed;
 }
 
-std::string XLSParser::parse(ThreadSafeOLEStorage& storage, const emission_callbacks& emit_tag) // TODO: needs to be removed finally
+std::string XLSParser::parse(ThreadSafeOLEStorage& storage, const message_callbacks& emit_message) // TODO: needs to be removed finally
 {
-	return impl().parse(storage, emit_tag);
+	return impl().parse(storage, emit_message);
 }
 
 } // namespace docwire
