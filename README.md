@@ -214,6 +214,8 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - HTTP::Post transformer: Facilitate **seamless communication with external HTTP APIs or services**, enabling data exchange and integration with external systems.
 
+- HTTP Server: **Host your own data processing pipelines as HTTP services easily.**. The built-in `http::server` allows you to expose any processing pipeline as an HTTP endpoint, enabling you to build powerful microservices for data processing.
+
 - **Integration with OpenAI API for most advanced NLP tasks**, including transformers like:
     - TranslateTo: Translate text or image to different languages.
     - Summarize: Generate summarized content from longer texts or description of images.

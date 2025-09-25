@@ -24,6 +24,14 @@ extract_version()
 project(docwire VERSION ${SIMPLE_DOCWIRE_VERSION} LANGUAGES CXX C)
 message(STATUS "Build docwire: ${DOCWIRE_VERSION}")
 
+if(MSVC)
+    # This is necessary for some translation units which use heavily templated libraries and
+	# can exceed the default object file size limit.
+    add_compile_options(/bigobj)
+    # Target Windows 10 and later to ensure API compatibility and silence compiler warnings.
+    add_compile_definitions(_WIN32_WINNT=0x0A00)
+endif()
+
 option(DOCWIRE_DOC "Compile Documentation" ON)
 option(DOCWIRE_TRACE "Enable Tracing" OFF)
 option(ADDRESS_SANITIZER "Enable address sanitizer" OFF)

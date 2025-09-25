@@ -21,17 +21,19 @@ namespace docwire
 
 continuation OutputChainElement::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	if (msg->is<std::exception_ptr>())
-		return emit_message(std::move(msg));
 	if (std::holds_alternative<ref_or_owned<std::ostream>>(m_out_obj))
 	{
+		if (msg->is<std::exception_ptr>())
+			return emit_message(std::move(msg));
 		throw_if (!msg->is<data_source>(),
 			"Only data_source elements are supported", errors::program_logic{});
 		std::shared_ptr<std::istream> in_stream = msg->get<data_source>().istream();
 		std::get<ref_or_owned<std::ostream>>(m_out_obj).get() << in_stream->rdbuf();
 	}
 	else
+	{
 		std::get<ref_or_owned<std::vector<message_ptr>>>(m_out_obj).get().push_back(std::move(msg));
+	}
 	return continuation::proceed;
 }
 

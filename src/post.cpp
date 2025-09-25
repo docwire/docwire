@@ -28,32 +28,34 @@ namespace docwire
 template<>
 struct pimpl_impl<http::Post> : pimpl_impl_base
 {
-	pimpl_impl(const std::string& url, const std::optional<std::map<std::string, std::string>> form, const std::string& pipe_field_name, const DefaultFileName& default_file_name, const std::string& oauth2_bearer_token)
-		: m_url(url), m_form(form), m_pipe_field_name(pipe_field_name), m_default_file_name(default_file_name), m_oauth2_bearer_token(oauth2_bearer_token)
+	pimpl_impl(const std::string& url, const std::optional<std::map<std::string, std::string>> form, const std::string& pipe_field_name, const DefaultFileName& default_file_name, const std::string& oauth2_bearer_token, http::ssl_verify_peer ssl_verify_peer_v = {true})
+		: m_url(url), m_form(form), m_pipe_field_name(pipe_field_name), m_default_file_name(default_file_name), m_oauth2_bearer_token(oauth2_bearer_token), m_ssl_verify_peer(ssl_verify_peer_v.v)
 	{}
 	std::string m_url;
 	std::optional<std::map<std::string, std::string>> m_form;
 	std::string m_pipe_field_name;
 	DefaultFileName m_default_file_name;
 	std::string m_oauth2_bearer_token;
+	bool m_ssl_verify_peer;
 };
 
 namespace http
 {
 
-Post::Post(const std::string& url, const std::string& oauth2_bearer_token)
-	: with_pimpl<Post>(url, std::nullopt, "", DefaultFileName{""}, oauth2_bearer_token)
+Post::Post(const std::string& url, const std::string& oauth2_bearer_token, ssl_verify_peer ssl_verify_peer_v)
+	: with_pimpl<Post>(url, std::nullopt, "", DefaultFileName{""}, oauth2_bearer_token, ssl_verify_peer_v)
 {
 }
 
-Post::Post(const std::string& url, const std::map<std::string, std::string> form, const std::string& pipe_field_name, const DefaultFileName& default_file_name, const std::string& oauth2_bearer_token)
-	: with_pimpl<Post>(url, form, pipe_field_name, default_file_name, oauth2_bearer_token)
+Post::Post(const std::string& url, const std::map<std::string, std::string>& form, const std::string& pipe_field_name, const DefaultFileName& default_file_name, const std::string& oauth2_bearer_token, ssl_verify_peer ssl_verify_peer_v)
+	: with_pimpl<Post>(url, form, pipe_field_name, default_file_name, oauth2_bearer_token, ssl_verify_peer_v)
 {
 }
 
 continuation Post::operator()(message_ptr msg, const message_callbacks& emit_message)
 try
 {
+	docwire_log_func();
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
 	docwire_log(debug) << "data_source received";
@@ -63,6 +65,7 @@ try
 	curlpp::Easy request;
 	request.setOpt<curlpp::options::Url>(impl().m_url);
 	request.setOpt(curlpp::options::UserAgent(std::string("DocWire SDK/") + VERSION));
+	request.setOpt(curlpp::options::SslVerifyPeer(impl().m_ssl_verify_peer)); // Corrected this line
 
 	if (impl().m_form)
 	{
@@ -121,8 +124,14 @@ try
 			in_stream->read(buf, static_cast<std::streamsize>(size * nitems));
 			return in_stream->gcount();
 		}));
+		request.setOpt(curlpp::options::InfileSize(data.span().size()));
 		request.setOpt(curlpp::options::Upload(true));
-		request.setOpt<curlpp::options::HttpHeader>({"Content-Type: application/json"});
+		std::string content_type_header = "Content-Type: application/octet-stream";
+		if (auto mt = data.highest_confidence_mime_type())
+		{
+			content_type_header = "Content-Type: " + mt->v;
+		}
+		request.setOpt<curlpp::options::HttpHeader>({content_type_header});
 	}
 	request.setOpt<curlpp::options::Encoding>("gzip");
 	if (!impl().m_oauth2_bearer_token.empty())

@@ -1,9 +1,6 @@
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(api_tests api_tests.cpp)
-if(MSVC)
-    target_compile_options(api_tests PRIVATE /bigobj)
-endif()
 target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_archives
 	docwire_fuzzy_match docwire_base64 docwire_content_type docwire_http docwire_local_ai docwire_openai
 	GTest::gtest GTest::gmock)

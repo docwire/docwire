@@ -36,6 +36,27 @@
    fun:_Unwind_RaiseException
 }
 {
+   unwind stack on raise exception 5
+   Helgrind:Race
+   obj:/usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+   fun:_Unwind_Resume
+}
+{
+   unwind stack on raise exception 6
+   Helgrind:Race
+   obj:/usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+   obj:/usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+   fun:_Unwind_Resume
+}
+{
+   unwind stack on raise exception 7
+   Helgrind:Race
+   fun:_Unwind_SetGR
+   fun:__gxx_personality_v0
+   obj:/usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+   fun:_Unwind_Resume
+}
+{
    Abseil Flags static initialization
    Memcheck:Leak
    match-leak-kinds: possible
@@ -45,5 +66,24 @@
    ...
    fun:call_init
    fun:_dl_init
+   ...
+}
+{
+   httplib_enqueue_on_listen
+   Helgrind:Dubious
+   ...
+   fun:_ZN7docwire10pimpl_implINS_4http6serverEE25httplib_listen_noninlinedEv
+}
+{
+   httplib_shutdown_on_stop
+   Helgrind:Dubious
+   ...
+   fun:_ZN7docwire10pimpl_implINS_4http6serverEE23httplib_stop_noninlinedEv
+}
+{
+   openssl_namemap_race_on_init
+   Helgrind:Race
+   fun:ossl_namemap_empty
+   fun:ossl_namemap_stored
    ...
 }
