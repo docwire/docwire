@@ -3,10 +3,9 @@ add_library(docwire_http SHARED
     post.cpp
 )
 
-find_package(unofficial-curlpp CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-target_link_libraries(docwire_http PRIVATE docwire_core docwire_content_type unofficial::curlpp::curlpp OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(docwire_http PRIVATE docwire_core docwire_content_type OpenSSL::SSL OpenSSL::Crypto)
 
 install(TARGETS docwire_http EXPORT docwire_targets)
 if(MSVC)

@@ -631,7 +631,7 @@ TEST(Http, PostForm)
     ASSERT_TRUE(output_val.as_object()["headers"].is_object());
     ASSERT_THAT(std::string{output_val.as_object()["headers"].as_object()["content-type"].as_string()},
                 ::testing::StartsWith("multipart/form-data; boundary="));
-    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-length"].as_string().c_str(), "458");
+    ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-length"].as_string().c_str(), "454");
     ASSERT_TRUE(output_val.as_object()["form"].is_object());
     ASSERT_STREQ(output_val.as_object()["form"].as_object()["field1"].as_string().c_str(), "value1");
     ASSERT_STREQ(output_val.as_object()["form"].as_object()["field2"].as_string().c_str(), "value2");

@@ -12,13 +12,11 @@
 #include "post.h"
 
 #include "content_type_by_file_extension.h"
-#include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Infos.hpp>
-#include <curlpp/Options.hpp>
 #include "error_tags.h"
 #include "log.h"
 #include "throw_if.h"
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include <httplib.h>
 #include <sstream>
 #include "version.h"
 
@@ -62,102 +60,116 @@ try
 	const data_source& data = msg->get<data_source>();
 	std::shared_ptr<std::istream> in_stream = data.istream();
 
-	curlpp::Easy request;
-	request.setOpt<curlpp::options::Url>(impl().m_url);
-	request.setOpt(curlpp::options::UserAgent(std::string("DocWire SDK/") + VERSION));
-	request.setOpt(curlpp::options::SslVerifyPeer(impl().m_ssl_verify_peer)); // Corrected this line
+	auto parse_url = [](const std::string& url_str) -> std::tuple<std::string, std::string, int, std::string> {
+		const std::string proto_end("://");
+		auto proto_it = std::search(url_str.begin(), url_str.end(), proto_end.begin(), proto_end.end());
+		if (proto_it == url_str.end())
+			throw make_error("Invalid URL: " + url_str, errors::program_logic{});
+		std::string protocol = {url_str.begin(), proto_it};
+		std::string::const_iterator host_start = proto_it + proto_end.length();
+
+		auto path_it = std::find(host_start, url_str.end(), '/');
+		std::string host_and_port_str = {host_start, path_it};
+		std::string path = {path_it, url_str.end()};
+		if (path.empty()) path = "/";
+
+		std::string host;
+		int port = 0; // 0 means default port for protocol
+
+		auto port_separator_it = std::find(host_and_port_str.begin(), host_and_port_str.end(), ':');
+		if (port_separator_it != host_and_port_str.end()) {
+			host = {host_and_port_str.begin(), port_separator_it};
+			std::string port_str = {port_separator_it + 1, host_and_port_str.end()};
+			try {
+				port = std::stoi(port_str);
+			} catch (const std::exception& e) {
+				throw make_error("Invalid port in URL: " + url_str, errors::program_logic{});
+			}
+		} else {
+			host = host_and_port_str;
+		}
+		return {protocol, host, port, path};
+	};
+
+	auto [protocol, host, port, path] = parse_url(impl().m_url);
+
+	std::unique_ptr<httplib::SSLClient> ssl_client;
+	std::unique_ptr<httplib::Client> client;
+
+	if (protocol == "https")
+	{
+		ssl_client = make_unique<httplib::SSLClient>(host, port == 0 ? 443 : port);
+		ssl_client->enable_server_certificate_verification(impl().m_ssl_verify_peer);
+	}
+	else if (protocol == "http")
+	{
+		client = make_unique<httplib::Client>(host, port == 0 ? 80 : port);
+	}
+	else
+	{
+		throw make_error("Unsupported protocol: " + protocol, errors::program_logic{});
+	}
+
+	httplib::Headers headers;
+	headers.emplace("User-Agent", std::string("DocWire SDK/") + VERSION);
+	if (!impl().m_oauth2_bearer_token.empty())
+	{
+		headers.emplace("Authorization", "Bearer " + impl().m_oauth2_bearer_token);
+	}
+
+	std::stringstream data_stream;
+	data_stream << in_stream->rdbuf();
+	std::string body_str = data_stream.str();
+	
+	httplib::Result res;
 
 	if (impl().m_form)
 	{
-		curlpp::Forms parts;
+		httplib::UploadFormDataItems items;
 		for (auto f: *impl().m_form)
-			parts.push_back(new curlpp::FormParts::Content(f.first, f.second));
-		std::stringstream data_stream;
-		data_stream << in_stream->rdbuf();
-		struct FileName
-		{
-			std::filesystem::path v;
-			explicit FileName(const std::filesystem::path& fn)
-				: v(fn) {}
-		};
-		class FileBuffer : public curlpp::FormPart
-		{
-			public:
-				FileBuffer(const std::string& field_name, const FileName& file_name, std::shared_ptr<std::string> buffer)
-					: FormPart(field_name), m_field_name(field_name), m_file_name(file_name), m_buffer(buffer)
-				{
-				}
-				virtual ~FileBuffer()
-				{
-				}
-				virtual FileBuffer* clone() const
-				{
-					return new FileBuffer(*this);
-				}
-			private:
-				void add(::curl_httppost ** first, ::curl_httppost ** last)
-				{
-					curl_formadd(first, last, CURLFORM_PTRNAME, m_field_name.c_str(), CURLFORM_BUFFER, m_file_name.v.u8string().c_str(), CURLFORM_BUFFERPTR, m_buffer->c_str(), CURLFORM_BUFFERLENGTH, m_buffer->size(), CURLFORM_END);
-				}
-				std::string m_field_name;
-				FileName m_file_name;
-				std::shared_ptr<std::string> m_buffer;
-		};
+			items.push_back({f.first, f.second, "", ""});
+
 		std::optional<file_extension> extension = data.file_extension();
+		std::string content_type = "application/octet-stream";
 		if (!extension)
 		{
 			if (auto mt = data.highest_confidence_mime_type())
 			{
 				extension = content_type::by_file_extension::to_extension(*mt);
+				content_type = mt->v;
 			}
 		}
-		FileName file_name { !extension ? impl().m_default_file_name.v : std::filesystem::path{std::string{"file"} + extension->string()} };
-		parts.push_back(new FileBuffer(impl().m_pipe_field_name, file_name, std::make_shared<std::string>(data_stream.str())));
-		request.setOpt(new curlpp::options::HttpPost(parts));
+
+		std::filesystem::path file_name_path = !extension ? impl().m_default_file_name.v : std::filesystem::path{std::string{"file"} + extension->string()};
+		items.push_back({impl().m_pipe_field_name, body_str, file_name_path.string(), content_type});
+		if (ssl_client)
+			res = ssl_client->Post(path, headers, items);
+		else
+			res = client->Post(path, headers, items);
 	}
 	else
 	{
-		request.setOpt(new curlpp::options::CustomRequest("POST"));
-		request.setOpt(curlpp::options::ReadFunction([in_stream](char* buf, size_t size, size_t nitems) -> size_t
-		{
-			docwire_log_func_with_args(size, nitems);
-			in_stream->read(buf, static_cast<std::streamsize>(size * nitems));
-			return in_stream->gcount();
-		}));
-		request.setOpt(curlpp::options::InfileSize(data.span().size()));
-		request.setOpt(curlpp::options::Upload(true));
-		std::string content_type_header = "Content-Type: application/octet-stream";
+		std::string content_type = "application/octet-stream";
 		if (auto mt = data.highest_confidence_mime_type())
 		{
-			content_type_header = "Content-Type: " + mt->v;
+			content_type = mt->v;
 		}
-		request.setOpt<curlpp::options::HttpHeader>({content_type_header});
+		if (ssl_client)
+			res = ssl_client->Post(path, headers, body_str, content_type);
+		else
+			res = client->Post(path, headers, body_str, content_type);
 	}
-	request.setOpt<curlpp::options::Encoding>("gzip");
-	if (!impl().m_oauth2_bearer_token.empty())
+
+	if (!res)
 	{
-		request.setOpt<curlpp::options::HttpAuth>(CURLAUTH_BEARER);
-		typedef curlpp::OptionTrait<std::string, CURLOPT_XOAUTH2_BEARER> XOAuth2Bearer;
-		request.setOpt(XOAuth2Bearer(impl().m_oauth2_bearer_token));
+		httplib::Error err = res.error();
+		std::string error_msg = "HTTP request failed: " + httplib::to_string(err);
+		throw make_error(error_msg, errors::network_failure{});
 	}
-	auto response_stream = std::make_shared<std::stringstream>();
-	curlpp::options::WriteStream ws(response_stream.get());
-	request.setOpt(ws);
-	try
-	{
-		request.perform();
-		auto response_code = curlpp::infos::ResponseCode::get(request);
-		throw_if (response_code < 200 || response_code > 299, "Server returned an error status code", response_code, response_stream->str());
-	}
-	catch (curlpp::LogicError &e)
-	{
-		std::throw_with_nested(make_error("HTTP request is invalid", errors::program_logic{}));
-    }
-	catch (curlpp::RuntimeError &e)
-	{
-		throw errors::make_nested(e, make_error("HTTP request failed", errors::network_failure{}));
-	}
-	return emit_message(data_source{seekable_stream_ptr{response_stream}});
+
+	throw_if (res->status < 200 || res->status > 299, "Server returned an error status code", res->status, res->body);
+
+	return emit_message(data_source{seekable_stream_ptr{std::make_shared<std::stringstream>(res->body)}});
 }
 catch (const std::exception&)
 {
