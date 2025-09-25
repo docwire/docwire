@@ -1,3 +1,41 @@
+## Version 2025.09.25
+
+This release introduces a major architectural overhaul, replacing the `std::variant`-based `Tag` system with a type-erased, polymorphic `message_ptr`. This fundamental change refactors the entire data pipeline—including parsers, exporters, filters, and core components—to emit rich, structured document events, simplifying the data flow and making it easier to add new data types. Alongside this, a new high-performance `http::server` is introduced, allowing developers to expose any processing pipeline as a standalone HTTP/HTTPS microservice with TLS support.
+
+> The pipeline's heart, a message new and bright,  
+> Where docs and mail now dance in polymorphic light.  
+> A server hums, where pipelines run as one,  
+> This grand refactor shines, a new day has begun.  
+> 🚀🔧🏗️
+
+- **Features**
+  - **HTTP Server:** Added a high-performance `http::server` class with HTTPS/TLS support. This allows any processing pipeline to be easily exposed as a standalone microservice via a path-to-pipeline mapping, enabling powerful and scalable data processing endpoints.
+
+- **Improvements**
+  - **HTTP Post Content-Type:** The `http::Post` component now automatically sets the `Content-Type` header for multipart form data based on the MIME type of the input `data_source`, simplifying API integrations.
+  - **Enhanced vcpkg Feature Parsing:** The build system's vcpkg feature parsing has been improved to handle more complex, object-based, platform-specific feature definitions.
+
+- **Refactor**
+  - **Polymorphic Message System:** Replaced the core `std::variant`-based `Tag` system with a type-erased, polymorphic `message_ptr` across the entire data pipeline. This major architectural change affects all parsers, exporters, filters, and core components, enabling them to emit rich, structured document events and simplifying the addition of new data types.
+  - **Reorganized Element Types:** Decoupled and reorganized all document, mail, and AI element types into separate, more logical header files (`document_elements.h`, `mail_elements.h`, `ai_elements.h`, `attributes.h`) for better code organization.
+  - **Abstracted XML Parsing Options:** Refactored the XML parser to use a dedicated `XmlStream::no_blanks` struct for configuration, improving clarity over raw integer flags.
+  - **Unified Transformer API:** Updated `TransformerFunc` and `StandardFilter` to use the new `message_transform_func`, aligning custom pipeline elements with the new message-based API.
+
+- **Fixes**
+  - **MSVC Compilation:** Resolved a compilation failure on MSVC by parenthesizing `std::min` to avoid conflicts with the Windows `min` macro and added the `/bigobj` compiler option to handle heavily templated libraries.
+  - **RTTI Issues on macOS:** Added visibility attributes to core document, mail, and AI elements to fix RTTI-related issues on macOS.
+
+- **Build**
+  - **Dependency Change:** Replaced `curlpp` with `cpp-httplib` and `OpenSSL` to support the `http::Post` and `http::server` components.
+  - **CI Update:** Removed the deprecated `macos-13` runner from the GitHub Actions workflow.
+
+- **Documentation**
+  - Updated `README.md` and all examples to use the new `message_ptr` API.
+
+- **Tests**
+  - **End-to-end HTTP Server Tests:** Added new integration tests to validate client-server pipeline processing for both HTTP and HTTPS using the new `http::server`.
+  - **API Migration:** Migrated the entire test suite to use the new `message_ptr` API, including the addition of custom GTest matchers for easier and more readable assertions.
+
 ## Version 2025.08.13
 
 This release marks a major milestone by integrating full support for OpenAI's newly released `gpt-5` family of models. To reflect this significant advancement in AI, `gpt_5` is now the default model for all OpenAI operations, ensuring users have immediate access to state-of-the-art capabilities. The release also includes minor code quality improvements.
