@@ -34,6 +34,10 @@ list(REMOVE_ITEM HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/thread_safe_ole_stream_reader.h)
 install(FILES ${HEADERS} DESTINATION include/docwire)
 
+# Install the custom libmagic definition for archive files (upstream Nov 26, 2024) to fix zip detection
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/libmagic_archives_definition
+        DESTINATION share/docwire)
+
 set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_INSTALL_DEBUG_LIBRARIES TRUE)

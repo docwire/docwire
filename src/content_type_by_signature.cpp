@@ -14,6 +14,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/compare.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <filesystem>
 #include <magic.h>
 #include "resource_path.h"
 #include "throw_if.h"
@@ -28,7 +29,11 @@ struct pimpl_impl<content_type::by_signature::database> : public pimpl_impl_base
         : magic_cookie(magic_open(MAGIC_NONE))
     {
         throw_if (magic_cookie == nullptr);
-        throw_if (magic_load(magic_cookie, resource_path("libmagic/misc/magic.mgc").string().c_str()) != 0, magic_error(magic_cookie));
+        const char separator = (std::filesystem::path::preferred_separator == '\\') ? ';' : ':';
+        const std::string magic_db_path = resource_path("libmagic/misc/magic.mgc").string() +
+                                          separator +
+                                          resource_path("docwire/libmagic_archives_definition").string();
+        throw_if (magic_load(magic_cookie, magic_db_path.c_str()) != 0, magic_error(magic_cookie));
         throw_if (magic_getparam(magic_cookie, MAGIC_PARAM_BYTES_MAX, &bytes_max) != 0, magic_error(magic_cookie));
     }
     ~pimpl_impl() { magic_close(magic_cookie); }
