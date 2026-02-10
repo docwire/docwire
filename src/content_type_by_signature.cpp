@@ -14,6 +14,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/compare.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include "error_tags.h"
 #include <filesystem>
 #include <magic.h>
 #include "resource_path.h"
@@ -29,10 +30,14 @@ struct pimpl_impl<content_type::by_signature::database> : public pimpl_impl_base
         : magic_cookie(magic_open(MAGIC_NONE))
     {
         throw_if (magic_cookie == nullptr);
+
+        const std::filesystem::path main_db_path = resource_path("libmagic/misc/magic.mgc");
+        const std::filesystem::path custom_db_path = resource_path("docwire/libmagic_archives_definition");
+        throw_if(!std::filesystem::exists(main_db_path), "Content type signatures database not found", main_db_path, errors::program_corrupted{});
+        throw_if(!std::filesystem::exists(custom_db_path), "Content type signatures database not found", custom_db_path, errors::program_corrupted{});
+
         const char separator = (std::filesystem::path::preferred_separator == '\\') ? ';' : ':';
-        const std::string magic_db_path = resource_path("libmagic/misc/magic.mgc").string() +
-                                          separator +
-                                          resource_path("docwire/libmagic_archives_definition").string();
+        const std::string magic_db_path = main_db_path.string() + separator + custom_db_path.string();
         throw_if (magic_load(magic_cookie, magic_db_path.c_str()) != 0, magic_error(magic_cookie));
         throw_if (magic_getparam(magic_cookie, MAGIC_PARAM_BYTES_MAX, &bytes_max) != 0, magic_error(magic_cookie));
     }
