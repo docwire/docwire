@@ -53,6 +53,7 @@ function(run_tests build_type)
 	file(WRITE "${CURRENT_BUILDTREES_DIR}/${triplet_build_type}/share/multilingual-e5-small-ct2-int8.path" "${CURRENT_INSTALLED_DIR}/share/multilingual-e5-small-ct2-int8")
 	file(WRITE "${CURRENT_BUILDTREES_DIR}/${triplet_build_type}/share/tessdata-fast.path" "${CURRENT_INSTALLED_DIR}/share/tessdata-fast")
 	file(WRITE "${CURRENT_BUILDTREES_DIR}/${triplet_build_type}/share/libmagic/misc/magic.mgc.path" "${CURRENT_INSTALLED_DIR}/share/libmagic/misc/magic.mgc")
+	file(WRITE "${CURRENT_BUILDTREES_DIR}/${triplet_build_type}/share/docwire/libmagic_archives_definition.path" "${CURRENT_PACKAGES_DIR}/share/docwire/libmagic_archives_definition")
 
 	set(valgrind_command "")
 	if(MEMCHECK_ENABLED)
