@@ -19,8 +19,10 @@ if(WIN32)
 		list(APPEND docwire_test_path_dirs "$<$<NOT:$<CONFIG:Debug>>:${prefix}/bin>")
 	endforeach()
 	list(REMOVE_DUPLICATES docwire_test_path_dirs)
+	# Escape semicolons in the host PATH so they aren't interpreted as list separators by CMake
+	string(REPLACE ";" "\;" escaped_path "$ENV{PATH}")
 	# Join with escaped semicolons for the ENVIRONMENT property
-	set(docwire_test_env_path "PATH=$<JOIN:${docwire_test_path_dirs},\;>\;$ENV{PATH}")
+	set(docwire_test_env_path "PATH=$<JOIN:${docwire_test_path_dirs},\;>\;${escaped_path}")
 endif()
 
 add_executable(xml_tests xml_tests.cpp)
