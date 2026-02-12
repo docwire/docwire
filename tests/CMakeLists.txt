@@ -9,10 +9,24 @@ target_compile_definitions(api_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 find_package(Boost REQUIRED COMPONENTS json)
 target_link_libraries(api_tests PRIVATE Boost::json)
 target_include_directories(api_tests PRIVATE ${Boost_INCLUDE_DIRS})
+docwire_deploy_resources(api_tests)
+
+if(WIN32)
+	set(docwire_test_path_dirs "$<TARGET_FILE_DIR:docwire_core>")
+	# Add bin directories from CMAKE_PREFIX_PATH to find external DLLs (e.g. provided by vcpkg)
+	foreach(prefix IN LISTS CMAKE_PREFIX_PATH)
+		list(APPEND docwire_test_path_dirs "$<$<CONFIG:Debug>:${prefix}/debug/bin>")
+		list(APPEND docwire_test_path_dirs "$<$<NOT:$<CONFIG:Debug>>:${prefix}/bin>")
+	endforeach()
+	list(REMOVE_DUPLICATES docwire_test_path_dirs)
+	# Join with escaped semicolons for the ENVIRONMENT property
+	set(docwire_test_env_path "PATH=$<JOIN:${docwire_test_path_dirs},\;>\;$ENV{PATH}")
+endif()
 
 add_executable(xml_tests xml_tests.cpp)
 target_link_libraries(xml_tests PRIVATE docwire_core docwire_xml GTest::gtest GTest::gmock)
 target_compile_definitions(xml_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
+docwire_deploy_resources(xml_tests)
 
 file(GLOB test_files *)
 list(FILTER test_files EXCLUDE REGEX ".*\\.cpp$")
@@ -24,9 +38,15 @@ include(GoogleTest)
 # as it avoids the overhead of starting a new process for each of the 700+ tests.
 add_test(NAME api_tests COMMAND api_tests)
 set_property(TEST api_tests PROPERTY LABELS "is_api_test")
+if(WIN32)
+	set_property(TEST api_tests APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
+endif()
 
 add_test(NAME xml_tests COMMAND xml_tests)
 set_property(TEST xml_tests PROPERTY LABELS "is_api_test")
+if(WIN32)
+	set_property(TEST xml_tests APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
+endif()
 
 # This script verifies that snippets in README.md are consistent with their corresponding full example source files
 # and that the README structure is correct. It works by:
@@ -189,6 +209,9 @@ foreach(example IN ITEMS
 	# Conditionally add the test, skipping OpenAI examples if the key is not set.
 	if ((openai_pos EQUAL -1 AND openai_key_pos EQUAL -1) OR NOT "$ENV{OPENAI_API_KEY}" STREQUAL "")
 		add_test(NAME ${example} COMMAND ${example})
+		if(WIN32)
+			set_property(TEST ${example} APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
+		endif()
 		string(FIND "${example_content}" "local_ai::" local_ai_pos)
 		if (NOT local_ai_pos EQUAL -1)
 			message(STATUS "Labeling test ${example} as uses_model_runner")

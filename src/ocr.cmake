@@ -17,3 +17,6 @@ endif()
 include(GenerateExportHeader)
 generate_export_header(docwire_ocr EXPORT_FILE_NAME ocr_export.h)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ocr_export.h DESTINATION include/docwire)
+
+docwire_find_resource(TESSDATA_FULL_PATH TYPE DIRECTORY REL_PATH "tessdata-fast" REQUIRED)
+docwire_target_resources(docwire_ocr "tessdata-fast" SOURCE "${TESSDATA_FULL_PATH}")

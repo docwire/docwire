@@ -1,6 +1,7 @@
 @PACKAGE_INIT@
 
 include("${CMAKE_CURRENT_LIST_DIR}/docwire-targets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/docwire_resources.cmake")
 
 check_required_components(docwire)
 
