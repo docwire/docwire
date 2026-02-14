@@ -12,6 +12,7 @@ target_include_directories(api_tests PRIVATE ${Boost_INCLUDE_DIRS})
 docwire_deploy_resources(api_tests)
 
 if(WIN32)
+	message(VERBOSE "CMAKE_PREFIX_PATH for tests: ${CMAKE_PREFIX_PATH}")
 	set(docwire_test_path_dirs "$<TARGET_FILE_DIR:docwire_core>")
 	# Add bin directories from CMAKE_PREFIX_PATH to find external DLLs (e.g. provided by vcpkg)
 	foreach(prefix IN LISTS CMAKE_PREFIX_PATH)
@@ -23,6 +24,7 @@ if(WIN32)
 	string(REPLACE ";" "\;" escaped_path "$ENV{PATH}")
 	# Join with escaped semicolons for the ENVIRONMENT property
 	set(docwire_test_env_path "PATH=$<JOIN:${docwire_test_path_dirs},\;>\;${escaped_path}")
+	message(VERBOSE "docwire_test_env_path: ${docwire_test_env_path}")
 endif()
 
 add_executable(xml_tests xml_tests.cpp)
