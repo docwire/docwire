@@ -98,10 +98,16 @@ function(docwire_target_resources target rel_dest_path)
     )
 
     # Property for use by downstream consumers after installation.
-    # This is an INTERFACE property and will be part of the installed target information.
+    # This is a public property and will be part of the installed target information via EXPORT_PROPERTIES.
     set_property(TARGET "${target}" APPEND PROPERTY
-        INTERFACE_DOCWIRE_RESOURCES
+        DOCWIRE_RESOURCES
         "${rel_dest_path}"
+    )
+
+    # Explicitly mark the custom property for export so it appears in docwire-targets.cmake
+    set_property(TARGET "${target}" APPEND PROPERTY
+        EXPORT_PROPERTIES
+        DOCWIRE_RESOURCES
     )
 endfunction()
 
@@ -176,7 +182,7 @@ function(docwire_deploy_resources app_target)
     set(resources_to_deploy "")
 
     foreach(current_target IN LISTS dependency_targets)
-        get_target_property(interface_res ${current_target} INTERFACE_DOCWIRE_RESOURCES)
+        get_target_property(interface_res ${current_target} DOCWIRE_RESOURCES)
         if(interface_res)
             get_target_property(build_sources ${current_target} _DOCWIRE_RESOURCE_SOURCES)
             if(build_sources)
@@ -184,7 +190,7 @@ function(docwire_deploy_resources app_target)
                 list(LENGTH interface_res count_dst)
                 list(LENGTH build_sources count_src)
                 if(NOT count_dst EQUAL count_src)
-                    message(FATAL_ERROR "DocWire: Resource property mismatch for target ${current_target}. INTERFACE_DOCWIRE_RESOURCES and _DOCWIRE_RESOURCE_SOURCES have different lengths.")
+                    message(FATAL_ERROR "DocWire: Resource property mismatch for target ${current_target}. DOCWIRE_RESOURCES and _DOCWIRE_RESOURCE_SOURCES have different lengths.")
                 endif()
                 math(EXPR loop_max "${count_dst} - 1")
                 foreach(i RANGE ${loop_max})
