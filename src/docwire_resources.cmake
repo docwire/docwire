@@ -106,6 +106,57 @@ function(docwire_target_resources target rel_dest_path)
 endfunction()
 
 #[=======================================================================[.rst:
+docwire_collect_transitive_dependencies
+---------------------------------------
+Collects all transitive dependencies of a target.
+
+  docwire_collect_transitive_dependencies(<target> <out_var>)
+
+Returns a list of all targets reachable from the given target via
+INTERFACE_LINK_LIBRARIES and LINK_LIBRARIES properties.
+#]=======================================================================]
+function(docwire_collect_transitive_dependencies root_target out_var)
+    set(visited_targets "")
+    set(targets_to_visit ${root_target})
+
+    while(targets_to_visit)
+        list(POP_FRONT targets_to_visit current_target)
+        
+        if(current_target IN_LIST visited_targets)
+            continue()
+        endif()
+        
+        if(NOT TARGET ${current_target})
+            continue()
+        endif()
+
+        list(APPEND visited_targets ${current_target})
+
+        set(deps "")
+        get_target_property(iface_libs ${current_target} INTERFACE_LINK_LIBRARIES)
+        if(iface_libs)
+            list(APPEND deps ${iface_libs})
+        endif()
+
+        get_target_property(type ${current_target} TYPE)
+        if(NOT type STREQUAL "INTERFACE_LIBRARY")
+            get_target_property(libs ${current_target} LINK_LIBRARIES)
+            if(libs)
+                list(APPEND deps ${libs})
+            endif()
+        endif()
+
+        foreach(dep IN LISTS deps)
+            if(TARGET "${dep}")
+                list(APPEND targets_to_visit "${dep}")
+            endif()
+        endforeach()
+    endwhile()
+
+    set(${out_var} "${visited_targets}" PARENT_SCOPE)
+endfunction()
+
+#[=======================================================================[.rst:
 docwire_deploy_resources
 ------------------------
 Deploys resources for an executable or library in the build tree.
@@ -120,18 +171,11 @@ function(docwire_deploy_resources app_target)
         message(FATAL_ERROR "docwire_deploy_resources: ${app_target} is not a target")
     endif()
 
-    set(visited_targets "")
+    docwire_collect_transitive_dependencies(${app_target} dependency_targets)
+
     set(resources_to_deploy "")
-    set(targets_to_visit ${app_target})
 
-    # Traverse the dependency graph to collect resource properties.
-    while(targets_to_visit)
-        list(POP_FRONT targets_to_visit current_target)
-        if(current_target IN_LIST visited_targets OR NOT TARGET ${current_target})
-            continue()
-        endif()
-        list(APPEND visited_targets ${current_target})
-
+    foreach(current_target IN LISTS dependency_targets)
         get_target_property(interface_res ${current_target} INTERFACE_DOCWIRE_RESOURCES)
         if(interface_res)
             get_target_property(build_sources ${current_target} _DOCWIRE_RESOURCE_SOURCES)
@@ -156,27 +200,7 @@ function(docwire_deploy_resources app_target)
                 endforeach()
             endif()
         endif()
-
-        # Append both interface and private link libraries to the visit list.
-        # The list is filtered to only include actual targets, ignoring keywords (debug, optimized),
-        # paths, and generator expressions which can also be part of the LINK_LIBRARIES properties.
-        get_target_property(libs ${current_target} INTERFACE_LINK_LIBRARIES)
-        foreach(lib IN LISTS libs)
-            if(TARGET ${lib})
-                list(APPEND targets_to_visit ${lib})
-            endif()
-        endforeach()
-
-        get_target_property(type ${current_target} TYPE)
-        if(NOT type STREQUAL "INTERFACE_LIBRARY")
-            get_target_property(libs ${current_target} LINK_LIBRARIES)
-            foreach(lib IN LISTS libs)
-                if(TARGET ${lib})
-                    list(APPEND targets_to_visit ${lib})
-                endif()
-            endforeach()
-        endif()
-    endwhile()
+    endforeach()
 
     if(NOT resources_to_deploy)
         return()

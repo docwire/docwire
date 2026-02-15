@@ -12,18 +12,21 @@ target_include_directories(api_tests PRIVATE ${Boost_INCLUDE_DIRS})
 docwire_deploy_resources(api_tests)
 
 if(WIN32)
-	message(VERBOSE "CMAKE_PREFIX_PATH for tests: ${CMAKE_PREFIX_PATH}")
-	set(docwire_test_path_dirs "$<TARGET_FILE_DIR:docwire_core>")
-	# Add bin directories from CMAKE_PREFIX_PATH to find external DLLs (e.g. provided by vcpkg)
-	foreach(prefix IN LISTS CMAKE_PREFIX_PATH)
-		list(APPEND docwire_test_path_dirs "$<$<CONFIG:Debug>:${prefix}/debug/bin>")
-		list(APPEND docwire_test_path_dirs "$<$<NOT:$<CONFIG:Debug>>:${prefix}/bin>")
+	docwire_collect_transitive_dependencies(api_tests all_deps)
+	set(docwire_test_path_dirs "")
+	foreach(dep IN LISTS all_deps)
+		get_target_property(target_type ${dep} TYPE)
+		if(target_type STREQUAL "SHARED_LIBRARY" OR target_type STREQUAL "MODULE_LIBRARY" OR target_type STREQUAL "EXECUTABLE" OR target_type STREQUAL "UNKNOWN_LIBRARY")
+			list(APPEND docwire_test_path_dirs "$<TARGET_FILE_DIR:${dep}>")
+		endif()
 	endforeach()
 	list(REMOVE_DUPLICATES docwire_test_path_dirs)
+
 	# Escape semicolons in the host PATH so they aren't interpreted as list separators by CMake
 	string(REPLACE ";" "\;" escaped_path "$ENV{PATH}")
 	# Join with escaped semicolons for the ENVIRONMENT property
-	set(docwire_test_env_path "PATH=$<JOIN:${docwire_test_path_dirs},\;>\;${escaped_path}")
+	list(JOIN docwire_test_path_dirs "\\;" joined_docwire_paths)
+	set(docwire_test_env_path "PATH=${joined_docwire_paths}\;${escaped_path}")
 	message(VERBOSE "docwire_test_env_path: ${docwire_test_env_path}")
 endif()
 
