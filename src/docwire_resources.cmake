@@ -221,6 +221,7 @@ function(docwire_deploy_resources app_target)
         # Generate the .path file in a stable intermediate location.
         # We use $<CONFIG> to handle multi-configuration generators where abs_path might vary.
         set(intermediate_path "${CMAKE_CURRENT_BINARY_DIR}/docwire_deploy_resources_temp/${app_target}/$<CONFIG>/${rel_dest_path}.path")
+        message(VERBOSE "Generating .path file for ${app_target}: ${rel_dest_path} -> ${abs_path}")
         file(GENERATE OUTPUT "${intermediate_path}" CONTENT "${abs_path}")
 
         set(final_path "${deploy_base}/${rel_dest_path}.path")
