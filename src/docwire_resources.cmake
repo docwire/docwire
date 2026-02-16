@@ -3,15 +3,15 @@ docwire_find_resource
 ---------------------
 Finds a resource file or directory on the system or in the build environment.
 
-  docwire_find_resource(<result_var> TYPE <FILE|DIRECTORY> REL_PATH <path> [REQUIRED])
+  docwire_find_resource(<result_var> REL_PATH <path> [REQUIRED])
 
 This function searches standard locations and CMAKE_PREFIX_PATH/share.
 #]=======================================================================]
 function(docwire_find_resource result_var)
-    cmake_parse_arguments(PARSE_ARGS "REQUIRED" "TYPE;REL_PATH" "" ${ARGN})
+    cmake_parse_arguments(PARSE_ARGS "REQUIRED" "REL_PATH" "" ${ARGN})
 
-    if(NOT PARSE_ARGS_TYPE OR NOT PARSE_ARGS_REL_PATH)
-        message(FATAL_ERROR "docwire_find_resource requires TYPE and REL_PATH arguments.")
+    if(NOT PARSE_ARGS_REL_PATH)
+        message(FATAL_ERROR "docwire_find_resource requires REL_PATH argument.")
     endif()
 
     get_filename_component(RESOURCE_NAME "${PARSE_ARGS_REL_PATH}" NAME)
@@ -38,32 +38,16 @@ function(docwire_find_resource result_var)
         list(APPEND docwire_search_paths "${prefix}/share")
     endforeach()
 
-    if("${PARSE_ARGS_TYPE}" STREQUAL "FILE")
-        find_file(${CACHE_VAR_NAME}
-            NAMES ${RESOURCE_NAME}
-            PATHS ${docwire_search_paths}
-            PATH_SUFFIXES ${RESOURCE_DIR_REL}
-            NO_DEFAULT_PATH
-            DOC "Path to resource file: ${PARSE_ARGS_REL_PATH}"
-            ${FIND_ARGS}
-        )
-        set(FOUND_PATH "${${CACHE_VAR_NAME}}")
-    elseif("${PARSE_ARGS_TYPE}" STREQUAL "DIRECTORY")
-        # For directories, we find the parent path and append the name
-        find_path(${CACHE_VAR_NAME}
-            NAMES ${RESOURCE_NAME}
-            PATHS ${docwire_search_paths}
-            PATH_SUFFIXES ${RESOURCE_DIR_REL}
-            NO_DEFAULT_PATH
-            DOC "Path to resource directory: ${PARSE_ARGS_REL_PATH}"
-            ${FIND_ARGS}
-        )
-        if(${CACHE_VAR_NAME})
-             # find_path returns the directory *containing* the name, so we must append the name.
-             set(FOUND_PATH "${${CACHE_VAR_NAME}}/${RESOURCE_NAME}")
-        endif()
-    else()
-        message(FATAL_ERROR "docwire_find_resource: TYPE must be FILE or DIRECTORY.")
+    find_path(${CACHE_VAR_NAME}
+        NAMES ${RESOURCE_NAME}
+        PATHS ${docwire_search_paths}
+        PATH_SUFFIXES ${RESOURCE_DIR_REL}
+        NO_DEFAULT_PATH
+        DOC "Path to resource: ${PARSE_ARGS_REL_PATH}"
+        ${FIND_ARGS}
+    )
+    if(${CACHE_VAR_NAME})
+         set(FOUND_PATH "${${CACHE_VAR_NAME}}/${RESOURCE_NAME}")
     endif()
 
     set(${result_var} "${FOUND_PATH}" PARENT_SCOPE)
@@ -201,8 +185,8 @@ function(docwire_deploy_resources app_target)
             else()
                 # Imported target context (package consumers)
                 foreach(rel_dest_path IN LISTS interface_res)
-                    set(abs_resource_path "$<TARGET_FILE_DIR:${current_target}>/../share/${rel_dest_path}")
-                    list(APPEND resources_to_deploy "${abs_resource_path}|${rel_dest_path}")
+                    docwire_find_resource(found_path REL_PATH "${rel_dest_path}" REQUIRED)
+                    list(APPEND resources_to_deploy "${found_path}|${rel_dest_path}")
                 endforeach()
             endif()
         endif()
