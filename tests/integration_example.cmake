@@ -63,6 +63,12 @@ install(TARGETS integration_example
             "vcruntime.*\\.dll"
             "msvcp.*\\.dll"
             # On Linux/macOS, you might want to exclude libc, libstdc++, etc., depending on your deployment strategy.
+    # On non-Windows platforms, we must specify where to install library and framework dependencies
+    # because executables don't have default LIBRARY or FRAMEWORK destinations to inherit from.
+    # Note: System frameworks (in /System/Library) are automatically excluded by CMake, so this
+    # destination is only used for 3rd-party frameworks (e.g. from vcpkg) if any are found.
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    FRAMEWORK DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )
 
 # 3. Install DocWire data resources.
