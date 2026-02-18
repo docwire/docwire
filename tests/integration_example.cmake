@@ -55,14 +55,21 @@ install(TARGETS integration_example
     # 2. Install runtime dependencies (DLLs on Windows, SOs on Linux, DYLIBs on macOS).
     # CMake's RUNTIME_DEPENDENCIES automatically finds all transitive shared library dependencies.
     RUNTIME_DEPENDENCIES
-        POST_EXCLUDE_REGEXES
+        PRE_EXCLUDE_REGEXES
+            # Exclude Windows API Sets (part of the OS, not physical files to distribute)
+            "api-ms-win-.*"
+            "ext-ms-win-.*"
+            # Exclude CI/Cloud environment specific DLLs (transitive system dependencies found on Azure/GitHub Actions runners)
+            "AzureAttest.*"
+            "HvsiFileTrust.*"
+            "PdmUtilities.*"
+            "WTDSENSOR.*"
+            "wpaxholder.*"
+            "wtdccm.*"
             # Exclude common Windows system libraries and Visual C++ Runtime (which should be installed via Redistributable)
-            "api-ms-win-.*\\.dll"
-            "ext-ms-win-.*\\.dll"
             "ucrtbase\\.dll"
             "vcruntime.*\\.dll"
             "msvcp.*\\.dll"
-            # On Linux/macOS, you might want to exclude libc, libstdc++, etc., depending on your deployment strategy.
     # On non-Windows platforms, we must specify where to install library and framework dependencies
     # because executables don't have default LIBRARY or FRAMEWORK destinations to inherit from.
     # Note: System frameworks (in /System/Library) are automatically excluded by CMake, so this
