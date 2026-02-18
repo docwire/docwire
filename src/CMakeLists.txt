@@ -1,3 +1,4 @@
+set(CMAKE_INSTALL_RPATH .)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 add_compile_definitions(DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
