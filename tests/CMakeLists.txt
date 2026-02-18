@@ -262,7 +262,7 @@ add_test(
 set_property(TEST integration_configure_test PROPERTY LABELS is_after_installation_test)
 add_test(
 	NAME integration_build_test
-	COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/integration_test_build
+	COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/integration_test_build --config $<CONFIG>
 )
 set_property(TEST integration_build_test PROPERTY LABELS is_after_installation_test)
 set_property(TEST integration_build_test PROPERTY DEPENDS integration_configure_test)
@@ -276,10 +276,10 @@ set_property(TEST integration_run_test PROPERTY DEPENDS integration_build_test)
 
 add_test(
 	NAME integration_install_test
-	COMMAND ${CMAKE_COMMAND} --install ${CMAKE_BINARY_DIR}/integration_test_build --prefix ${CMAKE_BINARY_DIR}/integration_test_install
+	COMMAND ${CMAKE_COMMAND} --install ${CMAKE_BINARY_DIR}/integration_test_build --prefix ${CMAKE_BINARY_DIR}/integration_test_install --config $<CONFIG>
 )
 set_property(TEST integration_install_test PROPERTY LABELS is_after_installation_test)
-set_property(TEST integration_install_test PROPERTY DEPENDS integration_build_test)
+set_property(TEST integration_install_test PROPERTY DEPENDS integration_run_test)
 
 add_test(
 	NAME integration_run_installed_test
