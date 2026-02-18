@@ -23,8 +23,6 @@ vcpkg_cmake_configure(
 	OPTIONS ${FEATURE_OPTIONS}
 )
 
-set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP FALSE)
-
 vcpkg_cmake_install()
 
 if(VCPKG_TARGET_IS_WINDOWS)

@@ -623,10 +623,12 @@ cd docwire
 3. **Integrate with your project or development environment**
 
 You can use vcpkg toolchain file to integrate DocWire SDK with your CMake project:
-```
+```bash
 cmake -DCMAKE_TOOLCHAIN_FILE=docwire/vcpkg/scripts/buildsystems/vcpkg.cmake ..
 ```
 Please refer to ["vcpkg in CMake projects" on Microsoft Learn](https://learn.microsoft.com/en-us/vcpkg/users/buildsystems/cmake-integration) for more information on how to use vcpkg with your CMake project.
+
+[You can find example how to integrate DocWire SDK with your project using CMake here](https://docwire.readthedocs.io/en/latest/integration_example_8cmake-example.html).
 
 To use DocWire SDK in your MSBuild projects (Visual Studio) run the following command:
 ```

@@ -9,7 +9,7 @@ target_compile_definitions(api_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 find_package(Boost REQUIRED COMPONENTS json)
 target_link_libraries(api_tests PRIVATE Boost::json)
 target_include_directories(api_tests PRIVATE ${Boost_INCLUDE_DIRS})
-docwire_deploy_resources(api_tests)
+docwire_deploy_resources(TARGETS api_tests)
 
 if(WIN32)
 	docwire_collect_transitive_dependencies(api_tests all_deps)
@@ -33,7 +33,7 @@ endif()
 add_executable(xml_tests xml_tests.cpp)
 target_link_libraries(xml_tests PRIVATE docwire_core docwire_xml GTest::gtest GTest::gmock)
 target_compile_definitions(xml_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
-docwire_deploy_resources(xml_tests)
+docwire_deploy_resources(TARGETS xml_tests)
 
 file(GLOB test_files *)
 list(FILTER test_files EXCLUDE REGEX ".*\\.cpp$")
@@ -268,8 +268,23 @@ set_property(TEST integration_build_test PROPERTY LABELS is_after_installation_t
 set_property(TEST integration_build_test PROPERTY DEPENDS integration_configure_test)
 add_test(
 	NAME integration_run_test
-	COMMAND integration_example
+	COMMAND integration_example ${CMAKE_CURRENT_SOURCE_DIR}/data_processing_definition.doc
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/integration_test_build
 )
 set_property(TEST integration_run_test PROPERTY LABELS is_after_installation_test)
 set_property(TEST integration_run_test PROPERTY DEPENDS integration_build_test)
+
+add_test(
+	NAME integration_install_test
+	COMMAND ${CMAKE_COMMAND} --install ${CMAKE_BINARY_DIR}/integration_test_build --prefix ${CMAKE_BINARY_DIR}/integration_test_install
+)
+set_property(TEST integration_install_test PROPERTY LABELS is_after_installation_test)
+set_property(TEST integration_install_test PROPERTY DEPENDS integration_build_test)
+
+add_test(
+	NAME integration_run_installed_test
+	COMMAND ${CMAKE_BINARY_DIR}/integration_test_install/bin/integration_example ${CMAKE_CURRENT_SOURCE_DIR}/data_processing_definition.doc
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/integration_test_install/bin
+)
+set_property(TEST integration_run_installed_test PROPERTY LABELS is_after_installation_test)
+set_property(TEST integration_run_installed_test PROPERTY DEPENDS integration_install_test)

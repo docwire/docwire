@@ -89,10 +89,13 @@ function(docwire_target_resources target rel_dest_path)
     )
 
     # Explicitly mark the custom property for export so it appears in docwire-targets.cmake
-    set_property(TARGET "${target}" APPEND PROPERTY
-        EXPORT_PROPERTIES
-        DOCWIRE_RESOURCES
-    )
+    get_target_property(_current_export_props "${target}" EXPORT_PROPERTIES)
+    if(NOT _current_export_props OR NOT "DOCWIRE_RESOURCES" IN_LIST _current_export_props)
+        set_property(TARGET "${target}" APPEND PROPERTY
+            EXPORT_PROPERTIES
+            DOCWIRE_RESOURCES
+        )
+    endif()
 endfunction()
 
 #[=======================================================================[.rst:
@@ -146,24 +149,27 @@ function(docwire_collect_transitive_dependencies root_target out_var)
     set(${out_var} "${visited_targets}" PARENT_SCOPE)
 endfunction()
 
-#[=======================================================================[.rst:
-docwire_deploy_resources
-------------------------
-Deploys resources for an executable or library in the build tree.
+function(_docwire_encode_resource out_var source dest)
+    set(${out_var} "${source}|${dest}" PARENT_SCOPE)
+endfunction()
 
-  docwire_deploy_resources(<app_target>)
-
-Traverses the dependency graph of the given target, collects all associated resources,
-and creates .path files in the build output directory to point to them.
-#]=======================================================================]
-function(docwire_deploy_resources app_target)
-    if(NOT TARGET ${app_target})
-        message(FATAL_ERROR "docwire_deploy_resources: ${app_target} is not a target")
+function(_docwire_decode_resource entry out_source_var out_dest_var)
+    string(FIND "${entry}" "|" separator_pos REVERSE)
+    if(separator_pos EQUAL -1)
+        message(FATAL_ERROR "DocWire: Invalid resource entry format: ${entry}")
     endif()
+    string(SUBSTRING "${entry}" 0 ${separator_pos} _abs_path)
+    math(EXPR separator_pos_plus_1 "${separator_pos} + 1")
+    string(SUBSTRING "${entry}" ${separator_pos_plus_1} -1 _rel_dest_path)
+    
+    set(${out_source_var} "${_abs_path}" PARENT_SCOPE)
+    set(${out_dest_var} "${_rel_dest_path}" PARENT_SCOPE)
+endfunction()
 
+function(_docwire_collect_resources_for_target app_target out_var)
     docwire_collect_transitive_dependencies(${app_target} dependency_targets)
 
-    set(resources_to_deploy "")
+    set(collected_resources "")
 
     foreach(current_target IN LISTS dependency_targets)
         get_target_property(interface_res ${current_target} DOCWIRE_RESOURCES)
@@ -180,48 +186,121 @@ function(docwire_deploy_resources app_target)
                 foreach(i RANGE ${loop_max})
                     list(GET build_sources ${i} src)
                     list(GET interface_res ${i} dst)
-                    list(APPEND resources_to_deploy "${src}|${dst}")
+                    _docwire_encode_resource(encoded_res "${src}" "${dst}")
+                    list(APPEND collected_resources "${encoded_res}")
                 endforeach()
             else()
                 # Imported target context (package consumers)
                 foreach(rel_dest_path IN LISTS interface_res)
                     docwire_find_resource(found_path REL_PATH "${rel_dest_path}" REQUIRED)
-                    list(APPEND resources_to_deploy "${found_path}|${rel_dest_path}")
+                    _docwire_encode_resource(encoded_res "${found_path}" "${rel_dest_path}")
+                    list(APPEND collected_resources "${encoded_res}")
                 endforeach()
             endif()
         endif()
     endforeach()
 
-    if(NOT resources_to_deploy)
-        return()
+    if(collected_resources)
+        list(REMOVE_DUPLICATES collected_resources)
     endif()
 
-    list(REMOVE_DUPLICATES resources_to_deploy)
+    set(${out_var} "${collected_resources}" PARENT_SCOPE)
+endfunction()
 
-    # Always deploy to ./share relative to the target executable.
-    # This ensures resources remain inside the build directory structure on all platforms.
-    set(deploy_base "$<TARGET_FILE_DIR:${app_target}>/share")
+#[=======================================================================[.rst:
+docwire_deploy_resources
+------------------------
+Prepares resources for an executable or library to be run from the build tree.
 
-    foreach(res_pair IN LISTS resources_to_deploy)
-        string(FIND "${res_pair}" "|" separator_pos REVERSE)
-        string(SUBSTRING "${res_pair}" 0 ${separator_pos} abs_path)
-        math(EXPR separator_pos_plus_1 "${separator_pos} + 1")
-        string(SUBSTRING "${res_pair}" ${separator_pos_plus_1} -1 rel_dest_path)
+  docwire_deploy_resources(TARGETS <target> ...)
 
-        # Generate the .path file in a stable intermediate location.
-        # We use $<CONFIG> to handle multi-configuration generators where abs_path might vary.
-        set(intermediate_path "${CMAKE_CURRENT_BINARY_DIR}/docwire_deploy_resources_temp/${app_target}/$<CONFIG>/${rel_dest_path}.path")
-        message(VERBOSE "Generating .path file for ${app_target}: ${rel_dest_path} -> ${abs_path}")
-        file(GENERATE OUTPUT "${intermediate_path}" CONTENT "${abs_path}")
+This function is intended for development and testing. It allows an application
+to find its resources when run directly from the build output directory, without
+needing to copy large resource files. It works by creating small `.path` files
+that point to the actual location of the resources.
 
-        set(final_path "${deploy_base}/${rel_dest_path}.path")
-        get_filename_component(rel_dest_dir "${rel_dest_path}" DIRECTORY)
-        set(final_dest_dir "${deploy_base}/${rel_dest_dir}")
+For creating a distributable installation, use `docwire_install_resources` instead.
+#]=======================================================================]
+function(docwire_deploy_resources)
+    cmake_parse_arguments(PARSE_ARGS "" "" "TARGETS" ${ARGN})
 
-        add_custom_command(TARGET ${app_target} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${final_dest_dir}"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${intermediate_path}" "${final_path}"
-            COMMENT "Linking resource pointer for ${rel_dest_path}"
-        )
+    if(NOT PARSE_ARGS_TARGETS)
+        message(FATAL_ERROR "docwire_deploy_resources requires TARGETS argument.")
+    endif()
+
+    foreach(app_target IN LISTS PARSE_ARGS_TARGETS)
+        if(NOT TARGET ${app_target})
+            message(FATAL_ERROR "docwire_deploy_resources: ${app_target} is not a target")
+        endif()
+
+        _docwire_collect_resources_for_target(${app_target} resources_to_deploy)
+
+        if(resources_to_deploy)
+            # Always deploy to ./share relative to the target executable.
+            # This ensures resources remain inside the build directory structure on all platforms.
+            set(deploy_base "$<TARGET_FILE_DIR:${app_target}>/share")
+
+            foreach(res_pair IN LISTS resources_to_deploy)
+                _docwire_decode_resource("${res_pair}" abs_path rel_dest_path)
+
+                # Generate the .path file in a stable intermediate location.
+                # We use $<CONFIG> to handle multi-configuration generators where abs_path might vary.
+                set(intermediate_path "${CMAKE_CURRENT_BINARY_DIR}/docwire_deploy_resources_temp/${app_target}/$<CONFIG>/${rel_dest_path}.path")
+                message(VERBOSE "Generating .path file for ${app_target}: ${rel_dest_path} -> ${abs_path}")
+                file(GENERATE OUTPUT "${intermediate_path}" CONTENT "${abs_path}")
+
+                set(final_path "${deploy_base}/${rel_dest_path}.path")
+                get_filename_component(rel_dest_dir "${rel_dest_path}" DIRECTORY)
+                set(final_dest_dir "${deploy_base}/${rel_dest_dir}")
+
+                add_custom_command(TARGET ${app_target} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${final_dest_dir}"
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${intermediate_path}" "${final_path}"
+                    COMMENT "Linking resource pointer for ${rel_dest_path}"
+                )
+            endforeach()
+        endif()
+    endforeach()
+endfunction()
+
+include(GNUInstallDirs)
+
+#[=======================================================================[.rst:
+docwire_install_resources
+-------------------------
+Installs DocWire resources (data files) for the given targets.
+
+  docwire_install_resources(TARGETS <target> ...)
+
+This function should be used alongside standard CMake install commands to ensure
+that data files required by DocWire libraries (like models or dictionaries)
+are included in the final installation.
+#]=======================================================================]
+function(docwire_install_resources)
+    cmake_parse_arguments(PARSE_ARGS "" "" "TARGETS" ${ARGN})
+
+    if(NOT PARSE_ARGS_TARGETS)
+        message(FATAL_ERROR "docwire_install_resources requires TARGETS argument.")
+    endif()
+
+    set(resources_to_install "")
+    foreach(target IN LISTS PARSE_ARGS_TARGETS)
+        if(NOT TARGET ${target})
+            message(FATAL_ERROR "docwire_install_resources: ${target} is not a target")
+        endif()
+        _docwire_collect_resources_for_target(${target} target_resources)
+        list(APPEND resources_to_install ${target_resources})
+    endforeach()
+    list(REMOVE_DUPLICATES resources_to_install)
+
+    foreach(res_pair IN LISTS resources_to_install)
+        _docwire_decode_resource("${res_pair}" abs_path rel_dest_path)
+
+        if(IS_DIRECTORY "${abs_path}")
+            install(DIRECTORY "${abs_path}/" DESTINATION "${CMAKE_INSTALL_DATADIR}/${rel_dest_path}" COMPONENT "Resources")
+        else() # It's a file
+            get_filename_component(dest_dir "${rel_dest_path}" DIRECTORY)
+            install(FILES "${abs_path}" DESTINATION "${CMAKE_INSTALL_DATADIR}/${dest_dir}" COMPONENT "Resources")
+        endif()
     endforeach()
 endfunction()
