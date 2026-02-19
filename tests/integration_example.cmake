@@ -57,19 +57,19 @@ install(TARGETS integration_example
     RUNTIME_DEPENDENCIES
         PRE_EXCLUDE_REGEXES
             # Exclude Windows API Sets (part of the OS, not physical files to distribute)
-            "api-ms-win-.*"
-            "ext-ms-win-.*"
+            "api-ms-.*"
+            "ext-ms-.*"
             # Exclude CI/Cloud environment specific DLLs (transitive system dependencies found on Azure/GitHub Actions runners)
-            "AzureAttest.*"
-            "HvsiFileTrust.*"
-            "PdmUtilities.*"
-            "WTDSENSOR.*"
+            "azureattest.*"
+            "hvsifiletrust.*"
+            "pdmutilities.*"
+            "wtdsensor.*"
             "wpaxholder.*"
             "wtdccm.*"
             # Exclude common Windows system libraries and Visual C++ Runtime (which should be installed via Redistributable)
-            "ucrtbase\\.dll"
-            "vcruntime.*\\.dll"
-            "msvcp.*\\.dll"
+            "ucrtbase.*"
+            "vcruntime.*"
+            "msvcp.*"
     # On non-Windows platforms, we must specify where to install library and framework dependencies
     # because executables don't have default LIBRARY or FRAMEWORK destinations to inherit from.
     # Note: System frameworks (in /System/Library) are automatically excluded by CMake, so this
