@@ -1,0 +1,17 @@
+From: sender@example.com
+To: receiver@example.com
+Subject: Deeply Nested Unclosed Test
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="level_1"
+
+--level_1
+Content-Type: multipart/related; boundary="level_2"
+
+--level_2
+Content-Type: multipart/alternative; boundary="level_3"
+
+--level_3
+Content-Type: text/plain; charset="utf-8"
+
+Deepest content found.
+--level_1--

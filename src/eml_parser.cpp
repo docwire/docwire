@@ -10,6 +10,7 @@
 /*********************************************************************************************************************************************/
 
 #include <algorithm>
+#include <cctype>
 #include <optional>
 #include <stack>
 #include <string>
@@ -97,11 +98,12 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 
 	void extractPlainText(const mime& mime_entity)
 	{
-		log_scope();
-		if (mime_entity.content_disposition() != mime::content_disposition_t::ATTACHMENT && mime_entity.content_type().type == mime::media_type_t::TEXT)
+		log_scope(std::string(mime_entity.name()), mime_entity.boundary(), mime_type_from_mime_entity(mime_entity));
+		if (mime_entity.content_type().type == mime::media_type_t::TEXT && (mime_entity.content_disposition() != mime::content_disposition_t::ATTACHMENT || std::string(mime_entity.name()).empty()))
 		{
 			log_scope();
 			std::string plain = mime_entity.content();
+
 			plain.erase(std::remove(plain.begin(), plain.end(), '\r'), plain.end());
 
 			bool skip_charset_decoding = false;
@@ -145,14 +147,15 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 					}
 				}
 			}
-			emit_message(document::Text{.text = "\n\n"});
-			return;
 		}
 		else if (mime_entity.content_type().type != mime::media_type_t::MULTIPART)
 		{
 			log_scope();
 			std::string plain = mime_entity.content();
 			std::string file_name = mime_entity.name();
+			if (file_name.empty())
+				return;
+
 			log_entry(file_name);
 			file_extension extension { std::filesystem::path{file_name} };
 			auto result = emit_message(mail::Attachment{.name = file_name, .size = plain.length(), .extension = extension});
@@ -160,8 +163,7 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 			{
 				try
 				{
-					emit_message_back(data_source {
-						plain, mime_type_from_mime_entity(mime_entity), confidence::very_high});
+					emit_message_back(data_source { plain, mime_type_from_mime_entity(mime_entity), confidence::very_high});
 				}
 				catch (std::exception&)
 				{
@@ -170,18 +172,42 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 			}
 			emit_message(mail::CloseAttachment{});
 		}
+
 		if (mime_entity.content_type().subtype == "alternative")
 		{
 			log_scope();
-			bool html_found = false;
-			for (const mime& m: mime_entity.parts())
-				if (m.content_type().subtype == "html" || m.content_type().subtype == "xhtml")
+			const mime* selected_part = nullptr;
+			const auto& parts = mime_entity.parts();
+
+			// 1. Try to find a non-empty HTML part
+			for (const mime& m: parts)
+			{
+				if ((m.content_type().subtype == "html" || m.content_type().subtype == "xhtml") && !m.content().empty())
 				{
-					extractPlainText(m);
-					html_found = true;
+					selected_part = &m;
+					break;
 				}
-			if (!html_found && mime_entity.parts().size() > 0)
-				extractPlainText(mime_entity.parts()[0]);
+			}
+
+			// 2. If no HTML, try to find a non-empty plain text part
+			if (!selected_part)
+			{
+				for (const mime& m: parts)
+				{
+					if (m.content_type().subtype == "plain" && !m.content().empty())
+					{
+						selected_part = &m;
+						break;
+					}
+				}
+			}
+
+			// 3. Fallback: use the first part if it exists (even if empty or other type)
+			if (!selected_part && !parts.empty())
+				selected_part = &parts[0];
+
+			if (selected_part)
+				extractPlainText(*selected_part);
 		}
 		else
 		{
@@ -197,12 +223,130 @@ EMLParser::EMLParser() = default;
 namespace
 {
 
+constexpr std::string_view boundary_delimiter = "--";
+
 void normalize_line(std::string& line)
 {
 	log_scope(line);
 	if (!line.empty() && line.back() == '\r')
 		line.pop_back();
 }
+
+// Helper class to expose protected members of mailio::mime.
+// We derive from mailio::mime to access the protected parse_header_line() method.
+// This allows us to incrementally parse headers line-by-line and leverage mailio's
+// existing logic for handling header folding and parameter extraction (like the boundary),
+// without having to reimplement a full MIME header parser.
+class HeaderParser : public mailio::mime
+{
+public:
+	using mailio::mime::parse_header_line;
+	using mailio::mime::content_type;
+};
+
+class BoundaryTracker
+{
+public:
+	void process_line(const std::string& line, mailio::message& mime_entity)
+	{
+		if (is_boundary_line(line))
+			handle_boundary_line(line, mime_entity);
+
+		if (m_in_headers)
+			handle_header_line(line);
+	}
+
+private:
+	bool is_boundary_line(const std::string& line) const
+	{
+		return line.starts_with(boundary_delimiter);
+	}
+
+	void handle_boundary_line(const std::string& line, mailio::message& mime_entity)
+	{
+		for (size_t i = m_boundaries.size(); i > 0; --i)
+		{
+			const auto current_boundary_index = i - 1;
+			const std::string& boundary = m_boundaries[current_boundary_index];
+
+			if (boundary.empty())
+				continue;
+			
+			const std::string boundary_prefix = std::string(boundary_delimiter) + boundary;
+			const bool is_closing = line == boundary_prefix + std::string(boundary_delimiter);
+			const bool is_new_part = !is_closing && (line == boundary_prefix);
+
+			if (is_closing || is_new_part)
+			{
+				inject_missing_closers(current_boundary_index, mime_entity);
+				m_boundaries.resize(is_closing ? current_boundary_index : current_boundary_index + 1);
+				m_in_headers = is_new_part;
+				if (is_new_part)
+				{
+					m_current_header_parser = HeaderParser{};
+					m_current_header_accumulator.clear();
+				}
+				return;
+			}
+		}
+	}
+
+	void inject_missing_closers(size_t active_boundary_index, mailio::message& mime_entity)
+	{
+		for (size_t j = m_boundaries.size() - 1; j > active_boundary_index; --j)
+		{
+			std::string missing_closer = std::string(boundary_delimiter) + m_boundaries[j] + std::string(boundary_delimiter);
+			mime_entity.parse_by_line(missing_closer);
+		}
+	}
+
+	void handle_header_line(const std::string& line)
+	{
+		if (line.empty())
+		{
+			flush_header();
+			m_in_headers = false;
+			if (m_current_header_parser.content_type().type == mailio::mime::media_type_t::MULTIPART &&
+				!m_current_header_parser.boundary().empty())
+			{
+				m_boundaries.push_back(m_current_header_parser.boundary());
+			}
+			m_current_header_parser = HeaderParser{};
+			m_current_header_accumulator.clear();
+		}
+		else if (std::isspace(static_cast<unsigned char>(line[0])))
+		{
+			if (!m_current_header_accumulator.empty())
+				m_current_header_accumulator += line;
+		}
+		else
+		{
+			flush_header();
+			m_current_header_accumulator = line;
+		}
+	}
+
+	void flush_header()
+	{
+		if (!m_current_header_accumulator.empty())
+		{
+			try
+			{
+				m_current_header_parser.parse_header_line(m_current_header_accumulator);
+			}
+			catch (const std::exception& e)
+			{
+				log_entry("Failed to parse header line", m_current_header_accumulator, e.what());
+			}
+			m_current_header_accumulator.clear();
+		}
+	}
+
+	std::vector<std::string> m_boundaries;
+	HeaderParser m_current_header_parser;
+	std::string m_current_header_accumulator;
+	bool m_in_headers = true;
+};
 
 mailio::message parse_message(const data_source& data, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 {
@@ -212,10 +356,13 @@ mailio::message parse_message(const data_source& data, const std::function<void(
 	mime_entity.line_policy(codec::line_len_policy_t::NONE);
 	try {
 		std::string line;
-		while (getline(*stream, line))
+		BoundaryTracker tracker;
+
+		while (std::getline(*stream, line))
 		{
 			normalize_line(line);
 			log_entry(line);
+			tracker.process_line(line, mime_entity);
 			mime_entity.parse_by_line(line);
 		}
 		mime_entity.parse_by_line("\r\n");

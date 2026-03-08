@@ -1,0 +1,11 @@
+From: sender@example.com
+To: receiver@example.com
+Subject: Alternative Plain Only Test
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="boundary_alt"
+
+--boundary_alt
+Content-Type: text/plain; charset="utf-8"
+
+This is the plain text part.
+--boundary_alt--

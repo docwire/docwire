@@ -1,0 +1,17 @@
+From: sender@example.com
+To: receiver@example.com
+Subject: Boundary Dashes Test
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="----=_NextPart_000_0001"
+
+------=_NextPart_000_0001
+Content-Type: multipart/alternative; boundary="----=_NextPart_001_0002"
+
+------=_NextPart_001_0002
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+
+SGVsbG8gV29ybGQh
+------=_NextPart_001_0002--
+
+------=_NextPart_000_0001--

@@ -1,0 +1,11 @@
+From: sender@example.com
+To: receiver@example.com
+Subject: Multipart Test
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="boundary123"
+
+--boundary123
+Content-Type: text/plain; charset="us-ascii"
+
+Plain text part.
+--boundary123--
