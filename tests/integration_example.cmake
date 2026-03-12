@@ -2,27 +2,19 @@ cmake_minimum_required(VERSION 3.21)
 project(integration_example LANGUAGES CXX)
 
 
-# DocWire SDK is designed to be used as a shared library (DLL/SO/DYLIB).
-# Static linking is not supported due to the complexity of dependencies and resource management.
-# Ensure that vcpkg is configured to use a dynamic triplet.
-if (VCPKG_TARGET_TRIPLET STREQUAL "x64-linux")
-    message(FATAL_ERROR "DocWire SDK requires dynamic linking. Use triplet x64-linux-dynamic instead of x64-linux")
-endif()
-if (VCPKG_TARGET_TRIPLET STREQUAL "x64-windows-static")
-    message(FATAL_ERROR "DocWire SDK requires dynamic linking. Use triplet x64-windows instead of x64-windows-static")
-endif()
-if (VCPKG_TARGET_TRIPLET STREQUAL "x64-osx")
-    message(FATAL_ERROR "DocWire SDK requires dynamic linking. Use triplet x64-osx-dynamic instead of x64-osx")
-endif()
-if (VCPKG_TARGET_TRIPLET STREQUAL "arm64-osx")
-    message(FATAL_ERROR "DocWire SDK requires dynamic linking. Use triplet arm64-osx-dynamic instead of arm64-osx")
-endif()
-
 add_executable(integration_example integration_example.cpp)
 
 # Find the DocWire SDK package.
-# This requires CMAKE_TOOLCHAIN_FILE to be set to the vcpkg toolchain file.
+# This requires CMAKE_TOOLCHAIN_FILE to be set (e.g. for vcpkg) or CMAKE_PREFIX_PATH to point to the installation.
 find_package(docwire CONFIG REQUIRED)
+
+# DocWire SDK is designed to be used as a shared library (DLL/SO/DYLIB).
+# Static linking is not supported due to the complexity of dependencies and resource management.
+# This check verifies that the found 'docwire_core' target is a shared library.
+get_target_property(DOCWIRE_CORE_TYPE docwire_core TYPE)
+if(NOT DOCWIRE_CORE_TYPE STREQUAL "SHARED_LIBRARY")
+    message(FATAL_ERROR "DocWire SDK requires dynamic linking, but the found 'docwire_core' target is not a shared library. Please ensure you are using a dynamic build configuration.")
+endif()
 
 # Link against the specific DocWire libraries your application needs.
 # docwire_core is always required. Other modules are optional based on usage.

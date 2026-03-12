@@ -1,8 +1,22 @@
 #include "docwire/docwire.h"
 #include <sstream>
+#include <iostream>
+#include <string>
 
 int main(int argc, char* argv[])
 {
+  // This block is used by the after-installation tests to verify that the
+  // example executable is built with the correct configuration (Debug/Release).
+  if (argc > 1 && std::string(argv[1]) == "--check-build-type")
+  {
+#ifdef NDEBUG
+    std::cout << "Build type: Release" << std::endl;
+#else
+    std::cout << "Build type: Debug" << std::endl;
+#endif
+    return 0;
+  }
+
   using namespace docwire;
   std::stringstream out_stream;
 

@@ -81,10 +81,12 @@ jobs:
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'asan' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
           TSAN_OPTIONS: ${{ matrix.sanitizer == 'tsan' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
           DEBUG: ${{ runner.debug }}
-      - name: "Run additional tests after installation"
+      - name: "Run after-installation tests (Release)"
         if: matrix.sanitizer == ''
-        working-directory: vcpkg/buildtrees/docwire/${{ matrix.triplet }}-rel
-        run: ctest --output-on-failure --label-regex is_after_installation_test
+        run: cmake -DTRIPLET=${{ matrix.triplet }} -DBUILD_TYPE=Release -P tools/run_after_installation_tests.cmake
+      - name: "Run after-installation tests (Debug)"
+        if: matrix.sanitizer == ''
+        run: cmake -DTRIPLET=${{ matrix.triplet }} -DBUILD_TYPE=Debug -P tools/run_after_installation_tests.cmake
       - name: "Upload logs"
         uses: actions/upload-artifact@v4
         if: always()
