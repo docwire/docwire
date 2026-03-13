@@ -58,7 +58,8 @@
 			"name": "boost-program-options"
 		},
 		{
-			"name": "cpp-httplib"
+			"name": "cpp-httplib",
+			"features": ["openssl"]
 		},
 		{
 			"name": "magic-enum"

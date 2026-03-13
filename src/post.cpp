@@ -18,7 +18,6 @@
 #include "serialization_filesystem.h" // IWYU pragma: keep
 #include "serialization_message.h" // IWYU pragma: keep
 #include "throw_if.h"
-#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <httplib.h>
 #include <sstream>
 #include "version.h"

@@ -3,9 +3,9 @@ add_library(docwire_http SHARED
     post.cpp
 )
 
-find_package(OpenSSL REQUIRED)
+find_package(httplib CONFIG REQUIRED COMPONENTS OpenSSL)
 
-target_link_libraries(docwire_http PRIVATE docwire_core docwire_content_type OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(docwire_http PRIVATE httplib::httplib docwire_core docwire_content_type)
 
 install(TARGETS docwire_http EXPORT docwire_targets)
 if(MSVC)

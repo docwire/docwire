@@ -21,7 +21,6 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/config.hpp>
-#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <httplib.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
