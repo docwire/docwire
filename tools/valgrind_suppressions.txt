@@ -87,3 +87,9 @@
    fun:ossl_namemap_stored
    ...
 }
+{
+   httplib_create_client_socket_getaddrinfo_race
+   Helgrind:Race
+   ...
+   fun:_ZNK7httplib10ClientImpl20create_client_socketERNS_5ErrorE
+}
