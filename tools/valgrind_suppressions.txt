@@ -93,3 +93,9 @@
    ...
    fun:_ZNK7httplib10ClientImpl20create_client_socketERNS_5ErrorE
 }
+{
+   glibc_handle_requests_dubious
+   Helgrind:Dubious
+   ...
+   fun:handle_requests
+}
