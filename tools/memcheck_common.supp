@@ -1,0 +1,30 @@
+# ==============================================================================
+# FILE: memcheck_common.supp
+# PURPOSE: Global Valgrind Memcheck suppressions applied to ALL builds.
+# This file suppresses false-positive memory leaks, uninitialized value 
+# warnings, and intentional "allocate-and-forget" patterns used by third-party
+# libraries (e.g., static registry initialization).
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# SECTION: ABSEIL (GOOGLE) STATIC INITIALIZATION
+# ------------------------------------------------------------------------------
+# Abseil uses static initialization blocks (running before main() via the 
+# dynamic loader's _dl_init) to globally register command-line flags. 
+# These flag registry objects are intentionally never deallocated to avoid 
+# static-destruction-order fiascos, as the OS will reclaim the memory on exit.
+# Memcheck correctly identifies that the memory is never freed, but we suppress 
+# it here as it is an expected, safe pattern, not a true leak.
+# ------------------------------------------------------------------------------
+
+{
+   absl_flags_static_init_leak
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:_Znwm
+   ...
+   fun:*absl*flags_internal*Register*CommandLineFlag*
+   ...
+   fun:call_init
+   fun:_dl_init
+}

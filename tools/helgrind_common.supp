@@ -1,0 +1,157 @@
+# ==============================================================================
+# FILE: helgrind_common.supp
+# PURPOSE: Global Helgrind suppressions applied to ALL build configurations.
+# This file should primarily contain suppressions for OS-level libraries 
+# (e.g., glibc) or pre-compiled binaries whose internal structure does not 
+# change based on our project's compiler optimization flags (-O0 vs -O3).
+# ==============================================================================
+
+# ==============================================================================
+# SECTION: C++ EXCEPTION HANDLING (LIBGCC / LIBSTDC++)
+# ==============================================================================
+# The standard C++ ABI used by GCC and Clang (historically known as the Itanium 
+# C++ ABI) uses lock-free caches and thread-local data to trace the stack during 
+# a throw. Helgrind does not natively understand these atomic operations and 
+# consistently flags them as Data Races. 
+# These are universally recognized false positives in the C++ community.
+# ------------------------------------------------------------------------------
+
+{
+   libgcc_unwind_raise_exception_1
+   Helgrind:Race
+   fun:_Unwind_RaiseException
+}
+{
+   libgcc_unwind_raise_exception_2
+   Helgrind:Race
+   obj:*/libgcc_s.so.*
+   fun:_Unwind_RaiseException
+}
+{
+   libgcc_unwind_raise_exception_3
+   Helgrind:Race
+   obj:*/libgcc_s.so.*
+   obj:*/libgcc_s.so.*
+   fun:_Unwind_RaiseException
+}
+{
+   libgcc_unwind_raise_exception_4
+   Helgrind:Race
+   fun:_Unwind_SetGR
+   fun:__gxx_personality_v0
+   obj:*/libgcc_s.so.*
+   fun:_Unwind_RaiseException
+}
+{
+   libgcc_unwind_resume_1
+   Helgrind:Race
+   obj:*/libgcc_s.so.*
+   fun:_Unwind_Resume
+}
+{
+   libgcc_unwind_resume_2
+   Helgrind:Race
+   obj:*/libgcc_s.so.*
+   obj:*/libgcc_s.so.*
+   fun:_Unwind_Resume
+}
+{
+   libgcc_unwind_resume_3
+   Helgrind:Race
+   fun:_Unwind_SetGR
+   fun:__gxx_personality_v0
+   obj:*/libgcc_s.so.*
+   fun:_Unwind_Resume
+}
+
+# ==============================================================================
+# SECTION: OPENSSL 3.X INTERNAL ATOMICS
+# ==============================================================================
+# OpenSSL 3.x heavily relies on Read-Copy-Update (RCU) and lock-free atomics 
+# for its internal Namemap (algorithm fetching). Helgrind flags these concurrent
+# reads/writes as races because it misses the atomic memory barriers.
+# ------------------------------------------------------------------------------
+
+{
+   openssl_namemap_atomic_race
+   Helgrind:Race
+   fun:ossl_namemap_empty
+   fun:ossl_namemap_stored
+}
+
+# ==============================================================================
+# SECTION: DYNAMIC LOADER & EXIT HANDLERS
+# ==============================================================================
+# libp11-kit (often loaded transitively via OpenSSL/certificates) cleans up 
+# its global mutexes during the dynamic linker's exit phase (_dl_fini). 
+# Because the threads are already tearing down, Helgrind misinterprets this 
+# cleanup as destroying a mutex with an invalid state.
+# ------------------------------------------------------------------------------
+
+{
+   p11_kit_mutex_destroy_on_exit
+   Helgrind:Misc
+   fun:mutex_destroy_WRK
+   obj:*/libp11-kit.so.*
+   fun:_dl_call_fini
+   fun:_dl_fini
+   fun:__run_exit_handlers
+   fun:exit
+}
+
+# ==============================================================================
+# SECTION: DOCWIRE HTTP SERVER (NON-INLINED WRAPPERS)
+# ==============================================================================
+# cpp-httplib's server implementation contains intentional, safe race conditions
+# regarding its 'is_running' flag during startup and shutdown. 
+# We wrap these calls in explicitly non-inlined functions so Helgrind can always 
+# hook them, safely ignoring the Dubious warnings in both Debug and Release.
+# ------------------------------------------------------------------------------
+
+{
+   docwire_httplib_server_listen
+   Helgrind:Dubious
+   ...
+   fun:_ZN7docwire10pimpl_implINS_4http6serverEE25httplib_listen_noninlinedEv
+}
+{
+   docwire_httplib_server_stop
+   Helgrind:Dubious
+   ...
+   fun:_ZN7docwire10pimpl_implINS_4http6serverEE23httplib_stop_noninlinedEv
+}
+
+# ------------------------------------------------------------------------------
+# SECTION: CPP-HTTPLIB & GLIBC ASYNC DNS (CALLEE SIDE)
+# ------------------------------------------------------------------------------
+# cpp-httplib uses glibc's getaddrinfo_a for asynchronous DNS resolution. 
+# glibc implements this by spawning hidden background worker threads. Because 
+# glibc uses highly optimized atomic operations instead of standard POSIX locks 
+# to coordinate these threads, Helgrind constantly flags their communication 
+# with the main HTTP client thread as Race or Dubious conditions. 
+# 
+# These suppressions safely ignore the glibc background threads (the callee) 
+# without masking real bugs in our own application code.
+# ------------------------------------------------------------------------------
+
+# Ignore races originating from glibc's internal DNS worker loop
+{
+   glibc_getaddrinfo_a_handle_requests_race
+   Helgrind:Race
+   ...
+   fun:handle_requests
+}
+{
+   glibc_getaddrinfo_a_handle_requests_dubious
+   Helgrind:Dubious
+   ...
+   fun:handle_requests
+}
+
+# Ignore races during the creation of the glibc helper thread
+{
+   glibc_gai_create_helper_thread_race
+   Helgrind:Race
+   ...
+   fun:__gai_create_helper_thread
+}
