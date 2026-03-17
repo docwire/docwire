@@ -63,6 +63,11 @@ if (THREAD_SANITIZER)
 	add_link_options(-fsanitize=thread)
 endif()
 
+if(HELGRIND_ENABLED)
+	message(STATUS "Helgrind enabled")
+    add_compile_definitions(HELGRIND_ENABLED)
+endif()
+
 enable_testing ()
 
 file(WRITE ${CMAKE_SOURCE_DIR}/version.h "#define VERSION \"${DOCWIRE_VERSION}\"")

@@ -7,28 +7,3 @@
 # necessary to keep the CI pipeline green in Release mode.
 # ==============================================================================
 
-# ------------------------------------------------------------------------------
-# SECTION: CPP-HTTPLIB ASYNC DNS (CALLER SIDE - INLINED)
-# ------------------------------------------------------------------------------
-# This suppresses the C++ side of the glibc getaddrinfo_a false positive 
-# (documented in helgrind_common.supp). 
-# 
-# In Release builds, getaddrinfo_with_timeout and the internal lambdas are 
-# inlined directly into create_client_socket. We are forced to suppress the 
-# entire parent function here. (Note: The Debug build still enforces strict 
-# safety on this code path).
-# ------------------------------------------------------------------------------
-
-# Broad suppression for the entire connection initialization phase
-{
-   httplib_create_client_socket_race
-   Helgrind:Race
-   ...
-   fun:*create_client_socket*
-}
-{
-   httplib_create_client_socket_dubious
-   Helgrind:Dubious
-   ...
-   fun:*create_client_socket*
-}

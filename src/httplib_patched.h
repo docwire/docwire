@@ -12,9 +12,10 @@
 #ifndef DOCWIRE_HTTPLIB_PATCHED_H
 #define DOCWIRE_HTTPLIB_PATCHED_H
 
-#ifdef __SANITIZE_THREAD__
-	// Fallback to blocking DNS for ThreadSanitizer
-	// getaddrinfo_a/handle_requsts causes a known TSan segfault in glibc
+#if defined(__SANITIZE_THREAD__) || defined(HELGRIND_ENABLED)
+    // Fallback to blocking DNS for ThreadSanitizer and Helgrind.
+    // getaddrinfo_a/handle_requests causes a known TSan segfault in glibc
+    // and breaks Valgrind's stack unwinder on Ubuntu 24.04 (GCC 13).
 	#undef CPPHTTPLIB_USE_NON_BLOCKING_GETADDRINFO
 #endif
 #include <httplib.h> // IWYU pragma: export
