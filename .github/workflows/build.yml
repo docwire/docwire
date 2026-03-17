@@ -65,7 +65,7 @@ jobs:
       - name: Build DocWire SDK
         run: |
           ${{ matrix.os == 'ubuntu-24.04' && 'sudo apt-get install -y mono-complete' || '' }}
-          ${{ (matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind') && 'sudo apt-get update && sudo apt-get install -y valgrind' || '' }}
+          ${{ (matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind') && 'sudo apt-get update && sudo apt-get install -y gcc-14 g++-14 valgrind && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100 --slave /usr/bin/g++ g++ /usr/bin/g++-14' || '' }}
           ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint doxygen autoconf-archive' || '' }}
           ${{ runner.os == 'macOS' && 'brew install --formula md5sha1sum automake autogen doxygen autoconf-archive' || '' }}
           ${{ matrix.os == 'macos-15' && 'brew install --formula mono' || '' }}
