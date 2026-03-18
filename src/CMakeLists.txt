@@ -38,11 +38,14 @@ list(REMOVE_ITEM HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/thread_safe_ole_stream_reader.h)
 install(FILES ${HEADERS} DESTINATION include/docwire)
 
+include(GNUInstallDirs)
+
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
 	docwire-config.cmake.in
 	${CMAKE_CURRENT_BINARY_DIR}/docwire-config.cmake
 	INSTALL_DESTINATION lib/cmake/docwire
+	PATH_VARS CMAKE_INSTALL_DATADIR
 )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/docwire-config.cmake DESTINATION lib/cmake/docwire)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/docwire_resources.cmake DESTINATION lib/cmake/docwire)

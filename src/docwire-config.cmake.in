@@ -1,5 +1,7 @@
 @PACKAGE_INIT@
 
+set_and_check(DOCWIRE_DATADIR "@PACKAGE_CMAKE_INSTALL_DATADIR@")
+
 include("${CMAKE_CURRENT_LIST_DIR}/docwire-targets.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/docwire_resources.cmake")
 
