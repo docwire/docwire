@@ -19,8 +19,7 @@ function(docwire_find_resource result_var)
 
     # Create a unique and predictable variable name for the cache.
     string(TOUPPER "${PARSE_ARGS_REL_PATH}" CACHE_VAR_SUFFIX)
-    string(REPLACE "/" "_" CACHE_VAR_SUFFIX "${CACHE_VAR_SUFFIX}")
-    string(REPLACE "." "_" CACHE_VAR_SUFFIX "${CACHE_VAR_SUFFIX}")
+    string(REGEX REPLACE "[/.-]" "_" CACHE_VAR_SUFFIX "${CACHE_VAR_SUFFIX}")
     set(CACHE_VAR_NAME "DOCWIRE_RESOURCE_${CACHE_VAR_SUFFIX}")
 
     set(FIND_ARGS "")
