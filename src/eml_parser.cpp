@@ -249,8 +249,8 @@ class BoundaryTracker
 public:
 	void process_line(const std::string& line, mailio::message& mime_entity)
 	{
-		if (is_boundary_line(line))
-			handle_boundary_line(line, mime_entity);
+		if (is_boundary_line(line) && handle_boundary_line(line, mime_entity))
+			return;
 
 		if (m_in_headers)
 			handle_header_line(line);
@@ -262,7 +262,7 @@ private:
 		return line.starts_with(boundary_delimiter);
 	}
 
-	void handle_boundary_line(const std::string& line, mailio::message& mime_entity)
+	bool handle_boundary_line(const std::string& line, mailio::message& mime_entity)
 	{
 		for (size_t i = m_boundaries.size(); i > 0; --i)
 		{
@@ -286,9 +286,10 @@ private:
 					m_current_header_parser = HeaderParser{};
 					m_current_header_accumulator.clear();
 				}
-				return;
+				return true;
 			}
 		}
+		return false;
 	}
 
 	void inject_missing_closers(size_t active_boundary_index, mailio::message& mime_entity)
