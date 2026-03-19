@@ -48,13 +48,17 @@ std::filesystem::path resource_path(const std::filesystem::path& module_path, co
         }
     };
 
-    // 1. Check paths relative to the executable (program).
-    // Essential for build tree tests (app in tests/, lib in src/) and Windows apps.
-    add_search_paths(std::filesystem::path(boost::dll::program_location().string()));
-
-    // 2. Check paths relative to the library (module).
-    // Essential for system installations and plugins where the app is generic (e.g. python).
+    // 1. Check paths relative to the library (module).
+    // We prioritize the module path to ensure we load the resources distributed with *this*
+    // version of the library. This is crucial for system installations and when the library
+    // is loaded as a plugin by a generic host (e.g., Python), avoiding version mismatches.
     add_search_paths(module_path);
+
+    // 2. Check paths relative to the executable (program).
+    // This serves as a fallback, primarily for development and build-tree scenarios
+    // (e.g., unit tests) where the executable (in tests/) and library (in src/) are separated,
+    // and resources are deployed relative to the test runner.
+    add_search_paths(std::filesystem::path(boost::dll::program_location().string()));
 
     // Filter duplicates while preserving order
     std::vector<std::filesystem::path> unique_paths;
