@@ -142,9 +142,22 @@ function(docwire_collect_transitive_dependencies root_target out_var)
         endif()
 
         foreach(dep IN LISTS deps)
-            if(TARGET "${dep}")
-                list(APPEND targets_to_visit "${dep}")
-            endif()
+            # Unwrap generator expressions (e.g. $<LINK_ONLY:tgt>, $<BUILD_INTERFACE:tgt>).
+            # We strip wrappers instead of evaluating them because we are at configuration time
+            # and exact build configuration might be unknown. This heuristic ensures we find
+            # all potential dependencies. It might collect resources from dependencies that
+            # are eventually not linked (e.g. debug-only libs in release build), but over-collecting
+            # is safer than missing required resources.
+            set(potential_targets "${dep}")
+            while(potential_targets MATCHES "^\\$<[^:]+:(.+)>$")
+                set(potential_targets "${CMAKE_MATCH_1}")
+            endwhile()
+
+            foreach(t IN LISTS potential_targets)
+                if(TARGET "${t}")
+                    list(APPEND targets_to_visit "${t}")
+                endif()
+            endforeach()
         endforeach()
     endwhile()
 
