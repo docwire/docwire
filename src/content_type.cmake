@@ -21,7 +21,7 @@ include(GenerateExportHeader)
 generate_export_header(docwire_content_type EXPORT_FILE_NAME content_type_export.h)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/content_type_export.h DESTINATION include/docwire)
 
-docwire_find_resource(MAGIC_MGC_FULL_PATH TYPE FILE REL_PATH "libmagic/misc/magic.mgc" REQUIRED)
+docwire_find_resource(MAGIC_MGC_FULL_PATH REL_PATH "libmagic/misc/magic.mgc" REQUIRED)
 docwire_target_resources(docwire_content_type "libmagic/misc/magic.mgc" SOURCE "${MAGIC_MGC_FULL_PATH}")
 
 docwire_target_resources(docwire_content_type "docwire/libmagic_archives_definition" SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/libmagic_archives_definition")
