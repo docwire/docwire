@@ -153,12 +153,17 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 			log_scope();
 			std::string plain = mime_entity.content();
 			std::string file_name = mime_entity.name();
-			if (file_name.empty())
-				return;
+			std::optional<std::string> attachment_name;
+			std::optional<file_extension> extension;
 
-			log_entry(file_name);
-			file_extension extension { std::filesystem::path{file_name} };
-			auto result = emit_message(mail::Attachment{.name = file_name, .size = plain.length(), .extension = extension});
+			if (!file_name.empty())
+			{
+				attachment_name = file_name;
+				extension = file_extension{ std::filesystem::path{file_name} };
+			}
+
+			log_entry(attachment_name);
+			auto result = emit_message(mail::Attachment{.name = attachment_name, .size = plain.length(), .extension = extension});
 			if (result != continuation::skip)
 			{
 				try
