@@ -73,7 +73,7 @@ function(docwire_target_resources target rel_dest_path)
 
     get_filename_component(abs_source_path "${PARSE_ARGS_SOURCE}" ABSOLUTE)
     if(NOT EXISTS "${abs_source_path}")
-        message(WARNING "docwire_target_resources: SOURCE path '${PARSE_ARGS_SOURCE}' does not exist for target '${target}'.")
+        message(FATAL_ERROR "docwire_target_resources: SOURCE path '${PARSE_ARGS_SOURCE}' does not exist for target '${target}'.")
     endif()
 
     # Property for use within the current build tree (e.g., for tests).
