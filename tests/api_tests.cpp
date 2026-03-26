@@ -153,6 +153,7 @@ std::vector<std::string> get_misc_test_files_list() {
         "alternative_plain_only.eml", "boundary_with_dashes.eml",
         "unclosed_inner_boundary.eml", "nested_deep_unclosed.eml",
         "header_folded_boundary.eml", "unnamed_attachment.eml",
+        "multipart_related_html.eml", "html_attachment_alternative.eml",
         "html_with_doc_ext.doc", "html_with_xls_ext.xls", "rtf_with_doc_ext.doc",
         "comments_libreoffice_3.5.odt", "comments_libreoffice_3.5.doc",
         "comments_libreoffice_3.5.docx", "comments_libreoffice_3.5.rtf",

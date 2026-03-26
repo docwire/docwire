@@ -181,33 +181,42 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 		if (mime_entity.content_type().subtype == "alternative")
 		{
 			log_scope();
-			const mime* selected_part = nullptr;
 			const auto& parts = mime_entity.parts();
 
-			// 1. Try to find a non-empty HTML part
-			for (const mime& m: parts)
-			{
-				if ((m.content_type().subtype == "html" || m.content_type().subtype == "xhtml") && !m.content().empty())
-				{
-					selected_part = &m;
-					break;
-				}
+			auto is_body_text = [](const mime& m, const std::vector<std::string>& subtypes) {
+				if (m.content_type().type != mime::media_type_t::TEXT) return false;
+				if (std::find(subtypes.begin(), subtypes.end(), m.content_type().subtype) == subtypes.end()) return false;
+				if (m.content().empty()) return false;
+				// Ensure it's not a named attachment, matching logic at the start of extractPlainText
+				if (m.content_disposition() == mime::content_disposition_t::ATTACHMENT && !std::string(m.name()).empty()) return false;
+				return true;
+			};
+
+			auto is_html_branch = [&](const mime& m) {
+				if (is_body_text(m, {"html", "xhtml"})) return true;
+				// Check for multipart/related wrapping the HTML
+				if (m.content_type().type == mime::media_type_t::MULTIPART && m.content_type().subtype == "related" && !m.parts().empty())
+					return is_body_text(m.parts()[0], {"html", "xhtml"});
+				return false;
+			};
+
+			auto is_plain_text = [&](const mime& m) {
+				return is_body_text(m, {"plain"});
+			};
+
+			const mime* selected_part = nullptr;
+
+			// 1. Prioritize HTML branches (including multipart/related)
+			auto it = std::find_if(parts.begin(), parts.end(), is_html_branch);
+			if (it != parts.end()) selected_part = &(*it);
+
+			// 2. Fallback to non-attachment plain text
+			if (!selected_part) {
+				it = std::find_if(parts.begin(), parts.end(), is_plain_text);
+				if (it != parts.end()) selected_part = &(*it);
 			}
 
-			// 2. If no HTML, try to find a non-empty plain text part
-			if (!selected_part)
-			{
-				for (const mime& m: parts)
-				{
-					if (m.content_type().subtype == "plain" && !m.content().empty())
-					{
-						selected_part = &m;
-						break;
-					}
-				}
-			}
-
-			// 3. Fallback: use the first part if it exists (even if empty or other type)
+			// 3. Ultimate Fallback: use the first part if nothing else matched
 			if (!selected_part && !parts.empty())
 				selected_part = &parts[0];
 
