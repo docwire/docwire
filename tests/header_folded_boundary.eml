@@ -1,0 +1,13 @@
+From: sender@example.com
+To: receiver@example.com
+Subject: Folded Boundary Test
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="folded_
+ boundary"
+
+--folded_boundary
+Content-Type: text/plain; charset="utf-8"
+
+Content inside folded boundary.
+--folded_boundary--

@@ -9,10 +9,31 @@ target_compile_definitions(api_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 find_package(Boost REQUIRED COMPONENTS json)
 target_link_libraries(api_tests PRIVATE Boost::json)
 target_include_directories(api_tests PRIVATE ${Boost_INCLUDE_DIRS})
+docwire_deploy_resources(TARGETS api_tests)
+
+if(WIN32)
+	docwire_collect_transitive_dependencies(api_tests all_deps)
+	set(docwire_test_path_dirs "")
+	foreach(dep IN LISTS all_deps)
+		get_target_property(target_type ${dep} TYPE)
+		if(target_type STREQUAL "SHARED_LIBRARY" OR target_type STREQUAL "MODULE_LIBRARY" OR target_type STREQUAL "EXECUTABLE" OR target_type STREQUAL "UNKNOWN_LIBRARY")
+			list(APPEND docwire_test_path_dirs "$<TARGET_FILE_DIR:${dep}>")
+		endif()
+	endforeach()
+	list(REMOVE_DUPLICATES docwire_test_path_dirs)
+
+	# Escape semicolons in the host PATH so they aren't interpreted as list separators by CMake
+	string(REPLACE ";" "\;" escaped_path "$ENV{PATH}")
+	# Join with escaped semicolons for the ENVIRONMENT property
+	list(JOIN docwire_test_path_dirs "\\;" joined_docwire_paths)
+	set(docwire_test_env_path "PATH=${joined_docwire_paths}\;${escaped_path}")
+	message(VERBOSE "docwire_test_env_path: ${docwire_test_env_path}")
+endif()
 
 add_executable(xml_tests xml_tests.cpp)
 target_link_libraries(xml_tests PRIVATE docwire_core docwire_xml GTest::gtest GTest::gmock)
 target_compile_definitions(xml_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
+docwire_deploy_resources(TARGETS xml_tests)
 
 file(GLOB test_files *)
 list(FILTER test_files EXCLUDE REGEX ".*\\.cpp$")
@@ -24,9 +45,15 @@ include(GoogleTest)
 # as it avoids the overhead of starting a new process for each of the 700+ tests.
 add_test(NAME api_tests COMMAND api_tests)
 set_property(TEST api_tests PROPERTY LABELS "is_api_test")
+if(WIN32)
+	set_property(TEST api_tests APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
+endif()
 
 add_test(NAME xml_tests COMMAND xml_tests)
 set_property(TEST xml_tests PROPERTY LABELS "is_api_test")
+if(WIN32)
+	set_property(TEST xml_tests APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
+endif()
 
 # This script verifies that snippets in README.md are consistent with their corresponding full example source files
 # and that the README structure is correct. It works by:
@@ -189,6 +216,9 @@ foreach(example IN ITEMS
 	# Conditionally add the test, skipping OpenAI examples if the key is not set.
 	if ((openai_pos EQUAL -1 AND openai_key_pos EQUAL -1) OR NOT "$ENV{OPENAI_API_KEY}" STREQUAL "")
 		add_test(NAME ${example} COMMAND ${example})
+		if(WIN32)
+			set_property(TEST ${example} APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
+		endif()
 		string(FIND "${example_content}" "local_ai::" local_ai_pos)
 		if (NOT local_ai_pos EQUAL -1)
 			message(STATUS "Labeling test ${example} as uses_model_runner")
@@ -200,46 +230,3 @@ foreach(example IN ITEMS
 		message(STATUS "Skipping test for ${example} because it uses OpenAI and OPENAI_API_KEY is not set.")
 	endif()
 endforeach()
-
-foreach(file IN ITEMS 1.doc 1.pdf basic_ocr-eng.png)
-	add_test(
-		NAME cli_${file}
-		COMMAND ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/docwire tests/${file}
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} # ensure CLI is running correctly outside build directory
-	)
-	set_property(TEST cli_${file} PROPERTY LABELS "is_after_installation_test")
-endforeach()
-
-message(STATUS "Adding integration test" ${VCPKG_TARGET_TRIPLET} ${VCPKG_DEFAULT_TRIPLET})
-add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}/integration_test/CMakeLists.txt
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/integration_test
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/integration_example.cmake ${CMAKE_BINARY_DIR}/integration_test/CMakeLists.txt
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/integration_example.cpp ${CMAKE_BINARY_DIR}/integration_test/integration_example.cpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/integration_example.cmake ${CMAKE_CURRENT_SOURCE_DIR}/integration_example.cpp
-)
-add_custom_target(setup_integration_test ALL
-	DEPENDS ${CMAKE_BINARY_DIR}/integration_test/CMakeLists.txt
-)
-add_test(
-	NAME integration_configure_test
-	COMMAND ${CMAKE_COMMAND}
-		-DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLED_DIR}/../scripts/buildsystems/vcpkg.cmake
-		-DVCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}
-		-S ${CMAKE_BINARY_DIR}/integration_test
-		-B ${CMAKE_BINARY_DIR}/integration_test_build
-)
-set_property(TEST integration_configure_test PROPERTY LABELS is_after_installation_test)
-add_test(
-	NAME integration_build_test
-	COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/integration_test_build
-)
-set_property(TEST integration_build_test PROPERTY LABELS is_after_installation_test)
-set_property(TEST integration_build_test PROPERTY DEPENDS integration_configure_test)
-add_test(
-	NAME integration_run_test
-	COMMAND integration_example
-	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/integration_test_build
-)
-set_property(TEST integration_run_test PROPERTY LABELS is_after_installation_test)
-set_property(TEST integration_run_test PROPERTY DEPENDS integration_build_test)

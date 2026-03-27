@@ -1,0 +1,8 @@
+From: sender@example.com
+To: receiver@example.com
+Subject: Base64 Test
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+
+SGVsbG8gV29ybGQh

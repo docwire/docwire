@@ -1,0 +1,16 @@
+From: sender@example.com
+To: receiver@example.com
+Subject: Empty HTML Test
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="boundary_empty"
+
+--boundary_empty
+Content-Type: text/plain; charset="us-ascii"
+
+This is the plain text part.
+
+--boundary_empty
+Content-Type: text/html; charset="us-ascii"
+
+
+--boundary_empty--

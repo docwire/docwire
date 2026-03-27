@@ -1,0 +1,16 @@
+From: sender@example.com
+To: receiver@example.com
+Subject: HTML Priority Test
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="boundary_priority"
+
+--boundary_priority
+Content-Type: text/plain; charset="us-ascii"
+
+This is the plain text part.
+
+--boundary_priority
+Content-Type: text/html; charset="us-ascii"
+
+<html><body><p>This is the HTML part.</p></body></html>
+--boundary_priority--

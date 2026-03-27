@@ -1,0 +1,18 @@
+From: sender@example.com
+To: recipient@example.com
+Subject: HTML Attachment Test
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="alt_boundary"
+
+--alt_boundary
+Content-Type: text/plain; charset=UTF-8
+
+Legitimate plain text body.
+
+--alt_boundary
+Content-Type: text/html; charset=UTF-8; name="attachment.html"
+Content-Disposition: attachment; filename="attachment.html"
+
+<html><body>HTML attachment.</body></html>
+
+--alt_boundary--

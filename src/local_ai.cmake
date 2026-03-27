@@ -24,3 +24,9 @@ endif()
 include(GenerateExportHeader)
 generate_export_header(docwire_local_ai EXPORT_FILE_NAME local_ai_export.h)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/local_ai_export.h DESTINATION include/docwire)
+
+docwire_find_resource(FLAN_T5_FULL_PATH REL_PATH "flan-t5-large-ct2-int8" REQUIRED)
+docwire_target_resources(docwire_local_ai "flan-t5-large-ct2-int8" SOURCE "${FLAN_T5_FULL_PATH}")
+
+docwire_find_resource(E5_MODEL_FULL_PATH REL_PATH "multilingual-e5-small-ct2-int8" REQUIRED)
+docwire_target_resources(docwire_local_ai "multilingual-e5-small-ct2-int8" SOURCE "${E5_MODEL_FULL_PATH}")

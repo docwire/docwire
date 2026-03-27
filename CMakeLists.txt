@@ -1,14 +1,14 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.17)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for VSCode CLangd extension
 
-# Get version from ChangeLog and store it in DOCWIRE_VERSION and SIMPLE_DOCWIRE_VERSION
+# Get version from ChangeLog.md and store it in DOCWIRE_VERSION and SIMPLE_DOCWIRE_VERSION
 function(extract_version)
-	file(READ "${CMAKE_CURRENT_SOURCE_DIR}/doc/ChangeLog" changelog_text)
+	file(READ "${CMAKE_CURRENT_SOURCE_DIR}/doc/ChangeLog.md" changelog_text)
 	if(${changelog_text} MATCHES "Version ([0-9]+\\.[0-9]+\\.[0-9]+)")
 		set(simple_doc_ver ${CMAKE_MATCH_1})
 	else()
-		message(FATAL_ERROR "Could not extract version number from ChangeLog")
+		message(FATAL_ERROR "Could not extract version number from ChangeLog.md")
 	endif()
 	if (changelog_text MATCHES "Unreleased")
 		set(doc_ver ${simple_doc_ver}-dirty)
@@ -61,6 +61,11 @@ if (THREAD_SANITIZER)
 	message(STATUS "Thread sanitizer enabled")
 	add_compile_options(-fsanitize=thread)
 	add_link_options(-fsanitize=thread)
+endif()
+
+if(HELGRIND_ENABLED)
+	message(STATUS "Helgrind enabled")
+    add_compile_definitions(HELGRIND_ENABLED)
 endif()
 
 enable_testing ()

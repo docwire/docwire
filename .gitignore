@@ -1,4 +1,6 @@
 build/
+tests/after_installation/build-Debug
+tests/after_installation/build-Release
 vcpkg/
 .vscode/
 version.h

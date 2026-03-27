@@ -14,6 +14,8 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/compare.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include "error_tags.h"
+#include <filesystem>
 #include <magic.h>
 #include "resource_path.h"
 #include "throw_if.h"
@@ -28,8 +30,19 @@ struct pimpl_impl<content_type::by_signature::database> : public pimpl_impl_base
         : magic_cookie(magic_open(MAGIC_NONE))
     {
         throw_if (magic_cookie == nullptr);
-        throw_if (magic_load(magic_cookie, resource_path("libmagic/misc/magic.mgc").string().c_str()) != 0, magic_error(magic_cookie));
-        throw_if (magic_getparam(magic_cookie, MAGIC_PARAM_BYTES_MAX, &bytes_max) != 0, magic_error(magic_cookie));
+
+        try
+        {
+            const std::filesystem::path main_db_path = resource_path("libmagic/misc/magic.mgc");
+            const std::filesystem::path custom_db_path = resource_path("docwire/libmagic_archives_definition");
+
+            const char separator = (std::filesystem::path::preferred_separator == '\\') ? ';' : ':';
+            const std::string magic_db_path = main_db_path.string() + separator + custom_db_path.string();
+            throw_if (magic_load(magic_cookie, magic_db_path.c_str()) != 0, magic_error(magic_cookie));
+            throw_if (magic_getparam(magic_cookie, MAGIC_PARAM_BYTES_MAX, &bytes_max) != 0, magic_error(magic_cookie));
+        } catch (const std::exception&) {
+            std::throw_with_nested(make_error("Failed to initialize content type signatures database", errors::program_corrupted{}));
+        }
     }
     ~pimpl_impl() { magic_close(magic_cookie); }
     content_type::by_signature::allow_multiple allow_multiple;

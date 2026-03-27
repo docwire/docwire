@@ -12,7 +12,6 @@ if [[ "$DOWNLOAD_VCPKG" != "0" ]]; then
 	fi
 	git clone https://github.com/microsoft/vcpkg.git
 	cd vcpkg
-	git apply --verbose ../tools/vcpkg_hotfixes/*.patch
 	./bootstrap-vcpkg.sh
 	cd ..
 fi
@@ -48,10 +47,11 @@ else
 fi
 
 if [[ "$DEBUG" == "1" ]]; then
+	export CMAKE_MESSAGE_LOG_LEVEL="VERBOSE"
 	export DOCWIRE_TESTS_CONSOLE_LOGGING="1"
 	VCPKG_DEBUG_OPTION="--debug"
 fi
 
 date > ./ports/docwire/.disable_binary_cache
 SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS=SOURCE_PATH ./vcpkg/vcpkg --overlay-ports=./ports remove docwire:$VCPKG_TRIPLET
-SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS="SOURCE_PATH;DOCWIRE_TESTS_CONSOLE_LOGGING;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS" ./vcpkg/vcpkg --overlay-ports=./ports install $VCPKG_DEBUG_OPTION docwire$FEATURES:$VCPKG_TRIPLET
+SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS="SOURCE_PATH;CMAKE_MESSAGE_LOG_LEVEL;DOCWIRE_TESTS_CONSOLE_LOGGING;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS" ./vcpkg/vcpkg --overlay-ports=./ports install $VCPKG_DEBUG_OPTION docwire$FEATURES:$VCPKG_TRIPLET

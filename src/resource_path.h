@@ -18,10 +18,12 @@
 namespace docwire
 {
 
+namespace detail
+{
 typedef std::filesystem::path(this_line_location_t)();
-
 DOCWIRE_CORE_EXPORT std::filesystem::path this_line_location_helper(const this_line_location_t& this_line_location_instance);
 DOCWIRE_CORE_EXPORT std::filesystem::path resource_path(const std::filesystem::path& module_path, const std::filesystem::path& resource_rel_path);
+}
 
 // Anonymous namespace to make sure that inline methods are instantiated in
 // current translation unit and are not shadowed by instantiations from other units.
@@ -30,13 +32,24 @@ namespace
 
 static inline std::filesystem::path this_line_location()
 {
-    this_line_location_t& f = this_line_location;
-    return this_line_location_helper(f);
+    detail::this_line_location_t& f = this_line_location;
+    return detail::this_line_location_helper(f);
 }
 
+/**
+ * @brief Locates a resource file or directory at runtime.
+ *
+ * This function searches for the specified resource in standard locations relative to the
+ * running executable and the shared library. It supports both build-tree layouts (via .path files)
+ * and installed layouts (relative to bin/ or lib/).
+ *
+ * @param resource_rel_path The relative path of the resource to find (e.g., "docwire/data.bin").
+ * @return The absolute path to the found resource.
+ * @throws docwire::errors::base if the resource cannot be found.
+ */
 static inline std::filesystem::path resource_path(const std::filesystem::path& resource_rel_path)
 {
-    return docwire::resource_path(this_line_location(), resource_rel_path);
+    return docwire::detail::resource_path(this_line_location(), resource_rel_path);
 }
 
 } // anonymous namespace

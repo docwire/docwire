@@ -1,0 +1,16 @@
+From: sender@example.com
+To: recipient@example.com
+Subject: Test unnamed attachment
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="boundary"
+
+--boundary
+Content-Type: text/plain; charset=us-ascii
+
+This is the body.
+--boundary
+Content-Type: application/rtf
+Content-Disposition: attachment
+
+{\rtf1\ansi This is the attachment content.}
+--boundary--

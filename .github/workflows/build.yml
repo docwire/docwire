@@ -53,11 +53,11 @@ jobs:
     timeout-minutes: ${{ (matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind') && 360 || 300 }}
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Export GitHub Actions cache environment variables
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
@@ -65,7 +65,7 @@ jobs:
       - name: Build DocWire SDK
         run: |
           ${{ matrix.os == 'ubuntu-24.04' && 'sudo apt-get install -y mono-complete' || '' }}
-          ${{ (matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind') && 'sudo apt-get update && sudo apt-get install -y valgrind' || '' }}
+          ${{ (matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind') && 'sudo apt-get update && sudo apt-get install -y gcc-14 g++-14 valgrind && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100 --slave /usr/bin/g++ g++ /usr/bin/g++-14' || '' }}
           ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint doxygen autoconf-archive' || '' }}
           ${{ runner.os == 'macOS' && 'brew install --formula md5sha1sum automake autogen doxygen autoconf-archive' || '' }}
           ${{ matrix.os == 'macos-15' && 'brew install --formula mono' || '' }}
@@ -81,12 +81,14 @@ jobs:
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'asan' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
           TSAN_OPTIONS: ${{ matrix.sanitizer == 'tsan' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
           DEBUG: ${{ runner.debug }}
-      - name: "Run additional tests after installation"
+      - name: "Run after-installation tests (Release)"
         if: matrix.sanitizer == ''
-        working-directory: vcpkg/buildtrees/docwire/${{ matrix.triplet }}-rel
-        run: ctest --label-regex is_after_installation_test
+        run: cmake -DTRIPLET=${{ matrix.triplet }} -DBUILD_TYPE=Release -P tools/run_after_installation_tests.cmake
+      - name: "Run after-installation tests (Debug)"
+        if: matrix.sanitizer == ''
+        run: cmake -DTRIPLET=${{ matrix.triplet }} -DBUILD_TYPE=Debug -P tools/run_after_installation_tests.cmake
       - name: "Upload logs"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: ${{ matrix.triplet }}-${{ matrix.os }}-${{ matrix.sanitizer == '' && 'binaries' || format('{0}-sanitizer', matrix.sanitizer) }}-logs
@@ -103,7 +105,7 @@ jobs:
           ./vcpkg/vcpkg export docwire:${{ matrix.triplet }} --output=docwire-vcpkg --raw --output-dir=.
           cmake -E tar czvf docwire-vcpkg-${{ matrix.triplet }}-${{ matrix.os }}-${{ github.sha }}.tar.gz docwire-vcpkg
       - name: "Upload 'vcpkg export' archive"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: success() && github.event.inputs.vcpkg_export == 'true' && matrix.sanitizer == ''
         with:
           name: ${{ matrix.triplet }}-${{ matrix.os }}-binaries

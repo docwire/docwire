@@ -1,0 +1,8 @@
+# ==============================================================================
+# FILE: helgrind_debug.supp
+# PURPOSE: Helgrind suppressions strictly for Debug builds (-O0 / -O1).
+# Because compiler inlining is disabled in Debug mode, Valgrind can see the 
+# exact, highly granular internal functions. We use this file to target 
+# false positives as narrowly as possible to maximize thread safety.
+# ==============================================================================
+

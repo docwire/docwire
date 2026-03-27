@@ -1,0 +1,17 @@
+From: sender@example.com
+To: receiver@example.com
+Subject: Nested Multipart Test
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="boundary_mixed"
+
+--boundary_mixed
+Content-Type: multipart/alternative; boundary="boundary_alt"
+
+--boundary_alt
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+
+SGVsbG8gV29ybGQh
+--boundary_alt--
+
+--boundary_mixed--

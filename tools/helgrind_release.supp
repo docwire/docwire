@@ -1,0 +1,9 @@
+# ==============================================================================
+# FILE: helgrind_release.supp
+# PURPOSE: Helgrind suppressions strictly for Release builds (-O2 / -O3).
+# Aggressive compiler inlining destroys internal stack frames, meaning Valgrind 
+# cannot see the granular internal functions targeted in helgrind_debug.supp. 
+# This file contains the slightly broader "parent function" suppressions 
+# necessary to keep the CI pipeline green in Release mode.
+# ==============================================================================
+

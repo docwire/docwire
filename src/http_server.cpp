@@ -12,6 +12,7 @@
 #include "http_server.h"
 #include "parsing_chain.h"
 #include "data_source.h"
+#include "httplib_patched.h"
 #include "input.h"
 #include "output.h"
 #include "log_scope.h"
@@ -21,8 +22,6 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/config.hpp>
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#include <httplib.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>

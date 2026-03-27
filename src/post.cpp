@@ -13,13 +13,12 @@
 
 #include "content_type_by_file_extension.h"
 #include "error_tags.h"
+#include "httplib_patched.h"
 #include "log_entry.h"
 #include "log_scope.h"
 #include "serialization_filesystem.h" // IWYU pragma: keep
 #include "serialization_message.h" // IWYU pragma: keep
 #include "throw_if.h"
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#include <httplib.h>
 #include <sstream>
 #include "version.h"
 

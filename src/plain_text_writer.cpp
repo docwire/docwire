@@ -208,11 +208,12 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   write_attachment(const mail::Attachment& attachment)
   {
     log_scope(attachment);
-    std::string text = "attachment: " + m_eol_sequence + m_eol_sequence;
+    std::string text = m_eol_sequence + m_eol_sequence + "attachment: ";
     if (attachment.name)
     {
-      text += "name: " + *attachment.name + m_eol_sequence;
+      text += *attachment.name;
     }
+    text += m_eol_sequence + m_eol_sequence;
     return std::make_shared<TextElement>(text);
   }
 

@@ -1,0 +1,7 @@
+From: sender@example.com
+To: receiver@example.com
+Subject: Simple Test
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+
+This is a simple plain text body.

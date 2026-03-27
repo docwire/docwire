@@ -1,0 +1,28 @@
+From: sender@example.com
+To: recipient@example.com
+Subject: Related HTML Test
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="alt_boundary"
+
+--alt_boundary
+Content-Type: text/plain; charset=UTF-8
+
+Plain text body.
+
+--alt_boundary
+Content-Type: multipart/related; boundary="related_boundary"
+
+--related_boundary
+Content-Type: text/html; charset=UTF-8
+
+<html><body>HTML body inside related.</body></html>
+
+--related_boundary
+Content-Type: image/png; name="image.png"
+Content-ID: <img1>
+Content-Transfer-Encoding: base64
+
+iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==
+--related_boundary--
+
+--alt_boundary--
