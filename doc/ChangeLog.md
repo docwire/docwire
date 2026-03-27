@@ -1,3 +1,40 @@
+## Version 2026.03.26
+
+This release focuses on developer experience and parsing stability. A new resource management framework allows application developers to bundle and install essential data files (like AI models and OCR dictionaries) with a single line in their CMake configuration. The EML parser has also been substantially strengthened to handle complex nested MIME structures and malformed boundaries with deterministic content selection, ensuring significantly more reliable text extraction from emails.
+
+> One line to find, one line to stay,  
+> The resources follow the SDK’s way.  
+> The email stream, a clearer sight,  
+> With boundaries tracked and sorted right.  
+> A solid base, a robust frame,  
+> DocWire answers every claim.  
+> 🐇✨📦📧🛡️
+
+- **Features**
+  - **One-Command Resource Management**: Introduced a robust CMake framework (`docwire_deploy_resources`, `docwire_install_resources`) that automates data file discovery and deployment. Developers can now bundle all necessary AI models and OCR dictionaries into their own applications with a single line in their build scripts.
+  - **Relocatable Package Support**: Resource paths are now exported in the package configuration, enabling relocatable SDK installations and full support for custom `CMAKE_INSTALL_DATADIR` layouts.
+  - **Robust Resource Validation**: CMake configuration now explicitly fails if required resource paths (like models or dictionaries) are missing, providing clear diagnostic errors early in the build process.
+  - **Custom Archive Definitions**: Integrated an updated `libmagic` database (from upstream Nov 2024) to resolve regressions in ZIP and container detection, ensuring reliable file type identification without external patches.
+  - **Tiered Valgrind Suppression System**: Implemented a granular suppression architecture with tool-specific files and a debug/release split, allowing for precise silencing of third-party false positives during deep thread-safety analysis.
+
+- **Improvements**
+  - **EML Parsing Robustness**: The email parser now features deterministic selection for `multipart/alternative` parts—prioritizing non-empty HTML content—and utilizes a new `BoundaryTracker` utility to correctly process complex nested structures and malformed boundaries.
+  - **Unnamed Attachment Support**: The EML parser now handles attachments without filenames via `std::optional`, ensuring content is extracted and labeled correctly rather than being skipped.
+  - **Shared Library Resource Discovery**: Resource resolution now employs a prioritized multi-candidate search strategy, favoring the library module path over the executable path. This ensures correct data file discovery when the SDK is used as a plugin in generic hosts like Python.
+  - **Modernized HTTP Integration**: The HTTP module now uses `httplib` in CONFIG mode with native OpenSSL support, simplifying dependency management and improving build stability.
+  - **Sanitizer Stability**: Introduced a fallback mechanism to disable asynchronous DNS resolution under ThreadSanitizer and Helgrind, bypassing known system-level stack-unwinding bugs on modern Linux distributions.
+  - **Plain Text Attachment Formatting**: Refined the `PlainTextWriter` to provide cleaner spacing and clearer labeling for attachments in both PST and EML exports.
+
+- **Fixes**
+  - **macOS Installation Pathing**: Fixed installation errors on macOS by explicitly specifying `LIBRARY` and `FRAMEWORK` destinations for runtime dependencies.
+  - **Windows Runtime Dependency Filtering**: Improved installation rules to robustly exclude OS-internal API sets and CI-specific system DLLs from the distribution package.
+
+- **Build / CI**
+  - **SDK Installation Verification**: Introduced a standalone test suite to verify package integrity independently of the build tree, ensuring both Debug and Release installations are fully functional for downstream users.
+
+- **Tests**
+  - **Email Parsing Fixtures**: Added a comprehensive set of EML test cases covering nested multiparts, folded boundaries, and unclosed inner boundaries to ensure long-term parsing stability.
+
 ## Version 2026.01.20
 
 This release introduces a major overhaul of the SDK's core, focusing on modern C++20 features for XML parsing, robust type-safe data conversions, and configurable safety policies. Significant architectural changes have been made to enhance resilience against partial failures in parsers, improve memory management, and standardize date/time handling using `std::chrono`. The update also includes new utilities for named parameters and non-null or in-range assertions, alongside numerous fixes and documentation improvements.
