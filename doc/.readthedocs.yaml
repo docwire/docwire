@@ -5,6 +5,7 @@ build:
     python: "3.11"
   apt_packages:
     - cmake
+    - doxygen
   jobs:
     pre_build:
       - touch conf.py index.rst
