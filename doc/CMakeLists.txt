@@ -15,7 +15,7 @@ endif()
 
 set(DOXYGEN_GENERATE_MAN NO)
 set(DOXYGEN_GENERATE_HTML YES)
-set(DOXYGEN_HTML_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/header.html")
+set(DOXYGEN_HTML_HEADER "${CMAKE_CURRENT_LIST_DIR}/header.html")
 set(DOXYGEN_PROJECT_NAME "DocWire SDK")
 set(DOXYGEN_PROJECT_NUMBER ${DOCWIRE_VERSION})
 set(DOXYGEN_PROJECT_BRIEF "DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing. Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining, document analysis. Offline processing possible for security and confidentiality")
