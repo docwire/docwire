@@ -16,7 +16,6 @@ $extrastylesheet
 
 <script>
   (function() {
-    // Only run if we are NOT on a local file or localhost
     var isLocal = window.location.hostname === "localhost" || 
                   window.location.hostname === "127.0.0.1" || 
                   window.location.protocol === "file:";
@@ -30,13 +29,13 @@ $extrastylesheet
 <body>
 <div id="top">```
 
+5.  Click **"Commit changes..."** and save it to your branch.
+
 ---
 
-### 2. Update `doc/CMakeLists.txt`
-We need to make sure Doxygen finds that file using a "rock-solid" path.
-
-1.  Open `doc/CMakeLists.txt` on GitHub.
-2.  Find **line 18** (the one that mentions `DOXYGEN_HTML_HEADER`).
-3.  Replace it with this:
-```cmake
-set(DOXYGEN_HTML_HEADER "${CMAKE_CURRENT_LIST_DIR}/header.html")
+### Step 2: Update `doc/CMakeLists.txt`
+1.  In the same **"Files changed"** tab, find `doc/CMakeLists.txt`.
+2.  Click the **Pencil icon** to edit.
+3.  Go to **line 18** and replace the existing `set(DOXYGEN_HTML_HEADER ...)` line with this one:
+   ```cmake
+   set(DOXYGEN_HTML_HEADER "${CMAKE_CURRENT_LIST_DIR}/header.html")
