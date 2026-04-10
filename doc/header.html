@@ -27,4 +27,14 @@ $extrastylesheet
 
 </head>
 <body>
-<div id="top">
+<div id="top">```
+**Commit this file.**
+
+---
+
+### Step 2: Update `doc/CMakeLists.txt`
+Now go to `doc/CMakeLists.txt` in the same tab, click the **Pencil icon**, and update **Line 18** to use `LIST_DIR`. This is the most reliable way for ReadTheDocs to find the file.
+
+**Replace Line 18 with this:**
+```cmake
+set(DOXYGEN_HTML_HEADER "${CMAKE_CURRENT_LIST_DIR}/header.html")
