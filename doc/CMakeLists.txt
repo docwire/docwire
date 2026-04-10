@@ -6,22 +6,26 @@ cmake_minimum_required(VERSION 3.16)
 
 find_package(Doxygen REQUIRED)
 if(NOT DOXYGEN_FOUND)
-    message(FATAL ERROR "Could not find the doxygen executable")
+    message(FATAL_ERROR "Could not find the doxygen executable")
 endif()
 
 # -----------------------------------------------------
 # Set some of the doxygen configs
 # -----------------------------------------------------
 
+set(DOXYGEN_PROJECT_NAME "DocWire SDK")
 set(DOXYGEN_GENERATE_MAN NO)
 set(DOXYGEN_GENERATE_HTML YES)
-set(DOXYGEN_HTML_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/header.html")
-message(STATUS "Doxygen Header Path: ${DOXYGEN_HTML_HEADER}")
-set(DOXYGEN_PROJECT_NAME "DocWire SDK")
+
+# Force absolute path for the custom header to ensure RTD finds it
+get_filename_component(ACTUAL_HEADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/header.html" ABSOLUTE)
+set(DOXYGEN_HTML_HEADER "${ACTUAL_HEADER_PATH}")
+message(STATUS "FORCE LOADING HEADER FROM: ${DOXYGEN_HTML_HEADER}")
+
 set(DOXYGEN_PROJECT_NUMBER ${DOCWIRE_VERSION})
 set(DOXYGEN_PROJECT_BRIEF "DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing. Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining, document analysis. Offline processing possible for security and confidentiality")
 set(DOXYGEN_STRIP_FROM_PATH ../src/)
-set(DOXYGEN_GENERATE_LATEX NO) # Added for consistency. It is set to NO by default by the CMake module.
+set(DOXYGEN_GENERATE_LATEX NO)
 set(DOXYGEN_EXAMPLE_PATH ../tests/)
 set(DOXYGEN_AUTOLINK_SUPPORT YES)
 set(DOXYGEN_SOURCE_BROWSER YES)
