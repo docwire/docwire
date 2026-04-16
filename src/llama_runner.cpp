@@ -1,15 +1,12 @@
 /*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge
- * Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost
- * efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and
- * confidentiality                                                          */
+/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
+/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
+/*  document analysis. Offline processing possible for security and confidentiality                                                          */
 /*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com */
-/*  Project homepage: https://github.com/docwire/docwire */
+/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
+/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial */
+/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
 #include "llama_runner.h"
@@ -117,6 +114,7 @@ template <> struct pimpl_impl<local_ai::llama_runner> : pimpl_impl_base
     local_ai::llama_handle<llama_model> model;
     local_ai::llama_handle<llama_context> ctx;
     local_ai::llama_handle<llama_sampler> sampler;
+    const llama_vocab* vocab = nullptr;
 
     static void llamaLogCallback(ggml_log_level level, const char* text, void* /*user*/)
     {
@@ -143,11 +141,12 @@ template <> struct pimpl_impl<local_ai::llama_runner> : pimpl_impl_base
             llama_model_load_from_file(config.model_path.c_str(), model_params));
 
         throw_if(!model, "Failed to load llama model.", errors::program_corrupted{});
+        vocab = llama_model_get_vocab(model.get());
 
         llama_context_params ctx_params = llama_context_default_params();
 
         ctx_params.n_ctx = config.n_ctx.get();
-        ctx_params.n_batch = 512;
+        ctx_params.n_batch = config.n_batch.get();
         ctx_params.n_threads = config.n_threads.get();
         ctx_params.embeddings = true;
 
@@ -167,6 +166,12 @@ template <> struct pimpl_impl<local_ai::llama_runner> : pimpl_impl_base
         llama_sampler_chain_add(sampler.get(), llama_sampler_init_temp(config.temp.get()));
 
         llama_sampler_chain_add(sampler.get(), llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
+        if (!config.grammar.empty()) {
+            const llama_vocab* vocab = llama_model_get_vocab(model.get());
+            llama_sampler_chain_add(sampler.get(),
+                                    llama_sampler_init_grammar(vocab, config.grammar.c_str(),
+                                                               config.grammar_root.c_str()));
+        }
     }
 
     void reset()
@@ -185,16 +190,144 @@ template <> struct pimpl_impl<local_ai::llama_runner> : pimpl_impl_base
         ctx.reset();
         model.reset();
     }
+
+    /**
+     * @brief Builds the chat-template prompt by combining
+     *          system prompt from config and user prompt
+     * @param user_input prompt given by user for a certain task
+     */
+    std::string build_prompt(const std::string& user_input) const
+    {
+        std::vector<llama_chat_message> messages = {{"system", config.system_prompt.c_str()},
+                                                    {"user", user_input.c_str()}};
+
+        std::string prompt;
+        const char* tmpl = llama_model_chat_template(model.get(), nullptr);
+
+        if (tmpl)
+        {
+            int32_t req = llama_chat_apply_template(tmpl, messages.data(), messages.size(), true, nullptr, 0);
+            throw_if(req <= 0, "Template size query failed", errors::program_logic{});
+
+            std::vector<char> formatted(req + 1, '\0');
+            int32_t written = llama_chat_apply_template(tmpl, messages.data(), messages.size(),
+                                                        true, formatted.data(), formatted.size());
+            throw_if(written <= 0, "Template formatting failed", errors::program_logic{});
+
+            prompt.assign(formatted.data(), written);
+        }
+        else
+        {
+        	// Fallback ChatML template
+            prompt = "<|im_start|>system\n" + config.system_prompt +
+                     "\n"
+                     "<|im_end|>\n"
+                     "<|im_start|>user\n" +
+                     user_input +
+                     "\n"
+                     "<|im_end|>\n"
+                     "<|im_start|>assistant\n";
+        }
+        return prompt;
+    }
+
+    /**
+     * @brief Tokenizes entire prompt and return the token vector.
+     * @param prompt
+     */
+    std::vector<llama_token> tokenize(const std::string& prompt) const
+    {
+        int n_tokens = llama_tokenize(vocab, prompt.c_str(), static_cast<int>(prompt.size()),
+                                      nullptr, 0, false, true);
+        if (n_tokens < 0)
+            n_tokens = -n_tokens;
+
+        throw_if(n_tokens == 0, "Empty tokenization result", errors::program_logic{});
+
+        std::vector<llama_token> tokens(n_tokens);
+        int written = llama_tokenize(vocab, prompt.c_str(), static_cast<int>(prompt.size()),
+                                     tokens.data(), tokens.size(), false, true);
+
+        throw_if(written != n_tokens, "Tokenization mismatch.", errors::program_logic{});
+        throw_if(static_cast<size_t>(n_tokens) > config.n_ctx.get(),
+                 "Input exceeds context window.", errors::program_logic{});
+
+        return tokens;
+    }
+
+
+    /**
+     * @brief This function feeds tokens into the context in batches
+     * @param tokens
+     */
+    void decode_prompt(const std::vector<llama_token>& tokens)
+    {
+        const int32_t n_batch = static_cast<int32_t>(config.n_batch.get());
+        llama_pos pos = 0;
+
+        for (size_t start = 0; start < tokens.size(); start += n_batch) {
+            int32_t len = std::min(n_batch, static_cast<int32_t>(tokens.size() - start));
+
+            llama_batch batch =
+                llama_batch_get_one(const_cast<llama_token*>(tokens.data() + start), len);
+
+            throw_if(llama_decode(ctx.get(), batch) != 0, "Initial decode failed",
+                     errors::program_logic{});
+
+            pos += len;
+        }
+    }
+
+    /**
+     * @brief This function generates response from the model and returns
+     */
+    std::string generate()
+    {
+        std::string output;
+        const int max_tokens = static_cast<int>(config.max_tokens.get());
+
+        for (int i = 0; i < max_tokens; ++i) {
+            llama_token token = llama_sampler_sample(sampler.get(), ctx.get(), -1);
+            llama_sampler_accept(sampler.get(), token);
+
+            if (llama_vocab_is_eog(vocab, token))
+                break;
+
+            char buf[256];
+            int n = llama_token_to_piece(vocab, token, buf, sizeof(buf), 0, true);
+            if (n > 0) {
+                output.append(buf, n);
+            }
+
+            llama_batch batch = llama_batch_get_one(&token, 1);
+
+            if (llama_decode(ctx.get(), batch) != 0)
+                break;
+        }
+        return output;
+    }
+
+    /**
+     * @brief This function provides abstraction for actual process function
+     */
+    std::string process(const std::string& user_input)
+    {
+        ensure_model_loaded();
+        reset();
+
+        std::string prompt = build_prompt(user_input);
+        auto tokens = tokenize(prompt);
+
+        decode_prompt(tokens);
+        return generate();
+    }
 };
 
 namespace local_ai
 {
 llama_runner::llama_runner(const model_inference_config& config) : with_pimpl(config) {}
 
-void llama_runner::unload()
-{
-    impl().llama_unload();
-}
+void llama_runner::unload() { impl().llama_unload(); }
 
 /*
  * This function runs inference on the given model provided to Llama
@@ -202,43 +335,7 @@ void llama_runner::unload()
 std::string llama_runner::process(const std::string& input)
 {
     llama_call_guard guard;
-    auto& impl = this->impl();
-    impl.ensure_model_loaded();
-    impl.reset();
-    const llama_vocab* vocab = llama_model_get_vocab(impl.model.get());
-
-    std::vector<llama_token> tokens(input.size());
-
-    int n_tokens = llama_tokenize(vocab, input.c_str(), input.length(), tokens.data(),
-                                  tokens.size(), true, false);
-
-    tokens.resize(n_tokens);
-
-    llama_batch batch = llama_batch_get_one(tokens.data(), tokens.size());
-
-    throw_if(llama_decode(impl.ctx.get(), batch) != 0, "Decode failed", errors::program_logic{});
-
-    std::string output;
-
-    for (int i = 0; i < impl.config.max_tokens.get(); ++i) {
-        llama_token token = llama_sampler_sample(impl.sampler.get(), impl.ctx.get(), -1);
-
-        llama_sampler_accept(impl.sampler.get(), token);
-
-        if (llama_vocab_is_eog(vocab, token))
-            break;
-
-        char buf[256];
-        int n = llama_token_to_piece(vocab, token, buf, sizeof(buf), 0, true);
-
-        output.append(buf, n);
-
-        batch = llama_batch_get_one(&token, 1);
-
-        if (llama_decode(impl.ctx.get(), batch) != 0)
-            break;
-    }
-    return output;
+    return impl().process(input);
 }
 
 /**
