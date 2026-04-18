@@ -247,7 +247,21 @@ foreach(example IN LISTS all_examples)
 	endif()
 endforeach()
 
-if(TARGET docwire_ai_ct2 AND TARGET docwire_ai_llama)
+if(TARGET docwire_ai_ct2)
+	message(STATUS "Adding Llama integration test")
+    add_executable(local_ai_ct2_integration local_ai_ct2_integration.cpp)
+    target_include_directories(local_ai_ct2_integration PRIVATE ../src)
+    target_link_libraries(local_ai_ct2_integration PRIVATE
+        docwire_core
+        docwire_ai
+        docwire_local_ai
+        docwire_openai
+    )
+    add_test(NAME local_ai_ct2_integration COMMAND local_ai_ct2_integration)
+    set_property(TEST local_ai_ct2_integration PROPERTY LABELS "is_example;uses_model_runner")
+endif()
+
+if(TARGET docwire_ai_llama)
     message(STATUS "Adding Llama integration test")
     add_executable(local_ai_llama_integration local_ai_llama_integration.cpp)
     target_include_directories(local_ai_llama_integration PRIVATE ../src)
