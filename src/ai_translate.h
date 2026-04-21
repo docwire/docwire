@@ -21,7 +21,7 @@ namespace docwire::ai
 class DOCWIRE_AI_EXPORT translate : public model_chain_element
 {
   	public:
-    	explicit translate(const std::string& language, std::shared_ptr<ai_runner> runner);
+    	explicit translate(const std::string& language, std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
 };
 
 } // namespace docwire::ai

@@ -14,8 +14,8 @@
 namespace docwire::ai
 {
 
-task::task(const std::string& prompt, std::shared_ptr<ai_runner> runner)
-    : model_chain_element(prompt, runner)
+task::task(const std::string& prompt, std::shared_ptr<ai_runner> runner,model_lifetime_policy lifetime)
+    : model_chain_element(prompt, runner, lifetime)
 {
 }
 } // namespace docwire::ai

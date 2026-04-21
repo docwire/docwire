@@ -11,8 +11,8 @@ namespace docwire::ai::local
 class DOCWIRE_LOCAL_AI_EXPORT summarize : public docwire::ai::summarize
 {
 public:
-    summarize();
-    explicit summarize(std::shared_ptr<docwire::ai::ai_runner> runner);
+    summarize(model_lifetime_policy lifetime = model_lifetime_policy::persistent);
+    explicit summarize(std::shared_ptr<docwire::ai::ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
 };
 
 } // namespace docwire::ai::local

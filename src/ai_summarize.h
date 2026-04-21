@@ -23,7 +23,7 @@ namespace docwire::ai
 class DOCWIRE_AI_EXPORT summarize : public model_chain_element
 {
   	public:
-    	explicit summarize(std::shared_ptr<ai_runner> runner);
+    	explicit summarize(std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
 	protected:
 	    static constexpr const char* summary_prompt =
 	        "Your task is to summarize the text:\n\n";
