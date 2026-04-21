@@ -9,56 +9,40 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AI_CT2_RUNNER_H
-#define DOCWIRE_AI_CT2_RUNNER_H
+#ifndef DOCWIRE_AI_EMBED_H
+#define DOCWIRE_AI_EMBED_H
 
-#include "ai_ct2_export.h"
-#include "pimpl.h"
-#include <filesystem>
-#include <vector>
-#include <string>
+#include "ai_export.h"
 #include "ai_runner.h"
+#include "chain_element.h"
+#include "pimpl.h"
 
-namespace docwire::ai::ct2
+namespace docwire::ai
 {
 
-/**
- * @brief Class representing the C2Translate AI model loaded to memory.
- *
- * Constructor loads model to memory and makes it ready for usage.
- * Destructor frees memory used by model.
- * It is important not to duplicate the object because memory consumption can be high.
- */
-class DOCWIRE_AI_CT2_EXPORT ct2_runner :  public ai_runner, public with_pimpl<ct2_runner>
+class DOCWIRE_AI_EXPORT embed : public ChainElement, public with_pimpl<embed>
 {
-public:
-    /**
-     * @brief Constructor. Loads model to memory.
-     * @param model_data_path Path to the folder containing model files.
-     */
-    ct2_runner(const std::filesystem::path& model_data_path);
+  public:
+    /// Common prefix for passage embeddings with E5 models.
+    static const std::string e5_passage_prefix;
+    /// Common prefix for query embeddings with E5 models.
+    static const std::string e5_query_prefix;
 
     /**
-     * @brief Process input text using the model.
-     * @param input Text to process.
-     * @return Processed text.
+     * @brief Construct a local AI embed chain element with a specific model runner and prefix.
+     *
+     * @param ai_runner The model runner to use for generating embeddings.
+     * @param prefix The string to prepend to the input text. Use an empty string for no prefix.
      */
-    std::string process(const std::string& input) override;
+    explicit embed(std::shared_ptr<ai_runner> model_runner, std::string prefix);
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
+    bool is_leaf() const override { return false; }
 
-    /**
-     * @brief Create embedding for the input text using the model.
-     * @param input Text to process.
-     * @return Vector of embedding values.
-     */
-    std::vector<double> embed(const std::string& input) override;
+  private:
+    using with_pimpl<embed>::impl;
 
-    /**
-     * @brief Unload the model and free associated resources.
-     * --!Must be thread-safe!-- and safe to call concurrently with process()/embed().
-     */
-    virtual void unload() override;
 };
 
-} // namespace docwire::ai::ct2
+} // namespace docwire::ai
 
-#endif // DOCWIRE_AI_CT2_RUNNER_H
+#endif // DOCWIRE_AI_EMBED_H

@@ -67,7 +67,7 @@ struct tokenizer_config
 } // anonymous namespace
 
 template<>
-struct pimpl_impl<local_ai::tokenizer> : pimpl_impl_base
+struct pimpl_impl<ai::ct2::tokenizer> : pimpl_impl_base
 {
     sentencepiece::SentencePieceProcessor m_processor;
     tokenizer_config m_tokenizer_config;
@@ -116,7 +116,7 @@ struct pimpl_impl<local_ai::tokenizer> : pimpl_impl_base
     }
 };
 
-namespace local_ai
+namespace ai::ct2
 {
 
 tokenizer::tokenizer(const std::filesystem::path& model_data_path)
@@ -173,5 +173,5 @@ std::string tokenizer::detokenize(const std::vector<std::string>& output_tokens)
     return output;
 }
 
-} // namespace local_ai
+} // namespace ai::ct2
 } // namespace docwire

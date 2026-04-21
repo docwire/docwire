@@ -8,15 +8,19 @@
 /*                                                                                                                                           */
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
-#ifdef DOCWIRE_LOCAL_CT2
 #include "ai_runner.h"
-#include "ct2_runner.h"
-#include "local_ai_embed.h"
+
 #include "model_chain_element.h"
 #include "model_inference_config.h"
+#ifdef DOCWIRE_LOCAL_CT2
+#include "ct2_runner.h"
 #endif
 #ifdef DOCWIRE_LLAMA
 #include "llama_runner.h"
+#endif
+#ifdef DOCWIRE_LOCAL_AI
+#include "local_ai_embed.h"
+#include "local_ai_misc_task.h"
 #endif
 #include "ai_elements.h"
 #include <boost/program_options.hpp>
@@ -113,8 +117,8 @@ std::string enum_names_str()
 	}
 	return names_str;
 }
-#ifdef DOCWIRE_LOCAL_CT2
-static std::shared_ptr<local_ai::ai_runner>
+#ifdef DOCWIRE_LOCAL_AI
+static std::shared_ptr<ai::ai_runner>
 create_local_runner(const boost::program_options::variables_map& vm,
                     const std::string& default_model)
 {
@@ -124,20 +128,20 @@ create_local_runner(const boost::program_options::variables_map& vm,
         if (model_path.ends_with(".gguf"))
         {
 	        #ifdef DOCWIRE_LLAMA
-	            local_ai::model_inference_config config;
+	            ai::model_inference_config config;
 	            config.model_path = model_path;
-	            config.n_ctx = local_ai::context_size{4096};
-	            config.n_threads = local_ai::thread_count{4};
-	            return std::make_shared<local_ai::llama_runner>(config);
+	            config.n_ctx = ai::context_size{4096};
+	            config.n_threads = ai::thread_count{4};
+	            return std::make_shared<ai::llama::llama_runner>(config);
 	        #else
 	            throw std::runtime_error("GGUF model support requires the llama-engine feature");
 	        #endif
         }
 
-        return std::make_shared<local_ai::ct2_runner>(model_path);
+        return std::make_shared<ai::ct2::ct2_runner>(model_path);
     }
 
-    return std::make_shared<local_ai::ct2_runner>(
+    return std::make_shared<ai::ct2::ct2_runner>(
         resource_path(default_model)
     );
 }
@@ -425,7 +429,7 @@ int main(int argc, char* argv[])
 
 			auto runner = create_local_runner(vm, "flan-t5-large-ct2-int8");
 			chain |=
-				local_ai::model_chain_element(prompt, runner);
+				ai::local::task(prompt, runner);
 		}
 		catch(const std::exception& e)
 		{
@@ -439,8 +443,8 @@ int main(int argc, char* argv[])
 		try
 		{
 			std::string prefix = vm["local-ai-embed"].as<std::string>();
-			auto runner = create_local_runner(vm, "flan-t5-large-ct2-int8");
-			chain |= local_ai::embed(runner, prefix);
+			//auto runner = create_local_runner(vm, "flan-t5-large-ct2-int8");
+			chain |= ai::local::embed(prefix);
 			chain |= [](message_ptr msg, const message_callbacks& emit_message) -> continuation {
 				if (msg->is<ai::embedding>())
 				{

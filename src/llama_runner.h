@@ -12,22 +12,22 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_LLAMA_RUNNER_H
-#define DOCWIRE_LOCAL_AI_LLAMA_RUNNER_H
+#ifndef DOCWIRE_AI_LLAMA_RUNNER_H
+#define DOCWIRE_AI_LLAMA_RUNNER_H
 
 #include "ai_runner.h"
-#include "ai_export.h"
+#include "ai_llama_export.h"
 #include "model_inference_config.h"
 #include "pimpl.h"
 
-namespace docwire::local_ai
+namespace docwire::ai::llama
 {
 /**
  * @brief This class is intended to load a Llama model with its correct model path and
  * respective configuration and run inference on the prompt supplied along with
  * the model configuration.
  */
-class DOCWIRE_AI_EXPORT llama_runner : public ai_runner, public with_pimpl<llama_runner>
+class DOCWIRE_AI_LLAMA_EXPORT llama_runner : public ai_runner, public with_pimpl<llama_runner>
 {
   private:
     bool supports_embeddings() const;
@@ -42,6 +42,6 @@ class DOCWIRE_AI_EXPORT llama_runner : public ai_runner, public with_pimpl<llama
     virtual void unload() override;
 };
 
-} // namespace docwire::local_ai
+} // namespace docwire::ai::llama
 
 #endif

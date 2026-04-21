@@ -12,13 +12,13 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_LLAMA_HANDLER_H
-#define DOCWIRE_LOCAL_AI_LLAMA_HANDLER_H
+#ifndef DOCWIRE_AI_LLAMA_HANDLER_H
+#define DOCWIRE_AI_LLAMA_HANDLER_H
 
 #include <llama.h>
 #include <memory>
 
-namespace docwire::local_ai {
+namespace docwire::ai::llama {
 /*
  * @brief A generic deleter to delete various Llama objects created on Heap memory;
  */
@@ -91,6 +91,6 @@ private:
   std::unique_ptr<T, llama_deleter<T>> ptr_;
 };
 
-} // namespace docwire::local_ai
+} // namespace docwire::ai::llama
 
 #endif

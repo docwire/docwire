@@ -13,14 +13,24 @@
 #define DOCWIRE_DOCWIRE_H
 
 // IWYU pragma: begin_exports
-#ifdef DOCWIRE_LOCAL_CT2
 #include "ai_runner.h"
-#include "local_ai_embed.h"
+#include "ai_summarize.h"
+#include "ai_translate.h"
+#include "ai_embed.h"
+#include "ai_misc_task.h"
 #include "model_chain_element.h"
-#include "model_inference_config.h"
+#ifdef DOCWIRE_LOCAL_CT2
+#include "ct2_runner.h"
 #endif
 #ifdef DOCWIRE_LLAMA
 #include "llama_runner.h"
+#include "model_inference_config.h"
+#endif
+#ifdef DOCWIRE_LOCAL_AI
+#include "local_ai_summarize.h"
+#include "local_ai_translate.h"
+#include "local_ai_embed.h"
+#include "local_ai_misc_task.h"
 #endif
 #include "ai_elements.h"
 #include "classify.h"

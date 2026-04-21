@@ -1,68 +1,46 @@
-add_library(docwire_local_ai INTERFACE)
-target_link_libraries(docwire_local_ai INTERFACE docwire_ai)
-install(TARGETS docwire_local_ai EXPORT docwire_targets)
 
-if(DOCWIRE_LOCAL_CT2)
-
-    message(STATUS "DOCWIRE_LOCAL_CT2 enabled: Building CT2 backend.")
-
-    add_library(docwire_ai_ct2 SHARED local_ai_embed.cpp local_ai_summarize.cpp local_ai_translate.cpp model_chain_element.cpp ct2_runner.cpp tokenizer.cpp)
-
-    target_compile_definitions(docwire_ai_ct2 PUBLIC DOCWIRE_LOCAL_CT2)
-
-    find_package(Boost REQUIRED COMPONENTS filesystem system json)
-    find_package(ctranslate2 CONFIG REQUIRED)
-    find_library(sentencepiece_LIBRARIES sentencepiece REQUIRED)
-
-    if(MSVC)
-        find_package(absl CONFIG REQUIRED)
-        list(APPEND sentencepiece_LIBRARIES
-            absl::strings
-            absl::flags
-            absl::flags_parse
-            absl::log
-            absl::check)
-
-        find_package(protobuf CONFIG REQUIRED)
-        list(APPEND sentencepiece_LIBRARIES protobuf::libprotobuf-lite)
-    endif()
-
-    target_link_libraries(docwire_ai_ct2 PRIVATE docwire_core docwire_ai Boost::filesystem Boost::json CTranslate2::ctranslate2 ${sentencepiece_LIBRARIES})
-
-    docwire_find_resource(FLAN_T5_FULL_PATH REL_PATH "flan-t5-large-ct2-int8" REQUIRED)
-    docwire_target_resources(docwire_ai_ct2 "flan-t5-large-ct2-int8" SOURCE "${FLAN_T5_FULL_PATH}")
-
-    docwire_find_resource(E5_MODEL_FULL_PATH REL_PATH "multilingual-e5-small-ct2-int8" REQUIRED)
-    docwire_target_resources(docwire_ai_ct2 "multilingual-e5-small-ct2-int8" SOURCE "${E5_MODEL_FULL_PATH}")
-
-    install(TARGETS docwire_ai_ct2 EXPORT docwire_targets)
-
-    if(MSVC)
-        install(FILES $<TARGET_PDB_FILE:docwire_ai_ct2> DESTINATION bin CONFIGURATIONS Debug)
-    endif()
-
-    target_link_libraries(docwire_local_ai INTERFACE docwire_ai_ct2)
-
-endif()
+add_library(docwire_local_ai SHARED
+    local_ai_summarize.cpp
+    local_ai_embed.cpp
+    local_ai_translate.cpp
+    local_ai_misc_task.cpp
+)
+target_link_libraries(docwire_local_ai PUBLIC docwire_ai)
+target_compile_definitions(docwire_local_ai PUBLIC DOCWIRE_LOCAL_AI)
 
 if(DOCWIRE_LLAMA)
-
-    message(STATUS "DOCWIRE_LLAMA enabled: building llama backend")
-
-    add_library(docwire_ai_llama SHARED llama_runner.cpp)
-
-    find_package(llama CONFIG REQUIRED)
-
-    target_link_libraries(docwire_ai_llama PRIVATE docwire_core docwire_ai llama)
-
-    target_compile_definitions(docwire_ai_llama PUBLIC DOCWIRE_LLAMA)
-
-    install(TARGETS docwire_ai_llama EXPORT docwire_targets)
-
-    target_link_libraries(docwire_local_ai INTERFACE docwire_ai_llama)
-
+    target_link_libraries(docwire_local_ai PUBLIC docwire_ai_llama)
+    target_compile_definitions(docwire_local_ai PUBLIC DOCWIRE_LLAMA)
 endif()
 
-if(NOT DOCWIRE_LOCAL_CT2 AND NOT DOCWIRE_LLAMA)
-    message(STATUS "No Local AI backends enabled.")
+if(DOCWIRE_LOCAL_CT2)
+    target_link_libraries(docwire_local_ai PUBLIC docwire_ai_ct2)
+    target_compile_definitions(docwire_local_ai PUBLIC DOCWIRE_LOCAL_CT2)
+endif()
+
+target_include_directories(docwire_local_ai
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include>
+)
+
+target_compile_features(docwire_local_ai PUBLIC cxx_std_20)
+
+
+include(GenerateExportHeader)
+
+generate_export_header(docwire_local_ai EXPORT_FILE_NAME local_ai_export.h)
+
+target_include_directories(docwire_local_ai PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/local_ai_export.h
+    DESTINATION include/docwire
+)
+
+install(TARGETS docwire_local_ai EXPORT docwire_targets)
+
+if(MSVC)
+    install(FILES $<TARGET_PDB_FILE:docwire_local_ai>
+        DESTINATION bin CONFIGURATIONS Debug)
 endif()

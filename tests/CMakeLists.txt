@@ -3,7 +3,11 @@ find_package(GTest CONFIG REQUIRED)
 add_executable(api_tests api_tests.cpp)
 target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_archives
 	docwire_fuzzy_match docwire_base64 docwire_content_type docwire_http docwire_openai
-	GTest::gtest GTest::gmock docwire_local_ai)
+	GTest::gtest GTest::gmock)
+if(TARGET docwire_local_ai)
+    target_link_libraries(api_tests PRIVATE docwire_local_ai)
+endif()
+
 
 target_compile_definitions(api_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 
@@ -222,7 +226,9 @@ foreach(example IN LISTS all_examples)
 		docwire_ocr docwire_archives docwire_ai docwire_openai docwire_fuzzy_match
 		docwire_content_type docwire_http)
 
-	target_link_libraries(${example} PRIVATE docwire_local_ai)
+	if(TARGET docwire_local_ai)
+        target_link_libraries(${example} PRIVATE docwire_local_ai)
+    endif()
 
 	# Read the example file to check for OpenAI and local AI usage.
 	file(READ ${example}.cpp example_content)
@@ -235,7 +241,7 @@ foreach(example IN LISTS all_examples)
 		if(WIN32)
 			set_property(TEST ${example} APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
 		endif()
-		string(FIND "${example_content}" "local_ai::" local_ai_pos)
+		string(FIND "${example_content}" "ai::local::" local_ai_pos)
 		if (NOT local_ai_pos EQUAL -1)
 			message(STATUS "Labeling test ${example} as uses_model_runner")
 			set_property(TEST ${example} PROPERTY LABELS "is_example;uses_model_runner")
@@ -252,10 +258,17 @@ if(TARGET docwire_ai_ct2)
     add_executable(local_ai_ct2_integration local_ai_ct2_integration.cpp)
     target_include_directories(local_ai_ct2_integration PRIVATE ../src)
     target_link_libraries(local_ai_ct2_integration PRIVATE
-        docwire_core
-        docwire_ai
-        docwire_local_ai
-        docwire_openai
+	    docwire_core
+	    docwire_office_formats
+	    docwire_mail
+	    docwire_ocr
+	    docwire_archives
+	    docwire_content_type
+	    docwire_ai
+	    docwire_local_ai
+	    docwire_openai
+	    docwire_fuzzy_match
+	    docwire_http
     )
     add_test(NAME local_ai_ct2_integration COMMAND local_ai_ct2_integration)
     set_property(TEST local_ai_ct2_integration PROPERTY LABELS "is_example;uses_model_runner")
@@ -267,9 +280,16 @@ if(TARGET docwire_ai_llama)
     target_include_directories(local_ai_llama_integration PRIVATE ../src)
     target_link_libraries(local_ai_llama_integration PRIVATE
         docwire_core
-        docwire_ai
-        docwire_local_ai
-        docwire_openai
+	    docwire_office_formats
+	    docwire_mail
+	    docwire_ocr
+	    docwire_archives
+	    docwire_content_type
+	    docwire_ai
+	    docwire_local_ai
+	    docwire_openai
+	    docwire_fuzzy_match
+	    docwire_http
     )
     add_test(NAME local_ai_llama_integration COMMAND local_ai_llama_integration)
     set_property(TEST local_ai_llama_integration PROPERTY LABELS "is_example;uses_model_runner")

@@ -9,12 +9,12 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_MODEL_INFERENCE_CONFIG_H
-#define DOCWIRE_LOCAL_AI_MODEL_INFERENCE_CONFIG_H
+#ifndef DOCWIRE_AI_MODEL_INFERENCE_CONFIG_H
+#define DOCWIRE_AI_MODEL_INFERENCE_CONFIG_H
 #include "model_inference_config_type.h"
 #include <string>
 
-namespace docwire::local_ai
+namespace docwire::ai
 {
 /*
  * @brief Handles configuration for llama model initialization and paramters
@@ -34,6 +34,6 @@ struct model_inference_config
     std::string grammar_root = "root";
 };
 
-} // namespace docwire::local_ai
+} // namespace docwire::ai
 
 #endif

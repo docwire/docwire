@@ -11,14 +11,18 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial */
 /*********************************************************************************************************************************************/
 #include "local_ai_translate.h"
-#include "model_chain_element.h"
+#include "ct2_runner.h"
+#include "resource_path.h"
 
-namespace docwire::local_ai
+namespace docwire::ai::local
 {
+
+translate::translate(const std::string& language)
+	: docwire::ai::translate(language,
+		std::make_shared<docwire::ai::ct2::ct2_runner>(resource_path("flan-t5-large-ct2-int8")))
+{}
 
 translate::translate(const std::string& language, std::shared_ptr<ai_runner> runner)
-    : model_chain_element(
-          "Your task is to translate every message to " + language + " language.\n\n", runner)
-{
-}
-} // namespace docwire::local_ai
+    : docwire::ai::translate(language, runner)
+{}
+} // namespace docwire::ai::local

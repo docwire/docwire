@@ -12,13 +12,11 @@
 #ifndef DOCWIRE_LOCAL_AI_EMBED_H
 #define DOCWIRE_LOCAL_AI_EMBED_H
 
-#include "chain_element.h"
-#include "ai_export.h"
-#include "ai_runner.h"
-#include "pimpl.h"
+#include "ai_embed.h"
+#include "local_ai_export.h"
 #include <memory>
 
-namespace docwire::local_ai
+namespace docwire::ai::local
 {
 
 /**
@@ -28,22 +26,9 @@ namespace docwire::local_ai
  * embedding for a given text. It is designed to work with sentence-transformer
  * models like `multilingual-e5-small`.
  */
-class DOCWIRE_AI_EXPORT embed : public ChainElement, public with_pimpl<embed>
+class DOCWIRE_LOCAL_AI_EXPORT embed :  public docwire::ai::embed
 {
 public:
-    /// Common prefix for passage embeddings with E5 models.
-    static const std::string e5_passage_prefix;
-    /// Common prefix for query embeddings with E5 models.
-    static const std::string e5_query_prefix;
-
-    /**
-     * @brief Construct a local AI embed chain element with a specific model runner and prefix.
-     *
-     * @param ai_runner The model runner to use for generating embeddings.
-     * @param prefix The string to prepend to the input text. Use an empty string for no prefix.
-     */
-    explicit embed(std::shared_ptr<ai_runner> model_runner, std::string prefix);
-
     /**
      * @brief Construct a local AI embed chain element with a default model runner and prefix.
      *
@@ -53,14 +38,8 @@ public:
      */
     explicit embed(std::string prefix);
 
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-
-    bool is_leaf() const override { return false; }
-
-private:
-    using with_pimpl<embed>::impl;
 };
 
-} // namespace docwire::local_ai
+}// namespace docwire::ai::local
 
 #endif // DOCWIRE_LOCAL_AI_EMBED_H

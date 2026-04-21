@@ -56,13 +56,13 @@ load_model(const std::filesystem::path& model_data_path)
 
 } // anonymous namespace
 
-template <> struct pimpl_impl<local_ai::ct2_runner> : pimpl_impl_base
+template <> struct pimpl_impl<ai::ct2::ct2_runner> : pimpl_impl_base
 {
 	std::mutex model_mutex;
     std::variant<std::monostate, std::shared_ptr<ctranslate2::Translator>,
                  std::shared_ptr<ctranslate2::Encoder>>
         m_model;
-    local_ai::tokenizer m_tokenizer;
+    ai::ct2::tokenizer m_tokenizer;
     std::filesystem::path m_model_path;
 
     pimpl_impl(const std::filesystem::path& model_data_path)
@@ -180,7 +180,7 @@ template <> struct pimpl_impl<local_ai::ct2_runner> : pimpl_impl_base
     }
 };
 
-namespace local_ai
+namespace ai::ct2
 {
 
 ct2_runner::ct2_runner(const std::filesystem::path& model_data_path) : with_pimpl(model_data_path)
@@ -208,5 +208,5 @@ void ct2_runner::unload()
     impl().m_model.emplace<std::monostate>();
 }
 
-} // namespace local_ai
+} // namespace ai::ct2
 } // namespace docwire

@@ -106,14 +106,14 @@ struct llama_call_guard
 
 } // anonymous namespace
 
-template <> struct pimpl_impl<local_ai::llama_runner> : pimpl_impl_base
+template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
 {
     std::mutex model_mutex;
     llama_backend_guard llama_backend;
-    local_ai::model_inference_config config;
-    local_ai::llama_handle<llama_model> model;
-    local_ai::llama_handle<llama_context> ctx;
-    local_ai::llama_handle<llama_sampler> sampler;
+    ai::model_inference_config config;
+    ai::llama::llama_handle<llama_model> model;
+    ai::llama::llama_handle<llama_context> ctx;
+    ai::llama::llama_handle<llama_sampler> sampler;
     const llama_vocab* vocab = nullptr;
 
     static void llamaLogCallback(ggml_log_level level, const char* text, void* /*user*/)
@@ -122,7 +122,7 @@ template <> struct pimpl_impl<local_ai::llama_runner> : pimpl_impl_base
             std::cerr << text;
         }
     }
-    pimpl_impl(const local_ai::model_inference_config& cfg) : config(cfg)
+    pimpl_impl(const ai::model_inference_config& cfg) : config(cfg)
     {
         g_verbose = config.verbose;
         //  Redirect llama.cpp's logs through our callback
@@ -137,7 +137,7 @@ template <> struct pimpl_impl<local_ai::llama_runner> : pimpl_impl_base
 
         llama_model_params model_params = llama_model_default_params();
 
-        model = local_ai::llama_handle<llama_model>(
+        model = docwire::ai::llama::llama_handle<llama_model>(
             llama_model_load_from_file(config.model_path.c_str(), model_params));
 
         throw_if(!model, "Failed to load llama model.", errors::program_corrupted{});
@@ -150,13 +150,13 @@ template <> struct pimpl_impl<local_ai::llama_runner> : pimpl_impl_base
         ctx_params.n_threads = config.n_threads.get();
         ctx_params.embeddings = true;
 
-        ctx = local_ai::llama_handle<llama_context>(llama_init_from_model(model.get(), ctx_params));
+        ctx = docwire::ai::llama::llama_handle<llama_context>(llama_init_from_model(model.get(), ctx_params));
 
         throw_if(!ctx, "Failed to create llama context.", errors::program_corrupted{});
 
         llama_sampler_chain_params sp = llama_sampler_chain_default_params();
 
-        sampler = local_ai::llama_handle<llama_sampler>(llama_sampler_chain_init(sp));
+        sampler = docwire::ai::llama::llama_handle<llama_sampler>(llama_sampler_chain_init(sp));
 
         throw_if(!sampler, "Failed to create sampler.", errors::program_corrupted{});
 
@@ -323,7 +323,7 @@ template <> struct pimpl_impl<local_ai::llama_runner> : pimpl_impl_base
     }
 };
 
-namespace local_ai
+namespace ai::llama
 {
 llama_runner::llama_runner(const model_inference_config& config) : with_pimpl(config) {}
 
@@ -406,6 +406,6 @@ std::vector<double> llama_runner::embed(const std::string& input)
     return result;
 }
 
-} // namespace local_ai
+} // namespace ai::llama
 
 } // namespace docwire

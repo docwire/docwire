@@ -365,7 +365,7 @@ std::filesystem::path("test.zip") | content_type::detector{} | archives_parser{}
 Classify file in any format (Office, PDF, mail, etc) to any categories using build-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | local_ai::model_chain_element("Classify to...: agreement, invoice, report...") | out_stream;
+std::filesystem::path("...") | ... | ai::local::task("Classify to...: agreement, invoice, report...") | out_stream;
 ensure(out_stream.str()) == "report";
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/local_ai_classify_8cpp-example.html)
@@ -381,7 +381,7 @@ ensure(out_stream.str()) == "report\n";
 Translate document in any format (Office, PDF, mail, etc) to other language using build-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | local_ai::model_chain_element("Translate to spanish:\n\n") | out_stream;
+std::filesystem::path("...") | ... | ai::local::translate("spanish:\n\n") | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "La procesación de datos se refiere a las actividades...")) > 80;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/local_ai_translate_8cpp-example.html)
@@ -397,7 +397,7 @@ ensure(fuzzy_match::ratio(out_stream.str(), "El procesamiento de datos se refier
 Detect sentiment of document in any format (Office, PDF, mail, etc) using build-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | local_ai::model_chain_element("Detect sentiment:\n\n") | out_stream;
+std::filesystem::path("...") | ... | ai::local::task("Detect sentiment:\n\n") | out_stream;
 ensure(out_stream.str()) == "positive";
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/local_ai_sentiment_8cpp-example.html)
@@ -412,7 +412,7 @@ std::filesystem::path("1.doc") | ... | openai::DetectSentiment(...) | std::cout;
 Make a summary of document in any format (Office, PDF, mail, etc) using build-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | local_ai::model_chain_element("Write a short summary...") | out_stream;
+std::filesystem::path("...") | ... | ai::local::summarize() | out_stream;
 ensure(out_stream.str()).is_one_of({ "Data processing is the collection, organization, analysis, and interpretation of data to extract useful insights and support decision-making."...
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/local_ai_summary_8cpp-example.html)
@@ -435,7 +435,7 @@ ensure(fuzzy_match::ratio(out_stream.str(), "Data processing involves converting
 Find phrases, objects and events with smart matching in documents in any format (Office, PDF, mail, etc) using build-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | local_ai::model_chain_element("Find sentence about \"data conversion\"...") | out_stream;
+std::filesystem::path("...") | ... | ai::local::task("Find sentence about \"data conversion\"...") | out_stream;
 ensure(out_stream.str()).is_one_of({ "Data processing refers to the activities performed on raw data to convert it into meaningful information."...
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/local_ai_find_8cpp-example.html)
@@ -461,9 +461,9 @@ ensure(out_msgs[0]->get<ai::embedding>().values.size()) == 1536;
 Create embedding for document in any format (Office, PDF, mail, etc) using build-in local AI model, create embeddings for two queries and calculate similarity:
 
 ```cpp
-std::filesystem::path("data_processing_definition.doc") | ... | local_ai::embed(local_ai::embed::e5_passage_prefix) | passage_msgs;
+std::filesystem::path("data_processing_definition.doc") | ... | ai::local::embed(ai::embed::e5_passage_prefix) | passage_msgs;
 ...
-docwire::data_source{std::string{"What is data processing?"}, ...} | local_ai::embed(local_ai::embed::e5_query_prefix) | similar_query_msgs;
+docwire::data_source{std::string{"What is data processing?"}, ...} | ai::local::embed(ai::embed::e5_query_prefix) | similar_query_msgs;
 ...
 double sim = cosine_similarity(passage_embedding.values, similar_query_embedding.values);
 ...

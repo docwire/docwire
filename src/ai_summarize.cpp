@@ -10,23 +10,13 @@
 /*                                                                                                                                           */
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial */
 /*********************************************************************************************************************************************/
+#include "ai_summarize.h"
 
-#ifndef DOCWIRE_TRANSLATE_H
-#define DOCWIRE_TRANSLATE_H
-
-#include "ai_translate.h"
-#include "local_ai_export.h"
-
-namespace docwire::ai::local
+namespace docwire::ai
 {
 
-class DOCWIRE_LOCAL_AI_EXPORT translate : public docwire::ai::translate
+summarize::summarize(std::shared_ptr<ai_runner> runner)
+    : model_chain_element(summary_prompt, runner)
 {
-  public:
- 	translate(const std::string& language);
-    explicit translate(const std::string& language, std::shared_ptr<ai_runner> runner);
-};
-
-} // namespace docwire::ai::local
-
-#endif // DOCWIRE_TRANSLATE_H
+}
+} // namespace docwire::ai

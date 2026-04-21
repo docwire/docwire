@@ -9,14 +9,14 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_MODEL_CHAIN_ELEMENT_H
-#define DOCWIRE_LOCAL_AI_MODEL_CHAIN_ELEMENT_H
+#ifndef DOCWIRE_AI_MODEL_CHAIN_ELEMENT_H
+#define DOCWIRE_AI_MODEL_CHAIN_ELEMENT_H
 
 #include "ai_runner.h"
 #include "chain_element.h"
 #include "ai_export.h"
 
-namespace docwire::local_ai
+namespace docwire::ai
 {
 
 /***
@@ -88,6 +88,6 @@ class DOCWIRE_AI_EXPORT model_chain_element : public ChainElement
     model_lifetime_policy m_model_lifetime;
 };
 
-} // namespace docwire::local_ai
+} // namespace docwire::ai
 
 #endif // DOCWIRE_AI_MODEL_CHAIN_ELEMENT_H

@@ -9,46 +9,21 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
+#ifndef DOCWIRE_AI_TASK_H
+#define DOCWIRE_AI_TASK_H
+
+#include "ai_export.h"
 #include "model_chain_element.h"
-#include "data_source.h"
-#include "error_tags.h"
-#include "resource_path.h"
-#include "throw_if.h"
 
 namespace docwire::ai
 {
 
-// model_chain_element::model_chain_element(const std::string& prompt, model_lifetime_policy lifetime)
-//     : docwire::local_ai::model_chain_element(
-//           prompt, std::make_shared<ct2_runner>(resource_path("flan-t5-large-ct2-int8")),
-//           lifetime)
-// {
-// }
-
-/**
- * @brief constructor to run llama models
- */
-model_chain_element::model_chain_element(const std::string& prompt,
-                                         std::shared_ptr<ai_runner> runner,
-                                         model_lifetime_policy lifetime)
-    : m_prompt(prompt), m_model_runner(std::move(runner)), m_model_lifetime(lifetime)
+class DOCWIRE_AI_EXPORT task : public model_chain_element
 {
-}
-
-continuation model_chain_element::operator()(message_ptr msg, const message_callbacks& emit_message)
-{
-    if (!msg->is<data_source>())
-        return emit_message(std::move(msg));
-
-    const data_source& data = msg->get<data_source>();
-    throw_if(!data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}),
-             errors::program_logic{});
-    std::string input = m_prompt + "\n" + data.string();
-    std::string output = m_model_runner->process(input);
-    if (m_model_lifetime == model_lifetime_policy::unload_after_use) {
-        m_model_runner->unload();
-    }
-    return emit_message(data_source{std::move(output)});
-}
+  	public:
+    	explicit task(const std::string& prompt, std::shared_ptr<ai_runner> runner);
+};
 
 } // namespace docwire::ai
+
+#endif // DOCWIRE_AI_SUMMARIZE_H
