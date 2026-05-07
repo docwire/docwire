@@ -739,7 +739,7 @@ DocWire SDK features a powerful, modern, and highly configurable logging framewo
 
 ```json
 {
-    "file": "api_tests.cpp",
+    "file": "log_tests.cpp",
     "function": "void MyTest::TestBody()",
     "line": 123,
     "log": [

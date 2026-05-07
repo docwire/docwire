@@ -13,6 +13,7 @@
 #define DOCWIRE_FILE_EXTENSION_H
 
 #include <algorithm>
+#include <compare>
 #include <filesystem>
 
 namespace docwire

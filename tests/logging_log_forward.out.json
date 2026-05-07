@@ -1,5 +1,5 @@
 [
-{"file":"api_tests.cpp","function":"void Logging_LogForward_Test::TestBody()","line":"<line>","log":[{"a + b":{"typeid":"int","value":30}}],"thread_id":"<thread_id>","timestamp":"<timestamp>"},
-{"file":"api_tests.cpp","function":"void Logging_LogForward_Test::TestBody()","line":"<line>","log":[{"c * 2":{"typeid":"int","value":60}},"audit"],"thread_id":"<thread_id>","timestamp":"<timestamp>"},
-{"file":"api_tests.cpp","function":"int function_with_log_return()","line":"<line>","log":[{"123":{"typeid":"int","value":123}},"return"],"thread_id":"<thread_id>","timestamp":"<timestamp>"}
+{"file":"log_tests.cpp","function":"void Logging_LogForward_Test::TestBody()","line":"<line>","log":[{"a + b":{"typeid":"int","value":30}}],"thread_id":"<thread_id>","timestamp":"<timestamp>"},
+{"file":"log_tests.cpp","function":"void Logging_LogForward_Test::TestBody()","line":"<line>","log":[{"c * 2":{"typeid":"int","value":60}},"audit"],"thread_id":"<thread_id>","timestamp":"<timestamp>"},
+{"file":"log_tests.cpp","function":"int function_with_log_return()","line":"<line>","log":[{"123":{"typeid":"int","value":123}},"return"],"thread_id":"<thread_id>","timestamp":"<timestamp>"}
 ]
