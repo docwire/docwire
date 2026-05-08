@@ -21,7 +21,20 @@
 #include "ref_or_owned.h"
 
 /**
- * @brief Provides content type detection based on signatures
+ * @namespace docwire::content_type::by_signature
+ * @brief Provides content type detection based on file signatures (magic bytes).
+ * 
+ * This module wraps `libmagic`. 
+ * 
+ * ### Quirks and Normalization
+ * `libmagic` occasionally returns obsolete or non-standard MIME types (e.g., returning `text/xml` 
+ * instead of `application/xml`, or `image/x-ms-bmp` instead of `image/bmp`). This module automatically 
+ * normalizes these outputs to modern IANA standards so downstream detectors have a consistent target.
+ * 
+ * ### Stream Limitations
+ * For non-seekable streams, `libmagic` cannot read the Central Directory of ZIP containers or strictly 
+ * validate RIFF containers. It will often return `application/zip` or `application/octet-stream` in 
+ * these cases. Downstream heuristic detectors are required to resolve these generic types.
  */
 namespace docwire::content_type::by_signature
 {
@@ -52,7 +65,10 @@ public:
 /**
 * @brief Detects and assigns content types to the provided data source using signatures-based content detection.
 *
-* @param data The data source to be analyzed for content type detection.
+* Reads the initial bytes of the data source and queries the signature database. 
+* Any legacy MIME types returned by the database are automatically normalized to modern IANA standards.
+*
+* @param data The data source to be analyzed for content type detection. Detected MIME types will be added to this object.
 * @param database_to_use The loaded database of signatures used for signature-based content detection. It will be created (and loaded) if not provided.
 * @param allow_multiple Allow multiple content types to be assigned to the same data source.
 *

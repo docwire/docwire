@@ -18,21 +18,21 @@ void detect(data_source& data)
 {
     if (!data.mime_types.empty() && data.mime_type_confidence(mime_type { "text/html" }) < confidence::medium)
       return;
-    std::string initial_content = data.string(length_limit{2048});
-    if (initial_content.find("<%@ Page") != std::string::npos || // very common ASP.NET directives
-        initial_content.find("<%@page") != std::string::npos || // case-insensitive common practice
-        initial_content.find("<%@ Control") != std::string::npos || // very common ASP.NET directives
-        initial_content.find("<%@control") != std::string::npos || // case-insensitive common practice
-        initial_content.find("runat=\"server\"") != std::string::npos || // Common in ASP.NET server controls
-        initial_content.find("<script language=\"C#\" runat=\"server\">") != std::string::npos || // C# script block
-        initial_content.find("<script language=\"VB\" runat=\"server\">") != std::string::npos || // VB.NET script block
-        initial_content.find("<%#") != std::string::npos) // ASP.NET data-binding expression
+    std::string_view initial_content = data.string_view(length_limit{2048});
+    if (initial_content.find("<%@ Page") != std::string_view::npos || // very common ASP.NET directives
+        initial_content.find("<%@page") != std::string_view::npos || // case-insensitive common practice
+        initial_content.find("<%@ Control") != std::string_view::npos || // very common ASP.NET directives
+        initial_content.find("<%@control") != std::string_view::npos || // case-insensitive common practice
+        initial_content.find("runat=\"server\"") != std::string_view::npos || // Common in ASP.NET server controls
+        initial_content.find("<script language=\"C#\" runat=\"server\">") != std::string_view::npos || // C# script block
+        initial_content.find("<script language=\"VB\" runat=\"server\">") != std::string_view::npos || // VB.NET script block
+        initial_content.find("<%#") != std::string_view::npos) // ASP.NET data-binding expression
     {
         data.add_mime_type(mime_type{"text/aspdotnet"}, confidence::highest);
     }
-    else if (initial_content.find("<%") != std::string::npos || // Generic ASP/PHP/JSP open tag, but common in classic ASP
-        initial_content.find("<%=") != std::string::npos || // ASP expression
-        initial_content.find("<!-- #include") != std::string::npos) // Server-Side Include (SSI), often used with ASP
+    else if (initial_content.find("<%") != std::string_view::npos || // Generic ASP/PHP/JSP open tag, but common in classic ASP
+        initial_content.find("<%=") != std::string_view::npos || // ASP expression
+        initial_content.find("<!-- #include") != std::string_view::npos) // Server-Side Include (SSI), often used with ASP
     {
         data.add_mime_type(mime_type{"text/asp"}, confidence::highest);
     }

@@ -19,8 +19,19 @@
 namespace docwire::content_type::asp
 {
 
+/**
+ * @brief Detects and assigns content types for ASP and ASP.NET formats.
+ *
+ * @param data The data source to be analyzed.
+ */
 DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
+/**
+ * @brief Detector chain element for ASP and ASP.NET formats.
+ *
+ * @see content_type::detector
+ * @see content_type::asp::detect
+ */
 class detector : public ChainElement
 {
 public:

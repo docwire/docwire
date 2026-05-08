@@ -13,7 +13,7 @@
 #include <boost/config.hpp>
 #include <boost/json.hpp>
 #include "content_type_by_file_extension.h"
-#include "content_type_by_signature.h"
+#include "content_type.h"
 #include "data_source.h"
 #include "diagnostic_message.h"
 #include <exception>
@@ -39,7 +39,7 @@ TEST(Http, Post)
 	ASSERT_NO_THROW(
 	{
 		std::ifstream("1.docx", std::ios_base::binary)
-            | content_type::by_signature::detector{}
+            | content_type::detector{}
             | office_formats_parser{}
 			| PlainTextExporter()
 			| http::Post("https://postman-echo.com/post")
@@ -62,7 +62,7 @@ TEST(Http, PostForm)
 	ASSERT_NO_THROW(
 	{
 		std::ifstream("1.docx", std::ios_base::binary)
-            | content_type::by_signature::detector{}
+            | content_type::detector{}
             | office_formats_parser{}
             | PlainTextExporter()
             | http::Post("https://postman-echo.com/post", {{"field1", "value1"}, {"field2", "value2"}}, "file", DefaultFileName("file.docx"))

@@ -14,8 +14,10 @@
 #include "content_type_asp.h"
 #include "content_type_by_file_extension.h"
 #include "content_type_html.h"
+#include "content_type_image.h"
 #include "content_type_iwork.h"
 #include "content_type_odf_flat.h"
+#include "content_type_odf_ooxml.h"
 #include "content_type_outlook.h"
 #include "content_type_xlsb.h"
 
@@ -26,6 +28,8 @@ void detect(data_source& data, const by_signature::database& signatures_db_to_us
 {
     content_type::by_file_extension::detect(data);
     content_type::by_signature::detect(data, signatures_db_to_use);
+    content_type::image::detect(data);
+    content_type::odf_ooxml::detect(data);
     content_type::asp::detect(data);
     content_type::html::detect(data);
     content_type::iwork::detect(data);

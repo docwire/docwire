@@ -227,6 +227,7 @@ const std::vector<mime_type> supported_mime_types
     mime_type{"image/jpeg"},
     mime_type{"image/bmp"},
     mime_type{"image/x-ms-bmp"},
+    mime_type{"image/x-bmp"},
     mime_type{"image/png"},
     mime_type{"image/x-portable-anymap"},
     mime_type{"image/webp"}

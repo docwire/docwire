@@ -19,8 +19,19 @@
 namespace docwire::content_type::html
 {
 
+/**
+ * @brief Detects and assigns content types for HTML and XHTML formats.
+ *
+ * @param data The data source to be analyzed.
+ */
 DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
+/**
+ * @brief Detector chain element for HTML and XHTML formats.
+ *
+ * @see content_type::detector
+ * @see content_type::html::detect
+ */
 class detector : public ChainElement
 {
 public:

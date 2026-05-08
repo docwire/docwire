@@ -20,13 +20,32 @@
 namespace docwire::content_type::outlook
 {
 
+/**
+ * @brief Detects and assigns content types for Microsoft Outlook formats.
+ *
+ * This detector identifies PST, OST, and MSG formats.
+ *
+ * @param data The data source to be analyzed.
+ * @param signatures_db_to_use The loaded database of signatures used for signature-based content detection.
+ */
 DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data,
     const by_signature::database& signatures_db_to_use = by_signature::database{});
 
+/**
+ * @brief Detector chain element for Microsoft Outlook formats.
+ *
+ * @see content_type::detector
+ * @see content_type::outlook::detect
+ */
 class detector : public ChainElement
 {
 public:
 
+    /**
+     * @brief Constructs a new detector with the given database of signatures.
+     * 
+     * @param signatures_db_to_use The database of signatures to be used for content type detection.
+     */
     detector(ref_or_owned<by_signature::database> signatures_db_to_use = by_signature::database{})
         : m_signatures_db_to_use(signatures_db_to_use) {}
 

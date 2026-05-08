@@ -17,7 +17,24 @@
 #include "ref_or_owned.h"
 
 /**
- * @brief Provides content type detection related functionality
+ * @namespace docwire::content_type
+ * @brief Provides a multi-stage pipeline for content type detection.
+ * 
+ * ### Architecture
+ * The content type detection in DocWire uses a multi-stage pipeline to ensure accuracy and performance:
+ * 1. **By File Extension:** Fast lookup using a comprehensive dictionary. Note that we intentionally 
+ *    keep multiple MIME type aliases for a single extension (e.g., `.xml` maps to both `text/xml` 
+ *    and `application/xml`) so users can query any valid historical variant.
+ * 2. **By Signature (libmagic):** Reads magic bytes. 
+ * 3. **Heuristic Fallbacks:** Custom detectors (e.g., HTML, OOXML, Images) that correct limitations 
+ *    in signature detection.
+ * 
+ * ### Stream Processing & Performance
+ * When processing non-seekable streams (like network sockets), signature detection cannot seek to the 
+ * end of the file. This causes ZIP-based formats (DOCX, ODT) to be detected generically as `application/zip`.
+ * To fix this, heuristic detectors are used. **Rule:** Heuristic detectors must prioritize performance 
+ * by reading only a small initial buffer (e.g., 4KB) to check for local file headers before falling back 
+ * to deep inspection (like ZIP parsing), preventing massive files from being downloaded into memory.
  */
 namespace docwire::content_type
 {
@@ -28,8 +45,10 @@ namespace docwire::content_type
  * This function attempts to identify the content type of the data by using the following detection methods:
  * - By file extension
  * - By file signature
- * - HTML content detection
+ * - Image content detection
+ * - ODF and OOXML format detection
  * - ASP content detection
+ * - HTML content detection
  * - iWork content detection
  * - ODF Flat format detection
  * - Outlook format detection
@@ -43,8 +62,10 @@ namespace docwire::content_type
  * @see content_type::by_signature::database
  * @see content_type::by_file_extension::detect
  * @see content_type::by_signature::detect
- * @see content_type::html::detect
+ * @see content_type::image::detect
+ * @see content_type::odf_ooxml::detect
  * @see content_type::asp::detect
+ * @see content_type::html::detect
  * @see content_type::iwork::detect
  * @see content_type::odf_flat::detect
  * @see content_type::outlook::detect
@@ -60,8 +81,10 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const by_signature::d
  * This class is a chain element that detects and assigns content types to data sources using the following detection methods:
  * - By file extension
  * - By file signature
- * - HTML content detection
+ * - Image content detection
+ * - ODF and OOXML format detection
  * - ASP content detection
+ * - HTML content detection
  * - iWork content detection
  * - ODF Flat format detection
  * - Outlook format detection
@@ -71,8 +94,10 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const by_signature::d
  * @see content_type::detect
  * @see content_type::by_file_extension::detector
  * @see content_type::by_signature::detector
- * @see content_type::html::detector
+ * @see content_type::image::detector
+ * @see content_type::odf_ooxml::detector
  * @see content_type::asp::detector
+ * @see content_type::html::detector
  * @see content_type::iwork::detector
  * @see content_type::odf_flat::detector
  * @see content_type::outlook::detector

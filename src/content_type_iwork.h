@@ -19,8 +19,21 @@
 namespace docwire::content_type::iwork
 {
 
+/**
+ * @brief Detects and assigns content types for Apple iWork formats.
+ *
+ * This detector identifies Keynote, Pages, and Numbers formats.
+ *
+ * @param data The data source to be analyzed.
+ */
 DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
+/**
+ * @brief Detector chain element for Apple iWork formats.
+ *
+ * @see content_type::detector
+ * @see content_type::iwork::detect
+ */
 class detector : public ChainElement
 {
 public:

@@ -9,49 +9,43 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONTENT_TYPE_ODF_FLAT_H
-#define DOCWIRE_CONTENT_TYPE_ODF_FLAT_H
+#include "content_type_image.h"
 
-#include "chain_element.h"
-#include "content_type_export.h"
-#include "data_source.h"
-
-namespace docwire::content_type::odf_flat
+namespace docwire::content_type::image
 {
 
-/**
- * @brief Detects and assigns content types for ODF Flat XML formats.
- *
- * This detector identifies Flat XML variants of OpenDocument formats (FODT, FODS, FODP, FODG).
- *
- * @param data The data source to be analyzed.
- */
-DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
-
-/**
- * @brief Detector chain element for ODF Flat XML formats.
- *
- * @see content_type::detector
- * @see content_type::odf_flat::detect
- */
-class detector : public ChainElement
+void detect(data_source& data)
 {
-public:
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override
+    if (data.highest_mime_type_confidence() >= confidence::highest)
+        return;
+
+    // Heuristic fallback: Only run if libmagic failed and returned octet-stream (or nothing).
+    if (!data.mime_types.empty() && 
+        data.mime_type_confidence(mime_type{"application/octet-stream"}) < confidence::medium)
     {
-        if (!msg->is<data_source>())
-	        return emit_message(std::move(msg));
-	    data_source& data = msg->get<data_source>();
-        detect(data);
-        return emit_message(std::move(msg));
+        return;
     }
 
-    bool is_leaf() const override
-	{
-		return false;
-	}
-};
+    // We only need the first 16 bytes to identify these image headers
+    std::string_view header = data.string_view(length_limit{16});
+    if (header.size() < 2)
+        return;
 
-} // namespace docwire::content_type::odf_flat
+    // BMP: Starts with "BM"
+    if (header[0] == 'B' && header[1] == 'M')
+    {
+        data.add_mime_type(mime_type{"image/bmp"}, confidence::highest);
+        return;
+    }
 
-#endif // DOCWIRE_CONTENT_TYPE_ODF_FLAT_H
+    // WEBP: Starts with "RIFF", followed by 4 bytes of size, followed by "WEBP"
+    if (header.size() >= 12 && 
+        header.substr(0, 4) == "RIFF" && 
+        header.substr(8, 4) == "WEBP")
+    {
+        data.add_mime_type(mime_type{"image/webp"}, confidence::highest);
+        return;
+    }
+}
+
+} // namespace docwire::content_type::image

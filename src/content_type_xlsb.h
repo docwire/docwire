@@ -19,8 +19,19 @@
 namespace docwire::content_type::xlsb
 {
 
+/**
+ * @brief Detects and assigns content types for Microsoft Excel Binary Spreadsheet (XLSB) format.
+ *
+ * @param data The data source to be analyzed.
+ */
 DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
+/**
+ * @brief Detector chain element for Microsoft Excel Binary Spreadsheet (XLSB) format.
+ *
+ * @see content_type::detector
+ * @see content_type::xlsb::detect
+ */
 class detector : public ChainElement
 {
 public:
