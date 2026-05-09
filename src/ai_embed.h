@@ -23,11 +23,6 @@ namespace docwire::ai
 class DOCWIRE_AI_EXPORT embed : public ChainElement, public with_pimpl<embed>
 {
   public:
-    /// Common prefix for passage embeddings with E5 models.
-    static const std::string e5_passage_prefix;
-    /// Common prefix for query embeddings with E5 models.
-    static const std::string e5_query_prefix;
-
     /**
      * @brief Construct a local AI embed chain element with a specific model runner and prefix.
      *

@@ -3,7 +3,7 @@ add_library(docwire_local_ai SHARED
     local_ai_summarize.cpp
     local_ai_embed.cpp
     local_ai_translate.cpp
-    local_ai_misc_task.cpp
+    local_ai_task.cpp
 )
 target_link_libraries(docwire_local_ai PUBLIC docwire_ai)
 target_compile_definitions(docwire_local_ai PUBLIC DOCWIRE_LOCAL_AI)

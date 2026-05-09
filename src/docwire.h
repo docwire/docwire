@@ -17,7 +17,7 @@
 #include "ai_summarize.h"
 #include "ai_translate.h"
 #include "ai_embed.h"
-#include "ai_misc_task.h"
+#include "ai_task.h"
 #include "model_chain_element.h"
 #ifdef DOCWIRE_LOCAL_CT2
 #include "ct2_runner.h"
@@ -30,7 +30,7 @@
 #include "local_ai_summarize.h"
 #include "local_ai_translate.h"
 #include "local_ai_embed.h"
-#include "local_ai_misc_task.h"
+#include "local_ai_task.h"
 #endif
 #include "ai_elements.h"
 #include "classify.h"

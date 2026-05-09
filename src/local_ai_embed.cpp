@@ -19,6 +19,8 @@ namespace docwire
 
 namespace ai::local
 {
+const std::string embed::e5_passage_prefix = "passage: ";
+const std::string embed::e5_query_prefix = "query: ";
 embed::embed(std::string prefix)
     : docwire::ai::embed(std::make_shared<docwire::ai::ct2::ct2_runner>(resource_path("multilingual-e5-small-ct2-int8")), std::move(prefix))
 {}

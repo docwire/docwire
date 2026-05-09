@@ -26,4 +26,4 @@ class DOCWIRE_AI_EXPORT task : public model_chain_element
 
 } // namespace docwire::ai
 
-#endif // DOCWIRE_AI_SUMMARIZE_H
+#endif // DOCWIRE_AI_TASK_H

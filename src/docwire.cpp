@@ -20,7 +20,7 @@
 #endif
 #ifdef DOCWIRE_LOCAL_AI
 #include "local_ai_embed.h"
-#include "local_ai_misc_task.h"
+#include "local_ai_task.h"
 #endif
 #include "ai_elements.h"
 #include <boost/program_options.hpp>

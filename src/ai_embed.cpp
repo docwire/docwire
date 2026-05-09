@@ -37,9 +37,6 @@ struct pimpl_impl<ai::embed> : pimpl_impl_base
 namespace ai
 {
 
-const std::string embed::e5_passage_prefix = "passage: ";
-const std::string embed::e5_query_prefix = "query: ";
-
 embed::embed(std::shared_ptr<ai_runner> model_runner, std::string prefix)
     : with_pimpl<embed>(std::move(model_runner), std::move(prefix))
 {}

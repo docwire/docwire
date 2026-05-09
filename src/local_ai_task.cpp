@@ -9,22 +9,22 @@
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_TASK_H
-#define DOCWIRE_LOCAL_AI_TASK_H
-
-#include "local_ai_export.h"
-#include "ai_misc_task.h"
+#include "local_ai_task.h"
+#include "ct2_runner.h"
+#include "resource_path.h"
 
 namespace docwire::ai::local
 {
 
-class DOCWIRE_LOCAL_AI_EXPORT task : public docwire::ai::task
+task::task(const std::string& prompt, model_lifetime_policy lifetime)
+    : docwire::ai::task(prompt, std::make_shared<docwire::ai::ct2::ct2_runner>(
+                                    resource_path("flan-t5-large-ct2-int8")), lifetime)
 {
-public:
-    explicit task(const std::string& prompt, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
-    explicit task(const std::string& prompt, std::shared_ptr<docwire::ai::ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
-};
+}
+
+task::task(const std::string& prompt, std::shared_ptr<docwire::ai::ai_runner> runner, model_lifetime_policy lifetime)
+    : docwire::ai::task(prompt, runner, lifetime)
+{
+}
 
 } // namespace docwire::ai::local
-
-#endif // DOCWIRE_LOCAL_AI_TASK_H

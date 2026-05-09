@@ -14,7 +14,6 @@
 
 #include "ai_embed.h"
 #include "local_ai_export.h"
-#include <memory>
 
 namespace docwire::ai::local
 {
@@ -29,6 +28,10 @@ namespace docwire::ai::local
 class DOCWIRE_LOCAL_AI_EXPORT embed :  public docwire::ai::embed
 {
 public:
+	/// Common prefix for passage embeddings with E5 models.
+    static const std::string e5_passage_prefix;
+    /// Common prefix for query embeddings with E5 models.
+    static const std::string e5_query_prefix;
     /**
      * @brief Construct a local AI embed chain element with a default model runner and prefix.
      *

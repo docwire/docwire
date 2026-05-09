@@ -381,7 +381,7 @@ ensure(out_stream.str()) == "report\n";
 Translate document in any format (Office, PDF, mail, etc) to other language using build-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | ai::local::translate("spanish:\n\n") | out_stream;
+std::filesystem::path("...") | ... | ai::local::translate("spanish:") | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "La procesación de datos se refiere a las actividades...")) > 80;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/local_ai_translate_8cpp-example.html)
@@ -461,9 +461,9 @@ ensure(out_msgs[0]->get<ai::embedding>().values.size()) == 1536;
 Create embedding for document in any format (Office, PDF, mail, etc) using build-in local AI model, create embeddings for two queries and calculate similarity:
 
 ```cpp
-std::filesystem::path("data_processing_definition.doc") | ... | ai::local::embed(ai::embed::e5_passage_prefix) | passage_msgs;
+std::filesystem::path("data_processing_definition.doc") | ... | ai::local::embed(ai::local::embed::e5_passage_prefix) | passage_msgs;
 ...
-docwire::data_source{std::string{"What is data processing?"}, ...} | ai::local::embed(ai::embed::e5_query_prefix) | similar_query_msgs;
+docwire::data_source{std::string{"What is data processing?"}, ...} | ai::local::embed(ai::local::embed::e5_query_prefix) | similar_query_msgs;
 ...
 double sim = cosine_similarity(passage_embedding.values, similar_query_embedding.values);
 ...

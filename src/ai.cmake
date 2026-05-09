@@ -1,5 +1,5 @@
 
-add_library(docwire_ai SHARED model_chain_element.cpp ai_summarize.cpp ai_translate.cpp ai_embed.cpp ai_misc_task.cpp)
+add_library(docwire_ai SHARED model_chain_element.cpp ai_summarize.cpp ai_translate.cpp ai_embed.cpp ai_task.cpp)
 
 target_link_libraries(docwire_ai PUBLIC docwire_core)
 
