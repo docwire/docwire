@@ -19,8 +19,8 @@ namespace docwire::ai::local
 namespace
 {
 
-constexpr std::string_view e5_passage_prefix = "passage: ";
-constexpr std::string_view e5_query_prefix = "query: ";
+constexpr std::string_view default_passage_prefix = "passage: ";
+constexpr std::string_view default_query_prefix = "query: ";
 
 std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
 {
@@ -31,11 +31,11 @@ std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
 } // anonymous namespace
 
 embed_passage::embed_passage()
-    : docwire::ai::embed(make_default_runner(), std::string{e5_passage_prefix})
+    : docwire::ai::embed(make_default_runner(), std::string{default_passage_prefix})
 {}
 
 embed_query::embed_query()
-    : docwire::ai::embed(make_default_runner(), std::string{e5_query_prefix})
+    : docwire::ai::embed(make_default_runner(), std::string{default_query_prefix})
 {}
 
 embed_with_prefix::embed_with_prefix(std::string prefix)
