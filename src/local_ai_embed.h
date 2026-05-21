@@ -19,28 +19,37 @@ namespace docwire::ai::local
 {
 
 /**
- * @brief A chain element that generates embeddings for input text using a local AI model.
- *
- * This class is a chain element that takes a ct2_runner to generate a vector
- * embedding for a given text. It is designed to work with sentence-transformer
- * models like `multilingual-e5-small`.
+ * @brief Embeds a passage (document chunk) using the local AI model's default passage prefix.
+ * The appropriate prefix for the underlying model (e.g. "passage: " for multilingual-e5-small)
+ * is applied automatically. No model-specific knowledge required at the call site.
  */
-class DOCWIRE_LOCAL_AI_EXPORT embed :  public docwire::ai::embed
+class DOCWIRE_LOCAL_AI_EXPORT embed_passage : public docwire::ai::embed
 {
 public:
-	/// Common prefix for passage embeddings with E5 models.
-    static const std::string e5_passage_prefix;
-    /// Common prefix for query embeddings with E5 models.
-    static const std::string e5_query_prefix;
-    /**
-     * @brief Construct a local AI embed chain element with a default model runner and prefix.
-     *
-     * This constructor initializes the embedder with a default `model_runner`
-     * configured to use the `multilingual-e5-small-ct2-int8` model.
-     * @param prefix The string to prepend to the input text. Use an empty string for no prefix.
-     */
-    explicit embed(std::string prefix);
+    embed_passage();
+};
 
+/**
+ * @brief Embeds a query (search input) using the local AI model's default query prefix.
+ *
+ * The appropriate prefix for the underlying model (e.g. "query: " for multilingual-e5-small)
+ * is applied automatically. No model-specific knowledge required at the call site.
+
+ */
+class DOCWIRE_LOCAL_AI_EXPORT embed_query : public docwire::ai::embed
+{
+public:
+    embed_query();
+};
+
+/**
+ * @brief Embeds text using an explicit, user-supplied prefix string.
+ *
+ */
+class DOCWIRE_LOCAL_AI_EXPORT embed_with_prefix : public docwire::ai::embed
+{
+public:
+    explicit embed_with_prefix(std::string prefix);
 };
 
 }// namespace docwire::ai::local

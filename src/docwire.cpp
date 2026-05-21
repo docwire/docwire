@@ -444,7 +444,7 @@ int main(int argc, char* argv[])
 		{
 			std::string prefix = vm["local-ai-embed"].as<std::string>();
 			//auto runner = create_local_runner(vm, "flan-t5-large-ct2-int8");
-			chain |= ai::local::embed(prefix);
+			chain |= ai::local::embed_with_prefix(prefix);
 			chain |= [](message_ptr msg, const message_callbacks& emit_message) -> continuation {
 				if (msg->is<ai::embedding>())
 				{

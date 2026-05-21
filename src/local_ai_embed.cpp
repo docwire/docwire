@@ -14,16 +14,31 @@
 #include "resource_path.h"
 #include <string>
 
-namespace docwire
+namespace docwire::ai::local
+{
+namespace
 {
 
-namespace ai::local
+constexpr std::string_view e5_passage_prefix = "passage: ";
+constexpr std::string_view e5_query_prefix = "query: ";
+
+std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
 {
-const std::string embed::e5_passage_prefix = "passage: ";
-const std::string embed::e5_query_prefix = "query: ";
-embed::embed(std::string prefix)
-    : docwire::ai::embed(std::make_shared<docwire::ai::ct2::ct2_runner>(resource_path("multilingual-e5-small-ct2-int8")), std::move(prefix))
+    return std::make_shared<docwire::ai::ct2::ct2_runner>(
+        resource_path("multilingual-e5-small-ct2-int8"));
+}
+
+} // anonymous namespace
+
+embed_passage::embed_passage()
+    : docwire::ai::embed(make_default_runner(), std::string{e5_passage_prefix})
 {}
 
-} // namespace ai::local
-} // namespace docwire
+embed_query::embed_query()
+    : docwire::ai::embed(make_default_runner(), std::string{e5_query_prefix})
+{}
+
+embed_with_prefix::embed_with_prefix(std::string prefix)
+    : docwire::ai::embed(make_default_runner(), std::move(prefix))
+{}
+} // namespace docwire::ai::local
