@@ -103,7 +103,7 @@ using magic_enum::istream_operators::operator>>;
 using magic_enum::ostream_operators::operator<<;
 
 enum class OutputType { plain_text, html, csv, metadata };
-
+enum class EmbedPrefixType { none, query, passage };
 template<typename T>
 std::string enum_names_str()
 {
@@ -164,7 +164,7 @@ int main(int argc, char* argv[])
 		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
 		("http-post", po::value<std::string>(), "url to process data via http post")
 		("local-ai-prompt", po::value<std::string>(), "prompt to process text via local AI model")
-		("local-ai-embed", po::value<std::string>()->implicit_value(""), "generate embedding of text via local AI model. Optional argument is a prefix (e.g. \"passage: \" or \"query: \").")
+		("local-ai-embed", po::value<EmbedPrefixType>()->implicit_value(EmbedPrefixType::none), "generate embedding of text via local AI model. Optional argument selects the prefix type: (e.g. \"passage: \" or \"query: \" or \"none: \").")
 		("local-ai-model", po::value<std::string>(), "path to local AI model data (build-in default model is used if not specified)")
 		("openai-chat", po::value<std::string>(), "prompt to process text and images via OpenAI")
 		("openai-extract-entities", "extract entities from text and images via OpenAI")
@@ -442,9 +442,15 @@ int main(int argc, char* argv[])
 	{
 		try
 		{
-			std::string prefix = vm["local-ai-embed"].as<std::string>();
-			//auto runner = create_local_runner(vm, "flan-t5-large-ct2-int8");
-			chain |= ai::local::embed_with_prefix(prefix);
+			EmbedPrefixType prefix_type = vm["local-ai-embed"].as<EmbedPrefixType>();
+			if (prefix_type == EmbedPrefixType::query)
+			{
+				chain |= ai::local::embed::query();
+			} else if (prefix_type == EmbedPrefixType::passage) {
+          		chain |= ai::local::embed::passage();
+	        } else {
+           		chain |= ai::local::embed::passage();
+           	}
 			chain |= [](message_ptr msg, const message_callbacks& emit_message) -> continuation {
 				if (msg->is<ai::embedding>())
 				{

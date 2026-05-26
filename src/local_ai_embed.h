@@ -15,7 +15,7 @@
 #include "ai_embed.h"
 #include "local_ai_export.h"
 
-namespace docwire::ai::local
+namespace docwire::ai::local::embed
 {
 
 /**
@@ -23,10 +23,10 @@ namespace docwire::ai::local
  * The appropriate prefix for the underlying model (e.g. "passage: " for multilingual-e5-small)
  * is applied automatically. No model-specific knowledge required at the call site.
  */
-class DOCWIRE_LOCAL_AI_EXPORT embed_passage : public docwire::ai::embed
+class DOCWIRE_LOCAL_AI_EXPORT passage : public docwire::ai::embed
 {
 public:
-    embed_passage();
+    passage();
 };
 
 /**
@@ -36,22 +36,12 @@ public:
  * is applied automatically. No model-specific knowledge required at the call site.
 
  */
-class DOCWIRE_LOCAL_AI_EXPORT embed_query : public docwire::ai::embed
+class DOCWIRE_LOCAL_AI_EXPORT query : public docwire::ai::embed
 {
 public:
-    embed_query();
+    query();
 };
 
-/**
- * @brief Embeds text using an explicit, user-supplied prefix string.
- *
- */
-class DOCWIRE_LOCAL_AI_EXPORT embed_with_prefix : public docwire::ai::embed
-{
-public:
-    explicit embed_with_prefix(std::string prefix);
-};
-
-}// namespace docwire::ai::local
+}// namespace docwire::ai::local::embed
 
 #endif // DOCWIRE_LOCAL_AI_EMBED_H

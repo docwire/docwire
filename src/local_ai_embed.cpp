@@ -14,7 +14,7 @@
 #include "resource_path.h"
 #include <string>
 
-namespace docwire::ai::local
+namespace docwire::ai::local::embed
 {
 namespace
 {
@@ -30,15 +30,11 @@ std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
 
 } // anonymous namespace
 
-embed_passage::embed_passage()
+passage::passage()
     : docwire::ai::embed(make_default_runner(), std::string{default_passage_prefix})
 {}
 
-embed_query::embed_query()
+query::query()
     : docwire::ai::embed(make_default_runner(), std::string{default_query_prefix})
-{}
-
-embed_with_prefix::embed_with_prefix(std::string prefix)
-    : docwire::ai::embed(make_default_runner(), std::move(prefix))
 {}
 } // namespace docwire::ai::local
