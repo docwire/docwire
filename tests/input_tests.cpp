@@ -143,7 +143,8 @@ TEST(Input, string_view_ref)
 TEST(Input, string_view_temp)
 {
     std::ostringstream output_stream{};    
-    std::string_view{read_binary_file("1.doc")} | content_type::by_signature::detector{} |
+    std::string input_str = read_binary_file("1.doc");
+    std::string_view{input_str} | content_type::by_signature::detector{} |
         DOCParser{} | PlainTextExporter{} | output_stream;
     ASSERT_EQ(output_stream.str(), read_test_file("1.doc.out"));
 }

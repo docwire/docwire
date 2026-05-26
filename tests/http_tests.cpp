@@ -276,7 +276,7 @@ TEST(Http, ServerNonFatalError)
     // 6. Verify the error handler was called and that the server is still running.
     {
         std::lock_guard<std::mutex> lock(error_mutex);
-        ASSERT_THAT(errors::diagnostic_message(error), ::testing::HasSubstr("test"));
+        ASSERT_THAT(errors::diagnostic_message(error), ::testing::HasSubstr("pipeline"));
     }
     EXPECT_EQ(success_response_stream.str(), "success data");
 }

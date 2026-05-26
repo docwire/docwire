@@ -203,7 +203,7 @@ namespace
     void check_caller_location(const docwire::basic_source_location& loc, int expected_line, const char* expected_func_substr)
     {
         // `file_name()` may return a full path, so we check the ending.
-        EXPECT_TRUE(std::string(loc.file_name()).ends_with("error_tests.cpp") || std::string(loc.file_name()).ends_with("core_tests.cpp"));
+        EXPECT_TRUE(std::string(loc.file_name()).ends_with("error_tests.cpp"));
         // `function_name()` may be decorated, so we check for a substring.
         EXPECT_THAT(std::string(loc.function_name()), testing::HasSubstr(expected_func_substr));
         // The line number must be the one passed from the call site.

@@ -48,7 +48,7 @@ std::string sanitize_log_text(const std::string& orig_log_text)
 	}
 	std::string log_text = "[\n";
 	value log_val = parse(orig_log_text);
-	for (int i = 0; i < log_val.as_array().size(); i++)
+	for (size_t i = 0; i < log_val.as_array().size(); i++)
 	{
 		if (i > 0)
 			log_text += ",\n";
