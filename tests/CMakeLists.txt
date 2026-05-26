@@ -1,18 +1,36 @@
 find_package(GTest CONFIG REQUIRED)
-
-add_executable(api_tests api_tests.cpp)
-target_link_libraries(api_tests PRIVATE docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_archives
-	docwire_fuzzy_match docwire_base64 docwire_content_type docwire_http docwire_local_ai docwire_openai
-	GTest::gtest GTest::gmock)
-target_compile_definitions(api_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
-
 find_package(Boost REQUIRED COMPONENTS json)
-target_link_libraries(api_tests PRIVATE Boost::json)
-target_include_directories(api_tests PRIVATE ${Boost_INCLUDE_DIRS})
-docwire_deploy_resources(TARGETS api_tests)
+
+# --- ALL TESTS IN ONE EXECUTABLE ---
+add_executable(docwire_tests
+	main.cpp
+	core_tests.cpp error_tests.cpp log_tests.cpp serialization_tests.cpp
+	exporter_tests.cpp
+	txt_parser_tests.cpp html_parser_tests.cpp ocr_parser_tests.cpp parser_failure_tests.cpp
+	utility_tests.cpp
+	ai_tests.cpp
+	content_type_tests.cpp
+	input_tests.cpp
+	document_parsing_tests.cpp
+	http_tests.cpp
+	data_source_tests.cpp
+	xml_tests.cpp
+)
+
+target_link_libraries(docwire_tests PRIVATE 
+	docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_archives
+	docwire_fuzzy_match docwire_base64 docwire_content_type docwire_http 
+	docwire_local_ai docwire_openai docwire_xml
+	GTest::gtest GTest::gmock Boost::json
+)
+
+target_compile_definitions(docwire_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
+target_include_directories(docwire_tests PRIVATE ${Boost_INCLUDE_DIRS})
+
+docwire_deploy_resources(TARGETS docwire_tests)
 
 if(WIN32)
-	docwire_collect_transitive_dependencies(api_tests all_deps)
+	docwire_collect_transitive_dependencies(docwire_tests all_deps)
 	set(docwire_test_path_dirs "")
 	foreach(dep IN LISTS all_deps)
 		get_target_property(target_type ${dep} TYPE)
@@ -30,11 +48,6 @@ if(WIN32)
 	message(VERBOSE "docwire_test_env_path: ${docwire_test_env_path}")
 endif()
 
-add_executable(xml_tests xml_tests.cpp)
-target_link_libraries(xml_tests PRIVATE docwire_core docwire_xml GTest::gtest GTest::gmock)
-target_compile_definitions(xml_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
-docwire_deploy_resources(TARGETS xml_tests)
-
 file(GLOB test_files *)
 list(FILTER test_files EXCLUDE REGEX ".*\\.cpp$")
 file(COPY ${test_files} DESTINATION .)
@@ -43,16 +56,10 @@ include(GoogleTest)
 
 # Run all gtests within a single process. This is much faster, especially under Valgrind,
 # as it avoids the overhead of starting a new process for each of the 700+ tests.
-add_test(NAME api_tests COMMAND api_tests)
-set_property(TEST api_tests PROPERTY LABELS "is_api_test")
+add_test(NAME docwire_tests COMMAND docwire_tests)
+set_property(TEST docwire_tests PROPERTY LABELS "is_api_test")
 if(WIN32)
-	set_property(TEST api_tests APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
-endif()
-
-add_test(NAME xml_tests COMMAND xml_tests)
-set_property(TEST xml_tests PROPERTY LABELS "is_api_test")
-if(WIN32)
-	set_property(TEST xml_tests APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
+	set_property(TEST docwire_tests APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
 endif()
 
 # This script verifies that snippets in README.md are consistent with their corresponding full example source files

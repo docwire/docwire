@@ -1,5 +1,5 @@
 [
-{"file":"api_tests.cpp","function":"void Logging_Filtering_Test::TestBody()","line":"<line>","log":["include_me","this is included"],"thread_id":"<thread_id>","timestamp":"<timestamp>"},
-{"file":"api_tests.cpp","function":"void Logging_Filtering_Test::TestBody()","line":"<line>","log":["include_me","another included entry"],"thread_id":"<thread_id>","timestamp":"<timestamp>"},
-{"file":"api_tests.cpp","function":"void Logging_Filtering_Test::TestBody()","line":"<line>","log":["scope_exit"],"thread_id":"<thread_id>","timestamp":"<timestamp>"}
+{"file":"log_tests.cpp","function":"void Logging_Filtering_Test::TestBody()","line":"<line>","log":["include_me","this is included"],"thread_id":"<thread_id>","timestamp":"<timestamp>"},
+{"file":"log_tests.cpp","function":"void Logging_Filtering_Test::TestBody()","line":"<line>","log":["include_me","another included entry"],"thread_id":"<thread_id>","timestamp":"<timestamp>"},
+{"file":"log_tests.cpp","function":"void Logging_Filtering_Test::TestBody()","line":"<line>","log":["scope_exit"],"thread_id":"<thread_id>","timestamp":"<timestamp>"}
 ]

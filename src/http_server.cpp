@@ -6,7 +6,7 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
 #include "http_server.h"
@@ -113,7 +113,13 @@ struct pimpl_impl<http::server> : pimpl_impl_base
             throw_if(!key_bio, "Failed to create key BIO from memory");
             m_key.reset(PEM_read_bio_PrivateKey(key_bio.get(), NULL, NULL, NULL));
             throw_if(!m_key, "Failed to parse private key from memory");
-			m_svr = std::make_unique<httplib::SSLServer>(m_cert.get(), m_key.get());
+            m_svr = std::make_unique<httplib::SSLServer>([this](httplib::tls::ctx_t ctx)
+            {
+				SSL_CTX* ssl_ctx = static_cast<SSL_CTX*>(ctx);
+				throw_if(SSL_CTX_use_certificate(ssl_ctx, m_cert.get()) <= 0, "Failed to use certificate");
+				throw_if(SSL_CTX_use_PrivateKey(ssl_ctx, m_key.get()) <= 0, "Failed to use private key");
+                return true;
+			});
 		}
 		else
 		{

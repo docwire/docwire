@@ -6,7 +6,7 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
 #include "content_type_by_signature.h"
@@ -34,10 +34,7 @@ struct pimpl_impl<content_type::by_signature::database> : public pimpl_impl_base
         try
         {
             const std::filesystem::path main_db_path = resource_path("libmagic/misc/magic.mgc");
-            const std::filesystem::path custom_db_path = resource_path("docwire/libmagic_archives_definition");
-
-            const char separator = (std::filesystem::path::preferred_separator == '\\') ? ';' : ':';
-            const std::string magic_db_path = main_db_path.string() + separator + custom_db_path.string();
+            const std::string magic_db_path = main_db_path.string();
             throw_if (magic_load(magic_cookie, magic_db_path.c_str()) != 0, magic_error(magic_cookie));
             throw_if (magic_getparam(magic_cookie, MAGIC_PARAM_BYTES_MAX, &bytes_max) != 0, magic_error(magic_cookie));
         } catch (const std::exception&) {
@@ -70,8 +67,15 @@ void detect(data_source& data, const database& database_to_use, allow_multiple a
     auto splitIt = boost::make_split_iterator(file_types_str, boost::first_finder("\\012- "));
     while (splitIt != boost::split_iterator<std::string::iterator>()) 
     {
+        std::string mt_str = std::string{splitIt->begin(), splitIt->end()};
+        
+        // Normalize libmagic quirks to standard MIME types
+        if (mt_str == "text/xml") mt_str = "application/xml";
+        else if (mt_str == "text/rtf") mt_str = "application/rtf";
+        else if (mt_str == "image/x-ms-bmp") mt_str = "image/bmp";
+
         data.add_mime_type(
-            mime_type { std::string{splitIt->begin(), splitIt->end()} },
+            mime_type { mt_str },
             confidence::very_high
         );
         ++splitIt;

@@ -2,7 +2,9 @@ add_library(docwire_content_type SHARED
     content_type.cpp
     content_type_asp.cpp
     content_type_html.cpp
+    content_type_image.cpp
     content_type_iwork.cpp
+    content_type_odf_ooxml.cpp
     content_type_odf_flat.cpp
     content_type_outlook.cpp
     content_type_xlsb.cpp
@@ -23,7 +25,3 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/content_type_export.h DESTINATION incl
 
 docwire_find_resource(MAGIC_MGC_FULL_PATH REL_PATH "libmagic/misc/magic.mgc" REQUIRED)
 docwire_target_resources(docwire_content_type "libmagic/misc/magic.mgc" SOURCE "${MAGIC_MGC_FULL_PATH}")
-
-docwire_target_resources(docwire_content_type "docwire/libmagic_archives_definition" SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/libmagic_archives_definition")
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/libmagic_archives_definition"
-        DESTINATION share/docwire)

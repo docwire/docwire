@@ -6,7 +6,7 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
 #ifndef DOCWIRE_DATA_SOURCE_H
@@ -230,13 +230,23 @@ class DOCWIRE_CORE_EXPORT data_source
 			return m_id;
 		}
 
-		/// Returns the MIME type with the highest confidence and its confidence level.
+		/**
+		 * @brief Returns the MIME type with the highest confidence and its confidence level.
+		 * 
+		 * @note Because a file extension can map to multiple valid MIME type aliases with the 
+		 * same confidence level, this method uses a deterministic alphabetical tie-breaker 
+		 * (e.g., `application/xml` wins over `text/xml`) to guarantee consistent cross-platform behavior.
+		 */
 		std::optional<std::pair<mime_type, confidence>> highest_confidence_mime_type_info() const
 		{
 			auto hc_mt_it = std::max_element(mime_types.begin(), mime_types.end(),
 			[](const auto& p1, const auto& p2)
 				{
-					return p1.second < p2.second;
+					if (p1.second != p2.second)
+						return p1.second < p2.second;
+					// Deterministic tie-breaker: alphabetically earlier string wins.
+					// Since max_element looks for the "largest" element, we invert the string comparison.
+					return p1.first.v > p2.first.v;
 				});
 			if (hc_mt_it != mime_types.end())
 				return *hc_mt_it;

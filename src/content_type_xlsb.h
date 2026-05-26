@@ -6,7 +6,7 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
 #ifndef DOCWIRE_CONTENT_TYPE_XLSB_H
@@ -19,8 +19,19 @@
 namespace docwire::content_type::xlsb
 {
 
+/**
+ * @brief Detects and assigns content types for Microsoft Excel Binary Spreadsheet (XLSB) format.
+ *
+ * @param data The data source to be analyzed.
+ */
 DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
+/**
+ * @brief Detector chain element for Microsoft Excel Binary Spreadsheet (XLSB) format.
+ *
+ * @see content_type::detector
+ * @see content_type::xlsb::detect
+ */
 class detector : public ChainElement
 {
 public:

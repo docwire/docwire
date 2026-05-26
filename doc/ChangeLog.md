@@ -1,3 +1,35 @@
+## Version 2026.05.25
+
+This release introduces a significant shift in the open-source licensing to AGPLv3 and brings major enhancements to content type detection. We've implemented a multi-stage pipeline with heuristic fallbacks to robustly identify ZIP-based formats and images, even on non-seekable network streams. The test infrastructure has been modularized and consolidated for better developer efficiency, and the HTTP server's SSL configuration has been modernized for improved stability.
+
+> The license shifts, a wider net,  
+> To AGPLv3, our standards set.  
+> With content found in streams so deep,  
+> Heuristics wake, while others sleep.  
+> The server's light, in SSL glows,  
+> Refactored tests, where wisdom flows.  
+> A modular heart, a consolidated sight,  
+> DocWire moves forward, into the light.  
+> ⚖️🔍🛡️🚀
+
+- **Features**
+  - **AGPLv3 Licensing**: Transitioned the open-source license from GPLv2 to GNU Affero General Public License version 3 (AGPLv3). This shift not only closes the "SaaS loophole" (ensuring network users receive source code), but also provides key modern advantages: explicit patent grants that protect users from litigation by contributors, compatibility with the Apache License 2.0 (facilitating integration with a wider ecosystem), and improved international legal language for global enforceability.
+  - **Heuristic Content Type Detection**: Introduced specialized heuristic detectors for Images (BMP, WEBP) and ZIP-based containers (OOXML, ODF). These detectors prioritize performance by checking local file headers in the first 4KB before falling back to deep inspection, specifically addressing detection failures on non-seekable streams with `libmagic` 5.47+.
+
+- **Improvements**
+  - **MIME Type Normalization**: Signature detection now automatically normalizes legacy or non-standard MIME types returned by `libmagic` to modern IANA standards (e.g., `text/xml` to `application/xml`), providing a consistent target for downstream components.
+  - **Performance Optimization in Detectors**: Updated heuristic detectors (ASP, HTML) to use `std::string_view` for content searching, reducing memory overhead and improving detection speed.
+  - **Deterministic MIME Tie-Breaking**: Enhanced the `data_source` logic to use alphabetical tie-breaking when multiple MIME types have identical confidence levels, ensuring consistent results across platforms.
+  - **Modernized SSL Server Setup**: Refactored `httplib::SSLServer` initialization to use the recommended setup callback for certificate and key configuration, aligning with the latest library API changes.
+
+- **Refactor**
+  - **Modular Test Suite**: Substantially refactored the test infrastructure by splitting the monolithic `api_tests.cpp` into specialized source files (`core_tests.cpp`, `error_tests.cpp`, `log_tests.cpp`, etc.) for improved maintainability.
+  - **Consolidated Test Executable**: Consolidated all unit tests into a single `docwire_tests` binary to drastically reduce process creation overhead during comprehensive test cycles under Valgrind.
+
+- **Fixes**
+  - **ZIP-based Format Detection**: Fixed regressions in the detection of OOXML (DOCX, XLSX, PPTX) and ODF formats when processed via non-seekable streams.
+  - **General Stability**: Resolved minor issues in the automated test suite and added missing include directives identified during code review.
+
 ## Version 2026.03.26
 
 This release focuses on developer experience and parsing stability. A new resource management framework allows application developers to bundle and install essential data files (like AI models and OCR dictionaries) with a single line in their CMake configuration. The EML parser has also been substantially strengthened to handle complex nested MIME structures and malformed boundaries with deterministic content selection, ensuring significantly more reliable text extraction from emails.

@@ -6,7 +6,7 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
 #ifndef DOCWIRE_CONTENT_TYPE_ODF_FLAT_H
@@ -19,8 +19,21 @@
 namespace docwire::content_type::odf_flat
 {
 
+/**
+ * @brief Detects and assigns content types for ODF Flat XML formats.
+ *
+ * This detector identifies Flat XML variants of OpenDocument formats (FODT, FODS, FODP, FODG).
+ *
+ * @param data The data source to be analyzed.
+ */
 DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
+/**
+ * @brief Detector chain element for ODF Flat XML formats.
+ *
+ * @see content_type::detector
+ * @see content_type::odf_flat::detect
+ */
 class detector : public ChainElement
 {
 public:
