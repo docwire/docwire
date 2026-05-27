@@ -219,6 +219,15 @@ struct ContentTypeTestCase {
     std::string expected_final_mime;     // What the pipeline MUST resolve
 };
 
+void PrintTo(const ContentTypeTestCase& test_case, std::ostream* os) {
+    *os << "{ file_name: \"" << test_case.file_name
+        << "\", expected_signature_mimes: {";
+    for (size_t i = 0; i < test_case.expected_signature_mimes.size(); ++i) {
+        *os << (i == 0 ? "" : ", ") << "\"" << test_case.expected_signature_mimes[i] << "\"";
+    }
+    *os << "}, expected_final_mime: \"" << test_case.expected_final_mime << "\" }";
+}
+
 // Generates clean names like "1_docx" instead of "0" or "1.docx"
 static std::string GenerateTestName(const ::testing::TestParamInfo<ContentTypeTestCase>& info) {
     std::string name = info.param.file_name;
