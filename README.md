@@ -461,9 +461,9 @@ ensure(out_msgs[0]->get<ai::embedding>().values.size()) == 1536;
 Create embedding for document in any format (Office, PDF, mail, etc) using build-in local AI model, create embeddings for two queries and calculate similarity:
 
 ```cpp
-std::filesystem::path("data_processing_definition.doc") | ... | ai::local::embed::passage{} | passage_msgs;
+std::filesystem::path("data_processing_definition.doc") | ... | ai::local::passage::embedder{} | passage_msgs;
 ...
-docwire::data_source{std::string{"What is data processing?"}, ...} | ai::local::embed::query{} | similar_query_msgs;
+docwire::data_source{std::string{"What is data processing?"}, ...} | ai::local::query::embedder{} | similar_query_msgs;
 ...
 double sim = cosine_similarity(passage_embedding.values, similar_query_embedding.values);
 ...

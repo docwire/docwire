@@ -14,8 +14,6 @@
 #include "resource_path.h"
 #include <string>
 
-namespace docwire::ai::local::embed
-{
 namespace
 {
 
@@ -25,16 +23,21 @@ constexpr std::string_view default_query_prefix = "query: ";
 std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
 {
     return std::make_shared<docwire::ai::ct2::ct2_runner>(
-        resource_path("multilingual-e5-small-ct2-int8"));
+        docwire::resource_path("multilingual-e5-small-ct2-int8"));
 }
 
 } // anonymous namespace
 
-passage::passage()
+namespace docwire::ai::local::passage
+{
+embedder::embedder()
     : docwire::ai::embed(make_default_runner(), std::string{default_passage_prefix})
 {}
+} // namespace docwire::ai::local::passage
 
-query::query()
+namespace docwire::ai::local::query
+{
+embedder::embedder()
     : docwire::ai::embed(make_default_runner(), std::string{default_query_prefix})
 {}
-} // namespace docwire::ai::local
+} // namespace docwire::ai::local::query

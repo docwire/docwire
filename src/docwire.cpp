@@ -445,11 +445,11 @@ int main(int argc, char* argv[])
 			EmbedPrefixType prefix_type = vm["local-ai-embed"].as<EmbedPrefixType>();
 			if (prefix_type == EmbedPrefixType::query)
 			{
-				chain |= ai::local::embed::query();
+				chain |= ai::local::query::embedder();
 			} else if (prefix_type == EmbedPrefixType::passage) {
-          		chain |= ai::local::embed::passage();
+          		chain |= ai::local::passage::embedder();
 	        } else {
-           		chain |= ai::local::embed::passage();
+           		chain |= ai::local::passage::embedder();
            	}
 			chain |= [](message_ptr msg, const message_callbacks& emit_message) -> continuation {
 				if (msg->is<ai::embedding>())
