@@ -185,7 +185,7 @@ Crucially, strong-type wrappers must expose two distinct ingestion paths to perf
 
 class pdf_reader {
     // 1. Private constructor prevents eager instantiation
-    pdf_reader(std::string path) { ... } 
+    pdf_reader(std::string_view path) { ... }
     
     // 2. Only the universal factory template can create this
     friend class docwire::resource_factory<pdf_reader>; 
