@@ -33,6 +33,6 @@ public:
     std::string detokenize(const std::vector<std::string>& output_tokens);
 };
 
-} // namespace docwire::local_ai
+} // namespace docwire::ai::ct2
 
-#endif // DOCWIRE_LOCAL_AI_TOKENIZER_H
+#endif // DOCWIRE_AI_TOKENIZER_H

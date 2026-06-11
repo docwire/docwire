@@ -20,9 +20,13 @@ add_executable(docwire_tests
 target_link_libraries(docwire_tests PRIVATE
 	docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_archives
 	docwire_fuzzy_match docwire_base64 docwire_content_type docwire_http
-	docwire_local_ai docwire_openai docwire_xml
+	docwire_openai docwire_xml
 	GTest::gtest GTest::gmock Boost::json
 )
+
+if(TARGET docwire_local_ai)
+    target_link_libraries(docwire_tests PRIVATE docwire_local_ai)
+endif()
 
 target_compile_definitions(docwire_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
 target_include_directories(docwire_tests PRIVATE ${Boost_INCLUDE_DIRS})
