@@ -6,7 +6,7 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
 #include "ocr_parser.h"
@@ -227,6 +227,7 @@ const std::vector<mime_type> supported_mime_types
     mime_type{"image/jpeg"},
     mime_type{"image/bmp"},
     mime_type{"image/x-ms-bmp"},
+    mime_type{"image/x-bmp"},
     mime_type{"image/png"},
     mime_type{"image/x-portable-anymap"},
     mime_type{"image/webp"}

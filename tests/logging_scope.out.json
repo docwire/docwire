@@ -1,5 +1,5 @@
 [
-{"file":"api_tests.cpp","function":"void Logging_Scope_Test::TestBody()","line":"<line>","log":["scope_enter",{"scope_var":{"typeid":"int","value":42}}],"thread_id":"<thread_id>","timestamp":"<timestamp>"},
-{"file":"api_tests.cpp","function":"void Logging_Scope_Test::TestBody()","line":"<line>","log":["inside scope"],"thread_id":"<thread_id>","timestamp":"<timestamp>"},
-{"file":"api_tests.cpp","function":"void Logging_Scope_Test::TestBody()","line":"<line>","log":["scope_exit",{"scope_var":{"typeid":"int","value":42}}],"thread_id":"<thread_id>","timestamp":"<timestamp>"}
+{"file":"log_tests.cpp","function":"void Logging_Scope_Test::TestBody()","line":"<line>","log":["scope_enter",{"scope_var":{"typeid":"int","value":42}}],"thread_id":"<thread_id>","timestamp":"<timestamp>"},
+{"file":"log_tests.cpp","function":"void Logging_Scope_Test::TestBody()","line":"<line>","log":["inside scope"],"thread_id":"<thread_id>","timestamp":"<timestamp>"},
+{"file":"log_tests.cpp","function":"void Logging_Scope_Test::TestBody()","line":"<line>","log":["scope_exit",{"scope_var":{"typeid":"int","value":42}}],"thread_id":"<thread_id>","timestamp":"<timestamp>"}
 ]

@@ -6,7 +6,7 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
 #ifndef DOCWIRE_LOG_CORE_H

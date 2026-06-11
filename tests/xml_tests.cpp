@@ -192,15 +192,3 @@ TEST(XmlTests, CDataHandling)
     auto root = xml::root_element(reader);
     EXPECT_EQ(root.string_value(), "<escaped>");
 }
-
-int main(int argc, char* argv[])
-{
-    if (environment::get("DOCWIRE_TESTS_CONSOLE_LOGGING").value_or("0") == "1")
-    {
-        log::set_sink(log::json_stream_sink(std::clog));
-        log::set_filter("*");
-    }
-
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

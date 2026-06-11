@@ -739,7 +739,7 @@ DocWire SDK features a powerful, modern, and highly configurable logging framewo
 
 ```json
 {
-    "file": "api_tests.cpp",
+    "file": "log_tests.cpp",
     "function": "void MyTest::TestBody()",
     "line": 123,
     "log": [
@@ -1006,18 +1006,18 @@ Happy Document Processing with DocWire CLI!
 
 Product is double licensed:
 
-- It can be used in open source projects under the terms of the GNU General Public License, version 2
+- It can be used in open source projects under the terms of the GNU Affero General Public License, version 3
 - It can be used in commercial projects under the terms of commercial license agreement
 
 Please contact SILVERCODERS (http://silvercoders.com) for a commercial license for DocWire SDK.
 
-In addition DocWire SDK incorporates code that falls under licenses separate from the GNU General Public License or the DocWire Commercial License;
+In addition DocWire SDK incorporates code that falls under licenses separate from the GNU Affero General Public License or the DocWire Commercial License;
 instead, it operates under specific opensource licenses granted by the original authors.
 Details are described in "3rdparty components used" documentation chapter.
 
-Please keep in mind that any attempt to circumvent the terms of the GNU General Public License by employing wrappers, pipelines,
+Please keep in mind that any attempt to circumvent the terms of the GNU Affero General Public License by employing wrappers, pipelines,
 client/server protocols, etc. is illegal. You must purchase a commercial license if your program, which is distributed under a license
-other than the GNU General Public License version 2, directly or indirectly calls any portion of this code.
+other than the GNU Affero General Public License version 3, directly or indirectly calls any portion of this code.
 Simply stop using the product if you disagree with this viewpoint.
 
 <a name="authors"></a>

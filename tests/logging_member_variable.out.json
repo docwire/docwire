@@ -1,3 +1,3 @@
 [
-{"file":"api_tests.cpp","function":"void Logging_MemberVariable_Test::TestBody()","line":"<line>","log":[{"r1.top_left.x":{"typeid":"int","value":1}},{"r2.top_left.x":{"typeid":"int","value":5}}],"thread_id":"<thread_id>","timestamp":"<timestamp>"}
+{"file":"log_tests.cpp","function":"void Logging_MemberVariable_Test::TestBody()","line":"<line>","log":[{"r1.top_left.x":{"typeid":"int","value":1}},{"r2.top_left.x":{"typeid":"int","value":5}}],"thread_id":"<thread_id>","timestamp":"<timestamp>"}
 ]
