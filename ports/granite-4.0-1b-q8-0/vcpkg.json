@@ -1,0 +1,7 @@
+{
+    "name": "granite-4.0-1b-q8-0",
+    "version": "1.0.0",
+    "description": "Granite 1B Instruct GGUF model",
+    "homepage": "https://huggingface.co/ibm-granite/granite-4.0-1b-GGUF",
+    "license": "Apache-2.0"
+}

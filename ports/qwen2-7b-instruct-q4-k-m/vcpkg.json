@@ -1,7 +1,0 @@
-{
-    "name": "qwen2-7b-instruct-q4-k-m",
-    "version": "1.0.0",
-    "description": "Qwen2 7B Instruct GGUF model",
-    "homepage": "https://huggingface.co/Qwen/Qwen2-7B-Instruct-GGUF",
-    "license": "Apache-2.0"
-}

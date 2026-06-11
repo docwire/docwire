@@ -47,12 +47,12 @@
 			"llama-cpp"
 			]
 		},
-    	"llama-qwen":
+    	"llama-granite":
 		{
-			"description": "Install Qwen2 7B GGUF model",
+			"description": "Install IBM Granite 4.0 1B Q8_0 GGUF model",
 			"dependencies": [
 			{ "name": "docwire", "features": ["llama-engine"] },
-			"qwen2-7b-instruct-q4-k-m"
+			"granite-4.0-1b-q8-0"
 			]
 		}
 	},

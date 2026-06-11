@@ -24,7 +24,7 @@ using namespace docwire;
 
 TEST(tokenizer, flan_t5)
 {
-    docwire::local_ai::tokenizer tokenizer { resource_path("flan-t5-large-ct2-int8") };
+    docwire::ai::ct2::tokenizer tokenizer { resource_path("flan-t5-large-ct2-int8") };
 
     // Test case for an empty input string. It should return only the end of sequence token.
     ASSERT_THAT(tokenizer.tokenize(""),
@@ -55,7 +55,7 @@ TEST(tokenizer, multilingual_e5)
 {
     try
     {
-        docwire::local_ai::tokenizer tokenizer { resource_path("multilingual-e5-small-ct2-int8") };
+        docwire::ai::ct2::tokenizer tokenizer { resource_path("multilingual-e5-small-ct2-int8") };
 
         // Test case for an empty input string. It should return only the end of sequence token.
         ASSERT_THAT(tokenizer.tokenize(""),
