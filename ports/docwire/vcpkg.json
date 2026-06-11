@@ -52,7 +52,7 @@
 			"description": "Install IBM Granite 4.0 1B Q8_0 GGUF model",
 			"dependencies": [
 			{ "name": "docwire", "features": ["llama-engine"] },
-			"granite-4.0-1b-q8-0"
+			"granite-4-1b-q8-0"
 			]
 		}
 	},
