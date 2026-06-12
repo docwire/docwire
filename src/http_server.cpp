@@ -39,13 +39,13 @@ namespace
 
 // Helper for RAII of OpenSSL objects
 template<auto F>
-struct OSSLDeleter {
+struct ossl_deleter {
     template<typename T>
     void operator()(T* ptr) const { F(ptr); }
 };
 
 template<typename T, auto F>
-using ossl_unique_ptr = std::unique_ptr<T, OSSLDeleter<F>>;
+using ossl_unique_ptr = std::unique_ptr<T, ossl_deleter<F>>;
 
 } // anonymous namespace
 
@@ -133,11 +133,11 @@ struct pimpl_impl<http::server> : pimpl_impl_base
         log_scope(path_key);
         try
         {
-            thread_local boost::container::flat_map<std::string, std::unique_ptr<ParsingChain>> pipelines;
+            thread_local boost::container::flat_map<std::string, std::unique_ptr<parsing_chain>> pipelines;
             auto& pipeline_ptr = pipelines[path_key];
             if (!pipeline_ptr)
-                pipeline_ptr = std::make_unique<ParsingChain>(factory());
-            ParsingChain& request_pipeline = *pipeline_ptr;
+                pipeline_ptr = std::make_unique<parsing_chain>(factory());
+            parsing_chain& request_pipeline = *pipeline_ptr;
 
             auto response_messages = std::make_shared<std::vector<message_ptr>>();
 
@@ -154,7 +154,7 @@ struct pimpl_impl<http::server> : pimpl_impl_base
                     request_data_source.add_mime_type(mime_type{media_type_str}, confidence::high);
             }
 
-            InputChainElement{std::move(request_data_source)} | request_pipeline | OutputChainElement{response_messages};
+            input_chain_element{std::move(request_data_source)} | request_pipeline | output_chain_element{response_messages};
 
             if (response_messages->empty())
             {

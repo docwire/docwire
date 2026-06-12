@@ -59,7 +59,7 @@ const std::vector<mime_type> supported_mime_types =
 } // anonymous namespace
 
 template<>
-struct pimpl_impl<DOCParser> : pimpl_impl_base
+struct pimpl_impl<doc_parser> : pimpl_impl_base
 {
     void parse(const data_source& data, const message_callbacks& emit_message);
 };
@@ -71,11 +71,11 @@ enum class TableState
 	in_cell
 };
 
-struct CurrentHeaderFooter
+struct current_header_footer
 {
 	bool in_header;
 	bool in_footer;
-	CurrentHeaderFooter() : in_header(false), in_footer(false) {};
+	current_header_footer() : in_header(false), in_footer(false) {};
 };
 
 // constants are from MS Word Binary File Format Specification
@@ -94,20 +94,20 @@ enum FieldPart
 	FIELD_PART_VALUE
 };
 
-struct CurrentState
+struct current_state
 {
 	std::stack<TableState> table_state;
-	CurrentHeaderFooter header_footer;
+	current_header_footer header_footer;
 	std::list<std::string> obj_texts;
 	std::list<std::string>::iterator obj_texts_iter;
 	FieldType field_type;
 	FieldPart field_part;
 	UString field_params;
 	UString field_value;
-	CurrentState() : field_type(FLT_NONE), field_part(FIELD_PART_NONE) {};
+	current_state() : field_type(FLT_NONE), field_part(FIELD_PART_NONE) {};
 };
 
-struct Comment
+struct comment
 {
 	int fc;
 	std::string text;
@@ -145,7 +145,7 @@ static void cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& strea
 		*unicode_detected = unicode;
 }
 
-static void parse_comments(const wvWare::Parser* parser, std::vector<Comment>& comments, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+static void parse_comments(const wvWare::Parser* parser, std::vector<comment>& comments, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 {
 	log_scope();
 	try
@@ -267,7 +267,7 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 			if (i < annotations.size())
 			{
 				log_scope(i, stream_offset);
-				Comment c;
+				comment c;
 				c.fc = stream_offset;
 				c.text = annotations[i];
 				comments.push_back(c);
@@ -290,18 +290,18 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<Comment>& c
 	}
 }
 
-class TextHandler : public wvWare::TextHandler
+class text_handler : public wvWare::TextHandler
 {
 	private:
 		const message_callbacks& m_emit_message;
 		const wvWare::Parser* m_parser;
-		CurrentState* m_curr_state;
+		current_state* m_curr_state;
 		bool m_comments_parsed;
-		std::vector<Comment> m_comments;
+		std::vector<comment> m_comments;
 		U32 m_prev_par_fc;
 
 	public:
-		TextHandler(const message_callbacks& emit_message, const wvWare::Parser* parser, CurrentState* curr_state)
+		text_handler(const message_callbacks& emit_message, const wvWare::Parser* parser, current_state* curr_state)
 			: m_emit_message(emit_message), m_parser(parser), m_curr_state(curr_state), m_comments_parsed(false), m_prev_par_fc(0)
 		{
 			m_curr_state = curr_state;
@@ -329,16 +329,16 @@ class TextHandler : public wvWare::TextHandler
 			{
 				if (m_curr_state->table_state.top() == TableState::in_table)
 				{
-					m_emit_message(document::CloseTable{});
+					m_emit_message(document::close_table{});
 					m_curr_state->table_state.pop();
 				}
 				else if (m_curr_state->table_state.top() == TableState::in_row)
 				{
-					m_emit_message(document::TableCell{});
+					m_emit_message(document::table_cell{});
 					m_curr_state->table_state.push(TableState::in_cell);
 				}
 			}
-			m_emit_message(document::Paragraph{});
+			m_emit_message(document::paragraph{});
 			if (((Parser9x*)m_parser)->currentParagraph()->size() > 0)
 			{
 				if (m_comments_parsed)
@@ -348,7 +348,7 @@ class TextHandler : public wvWare::TextHandler
 					{
 						std::string comment_text = m_comments[i].text;
 						std::replace(comment_text.begin(), comment_text.end(), '\x0b', '\n');
-						m_emit_message(document::Comment{.author = m_comments[i].author, .comment = comment_text});
+						m_emit_message(document::comment{.author = m_comments[i].author, .comment = comment_text});
 					}
 				}
 				else
@@ -370,7 +370,7 @@ class TextHandler : public wvWare::TextHandler
 		void paragraphEnd()
 		{
 			log_scope();
-			m_emit_message(document::CloseParagraph{});
+			m_emit_message(document::close_paragraph{});
 			if (!((Parser9x*)m_parser)->currentParagraph()->empty())
 			{
 				m_prev_par_fc = ((Parser9x*)m_parser)->currentParagraph()->back().m_startFC;
@@ -388,7 +388,7 @@ class TextHandler : public wvWare::TextHandler
 			{
 				std::string t = ustring_to_string(text);
 				std::replace(t.begin(), t.end(), '\x0b', '\n');
-				m_emit_message(document::Text{.text = t});
+				m_emit_message(document::text{.text = t});
 			}
 		}
 
@@ -426,7 +426,7 @@ class TextHandler : public wvWare::TextHandler
 					{
 						std::string obj_text = *m_curr_state->obj_texts_iter;
 						std::replace(obj_text.begin(), obj_text.end(), '\x0b', '\n');
-						m_emit_message(document::Text{.text = obj_text});
+						m_emit_message(document::text{.text = obj_text});
 						m_curr_state->obj_texts_iter++;
 					}
 					break;
@@ -473,9 +473,9 @@ class TextHandler : public wvWare::TextHandler
 						UString hyperlink_url;
 						for (i = 1; i < params.length() && params[i] != '"'; i++)
 							hyperlink_url += UString(params[i]);
-						m_emit_message(document::Link{.url = ustring_to_string(hyperlink_url)});
-						m_emit_message(document::Text{.text = ustring_to_string(m_curr_state->field_value)});
-						m_emit_message(document::CloseLink{});
+						m_emit_message(document::link{.url = ustring_to_string(hyperlink_url)});
+						m_emit_message(document::text{.text = ustring_to_string(m_curr_state->field_value)});
+						m_emit_message(document::close_link{});
 					}
 					else
 						res_text = params + UString(" ") + m_curr_state->field_value;
@@ -487,7 +487,7 @@ class TextHandler : public wvWare::TextHandler
 			m_curr_state->field_part = FIELD_PART_NONE;
 			std::string t = ustring_to_string(res_text);
 			std::replace(t.begin(), t.end(), '\x0b', '\n');
-			m_emit_message(document::Text{.text = t});
+			m_emit_message(document::text{.text = t});
 		}
 
 		void endOfDocument()
@@ -499,19 +499,19 @@ class TextHandler : public wvWare::TextHandler
 					{
 						std::string comment_text = m_comments[i].text;
 						std::replace(comment_text.begin(), comment_text.end(), '\x0b', '\n');
-						m_emit_message(document::Comment{.author = m_comments[i].author, .comment = comment_text});
+						m_emit_message(document::comment{.author = m_comments[i].author, .comment = comment_text});
 					}
 		}
 };
 
-class TableHandler : public wvWare::TableHandler
+class table_handler : public wvWare::TableHandler
 {
 	private:
 		const message_callbacks& m_emit_message;
-		CurrentState& m_current_state;
+		current_state& m_current_state;
 
 	public:
-		TableHandler(const message_callbacks& emit_message, CurrentState& current_state)
+		table_handler(const message_callbacks& emit_message, current_state& current_state)
 			: m_emit_message(emit_message), m_current_state(current_state)
 		{
 		}
@@ -521,11 +521,11 @@ class TableHandler : public wvWare::TableHandler
 			log_scope();
 			if (m_current_state.table_state.empty() || m_current_state.table_state.top() == TableState::in_cell)
 			{
-				m_emit_message(document::Table{});
+				m_emit_message(document::table{});
 				m_current_state.table_state.push(TableState::in_table);
 			}
 			throw_if (m_current_state.table_state.top() != TableState::in_table, errors::uninterpretable_data{});
-			m_emit_message(document::TableRow{});
+			m_emit_message(document::table_row{});
 			m_current_state.table_state.push(TableState::in_row);
 		}
 
@@ -535,11 +535,11 @@ class TableHandler : public wvWare::TableHandler
 			throw_if (m_current_state.table_state.empty(), errors::uninterpretable_data{});
 			if (m_current_state.table_state.top() == TableState::in_cell)
 			{
-				m_emit_message(document::CloseTableCell{});
+				m_emit_message(document::close_table_cell{});
 				m_current_state.table_state.pop();
 			}
 			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row, errors::uninterpretable_data{});
-			m_emit_message(document::CloseTableRow{});
+			m_emit_message(document::close_table_row{});
 			m_current_state.table_state.pop();
 		}
 
@@ -547,7 +547,7 @@ class TableHandler : public wvWare::TableHandler
 		{
 			log_scope();
 			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row, errors::uninterpretable_data{});
-			m_emit_message(document::TableCell{});
+			m_emit_message(document::table_cell{});
 			m_current_state.table_state.push(TableState::in_cell);
 		}
 
@@ -556,23 +556,23 @@ class TableHandler : public wvWare::TableHandler
 			log_scope();
 			if (!m_current_state.table_state.empty() && m_current_state.table_state.top() == TableState::in_table)
 			{
-				m_emit_message(document::CloseTable{});
+				m_emit_message(document::close_table{});
 				m_current_state.table_state.pop();
 			}
 			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_cell, errors::uninterpretable_data{});
-			m_emit_message(document::CloseTableCell{});
+			m_emit_message(document::close_table_cell{});
 			m_current_state.table_state.pop();
 		}
 };
 
-class SubDocumentHandler : public wvWare::SubDocumentHandler
+class subdocument_handler : public wvWare::SubDocumentHandler
 {
 	private:
 		const message_callbacks& m_emit_message;
-		CurrentHeaderFooter* m_curr_header_footer;
+		current_header_footer* m_curr_header_footer;
 	
 	public:
-		SubDocumentHandler(const message_callbacks& emit_message, CurrentHeaderFooter* curr_header_footer)
+		subdocument_handler(const message_callbacks& emit_message, current_header_footer* curr_header_footer)
 			: m_emit_message(emit_message), m_curr_header_footer(curr_header_footer)
 		{
 		}
@@ -586,13 +586,13 @@ class SubDocumentHandler : public wvWare::SubDocumentHandler
 				case HeaderData::HeaderEven:
 				case HeaderData::HeaderFirst:
 					m_curr_header_footer->in_header = true;
-					m_emit_message(document::Header{});
+					m_emit_message(document::header{});
 					break;
 				case HeaderData::FooterOdd:
 				case HeaderData::FooterEven:
 				case HeaderData::FooterFirst:
 					m_curr_header_footer->in_footer = true;
-					m_emit_message(document::Footer{});
+					m_emit_message(document::footer{});
 					break;
 			}
 		}
@@ -601,28 +601,28 @@ class SubDocumentHandler : public wvWare::SubDocumentHandler
 		{
 			log_scope();
 			if (m_curr_header_footer->in_header)
-				m_emit_message(document::CloseHeader{});
+				m_emit_message(document::close_header{});
 			if (m_curr_header_footer->in_footer)
-				m_emit_message(document::CloseFooter{});
+				m_emit_message(document::close_footer{});
 			m_curr_header_footer->in_header = false;
 			m_curr_header_footer->in_footer = false;
 		}
 };
 
-DOCParser::DOCParser() = default;
+doc_parser::doc_parser() = default;
 
-void pimpl_impl<DOCParser>::parse(const data_source& data, const message_callbacks& emit_message)
+void pimpl_impl<doc_parser>::parse(const data_source& data, const message_callbacks& emit_message)
 {
 	log_scope(data);
 
-	CurrentState curr_state;
-	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
+	current_state curr_state;
+	auto storage = std::make_unique<thread_safe_ole_storage>(data.span());
 	throw_if (!storage->isValid(), storage->getLastError(), errors::uninterpretable_data{});
-	emit_message(document::Document
+	emit_message(document::document
 		{
 			.metadata = [this, &storage, emit_message]()
 			{
-				attributes::Metadata meta;
+				attributes::metadata meta;
 				parse_oshared_summary_info(*storage, meta, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); }); // ?
 				return meta;
 			}
@@ -646,7 +646,7 @@ void pimpl_impl<DOCParser>::parse(const data_source& data, const message_callbac
 					log_scope();
 					try
 					{
-						XLSParser xls{};
+						xls_parser xls{};
 						obj_text = xls.parse(*storage, emit_message);
 					}
 					catch (const std::exception&)
@@ -671,21 +671,21 @@ void pimpl_impl<DOCParser>::parse(const data_source& data, const message_callbac
 	throw_if (!parser, "Error while creating parser");
 	throw_if (!parser->isOk() && parser->fib().fEncrypted, errors::file_encrypted{});
 	throw_if (!parser->isOk(), "Error while creating parser", errors::uninterpretable_data{});
-	TextHandler text_handler(emit_message, parser, &curr_state);
+	text_handler text_handler(emit_message, parser, &curr_state);
 	parser->setTextHandler(&text_handler);
-	TableHandler table_handler(emit_message, curr_state);
+	table_handler table_handler(emit_message, curr_state);
 	parser->setTableHandler(&table_handler);
-	SubDocumentHandler sub_document_handler(emit_message, &curr_state.header_footer);
-	parser->setSubDocumentHandler(&sub_document_handler);
+	subdocument_handler subdocument_handler(emit_message, &curr_state.header_footer);
+	parser->setSubDocumentHandler(&subdocument_handler);
 	cerr_redirection.redirect();
 	bool res = parser->parse();
 	cerr_redirection.restore();
 	throw_if (!res, "parse() failed", errors::uninterpretable_data{});
 	text_handler.endOfDocument();
-	emit_message(document::CloseDocument{});
+	emit_message(document::close_document{});
 }
 
-continuation DOCParser::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation doc_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
     if (!msg->is<data_source>())
         return emit_message(std::move(msg));

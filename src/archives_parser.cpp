@@ -47,13 +47,13 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-class ArchiveReader
+class archive_reader
 {
 public:
-	class EntryStreamBuf : public std::streambuf
+	class entry_streambuf : public std::streambuf
 	{
 	public:
-		EntryStreamBuf(archive* archive)
+		entry_streambuf(archive* archive)
 			: m_archive(archive)
 		{
 		}
@@ -76,51 +76,51 @@ public:
 		char m_buffer[m_buf_size];
 	};
 
-	class EntryIStream : public std::istream
+	class entry_istream : public std::istream
 	{
 	public:
-		EntryIStream(archive* archive)
-			: std::istream(new EntryStreamBuf(archive)) {}
+		entry_istream(archive* archive)
+			: std::istream(new entry_streambuf(archive)) {}
 
-		~EntryIStream() { delete rdbuf(); }
+		~entry_istream() { delete rdbuf(); }
 	};
 
-	class Entry
+	class entry
 	{
 	public:
-		Entry(archive* archive, archive_entry* entry)
+		entry(archive* archive, archive_entry* entry)
 			: m_archive(archive), m_entry(entry) {}
 
 		std::string get_name() { return archive_entry_pathname(m_entry); }
 
 		bool is_dir() { return (archive_entry_mode(m_entry) & AE_IFDIR); }
 
-		std::unique_ptr<EntryIStream> create_stream() { return std::make_unique<EntryIStream>(m_archive); }
+		std::unique_ptr<entry_istream> create_stream() { return std::make_unique<entry_istream>(m_archive); }
 
 		operator bool() { return m_entry != nullptr; }
 
-		bool operator!= (const Entry& r) { return m_entry != r.m_entry; };
+		bool operator!= (const entry& r) { return m_entry != r.m_entry; };
 
 	private:
 		archive* m_archive;
 		archive_entry* m_entry;
 	};
 
-	struct Iterator
+	struct iterator
 	{
-		ArchiveReader* m_reader;
-		Entry m_entry;
-		Iterator(ArchiveReader* reader, Entry entry)
+		archive_reader* m_reader;
+		entry m_entry;
+		iterator(archive_reader* reader, entry entry)
 			: m_reader(reader),
 				m_entry(entry)
 		{
 		}
-		Iterator& operator++() { m_entry = m_reader->get_next_entry(); return *this; }
-		bool operator!= (const Iterator& r) { return m_entry != r.m_entry; };
-		const Entry& operator*() const { return m_entry; }
+		iterator& operator++() { m_entry = m_reader->get_next_entry(); return *this; }
+		bool operator!= (const iterator& r) { return m_entry != r.m_entry; };
+		const entry& operator*() const { return m_entry; }
 	};
 
-	ArchiveReader(std::istream& stream, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+	archive_reader(std::istream& stream, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 		: data(stream), m_non_fatal_error_handler(non_fatal_error_handler)
 	{
 		m_archive = archive_read_new();
@@ -130,7 +130,7 @@ public:
 		throw_if (r != ARCHIVE_OK, "archive_read_open() failed", archive_error_string(m_archive));
 	}
 
-	~ArchiveReader()
+	~archive_reader()
 	{
 		int r = archive_read_free(m_archive);
 		if (r != ARCHIVE_OK)
@@ -142,33 +142,33 @@ public:
 		return m_archive;
 	}
 
-	Entry get_next_entry()
+	entry get_next_entry()
 	{
 		archive_entry* entry;
 		int r = archive_read_next_header(m_archive, &entry);
 		if (r == ARCHIVE_EOF)
 		{
 			log_entry("End of archive");
-			return Entry(m_archive, nullptr);
+			return archive_reader::entry(m_archive, nullptr);
 		}
 		throw_if (r != ARCHIVE_OK, "archive_read_next_header() failed", archive_error_string(m_archive));
-		return Entry(m_archive, entry);
+		return archive_reader::entry(m_archive, entry);
 	}
 
-	Iterator begin()
+	iterator begin()
 	{
-		return Iterator(this, get_next_entry());
+		return iterator(this, get_next_entry());
 	}
 
-	Iterator end()
+	iterator end()
 	{
-		return Iterator(this, Entry(m_archive, nullptr));
+		return iterator(this, entry(m_archive, nullptr));
 	}
 
 private:
-	struct CallbackClientData
+	struct callback_client_data
 	{
-		CallbackClientData(std::istream& stream)
+		callback_client_data(std::istream& stream)
 			: m_stream(stream)
 		{
 		}
@@ -178,13 +178,13 @@ private:
 	};
 
 	archive* m_archive;
-	CallbackClientData data;
+	callback_client_data data;
 	std::function<void(std::exception_ptr)> m_non_fatal_error_handler;
 
 	static la_ssize_t archive_read_callback(archive* archive, void* client_data, const void** buf)
 	{
 		log_scope();
-		CallbackClientData* data = (CallbackClientData*)client_data;
+		callback_client_data* data = (callback_client_data*)client_data;
 		*buf = data->m_buffer;
 		if (data->m_stream.read(data->m_buffer, data->m_buf_size))
 			return data->m_buf_size;
@@ -223,11 +223,11 @@ continuation archives_parser::operator()(message_ptr msg, const message_callback
 	try
 	{
 		log_scope();
-		ArchiveReader reader(*in_stream, [&emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
+		archive_reader reader(*in_stream, [&emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
 
 		message_counters counters;
 		auto counting_callbacks = make_counted_message_callbacks(emit_message, counters);
-		for (ArchiveReader::Entry entry: reader)
+		for (archive_reader::entry entry: reader)
 		{
 			std::string entry_name = entry.get_name();
 			log_scope(entry_name);

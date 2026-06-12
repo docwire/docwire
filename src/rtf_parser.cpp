@@ -44,7 +44,7 @@ using namespace wvWare;
 namespace
 {
 
-long parseNumber(DataStream& data_stream)
+long parseNumber(data_stream& data_stream)
 {
 	log_scope();
 	int ch;
@@ -63,7 +63,7 @@ long parseNumber(DataStream& data_stream)
 	return strtol(buf, (char **)NULL, 10);
 }
 
-int parseCharCode(DataStream& data_stream)
+int parseCharCode(data_stream& data_stream)
 {
 	log_scope();
 	int ch;
@@ -135,13 +135,13 @@ enum RTFCommand
 	RTF_ATNAUTHOR
 };
 
-struct RTFStringCommand
+struct rtf_string_command
 {
 	const char* name;
 	RTFCommand cmd;
 };
 
-RTFStringCommand rtf_commands[] =
+rtf_string_command rtf_commands[] =
 {
 	{ "uc", RTF_UC},
 	{ "ansicpg", RTF_CODEPAGE},
@@ -186,16 +186,16 @@ RTFStringCommand rtf_commands[] =
 
 enum class destination_type { text, annotation, fldinst, fldrslt };
 
-struct RTFGroup
+struct rtf_group
 {
 	int uc;
 	//int codepage;
 	destination_type destination;
 };
 
-struct RTFParserState
+struct rtf_parser_state
 {
-	std::stack<RTFGroup> groups;
+	std::stack<rtf_group> groups;
 	long int last_font_ref_num;
 	std::map<long int, std::string> font_table;
 	std::string author_of_next_annotation;
@@ -208,7 +208,7 @@ struct RTFParserState
 RTFCommand commandNameToEnum(char* name)
 {
 	log_scope(name);
-	for (int i = 0; i < sizeof(rtf_commands) / sizeof(RTFStringCommand); i++)
+	for (int i = 0; i < sizeof(rtf_commands) / sizeof(rtf_string_command); i++)
 	{
 		if (strcmp(name, rtf_commands[i].name) == 0)
 			return rtf_commands[i].cmd;
@@ -216,7 +216,7 @@ RTFCommand commandNameToEnum(char* name)
 	return RTF_UNKNOWN;
 }
 
-bool parseCommand(DataStream& data_stream, RTFCommand& cmd, long int& arg)
+bool parseCommand(data_stream& data_stream, RTFCommand& cmd, long int& arg)
 {
 	log_scope();
 	char name[RTFNAMEMAXLEN + 1];
@@ -320,7 +320,7 @@ std::chrono::sys_seconds parse_dttm_time(int dttm)
 	return sys_days{ymd} + hours{hour} + minutes{min};
 }
 
-void execCommand(DataStream& data_stream, UString& text, int& skip, RTFParserState& state, RTFCommand cmd, long int arg,
+void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_state& state, RTFCommand cmd, long int arg,
 	TextConverter*& converter, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 {
 	log_scope(cmd, arg);
@@ -568,24 +568,24 @@ void execCommand(DataStream& data_stream, UString& text, int& skip, RTFParserSta
 
 std::mutex converter_mutex;
 
-attributes::Metadata extract_rtf_metadata(const data_source& data); // Forward declaration
+attributes::metadata extract_rtf_metadata(const data_source& data); // Forward declaration
 
 void parse_rtf_content(const data_source& data, const message_callbacks& emit_message)
 {
 	log_scope(data);
 	UString text;
 	std::span<const std::byte> span = data.span();
-	auto stream = std::make_unique<BufferStream>(reinterpret_cast<const char*>(span.data()), span.size());
+	auto stream = std::make_unique<buffer_stream>(reinterpret_cast<const char*>(span.data()), span.size());
 	TextConverter* converter = NULL;
 	try
 	{
-		emit_message(document::Document
+		emit_message(document::document
 			{
 				.metadata = [&data]() { return extract_rtf_metadata(data); }
 			});
 		char ch;
-		RTFParserState state;
-		state.groups.push(RTFGroup());
+		rtf_parser_state state;
+		state.groups.push(rtf_group());
 		state.groups.top().uc = 1;
 		state.groups.top().destination = destination_type::text;
 		state.last_font_ref_num = 0;
@@ -631,7 +631,7 @@ void parse_rtf_content(const data_source& data, const message_callbacks& emit_me
 					destination_type destination = state.groups.top().destination;
 					state.groups.pop();
 					if (destination == destination_type::annotation && state.groups.top().destination != destination_type::annotation)
-						emit_message(document::Comment{.author = state.author_of_next_annotation, .time = convert::to<std::string>(state.annotation_time), .comment = ustring_to_string(state.annotation_text)});
+						emit_message(document::comment{.author = state.author_of_next_annotation, .time = convert::to<std::string>(state.annotation_time), .comment = ustring_to_string(state.annotation_text)});
 					else if (destination == destination_type::fldinst)
 					{
 					}
@@ -660,16 +660,16 @@ void parse_rtf_content(const data_source& data, const message_callbacks& emit_me
 								url.clear();
 							}
 
-							emit_message(document::Link{.url = url});
-							emit_message(document::Text{.text = ustring_to_string(state.fldrslt_text)});
-							emit_message(document::CloseLink{});
+							emit_message(document::link{.url = url});
+							emit_message(document::text{.text = ustring_to_string(state.fldrslt_text)});
+							emit_message(document::close_link{});
 						}
 					}
 					if (skip > state.groups.size() - 1)
 						skip = 0;
 					if (!text.isEmpty())
 					{
-						emit_message(document::Text({.text = ustring_to_string(text)}));
+						emit_message(document::text({.text = ustring_to_string(text)}));
 						text = "";
 					}
 					break;
@@ -704,7 +704,7 @@ void parse_rtf_content(const data_source& data, const message_callbacks& emit_me
 		if (converter != NULL)
 			delete converter;
 		converter = NULL;
-		emit_message(document::CloseDocument{});
+		emit_message(document::close_document{});
 	}
 	catch (std::bad_alloc& ba)
 	{
@@ -746,10 +746,10 @@ std::optional<std::chrono::sys_seconds> parse_rtf_time(std::string_view s)
 	return sys_days{ymd} + hours{hour} + minutes{minute} + seconds{second};
 }
 
-attributes::Metadata extract_rtf_metadata(const data_source& data)
+attributes::metadata extract_rtf_metadata(const data_source& data)
 {	
 	log_scope(data);
-	attributes::Metadata meta;
+	attributes::metadata meta;
 	std::string content = data.string();
 	size_t p = content.find("\\author ");
 	if (p != std::string::npos)
@@ -811,9 +811,9 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-RTFParser::RTFParser() = default;
+rtf_parser::rtf_parser() = default;
 
-continuation RTFParser::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation rtf_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));

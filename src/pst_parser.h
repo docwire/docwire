@@ -21,14 +21,14 @@
 namespace docwire
 {
 
-class DOCWIRE_MAIL_EXPORT PSTParser : public ChainElement, public with_pimpl<PSTParser>
+class DOCWIRE_MAIL_EXPORT pst_parser : public chain_element, public with_pimpl<pst_parser>
 {
 private:
-  using with_pimpl<PSTParser>::impl;
-  friend pimpl_impl<PSTParser>;
+  using with_pimpl<pst_parser>::impl;
+  friend pimpl_impl<pst_parser>;
 
 public:
-  PSTParser();
+  pst_parser();
   continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
   bool is_leaf() const override { return false; }
 };

@@ -15,9 +15,9 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<TransformerFunc> : with_pimpl_owner<TransformerFunc>
+struct pimpl_impl<transformer_func> : with_pimpl_owner<transformer_func>
 {
-  pimpl_impl(TransformerFunc& owner, message_transform_func transformer_function)
+  pimpl_impl(transformer_func& owner, message_transform_func transformer_function)
     : with_pimpl_owner{owner}, m_transformer_function(transformer_function)
   {}
 
@@ -29,12 +29,12 @@ struct pimpl_impl<TransformerFunc> : with_pimpl_owner<TransformerFunc>
   message_transform_func m_transformer_function;
 };
 
-TransformerFunc::TransformerFunc(message_transform_func transformer_function)
-  : with_pimpl<TransformerFunc>(transformer_function)
+transformer_func::transformer_func(message_transform_func transformer_function)
+  : with_pimpl<transformer_func>(transformer_function)
 {
 }
 
-continuation TransformerFunc::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation transformer_func::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
   return impl().transform(std::move(msg), emit_message);
 }

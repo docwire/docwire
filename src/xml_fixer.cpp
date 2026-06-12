@@ -20,21 +20,21 @@
 namespace docwire
 {
 
-struct XmlName
+struct xml_name
 {
 	std::string nspace;
 	std::string name;
 
-	XmlName()
+	xml_name()
 	{
 	}
 
-	XmlName(const std::string& _nspace, const std::string _name)
+	xml_name(const std::string& _nspace, const std::string _name)
 		: nspace(_nspace), name(_name)
 	{
 	}
 
-	bool operator==(const XmlName& right) const
+	bool operator==(const xml_name& right) const
 	{
 		return nspace == right.nspace && name == right.name;
 	}
@@ -49,16 +49,16 @@ struct XmlName
 	}
 };
 
-struct Attr
+struct attr
 {
-	XmlName name;
+	xml_name name;
 	std::string value;
 
-	Attr()
+	attr()
 	{
 	}
 
-	Attr(const XmlName& _name, const std::string& _value)
+	attr(const xml_name& _name, const std::string& _value)
 		: name(_name), value(_value)
 	{
 	}
@@ -71,24 +71,24 @@ struct Attr
 	/**
 		Required for std::find.
 	**/
-	bool operator==(const Attr& rhs)
+	bool operator==(const attr& rhs)
 	{
 		return name == rhs.name;
 	}
 };
 
-struct Tag
+struct xml_tag
 {
 	enum Type { HEADER, OPENING, CLOSING, OPENING_AND_CLOSING };
 	Type type;
-	XmlName name;
-	std::list<Attr> attrs;
+	xml_name name;
+	std::list<attr> attrs;
 
-	Tag()
+	xml_tag()
 	{
 	}
 
-	Tag(Type _type, const XmlName& _name)
+	xml_tag(Type _type, const xml_name& _name)
 		: type(_type), name(_name)
 	{
 	}
@@ -101,7 +101,7 @@ struct Tag
 		else if (type == HEADER)
 			text += '?';
 		text += name.fullName();
-		for (std::list<Attr>::const_iterator i = attrs.begin(); i != attrs.end(); i++)
+		for (std::list<attr>::const_iterator i = attrs.begin(); i != attrs.end(); i++)
 			text += " " + (*i).toText();
 		if (type == OPENING_AND_CLOSING)
 			text += '/';
@@ -113,7 +113,7 @@ struct Tag
 };
 
 template<>
-struct pimpl_impl<XmlFixer> : pimpl_impl_base
+struct pimpl_impl<xml_fixer> : pimpl_impl_base
 {
 	std::istringstream xml;
 
@@ -195,7 +195,7 @@ struct pimpl_impl<XmlFixer> : pimpl_impl_base
 		};
 	}
 
-	bool parseAttr(Attr* attr)
+	bool parseAttr(attr* attr)
 	{
 		std::streampos pos = xml.tellg();
 		if (!parseName(&attr->name.name))
@@ -233,16 +233,16 @@ struct pimpl_impl<XmlFixer> : pimpl_impl_base
 		return true;
 	}
 
-	bool parseTag(Tag* tag)
+	bool parseTag(xml_tag* tag)
 	{
 		if (!parseAssertChar('<'))
 			return false;
 		std::streampos pos = xml.tellg();
-		tag->type = Tag::OPENING;
+		tag->type = xml_tag::OPENING;
 		if (parseAssertChar('/'))
-			tag->type = Tag::CLOSING;
+			tag->type = xml_tag::CLOSING;
 		else if (parseAssertChar('?'))
-			tag->type = Tag::HEADER;
+			tag->type = xml_tag::HEADER;
 		if (!parseName(&tag->name.name))
 		{
 			xml.seekg(pos);
@@ -257,11 +257,11 @@ struct pimpl_impl<XmlFixer> : pimpl_impl_base
 				return false;
 			}
 		}
-		if (tag->type == Tag::HEADER || tag->type == Tag::OPENING)
+		if (tag->type == xml_tag::HEADER || tag->type == xml_tag::OPENING)
 		{
 			while (parseAssertChar(' '))
 			{
-				Attr attr;
+				attr attr;
 				if (!parseAttr(&attr))
 				{
 					xml.seekg(pos);
@@ -273,7 +273,7 @@ struct pimpl_impl<XmlFixer> : pimpl_impl_base
 			}
 		}
 		if (parseAssertChar('/'))
-			tag->type = Tag::OPENING_AND_CLOSING;
+			tag->type = xml_tag::OPENING_AND_CLOSING;
 		else
 			parseAssertChar('?');
 		if (!parseAssertChar('>'))
@@ -349,30 +349,30 @@ struct pimpl_impl<XmlFixer> : pimpl_impl_base
 	}
 };
 
-XmlFixer::XmlFixer()
+xml_fixer::xml_fixer()
 {
 }
 
-std::string XmlFixer::fix(const std::string& xml)
+std::string xml_fixer::fix(const std::string& xml)
 {
 	impl().xml.str(xml);
-	std::stack<XmlName> open_tags;
+	std::stack<xml_name> open_tags;
 	std::string fixed_xml;
 	for (;;)
 	{
-		Tag tag;
+		xml_tag tag;
 		std::string entity;
 		std::string utf8_char;
 		char ch;
 		if (impl().parseTag(&tag))
 		{
-			if (tag.type == Tag::OPENING_AND_CLOSING && open_tags.empty() && impl().xml.peek() != EOF)
+			if (tag.type == xml_tag::OPENING_AND_CLOSING && open_tags.empty() && impl().xml.peek() != EOF)
 			{
 				// some text after root opening and closing tag!
 				open_tags.push(tag.name);
-				tag.type = Tag::OPENING;
+				tag.type = xml_tag::OPENING;
 			}
-			else if (tag.type == Tag::CLOSING)
+			else if (tag.type == xml_tag::CLOSING)
 			{
 				if (!open_tags.empty() && open_tags.top() == tag.name)
 					open_tags.pop();
@@ -383,10 +383,10 @@ std::string XmlFixer::fix(const std::string& xml)
 						// some text after root closing tag!
 						continue;
 					}
-					fixed_xml += Tag(Tag::OPENING, tag.name).toText();
+					fixed_xml += xml_tag(xml_tag::OPENING, tag.name).toText();
 				}
 			}
-			else if (tag.type == Tag::OPENING)
+			else if (tag.type == xml_tag::OPENING)
 			{
 				if (open_tags.size() == xmlParserMaxDepth)
 				{
@@ -397,7 +397,7 @@ std::string XmlFixer::fix(const std::string& xml)
 					// new tag or close some tags?
 					// Current algorithm preserves as many tags as possible,
 					// so we are simply closing the last tag.
-					fixed_xml += Tag(Tag::CLOSING, open_tags.top()).toText();
+					fixed_xml += xml_tag(xml_tag::CLOSING, open_tags.top()).toText();
 					open_tags.pop();
 				}
 				open_tags.push(tag.name);
@@ -418,8 +418,8 @@ std::string XmlFixer::fix(const std::string& xml)
 	}
 	while (!open_tags.empty())
 	{
-		const XmlName& tag = open_tags.top();
-		fixed_xml += Tag(Tag::CLOSING, tag).toText();
+		const xml_name& tag = open_tags.top();
+		fixed_xml += xml_tag(xml_tag::CLOSING, tag).toText();
 		open_tags.pop();
 	}
 	return fixed_xml;

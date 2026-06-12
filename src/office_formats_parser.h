@@ -35,26 +35,26 @@ namespace docwire
  * @tparam safety_level The safety policy to use.
  */
 template <safety_policy safety_level = default_safety_level>
-class office_formats_parser : public ParsingChain
+class office_formats_parser : public parsing_chain
 {
     public:
         /**
          * @brief Constructs the composite parser with a predefined chain of format parsers.
          */
         office_formats_parser()
-            : ParsingChain{
-                HTMLParser{} |
-                DOCParser{} |
-                PDFParser{} |
-                XLSParser{} |
-                XLSBParser{} |
-                IWorkParser{} |
-                PPTParser{} |
-                RTFParser{} |
-                ODFOOXMLParser<safety_level>{} |
-                ODFXMLParser<safety_level>{} |
-                XMLParser<safety_level>{} |
-                TXTParser{}
+            : parsing_chain{
+                html_parser{} |
+                doc_parser{} |
+                pdf_parser{} |
+                xls_parser{} |
+                xlsb_parser{} |
+                iwork_parser{} |
+                ppt_parser{} |
+                rtf_parser{} |
+                odf_ooxml_parser<safety_level>{} |
+                odfxml_parser<safety_level>{} |
+                xml_parser<safety_level>{} |
+                txt_parser{}
             }
         {}
 };

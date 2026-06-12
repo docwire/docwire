@@ -19,11 +19,11 @@
 namespace docwire
 {
 
-class mail_parser : public ParsingChain
+class mail_parser : public parsing_chain
 {
     public:
         mail_parser()
-            : ParsingChain{EMLParser{} | PSTParser{}}
+            : parsing_chain{eml_parser{} | pst_parser{}}
         {}
 };
 

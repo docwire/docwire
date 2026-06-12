@@ -108,12 +108,12 @@ TEST(NotNull, ConstructionAndAccess)
     *ptr = 43;
     EXPECT_EQ(value, 43);
 
-    struct S { int x; };
-    S s{10};
-    not_null<S*> s_ptr(&s);
+    struct s { int x; };
+    s s_obj{10};
+    not_null<s*> s_ptr(&s_obj);
     EXPECT_EQ(s_ptr->x, 10);
     s_ptr->x = 11;
-    EXPECT_EQ(s.x, 11);
+    EXPECT_EQ(s_obj.x, 11);
 }
 
 TEST(NotNull, SmartPointers)
@@ -329,25 +329,25 @@ TEST(chaining, func_temp_no_args_no_result_callback_no_result_to_func_one_arg_no
     ASSERT_THAT(container, testing::ElementsAre(3));
 }
 
-struct NonCopyableFunctor
+struct non_copyable_functor
 {
-    NonCopyableFunctor() = default;
-    NonCopyableFunctor(const NonCopyableFunctor&) = delete;
-    NonCopyableFunctor(NonCopyableFunctor&&) = default;
+    non_copyable_functor() = default;
+    non_copyable_functor(const non_copyable_functor&) = delete;
+    non_copyable_functor(non_copyable_functor&&) = default;
     int operator()(int value) const { return value + 2; }
 };
 
 TEST(chaining, func_temp_no_args_with_result_callback_with_result_to_non_copyable_functor_temp)
 {
     using namespace chaining;
-    int result = [](std::function<int(int)> callback) { return callback(1); } | NonCopyableFunctor{};
+    int result = [](std::function<int(int)> callback) { return callback(1); } | non_copyable_functor{};
     ASSERT_EQ(result, 3);
 }
 
 TEST(chaining, func_temp_no_args_with_result_callback_with_result_to_non_copyable_functor_ref)
 {
     using namespace chaining;
-    NonCopyableFunctor ncf{};
+    non_copyable_functor ncf{};
     int result = [](const std::function<int(int)>& callback) { return callback(1); } | ncf;
     ASSERT_EQ(result, 3);
 }
@@ -381,22 +381,22 @@ void test_ref_or_owned(int expected_result)
 
 TEST(ref_or_owned, general)
 {
-    struct TestBase
+    struct test_base
     {
-        TestBase() : m_value(1) {};
-        TestBase(TestBase&)
+        test_base() : m_value(1) {};
+        test_base(test_base&)
         {
             throw std::runtime_error{"copy constructor called"};
         }
-        TestBase(TestBase&&) = default;
-        virtual ~TestBase() = default;
+        test_base(test_base&&) = default;
+        virtual ~test_base() = default;
         int value() { return m_value; }
         int m_value;
     };
-    struct TestDerived : TestBase
+    struct test_derived : test_base
     {
-        TestDerived() { m_value = 2; };
+        test_derived() { m_value = 2; };
     };
-    test_ref_or_owned<TestBase, TestBase>(1);
-    test_ref_or_owned<TestBase, TestDerived>(2);
+    test_ref_or_owned<test_base, test_base>(1);
+    test_ref_or_owned<test_base, test_derived>(2);
 }

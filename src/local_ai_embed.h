@@ -28,7 +28,7 @@ namespace docwire::local_ai
  * embedding for a given text. It is designed to work with sentence-transformer
  * models like `multilingual-e5-small`.
  */
-class DOCWIRE_LOCAL_AI_EXPORT embed : public ChainElement, public with_pimpl<embed>
+class DOCWIRE_LOCAL_AI_EXPORT embed : public chain_element, public with_pimpl<embed>
 {
 public:
     /// Common prefix for passage embeddings with E5 models.

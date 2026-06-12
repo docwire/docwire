@@ -26,12 +26,12 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<ThreadSafeOLEStorage> : pimpl_impl_base
+struct pimpl_impl<thread_safe_ole_storage> : pimpl_impl_base
 {
 	bool m_is_valid_ole;
 	std::string m_error;
 	std::string m_file_name;
-	DataStream* m_data_stream;
+	data_stream* m_data_stream;
 	uint16_t m_sector_size{0}, m_mini_sector_size{0};
 	uint32_t m_number_of_directories;
 	uint16_t m_header_version{0};
@@ -48,7 +48,7 @@ struct pimpl_impl<ThreadSafeOLEStorage> : pimpl_impl_base
 	std::vector<uint32_t> m_sectors_chain;
 	std::vector<uint32_t> m_mini_sectors_chain;
 
-	struct DirectoryEntry
+	struct directory_entry
 	{
 		std::string m_name;
 		enum ObjectType
@@ -67,10 +67,10 @@ struct pimpl_impl<ThreadSafeOLEStorage> : pimpl_impl_base
 		uint64_t m_stream_size{0};
 		bool m_added{false};
 	};
-	std::shared_ptr<DirectoryEntry> m_current_directory;
-	std::vector<std::shared_ptr<DirectoryEntry>> m_directories;
-	std::vector<std::shared_ptr<DirectoryEntry>> m_child_directories;
-	std::vector<std::shared_ptr<DirectoryEntry>> m_inside_directories;
+	std::shared_ptr<directory_entry> m_current_directory;
+	std::vector<std::shared_ptr<directory_entry>> m_directories;
+	std::vector<std::shared_ptr<directory_entry>> m_child_directories;
+	std::vector<std::shared_ptr<directory_entry>> m_inside_directories;
 	bool m_child_directories_loaded;
 	
 	explicit pimpl_impl(const std::string &file_name)
@@ -78,7 +78,7 @@ struct pimpl_impl<ThreadSafeOLEStorage> : pimpl_impl_base
 		m_file_name = file_name;
 		m_is_valid_ole = true;
 		m_data_stream = nullptr;
-		m_data_stream = new FileStream(file_name);
+		m_data_stream = new file_stream(file_name);
 		if (!m_data_stream->open())
 		{
 			m_is_valid_ole = false;
@@ -97,7 +97,7 @@ struct pimpl_impl<ThreadSafeOLEStorage> : pimpl_impl_base
 		m_file_name = "Memory buffer";
 		m_is_valid_ole = true;
 		m_data_stream = nullptr;
-		m_data_stream = new BufferStream(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+		m_data_stream = new buffer_stream(reinterpret_cast<const char*>(buffer.data()), buffer.size());
 		if (!m_data_stream->open())
 		{
 			m_is_valid_ole = false;
@@ -121,7 +121,7 @@ struct pimpl_impl<ThreadSafeOLEStorage> : pimpl_impl_base
 		delete m_data_stream;
 	}
 
-	void getStreamPositions(std::vector<uint32_t>& stream_positions, bool mini_stream, const std::shared_ptr<DirectoryEntry>& dir_entry)
+	void getStreamPositions(std::vector<uint32_t>& stream_positions, bool mini_stream, const std::shared_ptr<directory_entry>& dir_entry)
 	{
 		log_scope(mini_stream, dir_entry->m_name);
 		stream_positions.clear();
@@ -194,8 +194,8 @@ struct pimpl_impl<ThreadSafeOLEStorage> : pimpl_impl_base
 		m_child_directories.push_back(m_directories[m_current_directory->m_child]);
 		int index_start = 0;
 		int index_end = 0;
-		std::shared_ptr<DirectoryEntry> current_dir;
-		std::shared_ptr<DirectoryEntry> added_dir;
+		std::shared_ptr<directory_entry> current_dir;
+		std::shared_ptr<directory_entry> added_dir;
 		while (index_start != index_end + 1)
 		{
 			current_dir = m_child_directories[index_start];
@@ -241,7 +241,7 @@ struct pimpl_impl<ThreadSafeOLEStorage> : pimpl_impl_base
 			return;
 		size_t records_count = m_sector_size / 4;
 		size_t directory_count_per_sector = m_sector_size / 128;
-		std::shared_ptr<DirectoryEntry> directory;
+		std::shared_ptr<directory_entry> directory;
 		uint32_t directory_location = m_first_sector_directory_location;
 		while (directory_location != 0xFFFFFFFE)
 		{
@@ -255,7 +255,7 @@ struct pimpl_impl<ThreadSafeOLEStorage> : pimpl_impl_base
 			{
 				try
 				{
-					directory.reset(new DirectoryEntry());
+					directory.reset(new directory_entry());
 					directory->m_added = false;
 					uint16_t unichars[32];
 					if (!m_data_stream->read(unichars, sizeof(uint16_t), 32))
@@ -293,7 +293,7 @@ struct pimpl_impl<ThreadSafeOLEStorage> : pimpl_impl_base
 						m_is_valid_ole = false;
 						return;
 					}
-					directory->m_object_type = (DirectoryEntry::ObjectType)object_type;
+					directory->m_object_type = (directory_entry::ObjectType)object_type;
 					uint8_t color_flag;
 					if (!m_data_stream->read(&color_flag, sizeof(uint8_t), 1))
 					{
@@ -552,17 +552,17 @@ struct pimpl_impl<ThreadSafeOLEStorage> : pimpl_impl_base
 	}
 };
 
-ThreadSafeOLEStorage::ThreadSafeOLEStorage(const std::string &file_name)
+thread_safe_ole_storage::thread_safe_ole_storage(const std::string &file_name)
 	: with_pimpl(file_name)
 {
 }
 
-ThreadSafeOLEStorage::ThreadSafeOLEStorage(std::span<const std::byte> buffer)
+thread_safe_ole_storage::thread_safe_ole_storage(std::span<const std::byte> buffer)
 	: with_pimpl(buffer)
 {
 }
 
-bool ThreadSafeOLEStorage::open(Mode mode)
+bool thread_safe_ole_storage::open(Mode mode)
 {
 	log_scope(mode);
 	if (mode == ReadOnly)	//opening in constructor
@@ -570,29 +570,29 @@ bool ThreadSafeOLEStorage::open(Mode mode)
 	return false;			//only read mode is supported now
 }
 
-bool ThreadSafeOLEStorage::isValid() const
+bool thread_safe_ole_storage::isValid() const
 {
 	return impl().m_is_valid_ole;
 }
 
-void ThreadSafeOLEStorage::close()
+void thread_safe_ole_storage::close()
 {
 	log_scope();
 }
 
-std::string ThreadSafeOLEStorage::getLastError()
+std::string thread_safe_ole_storage::getLastError()
 {
 	log_scope();
 	return impl().m_error;
 }
 
-std::string ThreadSafeOLEStorage::name() const
+std::string thread_safe_ole_storage::name() const
 {
 	log_scope();
 	return impl().m_file_name;
 }
 
-bool ThreadSafeOLEStorage::getStreamsAndStoragesList(std::vector<std::string>& components)
+bool thread_safe_ole_storage::getStreamsAndStoragesList(std::vector<std::string>& components)
 {
 	log_scope();
 	components.clear();
@@ -611,7 +611,7 @@ bool ThreadSafeOLEStorage::getStreamsAndStoragesList(std::vector<std::string>& c
 	return true;
 }
 
-bool ThreadSafeOLEStorage::enterDirectory(const std::string& directory_path)
+bool thread_safe_ole_storage::enterDirectory(const std::string& directory_path)
 {
 	log_scope(directory_path);
 	if (!impl().m_is_valid_ole || impl().m_current_directory == nullptr)
@@ -626,7 +626,7 @@ bool ThreadSafeOLEStorage::enterDirectory(const std::string& directory_path)
 	{
 		if (impl().m_child_directories[i]->m_name == directory_path)
 		{
-			if (impl().m_child_directories[i]->m_object_type != pimpl_impl<ThreadSafeOLEStorage>::DirectoryEntry::storage)
+			if (impl().m_child_directories[i]->m_object_type != pimpl_impl<thread_safe_ole_storage>::directory_entry::storage)
 			{
 				impl().m_error = "Specified object is not directory";
 				return false;
@@ -644,7 +644,7 @@ bool ThreadSafeOLEStorage::enterDirectory(const std::string& directory_path)
 	return false;
 }
 
-bool ThreadSafeOLEStorage::leaveDirectory()
+bool thread_safe_ole_storage::leaveDirectory()
 {
 	log_scope();
 	if (!impl().m_is_valid_ole || impl().m_current_directory == nullptr)
@@ -663,7 +663,7 @@ bool ThreadSafeOLEStorage::leaveDirectory()
 	return true;
 }
 
-OLEStreamReader *ThreadSafeOLEStorage::createStreamReader(const std::string& stream_path)
+OLEStreamReader *thread_safe_ole_storage::createStreamReader(const std::string& stream_path)
 {
 	log_scope(stream_path);
 	if (!impl().m_is_valid_ole || impl().m_current_directory == nullptr) {
@@ -680,13 +680,13 @@ OLEStreamReader *ThreadSafeOLEStorage::createStreamReader(const std::string& str
 	{
 		if (m_child_directory->m_name == stream_path)
 		{
-			if (m_child_directory->m_object_type != pimpl_impl<ThreadSafeOLEStorage>::DirectoryEntry::stream)
+			if (m_child_directory->m_object_type != pimpl_impl<thread_safe_ole_storage>::directory_entry::stream)
 			{
 				impl().m_error = "Specified object is not a stream";
 				return nullptr;
 			}
-			ThreadSafeOLEStreamReader::Stream stream;
-			ThreadSafeOLEStreamReader* ole_stream_reader = nullptr;
+			thread_safe_ole_stream_reader::stream stream;
+			thread_safe_ole_stream_reader* ole_stream_reader = nullptr;
 			stream.m_data_stream = nullptr;
 			try
 			{
@@ -702,7 +702,7 @@ OLEStreamReader *ThreadSafeOLEStorage::createStreamReader(const std::string& str
 					stream.m_sector_size = impl().m_sector_size;
 					impl().getStreamPositions(stream.m_file_positions, false, m_child_directory);
 				}
-				ole_stream_reader = new ThreadSafeOLEStreamReader(this, stream);
+				ole_stream_reader = new thread_safe_ole_stream_reader(this, stream);
 				if (!ole_stream_reader->isValid())
 				{
 					impl().m_error = ole_stream_reader->getLastError();
@@ -725,7 +725,7 @@ OLEStreamReader *ThreadSafeOLEStorage::createStreamReader(const std::string& str
 	return nullptr;
 }
 
-bool ThreadSafeOLEStorage::readDirectFromBuffer(unsigned char* buffer, int size, int offset)
+bool thread_safe_ole_storage::readDirectFromBuffer(unsigned char* buffer, int size, int offset)
 {
 	log_scope(size, offset);
 	if (!impl().m_data_stream->open())
@@ -749,7 +749,7 @@ bool ThreadSafeOLEStorage::readDirectFromBuffer(unsigned char* buffer, int size,
 	return true;
 }
 
-void ThreadSafeOLEStorage::streamDestroyed(OLEStream* stream)
+void thread_safe_ole_storage::streamDestroyed(OLEStream* stream)
 {
 	log_scope();
 	//nothing to do. Stream is already self-sufficient and storage does not care about it

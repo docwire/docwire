@@ -26,7 +26,7 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<TXTParser> : pimpl_impl_base
+struct pimpl_impl<txt_parser> : pimpl_impl_base
 {
 	pimpl_impl(parse_paragraphs parse_paragraphs_arg, parse_lines parse_lines_arg)
 		: m_parse_paragraphs{parse_paragraphs_arg}, m_parse_lines{parse_lines_arg} {}
@@ -35,8 +35,8 @@ struct pimpl_impl<TXTParser> : pimpl_impl_base
     void parse(const data_source& data, const message_callbacks& emit_message);
 };
 
-TXTParser::TXTParser(parse_paragraphs parse_paragraphs_arg, parse_lines parse_lines_arg)
-	: with_pimpl<TXTParser>{parse_paragraphs_arg, parse_lines_arg} {}
+txt_parser::txt_parser(parse_paragraphs parse_paragraphs_arg, parse_lines parse_lines_arg)
+	: with_pimpl<txt_parser>{parse_paragraphs_arg, parse_lines_arg} {}
 
 namespace
 {
@@ -117,7 +117,7 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-void pimpl_impl<TXTParser>::parse(const data_source& data, const message_callbacks& emit_message)
+void pimpl_impl<txt_parser>::parse(const data_source& data, const message_callbacks& emit_message)
 {
 	log_scope(data);
 	std::string text;
@@ -188,7 +188,7 @@ void pimpl_impl<TXTParser>::parse(const data_source& data, const message_callbac
 	}
 	bool parse_paragraphs = m_parse_paragraphs.v;
 	bool parse_lines = m_parse_lines.v;
-	emit_message(document::Document{});
+	emit_message(document::document{});
 	if (parse_lines || parse_paragraphs)
 	{
 		std::string::size_type curr_pos = 0;
@@ -205,12 +205,12 @@ void pimpl_impl<TXTParser>::parse(const data_source& data, const message_callbac
 			{
 				if (paragraph_state == outside_paragraph)
 				{
-					emit_message(document::Paragraph{});
+					emit_message(document::paragraph{});
 					paragraph_state = empty_paragraph;
 				}
 				if (line.empty())
 				{
-					emit_message(document::CloseParagraph{});
+					emit_message(document::close_paragraph{});
 					paragraph_state = outside_paragraph;
 				}
 				else
@@ -218,24 +218,24 @@ void pimpl_impl<TXTParser>::parse(const data_source& data, const message_callbac
 					if (paragraph_state == filled_paragraph)
 					{
 						if (parse_lines)
-							emit_message(document::BreakLine{});
+							emit_message(document::break_line{});
 						else
-							emit_message(document::Text{.text = last_eol});
+							emit_message(document::text{.text = last_eol});
 					}
-					emit_message(document::Text{.text = line});
+					emit_message(document::text{.text = line});
 					paragraph_state = filled_paragraph;
 				}
 			}
 			else
 			{
 				if (!line.empty())
-					emit_message(document::Text{.text = line});
+					emit_message(document::text{.text = line});
 				if (!eol.empty())
 				{
 					if (parse_lines)
-						emit_message(document::BreakLine{});
+						emit_message(document::break_line{});
 					else
-						emit_message(document::Text{.text = eol});
+						emit_message(document::text{.text = eol});
 				}
 			}
 			if (eol.empty())
@@ -244,14 +244,14 @@ void pimpl_impl<TXTParser>::parse(const data_source& data, const message_callbac
 			last_eol = eol;
 		}
 		if (parse_paragraphs && paragraph_state != outside_paragraph)
-			emit_message(document::CloseParagraph{});
+			emit_message(document::close_paragraph{});
 	}
 	else
-		emit_message(document::Text{.text = text});
-	emit_message(document::CloseDocument{});
+		emit_message(document::text{.text = text});
+	emit_message(document::close_document{});
 }
 
-continuation TXTParser::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation txt_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
   if (!msg->is<data_source>())
     return emit_message(std::move(msg));

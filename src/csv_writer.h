@@ -20,7 +20,7 @@
 namespace docwire
 {
 
-class DOCWIRE_CORE_EXPORT CsvWriter : public Writer
+class DOCWIRE_CORE_EXPORT csv_writer : public writer
 {
 public:
   /**

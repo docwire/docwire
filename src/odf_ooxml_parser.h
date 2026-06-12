@@ -25,11 +25,11 @@ namespace docwire
  * @tparam safety_level The safety policy to use.
  */
 template <safety_policy safety_level = default_safety_level>
-class DOCWIRE_ODF_OOXML_EXPORT ODFOOXMLParser : public CommonXMLDocumentParser<safety_level>, public with_pimpl<ODFOOXMLParser<safety_level>>
+class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser : public common_xml_document_parser<safety_level>, public with_pimpl<odf_ooxml_parser<safety_level>>
 {
-    using base_type = CommonXMLDocumentParser<safety_level>;
-    using with_pimpl<ODFOOXMLParser<safety_level>>::impl;
-    friend pimpl_impl<ODFOOXMLParser<safety_level>>;
+    using base_type = common_xml_document_parser<safety_level>;
+    using with_pimpl<odf_ooxml_parser<safety_level>>::impl;
+    friend pimpl_impl<odf_ooxml_parser<safety_level>>;
 
     using base_type::registerODFOOXMLCommandHandler;
     using base_type::blanks;
@@ -39,7 +39,7 @@ class DOCWIRE_ODF_OOXML_EXPORT ODFOOXMLParser : public CommonXMLDocumentParser<s
     using base_type::parseXmlChildren;
     using base_type::getSharedStrings;
     using base_type::activeEmittingSignals;
-    using SharedString = base_type::SharedString;
+    using shared_string = base_type::shared_string;
     using scoped_context_stack_push = base_type::scoped_context_stack_push;
 
     class CommandHandlersSet;
@@ -48,7 +48,7 @@ class DOCWIRE_ODF_OOXML_EXPORT ODFOOXMLParser : public CommonXMLDocumentParser<s
     int lastOOXMLColNum();
     void setLastOOXMLColNum(int c);
     void parse(const data_source& data, XmlParseMode mode, const message_callbacks& emit_message);
-    attributes::Metadata metaData(ZipReader& zipfile) const;
+    attributes::metadata metaData(zip_reader& zipfile) const;
 
 	public:
 
@@ -62,7 +62,7 @@ class DOCWIRE_ODF_OOXML_EXPORT ODFOOXMLParser : public CommonXMLDocumentParser<s
     /**
      * @brief Default constructor.
      */
-    ODFOOXMLParser();
+    odf_ooxml_parser();
     /**
      * @brief Processes a message in the parsing chain.
      * @return The continuation status.

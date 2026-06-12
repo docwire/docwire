@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::ifstream("data_processing_definition.docx", std::ios_base::binary) | content_type::detector{} | office_formats_parser{} | HtmlExporter() | out_stream;
+    std::ifstream("data_processing_definition.docx", std::ios_base::binary) | content_type::detector{} | office_formats_parser{} | html_exporter() | out_stream;
     ensure(out_stream.str()).contains("Data processing refers to the activities");
   }
   catch (const std::exception& e)

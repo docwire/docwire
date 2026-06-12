@@ -18,12 +18,12 @@
 namespace docwire
 {
 
-class ThreadSafeOLEStorage;
+class thread_safe_ole_storage;
 
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT PPTParser : public ChainElement
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser : public chain_element
 {
 	public:
-		PPTParser();
+		ppt_parser();
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 };

@@ -213,13 +213,13 @@ TEST(content_type, xlsb)
 // COMPREHENSIVE PARAMETERIZED TESTS
 // ============================================================================
 
-struct ContentTypeTestCase {
+struct content_type_test_case {
     std::string file_name;
     std::vector<std::string> expected_signature_mimes; // What libmagic alone sees (allows multiple valid outputs)
     std::string expected_final_mime;     // What the pipeline MUST resolve
 };
 
-void PrintTo(const ContentTypeTestCase& test_case, std::ostream* os) {
+void PrintTo(const content_type_test_case& test_case, std::ostream* os) {
     *os << "{ file_name: \"" << test_case.file_name
         << "\", expected_signature_mimes: {";
     for (size_t i = 0; i < test_case.expected_signature_mimes.size(); ++i) {
@@ -229,14 +229,14 @@ void PrintTo(const ContentTypeTestCase& test_case, std::ostream* os) {
 }
 
 // Generates clean names like "1_docx" instead of "0" or "1.docx"
-static std::string GenerateTestName(const ::testing::TestParamInfo<ContentTypeTestCase>& info) {
+static std::string GenerateTestName(const ::testing::TestParamInfo<content_type_test_case>& info) {
     std::string name = info.param.file_name;
     std::replace(name.begin(), name.end(), '.', '_');
     std::replace(name.begin(), name.end(), '-', '_');
     return name;
 }
 
-static const std::vector<ContentTypeTestCase> content_type_test_cases = {
+static const std::vector<content_type_test_case> content_type_test_cases = {
     // Modern Office Formats
     {"1.docx", {"application/zip"}, "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
     {"1.xlsx", {"application/zip"}, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
@@ -293,7 +293,7 @@ static const std::vector<ContentTypeTestCase> content_type_test_cases = {
 // ============================================================================
 // TEST SUITE 1: content_type::by_signature
 // ============================================================================
-class by_signature : public ::testing::TestWithParam<ContentTypeTestCase> {
+class by_signature : public ::testing::TestWithParam<content_type_test_case> {
 protected:
     static std::shared_ptr<content_type::by_signature::database> db;
     static void SetUpTestSuite() { db = std::make_shared<content_type::by_signature::database>(); }
@@ -329,7 +329,7 @@ INSTANTIATE_TEST_SUITE_P(content_type, by_signature, ::testing::ValuesIn(content
 // ============================================================================
 // TEST SUITE 2: content_type::detector (Top-level)
 // ============================================================================
-class detector : public ::testing::TestWithParam<ContentTypeTestCase> {
+class detector : public ::testing::TestWithParam<content_type_test_case> {
 protected:
     static std::shared_ptr<content_type::by_signature::database> db;
     static void SetUpTestSuite() { db = std::make_shared<content_type::by_signature::database>(); }

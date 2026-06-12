@@ -30,7 +30,7 @@ namespace attributes
 /**
  * @brief Represents CSS-like styling information for document elements.
  */
-struct Styling
+struct styling
 {
   /// List of CSS classes.
   std::vector<std::string> classes;
@@ -40,7 +40,7 @@ struct Styling
   std::string style;  
 };
 
-struct Email
+struct email
 {
   /// The sender's email address.
   std::string from;
@@ -56,7 +56,7 @@ struct Email
   std::optional<std::string> sender;
 };
 
-struct Metadata
+struct metadata
 {
   /// The author of the document.
   std::optional<std::string> author;
@@ -71,7 +71,7 @@ struct Metadata
   /// The number of words in the document.
   std::optional<size_t> word_count;
   /// Email-specific attributes if applicable.
-  std::optional<Email> email_attrs;
+  std::optional<email> email_attrs;
 };
 
 /**
@@ -79,13 +79,13 @@ struct Metadata
  */
 template<class T>
 concept WithStyling = requires(T tag) {
-  {tag.styling} -> std::convertible_to<Styling>;
+  {tag.styling} -> std::convertible_to<styling>;
 };
 
 /**
  * @brief Represents the geometric position and dimensions of an element.
  */
-struct Position
+struct position
 {
 	std::optional<double> x;            ///< Optional x-coordinate of the bottom-left corner.
 	std::optional<double> y;            ///< Optional y-coordinate of the bottom-left corner.

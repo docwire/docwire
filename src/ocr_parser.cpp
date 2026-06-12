@@ -84,9 +84,9 @@ struct context
 } // anonymous namespace
 
 template<>
-struct pimpl_impl<OCRParser> : with_pimpl_owner<OCRParser>
+struct pimpl_impl<ocr_parser> : with_pimpl_owner<ocr_parser>
 {
-    pimpl_impl(OCRParser& owner) : with_pimpl_owner{owner} {}
+    pimpl_impl(ocr_parser& owner) : with_pimpl_owner{owner} {}
     std::vector<Language> m_languages;
     ocr_confidence_threshold m_ocr_confidence_threshold;
     ocr_timeout m_ocr_timeout;
@@ -102,7 +102,7 @@ struct pimpl_impl<OCRParser> : with_pimpl_owner<OCRParser>
     static bool cancel (void* data, int words)
     {
         auto context_ptr = reinterpret_cast<context*>(data);
-        return context_ptr->emit_message(ocr::PleaseWait{}) == continuation::stop;
+        return context_ptr->emit_message(ocr::please_wait{}) == continuation::stop;
     }
 };  
 
@@ -235,7 +235,7 @@ const std::vector<mime_type> supported_mime_types
 
 } // anonymous namespace
 
-OCRParser::OCRParser(const std::vector<Language>& languages,
+ocr_parser::ocr_parser(const std::vector<Language>& languages,
                      ocr_confidence_threshold ocr_confidence_threshold_arg,
                      ocr_timeout ocr_timeout_arg,
                      ocr_data_path ocr_data_path_arg)
@@ -247,7 +247,7 @@ OCRParser::OCRParser(const std::vector<Language>& languages,
     impl().m_ocr_data_path = ocr_data_path_arg.v.empty() ? default_tessdata_path() : ocr_data_path_arg;
 }
 
-void OCRParser::parse(const data_source& data, const std::vector<Language>& languages)
+void ocr_parser::parse(const data_source& data, const std::vector<Language>& languages)
 {
     log_scope(data, languages);
 
@@ -316,7 +316,7 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
     {
         monitor.set_deadline_msecs(*impl().m_ocr_timeout.v);
     }
-    monitor.cancel = &pimpl_impl<OCRParser>::cancel;
+    monitor.cancel = &pimpl_impl<ocr_parser>::cancel;
     monitor.cancel_this = reinterpret_cast<void*>(&impl().m_context_stack.top());
 
     // Recognize the image
@@ -334,11 +334,11 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
     rit->Begin(); // Start at page level
     do { // Iterate Blocks (RIL_BLOCK)
         // TODO: Add styling attributes from rit->BoundingBox(RIL_BLOCK, ...) if needed
-        impl().emit_message(document::Section{});
+        impl().emit_message(document::section{});
 
         do { // Iterate Paragraphs (RIL_PARA) within the current Block
             // TODO: Add styling attributes from rit->BoundingBox(RIL_PARA, ...) if needed
-            impl().emit_message(document::Paragraph{});
+            impl().emit_message(document::paragraph{});
             bool current_line_had_high_confidence_text = false; // Used for BreakLine logic
 
             do { // Iterate TextLines (RIL_TEXTLINE) within the current Paragraph
@@ -358,9 +358,9 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
                         float conf = rit->Confidence(tesseract::RIL_WORD);
                         if (conf >= confidence_threshold) {
                             if (previous_word_on_line_was_high_confidence) {
-                                impl().emit_message(document::Text{" "}); // Add space before the current word
+                                impl().emit_message(document::text{" "}); // Add space before the current word
                             }
-                            impl().emit_message(document::Text{current_word_str});
+                            impl().emit_message(document::text{current_word_str});
                             current_line_had_high_confidence_text = true;
                             previous_word_on_line_was_high_confidence = true;
                         } else {
@@ -384,7 +384,7 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
                     // Add BreakLine if not the last line of the current paragraph
                     if (!rit->IsAtFinalElement(tesseract::RIL_PARA, tesseract::RIL_TEXTLINE)) {
                         // TODO: Add styling attributes from rit->BoundingBox(RIL_TEXTLINE, ...) to BreakLine if needed
-                        impl().emit_message(document::BreakLine{});
+                        impl().emit_message(document::break_line{});
                     }
                 }
                 // Check if this was the last line in the current paragraph before trying to advance to the next line.
@@ -394,7 +394,7 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
             } while (rit->Next(tesseract::RIL_TEXTLINE)); // Advances to next line in this paragraph
 
             // End of Paragraph processing
-            impl().emit_message(document::CloseParagraph{});
+            impl().emit_message(document::close_paragraph{});
             // Check if this was the last paragraph in the current block before trying to advance to the next paragraph.
             if (rit->IsAtFinalElement(tesseract::RIL_BLOCK, tesseract::RIL_PARA)) {
                 break; // Break from RIL_PARA loop; Next(RIL_BLOCK) will be called.
@@ -402,20 +402,20 @@ void OCRParser::parse(const data_source& data, const std::vector<Language>& lang
         } while (rit->Next(tesseract::RIL_PARA)); // Advances to next paragraph in this block
 
         // End of Block processing
-        impl().emit_message(document::CloseSection{});
+        impl().emit_message(document::close_section{});
     } while (rit->Next(tesseract::RIL_BLOCK)); // Advances to next block on the page
 }
 
-continuation OCRParser::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation ocr_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
     log_scope(msg);
 
     auto process = [this](const data_source& data, const message_callbacks& emit_message) {
         log_scope(data);
         scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_message}};
-        emit_message(document::Document{.metadata = []() { return attributes::Metadata{}; }});
+        emit_message(document::document{.metadata = []() { return attributes::metadata{}; }});
         parse(data, impl().m_languages.size() > 0 ? impl().m_languages : std::vector({ Language::eng }));
-        emit_message(document::CloseDocument{});
+        emit_message(document::close_document{});
         return continuation::proceed;
     };
 
@@ -429,10 +429,10 @@ continuation OCRParser::operator()(message_ptr msg, const message_callbacks& emi
         else
             return emit_message(std::move(msg));
     }
-    else if (msg->is<document::Image>())
+    else if (msg->is<document::image>())
     {
         log_scope();
-        document::Image& image = msg->get<document::Image>();
+        document::image& image = msg->get<document::image>();
         image.source.assert_not_encrypted();
         if (!image.source.highest_confidence_mime_type().has_value())
         {

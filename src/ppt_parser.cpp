@@ -67,7 +67,7 @@ namespace
 		return (unsigned long)(*buffer) | ((unsigned long)(*(buffer +1 )) << 8L) | ((unsigned long)(*(buffer + 2)) << 16L) | ((unsigned long)(*(buffer + 3)) << 24L);
 	}
 
-	void parseRecord(int rec_type, unsigned long rec_len, ThreadSafeOLEStreamReader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+	void parseRecord(int rec_type, unsigned long rec_len, thread_safe_ole_stream_reader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 	{
 		log_scope(rec_type, rec_len);
 		switch(rec_type)
@@ -209,12 +209,12 @@ namespace
 		throw_if (!reader.isValid(), reader.getLastError());
 	}
 
-	bool oleEof(ThreadSafeOLEStreamReader& reader)
+	bool oleEof(thread_safe_ole_stream_reader& reader)
 	{
 		return reader.tell() == reader.size();
 	}
 
-	void parseOldPPT(ThreadSafeOLEStorage& storage, ThreadSafeOLEStreamReader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+	void parseOldPPT(thread_safe_ole_storage& storage, thread_safe_ole_stream_reader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 	{
 		log_scope();
 		std::vector<unsigned char> content(reader.size());
@@ -236,7 +236,7 @@ namespace
 				text[i] = 13;
 	}
 
-	void parsePPT(ThreadSafeOLEStreamReader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+	void parsePPT(thread_safe_ole_stream_reader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 	{
 		log_scope();
 		std::vector<unsigned char> rec(8);
@@ -269,7 +269,7 @@ namespace
 		}
 	}
 
-	void assertFileIsNotEncrypted(ThreadSafeOLEStorage& storage)
+	void assertFileIsNotEncrypted(thread_safe_ole_storage& storage)
 	{
 		log_scope();
 		std::vector<std::string> dirs;
@@ -287,21 +287,21 @@ namespace
 		}
 	}
 
-	attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const message_callbacks& emit_message);
+	attributes::metadata metaData(const std::unique_ptr<thread_safe_ole_storage>& storage, const message_callbacks& emit_message);
 
 };
 
-PPTParser::PPTParser() = default;
+ppt_parser::ppt_parser() = default;
 
 void parse(const data_source& data, const message_callbacks& emit_message)
 {	
 	log_scope(data);
 	try
 	{
-		std::unique_ptr<ThreadSafeOLEStorage> storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
+		std::unique_ptr<thread_safe_ole_storage> storage = std::make_unique<thread_safe_ole_storage>(data.span());
 		throw_if (!storage->isValid(), "Error opening stream as OLE container");
 		assertFileIsNotEncrypted(*storage);
-		emit_message(document::Document
+		emit_message(document::document
 			{
 				.metadata = [&storage, emit_message]()
 				{
@@ -322,19 +322,19 @@ void parse(const data_source& data, const message_callbacks& emit_message)
 				// warning TODO: Check if there is a better way to get PowerPoint version.
 				if (dirs[i] == "Text_Content")
 				{
-					std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("Text_Content") };
+					std::unique_ptr<thread_safe_ole_stream_reader> reader { (thread_safe_ole_stream_reader*)storage->createStreamReader("Text_Content") };
 					throw_if (reader == NULL, storage->getLastError(), std::make_pair("stream_path", "Text_Content"));
 					parseOldPPT(*storage, *reader, text, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
-					emit_message(document::Text{.text = text});
+					emit_message(document::text{.text = text});
 					return;
 				}
 			}
 		}
-		std::unique_ptr<ThreadSafeOLEStreamReader> reader { (ThreadSafeOLEStreamReader*)storage->createStreamReader("PowerPoint Document") };
+		std::unique_ptr<thread_safe_ole_stream_reader> reader { (thread_safe_ole_stream_reader*)storage->createStreamReader("PowerPoint Document") };
 		throw_if (reader == NULL, storage->getLastError(), std::make_pair("stream_path", "PowerPoint Document"));
 		parsePPT(*reader, text, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
-		emit_message(document::Text{.text = text});
-		emit_message(document::CloseDocument{});
+		emit_message(document::text{.text = text});
+		emit_message(document::close_document{});
 		return;
 	}
 	catch (const std::exception& e)
@@ -346,10 +346,10 @@ void parse(const data_source& data, const message_callbacks& emit_message)
 namespace
 {
 
-attributes::Metadata metaData(const std::unique_ptr<ThreadSafeOLEStorage>& storage, const message_callbacks& emit_message)
+attributes::metadata metaData(const std::unique_ptr<thread_safe_ole_storage>& storage, const message_callbacks& emit_message)
 {
 	log_scope();
-	attributes::Metadata meta;
+	attributes::metadata meta;
 		parse_oshared_summary_info(*storage, meta, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
 		// If page count not found use slide count as page count
 		if (!meta.page_count)
@@ -380,7 +380,7 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-continuation PPTParser::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation ppt_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));

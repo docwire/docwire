@@ -18,10 +18,10 @@
 namespace docwire
 {
 
-class DOCWIRE_RTF_EXPORT RTFParser : public ChainElement
+class DOCWIRE_RTF_EXPORT rtf_parser : public chain_element
 {
 	public:
-		RTFParser();
+		rtf_parser();
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 };

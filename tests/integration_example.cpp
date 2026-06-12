@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
     std::filesystem::path(argv[1]) |
         content_type::detector{} |
         office_formats_parser() |
-        PlainTextExporter() |
+        plain_text_exporter() |
         local_ai::model_chain_element("Write a short summary for this text:\n\n") |
         out_stream;
   }

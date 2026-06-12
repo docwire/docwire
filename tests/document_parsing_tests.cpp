@@ -93,7 +93,7 @@ std::vector<std::string> get_misc_test_files_list() {
     };
 }
 
-class DocumentParsingTests : public ::testing::TestWithParam<std::string> {
+class document_parsing_tests : public ::testing::TestWithParam<std::string> {
 protected:
     std::vector<Language> get_ocr_languages_from_filename(const std::string& file_name) const {
         std::vector<Language> langs;
@@ -136,8 +136,8 @@ protected:
             std::forward<ChainStart>(chain_start_obj) |
                 content_type::detector{} |
                 archives_parser{} |
-                office_formats_parser{} | mail_parser{} | OCRParser{ocr_langs} |
-                PlainTextExporter() |
+                office_formats_parser{} | mail_parser{} | ocr_parser{ocr_langs} |
+                plain_text_exporter() |
                 output_stream;
         } catch (const std::exception& e) {
             FAIL() << errors::diagnostic_message(e);
@@ -147,7 +147,7 @@ protected:
     }
 };
 
-TEST_P(DocumentParsingTests, ParseFromPathAndExtractText) {
+TEST_P(document_parsing_tests, ParseFromPathAndExtractText) {
     // GIVEN
     const std::string& file_name = GetParam();
 
@@ -157,7 +157,7 @@ TEST_P(DocumentParsingTests, ParseFromPathAndExtractText) {
     ParseAndAssertOutput(file_name, std::filesystem::path{file_name});
 }
 
-TEST_P(DocumentParsingTests, ParseFromStreamAndExtractText) {
+TEST_P(document_parsing_tests, ParseFromStreamAndExtractText) {
     // GIVEN
     const std::string& file_name = GetParam();
 
@@ -177,7 +177,7 @@ void escape_test_name(std::string& str)
     );
 }
 
-class MetadataTest : public ::testing::TestWithParam<const char*>
+class metadata_test : public ::testing::TestWithParam<const char*>
 {
 protected:
 
@@ -188,7 +188,7 @@ protected:
     };
 };
 
-TEST_P(MetadataTest, ParseFromPathTest)
+TEST_P(metadata_test, ParseFromPathTest)
 {
     auto format = GetParam();
 
@@ -210,8 +210,8 @@ TEST_P(MetadataTest, ParseFromPathTest)
 
         std::filesystem::path{file_name} |
             content_type::by_file_extension::detector{} |
-          office_formats_parser{} | mail_parser{} | OCRParser{} |
-          MetaDataExporter() |
+          office_formats_parser{} | mail_parser{} | ocr_parser{} |
+          metadata_exporter() |
           output_stream;
 
         // THEN
@@ -220,21 +220,21 @@ TEST_P(MetadataTest, ParseFromPathTest)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ReadFromFileMetadataTests, MetadataTest,
+    ReadFromFileMetadataTests, metadata_test,
     ::testing::Values(
         "odt", "ods", "odp", "odg", "rtf", "doc", "xls", "ppt", "docx", "xlsx", "pptx", "html"
                       ),
-    [](const ::testing::TestParamInfo<MetadataTest::ParamType>& info) {
+    [](const ::testing::TestParamInfo<metadata_test::ParamType>& info) {
       std::string name = std::string{ info.param } + "_basic_metadata_tests";
       return name;
     });
 
-class CallbackTest : public ::testing::TestWithParam<std::tuple<const char*, const char*, message_transform_func>>
+class callback_test : public ::testing::TestWithParam<std::tuple<const char*, const char*, message_transform_func>>
 {
 };
 
 
-TEST_P(CallbackTest, ParseFromPathTest)
+TEST_P(callback_test, ParseFromPathTest)
 {
     const auto [name, out_name, callback] = GetParam();
 
@@ -255,9 +255,9 @@ TEST_P(CallbackTest, ParseFromPathTest)
 
     std::filesystem::path{file_name} |
         content_type::by_file_extension::detector{} |
-        office_formats_parser{} | mail_parser{} | OCRParser{} |
+        office_formats_parser{} | mail_parser{} | ocr_parser{} |
         callback |
-        PlainTextExporter() |
+        plain_text_exporter() |
         output_stream;
 
     // THEN
@@ -265,16 +265,16 @@ TEST_P(CallbackTest, ParseFromPathTest)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    StandardFilterTests, CallbackTest,
+    StandardFilterTests, callback_test,
     ::testing::Values(
-        std::make_tuple("1.pst", "1.pst.2.out", StandardFilter::filterByMailMinCreationTime(1644216799))
+        std::make_tuple("1.pst", "1.pst.2.out", standard_filter::filterByMailMinCreationTime(1644216799))
                       ));
 
-class HTMLWriterTest : public ::testing::TestWithParam<const char*>
+class html_writer_test : public ::testing::TestWithParam<const char*>
 {
 };
 
-TEST_P(HTMLWriterTest, ParseFromPathTest)
+TEST_P(html_writer_test, ParseFromPathTest)
 {
     // GIVEN
     auto name = GetParam();
@@ -293,8 +293,8 @@ TEST_P(HTMLWriterTest, ParseFromPathTest)
 
     std::filesystem::path{file_name} |
         content_type::by_file_extension::detector{} |
-        office_formats_parser{} | mail_parser{} | OCRParser{} |
-        HtmlExporter() |
+        office_formats_parser{} | mail_parser{} | ocr_parser{} |
+        html_exporter() |
         output_stream;
 
     // THEN
@@ -302,14 +302,14 @@ TEST_P(HTMLWriterTest, ParseFromPathTest)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ReadFromFileHTMLWriterTest, HTMLWriterTest,
+    ReadFromFileHTMLWriterTest, html_writer_test,
     ::testing::Values(
         "1.docx", "2.docx", "3.docx", "4.docx", "5.docx", "6.docx", "7.docx", "8.docx", "9.docx", "10.docx",
         "1.doc", "2.doc", "3.doc", "4.doc", "5.doc", "6.doc", "7.doc", "8.doc", "9.doc",
         "1.html", "2.html", "3.html", "4.html", "5.html", "6.html", "7.html", "8.html", "9.html",
         "first.eml", "basic_ocr-eng.png", "paragraphs-eng.png"
                       ),
-    [](const ::testing::TestParamInfo<HTMLWriterTest::ParamType>& info) {
+    [](const ::testing::TestParamInfo<html_writer_test::ParamType>& info) {
         std::string file_name = info.param;
         escape_test_name(file_name);
 
@@ -317,11 +317,11 @@ INSTANTIATE_TEST_SUITE_P(
         return name;
     });
 
-class PasswordProtectedTest : public ::testing::TestWithParam<const char*>
+class password_protected_test : public ::testing::TestWithParam<const char*>
 {
 };
 
-TEST_P(PasswordProtectedTest, MajorTestingModule)
+TEST_P(password_protected_test, MajorTestingModule)
 {
     // GIVEN
     auto format = GetParam();
@@ -336,8 +336,8 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
     {
         std::filesystem::path{file_name} |
             content_type::by_file_extension::detector{} |
-            office_formats_parser{} | mail_parser{} | OCRParser{} |
-            PlainTextExporter() |
+            office_formats_parser{} | mail_parser{} | ocr_parser{} |
+            plain_text_exporter() |
             output_stream;
         FAIL() << "We are not supporting password protected files yet. Why didn\'t we catch exception?\n";
     }
@@ -349,17 +349,17 @@ TEST_P(PasswordProtectedTest, MajorTestingModule)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ReadFromFilePasswordProtectedTests, PasswordProtectedTest,
+    ReadFromFilePasswordProtectedTests, password_protected_test,
     ::testing::Values(
         "doc", "docx", "key", "pages", "numbers", "odp", "pdf", "ppt", "pptx", "xls", "xlsb", "xlsx"
                       ),
-    [](const ::testing::TestParamInfo<PasswordProtectedTest::ParamType>& info) {
+    [](const ::testing::TestParamInfo<password_protected_test::ParamType>& info) {
         std::string format = info.param;
         std::string name = format + "_password_protected_test";
         return name;
     });
 
-class MultithreadedTest : public ::testing::TestWithParam<std::tuple<int, int, const char*>>
+class multithreaded_test : public ::testing::TestWithParam<std::tuple<int, int, const char*>>
 {
 };
 
@@ -369,18 +369,18 @@ void thread_func(const std::string& file_name)
 
     std::filesystem::path{file_name} |
       content_type::by_file_extension::detector{} |
-      office_formats_parser{} | mail_parser{} | OCRParser{} |
-      PlainTextExporter() |
+      office_formats_parser{} | mail_parser{} | ocr_parser{} |
+      plain_text_exporter() |
       output_stream;
 
     std::filesystem::path{file_name} |
       content_type::by_file_extension::detector{} |
-      office_formats_parser{} | mail_parser{} | OCRParser{} |
-      MetaDataExporter() |
+      office_formats_parser{} | mail_parser{} | ocr_parser{} |
+      metadata_exporter() |
       output_stream;
 }
 
-TEST_P(MultithreadedTest, ReadFromFileTests)
+TEST_P(multithreaded_test, ReadFromFileTests)
 {
     const auto [lower, upper, format] = GetParam();
 
@@ -412,7 +412,7 @@ TEST_P(MultithreadedTest, ReadFromFileTests)
 
 
 INSTANTIATE_TEST_SUITE_P(
-    BasicTests, MultithreadedTest,
+    BasicTests, multithreaded_test,
     ::testing::Values(
         std::make_tuple(1, 9, "odt"),
         std::make_tuple(1, 9, "fodt"),
@@ -437,14 +437,14 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(1, 9, "html"),
         std::make_tuple(1, 1, "pst")
                       ),
-    [](const ::testing::TestParamInfo<MultithreadedTest::ParamType>& info) {
+    [](const ::testing::TestParamInfo<multithreaded_test::ParamType>& info) {
       std::string name = std::string{ std::get<2>(info.param) } + "_multithreaded_tests";
       return name;
     });
 
 
 INSTANTIATE_TEST_SUITE_P(
-    AllDocumentParsing, DocumentParsingTests,
+    AllDocumentParsing, document_parsing_tests,
     ::testing::ValuesIn(
         []() {
             auto basic_files = generate_list_for_basic_tests();
@@ -456,17 +456,17 @@ INSTANTIATE_TEST_SUITE_P(
             return all_files;
         }()
     ),
-    [](const ::testing::TestParamInfo<DocumentParsingTests::ParamType>& info) {
+    [](const ::testing::TestParamInfo<document_parsing_tests::ParamType>& info) {
         std::string file_name = info.param;
         escape_test_name(file_name);
         return file_name;
     });
 
-class MultiPageFilterTest : public ::testing::TestWithParam<std::tuple<int, int, const char*>>
+class multi_page_filter_test : public ::testing::TestWithParam<std::tuple<int, int, const char*>>
 {
 };
 
-TEST_P(MultiPageFilterTest, ReadFromPathTests)
+TEST_P(multi_page_filter_test, ReadFromPathTests)
 {
   const auto [lower, upper, format] = GetParam();
   const int MAX_PAGES = 2;
@@ -492,10 +492,10 @@ TEST_P(MultiPageFilterTest, ReadFromPathTests)
 
     std::filesystem::path{file_name} |
         content_type::by_file_extension::detector{} |
-        office_formats_parser{} | mail_parser{} | OCRParser{} |
+        office_formats_parser{} | mail_parser{} | ocr_parser{} |
         [MAX_PAGES, counter = 0](message_ptr msg, const message_callbacks& emit_message) mutable
         {
-            if (msg->is<document::Page>())
+            if (msg->is<document::page>())
             {
                 ++counter;
                 if (counter > MAX_PAGES)
@@ -503,7 +503,7 @@ TEST_P(MultiPageFilterTest, ReadFromPathTests)
             }
             return emit_message(std::move(msg));
         } |
-        PlainTextExporter() |
+        plain_text_exporter() |
         output_stream;
 
     // THEN
@@ -513,11 +513,11 @@ TEST_P(MultiPageFilterTest, ReadFromPathTests)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-        BasicTests, MultiPageFilterTest,
+        BasicTests, multi_page_filter_test,
         ::testing::Values(
                 std::make_tuple(1, 1, "pdf")
         ),
-        [](const ::testing::TestParamInfo<MultiPageFilterTest::ParamType>& info) {
+        [](const ::testing::TestParamInfo<multi_page_filter_test::ParamType>& info) {
           std::string name = std::string{ std::get<2>(info.param) } + "_multi_page_filter_tests";
           return name;
         });

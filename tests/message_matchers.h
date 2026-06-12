@@ -21,9 +21,9 @@
 #include "stringification.h"
 
 template <typename T>
-class MessagePtrWithMatcher {
+class message_ptr_with_matcher {
 public:
-    explicit MessagePtrWithMatcher(const testing::Matcher<const T&>& sub_matcher)
+    explicit message_ptr_with_matcher(const testing::Matcher<const T&>& sub_matcher)
         : sub_matcher_(sub_matcher) {}
 
     void DescribeTo(std::ostream* os) const {
@@ -54,12 +54,12 @@ private:
 };
 
 template <typename T>
-testing::PolymorphicMatcher<MessagePtrWithMatcher<T>> MessagePtrWith(const testing::Matcher<const T&>& sub_matcher) {
-    return testing::MakePolymorphicMatcher(MessagePtrWithMatcher<T>(sub_matcher));
+testing::PolymorphicMatcher<message_ptr_with_matcher<T>> MessagePtrWith(const testing::Matcher<const T&>& sub_matcher) {
+    return testing::MakePolymorphicMatcher(message_ptr_with_matcher<T>(sub_matcher));
 }
 
 namespace docwire::document {
-    inline void PrintTo(const Text& text, std::ostream* os) {
+    inline void PrintTo(const text& text, std::ostream* os) {
         *os << testing::PrintToString(text.text);
     }
 }

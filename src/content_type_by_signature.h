@@ -89,7 +89,7 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& datab
 * @see content_type::detector
 * @see content_type::by_signature::detect
 */
-class detector : public ChainElement
+class detector : public chain_element
 {
 public:
 
@@ -118,9 +118,9 @@ public:
                 data_source& data = msg->get<data_source>();
                 detect(data, m_database_to_use.get(), m_allow_multiple);
             }
-            else if (msg->is<document::Image>())
+            else if (msg->is<document::image>())
             {
-                data_source& data = msg->get<document::Image>().source;
+                data_source& data = msg->get<document::image>().source;
                 detect(data, m_database_to_use.get(), m_allow_multiple);
             }
         }

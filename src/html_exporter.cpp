@@ -23,29 +23,29 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<HtmlExporter> : pimpl_impl_base
+struct pimpl_impl<html_exporter> : pimpl_impl_base
 {
 	std::shared_ptr<std::stringstream> m_stream;
-	HtmlWriter m_writer;
+	html_writer m_writer;
 	int m_nested_docs_level { 0 };
 };
 
-HtmlExporter::HtmlExporter()
+html_exporter::html_exporter()
 {}
 
-continuation HtmlExporter::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation html_exporter::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	log_scope(msg);
 	if (msg->is<std::exception_ptr>())
 		return emit_message(std::move(msg));
-	if (msg->is<document::Document>() || !impl().m_stream)
+	if (msg->is<document::document>() || !impl().m_stream)
 	{
 		++impl().m_nested_docs_level;
 		if (impl().m_nested_docs_level == 1)
 			impl().m_stream = std::make_shared<std::stringstream>();
 	}
 	impl().m_writer.write_to(msg, *impl().m_stream);
-	if (msg->is<document::CloseDocument>())
+	if (msg->is<document::close_document>())
 	{
 		throw_if(impl().m_nested_docs_level <= 0, errors::program_logic{});
 		--impl().m_nested_docs_level;

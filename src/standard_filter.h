@@ -22,13 +22,13 @@ namespace docwire
  * @brief Sets of standard filters to use in parsers.
  * example of use:
  * @code
- * std::filesystem::path{"test.pst"} | content_type::by_file_extension::detector{} | PSTParser{} |
- *  StandardFilter::filterByFolderName({"Inbox", "Sent"}) |
- *  StandardFilter::filterByAttachmentType({"jpg", "png"}) |
- *  PlainTextExporter{};
+ * std::filesystem::path{"test.pst"} | content_type::by_file_extension::detector{} | pst_parser{} |
+ *  standard_filter::filterByFolderName({"Inbox", "Sent"}) |
+ *  standard_filter::filterByAttachmentType({"jpg", "png"}) |
+ *  plain_text_exporter{};
  * @endcode
  */
-class DOCWIRE_CORE_EXPORT StandardFilter
+class DOCWIRE_CORE_EXPORT standard_filter
 {
 public:
   /**

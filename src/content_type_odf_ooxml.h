@@ -40,7 +40,7 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
  * @see content_type::detector
  * @see content_type::odf_ooxml::detect
  */
-class detector : public ChainElement
+class detector : public chain_element
 {
 public:
     continuation operator()(message_ptr msg, const message_callbacks& emit_message) override

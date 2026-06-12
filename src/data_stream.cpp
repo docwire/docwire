@@ -17,27 +17,27 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<FileStream> : pimpl_impl_base
+struct pimpl_impl<file_stream> : pimpl_impl_base
 {
 	FILE* m_file;
 	std::string m_file_name;
 	bool m_opened;
 };
 
-FileStream::FileStream(const std::string& file_name)
+file_stream::file_stream(const std::string& file_name)
 {
 	impl().m_file = NULL;
 	impl().m_opened = false;
 	impl().m_file_name = file_name;
 }
 
-FileStream::~FileStream()
+file_stream::~file_stream()
 {
 	if (impl().m_file)
 		fclose(impl().m_file);
 }
 
-bool FileStream::open()
+bool file_stream::open()
 {
 	if (impl().m_opened)
 		return true;
@@ -47,7 +47,7 @@ bool FileStream::open()
 	return impl().m_opened;
 }
 
-bool FileStream::close()
+bool file_stream::close()
 {
 	if (!impl().m_opened)
 		return true;
@@ -58,7 +58,7 @@ bool FileStream::close()
 	return true;
 }
 
-bool FileStream::read(void* data, int element_size, size_t elements_num)
+bool file_stream::read(void* data, int element_size, size_t elements_num)
 {
 	if (!impl().m_opened)
 		return false;
@@ -67,7 +67,7 @@ bool FileStream::read(void* data, int element_size, size_t elements_num)
 	return true;
 }
 
-bool FileStream::seek(int offset, int whence)
+bool file_stream::seek(int offset, int whence)
 {
 	if (!impl().m_opened)
 		return false;
@@ -76,28 +76,28 @@ bool FileStream::seek(int offset, int whence)
 	return true;
 }
 
-bool FileStream::eof()
+bool file_stream::eof()
 {
 	if (!impl().m_opened)
 		return true;
 	return !(feof(impl().m_file) == 0);
 }
 
-int FileStream::getc()
+int file_stream::getc()
 {
 	if (!impl().m_opened)
 		return 0;
 	return fgetc(impl().m_file);
 }
 
-bool FileStream::unGetc(int ch)
+bool file_stream::unGetc(int ch)
 {
 	if (!impl().m_opened)
 		return false;
 	return ungetc(ch, impl().m_file) == ch;
 }
 
-size_t FileStream::size()
+size_t file_stream::size()
 {
 	if (!impl().m_opened)
 		return 0;
@@ -109,48 +109,48 @@ size_t FileStream::size()
 	return size;
 }
 
-size_t FileStream::tell()
+size_t file_stream::tell()
 {
 	return ftell(impl().m_file);
 }
 
-std::string FileStream::name()
+std::string file_stream::name()
 {
 	return impl().m_file_name;
 }
 
-DataStream* FileStream::clone()
+data_stream* file_stream::clone()
 {
-	return new FileStream(impl().m_file_name);
+	return new file_stream(impl().m_file_name);
 }
 
 template<>
-struct pimpl_impl<BufferStream> : pimpl_impl_base
+struct pimpl_impl<buffer_stream> : pimpl_impl_base
 {
 	const char* m_buffer;
 	size_t m_size;
 	size_t m_pointer;
 };
 
-BufferStream::BufferStream(const char *buffer, size_t size)
+buffer_stream::buffer_stream(const char *buffer, size_t size)
 {
 	impl().m_buffer = buffer;
 	impl().m_size = size;
 	impl().m_pointer = 0;
 }
 
-bool BufferStream::open()
+bool buffer_stream::open()
 {
 	impl().m_pointer = 0;
 	return true;
 }
 
-bool BufferStream::close()
+bool buffer_stream::close()
 {
 	return true;
 }
 
-bool BufferStream::read(void *data, int element_size, size_t elements_num)
+bool buffer_stream::read(void *data, int element_size, size_t elements_num)
 {
 	size_t len = element_size * elements_num;
 	if (len > impl().m_size - impl().m_pointer)
@@ -160,7 +160,7 @@ bool BufferStream::read(void *data, int element_size, size_t elements_num)
 	return true;
 }
 
-bool BufferStream::seek(int offset, int whence)
+bool buffer_stream::seek(int offset, int whence)
 {
 	size_t position;
 	switch (whence)
@@ -183,19 +183,19 @@ bool BufferStream::seek(int offset, int whence)
 	return true;
 }
 
-bool BufferStream::eof()
+bool buffer_stream::eof()
 {
 	return impl().m_pointer == impl().m_size;
 }
 
-int BufferStream::getc()
+int buffer_stream::getc()
 {
 	if (impl().m_size - impl().m_pointer < 1)
 		return EOF;
 	return impl().m_buffer[impl().m_pointer++];
 }
 
-bool BufferStream::unGetc(int ch)
+bool buffer_stream::unGetc(int ch)
 {
 	if (impl().m_pointer < 1)
 	{
@@ -205,24 +205,24 @@ bool BufferStream::unGetc(int ch)
 	return true;
 }
 
-size_t BufferStream::size()
+size_t buffer_stream::size()
 {
 	return impl().m_size;
 }
 
-size_t BufferStream::tell()
+size_t buffer_stream::tell()
 {
 	return impl().m_pointer;
 }
 
-std::string BufferStream::name()
+std::string buffer_stream::name()
 {
 	return "Memory buffer";
 }
 
-DataStream* BufferStream::clone()
+data_stream* buffer_stream::clone()
 {
-	return new BufferStream(impl().m_buffer, impl().m_size);
+	return new buffer_stream(impl().m_buffer, impl().m_size);
 }
 
 } // namespace docwire

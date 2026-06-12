@@ -20,9 +20,9 @@ namespace docwire::serialization
 {
 
 template<>
-struct serializer<mail::Attachment>
+struct serializer<mail::attachment>
 {
-    value full(const mail::Attachment& attachment) const
+    value full(const mail::attachment& attachment) const
     {
         return object{{
             {"name", serialization::full(attachment.name)},
@@ -30,13 +30,13 @@ struct serializer<mail::Attachment>
             {"extension", serialization::full(attachment.extension)}
         }};
     }
-    value typed_summary(const mail::Attachment& attachment) const { return decorate_with_typeid(full(attachment), type_name::pretty<mail::Attachment>()); }
+    value typed_summary(const mail::attachment& attachment) const { return decorate_with_typeid(full(attachment), type_name::pretty<mail::attachment>()); }
 };
 
 template<>
-struct serializer<mail::Mail>
+struct serializer<mail::mail>
 {
-    value full(const mail::Mail& mail) const
+    value full(const mail::mail& mail) const
     {
         return object{{
             {"subject", serialization::full(mail.subject)},
@@ -44,20 +44,20 @@ struct serializer<mail::Mail>
             {"level", serialization::full(mail.level)}
         }};
     }
-    value typed_summary(const mail::Mail& mail) const { return decorate_with_typeid(full(mail), type_name::pretty<mail::Mail>()); }
+    value typed_summary(const mail::mail& mail) const { return decorate_with_typeid(full(mail), type_name::pretty<mail::mail>()); }
 };
 
 template<>
-struct serializer<mail::Folder>
+struct serializer<mail::folder>
 {
-    value full(const mail::Folder& folder) const
+    value full(const mail::folder& folder) const
     {
         return object{{
             {"name", serialization::full(folder.name)},
             {"level", serialization::full(folder.level)}
         }};
     }
-    value typed_summary(const mail::Folder& folder) const { return decorate_with_typeid(full(folder), type_name::pretty<mail::Folder>()); }
+    value typed_summary(const mail::folder& folder) const { return decorate_with_typeid(full(folder), type_name::pretty<mail::folder>()); }
 };
 
 }

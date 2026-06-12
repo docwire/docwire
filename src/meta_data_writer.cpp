@@ -17,8 +17,8 @@
 
 namespace docwire
 {
-std::shared_ptr<TextElement>
-write_meta_data(const attributes::Metadata& metadata)
+std::shared_ptr<text_element>
+write_meta_data(const attributes::metadata& metadata)
 {
   std::string text = "";
   auto author = metadata.author;
@@ -70,15 +70,15 @@ write_meta_data(const attributes::Metadata& metadata)
   {
     text += "Word count: unidentified\n";
   }
-  return std::make_shared<TextElement>(text);
+  return std::make_shared<text_element>(text);
 }
 
 void
-MetaDataWriter::write_to(const message_ptr& msg, std::ostream &file)
+metadata_writer::write_to(const message_ptr& msg, std::ostream &file)
 {
-  if (msg->is<document::Document>())
+  if (msg->is<document::document>())
   {
-    write_meta_data(msg->get<document::Document>().metadata())->write_to(file);
+    write_meta_data(msg->get<document::document>().metadata())->write_to(file);
   }
 }
 

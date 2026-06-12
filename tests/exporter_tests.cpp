@@ -42,45 +42,45 @@ void test_table_exporting(const std::string& expected)
     auto parsing_chain = Exporter{} | output_stream;
     auto msgs = make_message_vector
     (
-        document::Document{},
-        document::Table{},
-        document::Caption{},
-        document::Text{.text = "Table caption"},
-        document::CloseCaption{},
-        document::TableRow{},
-        document::TableCell{},
-        document::Text{.text = "Header 1"},
-        document::CloseTableCell{},
-        document::TableCell{},
-        document::Text{.text = "Header 2"},
-        document::CloseTableCell{},
-        document::CloseTableRow{},
-        document::TableRow{},
-        document::TableCell{},
-        document::Text{.text = "Row 1 Cell 1"},
-        document::CloseTableCell{},
-        document::TableCell{},
-        document::Text{.text = "Row 1 Cell 2"},
-        document::CloseTableCell{},
-        document::CloseTableRow{},
-        document::TableRow{},
-        document::TableCell{},
-        document::Text{.text = "Row 2 Cell 1"},
-        document::CloseTableCell{},
-        document::TableCell{},
-        document::Text{.text = "Row 2 Cell 2"},
-        document::CloseTableCell{},
-        document::CloseTableRow{},
-        document::TableRow{},
-        document::TableCell{},
-        document::Text{.text = "Footer 1"},
-        document::CloseTableCell{},
-        document::TableCell{},
-        document::Text{.text = "Footer 2"},
-        document::CloseTableCell{},
-        document::CloseTableRow{},
-        document::CloseTable{},
-        document::CloseDocument{}
+        document::document{},
+        document::table{},
+        document::caption{},
+        document::text{.text = "Table caption"},
+        document::close_caption{},
+        document::table_row{},
+        document::table_cell{},
+        document::text{.text = "Header 1"},
+        document::close_table_cell{},
+        document::table_cell{},
+        document::text{.text = "Header 2"},
+        document::close_table_cell{},
+        document::close_table_row{},
+        document::table_row{},
+        document::table_cell{},
+        document::text{.text = "Row 1 Cell 1"},
+        document::close_table_cell{},
+        document::table_cell{},
+        document::text{.text = "Row 1 Cell 2"},
+        document::close_table_cell{},
+        document::close_table_row{},
+        document::table_row{},
+        document::table_cell{},
+        document::text{.text = "Row 2 Cell 1"},
+        document::close_table_cell{},
+        document::table_cell{},
+        document::text{.text = "Row 2 Cell 2"},
+        document::close_table_cell{},
+        document::close_table_row{},
+        document::table_row{},
+        document::table_cell{},
+        document::text{.text = "Footer 1"},
+        document::close_table_cell{},
+        document::table_cell{},
+        document::text{.text = "Footer 2"},
+        document::close_table_cell{},
+        document::close_table_row{},
+        document::close_table{},
+        document::close_document{}
     );
     for (auto& msg : msgs)
     {
@@ -89,9 +89,9 @@ void test_table_exporting(const std::string& expected)
     ASSERT_EQ(output_stream.str(), expected);
 }
 
-TEST(HtmlExporter, table)
+TEST(html_exporter, table)
 {
-    test_table_exporting<HtmlExporter>(
+    test_table_exporting<html_exporter>(
         "<!DOCTYPE html>\n"
         "<html>\n"
         "<head>\n"
@@ -110,9 +110,9 @@ TEST(HtmlExporter, table)
         "</html>\n");
 }
 
-TEST(PlainTextExporter, table)
+TEST(plain_text_exporter, table)
 {
-    test_table_exporting<PlainTextExporter>(
+    test_table_exporting<plain_text_exporter>(
         "Table caption\n"
         "Header 1      Header 2    \n"
         "Row 1 Cell 1  Row 1 Cell 2\n"
@@ -121,68 +121,68 @@ TEST(PlainTextExporter, table)
         "\n");
 }
 
-TEST(PlainTextExporter, table_inside_table_without_rows)
+TEST(plain_text_exporter, table_inside_table_without_rows)
 {
     ASSERT_ANY_THROW(
         std::string{"<html><table><table><tr><td>table inside table without cells</td></tr></table></table></html>"} |
-            HTMLParser{} |
-            PlainTextExporter{} |
+            html_parser{} |
+            plain_text_exporter{} |
             std::ostringstream{}
     );
 }
 
-TEST(PlainTextExporter, table_inside_table_row_without_cells)
+TEST(plain_text_exporter, table_inside_table_row_without_cells)
 {
     ASSERT_ANY_THROW(
         std::string{"<html><table><tr><table><tr><td>table inside table without cells</td></tr></table></tr></table></html>"} |
-            HTMLParser{} |
-            PlainTextExporter{} |
+            html_parser{} |
+            plain_text_exporter{} |
             std::ostringstream{}
     );
 }
 
-TEST(PlainTextExporter, cell_inside_table_without_rows)
+TEST(plain_text_exporter, cell_inside_table_without_rows)
 {
     ASSERT_ANY_THROW(
         std::string{"<html><table><thead><td>cell without row</td></thead></table></html>"} |
-            HTMLParser{} |
-            PlainTextExporter{} |
+            html_parser{} |
+            plain_text_exporter{} |
             std::ostringstream{}
     );
 }
 
-TEST(PlainTextExporter, content_inside_table_without_rows)
+TEST(plain_text_exporter, content_inside_table_without_rows)
 {
     ASSERT_ANY_THROW(
         std::string{"<html><table>content without rows</table></html>"} |
-            HTMLParser{} |
-            PlainTextExporter{} |
+            html_parser{} |
+            plain_text_exporter{} |
             std::ostringstream{}
     );
 }
 
-TEST(PlainTextExporter, content_inside_table_row_without_cells)
+TEST(plain_text_exporter, content_inside_table_row_without_cells)
 {
     ASSERT_ANY_THROW(
         std::string{"<html><table><tr>content without cell</tr></table></html>"} |
-            HTMLParser{} |
-            PlainTextExporter{} |
+            html_parser{} |
+            plain_text_exporter{} |
             std::ostringstream{}
     );
 }
 
-TEST(PlainTextExporter, eol_sequence_crlf)
+TEST(plain_text_exporter, eol_sequence_crlf)
 {
-    PlainTextExporter exporter{eol_sequence{"\r\n"}};
+    plain_text_exporter exporter{eol_sequence{"\r\n"}};
     std::ostringstream output_stream{};
     auto parsing_chain = exporter | output_stream;
     std::vector<message_ptr> msgs = make_message_vector
     (
-        document::Document{},
-        document::Text{.text = "Line1"},
-        document::BreakLine{},
-        document::Text{.text = "Line2"},
-        document::CloseDocument{}
+        document::document{},
+        document::text{.text = "Line1"},
+        document::break_line{},
+        document::text{.text = "Line2"},
+        document::close_document{}
     );
     for (auto& msg : msgs)
     {
@@ -191,23 +191,23 @@ TEST(PlainTextExporter, eol_sequence_crlf)
     ASSERT_EQ(output_stream.str(), "Line1\r\nLine2\r\n");
 }
 
-TEST(PlainTextExporter, custom_link_formatting)
+TEST(plain_text_exporter, custom_link_formatting)
 {
-    PlainTextExporter exporter(
+    plain_text_exporter exporter(
         eol_sequence{"\n"},
         link_formatter{
-            .format_opening = [](const document::Link& link){ return (link.url ? "(" + *link.url + ")" : "") + "["; },
-            .format_closing = [](const document::CloseLink& link){ return "]"; }
+            .format_opening = [](const document::link& link){ return (link.url ? "(" + *link.url + ")" : "") + "["; },
+            .format_closing = [](const document::close_link& link){ return "]"; }
         });
     std::ostringstream output_stream{};
     auto parsing_chain = exporter | output_stream;
     std::vector<message_ptr> msgs = make_message_vector
     (
-        document::Document{},
-        document::Link{.url = "https://docwire.io"},
-        document::Text{.text = "DocWire SDK home page"},
-        document::CloseLink{},
-        document::CloseDocument{}
+        document::document{},
+        document::link{.url = "https://docwire.io"},
+        document::text{.text = "DocWire SDK home page"},
+        document::close_link{},
+        document::close_document{}
     );
     for (auto msg: msgs)
     {

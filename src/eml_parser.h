@@ -20,14 +20,14 @@
 namespace docwire
 {
 
-class DOCWIRE_MAIL_EXPORT EMLParser : public ChainElement, public with_pimpl<EMLParser>
+class DOCWIRE_MAIL_EXPORT eml_parser : public chain_element, public with_pimpl<eml_parser>
 {
 	private:
-		using with_pimpl<EMLParser>::impl;
-		friend pimpl_impl<EMLParser>;
+		using with_pimpl<eml_parser>::impl;
+		friend pimpl_impl<eml_parser>;
 
 	public:
-		EMLParser();
+		eml_parser();
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 };

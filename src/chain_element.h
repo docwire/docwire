@@ -19,20 +19,20 @@
 namespace docwire
 {
 
-class ParsingChain;
+class parsing_chain;
 
-class DOCWIRE_CORE_EXPORT ChainElement : public with_pimpl<ChainElement>
+class DOCWIRE_CORE_EXPORT chain_element : public with_pimpl<chain_element>
 {
 public:
-  ChainElement();
-  ChainElement(ChainElement&&) = default;
-  virtual ~ChainElement() = default;
-  ChainElement& operator=(ChainElement&&) = default;
+  chain_element();
+  chain_element(chain_element&&) = default;
+  virtual ~chain_element() = default;
+  chain_element& operator=(chain_element&&) = default;
 
   virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) = 0;
 
   /**
-   * @brief Check if ChainElement is a leaf (last element which doesn't produce any messages). At this moment only Exporters are leafs.
+   * @brief Check if chain element is a leaf (last element which doesn't produce any messages). At this moment only exporters are leafs.
    * @return true if leaf
    */
   virtual bool is_leaf() const = 0;

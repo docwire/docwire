@@ -127,11 +127,11 @@ TEST(Logging, Iterable)
 
 TEST(Logging, MemberVariable)
 {
-    struct Point { int x; int y; };
-    struct Rect { Point top_left; Point bottom_right; };
+    struct point { int x; int y; };
+    struct rect { point top_left; point bottom_right; };
 
-    Rect r1 = {{1, 2}, {3, 4}};
-    Rect r2 = {{5, 6}, {7, 8}};
+    rect r1 = {{1, 2}, {3, 4}};
+    rect r2 = {{5, 6}, {7, 8}};
 
 	std::stringstream log_stream;
     {

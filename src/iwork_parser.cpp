@@ -229,7 +229,7 @@ static std::string ParseDuration(std::string& format, long value)
 	return os.str();
 }
 
-static std::string find_main_xml_file(const ZipReader& unzip)
+static std::string find_main_xml_file(const zip_reader& unzip)
 {
 	log_scope();
 	if (unzip.exists("index.xml"))
@@ -263,7 +263,7 @@ const std::vector<mime_type> supported_mime_types =
 } // anonymous namespace
 
 template<>
-struct pimpl_impl<IWorkParser> : pimpl_impl_base
+struct pimpl_impl<iwork_parser> : pimpl_impl_base
 {
 	void parse(const data_source& data, const message_callbacks& emit_message);
 	std::stack<context> m_context_stack;
@@ -274,15 +274,15 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		return m_context_stack.top().emit_message(std::forward<T>(object));
 	}
 
-	class DataSource
+	class data_source
 	{
 		private:
-			ZipReader* m_zipfile;
+			zip_reader* m_zipfile;
 			bool m_done;
 			std::string m_xml_file;
 
 		public:
-			DataSource(ZipReader& zipfile, std::string& xml_file)
+			data_source(zip_reader& zipfile, std::string& xml_file)
 			{
 				m_zipfile = &zipfile;
 				m_done = false;
@@ -310,7 +310,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 			}
 	};
 
-	class XmlReader
+	class xml_reader
 	{
 		public:
 			enum XmlElementKind
@@ -322,14 +322,14 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 				no_element			//end of data
 			};
 
-			struct XmlElement
+			struct xml_element
 			{
 				XmlElementKind m_kind;
 				std::map<std::string, std::string> m_attributes;
 				std::string m_name;
 				std::string m_characters;
 
-				XmlElement()
+				xml_element()
 				{
 					m_name.reserve(50);
 					m_characters.reserve(1024);
@@ -352,7 +352,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		private:
 			bool m_tag_opened;
-			DataSource* m_data_source;
+			data_source* m_data_source;
 			int m_chunk_len;
 			char m_chunk[1025];
 			int m_pointer;
@@ -382,7 +382,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 				}
 			}
 
-			void ReadXmlAttributes(XmlElement& xml_element)
+			void ReadXmlAttributes(xml_element& xml_element)
 			{
 				log_scope();
 				if (!m_tag_opened)
@@ -442,7 +442,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 				}
 			}
 
-			XmlReader(DataSource& data_source)
+			xml_reader(data_source& data_source)
 			{
 				m_data_source = &data_source;
 				m_tag_opened = false;
@@ -451,7 +451,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 				m_chunk[0] = '\0';
 			}
 
-			void GetNextElement(XmlElement& xml_element)
+			void GetNextElement(xml_element& xml_element)
 			{
 				log_scope();
 				xml_element.Clear();
@@ -510,7 +510,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 			}
 	};
 
-	struct IWorkContent
+	struct iwork_content
 	{
 		enum IWorkType
 		{
@@ -521,30 +521,30 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		};
 
 		//each xml element which I am interested in will be handled by own function
-		typedef void (IWorkContent::*XmlElementHandler)(void);
+		typedef void (iwork_content::*XmlElementHandler)(void);
 
-		struct NumberFormat
+		struct number_format
 		{
 			int m_type_numbers;			//money=1, normal number=0, percentage=2
 			std::string m_format_string;	//I should add more support for this parameter
 			int m_fraction_precision;
 			std::string m_currency;
 
-			NumberFormat()
+			number_format()
 			{
 				m_type_numbers = 0;
 				m_fraction_precision = 0;
 			}
 		};
 
-		struct CellStyle
+		struct cell_style
 		{
-			NumberFormat* m_number_format;
+			number_format* m_number_format;
 			std::string m_date_format;
 			std::string m_duration_format;
 			std::string m_id;
 
-			CellStyle()
+			cell_style()
 			{
 				m_number_format = NULL;
 				m_date_format = "dd.MM.yyyy hh:mm a";
@@ -552,16 +552,16 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 			}
 		};
 
-		struct TableCell
+		struct table_cell
 		{
 			bool m_is_date;
 			bool m_is_duration;
 			bool m_is_text;
 			bool m_is_number;
-			CellStyle* m_cell_style;
+			cell_style* m_cell_style;
 			std::string m_value;
 
-			TableCell()
+			table_cell()
 			{
 				m_value.reserve(2048);
 				Clear();
@@ -578,13 +578,13 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 			}
 		};
 
-		struct TextualElement
+		struct textual_element
 		{
 			double m_x, m_y;
 			std::string m_text;
 			std::string* m_text_pointer;
 
-			TextualElement()
+			textual_element()
 			{
 				m_x = 0;
 				m_y = 0;
@@ -592,23 +592,23 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 				m_text_pointer = &m_text;
 			}
 
-			virtual ~TextualElement()
+			virtual ~textual_element()
 			{
 			}
 		};
 
-		struct Table : public TextualElement
+		struct table : public textual_element
 		{
 			int m_rows_count;
 			int m_columns_count;
 			int m_current_column;
 			bool m_in_pm;
-			TableCell m_current_cell;
+			table_cell m_current_cell;
 			std::map<std::string, std::string> m_pms;
 			std::string m_selected_pm;
 			std::list<int> m_cells_per_rows;
 
-			Table()
+			table()
 			{
 				m_rows_count = 0;
 				m_columns_count = 0;
@@ -619,8 +619,8 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 			void AddCell()
 			{
-				CellStyle* cell_style = m_current_cell.m_cell_style;
-				NumberFormat* number_format = cell_style == NULL ? NULL : cell_style->m_number_format;
+				cell_style* cell_style = m_current_cell.m_cell_style;
+				number_format* number_format = cell_style == NULL ? NULL : cell_style->m_number_format;
 				std::ostringstream os;
 
 				if (m_current_cell.m_is_duration)
@@ -729,7 +729,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 			}
 		};
 
-		struct Chart : public TextualElement
+		struct chart : public textual_element
 		{
 			int m_series_count;
 			int m_chart_direction;
@@ -738,7 +738,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 			std::list<std::string> m_row_names;
 			std::list<std::string> m_column_names;
 
-			Chart()
+			chart()
 			{
 				m_series_count = -1;
 				m_chart_direction = 0;
@@ -791,18 +791,18 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		//a lot of variables to store data. Some of them are common beetwen pages/numbers/key, some are special
 		std::string* m_current_text_pointer;
 		std::string m_text_body;
-		XmlReader::XmlElement m_current_element;
+		xml_reader::xml_element m_current_element;
 		bool m_reading_text;
 		int m_pages_count;
-		std::list<TextualElement*> m_textual_elements;
-		std::map<std::string, CellStyle> m_cell_styles;
-		std::map<std::string, NumberFormat> m_number_formats;
+		std::list<textual_element*> m_textual_elements;
+		std::map<std::string, cell_style> m_cell_styles;
+		std::map<std::string, number_format> m_number_formats;
 		std::map<std::string, std::string> m_date_formats;
 		std::map<std::string, std::string> m_duration_formats;
-		CellStyle* m_current_cell_style;
-		Table* m_current_table;
-		Chart* m_current_chart;
-		TextualElement* m_current_textual;
+		cell_style* m_current_cell_style;
+		table* m_current_table;
+		chart* m_current_chart;
+		textual_element* m_current_textual;
 		bool m_in_textual_element;
 		bool m_in_table;
 		bool m_in_cell_style;
@@ -832,10 +832,10 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		int m_footnote_start;
 		int m_footnote_count;
 		IWorkType m_iwork_type;
-		XmlReader* m_xml_reader;
+		xml_reader* m_xml_reader;
 		std::map<std::string, XmlElementHandler> m_handlers;
 
-		IWorkContent(XmlReader& xml_reader)
+		iwork_content(xml_reader& xml_reader)
 		{
 			m_xml_reader = &xml_reader;
 			m_in_annotation = false;
@@ -871,7 +871,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 			RegisterHandlers();
 		}
 
-		~IWorkContent()
+		~iwork_content()
 		{
 			ClearTextualElements();
 		}
@@ -883,7 +883,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ClearTextualElements()
 		{
-			std::list<TextualElement*>::iterator it = m_textual_elements.begin();
+			std::list<textual_element*>::iterator it = m_textual_elements.begin();
 			while (it != m_textual_elements.end())
 			{
 				delete (*it);
@@ -892,7 +892,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 			m_textual_elements.clear();
 		}
 
-		static bool CompareElements(TextualElement* first, TextualElement* second)
+		static bool CompareElements(textual_element* first, textual_element* second)
 		{
 			if (first->m_y < second->m_y)
 				return true;
@@ -904,7 +904,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		void AddTextFromTextualElements()
 		{
 			m_textual_elements.sort(CompareElements);
-			std::list<TextualElement*>::iterator it = m_textual_elements.begin();
+			std::list<textual_element*>::iterator it = m_textual_elements.begin();
 			while (it != m_textual_elements.end())
 			{
 				m_text_body += (*it)->m_text;
@@ -916,13 +916,13 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseLsWorkspace()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 			{
 				++m_pages_count;
 				if (m_pages_count > 1)
 					(*m_current_text_pointer) += "\n";
 			}
-			else if (m_current_element.m_kind == XmlReader::closing_element)
+			else if (m_current_element.m_kind == xml_reader::closing_element)
 			{
 				AddTextFromTextualElements();
 				ClearTextualElements();
@@ -931,7 +931,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseSfP()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 				m_reading_text = true;
 			else
 				m_reading_text = false;
@@ -949,12 +949,12 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseSfTabularInfo()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 			{
-				Table* table = NULL;
+				table* table = NULL;
 				try
 				{
-					table = new Table();
+					table = new iwork_content::table();
 					m_current_table = table;
 					m_current_textual = table;
 					m_in_textual_element = true;
@@ -1055,7 +1055,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		{
 			if (m_in_table)
 			{
-				if (m_current_element.m_kind == XmlReader::opening_element)
+				if (m_current_element.m_kind == xml_reader::opening_element)
 					m_current_table->m_in_pm = true;
 				else
 				{
@@ -1077,7 +1077,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		{
 			if (m_in_table)
 			{
-				if (m_current_element.m_kind != XmlReader::opening_element)
+				if (m_current_element.m_kind != xml_reader::opening_element)
 				{
 					m_current_table->AddCell();
 					if (m_current_table->m_in_pm == false)
@@ -1111,7 +1111,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 					if (m_cell_styles.find(format_name) != m_cell_styles.end())
 						m_current_table->m_current_cell.m_cell_style = &m_cell_styles[format_name];
 				}
-				if (m_current_element.m_kind != XmlReader::opening_element)
+				if (m_current_element.m_kind != xml_reader::opening_element)
 				{
 					m_current_table->AddCell();
 					if (m_current_table->m_in_pm == false)
@@ -1122,7 +1122,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseSfS()
 		{
-			if (m_current_element.m_kind != XmlReader::opening_element)
+			if (m_current_element.m_kind != xml_reader::opening_element)
 			{
 				if (m_in_table && m_current_table->m_in_pm == false)
 					m_current_table->FinishCell();
@@ -1156,7 +1156,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 					if (m_cell_styles.find(format_name) != m_cell_styles.end())
 						m_current_table->m_current_cell.m_cell_style = &m_cell_styles[format_name];
 				}
-				if (m_current_element.m_kind != XmlReader::opening_element)
+				if (m_current_element.m_kind != xml_reader::opening_element)
 				{
 					m_current_table->m_current_cell.m_is_date = true;
 					m_current_table->m_current_cell.m_is_number = false;
@@ -1182,7 +1182,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 					if (m_current_element.HasAttribute("sfa:ID"))
 						m_current_table->m_selected_pm = m_current_element.m_attributes["sfa:ID"];
 				}
-				if (m_current_element.m_kind != XmlReader::opening_element)
+				if (m_current_element.m_kind != xml_reader::opening_element)
 				{
 					m_current_table->AddCell();
 					if (m_current_table->m_in_pm == false)
@@ -1227,7 +1227,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 					if (m_cell_styles.find(format_name) != m_cell_styles.end())
 						m_current_table->m_current_cell.m_cell_style = &m_cell_styles[format_name];
 				}
-				if (m_current_element.m_kind != XmlReader::opening_element)
+				if (m_current_element.m_kind != xml_reader::opening_element)
 				{
 					m_current_table->m_current_cell.m_is_duration = true;
 					m_current_table->m_current_cell.m_is_number = false;
@@ -1246,12 +1246,12 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseSfStickyNote()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 			{
 				m_current_textual = NULL;
 				try
 				{
-					m_current_textual = new TextualElement();
+					m_current_textual = new textual_element();
 					m_current_text_pointer = &m_current_textual->m_text;
 					m_in_textual_element = true;
 					m_textual_elements.push_back(m_current_textual);
@@ -1275,12 +1275,12 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseSfChartInfo()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 			{
-				Chart* chart = NULL;
+				chart* chart = NULL;
 				try
 				{
-					Chart* chart = new Chart();
+					chart = new iwork_content::chart();
 					m_current_chart = chart;
 					m_current_textual = chart;
 					m_current_text_pointer = &m_current_chart->m_text;
@@ -1296,7 +1296,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 					throw;
 				}
 			}
-			else if (m_in_chart && m_current_element.m_kind == XmlReader::closing_element)
+			else if (m_in_chart && m_current_element.m_kind == xml_reader::closing_element)
 			{
 				m_current_chart->FinishChart();
 				(*m_current_text_pointer) += "\n\n";
@@ -1341,7 +1341,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		{
 			if (m_in_chart)
 			{
-				if (m_current_element.m_kind == XmlReader::opening_element)
+				if (m_current_element.m_kind == xml_reader::opening_element)
 					m_current_chart->m_filling_rows = true;
 				else
 					m_current_chart->m_filling_rows = false;
@@ -1352,7 +1352,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		{
 			if (m_in_chart)
 			{
-				if (m_current_element.m_kind == XmlReader::opening_element)
+				if (m_current_element.m_kind == xml_reader::opening_element)
 					m_current_chart->m_filling_columns = true;
 				else
 					m_current_chart->m_filling_columns = false;
@@ -1366,7 +1366,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 				m_current_cell_style = &m_cell_styles[m_current_element.m_attributes["sfa:ID"]];
 				m_current_cell_style->m_id = m_current_element.m_attributes["sfa:ID"];
 			}
-			if (m_current_cell_style && m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_cell_style && m_current_element.m_kind == xml_reader::opening_element)
 				m_in_cell_style = true;
 			else
 			{
@@ -1448,7 +1448,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseSfNumberFormat()
 		{
-			NumberFormat* format = NULL;
+			number_format* format = NULL;
 			if (m_in_cell_style && !m_current_element.HasAttribute("sfa:ID"))	//internat number format for cell style.
 			{
 				std::string format_id = "Internet_format_number_" + m_current_cell_style->m_id;
@@ -1479,14 +1479,14 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseKeySlide()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 			{
 				++m_pages_count;
 				if (m_pages_count > 1)
 					(*m_current_text_pointer) += "\n";
 				m_in_slide = true;
 			}
-			else if (m_current_element.m_kind == XmlReader::closing_element)
+			else if (m_current_element.m_kind == xml_reader::closing_element)
 			{
 				m_in_slide = false;
 				AddTextFromTextualElements();
@@ -1499,7 +1499,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseSfGroup()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 				m_next_position_for_group = true;
 			else
 			{
@@ -1513,7 +1513,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseKeyTitlePlaceholder()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 			{
 				m_in_title = true;
 				m_text_body += "\n";
@@ -1528,7 +1528,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseKeyNotes()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 			{
 				m_in_notes = true;
 				m_current_text_pointer = &m_notes;
@@ -1544,9 +1544,9 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		{
 			if (m_iwork_type == pages)
 			{
-				if (m_current_element.m_kind != XmlReader::opening_element)
+				if (m_current_element.m_kind != xml_reader::opening_element)
 				{
-					if (m_current_element.m_kind == XmlReader::closing_element)
+					if (m_current_element.m_kind == xml_reader::closing_element)
 						m_inside_text_body = false;
 				}
 				else if (m_current_element.HasAttribute("sf:kind"))
@@ -1564,7 +1564,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseSfAnnotation()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element && m_current_element.HasAttribute("sf:target"))
+			if (m_current_element.m_kind == xml_reader::opening_element && m_current_element.HasAttribute("sf:target"))
 			{
 				m_current_text_pointer = &m_annotations[m_current_element.m_attributes["sf:target"]];
 				m_current_text_pointer->reserve(2048);
@@ -1592,7 +1592,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseSfAttachment()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 			{
 				if (m_current_element.HasAttribute("sfa:ID"))
 				{
@@ -1638,7 +1638,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		{
 			if (m_iwork_type == pages)
 			{
-				if (m_current_element.m_kind == XmlReader::opening_element)
+				if (m_current_element.m_kind == xml_reader::opening_element)
 				{
 					m_inside_headers = true;
 					m_tmp_header.clear();
@@ -1657,7 +1657,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		{
 			if (m_iwork_type == pages)
 			{
-				if (m_current_element.m_kind == XmlReader::opening_element)
+				if (m_current_element.m_kind == xml_reader::opening_element)
 				{
 					m_inside_footers = true;
 					m_tmp_footer.clear();
@@ -1674,7 +1674,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseSfFootnotes()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 				m_inside_footnotes = true;
 			else
 			{
@@ -1733,69 +1733,69 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		//std::map is much faster than a lot of "if" conditions
 		void RegisterHandlers()
 		{
-			m_handlers["ls:workspace"] = &IWorkContent::ParseLsWorkspace;
-			m_handlers["sf:p"] = &IWorkContent::ParseSfP;
-			m_handlers["sf:br"] = &IWorkContent::ParseSfBr;
-			m_handlers["sf:lnbr"] = &IWorkContent::ParseSfBr;
-			m_handlers["sf:crbr"] = &IWorkContent::ParseSfBr;
-			m_handlers["sf:contbr"] = &IWorkContent::ParseSfBr;
-			m_handlers["sf:sectbr"] = &IWorkContent::ParseSfBr;
-			m_handlers["sf:tab"] = &IWorkContent::ParseSfTab;
-			m_handlers["sf:tabular-info"] = &IWorkContent::ParseSfTabularInfo;
-			m_handlers["sf:tabular-model"] = &IWorkContent::ParseSfTabularModel;
-			m_handlers["sf:position"] = &IWorkContent::ParseSfPosition;
-			m_handlers["sf:rows"] = &IWorkContent::ParseSfRows;
-			m_handlers["sf:columns"] = &IWorkContent::ParseSfColumns;
-			m_handlers["sf:grid-row"] = &IWorkContent::ParseSfGridRow;
-			m_handlers["sf:pm"] = &IWorkContent::ParseSfPm;
-			m_handlers["sf:t"] = &IWorkContent::ParseSfT;
-			m_handlers["sf:ct"] = &IWorkContent::ParseSfCT;
-			m_handlers["sf:n"] = &IWorkContent::ParseSfN;
-			m_handlers["sf:sl"] = &IWorkContent::ParseSfN;
-			m_handlers["sf:st"] = &IWorkContent::ParseSfN;
-			m_handlers["sf:s"] = &IWorkContent::ParseSfS;
-			m_handlers["sf:cb"] = &IWorkContent::ParseSfS;
-			m_handlers["sf:g"] = &IWorkContent::ParseSfS;
-			m_handlers["sf:o"] = &IWorkContent::ParseSfS;
-			m_handlers["sf:rd"] = &IWorkContent::ParseSfRd;
-			m_handlers["sf:d"] = &IWorkContent::ParseSfD;
-			m_handlers["sf:f"] = &IWorkContent::ParseSfF;
-			m_handlers["sf:proxied-cell-ref"] = &IWorkContent::ParseSfProxiedCellRef;
-			m_handlers["sf:rdu"] = &IWorkContent::ParseSfRdu;
-			m_handlers["sf:du"] = &IWorkContent::ParseSfDu;
-			m_handlers["sf:rn"] = &IWorkContent::ParseSfRn;
-			m_handlers["sf:sticky-note"] = &IWorkContent::ParseSfStickyNote;
-			m_handlers["sf:shape"] = &IWorkContent::ParseSfStickyNote;
-			m_handlers["sf:cell-comment-drawable-info"] = &IWorkContent::ParseSfStickyNote;
-			m_handlers["sf:chart-info"] = &IWorkContent::ParseSfChartInfo;
-			m_handlers["sf:formula-chart-model"] = &IWorkContent::ParseSfFormulaChartModel;
-			m_handlers["sf:string"] = &IWorkContent::ParseSfString;
-			m_handlers["sf:cached_series_count"] = &IWorkContent::ParseSfCachedSeriesCount;
-			m_handlers["sf:chart-name"] = &IWorkContent::ParseSfChartName;
-			m_handlers["sf:chart-row_names"] = &IWorkContent::ParseSfChartRowNames;
-			m_handlers["sf:chart-column_names"] = &IWorkContent::ParseSfChartColumnNames;
-			m_handlers["sf:cell-style"] = &IWorkContent::ParseSfCellStyle;
-			m_handlers["sf:date-format-ref"] = &IWorkContent::ParseSfDateFormatRef;
-			m_handlers["sf:duration-format-ref"] = &IWorkContent::ParseSfDurationFormatRef;
-			m_handlers["sf:date-format"] = &IWorkContent::ParseSfDateFormat;
-			m_handlers["sf:duration-format"] = &IWorkContent::ParseSfDurationFormat;
-			m_handlers["sf:number-format-ref"] = &IWorkContent::ParseSfNumberFormatRef;
-			m_handlers["sf:number-format"] = &IWorkContent::ParseSfNumberFormat;
-			m_handlers["key:slide"] = &IWorkContent::ParseKeySlide;
-			m_handlers["sf:group"] = &IWorkContent::ParseSfGroup;
-			m_handlers["key:title-placeholder"] = &IWorkContent::ParseKeyTitlePlaceholder;
-			m_handlers["key:notes"] = &IWorkContent::ParseKeyNotes;
-			m_handlers["sf:text-storage"] = &IWorkContent::ParseSfTextStorage;
-			m_handlers["sf:annotation"] = &IWorkContent::ParseSfAnnotation;
-			m_handlers["sf:annotation-field"] = &IWorkContent::ParseSfAnnotationField;
-			m_handlers["sf:attachment"] = &IWorkContent::ParseSfAttachment;
-			m_handlers["sf:attachment-ref"] = &IWorkContent::ParseSfAttachmentRef;
-			m_handlers["sf:header"] = &IWorkContent::ParseSfHeader;
-			m_handlers["sf:footer"] = &IWorkContent::ParseSfFooter;
-			m_handlers["sf:footnotes"] = &IWorkContent::ParseSfFootnotes;
-			m_handlers["sf:footnote-mark"] = &IWorkContent::ParseSfFootnoteMark;
-			m_handlers["sf:footnote"] = &IWorkContent::ParseSfFootnote;
-			m_handlers["sf:page-start"] = &IWorkContent::ParseSfPageStart;
+			m_handlers["ls:workspace"] = &iwork_content::ParseLsWorkspace;
+			m_handlers["sf:p"] = &iwork_content::ParseSfP;
+			m_handlers["sf:br"] = &iwork_content::ParseSfBr;
+			m_handlers["sf:lnbr"] = &iwork_content::ParseSfBr;
+			m_handlers["sf:crbr"] = &iwork_content::ParseSfBr;
+			m_handlers["sf:contbr"] = &iwork_content::ParseSfBr;
+			m_handlers["sf:sectbr"] = &iwork_content::ParseSfBr;
+			m_handlers["sf:tab"] = &iwork_content::ParseSfTab;
+			m_handlers["sf:tabular-info"] = &iwork_content::ParseSfTabularInfo;
+			m_handlers["sf:tabular-model"] = &iwork_content::ParseSfTabularModel;
+			m_handlers["sf:position"] = &iwork_content::ParseSfPosition;
+			m_handlers["sf:rows"] = &iwork_content::ParseSfRows;
+			m_handlers["sf:columns"] = &iwork_content::ParseSfColumns;
+			m_handlers["sf:grid-row"] = &iwork_content::ParseSfGridRow;
+			m_handlers["sf:pm"] = &iwork_content::ParseSfPm;
+			m_handlers["sf:t"] = &iwork_content::ParseSfT;
+			m_handlers["sf:ct"] = &iwork_content::ParseSfCT;
+			m_handlers["sf:n"] = &iwork_content::ParseSfN;
+			m_handlers["sf:sl"] = &iwork_content::ParseSfN;
+			m_handlers["sf:st"] = &iwork_content::ParseSfN;
+			m_handlers["sf:s"] = &iwork_content::ParseSfS;
+			m_handlers["sf:cb"] = &iwork_content::ParseSfS;
+			m_handlers["sf:g"] = &iwork_content::ParseSfS;
+			m_handlers["sf:o"] = &iwork_content::ParseSfS;
+			m_handlers["sf:rd"] = &iwork_content::ParseSfRd;
+			m_handlers["sf:d"] = &iwork_content::ParseSfD;
+			m_handlers["sf:f"] = &iwork_content::ParseSfF;
+			m_handlers["sf:proxied-cell-ref"] = &iwork_content::ParseSfProxiedCellRef;
+			m_handlers["sf:rdu"] = &iwork_content::ParseSfRdu;
+			m_handlers["sf:du"] = &iwork_content::ParseSfDu;
+			m_handlers["sf:rn"] = &iwork_content::ParseSfRn;
+			m_handlers["sf:sticky-note"] = &iwork_content::ParseSfStickyNote;
+			m_handlers["sf:shape"] = &iwork_content::ParseSfStickyNote;
+			m_handlers["sf:cell-comment-drawable-info"] = &iwork_content::ParseSfStickyNote;
+			m_handlers["sf:chart-info"] = &iwork_content::ParseSfChartInfo;
+			m_handlers["sf:formula-chart-model"] = &iwork_content::ParseSfFormulaChartModel;
+			m_handlers["sf:string"] = &iwork_content::ParseSfString;
+			m_handlers["sf:cached_series_count"] = &iwork_content::ParseSfCachedSeriesCount;
+			m_handlers["sf:chart-name"] = &iwork_content::ParseSfChartName;
+			m_handlers["sf:chart-row_names"] = &iwork_content::ParseSfChartRowNames;
+			m_handlers["sf:chart-column_names"] = &iwork_content::ParseSfChartColumnNames;
+			m_handlers["sf:cell-style"] = &iwork_content::ParseSfCellStyle;
+			m_handlers["sf:date-format-ref"] = &iwork_content::ParseSfDateFormatRef;
+			m_handlers["sf:duration-format-ref"] = &iwork_content::ParseSfDurationFormatRef;
+			m_handlers["sf:date-format"] = &iwork_content::ParseSfDateFormat;
+			m_handlers["sf:duration-format"] = &iwork_content::ParseSfDurationFormat;
+			m_handlers["sf:number-format-ref"] = &iwork_content::ParseSfNumberFormatRef;
+			m_handlers["sf:number-format"] = &iwork_content::ParseSfNumberFormat;
+			m_handlers["key:slide"] = &iwork_content::ParseKeySlide;
+			m_handlers["sf:group"] = &iwork_content::ParseSfGroup;
+			m_handlers["key:title-placeholder"] = &iwork_content::ParseKeyTitlePlaceholder;
+			m_handlers["key:notes"] = &iwork_content::ParseKeyNotes;
+			m_handlers["sf:text-storage"] = &iwork_content::ParseSfTextStorage;
+			m_handlers["sf:annotation"] = &iwork_content::ParseSfAnnotation;
+			m_handlers["sf:annotation-field"] = &iwork_content::ParseSfAnnotationField;
+			m_handlers["sf:attachment"] = &iwork_content::ParseSfAttachment;
+			m_handlers["sf:attachment-ref"] = &iwork_content::ParseSfAttachmentRef;
+			m_handlers["sf:header"] = &iwork_content::ParseSfHeader;
+			m_handlers["sf:footer"] = &iwork_content::ParseSfFooter;
+			m_handlers["sf:footnotes"] = &iwork_content::ParseSfFootnotes;
+			m_handlers["sf:footnote-mark"] = &iwork_content::ParseSfFootnoteMark;
+			m_handlers["sf:footnote"] = &iwork_content::ParseSfFootnote;
+			m_handlers["sf:page-start"] = &iwork_content::ParseSfPageStart;
 		}
 
 		void ParseXmlData()
@@ -1803,9 +1803,9 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 			while (true)
 			{
 				m_xml_reader->GetNextElement(m_current_element);
-				if (m_current_element.m_kind == XmlReader::no_element)
+				if (m_current_element.m_kind == xml_reader::no_element)
 					return;
-				if (m_current_element.m_kind == XmlReader::characters)
+				if (m_current_element.m_kind == xml_reader::characters)
 				{
 					if (m_reading_text)
 					{
@@ -1830,25 +1830,25 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		}
 	};
 
-	struct IWorkMetadataContent
+	struct iwork_metadata_content
 	{
-		typedef void (IWorkMetadataContent::*XmlElementHandler)(void);
+		typedef void (iwork_metadata_content::*XmlElementHandler)(void);
 
-		XmlReader* m_xml_reader;
-		attributes::Metadata* m_metadata;
+		xml_reader* m_xml_reader;
+		attributes::metadata* m_metadata;
 		bool m_in_metadata;
 		bool m_in_authors;
 		bool m_in_publication_info;
 		bool m_in_creation_date;
 		bool m_in_last_modify_date;
 		int m_pages_count;
-		XmlReader::XmlElement m_current_element;
+		xml_reader::xml_element m_current_element;
 		std::map<std::string, XmlElementHandler> m_handlers;
 		std::string m_authors;
 		std::string m_creation_date;
 		std::string m_last_modify_date;
 
-		IWorkMetadataContent(XmlReader& xml_reader, attributes::Metadata& metadata)
+		iwork_metadata_content(xml_reader& xml_reader, attributes::metadata& metadata)
 		{
 			m_xml_reader = &xml_reader;
 			m_metadata = &metadata;
@@ -1867,7 +1867,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 			while (true)
 			{
 				m_xml_reader->GetNextElement(m_current_element);
-				if (m_current_element.m_kind == XmlReader::no_element)
+				if (m_current_element.m_kind == xml_reader::no_element)
 				{
 					if (m_pages_count > 0)
 					{
@@ -1896,7 +1896,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 					}
 					return;
 				}
-				if (m_current_element.m_kind == XmlReader::characters)
+				if (m_current_element.m_kind == xml_reader::characters)
 					continue;
 
 				//associate xml element with handler, its quite fast
@@ -1915,16 +1915,16 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void RegisterHandlers()
 		{
-			m_handlers["sf:page-start"] = &IWorkMetadataContent::ParseSfPageStart;
-			m_handlers["ls:workspace"] = &IWorkMetadataContent::ParseLsWorkspace;
-			m_handlers["key:slide"] = &IWorkMetadataContent::ParseSlSlide;
-			m_handlers["sf:metadata"] = &IWorkMetadataContent::ParseSfMetadata;
-			m_handlers["sf:authors"] = &IWorkMetadataContent::ParseSfAuthors;
-			m_handlers["sf:string"] = &IWorkMetadataContent::ParseSfString;
-			m_handlers["sl:publication-info"] = &IWorkMetadataContent::ParseSlPublicationInfo;
-			m_handlers["sl:SLCreationDateProperty"] = &IWorkMetadataContent::ParseSlCreationDateProperty;
-			m_handlers["sl:SLLastModifiedDateProperty"] = &IWorkMetadataContent::ParseSlLastModifiedDateProperty;
-			m_handlers["sl:date"] = &IWorkMetadataContent::ParseSlDate;
+			m_handlers["sf:page-start"] = &iwork_metadata_content::ParseSfPageStart;
+			m_handlers["ls:workspace"] = &iwork_metadata_content::ParseLsWorkspace;
+			m_handlers["key:slide"] = &iwork_metadata_content::ParseSlSlide;
+			m_handlers["sf:metadata"] = &iwork_metadata_content::ParseSfMetadata;
+			m_handlers["sf:authors"] = &iwork_metadata_content::ParseSfAuthors;
+			m_handlers["sf:string"] = &iwork_metadata_content::ParseSfString;
+			m_handlers["sl:publication-info"] = &iwork_metadata_content::ParseSlPublicationInfo;
+			m_handlers["sl:SLCreationDateProperty"] = &iwork_metadata_content::ParseSlCreationDateProperty;
+			m_handlers["sl:SLLastModifiedDateProperty"] = &iwork_metadata_content::ParseSlLastModifiedDateProperty;
+			m_handlers["sl:date"] = &iwork_metadata_content::ParseSlDate;
 		}
 
 		void ParseSlDate()
@@ -1949,7 +1949,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		{
 			if (m_in_publication_info)
 			{
-				if (m_current_element.m_kind == XmlReader::opening_element)
+				if (m_current_element.m_kind == xml_reader::opening_element)
 					m_in_last_modify_date = true;
 				else
 					m_in_last_modify_date = false;
@@ -1960,7 +1960,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		{
 			if (m_in_publication_info)
 			{
-				if (m_current_element.m_kind == XmlReader::opening_element)
+				if (m_current_element.m_kind == xml_reader::opening_element)
 					m_in_creation_date = true;
 				else
 					m_in_creation_date = false;
@@ -1969,7 +1969,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseSlPublicationInfo()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 				m_in_publication_info = true;
 			else
 				m_in_publication_info = false;
@@ -1995,7 +1995,7 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		{
 			if (m_in_metadata)
 			{
-				if (m_current_element.m_kind == XmlReader::opening_element)
+				if (m_current_element.m_kind == xml_reader::opening_element)
 					m_in_authors = true;
 				else
 					m_in_authors = false;
@@ -2004,40 +2004,40 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 
 		void ParseLsWorkspace()
 		{
-			if (m_current_element.m_kind != XmlReader::closing_element)
+			if (m_current_element.m_kind != xml_reader::closing_element)
 				++m_pages_count;
 		}
 
 		void ParseSfPageStart()
 		{
-			if (m_current_element.m_kind != XmlReader::closing_element)
+			if (m_current_element.m_kind != xml_reader::closing_element)
 				++m_pages_count;
 		}
 
 		void ParseSlSlide()
 		{
-			if (m_current_element.m_kind != XmlReader::closing_element)
+			if (m_current_element.m_kind != xml_reader::closing_element)
 				++m_pages_count;
 		}
 
 		void ParseSfMetadata()
 		{
-			if (m_current_element.m_kind == XmlReader::opening_element)
+			if (m_current_element.m_kind == xml_reader::opening_element)
 				m_in_metadata = true;
 			else
 				m_in_metadata = false;
 		}
 	};
 
-	void ReadMetadata(ZipReader& zipfile, attributes::Metadata& metadata, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+	void ReadMetadata(zip_reader& zipfile, attributes::metadata& metadata, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 	{
 		log_scope();
-		DataSource xml_data_source(zipfile, m_context_stack.top().m_xml_file);
-		XmlReader xml_reader(xml_data_source);
-		IWorkMetadataContent metadata_content(xml_reader, metadata);
+		data_source xml_data_source(zipfile, m_context_stack.top().m_xml_file);
+		xml_reader xml_reader(xml_data_source);
+		iwork_metadata_content metadata_content(xml_reader, metadata);
 
 		throw_if (!zipfile.loadDirectory());
-		throw_if (getIWorkType(xml_reader) == IWorkContent::encrypted, errors::file_encrypted{});
+		throw_if (getIWorkType(xml_reader) == iwork_content::encrypted, errors::file_encrypted{});
 		try
 		{
 			metadata_content.ParseMetaData(non_fatal_error_handler);
@@ -2048,10 +2048,10 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 		}
 	}
 
-	IWorkContent::IWorkType getIWorkType(XmlReader& xml_reader)
+	iwork_content::IWorkType getIWorkType(xml_reader& xml_reader)
 	{
 		log_scope();
-		XmlReader::XmlElement current_element;
+		xml_reader::xml_element current_element;
 		// warning TODO: Check how encrypted files really look like
 		while (true)
 		{
@@ -2061,32 +2061,32 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 			}
 			catch (const std::exception& ex)
 			{
-				return IWorkContent::encrypted;	//encrypted or corrupted?
+				return iwork_content::encrypted;	//encrypted or corrupted?
 			}
-			if (current_element.m_kind == XmlReader::opening_element)
+			if (current_element.m_kind == xml_reader::opening_element)
 			{
 				if (current_element.m_name.substr(0, 3) == "sl:")
-					return IWorkContent::pages;
+					return iwork_content::pages;
 				if (current_element.m_name.substr(0, 3) == "ls:")
-					return IWorkContent::numbers;
+					return iwork_content::numbers;
 				if (current_element.m_name.substr(0, 4) == "key:")
-					return IWorkContent::key;
+					return iwork_content::key;
 			}
-			else if (current_element.m_kind == XmlReader::no_element)
-				return IWorkContent::encrypted;
+			else if (current_element.m_kind == xml_reader::no_element)
+				return iwork_content::encrypted;
 		}
 	}
 
-	void parseIWork(ZipReader& zipfile, std::string& text)
+	void parseIWork(zip_reader& zipfile, std::string& text)
 	{
 		log_scope();
-		DataSource xml_data_source(zipfile, m_context_stack.top().m_xml_file);
-		XmlReader xml_reader(xml_data_source);
-		IWorkContent iwork_content(xml_reader);
+		data_source xml_data_source(zipfile, m_context_stack.top().m_xml_file);
+		xml_reader xml_reader(xml_data_source);
+		iwork_content iwork_content(xml_reader);
 
 		throw_if (!zipfile.loadDirectory());
-		IWorkContent::IWorkType iwork_type = getIWorkType(xml_reader);
-		throw_if (iwork_type == IWorkContent::encrypted, errors::file_encrypted{});
+		iwork_content::IWorkType iwork_type = getIWorkType(xml_reader);
+		throw_if (iwork_type == iwork_content::encrypted, errors::file_encrypted{});
 		iwork_content.setType(iwork_type);
 		text.clear();
 		try
@@ -2114,37 +2114,37 @@ struct pimpl_impl<IWorkParser> : pimpl_impl_base
 	}
 };
 
-IWorkParser::IWorkParser() = default;
+iwork_parser::iwork_parser() = default;
 
-void pimpl_impl<IWorkParser>::parse(const data_source& data, const message_callbacks& emit_message)
+void pimpl_impl<iwork_parser>::parse(const docwire::data_source& data, const message_callbacks& emit_message)
 {
 	log_scope(data);
 	scoped::stack_push<context> context_guard{m_context_stack, {.emit_message = emit_message}};
-	ZipReader unzip{data};
+	zip_reader unzip{data};
 	try
 	{
 		unzip.open();
 	}
 	catch (const std::exception&)
 	{
-		std::throw_with_nested(make_error("ZipReader::unzip() failed"));
+		std::throw_with_nested(make_error("zip_reader::unzip() failed"));
 	}
 	try
 	{
 		m_context_stack.top().m_xml_file = find_main_xml_file(unzip);
-		emit_message(document::Document
+		emit_message(document::document
 			{
 				.metadata=[this, &unzip, emit_message]()
 				{
-					attributes::Metadata metadata;
+					attributes::metadata metadata;
 					ReadMetadata(unzip, metadata, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
 					return metadata;
 				}
 			});
 		std::string text;
 		parseIWork(unzip, text);
-		emit_message(document::Text{.text = text});
-		emit_message(document::CloseDocument{});
+		emit_message(document::text{.text = text});
+		emit_message(document::close_document{});
 	}
 	catch (const std::exception& ex)
 	{
@@ -2152,7 +2152,7 @@ void pimpl_impl<IWorkParser>::parse(const data_source& data, const message_callb
 	}
 }
 
-continuation IWorkParser::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation iwork_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));

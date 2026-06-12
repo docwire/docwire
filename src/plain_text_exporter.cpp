@@ -21,33 +21,33 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<PlainTextExporter> : pimpl_impl_base
+struct pimpl_impl<plain_text_exporter> : pimpl_impl_base
 {
 	pimpl_impl(eol_sequence eol_sequence, link_formatter link_formatter)
 		: m_writer{eol_sequence.v, link_formatter.format_opening, link_formatter.format_closing}
 	{}
 
 	std::shared_ptr<std::stringstream> m_stream;
-	PlainTextWriter m_writer;
+	plain_text_writer m_writer;
 	int m_nested_docs_level { 0 };
 };
 
-PlainTextExporter::PlainTextExporter(eol_sequence eol_sequence, link_formatter link_formatter)
-	: with_pimpl<PlainTextExporter>(eol_sequence, link_formatter)
+plain_text_exporter::plain_text_exporter(eol_sequence eol_sequence, link_formatter link_formatter)
+	: with_pimpl<plain_text_exporter>(eol_sequence, link_formatter)
 {}
 
-continuation PlainTextExporter::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation plain_text_exporter::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	if (msg->is<std::exception_ptr>())
 		return emit_message(std::move(msg));
-	if (msg->is<document::Document>() || !impl().m_stream)
+	if (msg->is<document::document>() || !impl().m_stream)
 	{
 		++impl().m_nested_docs_level;
 		if (impl().m_nested_docs_level == 1)
 			impl().m_stream = std::make_shared<std::stringstream>();
 	}
 	impl().m_writer.write_to(msg, *impl().m_stream);
-	if (msg->is<document::CloseDocument>())
+	if (msg->is<document::close_document>())
 	{
 		throw_if(impl().m_nested_docs_level <= 0, errors::program_logic{});
 		--impl().m_nested_docs_level;

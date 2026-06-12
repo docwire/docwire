@@ -50,7 +50,7 @@ void detect(data_source& data)
     // STEP 2: Deep Inspection Fallback
     // If the identifying files were not in the first 4KB (e.g., the ZIP was packed in a non-standard order),
     // we prioritize quality over speed and parse the actual ZIP Central Directory.
-    ZipReader unzip{data};
+    zip_reader unzip{data};
     try
     {
         unzip.open();
