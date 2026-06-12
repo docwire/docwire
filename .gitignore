@@ -7,3 +7,5 @@ version.h
 ports/docwire/.disable_binary_cache
 .cache
 compile_commands.json
+.zed
+.clang-format

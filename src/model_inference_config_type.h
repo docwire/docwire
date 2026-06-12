@@ -6,38 +6,43 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
+/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "local_ai_embed.h"
-#include "ct2_runner.h"
-#include "resource_path.h"
-#include <string>
+#ifndef DOCWIRE_AI_MODEL_INFERENCE_CONFIG_TYPE_H
+#define DOCWIRE_AI_MODEL_INFERENCE_CONFIG_TYPE_H
 
-namespace
+#include "strong_type.h"
+#include <cstddef>
+
+namespace docwire::ai
 {
-
-constexpr std::string_view default_passage_prefix = "passage: ";
-constexpr std::string_view default_query_prefix = "query: ";
-
-std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
+struct context_size_tag
 {
-    return std::make_shared<docwire::ai::ct2::ct2_runner>(
-        docwire::resource_path("multilingual-e5-small-ct2-int8"));
-}
-
-} // anonymous namespace
-
-namespace docwire::ai::local::passage
+};
+struct thread_count_tag
 {
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_passage_prefix})
-{}
-} // namespace docwire::ai::local::passage
-
-namespace docwire::ai::local::query
+};
+struct token_limit_tag
 {
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_query_prefix})
-{}
-} // namespace docwire::ai::local::query
+};
+struct temperature_tag
+{
+};
+struct min_p_tag
+{
+};
+struct batch_size_tag
+{
+};
+
+using batch_size = strong_type<std::size_t, batch_size_tag>;
+using context_size = strong_type<std::size_t, context_size_tag>;
+using thread_count = strong_type<std::size_t, thread_count_tag>;
+using token_limit = strong_type<std::size_t, token_limit_tag>;
+
+using temperature = strong_type<float, temperature_tag>;
+using min_p = strong_type<float, min_p_tag>;
+} // namespace docwire::ai
+
+#endif

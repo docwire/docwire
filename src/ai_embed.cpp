@@ -6,49 +6,54 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
+/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "model_chain_element.h"
+#include "ai_embed.h"
+#include "ai_elements.h"
 #include "data_source.h"
 #include "error_tags.h"
-#include "resource_path.h"
+#include "log_scope.h"
+#include "serialization_message.h" // IWYU pragma: keep
+#include <string>
 #include "throw_if.h"
+#include <vector>
 
-namespace docwire::ai
+namespace docwire
 {
 
-// model_chain_element::model_chain_element(const std::string& prompt, model_lifetime_policy lifetime)
-//     : docwire::local_ai::model_chain_element(
-//           prompt, std::make_shared<ct2_runner>(resource_path("flan-t5-large-ct2-int8")),
-//           lifetime)
-// {
-// }
-
-/**
- * @brief constructor to run llama models
- */
-model_chain_element::model_chain_element(const std::string& prompt,
-                                         std::shared_ptr<ai_runner> runner,
-                                         model_lifetime_policy lifetime)
-    : m_prompt(prompt), m_model_runner(std::move(runner)), m_model_lifetime(lifetime)
+template <>
+struct pimpl_impl<ai::embed> : pimpl_impl_base
 {
-}
+    std::shared_ptr<ai::ai_runner> m_model_runner;
+    std::string m_prefix;
 
-continuation model_chain_element::operator()(message_ptr msg, const message_callbacks& emit_message)
+    pimpl_impl(std::shared_ptr<ai::ai_runner> model_runner, std::string prefix)
+        : m_model_runner(std::move(model_runner)), m_prefix(std::move(prefix))
+    {
+    }
+};
+
+namespace ai
 {
+
+embed::embed(std::shared_ptr<ai_runner> model_runner, std::string prefix)
+    : with_pimpl<embed>(std::move(model_runner), std::move(prefix))
+{}
+
+continuation embed::operator()(message_ptr msg, const message_callbacks& emit_message)
+{
+    log_scope(msg);
     if (!msg->is<data_source>())
         return emit_message(std::move(msg));
 
     const data_source& data = msg->get<data_source>();
-    throw_if(!data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}),
-             errors::program_logic{});
-    std::string input = m_prompt + "\n" + data.string();
-    std::string output = m_model_runner->process(input);
-    if (m_model_lifetime == model_lifetime_policy::unload_after_use) {
-        m_model_runner->unload();
-    }
-    return emit_message(data_source{std::move(output)});
-}
+    throw_if(!data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}), "Input for ai::embed must be text/plain", errors::program_logic{});
+    std::string data_str = data.string();
 
-} // namespace docwire::ai
+    std::string prefixed_input = impl().m_prefix + data_str;
+    std::vector<double> embedding_vector = impl().m_model_runner->embed(prefixed_input);
+    return emit_message(ai::embedding{std::move(embedding_vector)});
+}
+} // namespace ai
+} // namespace docwire

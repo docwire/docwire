@@ -1,32 +1,46 @@
-add_library(docwire_local_ai SHARED local_ai_embed.cpp model_chain_element.cpp model_runner.cpp tokenizer.cpp)
 
-find_package(Boost REQUIRED COMPONENTS filesystem system json)
-find_package(ctranslate2 CONFIG REQUIRED)
-find_library(sentencepiece_LIBRARIES sentencepiece REQUIRED)
-if(MSVC)
-    find_package(absl CONFIG REQUIRED)
-    list(APPEND sentencepiece_LIBRARIES
-        absl::strings
-        absl::flags
-        absl::flags_parse
-        absl::log
-        absl::check)
-    find_package(protobuf CONFIG REQUIRED)
-    list(APPEND sentencepiece_LIBRARIES protobuf::libprotobuf-lite)
-endif()
-target_link_libraries(docwire_local_ai PRIVATE docwire_core docwire_ai Boost::filesystem Boost::json CTranslate2::ctranslate2 ${sentencepiece_LIBRARIES})
+add_library(docwire_local_ai SHARED
+    local_ai_summarize.cpp
+    local_ai_embed.cpp
+    local_ai_translate.cpp
+    local_ai_task.cpp
+)
+target_link_libraries(docwire_local_ai PUBLIC docwire_ai)
+target_compile_definitions(docwire_local_ai PUBLIC DOCWIRE_LOCAL_AI)
 
-install(TARGETS docwire_local_ai EXPORT docwire_targets)
-if(MSVC)
-    install(FILES $<TARGET_PDB_FILE:docwire_local_ai> DESTINATION bin CONFIGURATIONS Debug)
+if(DOCWIRE_LLAMA)
+    target_link_libraries(docwire_local_ai PUBLIC docwire_ai_llama)
+    target_compile_definitions(docwire_local_ai PUBLIC DOCWIRE_LLAMA)
 endif()
+
+if(DOCWIRE_LOCAL_CT2)
+    target_link_libraries(docwire_local_ai PUBLIC docwire_ai_ct2)
+    target_compile_definitions(docwire_local_ai PUBLIC DOCWIRE_LOCAL_CT2)
+endif()
+
+target_include_directories(docwire_local_ai
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include>
+)
+
+target_compile_features(docwire_local_ai PUBLIC cxx_std_20)
+
 
 include(GenerateExportHeader)
+
 generate_export_header(docwire_local_ai EXPORT_FILE_NAME local_ai_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/local_ai_export.h DESTINATION include/docwire)
 
-docwire_find_resource(FLAN_T5_FULL_PATH REL_PATH "flan-t5-large-ct2-int8" REQUIRED)
-docwire_target_resources(docwire_local_ai "flan-t5-large-ct2-int8" SOURCE "${FLAN_T5_FULL_PATH}")
+target_include_directories(docwire_local_ai PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 
-docwire_find_resource(E5_MODEL_FULL_PATH REL_PATH "multilingual-e5-small-ct2-int8" REQUIRED)
-docwire_target_resources(docwire_local_ai "multilingual-e5-small-ct2-int8" SOURCE "${E5_MODEL_FULL_PATH}")
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/local_ai_export.h
+    DESTINATION include/docwire
+)
+
+install(TARGETS docwire_local_ai EXPORT docwire_targets)
+
+if(MSVC)
+    install(FILES $<TARGET_PDB_FILE:docwire_local_ai>
+        DESTINATION bin CONFIGURATIONS Debug)
+endif()

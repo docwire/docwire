@@ -6,38 +6,34 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
+/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "local_ai_embed.h"
-#include "ct2_runner.h"
-#include "resource_path.h"
+#ifndef DOCWIRE_AI_MODEL_INFERENCE_CONFIG_H
+#define DOCWIRE_AI_MODEL_INFERENCE_CONFIG_H
+#include "model_inference_config_type.h"
 #include <string>
 
-namespace
+namespace docwire::ai
 {
-
-constexpr std::string_view default_passage_prefix = "passage: ";
-constexpr std::string_view default_query_prefix = "query: ";
-
-std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
+/*
+ * @brief Handles configuration for llama model initialization and paramters
+ */
+struct model_inference_config
 {
-    return std::make_shared<docwire::ai::ct2::ct2_runner>(
-        docwire::resource_path("multilingual-e5-small-ct2-int8"));
-}
+    std::string model_path;
+    context_size n_ctx{4096};
+    batch_size n_batch{1024};
+    thread_count n_threads{4};
+    token_limit max_tokens{512};
+    temperature temp{0.2f};
+    min_p min_probability{0.05f};
+    bool verbose = false;
+    std::string system_prompt = "Do NOT repeat the input. Answer concisely and directly.";
+    std::string grammar{};
+    std::string grammar_root = "root";
+};
 
-} // anonymous namespace
+} // namespace docwire::ai
 
-namespace docwire::ai::local::passage
-{
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_passage_prefix})
-{}
-} // namespace docwire::ai::local::passage
-
-namespace docwire::ai::local::query
-{
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_query_prefix})
-{}
-} // namespace docwire::ai::local::query
+#endif

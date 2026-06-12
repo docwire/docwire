@@ -9,19 +9,19 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_TOKENIZER_H
-#define DOCWIRE_LOCAL_AI_TOKENIZER_H
+#ifndef DOCWIRE_AI_TOKENIZER_H
+#define DOCWIRE_AI_TOKENIZER_H
 
-#include "local_ai_export.h"
+#include "ai_ct2_export.h"
 #include "pimpl.h"
 #include <filesystem>
 #include <string>
 #include <vector>
 
-namespace docwire::local_ai
+namespace docwire::ai::ct2
 {
 
-class DOCWIRE_LOCAL_AI_EXPORT tokenizer : public with_pimpl<tokenizer>
+class DOCWIRE_AI_CT2_EXPORT tokenizer : public with_pimpl<tokenizer>
 {
 public:
     tokenizer(const std::filesystem::path& model_data_path);
@@ -33,6 +33,6 @@ public:
     std::string detokenize(const std::vector<std::string>& output_tokens);
 };
 
-} // namespace docwire::local_ai
+} // namespace docwire::ai::ct2
 
-#endif // DOCWIRE_LOCAL_AI_TOKENIZER_H
+#endif // DOCWIRE_AI_TOKENIZER_H

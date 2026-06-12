@@ -6,38 +6,38 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
+/*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial                                                                   */
 /*********************************************************************************************************************************************/
 
-#include "local_ai_embed.h"
-#include "ct2_runner.h"
-#include "resource_path.h"
-#include <string>
+#ifndef DOCWIRE_AI_EMBED_H
+#define DOCWIRE_AI_EMBED_H
 
-namespace
+#include "ai_export.h"
+#include "ai_runner.h"
+#include "chain_element.h"
+#include "pimpl.h"
+
+namespace docwire::ai
 {
 
-constexpr std::string_view default_passage_prefix = "passage: ";
-constexpr std::string_view default_query_prefix = "query: ";
-
-std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
+class DOCWIRE_AI_EXPORT embed : public ChainElement, public with_pimpl<embed>
 {
-    return std::make_shared<docwire::ai::ct2::ct2_runner>(
-        docwire::resource_path("multilingual-e5-small-ct2-int8"));
-}
+  public:
+    /**
+     * @brief Construct a local AI embed chain element with a specific model runner and prefix.
+     *
+     * @param ai_runner The model runner to use for generating embeddings.
+     * @param prefix The string to prepend to the input text. Use an empty string for no prefix.
+     */
+    explicit embed(std::shared_ptr<ai_runner> model_runner, std::string prefix);
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
+    bool is_leaf() const override { return false; }
 
-} // anonymous namespace
+  private:
+    using with_pimpl<embed>::impl;
 
-namespace docwire::ai::local::passage
-{
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_passage_prefix})
-{}
-} // namespace docwire::ai::local::passage
+};
 
-namespace docwire::ai::local::query
-{
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_query_prefix})
-{}
-} // namespace docwire::ai::local::query
+} // namespace docwire::ai
+
+#endif // DOCWIRE_AI_EMBED_H

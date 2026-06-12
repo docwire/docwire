@@ -32,7 +32,6 @@ int main(int argc, char* argv[])
         content_type::detector{} |
         office_formats_parser() |
         PlainTextExporter() |
-        local_ai::model_chain_element("Write a short summary for this text:\n\n") |
         out_stream;
   }
   catch (const std::exception& e)

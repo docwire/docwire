@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | local_ai::model_chain_element("Detect sentiment:\n\n") | out_stream;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | ai::local::task("Detect sentiment:\n\n") | out_stream;
     ensure(out_stream.str()) == "positive";
   }
   catch (const std::exception& e)

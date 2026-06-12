@@ -12,55 +12,39 @@
 #ifndef DOCWIRE_LOCAL_AI_EMBED_H
 #define DOCWIRE_LOCAL_AI_EMBED_H
 
-#include "chain_element.h"
+#include "ai_embed.h"
 #include "local_ai_export.h"
-#include "model_runner.h"
-#include "pimpl.h"
-#include <memory>
 
-namespace docwire::local_ai
+namespace docwire::ai::local::passage
 {
 
 /**
- * @brief A chain element that generates embeddings for input text using a local AI model.
- *
- * This class is a chain element that takes a model_runner to generate a vector
- * embedding for a given text. It is designed to work with sentence-transformer
- * models like `multilingual-e5-small`.
+ * @brief Embeds a passage (document chunk) using the local AI model's default passage prefix.
+ * The appropriate prefix for the underlying model (e.g. "passage: " for multilingual-e5-small)
+ * is applied automatically. No model-specific knowledge required at the call site.
  */
-class DOCWIRE_LOCAL_AI_EXPORT embed : public ChainElement, public with_pimpl<embed>
+class DOCWIRE_LOCAL_AI_EXPORT embedder : public docwire::ai::embed
 {
-public:
-    /// Common prefix for passage embeddings with E5 models.
-    static const std::string e5_passage_prefix;
-    /// Common prefix for query embeddings with E5 models.
-    static const std::string e5_query_prefix;
+  public:
+    embedder();
+};
+} // namespace docwire::ai::local::passage
 
-    /**
-     * @brief Construct a local AI embed chain element with a specific model runner and prefix.
-     *
-     * @param model_runner The model runner to use for generating embeddings.
-     * @param prefix The string to prepend to the input text. Use an empty string for no prefix.
-     */
-    explicit embed(std::shared_ptr<model_runner> model_runner, std::string prefix);
+namespace docwire::ai::local::query
+{
+/**
+ * @brief Embeds a search query (search input) using the local AI model's default query prefix.
+ *
+ * The appropriate prefix for the underlying model (e.g. "query: " for multilingual-e5-small)
+ * is applied automatically. No model-specific knowledge required at the call site.
 
-    /**
-     * @brief Construct a local AI embed chain element with a default model runner and prefix.
-     *
-     * This constructor initializes the embedder with a default `model_runner`
-     * configured to use the `multilingual-e5-small-ct2-int8` model.
-     * @param prefix The string to prepend to the input text. Use an empty string for no prefix.
-     */
-    explicit embed(std::string prefix);
-
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-
-    bool is_leaf() const override { return false; }
-
-private:
-    using with_pimpl<embed>::impl;
+ */
+class DOCWIRE_LOCAL_AI_EXPORT embedder : public docwire::ai::embed
+{
+  public:
+    embedder();
 };
 
-} // namespace docwire::local_ai
+} // namespace docwire::ai::local::query
 
 #endif // DOCWIRE_LOCAL_AI_EMBED_H
