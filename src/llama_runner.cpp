@@ -108,7 +108,7 @@ struct llama_call_guard
 
 template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
 {
-    std::mutex model_mutex;
+    std::recursive_mutex model_mutex;
     llama_backend_guard llama_backend;
     ai::model_inference_config config;
     ai::llama::llama_handle<llama_model> model;
@@ -131,7 +131,7 @@ template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
 
     void ensure_model_loaded()
     {
-        std::lock_guard<std::mutex> lock(model_mutex);
+        std::lock_guard<std::recursive_mutex > lock(model_mutex);
         if (model)
             return;
 
@@ -185,7 +185,7 @@ template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
 
     void llama_unload()
     {
-        std::lock_guard<std::mutex> lock(model_mutex);
+        std::lock_guard<std::recursive_mutex > lock(model_mutex);
         sampler.reset();
         ctx.reset();
         model.reset();
@@ -260,7 +260,7 @@ template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
      * @brief This function feeds tokens into the context in batches
      * @param tokens
      */
-    void decode_prompt(const std::vector<llama_token>& tokens)
+    llama_pos decode_prompt(const std::vector<llama_token>& tokens)
     {
         const int32_t n_batch = static_cast<int32_t>(config.n_batch.get());
         llama_pos pos = 0;
@@ -276,12 +276,13 @@ template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
 
             pos += len;
         }
+        return pos;
     }
 
     /**
      * @brief This function generates response from the model and returns
      */
-    std::string generate()
+    std::string generate(llama_pos pos)
     {
         std::string output;
         const int max_tokens = static_cast<int>(config.max_tokens.get());
@@ -295,14 +296,19 @@ template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
 
             char buf[256];
             int n = llama_token_to_piece(vocab, token, buf, sizeof(buf), 0, true);
-            if (n > 0) {
+            if (n < 0) {
+                std::vector<char> large_buf(-n);
+                n = llama_token_to_piece(vocab, token, large_buf.data(), large_buf.size(), 0, true);
+                throw_if(n <= 0, "Failed to convert token to piece", errors::program_logic{});
+                output.append(large_buf.data(), n);
+            } else if (n > 0) {
                 output.append(buf, n);
             }
 
             llama_batch batch = llama_batch_get_one(&token, 1);
-
             if (llama_decode(ctx.get(), batch) != 0)
                 break;
+            pos++;
         }
         return output;
     }
@@ -312,14 +318,15 @@ template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
      */
     std::string process(const std::string& user_input)
     {
+    	std::lock_guard<std::recursive_mutex> lock(model_mutex);
         ensure_model_loaded();
         reset();
 
         std::string prompt = build_prompt(user_input);
         auto tokens = tokenize(prompt);
 
-        decode_prompt(tokens);
-        return generate();
+        llama_pos pos = decode_prompt(tokens);
+        return generate(pos);
     }
 };
 
@@ -346,6 +353,7 @@ std::vector<double> llama_runner::embed(const std::string& input)
     llama_call_guard guard;
     auto& impl = this->impl();
 
+    std::lock_guard<std::recursive_mutex> lock(impl.model_mutex);
     impl.ensure_model_loaded();
     impl.reset();
 

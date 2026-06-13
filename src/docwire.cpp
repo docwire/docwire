@@ -137,13 +137,19 @@ create_local_runner(const boost::program_options::variables_map& vm,
 	            throw std::runtime_error("GGUF model support requires the llama-engine feature");
 	        #endif
         }
-
-        return std::make_shared<ai::ct2::ct2_runner>(model_path);
+        #ifdef DOCWIRE_LOCAL_CT2
+        	return std::make_shared<ai::ct2::ct2_runner>(model_path);
+        #else
+        	throw std::runtime_error("CT2 model support requires the ct2-engine feature");
+        #endif
     }
-
+    #ifdef DOCWIRE_LOCAL_CT2
     return std::make_shared<ai::ct2::ct2_runner>(
         resource_path(default_model)
     );
+    #else
+    	throw std::runtime_error("Default local AI model requires the ct2-engine feature");
+    #endif
 }
 #endif
 

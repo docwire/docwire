@@ -29,8 +29,6 @@ namespace docwire::ai::llama
  */
 class DOCWIRE_AI_LLAMA_EXPORT llama_runner : public ai_runner, public with_pimpl<llama_runner>
 {
-  private:
-    bool supports_embeddings() const;
 
   public:
     explicit llama_runner(const model_inference_config& config);

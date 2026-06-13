@@ -57,7 +57,7 @@ class DOCWIRE_AI_EXPORT model_chain_element : public ChainElement
      * @param prompt The prompt to append to the input text.
      * @param model_lifetime_policy Option to decide whether to unload model after usage or keep it persistent
      */
-    model_chain_element(const std::string& prompt, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
+    //model_chain_element(const std::string& prompt, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
 
     /**
      * @brief Process the input.
