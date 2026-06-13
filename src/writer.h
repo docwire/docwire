@@ -20,11 +20,11 @@
 namespace docwire
 {
 
-class TextElement
+class text_element
 {
 public:
-  TextElement() = default;
-  explicit TextElement(std::string text) : text(std::move(text)) {};
+  text_element() = default;
+  explicit text_element(std::string text) : text(std::move(text)) {};
   virtual void write_to(std::ostream &file) const
   {
     file << text;
@@ -37,7 +37,7 @@ private:
 /**
  * @brief The Writer class is used to write data from callbacks to an output stream.
  */
-class DOCWIRE_CORE_EXPORT Writer
+class DOCWIRE_CORE_EXPORT writer
 {
 public:
   /**

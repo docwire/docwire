@@ -19,9 +19,9 @@ namespace docwire
 using namespace wvWare;
 
 template<>
-struct pimpl_impl<ThreadSafeOLEStreamReader> : pimpl_impl_base
+struct pimpl_impl<thread_safe_ole_stream_reader> : pimpl_impl_base
 {
-	DataStream* m_data_stream{};
+	data_stream* m_data_stream{};
 	uint64_t m_size{0};
 	uint64_t m_position{0};
 	uint64_t m_chunk_position{0};
@@ -32,7 +32,7 @@ struct pimpl_impl<ThreadSafeOLEStreamReader> : pimpl_impl_base
 	bool m_valid{false};
 };
 
-ThreadSafeOLEStreamReader::ThreadSafeOLEStreamReader(ThreadSafeOLEStorage *storage, Stream &stream)
+thread_safe_ole_stream_reader::thread_safe_ole_stream_reader(thread_safe_ole_storage *storage, stream &stream)
 	: OLEStreamReader((wvWare::OLEStorage*)storage)
 {
 	impl().m_data_stream = stream.m_data_stream;
@@ -62,33 +62,33 @@ ThreadSafeOLEStreamReader::ThreadSafeOLEStreamReader(ThreadSafeOLEStorage *stora
 	}
 }
 
-ThreadSafeOLEStreamReader::~ThreadSafeOLEStreamReader()
+thread_safe_ole_stream_reader::~thread_safe_ole_stream_reader()
 {
 	impl().m_data_stream->close();
 	delete impl().m_data_stream;
 }
 
-std::string ThreadSafeOLEStreamReader::getLastError() const
+std::string thread_safe_ole_stream_reader::getLastError() const
 {
 	return impl().m_error;
 }
 
-bool ThreadSafeOLEStreamReader::isValid() const
+bool thread_safe_ole_stream_reader::isValid() const
 {
 	return impl().m_valid;
 }
 
-int ThreadSafeOLEStreamReader::tell() const
+int thread_safe_ole_stream_reader::tell() const
 {
 	return impl().m_position;
 }
 
-size_t ThreadSafeOLEStreamReader::size() const
+size_t thread_safe_ole_stream_reader::size() const
 {
 	return impl().m_size;
 }
 
-bool ThreadSafeOLEStreamReader::read(U8* buf, size_t length)
+bool thread_safe_ole_stream_reader::read(U8* buf, size_t length)
 {
 	if (!impl().m_valid)
 		return false;
@@ -147,7 +147,7 @@ bool ThreadSafeOLEStreamReader::read(U8* buf, size_t length)
 	return true;
 }
 
-bool ThreadSafeOLEStreamReader::seek(int offset, int whence)
+bool thread_safe_ole_stream_reader::seek(int offset, int whence)
 {
 	uint64_t new_position;
 	if (!impl().m_valid)
@@ -186,12 +186,12 @@ bool ThreadSafeOLEStreamReader::seek(int offset, int whence)
 	return true;
 }
 
-bool ThreadSafeOLEStreamReader::readU8(U8& data)
+bool thread_safe_ole_stream_reader::readU8(U8& data)
 {
 	return read(&data, 1);
 }
 
-U8 ThreadSafeOLEStreamReader::readU8()
+U8 thread_safe_ole_stream_reader::readU8()
 {
 	U8 data = 0;
 	if (!read(&data, 1))
@@ -199,12 +199,12 @@ U8 ThreadSafeOLEStreamReader::readU8()
 	return data;
 }
 
-bool ThreadSafeOLEStreamReader::readS8(S8& data)
+bool thread_safe_ole_stream_reader::readS8(S8& data)
 {
 	return read((U8*)&data, 1);
 }
 
-S8 ThreadSafeOLEStreamReader::readS8()
+S8 thread_safe_ole_stream_reader::readS8()
 {
 	U8 data = 0;
 	if (!read(&data, 1))
@@ -212,7 +212,7 @@ S8 ThreadSafeOLEStreamReader::readS8()
 	return (S8)data;
 }
 
-bool ThreadSafeOLEStreamReader::readU16(U16& data)
+bool thread_safe_ole_stream_reader::readU16(U16& data)
 {
 	#if defined(WORDS_BIGENDIAN)
 	return read((U8*)data + 1, 1) && read((U8*)data, 1);
@@ -221,7 +221,7 @@ bool ThreadSafeOLEStreamReader::readU16(U16& data)
 	#endif
 }
 
-U16 ThreadSafeOLEStreamReader::readU16()
+U16 thread_safe_ole_stream_reader::readU16()
 {
 	U16 data = 0;
 	#if defined(WORDS_BIGENDIAN)
@@ -233,7 +233,7 @@ U16 ThreadSafeOLEStreamReader::readU16()
 	return data;
 }
 
-bool ThreadSafeOLEStreamReader::readS16(S16& data)
+bool thread_safe_ole_stream_reader::readS16(S16& data)
 {
 	#if defined(WORDS_BIGENDIAN)
 	return read((U8*)&data + 1, 1) && read((U8*)&data, 1);
@@ -242,7 +242,7 @@ bool ThreadSafeOLEStreamReader::readS16(S16& data)
 	#endif
 }
 
-S16 ThreadSafeOLEStreamReader::readS16()
+S16 thread_safe_ole_stream_reader::readS16()
 {
 	U16 data = 0;
 	#if defined(WORDS_BIGENDIAN)
@@ -254,7 +254,7 @@ S16 ThreadSafeOLEStreamReader::readS16()
 	return (S16)data;
 }
 
-bool ThreadSafeOLEStreamReader::readU32(U32& data)
+bool thread_safe_ole_stream_reader::readU32(U32& data)
 {
 	#if defined(WORDS_BIGENDIAN)
 	return read((U8*)&data + 3, 1) && read((U8*)&data + 2, 1) && read((U8*)&data + 1, 1) && read((U8*)&data, 1);
@@ -263,7 +263,7 @@ bool ThreadSafeOLEStreamReader::readU32(U32& data)
 	#endif
 }
 
-U32 ThreadSafeOLEStreamReader::readU32()
+U32 thread_safe_ole_stream_reader::readU32()
 {
 	U32 data = 0;
 	#if defined(WORDS_BIGENDIAN)
@@ -275,7 +275,7 @@ U32 ThreadSafeOLEStreamReader::readU32()
 	return data;
 }
 
-bool ThreadSafeOLEStreamReader::readS32(S32& data)
+bool thread_safe_ole_stream_reader::readS32(S32& data)
 {
 	#if defined(WORDS_BIGENDIAN)
 	return read((U8*)&data + 3, 1) && read((U8*)&data + 2, 1) && read((U8*)&data + 1, 1) && read((U8*)&data, 1);
@@ -284,7 +284,7 @@ bool ThreadSafeOLEStreamReader::readS32(S32& data)
 	#endif
 }
 
-S32 ThreadSafeOLEStreamReader::readS32()
+S32 thread_safe_ole_stream_reader::readS32()
 {
 	U32 data = 0;
 	#if defined(WORDS_BIGENDIAN)

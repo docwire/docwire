@@ -40,17 +40,17 @@ static int to_libxml_parse_options(reader_blanks blanks_option)
 	return libxml_options;
 }
 
-class LibXml2InitAndCleanup final
+class lib_xml2_init_and_cleanup final
 {
 	public:
-		LibXml2InitAndCleanup() { xmlInitParser(); }
-		~LibXml2InitAndCleanup() { xmlCleanupParser(); }
+		lib_xml2_init_and_cleanup() { xmlInitParser(); }
+		~lib_xml2_init_and_cleanup() { xmlCleanupParser(); }
 };
 
 static std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> make_xml_text_reader_safely(std::string_view xml, reader_blanks blanks_option)
 {
 	std::lock_guard<std::mutex> xml_parser_init_mutex_lock(xml_parser_init_mutex);
-	static LibXml2InitAndCleanup init_and_cleanup{};
+	static lib_xml2_init_and_cleanup init_and_cleanup{};
 	const int final_options = to_libxml_parse_options(blanks_option) | XML_PARSE_NOERROR | XML_PARSE_NOWARNING;
 	throw_if (xml.size() > static_cast<size_t>(std::numeric_limits<int>::max()), "XML input too large for libxml2");
 	return std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)>(

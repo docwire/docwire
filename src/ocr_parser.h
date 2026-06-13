@@ -28,7 +28,7 @@ namespace docwire
 namespace ocr
 {
 
-struct PleaseWait {};
+struct please_wait {};
 
 } // namespace ocr
 
@@ -36,15 +36,15 @@ struct ocr_confidence_threshold { std::optional<float> v; };
 struct ocr_data_path { std::filesystem::path v; };
 struct ocr_timeout { std::optional<int32_t> v; };
 
-class DOCWIRE_OCR_EXPORT OCRParser : public ChainElement, public with_pimpl<OCRParser>
+class DOCWIRE_OCR_EXPORT ocr_parser : public chain_element, public with_pimpl<ocr_parser>
 {
 private:
-    using with_pimpl<OCRParser>::impl;
-    friend pimpl_impl<OCRParser>;
+    using with_pimpl<ocr_parser>::impl;
+    friend pimpl_impl<ocr_parser>;
 
 public:
 
-    OCRParser(const std::vector<Language>& languages = {},
+    ocr_parser(const std::vector<Language>& languages = {},
         ocr_confidence_threshold ocr_confidence_threshold_arg = {},
         ocr_timeout ocr_timeout_arg = {},
         ocr_data_path ocr_data_path_arg = {});

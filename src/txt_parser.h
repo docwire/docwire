@@ -21,11 +21,11 @@ namespace docwire
 struct parse_paragraphs { bool v; };
 struct parse_lines { bool v; };
 
-class DOCWIRE_PLAIN_TEXT_EXPORT TXTParser : public ChainElement, public with_pimpl<TXTParser>
+class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser : public chain_element, public with_pimpl<txt_parser>
 {
 	public:
 
-	TXTParser(
+	txt_parser(
 		parse_paragraphs parse_paragraphs_arg = parse_paragraphs{true},
 		parse_lines parse_lines_arg = parse_lines{true});
     
@@ -33,7 +33,7 @@ class DOCWIRE_PLAIN_TEXT_EXPORT TXTParser : public ChainElement, public with_pim
     bool is_leaf() const override { return false; }
 
 private:
-	using with_pimpl<TXTParser>::impl;
+	using with_pimpl<txt_parser>::impl;
 };
 
 } // namespace docwire

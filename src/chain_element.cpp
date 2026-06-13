@@ -15,13 +15,13 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<ChainElement> : pimpl_impl_base
+struct pimpl_impl<chain_element> : pimpl_impl_base
 {
   pimpl_impl()
   {}
 };
 
-ChainElement::ChainElement()
+chain_element::chain_element()
 {
 }
 

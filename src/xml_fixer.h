@@ -19,10 +19,10 @@
 namespace docwire
 {
 
-class DOCWIRE_XML_EXPORT XmlFixer : public with_pimpl<XmlFixer>
+class DOCWIRE_XML_EXPORT xml_fixer : public with_pimpl<xml_fixer>
 {
 	public:
-		XmlFixer();
+		xml_fixer();
 		std::string fix(const std::string& xml);
 };
 

@@ -25,12 +25,12 @@ namespace docwire
  * @tparam safety_level The safety policy to use.
  */
 template <safety_policy safety_level = default_safety_level>
-class DOCWIRE_ODF_OOXML_EXPORT ODFXMLParser : public CommonXMLDocumentParser<safety_level>, public with_pimpl<ODFXMLParser<safety_level>>
+class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser : public common_xml_document_parser<safety_level>, public with_pimpl<odfxml_parser<safety_level>>
 {
 	private:
-		using base_type = CommonXMLDocumentParser<safety_level>;
-		using with_pimpl<ODFXMLParser<safety_level>>::impl;
-		friend pimpl_impl<ODFXMLParser<safety_level>>;
+		using base_type = common_xml_document_parser<safety_level>;
+		using with_pimpl<odfxml_parser<safety_level>>::impl;
+		friend pimpl_impl<odfxml_parser<safety_level>>;
 
 		using base_type::registerODFOOXMLCommandHandler;
 		using scoped_context_stack_push = base_type::scoped_context_stack_push;
@@ -45,7 +45,7 @@ class DOCWIRE_ODF_OOXML_EXPORT ODFXMLParser : public CommonXMLDocumentParser<saf
 		/**
 		 * @brief Default constructor.
 		 */
-		ODFXMLParser();
+		odfxml_parser();
 		/**
 		 * @brief Processes a message in the parsing chain.
 		 * @return The continuation status.

@@ -26,7 +26,7 @@ void detect(data_source& data)
         if (zip_confidence < confidence::medium)
             return;
     }
-    ZipReader unzip{data};
+    zip_reader unzip{data};
     try
     {
         unzip.open();

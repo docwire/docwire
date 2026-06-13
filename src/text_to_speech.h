@@ -22,7 +22,7 @@ namespace docwire
 namespace openai
 {
 
-class DOCWIRE_OPENAI_EXPORT TextToSpeech : public ChainElement, public with_pimpl<TextToSpeech>
+class DOCWIRE_OPENAI_EXPORT text_to_speech : public chain_element, public with_pimpl<text_to_speech>
 {
 public:
 	enum class Model
@@ -35,7 +35,7 @@ public:
 		alloy, echo, fable, onyx, nova, shimmer
 	};
 
-	TextToSpeech(const std::string& api_key, Model model = Model::gpt_4o_mini_tts, Voice voice = Voice::alloy);
+	text_to_speech(const std::string& api_key, Model model = Model::gpt_4o_mini_tts, Voice voice = Voice::alloy);
 
 	/**
 	* @brief Executes transform operation for given node data.
@@ -51,7 +51,7 @@ public:
 	}
 
 private:
-	using with_pimpl<TextToSpeech>::impl;
+	using with_pimpl<text_to_speech>::impl;
 };
 
 } // namespace openai

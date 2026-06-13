@@ -29,12 +29,12 @@
 namespace docwire
 {
 
-class Cell
+class cell
 {
 public:
-  Cell(std::string eol_sequence,
-    std::function<std::string(const document::Link&)> format_link_opening,
-    std::function<std::string(const document::CloseLink&)> format_link_closing)
+  cell(std::string eol_sequence,
+    std::function<std::string(const document::link&)> format_link_opening,
+    std::function<std::string(const document::close_link&)> format_link_closing)
   : writer(eol_sequence, format_link_opening, format_link_closing)
   {}
 
@@ -88,7 +88,7 @@ public:
     return result;
   }
 
-  PlainTextWriter writer;
+  plain_text_writer writer;
   std::string result;
   std::vector<std::string> lines;
 };
@@ -97,8 +97,8 @@ class nested_writer
 {
 public:
   nested_writer(std::string eol_sequence, 
-    std::function<std::string(const document::Link&)> format_link_opening,
-    std::function<std::string(const document::CloseLink&)> format_link_closing)
+    std::function<std::string(const document::link&)> format_link_opening,
+    std::function<std::string(const document::close_link&)> format_link_closing)
   : m_writer(eol_sequence, format_link_opening, format_link_closing)
   {}
 
@@ -112,51 +112,51 @@ public:
     return m_stream.str();
   }
 
-  PlainTextWriter m_writer;
+  plain_text_writer m_writer;
   std::stringstream m_stream;
 };
 
 template<>
-struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
+struct pimpl_impl<plain_text_writer> : pimpl_impl_base
 {
-  using handler_func = std::function<std::shared_ptr<TextElement>(const message_ptr&)>;
+  using handler_func = std::function<std::shared_ptr<text_element>(const message_ptr&)>;
   const boost::container::flat_map<std::type_index, handler_func> m_handlers;
 
   pimpl_impl(const std::string& eol_sequence,
-      std::function<std::string(const document::Link&)> format_link_opening,
-      std::function<std::string(const document::CloseLink&)> format_link_closing)
+      std::function<std::string(const document::link&)> format_link_opening,
+      std::function<std::string(const document::close_link&)> format_link_closing)
     : m_handlers{
-        {typeid(mail::Mail), [this](const message_ptr& msg) { return write_mail(msg->get<mail::Mail>()); }},
-        {typeid(mail::Attachment), [this](const message_ptr& msg) { return write_attachment(msg->get<mail::Attachment>()); }},
-        {typeid(mail::Folder), [this](const message_ptr& msg) { return write_folder(msg->get<mail::Folder>()); }},
-        {typeid(document::Text), [this](const message_ptr& msg) { return write_text(msg->get<document::Text>()); }},
-        {typeid(mail::CloseMailBody), [this](const message_ptr& msg) { return write_close_mail_body(msg->get<mail::CloseMailBody>()); }},
-        {typeid(mail::CloseAttachment), [this](const message_ptr& msg) { return write_close_attachment(msg->get<mail::CloseAttachment>()); }},
-        {typeid(document::BreakLine), [this](const message_ptr& msg) { return write_new_line(msg->get<document::BreakLine>()); }},
-        {typeid(document::CloseParagraph), [this](const message_ptr& msg) { return write_new_paragraph(msg->get<document::CloseParagraph>()); }},
-        {typeid(document::CloseSection), [this](const message_ptr& msg) { return write_new_paragraph(document::CloseParagraph()); }},
-        {typeid(document::Table), [this](const message_ptr& msg) { return turn_on_table_mode(msg->get<document::Table>()); }},
-        {typeid(document::CloseTable), [this](const message_ptr& msg) { return turn_off_table_mode(msg->get<document::CloseTable>()); }},
-        {typeid(document::Link), [this](const message_ptr& msg) { return std::make_shared<TextElement>(m_format_link_opening(msg->get<document::Link>())); }},
-        {typeid(document::CloseLink), [this](const message_ptr& msg) { return std::make_shared<TextElement>(m_format_link_closing(msg->get<document::CloseLink>())); }},
-        {typeid(document::Image), [this](const message_ptr& msg) { return write_image(msg->get<document::Image>()); }},
-        {typeid(document::List), [this](const message_ptr& msg) { return write_list(msg->get<document::List>()); }},
-        {typeid(document::CloseList), [this](const message_ptr& msg) { return write_close_list(msg->get<document::CloseList>()); }},
-        {typeid(document::ListItem), [this](const message_ptr& msg) { return write_list_item(msg->get<document::ListItem>()); }},
-        {typeid(document::CloseListItem), [this](const message_ptr& msg) { return write_close_list_item(msg->get<document::CloseListItem>()); }},
-        {typeid(document::Header), [this](const message_ptr& msg) { return write_header(msg->get<document::Header>()); }},
-        {typeid(document::CloseHeader), [this](const message_ptr& msg) { return write_close_header(msg->get<document::CloseHeader>()); }},
-        {typeid(document::Footer), [this](const message_ptr& msg) { return write_footer(msg->get<document::Footer>()); }},
-        {typeid(document::CloseFooter), [this](const message_ptr& msg) { return write_close_footer(msg->get<document::CloseFooter>()); }},
-        {typeid(document::Comment), [this](const message_ptr& msg) { return write_comment(msg->get<document::Comment>()); }},
-        {typeid(document::ClosePage), [this](const message_ptr& msg) { return write_close_page(msg->get<document::ClosePage>()); }},
-        {typeid(document::Document), [this](const message_ptr& msg) {
+        {typeid(mail::mail), [this](const message_ptr& msg) { return write_mail(msg->get<mail::mail>()); }},
+        {typeid(mail::attachment), [this](const message_ptr& msg) { return write_attachment(msg->get<mail::attachment>()); }},
+        {typeid(mail::folder), [this](const message_ptr& msg) { return write_folder(msg->get<mail::folder>()); }},
+        {typeid(document::text), [this](const message_ptr& msg) { return write_text(msg->get<document::text>()); }},
+        {typeid(mail::close_mail_body), [this](const message_ptr& msg) { return write_close_mail_body(msg->get<mail::close_mail_body>()); }},
+        {typeid(mail::close_attachment), [this](const message_ptr& msg) { return write_close_attachment(msg->get<mail::close_attachment>()); }},
+        {typeid(document::break_line), [this](const message_ptr& msg) { return write_new_line(msg->get<document::break_line>()); }},
+        {typeid(document::close_paragraph), [this](const message_ptr& msg) { return write_new_paragraph(msg->get<document::close_paragraph>()); }},
+        {typeid(document::close_section), [this](const message_ptr& msg) { return write_new_paragraph(document::close_paragraph()); }},
+        {typeid(document::table), [this](const message_ptr& msg) { return turn_on_table_mode(msg->get<document::table>()); }},
+        {typeid(document::close_table), [this](const message_ptr& msg) { return turn_off_table_mode(msg->get<document::close_table>()); }},
+        {typeid(document::link), [this](const message_ptr& msg) { return std::make_shared<text_element>(m_format_link_opening(msg->get<document::link>())); }},
+        {typeid(document::close_link), [this](const message_ptr& msg) { return std::make_shared<text_element>(m_format_link_closing(msg->get<document::close_link>())); }},
+        {typeid(document::image), [this](const message_ptr& msg) { return write_image(msg->get<document::image>()); }},
+        {typeid(document::list), [this](const message_ptr& msg) { return write_list(msg->get<document::list>()); }},
+        {typeid(document::close_list), [this](const message_ptr& msg) { return write_close_list(msg->get<document::close_list>()); }},
+        {typeid(document::list_item), [this](const message_ptr& msg) { return write_list_item(msg->get<document::list_item>()); }},
+        {typeid(document::close_list_item), [this](const message_ptr& msg) { return write_close_list_item(msg->get<document::close_list_item>()); }},
+        {typeid(document::header), [this](const message_ptr& msg) { return write_header(msg->get<document::header>()); }},
+        {typeid(document::close_header), [this](const message_ptr& msg) { return write_close_header(msg->get<document::close_header>()); }},
+        {typeid(document::footer), [this](const message_ptr& msg) { return write_footer(msg->get<document::footer>()); }},
+        {typeid(document::close_footer), [this](const message_ptr& msg) { return write_close_footer(msg->get<document::close_footer>()); }},
+        {typeid(document::comment), [this](const message_ptr& msg) { return write_comment(msg->get<document::comment>()); }},
+        {typeid(document::close_page), [this](const message_ptr& msg) { return write_close_page(msg->get<document::close_page>()); }},
+        {typeid(document::document), [this](const message_ptr& msg) {
             m_nested_docs_counter++;
-            return std::shared_ptr<TextElement>();
+            return std::shared_ptr<text_element>();
         }},
-        {typeid(document::CloseDocument), [this](const message_ptr& msg) {
+        {typeid(document::close_document), [this](const message_ptr& msg) {
             m_nested_docs_counter--;
-            return m_nested_docs_counter == 0 ? write_close_document(msg->get<document::CloseDocument>()) : std::shared_ptr<TextElement>();
+            return m_nested_docs_counter == 0 ? write_close_document(msg->get<document::close_document>()) : std::shared_ptr<text_element>();
         }},
     },
     m_eol_sequence(eol_sequence),
@@ -183,8 +183,8 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
     return new_text;
   }
 
-  std::shared_ptr<TextElement>
-  write_mail(const mail::Mail& mail)
+  std::shared_ptr<text_element>
+  write_mail(const mail::mail& mail)
   {
     log_scope(mail);
     std::string text = "";
@@ -201,11 +201,11 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
     {
       text += " creation time: " + timestampToString(*mail.date) + m_eol_sequence;
     }
-    return std::make_shared<TextElement>(text);
+    return std::make_shared<text_element>(text);
   }
 
-  std::shared_ptr<TextElement>
-  write_attachment(const mail::Attachment& attachment)
+  std::shared_ptr<text_element>
+  write_attachment(const mail::attachment& attachment)
   {
     log_scope(attachment);
     std::string text = m_eol_sequence + m_eol_sequence + "attachment: ";
@@ -214,11 +214,11 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
       text += *attachment.name;
     }
     text += m_eol_sequence + m_eol_sequence;
-    return std::make_shared<TextElement>(text);
+    return std::make_shared<text_element>(text);
   }
 
-  std::shared_ptr<TextElement>
-  write_folder(const mail::Folder& folder)
+  std::shared_ptr<text_element>
+  write_folder(const mail::folder& folder)
   {
     log_scope(folder);
     std::string text = "";
@@ -231,50 +231,50 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
     {
       text += *folder.name + m_eol_sequence;
     }
-    return std::make_shared<TextElement>(text);
+    return std::make_shared<text_element>(text);
   }
 
-  std::shared_ptr<TextElement>
-  write_text(const document::Text& text)
+  std::shared_ptr<text_element>
+  write_text(const document::text& text)
   {
     log_scope(text);
-    return std::make_shared<TextElement>(text.text);
+    return std::make_shared<text_element>(text.text);
   }
 
-  std::shared_ptr<TextElement>
-  write_close_mail_body(const mail::CloseMailBody&)
+  std::shared_ptr<text_element>
+  write_close_mail_body(const mail::close_mail_body&)
   {
     log_scope();
-    return std::make_shared<TextElement>(m_eol_sequence);
+    return std::make_shared<text_element>(m_eol_sequence);
   }
 
-  std::shared_ptr<TextElement>
-  write_close_attachment(const mail::CloseAttachment&)
+  std::shared_ptr<text_element>
+  write_close_attachment(const mail::close_attachment&)
   {
     log_scope();
-    return std::make_shared<TextElement>(m_eol_sequence);
+    return std::make_shared<text_element>(m_eol_sequence);
   }
 
-  std::shared_ptr<TextElement>
-  write_new_line(const document::BreakLine&)
+  std::shared_ptr<text_element>
+  write_new_line(const document::break_line&)
   {
     log_scope();
-    return std::make_shared<TextElement>(m_eol_sequence);
+    return std::make_shared<text_element>(m_eol_sequence);
   }
 
-  std::shared_ptr<TextElement>
-  write_new_paragraph(const document::CloseParagraph&)
+  std::shared_ptr<text_element>
+  write_new_paragraph(const document::close_paragraph&)
   {
     log_scope();
     if (list_mode)
     {
-      return std::make_shared<TextElement>("");
+      return std::make_shared<text_element>("");
     }
-    return std::make_shared<TextElement>(m_eol_sequence);
+    return std::make_shared<text_element>(m_eol_sequence);
   }
 
-  std::shared_ptr<TextElement>
-  write_image(const document::Image& image)
+  std::shared_ptr<text_element>
+  write_image(const document::image& image)
   {
     log_scope(image);
     std::string text;
@@ -300,66 +300,66 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
     {
       text = *image.alt;
     }
-    return std::make_shared<TextElement>(text);
+    return std::make_shared<text_element>(text);
   }
 
-  std::shared_ptr<TextElement>
-  turn_on_table_mode(const document::Table&)
+  std::shared_ptr<text_element>
+  turn_on_table_mode(const document::table&)
   {
     log_scope();
-    return std::make_shared<TextElement>("");
+    return std::make_shared<text_element>("");
   }
 
-  std::shared_ptr<TextElement>
-  turn_off_table_mode(const document::CloseTable&)
+  std::shared_ptr<text_element>
+  turn_off_table_mode(const document::close_table&)
   {
     log_scope();
-    return std::make_shared<TextElement>("");
+    return std::make_shared<text_element>("");
   }
 
-  std::shared_ptr<TextElement>
-  write_list(const document::List& list)
+  std::shared_ptr<text_element>
+  write_list(const document::list& list)
   {
     log_scope(list);
     list_mode = true;
     list_counter = 1;
     list_type = list.type;
-    return std::make_shared<TextElement>(m_eol_sequence);
+    return std::make_shared<text_element>(m_eol_sequence);
   }
 
-  std::shared_ptr<TextElement>
-  write_close_list(const document::CloseList&)
+  std::shared_ptr<text_element>
+  write_close_list(const document::close_list&)
   {
     log_scope();
     list_mode = false;
     list_counter = 1;
-    return std::make_shared<TextElement>("");
+    return std::make_shared<text_element>("");
   }
 
-  std::shared_ptr<TextElement>
-  write_list_item(const document::ListItem&)
+  std::shared_ptr<text_element>
+  write_list_item(const document::list_item&)
   {
     log_scope();
     if (list_type == "none")
-      return std::make_shared<TextElement>("");
+      return std::make_shared<text_element>("");
     else if (list_type == "decimal")
-      return std::make_shared<TextElement>(std::to_string(list_counter) + ". ");
+      return std::make_shared<text_element>(std::to_string(list_counter) + ". ");
     else if (list_type == "disc")
-      return std::make_shared<TextElement>("* ");
+      return std::make_shared<text_element>("* ");
     else
-      return std::make_shared<TextElement>(list_type);
+      return std::make_shared<text_element>(list_type);
   }
 
-  std::shared_ptr<TextElement>
-  write_close_list_item(const document::CloseListItem&)
+  std::shared_ptr<text_element>
+  write_close_list_item(const document::close_list_item&)
   {
     log_scope();
     ++list_counter;
-    return std::make_shared<TextElement>(m_eol_sequence);
+    return std::make_shared<text_element>(m_eol_sequence);
   }
 
-	std::shared_ptr<TextElement>
-	write_comment(const document::Comment& comment)
+	std::shared_ptr<text_element>
+	write_comment(const document::comment& comment)
 	{
 		log_scope(comment);
 		std::string text = m_eol_sequence + "[[[";
@@ -381,52 +381,52 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
 		}
 		text += "[[[---]]]" + m_eol_sequence;
 
-		return std::make_shared<TextElement>(text);
+		return std::make_shared<text_element>(text);
 	}
 
-	std::shared_ptr<TextElement> write_header(const document::Header&)
+	std::shared_ptr<text_element> write_header(const document::header&)
 	{
 		header_mode = true;
 		log_scope();
-		return std::make_shared<TextElement>("");
+		return std::make_shared<text_element>("");
 	}
 
-	std::shared_ptr<TextElement> write_close_header(const document::CloseHeader&)
+	std::shared_ptr<text_element> write_close_header(const document::close_header&)
 	{
     log_scope();
 		header_mode = false;
-		return std::make_shared<TextElement>(m_eol_sequence);
+		return std::make_shared<text_element>(m_eol_sequence);
 	}
 
-	std::shared_ptr<TextElement> write_footer(const document::Footer&)
+	std::shared_ptr<text_element> write_footer(const document::footer&)
 	{
     log_scope();
 		footer_mode = true;
 		footer_stream.str("");
-		return std::make_shared<TextElement>("");
+		return std::make_shared<text_element>("");
 	}
 
-	std::shared_ptr<TextElement> write_close_footer(const document::CloseFooter&)
+	std::shared_ptr<text_element> write_close_footer(const document::close_footer&)
 	{
     log_scope();
 		footer_mode = false;
-		return std::make_shared<TextElement>("");
+		return std::make_shared<text_element>("");
 	}
 
-	std::shared_ptr<TextElement>
-	write_close_page(const document::ClosePage&)
+	std::shared_ptr<text_element>
+	write_close_page(const document::close_page&)
 	{
 		log_scope();
-		return std::make_shared<TextElement>(m_eol_sequence);
+		return std::make_shared<text_element>(m_eol_sequence);
 	}
 
-	std::shared_ptr<TextElement> write_close_document(const document::CloseDocument&)
+	std::shared_ptr<text_element> write_close_document(const document::close_document&)
 	{
 		log_scope();
 		std::string footer = footer_stream.str();
 		if (!footer.empty())
 			footer += m_eol_sequence;
-		return std::make_shared<TextElement>(m_eol_sequence + footer);
+		return std::make_shared<text_element>(m_eol_sequence + footer);
 	}
 
   std::string add_shift(int count)
@@ -492,18 +492,18 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   {
     for (unsigned int i = 0; i < msgs.size(); ++i)
     {
-      if (msgs[i]->is<document::Table>())
+      if (msgs[i]->is<document::table>())
       {
         std::stringstream ss;
-        PlainTextWriter writer{m_eol_sequence, m_format_link_opening, m_format_link_closing};
+        plain_text_writer writer{m_eol_sequence, m_format_link_opening, m_format_link_closing};
         int open_table_msgs = 1;
         writer.write_to(msgs[i], ss);
         do
         {
           writer.write_to(msgs[++i], ss);
-          if (msgs[i]->is<document::Table>())
+          if (msgs[i]->is<document::table>())
             open_table_msgs++;
-          else if (msgs[i]->is<document::CloseTable>())
+          else if (msgs[i]->is<document::close_table>())
             open_table_msgs--;
         }
         while (open_table_msgs > 0);
@@ -511,28 +511,28 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
         throw_if (table.back().empty(), "Table inside table row without cells", errors::program_logic{});
         table.back().back().write(ss.str());
       }
-      else if (msgs[i]->is<document::Caption>())
+      else if (msgs[i]->is<document::caption>())
       {
         throw_if (table_caption_mode, "Table caption inside table caption", errors::program_logic{});
         throw_if (table_caption_writer, "Second caption inside table", errors::program_logic{});
         table_caption_mode = true;
         table_caption_writer = nested_writer{m_eol_sequence, m_format_link_opening, m_format_link_closing};
       }
-      else if (msgs[i]->is<document::CloseCaption>())
+      else if (msgs[i]->is<document::close_caption>())
       {
         throw_if (!table_caption_mode, "Close caption outside table caption", errors::program_logic{});
         table_caption_mode = false;
       }
-      else if (msgs[i]->is<document::TableRow>())
+      else if (msgs[i]->is<document::table_row>())
       {
         table.push_back({});
       }
-      else if (msgs[i]->is<document::TableCell>())
+      else if (msgs[i]->is<document::table_cell>())
       {
         throw_if (table.empty(), "Cell inside table without rows", errors::program_logic{});
-        table.back().push_back(Cell{m_eol_sequence, m_format_link_opening, m_format_link_closing});
+        table.back().push_back(cell{m_eol_sequence, m_format_link_opening, m_format_link_closing});
       }
-      else if (!msgs[i]->is<document::CloseTableRow>() && !msgs[i]->is<document::CloseTableCell>())
+      else if (!msgs[i]->is<document::close_table_row>() && !msgs[i]->is<document::close_table_cell>())
       {
         if (table_caption_mode)
         {
@@ -551,7 +551,7 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
 
   void write_to(const message_ptr& msg, std::ostream &stream)
   {
-    if (msg->is<document::CloseTable>())
+    if (msg->is<document::close_table>())
     {
       level--;
 
@@ -571,7 +571,7 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
       msgs.push_back(msg);
     }
 
-    if (msg->is<document::Table>())
+    if (msg->is<document::table>())
     {
       level++;
     }
@@ -579,7 +579,7 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
     if (level == 0)
     {
       auto it = m_handlers.find(std::type_index(msg->object_type()));
-      std::shared_ptr<TextElement> text_element;
+      std::shared_ptr<text_element> text_element;
       if (it != m_handlers.end())
       {
         text_element = it->second(msg);
@@ -590,8 +590,8 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   }
 
   std::string m_eol_sequence;
-  std::function<std::string(const document::Link&)> m_format_link_opening;
-  std::function<std::string(const document::CloseLink&)> m_format_link_closing;
+  std::function<std::string(const document::link&)> m_format_link_opening;
+  std::function<std::string(const document::close_link&)> m_format_link_closing;
   int level { 0 };
   std::vector<message_ptr> msgs;
   std::string list_type;
@@ -600,26 +600,26 @@ struct pimpl_impl<PlainTextWriter> : pimpl_impl_base
   bool header_mode{false};
   bool footer_mode{false};
   std::stringstream footer_stream;
-  std::vector<std::vector<Cell>> table;
+  std::vector<std::vector<cell>> table;
   std::optional<nested_writer> table_caption_writer;
   bool table_caption_mode{false};
   int m_nested_docs_counter { 0 };
 };
 
-PlainTextWriter::PlainTextWriter(const std::string& eol_sequence,
-  std::function<std::string(const document::Link&)> format_link_opening,
-  std::function<std::string(const document::CloseLink&)> format_link_closing)
-    : with_pimpl<PlainTextWriter>(eol_sequence, format_link_opening, format_link_closing)
+plain_text_writer::plain_text_writer(const std::string& eol_sequence,
+  std::function<std::string(const document::link&)> format_link_opening,
+  std::function<std::string(const document::close_link&)> format_link_closing)
+    : with_pimpl<plain_text_writer>(eol_sequence, format_link_opening, format_link_closing)
 {
 }
 
 void
-PlainTextWriter::write_to(const message_ptr& msg, std::ostream &stream)
+plain_text_writer::write_to(const message_ptr& msg, std::ostream &stream)
 {
   impl().write_to(msg, stream);
 }
 
-const std::string PlainTextWriter::eol_sequence() const
+const std::string plain_text_writer::eol_sequence() const
 {
   return impl().m_eol_sequence;
 }

@@ -17,7 +17,7 @@
 using namespace docwire;
 using namespace testing;
 
-TEST(HTMLParser, table)
+TEST(html_parser, table)
 {
     std::vector<message_ptr> msgs;
     docwire::data_source{std::string{
@@ -31,51 +31,51 @@ TEST(HTMLParser, table)
             "<tfoot><tr><td>Footer 1</td><td>Footer 2</td></tr></tfoot>"
         "</table>"},
         mime_type{"text/html"}, confidence::highest} |
-        HTMLParser{} | msgs;
+        html_parser{} | msgs;
     ASSERT_THAT(msgs, ElementsAre(
-        MessagePtrWith<document::Document>(_),
-        MessagePtrWith<document::Table>(_),
-        MessagePtrWith<document::Caption>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Table caption"))),
-        MessagePtrWith<document::CloseCaption>(_),
-        MessagePtrWith<document::TableRow>(_),
-        MessagePtrWith<document::TableCell>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Header 1"))),
-        MessagePtrWith<document::CloseTableCell>(_),
-        MessagePtrWith<document::TableCell>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Header 2"))),
-        MessagePtrWith<document::CloseTableCell>(_),
-        MessagePtrWith<document::CloseTableRow>(_),
-        MessagePtrWith<document::TableRow>(_),
-        MessagePtrWith<document::TableCell>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Row 1 Cell 1"))),
-        MessagePtrWith<document::CloseTableCell>(_),
-        MessagePtrWith<document::TableCell>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Row 1 Cell 2"))),
-        MessagePtrWith<document::CloseTableCell>(_),
-        MessagePtrWith<document::CloseTableRow>(_),
-        MessagePtrWith<document::TableRow>(_),
-        MessagePtrWith<document::TableCell>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Row 2 Cell 1"))),
-        MessagePtrWith<document::CloseTableCell>(_),
-        MessagePtrWith<document::TableCell>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Row 2 Cell 2"))),
-        MessagePtrWith<document::CloseTableCell>(_),
-        MessagePtrWith<document::CloseTableRow>(_),
-        MessagePtrWith<document::TableRow>(_),
-        MessagePtrWith<document::TableCell>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Footer 1"))),
-        MessagePtrWith<document::CloseTableCell>(_),
-        MessagePtrWith<document::TableCell>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Footer 2"))),
-        MessagePtrWith<document::CloseTableCell>(_),
-        MessagePtrWith<document::CloseTableRow>(_),
-        MessagePtrWith<document::CloseTable>(_),
-        MessagePtrWith<document::CloseDocument>(_)
+        MessagePtrWith<document::document>(_),
+        MessagePtrWith<document::table>(_),
+        MessagePtrWith<document::caption>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Table caption"))),
+        MessagePtrWith<document::close_caption>(_),
+        MessagePtrWith<document::table_row>(_),
+        MessagePtrWith<document::table_cell>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Header 1"))),
+        MessagePtrWith<document::close_table_cell>(_),
+        MessagePtrWith<document::table_cell>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Header 2"))),
+        MessagePtrWith<document::close_table_cell>(_),
+        MessagePtrWith<document::close_table_row>(_),
+        MessagePtrWith<document::table_row>(_),
+        MessagePtrWith<document::table_cell>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Row 1 Cell 1"))),
+        MessagePtrWith<document::close_table_cell>(_),
+        MessagePtrWith<document::table_cell>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Row 1 Cell 2"))),
+        MessagePtrWith<document::close_table_cell>(_),
+        MessagePtrWith<document::close_table_row>(_),
+        MessagePtrWith<document::table_row>(_),
+        MessagePtrWith<document::table_cell>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Row 2 Cell 1"))),
+        MessagePtrWith<document::close_table_cell>(_),
+        MessagePtrWith<document::table_cell>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Row 2 Cell 2"))),
+        MessagePtrWith<document::close_table_cell>(_),
+        MessagePtrWith<document::close_table_row>(_),
+        MessagePtrWith<document::table_row>(_),
+        MessagePtrWith<document::table_cell>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Footer 1"))),
+        MessagePtrWith<document::close_table_cell>(_),
+        MessagePtrWith<document::table_cell>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Footer 2"))),
+        MessagePtrWith<document::close_table_cell>(_),
+        MessagePtrWith<document::close_table_row>(_),
+        MessagePtrWith<document::close_table>(_),
+        MessagePtrWith<document::close_document>(_)
     ));
 }
 
-TEST(HTMLParser, whitespaces)
+TEST(html_parser, whitespaces)
 {
     std::vector<message_ptr> msgs;
     docwire::data_source{std::string{
@@ -91,35 +91,35 @@ TEST(HTMLParser, whitespaces)
                 "\t</tr>\n"
         "</table>\n"},
         mime_type{"text/html"}, confidence::highest} |
-        HTMLParser{} | msgs;
+        html_parser{} | msgs;
     ASSERT_THAT(msgs, ElementsAre(
-        MessagePtrWith<document::Document>(_),
-        MessagePtrWith<document::Section>(_),
-        MessagePtrWith<document::Paragraph>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Paragraph"))),
-        MessagePtrWith<document::CloseParagraph>(_),
-        MessagePtrWith<document::Paragraph>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Paragraph with many spaces"))),
-        MessagePtrWith<document::CloseParagraph>(_),
-        MessagePtrWith<document::Paragraph>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Paragraph\xC2\xA0with\xC2\xA0non-breaking\xC2\xA0spaces"))),
-        MessagePtrWith<document::CloseParagraph>(_),
-        MessagePtrWith<document::CloseSection>(_),
-        MessagePtrWith<document::Table>(_),
-        MessagePtrWith<document::Caption>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Table caption"))),
-        MessagePtrWith<document::CloseCaption>(_),
-        MessagePtrWith<document::TableRow>(_),
-        MessagePtrWith<document::TableCell>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Table cell"))),
-        MessagePtrWith<document::CloseTableCell>(_),
-        MessagePtrWith<document::CloseTableRow>(_),
-        MessagePtrWith<document::CloseTable>(_),
-        MessagePtrWith<document::CloseDocument>(_)
+        MessagePtrWith<document::document>(_),
+        MessagePtrWith<document::section>(_),
+        MessagePtrWith<document::paragraph>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Paragraph"))),
+        MessagePtrWith<document::close_paragraph>(_),
+        MessagePtrWith<document::paragraph>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Paragraph with many spaces"))),
+        MessagePtrWith<document::close_paragraph>(_),
+        MessagePtrWith<document::paragraph>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Paragraph\xC2\xA0with\xC2\xA0non-breaking\xC2\xA0spaces"))),
+        MessagePtrWith<document::close_paragraph>(_),
+        MessagePtrWith<document::close_section>(_),
+        MessagePtrWith<document::table>(_),
+        MessagePtrWith<document::caption>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Table caption"))),
+        MessagePtrWith<document::close_caption>(_),
+        MessagePtrWith<document::table_row>(_),
+        MessagePtrWith<document::table_cell>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Table cell"))),
+        MessagePtrWith<document::close_table_cell>(_),
+        MessagePtrWith<document::close_table_row>(_),
+        MessagePtrWith<document::close_table>(_),
+        MessagePtrWith<document::close_document>(_)
     ));
 }
 
-TEST(HTMLParser, encoding)
+TEST(html_parser, encoding)
 {
     std::vector<const char*> test_cases =
     {
@@ -133,18 +133,18 @@ TEST(HTMLParser, encoding)
         std::vector<message_ptr> msgs;
         docwire::data_source{std::string{html_content},
             mime_type{"text/html"}, confidence::highest} |
-            HTMLParser{} | msgs;
+            html_parser{} | msgs;
         ASSERT_THAT(msgs, ElementsAre(
-            MessagePtrWith<document::Document>(_),
-            MessagePtrWith<document::Paragraph>(_),
-            MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("ąśćłóżł"))),
-            MessagePtrWith<document::CloseParagraph>(_),
-            MessagePtrWith<document::CloseDocument>(_)
+            MessagePtrWith<document::document>(_),
+            MessagePtrWith<document::paragraph>(_),
+            MessagePtrWith<document::text>(Field(&document::text::text, StrEq("ąśćłóżł"))),
+            MessagePtrWith<document::close_paragraph>(_),
+            MessagePtrWith<document::close_document>(_)
         ));
     }
 }
 
-TEST(HTMLParser, lists)
+TEST(html_parser, lists)
 {
     std::vector<message_ptr> msgs;
     docwire::data_source{std::string{
@@ -161,38 +161,38 @@ TEST(HTMLParser, lists)
             "<li>Item 6</li>"
         "</ul>"},
         mime_type{"text/html"}, confidence::highest} |
-        HTMLParser{} | msgs;
+        html_parser{} | msgs;
     ASSERT_THAT(msgs, ElementsAre(
-        MessagePtrWith<document::Document>(_),
-        MessagePtrWith<document::List>(Field(&document::List::type, StrEq("disc"))),
-        MessagePtrWith<document::ListItem>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Item 1"))),
-        MessagePtrWith<document::CloseListItem>(_),
-        MessagePtrWith<document::ListItem>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Item 2"))),
-        MessagePtrWith<document::CloseListItem>(_),
-        MessagePtrWith<document::CloseList>(_),
-        MessagePtrWith<document::List>(Field(&document::List::type, StrEq("decimal"))),
-        MessagePtrWith<document::ListItem>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Item 3"))),
-        MessagePtrWith<document::CloseListItem>(_),
-        MessagePtrWith<document::ListItem>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Item 4"))),
-        MessagePtrWith<document::CloseListItem>(_),
-        MessagePtrWith<document::CloseList>(_),
-        MessagePtrWith<document::List>(Field(&document::List::type, StrEq("none"))),
-        MessagePtrWith<document::ListItem>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Item 5"))),
-        MessagePtrWith<document::CloseListItem>(_),
-        MessagePtrWith<document::ListItem>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("Item 6"))),
-        MessagePtrWith<document::CloseListItem>(_),
-        MessagePtrWith<document::CloseList>(_),
-        MessagePtrWith<document::CloseDocument>(_)
+        MessagePtrWith<document::document>(_),
+        MessagePtrWith<document::list>(Field(&document::list::type, StrEq("disc"))),
+        MessagePtrWith<document::list_item>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Item 1"))),
+        MessagePtrWith<document::close_list_item>(_),
+        MessagePtrWith<document::list_item>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Item 2"))),
+        MessagePtrWith<document::close_list_item>(_),
+        MessagePtrWith<document::close_list>(_),
+        MessagePtrWith<document::list>(Field(&document::list::type, StrEq("decimal"))),
+        MessagePtrWith<document::list_item>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Item 3"))),
+        MessagePtrWith<document::close_list_item>(_),
+        MessagePtrWith<document::list_item>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Item 4"))),
+        MessagePtrWith<document::close_list_item>(_),
+        MessagePtrWith<document::close_list>(_),
+        MessagePtrWith<document::list>(Field(&document::list::type, StrEq("none"))),
+        MessagePtrWith<document::list_item>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Item 5"))),
+        MessagePtrWith<document::close_list_item>(_),
+        MessagePtrWith<document::list_item>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("Item 6"))),
+        MessagePtrWith<document::close_list_item>(_),
+        MessagePtrWith<document::close_list>(_),
+        MessagePtrWith<document::close_document>(_)
     ));
 }
 
-TEST(HTMLParser, misplaced_tags)
+TEST(html_parser, misplaced_tags)
 {
     std::vector<message_ptr> msgs;
     docwire::data_source{std::string{
@@ -209,28 +209,28 @@ TEST(HTMLParser, misplaced_tags)
         "\t</body>\n"
         "</html>\n"},
         mime_type{"text/html"}, confidence::highest} |
-        HTMLParser{} | msgs;
+        html_parser{} | msgs;
     ASSERT_THAT(msgs, ElementsAre(
-        MessagePtrWith<document::Document>(_),
-        MessagePtrWith<document::Paragraph>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("paragraph1"))),
-        MessagePtrWith<document::CloseParagraph>(_),
-        MessagePtrWith<document::Paragraph>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("paragraph2"))),
-        MessagePtrWith<document::CloseParagraph>(_),
-        MessagePtrWith<document::Style>(Field(&document::Style::css_text, StrEq("css content"))),
-        MessagePtrWith<document::Table>(_),
-        MessagePtrWith<document::TableRow>(_),
-        MessagePtrWith<document::TableCell>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("cell1"))),
-        MessagePtrWith<document::CloseTableCell>(_),
-        MessagePtrWith<document::CloseTableRow>(_),
-        MessagePtrWith<document::TableRow>(_),
-        MessagePtrWith<document::TableCell>(_),
-        MessagePtrWith<document::Text>(Field(&document::Text::text, StrEq("cell2"))),
-        MessagePtrWith<document::CloseTableCell>(_),
-        MessagePtrWith<document::CloseTableRow>(_),
-        MessagePtrWith<document::CloseTable>(_),
-        MessagePtrWith<document::CloseDocument>(_)
+        MessagePtrWith<document::document>(_),
+        MessagePtrWith<document::paragraph>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("paragraph1"))),
+        MessagePtrWith<document::close_paragraph>(_),
+        MessagePtrWith<document::paragraph>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("paragraph2"))),
+        MessagePtrWith<document::close_paragraph>(_),
+        MessagePtrWith<document::style>(Field(&document::style::css_text, StrEq("css content"))),
+        MessagePtrWith<document::table>(_),
+        MessagePtrWith<document::table_row>(_),
+        MessagePtrWith<document::table_cell>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("cell1"))),
+        MessagePtrWith<document::close_table_cell>(_),
+        MessagePtrWith<document::close_table_row>(_),
+        MessagePtrWith<document::table_row>(_),
+        MessagePtrWith<document::table_cell>(_),
+        MessagePtrWith<document::text>(Field(&document::text::text, StrEq("cell2"))),
+        MessagePtrWith<document::close_table_cell>(_),
+        MessagePtrWith<document::close_table_row>(_),
+        MessagePtrWith<document::close_table>(_),
+        MessagePtrWith<document::close_document>(_)
     ));
 }

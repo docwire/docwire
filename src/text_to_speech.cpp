@@ -27,20 +27,20 @@ namespace docwire
 using namespace openai;
 
 template<>
-struct pimpl_impl<openai::TextToSpeech> : pimpl_impl_base
+struct pimpl_impl<openai::text_to_speech> : pimpl_impl_base
 {
-	pimpl_impl(const std::string& api_key, TextToSpeech::Model model, TextToSpeech::Voice voice)
+	pimpl_impl(const std::string& api_key, text_to_speech::Model model, text_to_speech::Voice voice)
 		: m_api_key(api_key), m_model(model), m_voice(voice) {}
 	std::string m_api_key;
-	TextToSpeech::Model m_model;
-	TextToSpeech::Voice m_voice;
+	text_to_speech::Model m_model;
+	text_to_speech::Voice m_voice;
 };
 
 namespace openai
 {
 
-TextToSpeech::TextToSpeech(const std::string& api_key, Model model, Voice voice)
-	: with_pimpl<TextToSpeech>(api_key, model, voice)
+text_to_speech::text_to_speech(const std::string& api_key, Model model, Voice voice)
+	: with_pimpl<text_to_speech>(api_key, model, voice)
 {
 	log_scope(model, voice);
 }
@@ -48,32 +48,32 @@ TextToSpeech::TextToSpeech(const std::string& api_key, Model model, Voice voice)
 namespace
 {
 
-std::string model_to_string(TextToSpeech::Model model)
+std::string model_to_string(text_to_speech::Model model)
 {
 	switch (model)
 	{
-		case TextToSpeech::Model::gpt_4o_mini_tts: return "gpt-4o-mini-tts";
-		case TextToSpeech::Model::tts_1: return "tts-1";
-		case TextToSpeech::Model::tts_1_hd: return "tts-1-hd";
+		case text_to_speech::Model::gpt_4o_mini_tts: return "gpt-4o-mini-tts";
+		case text_to_speech::Model::tts_1: return "tts-1";
+		case text_to_speech::Model::tts_1_hd: return "tts-1-hd";
 		default: return "?";
 	}
 }
 
-std::string voice_to_string(TextToSpeech::Voice voice)
+std::string voice_to_string(text_to_speech::Voice voice)
 {
 	switch (voice)
 	{
-		case TextToSpeech::Voice::alloy: return "alloy";
-		case TextToSpeech::Voice::echo: return "echo";
-		case TextToSpeech::Voice::fable: return "fable";
-		case TextToSpeech::Voice::onyx: return "onyx";
-		case TextToSpeech::Voice::nova: return "nova";
-		case TextToSpeech::Voice::shimmer: return "shimmer";
+		case text_to_speech::Voice::alloy: return "alloy";
+		case text_to_speech::Voice::echo: return "echo";
+		case text_to_speech::Voice::fable: return "fable";
+		case text_to_speech::Voice::onyx: return "onyx";
+		case text_to_speech::Voice::nova: return "nova";
+		case text_to_speech::Voice::shimmer: return "shimmer";
 		default: return "?";
 	}
 }
 
-std::string prepare_query(const std::string& input, TextToSpeech::Model model, TextToSpeech::Voice voice)
+std::string prepare_query(const std::string& input, text_to_speech::Model model, text_to_speech::Voice voice)
 {
 	log_scope(input, model, voice);
 	boost::json::object query
@@ -92,7 +92,7 @@ std::string post_request(const std::string& query, const std::string& api_key)
 	try
 	{
 		data_source{query, mime_type{"application/json"}, confidence::highest} |
-			http::Post("https://api.openai.com/v1/audio/speech", api_key) |
+			http::post("https://api.openai.com/v1/audio/speech", api_key) |
 			response_stream;
 	}
 	catch (const std::exception& e)
@@ -104,7 +104,7 @@ std::string post_request(const std::string& query, const std::string& api_key)
 
 } // anonymous namespace
 
-continuation TextToSpeech::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation text_to_speech::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	log_scope();
 	if (!msg->is<data_source>())

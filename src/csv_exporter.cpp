@@ -20,23 +20,23 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<CsvExporter> : pimpl_impl_base
+struct pimpl_impl<csv_exporter> : pimpl_impl_base
 {
 	std::shared_ptr<std::stringstream> m_stream;
-	CsvWriter m_writer;
+	csv_writer m_writer;
 };
 
-CsvExporter::CsvExporter()
+csv_exporter::csv_exporter()
 {}
 
-continuation CsvExporter::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation csv_exporter::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	if (msg->is<std::exception_ptr>())
 		return emit_message(std::move(msg));
-	if (msg->is<document::Document>() || !impl().m_stream)
+	if (msg->is<document::document>() || !impl().m_stream)
 		impl().m_stream = std::make_shared<std::stringstream>();
 	impl().m_writer.write_to(msg, *impl().m_stream);
-	if (msg->is<document::CloseDocument>())
+	if (msg->is<document::close_document>())
 	{
 		emit_message(data_source{seekable_stream_ptr{impl().m_stream}});
 		impl().m_stream.reset();

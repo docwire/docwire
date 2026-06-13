@@ -27,7 +27,7 @@ namespace docwire
 const int CASESENSITIVITY = 1;
 
 //data for reading from buffer (insted of file)
-struct ZippedBuffer
+struct zipped_buffer
 {
 	std::span<const std::byte> m_span;
 	size_t m_pointer;
@@ -44,7 +44,7 @@ static voidpf buffer_open(voidpf opaque, const char* filename, int mode)
 static uLong buffer_read(voidpf opaque, voidpf stream, void* buf, uLong size)
 {
 	log_scope(size);
-	ZippedBuffer* buffer = (ZippedBuffer*)opaque;
+	zipped_buffer* buffer = (zipped_buffer*)opaque;
 	if (buffer->m_span.size() < buffer->m_pointer + size)
 	{
 		size_t readed = buffer->m_span.size() - buffer->m_pointer;
@@ -70,13 +70,13 @@ static uLong buffer_write(voidpf opaque, voidpf stream, const void* buf, uLong s
 static long buffer_tell(voidpf opaque, voidpf stream)
 {
 	log_scope();
-	return ((ZippedBuffer*)opaque)->m_pointer;
+	return ((zipped_buffer*)opaque)->m_pointer;
 }
 
 static long buffer_seek(voidpf opaque, voidpf stream, uLong offset, int origin)
 {
 	log_scope(offset, origin);
-	ZippedBuffer* buffer = (ZippedBuffer*)opaque;
+	zipped_buffer* buffer = (zipped_buffer*)opaque;
 	size_t position;
 	switch (origin)
 	{
@@ -111,16 +111,16 @@ static int buffer_error(voidpf opaque, voidpf stream)
 }
 
 template<>
-struct pimpl_impl<ZipReader> : pimpl_impl_base
+struct pimpl_impl<zip_reader> : pimpl_impl_base
 {
 	unzFile ArchiveFile;
 	std::map<std::string, unz_file_pos> m_directory;
 	bool m_opened_for_chunks;
 	std::span<const std::byte> m_span;
-	ZippedBuffer* m_zipped_buffer;
+	zipped_buffer* m_zipped_buffer;
 };
 
-ZipReader::ZipReader(const data_source& data)
+zip_reader::zip_reader(const data_source& data)
 {
 		log_scope(data);
 		impl().m_opened_for_chunks = false;
@@ -129,7 +129,7 @@ ZipReader::ZipReader(const data_source& data)
 		impl().m_zipped_buffer = NULL;
 }
 
-ZipReader::~ZipReader()
+zip_reader::~zip_reader()
 {
 	log_scope();
 	if (impl().ArchiveFile != NULL)
@@ -138,10 +138,10 @@ ZipReader::~ZipReader()
 		delete impl().m_zipped_buffer;
 }
 
-void ZipReader::open()
+void zip_reader::open()
 {
 		log_scope();
-		impl().m_zipped_buffer = new ZippedBuffer;
+		impl().m_zipped_buffer = new zipped_buffer;
 		impl().m_zipped_buffer->m_span = impl().m_span;
 		impl().m_zipped_buffer->m_pointer = 0;
 		zlib_filefunc_def read_from_buffer_functions;
@@ -158,13 +158,13 @@ void ZipReader::open()
 	throw_if (impl().ArchiveFile == NULL, "Could not open zip archive");
 }
 
-bool ZipReader::exists(const std::string& file_name) const
+bool zip_reader::exists(const std::string& file_name) const
 {
 	log_scope(file_name);
 	return (unzLocateFile(impl().ArchiveFile, file_name.c_str(), CASESENSITIVITY) == UNZ_OK);
 }
 
-bool ZipReader::read(const std::string& file_name, std::string* contents, int num_of_chars)
+bool zip_reader::read(const std::string& file_name, std::string* contents, int num_of_chars)
 {
 	log_scope(file_name, num_of_chars);
 	int res;
@@ -204,13 +204,13 @@ bool ZipReader::read(const std::string& file_name, std::string* contents, int nu
 	return true;
 }
 
-void ZipReader::closeReadingFileForChunks()
+void zip_reader::closeReadingFileForChunks()
 {
 	log_scope();
 	impl().m_opened_for_chunks = false;
 }
 
-bool ZipReader::readChunk(const std::string& file_name, char* contents, int num_of_chars, int& readed, bool add_null_terminator)
+bool zip_reader::readChunk(const std::string& file_name, char* contents, int num_of_chars, int& readed, bool add_null_terminator)
 {
 	log_scope(file_name, num_of_chars);
 	if (num_of_chars == 0)
@@ -257,7 +257,7 @@ bool ZipReader::readChunk(const std::string& file_name, char* contents, int num_
 	return true;
 }
 
-bool ZipReader::readChunk(const std::string& file_name, std::string* contents, int num_of_chars)
+bool zip_reader::readChunk(const std::string& file_name, std::string* contents, int num_of_chars)
 {
 	log_scope(file_name, num_of_chars);
 	std::vector<char> vcontents(num_of_chars + 1);
@@ -271,7 +271,7 @@ bool ZipReader::readChunk(const std::string& file_name, std::string* contents, i
 	return true;
 }
 
-bool ZipReader::getFileSize(const std::string& file_name, unsigned long& file_size)
+bool zip_reader::getFileSize(const std::string& file_name, unsigned long& file_size)
 {
 	log_scope(file_name);
 	int res;
@@ -293,7 +293,7 @@ bool ZipReader::getFileSize(const std::string& file_name, unsigned long& file_si
 	return true;
 }
 
-bool ZipReader::loadDirectory()
+bool zip_reader::loadDirectory()
 {
 	log_scope();
 	impl().m_directory.clear();

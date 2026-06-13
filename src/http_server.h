@@ -51,16 +51,16 @@ struct regex_path
 /**
  * @brief A standalone HTTP server that processes requests using a user-provided pipeline.
  *
- * This server is not a `ChainElement` itself but acts as a host for processing pipelines.
- * For each registered URL, it uses a factory function to create a `ParsingChain`
+ * This server is not a `chain_element` itself but acts as a host for processing pipelines.
+ * For each registered URL, it uses a factory function to create a `parsing_chain`
  * which processes incoming requests. To enhance performance, created pipelines are
  * cached on a per-thread basis.
  */
 class DOCWIRE_HTTP_EXPORT server : public with_pimpl<server>
 {
 public:
-	/// A factory function that creates a `ParsingChain` for processing a request.
-	using pipeline_factory = std::function<ParsingChain()>;
+	/// A factory function that creates a `parsing_chain` for processing a request.
+	using pipeline_factory = std::function<parsing_chain()>;
 	/// A list of routes, where each route is a path (string or regex) mapped to a pipeline factory.
 	using route_list = std::vector<std::pair<std::variant<std::string, regex_path>, pipeline_factory>>;
 	

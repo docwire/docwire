@@ -18,7 +18,7 @@
 
 using namespace docwire;
 
-continuation InputChainElement::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation input_chain_element::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	log_scope();
 	if (msg->is<pipeline::start_processing>())

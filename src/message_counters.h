@@ -17,9 +17,9 @@ struct message_counters {
 };
 
 inline bool is_framing_message(const message_base& msg) {
-    return msg.is<document::Document>() || msg.is<document::CloseDocument>() ||
-           msg.is<document::Page>() || msg.is<document::ClosePage>() ||
-           msg.is<document::BreakLine>() ||
+    return msg.is<document::document>() || msg.is<document::close_document>() ||
+           msg.is<document::page>() || msg.is<document::close_page>() ||
+           msg.is<document::break_line>() ||
            msg.is<std::exception_ptr>();
 }
 

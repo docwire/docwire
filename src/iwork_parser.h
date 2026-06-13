@@ -18,16 +18,16 @@
 namespace docwire
 {
 
-class DOCWIRE_IWORK_EXPORT IWorkParser : public ChainElement, public with_pimpl<IWorkParser>
+class DOCWIRE_IWORK_EXPORT iwork_parser : public chain_element, public with_pimpl<iwork_parser>
 {
 	public:
-		IWorkParser();
+		iwork_parser();
 
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 
 	private:
-		using with_pimpl<IWorkParser>::impl;
+		using with_pimpl<iwork_parser>::impl;
 };
 
 } // namespace docwire

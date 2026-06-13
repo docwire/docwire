@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("document_processing_market_trends.odt") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | openai::Classify({ "agreement", "invoice", "report", "legal", "other"}, environment::get("OPENAI_API_KEY").value()) | out_stream;
+    std::filesystem::path("document_processing_market_trends.odt") | content_type::detector{} | office_formats_parser{} | plain_text_exporter() | openai::classify({ "agreement", "invoice", "report", "legal", "other"}, environment::get("OPENAI_API_KEY").value()) | out_stream;
     ensure(out_stream.str()) == "report\n";
   }
   catch (const std::exception& e)

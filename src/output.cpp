@@ -19,7 +19,7 @@
 namespace docwire
 {
 
-continuation OutputChainElement::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation output_chain_element::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	if (std::holds_alternative<ref_or_owned<std::ostream>>(m_out_obj))
 	{

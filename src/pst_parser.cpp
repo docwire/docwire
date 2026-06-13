@@ -114,9 +114,9 @@ using bfio_handle = unique_handle<libbfio_handle_t, decltype([](libbfio_handle_t
 	libbfio_handle_free(&ptr, &error);
 })>;
 
-struct RawAttachment
+struct raw_attachment
 {
-  RawAttachment(size_t size, std::unique_ptr<uint8_t[]>& raw_data, std::string name)
+  raw_attachment(size_t size, std::unique_ptr<uint8_t[]>& raw_data, std::string name)
   : m_size(size),
     m_raw_data(std::move(raw_data)),
     m_name(name)
@@ -126,13 +126,13 @@ struct RawAttachment
   std::unique_ptr<uint8_t[]> m_raw_data;
 };
 
-class Message
+class pst_message
 {
   static constexpr uint64_t WINDOWS_TICK = 10000000;
   static constexpr uint64_t SHIFT = 11644473600;
 
   public:
-	explicit Message(pff_item in)
+	explicit pst_message(pff_item in)
 		: _messageHandle{std::move(in)}
 	{
 		log_scope();
@@ -229,13 +229,13 @@ class Message
     return {};
 	}
 
-	std::vector<RawAttachment>
+	std::vector<raw_attachment>
 	getAttachments()
 	{
 		log_scope();
 		int items;
 		pff_error err;
-    std::vector<RawAttachment> attachments;
+    std::vector<raw_attachment> attachments;
     if (libpff_message_get_number_of_attachments(_messageHandle, &items, &err) != 1)
 		{
 			return {};
@@ -261,7 +261,7 @@ class Message
 				continue;
 			}
       std::string attachment_name = getAttachmentName(item);
-      attachments.push_back(RawAttachment(size, datablob, attachment_name));
+      attachments.push_back(raw_attachment(size, datablob, attachment_name));
 		}
 		return attachments;
 	}
@@ -270,10 +270,10 @@ class Message
 	pff_item _messageHandle;
 };
 
-class Folder
+class folder
 {
   public:
-	explicit Folder(pff_item&& folderHandle)
+	explicit folder(pff_item&& folderHandle)
 		: _folderHandle(std::move(folderHandle))
 	{
 		log_scope();
@@ -293,19 +293,19 @@ class Folder
 		return messages_no;
 	}
 
-	Folder getSubFolder(int index) const
+	folder getSubFolder(int index) const
 	{
 		libpff_item_t* sub_folder = NULL;
 		libpff_folder_get_sub_folder(_folderHandle, index, &sub_folder, nullptr);
-		Folder folder(sub_folder);
+		folder folder(sub_folder);
 		return folder;
 	}
 
-	Message getMessage(int index) const
+	pst_message getMessage(int index) const
 	{
 		libpff_item_t* mail = NULL;
 		libpff_folder_get_sub_message(_folderHandle, index, &mail, nullptr);
-		Message msg(mail);
+		pst_message msg(mail);
 		return msg;
 	}
 
@@ -339,7 +339,7 @@ const std::vector<mime_type> supported_mime_types =
 } // anonymous namespace
 
 template<>
-struct pimpl_impl<PSTParser> : pimpl_impl_base
+struct pimpl_impl<pst_parser> : pimpl_impl_base
 {
 	std::stack<context> m_context_stack;
 
@@ -359,22 +359,22 @@ struct pimpl_impl<PSTParser> : pimpl_impl_base
 
   private:
     void parse_element(const char* buffer, size_t size, const std::string& extension="") const;
-    void parse_internal(const Folder& root, int deep, unsigned int &mail_counter) const;
+    void parse_internal(const folder& root, int deep, unsigned int &mail_counter) const;
 };
 
-void pimpl_impl<PSTParser>::parse_internal(const Folder& root, int deep, unsigned int &mail_counter) const
+void pimpl_impl<pst_parser>::parse_internal(const folder& root, int deep, unsigned int &mail_counter) const
 {
 	log_scope(deep, mail_counter);
 	for (int i = 0; i < root.getSubFolderNumber(); ++i)
 	{
 		auto sub_folder = root.getSubFolder(i);
-    auto result = emit_message(mail::Folder{.name = sub_folder.getName(), .level = deep});
+    auto result = emit_message(mail::folder{.name = sub_folder.getName(), .level = deep});
     if (result == continuation::skip)
     {
       continue;
     }
     parse_internal(sub_folder, deep + 1, mail_counter);
-	emit_message(mail::CloseFolder{});
+	emit_message(mail::close_folder{});
 	}
 	for (int i = 0; i < root.getMessageNumber(); ++i)
 	{
@@ -383,12 +383,12 @@ void pimpl_impl<PSTParser>::parse_internal(const Folder& root, int deep, unsigne
     auto html_text = message.getTextAsHtml();
     if(html_text)
     {
-      auto result = emit_message(mail::Mail{.subject = message.getName(), .date = message.getCreationDate(), .level = deep});
+      auto result = emit_message(mail::mail{.subject = message.getName(), .date = message.getCreationDate(), .level = deep});
       if (result == continuation::skip)
       {
         continue;
       }
-      emit_message(mail::MailBody{});
+      emit_message(mail::mail_body{});
       try
       {
         emit_message_back(data_source{*html_text, mime_type { "text/html" }, confidence::very_high});
@@ -398,7 +398,7 @@ void pimpl_impl<PSTParser>::parse_internal(const Folder& root, int deep, unsigne
         emit_message(errors::make_nested_ptr(std::current_exception(), make_error("Failed to process mail body")));
       }
       ++mail_counter;
-      emit_message(mail::CloseMailBody{});
+      emit_message(mail::close_mail_body{});
     }
 
 		auto attachments = message.getAttachments();
@@ -406,7 +406,7 @@ void pimpl_impl<PSTParser>::parse_internal(const Folder& root, int deep, unsigne
     {
       file_extension extension { std::filesystem::path{attachment.m_name} };
       auto result = emit_message(
-        mail::Attachment{.name = attachment.m_name, .size = attachment.m_size, .extension = extension});
+        mail::attachment{.name = attachment.m_name, .size = attachment.m_size, .extension = extension});
       if (result == continuation::skip)
       {
         continue;
@@ -419,9 +419,9 @@ void pimpl_impl<PSTParser>::parse_internal(const Folder& root, int deep, unsigne
       {
         emit_message(errors::make_nested_ptr(std::current_exception(), make_error("Failed to process attachment", attachment.m_name)));
       }
-      emit_message(mail::CloseAttachment{});
+      emit_message(mail::close_attachment{});
     }
-	emit_message(mail::CloseMail{});
+	emit_message(mail::close_mail{});
 	}
 }
 
@@ -485,7 +485,7 @@ void libbfio_stream_initialize(libbfio_handle_t** handle, std::shared_ptr<std::i
 
 } // anonymous namespace
 
-void pimpl_impl<PSTParser>::parse(std::shared_ptr<std::istream> stream) const
+void pimpl_impl<pst_parser>::parse(std::shared_ptr<std::istream> stream) const
 {
 	log_scope();
 	bfio_handle handle;
@@ -501,16 +501,16 @@ void pimpl_impl<PSTParser>::parse(std::shared_ptr<std::istream> stream) const
 
 	pff_item root = nullptr;
 	throw_if (libpff_file_get_root_folder(file, &root, &error) != 1, "libpff_file_get_root_folder failed");
-	Folder root_folder(std::move(root));
+	folder root_folder(std::move(root));
   unsigned int mail_counter = 0;
-	emit_message(document::Document{.metadata = []() { return attributes::Metadata{}; }});
+	emit_message(document::document{.metadata = []() { return attributes::metadata{}; }});
   parse_internal(root_folder, 0, mail_counter);
-	emit_message(document::CloseDocument{});
+	emit_message(document::close_document{});
 }
 
-PSTParser::PSTParser() = default;
+pst_parser::pst_parser() = default;
 
-continuation PSTParser::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation pst_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	log_scope(msg);
 

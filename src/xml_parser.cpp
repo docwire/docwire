@@ -36,18 +36,18 @@ void parseXmlData(const message_callbacks& emit_message, xml::children_view<safe
 		{
 			std::string_view text = node.content();
 			if (!text.empty())
-				emit_message(document::Text{ std::string{text} });
+				emit_message(document::text{ std::string{text} });
 		}
 		else if (tag_name != "style" && full_tag_name != "o:DocumentProperties" &&
 			full_tag_name != "o:CustomDocumentProperties" && full_tag_name != "w:binData")
 		{
 			if (full_tag_name == "w:p")
-				emit_message(document::Paragraph{});
+				emit_message(document::paragraph{});
 			parseXmlData(emit_message, children(node));
 			if (full_tag_name == "w:p")
-				emit_message(document::CloseParagraph{});
+				emit_message(document::close_paragraph{});
 			else if (full_tag_name == "w:tab")
-				emit_message(document::Text{"\t"});
+				emit_message(document::text{"\t"});
 		}
 	}
 }
@@ -61,7 +61,7 @@ const std::vector<mime_type> supported_mime_types =
 } // anonymous namespace
 
 template <safety_policy safety_level>
-continuation XMLParser<safety_level>::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation xml_parser<safety_level>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	log::scope _{ "msg"_v = msg };
 
@@ -77,10 +77,10 @@ continuation XMLParser<safety_level>::operator()(message_ptr msg, const message_
 	log_entry();
 	try
 	{
-		emit_message(document::Document{});
+		emit_message(document::document{});
 		xml::reader<safety_level> reader(data.string_view()); // Correctly uses the non-owning constructor
 		parseXmlData(emit_message, children(reader));
-		emit_message(document::CloseDocument{});
+		emit_message(document::close_document{});
 	}
 	catch (const std::exception& e)
 	{
@@ -89,7 +89,7 @@ continuation XMLParser<safety_level>::operator()(message_ptr msg, const message_
 	return continuation::proceed;
 }
 
-template class DOCWIRE_XML_EXPORT XMLParser<strict>;
-template class DOCWIRE_XML_EXPORT XMLParser<relaxed>;
+template class DOCWIRE_XML_EXPORT xml_parser<strict>;
+template class DOCWIRE_XML_EXPORT xml_parser<relaxed>;
 
 } // namespace docwire

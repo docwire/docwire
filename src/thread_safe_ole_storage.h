@@ -22,14 +22,14 @@
 namespace docwire
 {
 
-class ThreadSafeOLEStreamReader;
+class thread_safe_ole_stream_reader;
 using namespace wvWare;
 
-class DOCWIRE_CORE_EXPORT ThreadSafeOLEStorage : public OLEStorage, public with_pimpl<ThreadSafeOLEStorage>
+class DOCWIRE_CORE_EXPORT thread_safe_ole_storage : public OLEStorage, public with_pimpl<thread_safe_ole_storage>
 {
 	public:
-		explicit ThreadSafeOLEStorage(const std::string& file_name);
-		ThreadSafeOLEStorage(std::span<const std::byte> buffer);
+		explicit thread_safe_ole_storage(const std::string& file_name);
+		thread_safe_ole_storage(std::span<const std::byte> buffer);
 		bool isValid() const override;
 		bool open(Mode mode) override;
 		void close() override;

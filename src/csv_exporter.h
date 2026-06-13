@@ -20,10 +20,10 @@ namespace docwire
 /**
  * @brief Exports data to CSV format.
  */
-class DOCWIRE_CORE_EXPORT CsvExporter: public ChainElement, public with_pimpl<CsvExporter>
+class DOCWIRE_CORE_EXPORT csv_exporter: public chain_element, public with_pimpl<csv_exporter>
 {
 public:
-	CsvExporter();
+	csv_exporter();
 
 	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
@@ -33,7 +33,7 @@ public:
 	}
 
 private:
-  using with_pimpl<CsvExporter>::impl;
+  using with_pimpl<csv_exporter>::impl;
 };
 
 } // namespace docwire

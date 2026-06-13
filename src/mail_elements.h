@@ -24,34 +24,34 @@ namespace docwire
 namespace mail
 {
 
-struct DOCWIRE_CORE_EXPORT Mail
+struct DOCWIRE_CORE_EXPORT mail
 {
   std::optional<std::string> subject;
   std::optional<std::uint32_t> date;
   std::optional<int> level;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseMail {};
+struct DOCWIRE_CORE_EXPORT close_mail {};
 
-struct DOCWIRE_CORE_EXPORT MailBody {};
-struct DOCWIRE_CORE_EXPORT CloseMailBody { };
+struct DOCWIRE_CORE_EXPORT mail_body {};
+struct DOCWIRE_CORE_EXPORT close_mail_body { };
 
-struct DOCWIRE_CORE_EXPORT Attachment
+struct DOCWIRE_CORE_EXPORT attachment
 {
   std::optional<std::string> name;
   std::size_t size;
   std::optional<file_extension> extension;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseAttachment { };
+struct DOCWIRE_CORE_EXPORT close_attachment { };
 
-struct DOCWIRE_CORE_EXPORT Folder
+struct DOCWIRE_CORE_EXPORT folder
 {
   std::optional<std::string> name;
   std::optional<int> level;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseFolder { };
+struct DOCWIRE_CORE_EXPORT close_folder { };
 
 } // namespace mail
 } // namespace docwire

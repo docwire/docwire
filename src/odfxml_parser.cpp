@@ -36,20 +36,20 @@ const std::vector<mime_type> supported_mime_types =
 } // anonymous namespace
 	
 template <safety_policy safety_level>
-struct pimpl_impl<ODFXMLParser<safety_level>> : with_pimpl_owner<ODFXMLParser<safety_level>>
+struct pimpl_impl<odfxml_parser<safety_level>> : with_pimpl_owner<odfxml_parser<safety_level>>
 {
-	using with_pimpl_owner<ODFXMLParser<safety_level>>::owner;
+	using with_pimpl_owner<odfxml_parser<safety_level>>::owner;
 
 	void parse(const data_source& data, XmlParseMode mode, const message_callbacks& emit_message);
-	attributes::Metadata extract_metadata(std::string_view xml_content) const;
-	pimpl_impl(ODFXMLParser<safety_level>& owner) : with_pimpl_owner<ODFXMLParser<safety_level>>{owner} {}
+	attributes::metadata extract_metadata(std::string_view xml_content) const;
+	pimpl_impl(odfxml_parser<safety_level>& owner) : with_pimpl_owner<odfxml_parser<safety_level>>{owner} {}
 
 		void onODFBody(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-							  const ZipReader* zipfile, std::string& text,
+							  const zip_reader* zipfile, std::string& text,
 							  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
-			// warning TODO: Unfortunately, in CommonXMLDocumentParser we are not checking full names for xml tags.\
+			// warning TODO: Unfortunately, in common_xml_document_parser we are not checking full names for xml tags.\
 			Thats a problem, since we can have table:body, office:body etc. What if more xml tags are not handled correctly?
 			if (xml_node.full_name() != "office:body")
 			{
@@ -61,7 +61,7 @@ struct pimpl_impl<ODFXMLParser<safety_level>> : with_pimpl_owner<ODFXMLParser<sa
 		}
 
 		void onODFObject(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-								ZipReader* zipfile, std::string& text,
+								zip_reader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
@@ -71,7 +71,7 @@ struct pimpl_impl<ODFXMLParser<safety_level>> : with_pimpl_owner<ODFXMLParser<sa
 		}
 
 		void onODFBinaryData(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-									const ZipReader* zipfile, std::string& text,
+									const zip_reader* zipfile, std::string& text,
 									bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
@@ -80,30 +80,30 @@ struct pimpl_impl<ODFXMLParser<safety_level>> : with_pimpl_owner<ODFXMLParser<sa
 };
 
 template <safety_policy safety_level>
-ODFXMLParser<safety_level>::ODFXMLParser()
+odfxml_parser<safety_level>::odfxml_parser()
 {
-	registerODFOOXMLCommandHandler("body", [&impl=impl()](xml::node_ref<safety_level>& xml_node, XmlParseMode mode, ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+	registerODFOOXMLCommandHandler("body", [&impl=impl()](xml::node_ref<safety_level>& xml_node, XmlParseMode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		impl.onODFBody(xml_node, mode, zipfile, text, children_processed, level_suffix, first_on_level);
 	});
-	registerODFOOXMLCommandHandler("object", [&impl=impl()](xml::node_ref<safety_level>& xml_node, XmlParseMode mode, ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+	registerODFOOXMLCommandHandler("object", [&impl=impl()](xml::node_ref<safety_level>& xml_node, XmlParseMode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		impl.onODFObject(xml_node, mode, zipfile, text, children_processed, level_suffix, first_on_level);
 	});
-	registerODFOOXMLCommandHandler("binary-data", [&impl=impl()](xml::node_ref<safety_level>& xml_node, XmlParseMode mode, ZipReader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+	registerODFOOXMLCommandHandler("binary-data", [&impl=impl()](xml::node_ref<safety_level>& xml_node, XmlParseMode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		impl.onODFBinaryData(xml_node, mode, zipfile, text, children_processed, level_suffix, first_on_level);
 	});
 }
 
 template <safety_policy safety_level>
-void pimpl_impl<ODFXMLParser<safety_level>>::parse(const data_source& data, XmlParseMode mode, const message_callbacks& emit_message)
+void pimpl_impl<odfxml_parser<safety_level>>::parse(const data_source& data, XmlParseMode mode, const message_callbacks& emit_message)
 {
 	log_scope(mode);
 	std::string_view xml_content = data.string_view();
 	auto base_context_guard = owner().create_base_context_guard(emit_message);
 
-	emit_message(document::Document
+	emit_message(document::document
 		{
 			.metadata = [this, xml_content]()
 			{
@@ -124,14 +124,14 @@ void pimpl_impl<ODFXMLParser<safety_level>>::parse(const data_source& data, XmlP
 	{
 		std::throw_with_nested(make_error("Extracting text failed"));
 	}
-	emit_message(document::CloseDocument{});
+	emit_message(document::close_document{});
 }
 
 template <safety_policy safety_level>
-attributes::Metadata pimpl_impl<ODFXMLParser<safety_level>>::extract_metadata(std::string_view xml_content) const
+attributes::metadata pimpl_impl<odfxml_parser<safety_level>>::extract_metadata(std::string_view xml_content) const
 {
 	log_scope();
-	attributes::Metadata metadata;
+	attributes::metadata metadata;
 
 	owner().parseODFMetadata(xml_content, metadata); // Call owner's parseODFMetadata
 	if (!metadata.page_count)
@@ -153,7 +153,7 @@ attributes::Metadata pimpl_impl<ODFXMLParser<safety_level>>::extract_metadata(st
 }
 
 template <safety_policy safety_level>
-continuation ODFXMLParser<safety_level>::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation odfxml_parser<safety_level>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	log_scope(msg);
 
@@ -180,7 +180,7 @@ continuation ODFXMLParser<safety_level>::operator()(message_ptr msg, const messa
 	return continuation::proceed;
 }
 
-template class DOCWIRE_ODF_OOXML_EXPORT ODFXMLParser<strict>;
-template class DOCWIRE_ODF_OOXML_EXPORT ODFXMLParser<relaxed>;
+template class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser<strict>;
+template class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser<relaxed>;
 
 } // namespace docwire

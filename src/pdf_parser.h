@@ -19,14 +19,14 @@
 
 namespace docwire
 {
-class DOCWIRE_PDF_EXPORT PDFParser : public ChainElement, public with_pimpl<PDFParser>
+class DOCWIRE_PDF_EXPORT pdf_parser : public chain_element, public with_pimpl<pdf_parser>
 {
 	private:
-		using with_pimpl<PDFParser>::impl;
-		friend pimpl_impl<PDFParser>;
+		using with_pimpl<pdf_parser>::impl;
+		friend pimpl_impl<pdf_parser>;
 
 	public:
-		PDFParser();
+		pdf_parser();
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 };

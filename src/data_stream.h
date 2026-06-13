@@ -20,10 +20,10 @@
 namespace docwire
 {
 
-class DataStream
+class data_stream
 {
 	public:
-		virtual ~DataStream(){}
+		virtual ~data_stream(){}
 		virtual bool open() = 0;
 		virtual bool close() = 0;
 		virtual bool read(void* data, int element_size, size_t elements_num) = 0;
@@ -34,14 +34,14 @@ class DataStream
 		virtual size_t size() = 0;
 		virtual size_t tell() = 0;
 		virtual std::string name() = 0;
-		virtual DataStream* clone() = 0;
+		virtual data_stream* clone() = 0;
 };
 
-class DOCWIRE_CORE_EXPORT FileStream : public DataStream, public with_pimpl<FileStream>
+class DOCWIRE_CORE_EXPORT file_stream : public data_stream, public with_pimpl<file_stream>
 {
 	public:
-		FileStream(const std::string& file_name);
-		~FileStream();
+		file_stream(const std::string& file_name);
+		~file_stream();
 		bool open();
 		bool close();
 		bool read(void* data, int element_size, size_t elements_num);
@@ -52,13 +52,13 @@ class DOCWIRE_CORE_EXPORT FileStream : public DataStream, public with_pimpl<File
 		size_t size();
 		size_t tell();
 		std::string name();
-		DataStream* clone();
+		data_stream* clone();
 };
 
-class DOCWIRE_CORE_EXPORT BufferStream : public DataStream, public with_pimpl<BufferStream>
+class DOCWIRE_CORE_EXPORT buffer_stream : public data_stream, public with_pimpl<buffer_stream>
 {
 	public:
-		BufferStream(const char* buffer, size_t size);
+		buffer_stream(const char* buffer, size_t size);
 		bool open();
 		bool close();
 		bool read(void* data, int element_size, size_t elements_num);
@@ -69,7 +69,7 @@ class DOCWIRE_CORE_EXPORT BufferStream : public DataStream, public with_pimpl<Bu
 		size_t size();
 		size_t tell();
 		std::string name();
-		DataStream* clone();
+		data_stream* clone();
 };
 
 } // namespace docwire

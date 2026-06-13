@@ -34,7 +34,7 @@
 
 using namespace docwire;
 
-TEST(Http, Post)
+TEST(Http, post)
 {
     std::ostringstream output_stream{};
 	ASSERT_NO_THROW(
@@ -42,8 +42,8 @@ TEST(Http, Post)
 		std::ifstream("1.docx", std::ios_base::binary)
             | content_type::detector{}
             | office_formats_parser{}
-			| PlainTextExporter()
-			| http::Post("https://postman-echo.com/post")
+			| plain_text_exporter()
+			| http::post("https://postman-echo.com/post")
 			| output_stream;
 	});
 
@@ -57,7 +57,7 @@ TEST(Http, Post)
 	ASSERT_STREQ(output_val.as_object()["data"].as_string().c_str(), "<http://www.silvercoders.com/>hyperlink test\n\n");
 }
 
-TEST(Http, PostForm)
+TEST(Http, postForm)
 {
     std::ostringstream output_stream{};
 	ASSERT_NO_THROW(
@@ -65,8 +65,8 @@ TEST(Http, PostForm)
 		std::ifstream("1.docx", std::ios_base::binary)
             | content_type::detector{}
             | office_formats_parser{}
-            | PlainTextExporter()
-            | http::Post("https://postman-echo.com/post", {{"field1", "value1"}, {"field2", "value2"}}, "file", DefaultFileName("file.docx"))
+            | plain_text_exporter()
+            | http::post("https://postman-echo.com/post", {{"field1", "value1"}, {"field2", "value2"}}, "file", default_file_name("file.docx"))
             | output_stream;
 	});
 
@@ -86,12 +86,12 @@ TEST(Http, PostForm)
 
 namespace {
 // RAII helper to start a server in a thread and ensure it's stopped on scope exit.
-struct ScopedServer {
+struct scoped_server {
     http::server server;
     std::thread server_thread;
 
     // Takes server by value to move it into the member.
-    explicit ScopedServer(http::server s)
+    explicit scoped_server(http::server s)
         : server(std::move(s)),
           server_thread([this]() {
               try {
@@ -106,7 +106,7 @@ struct ScopedServer {
         server.wait_until_ready();
     }
 
-    ~ScopedServer() {
+    ~scoped_server() {
         server.stop();
         if (server_thread.joinable()) {
             server_thread.join();
@@ -114,7 +114,7 @@ struct ScopedServer {
     }
 };
 } // namespace
-class HttpServerTest : public ::testing::Test {
+class http_server_test : public ::testing::Test {
 protected:
     const http::address addr{"127.0.0.1"};
     const std::string route_path = "/test";
@@ -127,7 +127,7 @@ protected:
             http::server(addr, port, http::generate_self_signed_cert(addr.v, "US", "DocWire Test"), create_routes()) :
             http::server(addr, port, create_routes());
 
-        ScopedServer server_runner{std::move(server)};
+        scoped_server server_runner{std::move(server)};
     
         std::ostringstream response_stream;
         std::string expected_response_body;
@@ -136,7 +136,7 @@ protected:
         {
             std::ostringstream expected_text_stream;
             data_source{doc_path} | content_type::by_file_extension::detector{} |
-            office_formats_parser{} | PlainTextExporter() | expected_text_stream;
+            office_formats_parser{} | plain_text_exporter() | expected_text_stream;
             expected_response_body = expected_text_stream.str() + " processed";
         }
         catch(const std::exception & e)
@@ -148,10 +148,10 @@ protected:
         {
             if (is_https) {
                 data_source{doc_path} | content_type::by_file_extension::detector{} |
-                    http::Post(url, "", http::ssl_verify_peer{false}) | response_stream;
+                    http::post(url, "", http::ssl_verify_peer{false}) | response_stream;
             } else {
                 data_source{doc_path} | content_type::by_file_extension::detector{} |
-                    http::Post(url) | response_stream;
+                    http::post(url) | response_stream;
             }
         }
         catch (const std::exception& e)
@@ -163,8 +163,8 @@ protected:
     }
 
     http::server::pipeline_factory create_pipeline_factory() {
-        return []() -> ParsingChain {
-            return office_formats_parser{} | PlainTextExporter{} | [](message_ptr msg, const message_callbacks& emit_message) {
+        return []() -> parsing_chain {
+            return office_formats_parser{} | plain_text_exporter{} | [](message_ptr msg, const message_callbacks& emit_message) {
                 if (msg->is<data_source>()) {
                     auto original_text = msg->get<data_source>().string();
                     return emit_message(data_source{original_text + " processed", mime_type{"text/plain"}, confidence::highest});
@@ -181,12 +181,12 @@ protected:
     }
 };
 
-TEST_F(HttpServerTest, ServerAndPost)
+TEST_F(http_server_test, ServerAndpost)
 {
     run_server_test({8080}, false);
 }
 
-TEST_F(HttpServerTest, HttpsServerAndPost)
+TEST_F(http_server_test, HttpsServerAndpost)
 {
     try
     {
@@ -241,15 +241,15 @@ TEST(Http, ServerNonFatalError)
 
     // 2. Create factories for an error-producing pipeline and a successful one.
     http::server::route_list routes;
-    routes.push_back({"/error", []() -> ParsingChain {
-        return TransformerFunc{[](message_ptr, const message_callbacks& emit_message) -> continuation {
+    routes.push_back({"/error", []() -> parsing_chain {
+        return transformer_func{[](message_ptr, const message_callbacks& emit_message) -> continuation {
             return emit_message(make_error_ptr("Error from pipeline processing"));
         }} | [](message_ptr msg, const message_callbacks& emit_message) {
             return emit_message(std::move(msg));
         };
     }});
-    routes.push_back({"/success", []() -> ParsingChain {
-        return TransformerFunc{[](message_ptr msg, const message_callbacks& emit_message) {
+    routes.push_back({"/success", []() -> parsing_chain {
+        return transformer_func{[](message_ptr msg, const message_callbacks& emit_message) {
             return emit_message(std::move(msg));
         }} | [](message_ptr msg, const message_callbacks& emit_message)
         {
@@ -258,12 +258,12 @@ TEST(Http, ServerNonFatalError)
     }});
 
     // 3. Instantiate and start the server.
-    ScopedServer server_runner{http::server(addr, port, std::move(routes), http::thread_num{1}, http::error_handler{test_error_handler})};
+    scoped_server server_runner{http::server(addr, port, std::move(routes), http::thread_num{1}, http::error_handler{test_error_handler})};
 
     // 4. Make a request to the error-producing endpoint. This should trigger the error handler and throw on the client side.
     ASSERT_THROW(
         {
-            docwire::data_source{std::string_view{"some data"}} | http::Post("http://" + addr.v + ":" + std::to_string(port.v) + "/error") | std::ostringstream{};
+            docwire::data_source{std::string_view{"some data"}} | http::post("http://" + addr.v + ":" + std::to_string(port.v) + "/error") | std::ostringstream{};
         },
         std::exception
     );
@@ -271,7 +271,7 @@ TEST(Http, ServerNonFatalError)
     // 5. Make a request to the successful endpoint to ensure the server is still running.
     std::ostringstream success_response_stream;
     ASSERT_NO_THROW({
-        docwire::data_source{std::string_view{"success data"}} | http::Post("http://" + addr.v + ":" + std::to_string(port.v) + "/success") | success_response_stream;
+        docwire::data_source{std::string_view{"success data"}} | http::post("http://" + addr.v + ":" + std::to_string(port.v) + "/success") | success_response_stream;
     });
 
     // 6. Verify the error handler was called and that the server is still running.

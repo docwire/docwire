@@ -52,7 +52,7 @@ struct context
 } // anonymous namespace
 
 template<>
-struct pimpl_impl<EMLParser> : pimpl_impl_base
+struct pimpl_impl<eml_parser> : pimpl_impl_base
 {
 	std::stack<context> m_context_stack;
 
@@ -131,7 +131,7 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 				if (skip_charset_decoding)
 				{
 					log_scope();
-					emit_message(document::Text{.text = plain});
+					emit_message(document::text{.text = plain});
 				}
 				else
 				{
@@ -163,7 +163,7 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 			}
 
 			log_entry(attachment_name);
-			auto result = emit_message(mail::Attachment{.name = attachment_name, .size = plain.length(), .extension = extension});
+			auto result = emit_message(mail::attachment{.name = attachment_name, .size = plain.length(), .extension = extension});
 			if (result != continuation::skip)
 			{
 				try
@@ -175,7 +175,7 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 					emit_message(errors::make_nested_ptr(std::current_exception(), make_error("Failed to process attachment", file_name)));
 				}
 			}
-			emit_message(mail::CloseAttachment{});
+			emit_message(mail::close_attachment{});
 		}
 
 		if (mime_entity.content_type().subtype == "alternative")
@@ -232,7 +232,7 @@ struct pimpl_impl<EMLParser> : pimpl_impl_base
 	}
 };
 
-EMLParser::EMLParser() = default;
+eml_parser::eml_parser() = default;
 
 namespace
 {
@@ -251,14 +251,14 @@ void normalize_line(std::string& line)
 // This allows us to incrementally parse headers line-by-line and leverage mailio's
 // existing logic for handling header folding and parameter extraction (like the boundary),
 // without having to reimplement a full MIME header parser.
-class HeaderParser : public mailio::mime
+class header_parser : public mailio::mime
 {
 public:
 	using mailio::mime::parse_header_line;
 	using mailio::mime::content_type;
 };
 
-class BoundaryTracker
+class boundary_tracker
 {
 public:
 	void process_line(const std::string& line, mailio::message& mime_entity)
@@ -297,7 +297,7 @@ private:
 				m_in_headers = is_new_part;
 				if (is_new_part)
 				{
-					m_current_header_parser = HeaderParser{};
+					m_current_header_parser = header_parser{};
 					m_current_header_accumulator.clear();
 				}
 				return true;
@@ -326,7 +326,7 @@ private:
 			{
 				m_boundaries.push_back(m_current_header_parser.boundary());
 			}
-			m_current_header_parser = HeaderParser{};
+			m_current_header_parser = header_parser{};
 			m_current_header_accumulator.clear();
 		}
 		else if (std::isspace(static_cast<unsigned char>(line[0])))
@@ -358,7 +358,7 @@ private:
 	}
 
 	std::vector<std::string> m_boundaries;
-	HeaderParser m_current_header_parser;
+	header_parser m_current_header_parser;
 	std::string m_current_header_accumulator;
 	bool m_in_headers = true;
 };
@@ -371,7 +371,7 @@ mailio::message parse_message(const data_source& data, const std::function<void(
 	mime_entity.line_policy(codec::line_len_policy_t::NONE);
 	try {
 		std::string line;
-		BoundaryTracker tracker;
+		boundary_tracker tracker;
 
 		while (std::getline(*stream, line))
 		{
@@ -398,11 +398,11 @@ const std::vector<mime_type> supported_mime_types =
 namespace
 {
 
-attributes::Metadata metaData(const mailio::message& mime_entity);
+attributes::metadata metaData(const mailio::message& mime_entity);
 
 } // anonymous namespace
 
-continuation EMLParser::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation eml_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	log_scope(msg);
 	if (!msg->is<data_source>())
@@ -421,7 +421,7 @@ continuation EMLParser::operator()(message_ptr msg, const message_callbacks& emi
 		auto counting_callbacks = make_counted_message_callbacks(emit_message, counters);
 		scoped::stack_push<context> context_guard{impl().m_context_stack, context{counting_callbacks}};
 		mailio::message mime_entity = parse_message(data, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
-		emit_message(document::Document
+		emit_message(document::document
 			{
 				.metadata = [&mime_entity]()
 				{
@@ -431,7 +431,7 @@ continuation EMLParser::operator()(message_ptr msg, const message_callbacks& emi
 		impl().extractPlainText(mime_entity);
 		if (counters.all_failed())
 			throw make_error("No parts were successfully processed", errors::uninterpretable_data{});
-		emit_message(document::CloseDocument{});
+		emit_message(document::close_document{});
 	}
 	catch (const std::exception& e)
 	{
@@ -462,16 +462,16 @@ std::optional<std::chrono::sys_seconds> convert_impl(const mailio_time& ldt, con
 	}
 }
 
-attributes::Metadata metaData(const mailio::message& mime_entity)
+attributes::metadata metaData(const mailio::message& mime_entity)
 {
 	log_scope();
-	attributes::Metadata metadata;
+	attributes::metadata metadata;
 	metadata.author = mime_entity.from_to_string();
 	metadata.creation_date = convert::try_to<std::chrono::sys_seconds>(mailio_time{mime_entity.date_time()});
 
 	//in EML file format author is visible under key "From". And creation date is visible under key "Data".
 	//So, should I repeat the same values or skip them?
-	metadata.email_attrs = attributes::Email
+	metadata.email_attrs = attributes::email
 	{
 		.from = mime_entity.from_to_string(),
 		.date = convert::to<std::chrono::sys_seconds>(mailio_time{mime_entity.date_time()})

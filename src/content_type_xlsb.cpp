@@ -41,7 +41,7 @@ void detect(data_source& data)
 
     // STEP 2: Deep Inspection Fallback
     // Parse the ZIP Central Directory at the end of the file if the heuristic failed.
-    ZipReader unzip{data};
+    zip_reader unzip{data};
     try
     {
         unzip.open();

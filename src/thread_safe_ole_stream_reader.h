@@ -23,24 +23,24 @@
 namespace docwire
 {
 
-class ThreadSafeOLEStorage;
+class thread_safe_ole_storage;
 using namespace wvWare;
-class DataStream;
+class data_stream;
 
-class DOCWIRE_CORE_EXPORT ThreadSafeOLEStreamReader : public wvWare::OLEStreamReader, public with_pimpl<ThreadSafeOLEStreamReader>
+class DOCWIRE_CORE_EXPORT thread_safe_ole_stream_reader : public wvWare::OLEStreamReader, public with_pimpl<thread_safe_ole_stream_reader>
 {
-	friend class ThreadSafeOLEStorage;
+	friend class thread_safe_ole_storage;
 	public:
-		struct Stream
+		struct stream
 		{
 			uint64_t m_size;
 			std::vector<uint32_t> m_file_positions;
 			uint32_t m_sector_size;
-			DataStream* m_data_stream;
+			data_stream* m_data_stream;
 		};
-		ThreadSafeOLEStreamReader(ThreadSafeOLEStorage* storage, Stream& stream);
+		thread_safe_ole_stream_reader(thread_safe_ole_storage* storage, stream& stream);
 	public:
-		~ThreadSafeOLEStreamReader() override;
+		~thread_safe_ole_stream_reader() override;
 		std::string getLastError() const;
 		bool isValid() const override;
 		int tell() const override;

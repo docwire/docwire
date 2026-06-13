@@ -71,7 +71,7 @@ enum RecordType
 
 enum BiffVersion { BIFF2, BIFF3, BIFF4, BIFF5, BIFF8 };
 
-struct XFRecord
+struct xf_record
 {
 	short int num_format_id;
 };
@@ -81,7 +81,7 @@ struct context
 	const message_callbacks& emit_message;
 	std::string m_codepage = "cp1251";
 	BiffVersion m_biff_version;
-	std::vector<XFRecord> m_xf_records;
+	std::vector<xf_record> m_xf_records;
 	double m_date_shift;
 	std::vector<std::string> m_shared_string_table;
 	std::vector<unsigned char> m_shared_string_table_buf;
@@ -103,7 +103,7 @@ const std::vector<mime_type> supported_mime_types =
 } // anonymous namespace
 
 template<>
-struct pimpl_impl<XLSParser> : pimpl_impl_base
+struct pimpl_impl<xls_parser> : pimpl_impl_base
 {
 	std::stack<context> m_context_stack;
 	
@@ -114,7 +114,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 	}
 
 	void parse(const data_source& data, const message_callbacks& emit_message);
-	std::string parse(ThreadSafeOLEStorage& storage, const message_callbacks& emit_message);
+	std::string parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message);
 
 	U16 getU16LittleEndian(std::vector<unsigned char>::const_iterator buffer)
 	{
@@ -126,10 +126,10 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 		return (long)(*buffer) | ((long)(*(buffer + 1)) << 8L) | ((long)(*(buffer + 2)) << 16L)|((long)(*(buffer + 3)) << 24L);
 	}  
 
-	class StandardDateFormats : public std::map<int, std::string>
+	class standard_date_formats : public std::map<int, std::string>
 	{
 		public:
-			StandardDateFormats()
+			standard_date_formats()
 			{
 				insert(value_type(0x0E, "%m-%d-%y"));
 				insert(value_type(0x0F, "%d-%b-%y"));
@@ -147,7 +147,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 			}
 	};
 
-	bool oleEof(ThreadSafeOLEStreamReader& reader)
+	bool oleEof(thread_safe_ole_stream_reader& reader)
 	{
 		return reader.tell() == reader.size();
 	}
@@ -155,7 +155,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 	std::string getStandardDateFormat(int xf_index)
 	{
 		log_scope(xf_index);
-		static StandardDateFormats formats;
+		static standard_date_formats formats;
 		if (xf_index >= m_context_stack.top().m_xf_records.size())
 		{
 			emit_message(make_error_ptr("Incorrect format code", xf_index));
@@ -164,7 +164,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 		int num_format_id = m_context_stack.top().m_xf_records[xf_index].num_format_id;
 		if (m_context_stack.top().m_defined_num_format_ids.count(num_format_id))
 			return "";
-		StandardDateFormats::iterator i = formats.find(num_format_id);
+		standard_date_formats::iterator i = formats.find(num_format_id);
 		if (i == formats.end())
 			return "";
 		else
@@ -714,7 +714,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 					emit_message(make_error_ptr("Record is too short. XLS_XF (or record of number 0x43) must be at least 4 bytes in length", rec.size()));
 					break;
 				}
-				XFRecord xf_record;
+				xf_record xf_record;
 				xf_record.num_format_id = getU16LittleEndian(rec.begin() + 2);
 				m_context_stack.top().m_xf_records.push_back(xf_record);
 					break;
@@ -723,7 +723,7 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 		m_context_stack.top().m_prev_rec_type = rec_type;
 	}  
 
-	void parseXLS(ThreadSafeOLEStreamReader& reader, std::string& text)
+	void parseXLS(thread_safe_ole_stream_reader& reader, std::string& text)
 	{
 		log_scope();
 		m_context_stack.top().m_xf_records.clear();
@@ -903,35 +903,35 @@ struct pimpl_impl<XLSParser> : pimpl_impl_base
 	}
 };
 
-XLSParser::XLSParser()
+xls_parser::xls_parser()
 {
 }
 
-void pimpl_impl<XLSParser>::parse(const data_source& data, const message_callbacks& emit_message)
+void pimpl_impl<xls_parser>::parse(const data_source& data, const message_callbacks& emit_message)
 {
-	auto storage = std::make_unique<ThreadSafeOLEStorage>(data.span());
+	auto storage = std::make_unique<thread_safe_ole_storage>(data.span());
 	throw_if (!storage->isValid(), storage->getLastError());
-	emit_message(document::Document
+	emit_message(document::document
 		{
 			.metadata = [this, emit_message, &storage]()
 			{
-				attributes::Metadata meta;
+				attributes::metadata meta;
 				parse_oshared_summary_info(*storage, meta, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
 				return meta;
 			}
 		});
-	emit_message(document::Text{.text = parse(*storage, emit_message)});
-	emit_message(document::CloseDocument{});
+	emit_message(document::text{.text = parse(*storage, emit_message)});
+	emit_message(document::close_document{});
 }
 
-std::string pimpl_impl<XLSParser>::parse(ThreadSafeOLEStorage& storage, const message_callbacks& emit_message)
+std::string pimpl_impl<xls_parser>::parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message)
 {
 	log_scope();
 	scoped::stack_push<context> context_guard{m_context_stack, context{.emit_message = emit_message}};
 	try
 	{
 		std::lock_guard<std::mutex> parser_mutex_lock(parser_mutex);
-		std::unique_ptr<ThreadSafeOLEStreamReader> workbook_reader { static_cast<ThreadSafeOLEStreamReader*>(storage.createStreamReader("Workbook")) };
+		std::unique_ptr<thread_safe_ole_stream_reader> workbook_reader { static_cast<thread_safe_ole_stream_reader*>(storage.createStreamReader("Workbook")) };
 		std::string text;
 		if (workbook_reader != nullptr)
 		{
@@ -939,7 +939,7 @@ std::string pimpl_impl<XLSParser>::parse(ThreadSafeOLEStorage& storage, const me
 		}
 		else
 		{
-			std::unique_ptr<ThreadSafeOLEStreamReader> book_reader { static_cast<ThreadSafeOLEStreamReader*>(storage.createStreamReader("Book")) };
+			std::unique_ptr<thread_safe_ole_stream_reader> book_reader { static_cast<thread_safe_ole_stream_reader*>(storage.createStreamReader("Book")) };
 			throw_if (book_reader == nullptr, storage.getLastError());
 			parseXLS(*book_reader, text);
 		}		
@@ -951,7 +951,7 @@ std::string pimpl_impl<XLSParser>::parse(ThreadSafeOLEStorage& storage, const me
 	}
 }
 
-continuation XLSParser::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation xls_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
@@ -966,7 +966,7 @@ continuation XLSParser::operator()(message_ptr msg, const message_callbacks& emi
 	return continuation::proceed;
 }
 
-std::string XLSParser::parse(ThreadSafeOLEStorage& storage, const message_callbacks& emit_message) // TODO: needs to be removed finally
+std::string xls_parser::parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message) // TODO: needs to be removed finally
 {
 	return impl().parse(storage, emit_message);
 }
