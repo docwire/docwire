@@ -20,7 +20,7 @@
 namespace docwire::ai
 {
 
-class DOCWIRE_AI_EXPORT embed : public ChainElement, public with_pimpl<embed>
+class DOCWIRE_AI_EXPORT embed : public chain_element, public with_pimpl<embed>
 {
   public:
     /**
