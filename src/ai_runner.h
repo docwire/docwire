@@ -61,7 +61,7 @@ class DOCWIRE_AI_EXPORT ai_runner {
      *
      * Must be thread-safe.
      */
-    virtual std::vector<double> embed(const std::string&) = 0;
+    virtual std::vector<double> embed(const std::string& input) = 0;
     /**
      * @brief Unload the model and free associated resources.
      * --!Must be thread-safe!-- and safe to call concurrently with process()/embed().

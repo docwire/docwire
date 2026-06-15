@@ -1,5 +1,4 @@
 #include "docwire.h"
-#include "local_ai_embed.h"
 #include <iostream>
 #include <vector>
 #include <string>
