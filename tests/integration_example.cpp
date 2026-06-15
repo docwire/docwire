@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
     std::filesystem::path(argv[1]) |
         content_type::detector{} |
         office_formats_parser() |
-        PlainTextExporter() |
+        plain_text_exporter() |
         out_stream;
   }
   catch (const std::exception& e)

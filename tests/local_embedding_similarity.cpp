@@ -1,4 +1,5 @@
 #include "docwire.h"
+#include "plain_text_exporter.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -12,7 +13,7 @@ int main(int argc, char* argv[])
   {
     // 1. Create an embedding for the document (passage) using the default prefix
     std::vector<message_ptr> passage_msgs;
-    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | ai::local::passage::embedder{} | passage_msgs;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | plain_text_exporter() | ai::local::passage::embedder{} | passage_msgs;
     ensure(passage_msgs.size()) == 1;
     ensure(passage_msgs[0]->is<ai::embedding>()) == true;
     auto passage_embedding = passage_msgs[0]->get<ai::embedding>();

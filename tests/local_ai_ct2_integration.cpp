@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
     std::stringstream out_stream;
     try {
         std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser() |
-            PlainTextExporter() |
+            plain_text_exporter() |
             ai::local::task("Write a short summary for this text:\n\n") | out_stream;
     } catch (const std::exception& e) {
         std::cerr << errors::diagnostic_message(e) << std::endl;
