@@ -17,14 +17,6 @@
 
 namespace docwire::ai
 {
-
-// model_chain_element::model_chain_element(const std::string& prompt, model_lifetime_policy lifetime)
-//     : docwire::local_ai::model_chain_element(
-//           prompt, std::make_shared<ct2_runner>(resource_path("flan-t5-large-ct2-int8")),
-//           lifetime)
-// {
-// }
-
 /**
  * @brief constructor to run llama models
  */

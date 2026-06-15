@@ -260,7 +260,7 @@ foreach(example IN LISTS all_examples)
 endforeach()
 
 if(TARGET docwire_ai_ct2)
-	message(STATUS "Adding Llama integration test")
+	message(STATUS "Adding CT2 integration test")
     add_executable(local_ai_ct2_integration local_ai_ct2_integration.cpp)
     target_include_directories(local_ai_ct2_integration PRIVATE ../src)
     target_link_libraries(local_ai_ct2_integration PRIVATE

@@ -24,7 +24,7 @@ namespace docwire::ai
  */
 enum class model_lifetime_policy
 {
-    persistent, // keeps the model in memory, which makes it availabel for next pipeline usage
+    persistent, // keeps the model in memory, which makes it available for next pipeline usage
     unload_after_use // unloads after current usage
 };
 
