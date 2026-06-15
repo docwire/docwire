@@ -20,19 +20,19 @@
 namespace docwire
 {
 
-class ThreadSafeOLEStorage;
+class thread_safe_ole_storage;
 
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT XLSParser : public ChainElement, public with_pimpl<XLSParser>
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser : public chain_element, public with_pimpl<xls_parser>
 {
 	private:
-		friend pimpl_impl<XLSParser>;
-		using with_pimpl<XLSParser>::impl;
+		friend pimpl_impl<xls_parser>;
+		using with_pimpl<xls_parser>::impl;
 
 	public:
-		XLSParser();
+		xls_parser();
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
-		std::string parse(ThreadSafeOLEStorage& storage, const message_callbacks& emit_message);
+		std::string parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message);
 };
 
 } // namespace docwire

@@ -20,10 +20,10 @@ namespace docwire
 /**
  * @brief Exports meta data only to plain text format.
  */
-class DOCWIRE_CORE_EXPORT MetaDataExporter: public ChainElement, public with_pimpl<MetaDataExporter>
+class DOCWIRE_CORE_EXPORT metadata_exporter: public chain_element, public with_pimpl<metadata_exporter>
 {
 public:
-  MetaDataExporter();
+  metadata_exporter();
 
 	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
@@ -33,7 +33,7 @@ public:
 	}
 
 private:
-  using with_pimpl<MetaDataExporter>::impl;
+  using with_pimpl<metadata_exporter>::impl;
 };
 
 } // namespace docwire

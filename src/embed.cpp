@@ -82,7 +82,7 @@ std::string post_request(const std::string& query, const std::string& api_key)
 	try
 	{
 		data_source{query, mime_type{"application/json"}, confidence::highest} |
-			http::Post("https://api.openai.com/v1/embeddings", api_key) |
+			http::post("https://api.openai.com/v1/embeddings", api_key) |
 			response_stream;
 	}
 	catch (const std::exception& e)

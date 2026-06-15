@@ -31,7 +31,7 @@ namespace docwire
 using namespace openai;
 
 template<>
-struct pimpl_impl<openai::Chat> : pimpl_impl_base
+struct pimpl_impl<openai::chat> : pimpl_impl_base
 {
 	pimpl_impl(const std::string& system_message, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
 		: m_system_message(system_message), m_api_key(api_key), m_model(model), m_temperature(temperature), m_image_detail(image_detail) {}
@@ -49,8 +49,8 @@ namespace docwire
 namespace openai
 {
 
-Chat::Chat(const std::string& system_message, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
-	: with_pimpl<Chat>(system_message, api_key, model, temperature, image_detail)
+chat::chat(const std::string& system_message, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+	: with_pimpl<chat>(system_message, api_key, model, temperature, image_detail)
 {
 	log_scope(system_message, model, temperature, image_detail);
 }
@@ -130,7 +130,7 @@ std::string post_request(const std::string& query, const std::string& api_key)
 	try
 	{
 		data_source{query, mime_type{"application/json"}, confidence::highest} |
-			http::Post("https://api.openai.com/v1/chat/completions", api_key) |
+			http::post("https://api.openai.com/v1/chat/completions", api_key) |
 			response_stream;
 		// TODO: some models require Responses API instead
 	}
@@ -157,7 +157,7 @@ std::string parse_response(const std::string& response)
 
 } // anonymous namespace
 
-continuation Chat::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation chat::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	log_scope(msg);
 	if (!msg->is<data_source>())

@@ -19,14 +19,14 @@
 using namespace docwire;
 using namespace testing;
 
-TEST(OCRParser, leptonica_stderr_capturer)
+TEST(ocr_parser, leptonica_stderr_capturer)
 {
     try
     {
         data_source{std::string{"Incorrect image data"}, 
             mime_type{"image/jpeg"}, confidence::highest} |
-            OCRParser{} | std::vector<message_ptr>{};
-        FAIL() << "OCRParser should have thrown an exception";
+            ocr_parser{} | std::vector<message_ptr>{};
+        FAIL() << "ocr_parser should have thrown an exception";
     }
     catch (const std::exception& e)
     {

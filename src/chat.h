@@ -63,10 +63,10 @@ enum class ImageDetail
 	low, high, automatic
 };
 
-class DOCWIRE_OPENAI_EXPORT Chat : public ChainElement, public with_pimpl<Chat>
+class DOCWIRE_OPENAI_EXPORT chat : public chain_element, public with_pimpl<chat>
 {
 public:
-	Chat(const std::string& system_message, const std::string& api_key, Model model = Model::gpt_5, float temperature = 0.7, ImageDetail image_detail = ImageDetail::automatic);
+	chat(const std::string& system_message, const std::string& api_key, Model model = Model::gpt_5, float temperature = 0.7, ImageDetail image_detail = ImageDetail::automatic);
 
 	/**
 	* @brief Executes transform operation for given node data.
@@ -83,7 +83,7 @@ public:
 	}
 
 private:
-	using with_pimpl<Chat>::impl;
+	using with_pimpl<chat>::impl;
 };
 
 } // namespace openai

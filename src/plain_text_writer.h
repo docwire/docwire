@@ -23,12 +23,12 @@
 namespace docwire
 {
 
-class DOCWIRE_CORE_EXPORT PlainTextWriter : public Writer, public with_pimpl<PlainTextWriter>
+class DOCWIRE_CORE_EXPORT plain_text_writer : public writer, public with_pimpl<plain_text_writer>
 {
 public:
-  PlainTextWriter(const std::string& eol_sequence,
-    std::function<std::string(const document::Link&)> format_link_opening,
-    std::function<std::string(const document::CloseLink&)> format_link_closing);
+  plain_text_writer(const std::string& eol_sequence,
+    std::function<std::string(const document::link&)> format_link_opening,
+    std::function<std::string(const document::close_link&)> format_link_closing);
 
   /**
    * @brief Converts text from callback to plain text format.

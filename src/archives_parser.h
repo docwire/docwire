@@ -18,7 +18,7 @@
 namespace docwire
 {
 
-class DOCWIRE_ARCHIVES_EXPORT archives_parser : public ChainElement
+class DOCWIRE_ARCHIVES_EXPORT archives_parser : public chain_element
 {
 public:
 

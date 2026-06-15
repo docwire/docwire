@@ -22,7 +22,7 @@ namespace docwire
 namespace openai
 {
 
-class DOCWIRE_OPENAI_EXPORT embed : public ChainElement, public with_pimpl<embed>
+class DOCWIRE_OPENAI_EXPORT embed : public chain_element, public with_pimpl<embed>
 {
 public:
 	enum class model

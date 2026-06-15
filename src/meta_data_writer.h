@@ -20,7 +20,7 @@
 namespace docwire
 {
 
-class DOCWIRE_CORE_EXPORT MetaDataWriter : public Writer
+class DOCWIRE_CORE_EXPORT metadata_writer : public writer
 {
 public:
   /**

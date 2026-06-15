@@ -22,17 +22,17 @@ struct eol_sequence { std::string v; };
 
 struct link_formatter
 {
-	std::function<std::string(const document::Link&)> format_opening;
-	std::function<std::string(const document::CloseLink&)> format_closing;
+	std::function<std::string(const document::link&)> format_opening;
+	std::function<std::string(const document::close_link&)> format_closing;
 };
 
 /**
  * @brief Exports data to plain text format.
  */
-class DOCWIRE_CORE_EXPORT PlainTextExporter: public ChainElement, public with_pimpl<PlainTextExporter>
+class DOCWIRE_CORE_EXPORT plain_text_exporter: public chain_element, public with_pimpl<plain_text_exporter>
 {
 public:
-	PlainTextExporter(eol_sequence eol = eol_sequence{"\n"}, link_formatter formatter = default_link_formatter);
+	plain_text_exporter(eol_sequence eol = eol_sequence{"\n"}, link_formatter formatter = default_link_formatter);
 
 	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
@@ -44,17 +44,17 @@ public:
 private:
 	inline static const link_formatter default_link_formatter =
 	{
-		.format_opening = [](const document::Link& link)
+		.format_opening = [](const document::link& link)
 		{
 			return link.url ? "<" + *link.url + ">" : "";
 		},
-		.format_closing = [](const document::CloseLink&)
+		.format_closing = [](const document::close_link&)
 		{
 			return "";
 		}
 	};
 
-	using with_pimpl<PlainTextExporter>::impl;
+	using with_pimpl<plain_text_exporter>::impl;
 };
 
 } // namespace docwire

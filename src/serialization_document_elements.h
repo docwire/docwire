@@ -35,63 +35,63 @@ struct serializer<T> {
     value typed_summary(const T& val) const { return decorate_with_typeid(full(val), type_name::pretty<T>()); }
 };
 
-template <> struct serializer<document::Text>
+template <> struct serializer<document::text>
 {
-    value full(const document::Text& text) const
+    value full(const document::text& text) const
     {
         return object{{{"text", text.text}}};
     }
-    value typed_summary(const document::Text& text) const { return decorate_with_typeid(full(text), type_name::pretty<document::Text>()); }
+    value typed_summary(const document::text& text) const { return decorate_with_typeid(full(text), type_name::pretty<document::text>()); }
 };
 
-template <> struct serializer<document::Link>
+template <> struct serializer<document::link>
 {
-    value full(const document::Link& link) const
+    value full(const document::link& link) const
     {
         return object{{
             {"url", serialization::full(link.url)},
             {"styling", serialization::full(link.styling)}
         }};
     }
-    value typed_summary(const document::Link& link) const { return decorate_with_typeid(full(link), type_name::pretty<document::Link>()); }
+    value typed_summary(const document::link& link) const { return decorate_with_typeid(full(link), type_name::pretty<document::link>()); }
 };
 
-template <> struct serializer<document::Image>
+template <> struct serializer<document::image>
 {
-    value full(const document::Image& image) const
+    value full(const document::image& image) const
     {
         return object{{
             {"alt", serialization::full(image.alt)},
             {"styling", serialization::full(image.styling)}
         }};
     }
-    value typed_summary(const document::Image& image) const { return decorate_with_typeid(serialization::full(image), type_name::pretty<document::Image>()); }
+    value typed_summary(const document::image& image) const { return decorate_with_typeid(serialization::full(image), type_name::pretty<document::image>()); }
 };
 
-template <> struct serializer<document::Style>
+template <> struct serializer<document::style>
 {
-    value full(const document::Style& style) const
+    value full(const document::style& style) const
     {
         return object{{{"css_text", style.css_text}}};
     }
-    value typed_summary(const document::Style& style) const { return decorate_with_typeid(serialization::full(style), type_name::pretty<document::Style>()); }
+    value typed_summary(const document::style& style) const { return decorate_with_typeid(serialization::full(style), type_name::pretty<document::style>()); }
 };
 
-template <> struct serializer<document::List>
+template <> struct serializer<document::list>
 {
-    value full(const document::List& list) const
+    value full(const document::list& list) const
     {
         return object{{
             {"type", serialization::full(list.type)},
             {"styling", serialization::full(list.styling)}
         }};
     }
-    value typed_summary(const document::List& list) const { return decorate_with_typeid(serialization::full(list), type_name::pretty<document::List>()); }
+    value typed_summary(const document::list& list) const { return decorate_with_typeid(serialization::full(list), type_name::pretty<document::list>()); }
 };
 
-template <> struct serializer<document::Comment>
+template <> struct serializer<document::comment>
 {
-    value full(const document::Comment& comment) const
+    value full(const document::comment& comment) const
     {
         return object{{
             {"author", serialization::full(comment.author)},
@@ -99,13 +99,13 @@ template <> struct serializer<document::Comment>
             {"comment", serialization::full(comment.comment)}
         }};
     }
-    value typed_summary(const document::Comment& comment) const { return decorate_with_typeid(full(comment), type_name::pretty<document::Comment>()); }
+    value typed_summary(const document::comment& comment) const { return decorate_with_typeid(full(comment), type_name::pretty<document::comment>()); }
 };
 
 template <>
-struct serializer<attributes::Styling>
+struct serializer<attributes::styling>
 {
-    value full(const attributes::Styling& styling) const
+    value full(const attributes::styling& styling) const
     {
         return object{{
             {"classes", serialization::full(styling.classes)},
@@ -113,7 +113,7 @@ struct serializer<attributes::Styling>
             {"style", serialization::full(styling.style)}
         }};
     }
-    value typed_summary(const attributes::Styling& styling) const { return decorate_with_typeid(serialization::full(styling), type_name::pretty<attributes::Styling>()); }
+    value typed_summary(const attributes::styling& styling) const { return decorate_with_typeid(serialization::full(styling), type_name::pretty<attributes::styling>()); }
 };
 
 } // namespace docwire::serialization

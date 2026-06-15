@@ -22,7 +22,7 @@
 
 namespace docwire
 {
-	class ZipReader;
+	class zip_reader;
 	class Metadata;
 
 enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
@@ -30,7 +30,7 @@ enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
 /**
  * @brief Base class for XML-based document parsers (ODF, OOXML, etc.).
  * 
- * This class is inherited by specific parsers (e.g., ODFOOXMLParser, ODFXMLParser).
+ * This class is inherited by specific parsers (e.g., odf_ooxml_parser, odfxml_parser).
  * It allows registering handlers for specific XML tags.
  * 
  * @tparam safety_level The safety policy used for XML parsing operations.
@@ -38,11 +38,11 @@ enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
 template <safety_policy safety_level = default_safety_level>
-class CommonXMLDocumentParser: public ChainElement, public with_pimpl<CommonXMLDocumentParser<safety_level>>
+class common_xml_document_parser: public chain_element, public with_pimpl<common_xml_document_parser<safety_level>>
 {
 	private:
-		friend pimpl_impl<CommonXMLDocumentParser<safety_level>>;
-		using with_pimpl<CommonXMLDocumentParser<safety_level>>::impl;
+		friend pimpl_impl<common_xml_document_parser<safety_level>>;
+		using with_pimpl<common_xml_document_parser<safety_level>>::impl;
 
 	//public interface for derived classes (and its components)
 	public:
@@ -54,30 +54,30 @@ class CommonXMLDocumentParser: public ChainElement, public with_pimpl<CommonXMLD
 		};
 
 		/// Represents a comment with author, time, and text.
-		struct Comment
+		struct comment
 		{
 			std::string m_author;
 			std::string m_time;
 			std::string m_text;
-			Comment() {}
+			comment() {}
 			/**
 			 * @brief Constructs a Comment.
 			 * @param author The author of the comment.
 			 * @param time The timestamp of the comment.
 			 * @param text The content of the comment.
 			 */
-			Comment(const std::string& author, const std::string& time, const std::string& text)
+			comment(const std::string& author, const std::string& time, const std::string& text)
 				: m_author(author), m_time(time), m_text(text) {}
 		};
 
 		/// Represents a relationship, typically for hyperlinks or embedded objects.
-		struct Relationship
+		struct relationship
 		{
 			std::string m_target;
 		};
 
 		/// Represents a shared string, a common optimization in OOXML formats.
-		struct SharedString
+		struct shared_string
 		{
 			std::string m_text;
 		};
@@ -85,19 +85,19 @@ class CommonXMLDocumentParser: public ChainElement, public with_pimpl<CommonXMLD
 		/// Type alias for a vector of list styles.
 		typedef std::vector<ODFOOXMLListStyle> ListStyleVector;
 		/// Type alias for a map of list style names to their definitions.
-		using ListStyleMap = std::map<std::string, CommonXMLDocumentParser<safety_level>::ListStyleVector>;
+		using ListStyleMap = std::map<std::string, common_xml_document_parser<safety_level>::ListStyleVector>;
 		/// Type alias for a map of comment IDs to Comment objects.
-		using CommentMap = std::map<int, CommonXMLDocumentParser<safety_level>::Comment>;
+		using CommentMap = std::map<int, common_xml_document_parser<safety_level>::comment>;
 		/// Type alias for a map of relationship IDs to Relationship objects.
-		using RelationshipMap = std::map<std::string, CommonXMLDocumentParser<safety_level>::Relationship>;
+		using RelationshipMap = std::map<std::string, common_xml_document_parser<safety_level>::relationship>;
 		/// Type alias for a vector of shared strings.
-		using SharedStringVector = std::vector<SharedString>;
+		using SharedStringVector = std::vector<shared_string>;
 
 		/**
 		 * @brief Defines the function signature for an XML tag command handler.
 		 */
 		typedef std::function<void(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-                                 ZipReader* zipfile, std::string& text,
+                                 zip_reader* zipfile, std::string& text,
                                  bool& children_processed, std::string& level_suffix, bool first_on_level)> CommandHandler;
 
 		/**
@@ -117,20 +117,20 @@ class CommonXMLDocumentParser: public ChainElement, public with_pimpl<CommonXMLD
 		 * 
 		 * @param xml_nodes The view of XML nodes to parse.
 		 * @param mode The parsing mode (e.g., PARSE_XML, STRIP_XML).
-		 * @param zipfile Pointer to the ZipReader if the XML is part of a zipped archive (e.g., DOCX, ODT).
+		 * @param zipfile Pointer to the zip_reader if the XML is part of a zipped archive (e.g., DOCX, ODT).
 		 * @return The extracted text content.
 		 */
-		std::string parseXmlData(xml::children_view<safety_level> xml_nodes, XmlParseMode mode, ZipReader* zipfile);
+		std::string parseXmlData(xml::children_view<safety_level> xml_nodes, XmlParseMode mode, zip_reader* zipfile);
 
 		/**
 		 * @brief Parses the children of a given XML node.
 		 * 
 		 * @param xml_node The parent node whose children will be parsed.
 		 * @param mode The parsing mode.
-		 * @param zipfile Pointer to the ZipReader if applicable.
+		 * @param zipfile Pointer to the zip_reader if applicable.
 		 * @return The extracted text content from the children.
 		 */
-		std::string parseXmlChildren(xml::node_ref<safety_level>& xml_node, XmlParseMode mode, ZipReader* zipfile);
+		std::string parseXmlChildren(xml::node_ref<safety_level>& xml_node, XmlParseMode mode, zip_reader* zipfile);
 
 		/**
 		 * @brief Extracts text from raw XML content.
@@ -139,17 +139,17 @@ class CommonXMLDocumentParser: public ChainElement, public with_pimpl<CommonXMLD
 		 * 
 		 * @param xml_contents The raw XML string.
 		 * @param mode The parsing mode.
-		 * @param zipfile Pointer to the ZipReader if applicable.
+		 * @param zipfile Pointer to the zip_reader if applicable.
 		 * @param text Output parameter where the extracted text will be appended.
 		 */
-		void extractText(std::string_view xml_contents, XmlParseMode mode, ZipReader* zipfile, std::string& text);
+		void extractText(std::string_view xml_contents, XmlParseMode mode, zip_reader* zipfile, std::string& text);
 
 		/**
 		 * @brief Parses ODF metadata from XML content.
 		 * @param xml_content The raw XML content of the metadata file.
 		 * @param metadata The structure to populate with parsed metadata.
 		 */
-		void parseODFMetadata(std::string_view xml_content, attributes::Metadata& metadata) const;
+		void parseODFMetadata(std::string_view xml_content, attributes::metadata& metadata) const;
 
 		/**
 		 * @brief Formats a comment for output.
@@ -195,7 +195,7 @@ class CommonXMLDocumentParser: public ChainElement, public with_pimpl<CommonXMLD
 		/**
 		 * @brief Default constructor.
 		 */
-		CommonXMLDocumentParser();
+		common_xml_document_parser();
 
 	protected:
 		/**
@@ -210,11 +210,11 @@ class CommonXMLDocumentParser: public ChainElement, public with_pimpl<CommonXMLD
 			 * @param parser The parser instance.
 			 * @param emit_message The message callbacks for the new context.
 			 */
-			scoped_context_stack_push(CommonXMLDocumentParser& parser, const message_callbacks& emit_message);
+			scoped_context_stack_push(common_xml_document_parser& parser, const message_callbacks& emit_message);
 			/// Destructor that pops the context from the parser's stack.
 			~scoped_context_stack_push();
 		private:
-			CommonXMLDocumentParser& m_parser;
+			common_xml_document_parser& m_parser;
 		};
 };
 

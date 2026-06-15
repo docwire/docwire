@@ -50,14 +50,11 @@ vcpkg_from_github(
 file(REMOVE_RECURSE ${SOURCE_PATH}/third_party/ruy)
 file(RENAME ${RUY_SOURCE_PATH} ${SOURCE_PATH}/third_party/ruy)
 
-vcpkg_from_github(
-	OUT_SOURCE_PATH SPDLOG_SOURCE_PATH
-	REPO gabime/spdlog
-	REF 76fb40d95455f249bd70824ecfcae7a8f0930fa3
-	SHA512 a9e236144af0b4eaabac1fad358d2188124711b036435deb1e69acb258cac096a8f72eec4508784d8c63f4f526ea29991206277415072df501be5ac52c97fba2
+vcpkg_replace_string(
+    "${SOURCE_PATH}/CMakeLists.txt"
+    "add_subdirectory(third_party/spdlog EXCLUDE_FROM_ALL)"
+    "find_package(spdlog REQUIRED)"
 )
-file(REMOVE_RECURSE ${SOURCE_PATH}/third_party/spdlog)
-file(RENAME ${SPDLOG_SOURCE_PATH} ${SOURCE_PATH}/third_party/spdlog)
 
 vcpkg_from_github(
 	OUT_SOURCE_PATH THRUST_SOURCE_PATH

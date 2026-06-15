@@ -251,7 +251,7 @@ UString utf8_to_ustring(const std::string& src)
 bool is_encrypted_with_ms_offcrypto(const data_source& data)
 {
 	log_scope(data);
-	ThreadSafeOLEStorage storage(data.span());
+	thread_safe_ole_storage storage(data.span());
 	if (storage.isValid())
 	{
 		std::vector<std::string> dirs;

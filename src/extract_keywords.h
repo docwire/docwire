@@ -19,10 +19,10 @@ namespace docwire
 namespace openai
 {
 
-class DOCWIRE_OPENAI_EXPORT ExtractKeywords : public Chat
+class DOCWIRE_OPENAI_EXPORT extract_keywords : public chat
 {
 public:
-	ExtractKeywords(unsigned int max_keywords, const std::string& api_key, Model model = Model::gpt_5, float temperature = 0.0f, ImageDetail image_detail = ImageDetail::automatic);
+	extract_keywords(unsigned int max_keywords, const std::string& api_key, Model model = Model::gpt_5, float temperature = 0.0f, ImageDetail image_detail = ImageDetail::automatic);
 };
 
 } // namespace openai

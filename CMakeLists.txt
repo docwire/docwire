@@ -47,11 +47,12 @@ if (ADDRESS_SANITIZER)
 		if (MSVC)
 			# This is the fix for LNK2038 errors when linking ASan-enabled code
 			# against non-ASan dependencies (like those from vcpkg).
-			# It prevents MSVC from changing the layout of std::string and std::vector,
+			# It prevents MSVC from changing the layout of std::string, std::vector and std::optional,
 			# thus maintaining ABI compatibility.
 			add_compile_definitions(
 				_DISABLE_STRING_ANNOTATION=1
 				_DISABLE_VECTOR_ANNOTATION=1
+				_DISABLE_OPTIONAL_ANNOTATION=1
 			)
 		endif()
 		message(STATUS "ASAN_OPTIONS environment variable: $ENV{ASAN_OPTIONS}")

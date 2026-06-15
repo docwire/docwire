@@ -26,10 +26,10 @@ concept IStreamDerived = std::derived_from<T, std::istream>;
 template<typename T>
 concept istream_derived_ref_qualified = IStreamDerived<std::remove_reference_t<T>>;
 
-class DOCWIRE_CORE_EXPORT InputChainElement : public ChainElement
+class DOCWIRE_CORE_EXPORT input_chain_element : public chain_element
 {
 public:
-  explicit InputChainElement(ref_or_owned<data_source> data)
+  explicit input_chain_element(ref_or_owned<data_source> data)
     : m_data{data}
   {}
 
@@ -41,18 +41,18 @@ private:
   ref_or_owned<data_source> m_data;
 };
 
-inline ParsingChain operator|(ref_or_owned<data_source> data, ref_or_owned<ChainElement> chain_element)
+inline parsing_chain operator|(ref_or_owned<data_source> data, ref_or_owned<chain_element> chain_element)
 {
-  return InputChainElement{data} | chain_element;
+  return input_chain_element{data} | chain_element;
 }
 
-inline ParsingChain operator|(ref_or_owned<std::istream> stream, ref_or_owned<ChainElement> chain_element)
+inline parsing_chain operator|(ref_or_owned<std::istream> stream, ref_or_owned<chain_element> chain_element)
 {
-  return InputChainElement{data_source{seekable_stream_ptr{stream.to_shared_ptr()}}} | chain_element.to_shared_ptr();
+  return input_chain_element{data_source{seekable_stream_ptr{stream.to_shared_ptr()}}} | chain_element.to_shared_ptr();
 }
 
 template<data_source_compatible_type_ref_qualified T>
-ParsingChain operator|(T&& v, ref_or_owned<ChainElement> chain_element)
+parsing_chain operator|(T&& v, ref_or_owned<chain_element> chain_element)
 {
   return data_source{std::forward<T>(v)} | chain_element;
 }

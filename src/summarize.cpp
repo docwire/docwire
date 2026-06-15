@@ -19,8 +19,8 @@ namespace docwire
 namespace openai
 {
 
-Summarize::Summarize(const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
-	: Chat("Your task is to summarize every message", api_key, model, temperature, image_detail)
+summarize::summarize(const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+	: chat("Your task is to summarize every message", api_key, model, temperature, image_detail)
 {
 	log_scope(model, temperature, image_detail);
 }

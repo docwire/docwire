@@ -54,7 +54,7 @@ DOCWIRE_CONTENT_TYPE_EXPORT std::optional<file_extension> to_extension(const mim
 * @see content_type::detector
 * @see content_type::by_file_extension::detect
 */
-class detector : public ChainElement
+class detector : public chain_element
 {
 public:
     continuation operator()(message_ptr msg, const message_callbacks& emit_message) override
@@ -64,9 +64,9 @@ public:
             data_source& data = msg->get<data_source>();
             detect(data);
         }
-        else if (msg->is<document::Image>())
+        else if (msg->is<document::image>())
         {
-            data_source& data = msg->get<document::Image>().source;
+            data_source& data = msg->get<document::image>().source;
             detect(data);
         }
 	    return emit_message(std::move(msg));

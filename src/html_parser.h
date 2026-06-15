@@ -18,15 +18,15 @@
 
 namespace docwire
 {
-class DOCWIRE_HTML_EXPORT HTMLParser : public ChainElement, public with_pimpl<HTMLParser>
+class DOCWIRE_HTML_EXPORT html_parser : public chain_element, public with_pimpl<html_parser>
 {
 	private:
-		using with_pimpl<HTMLParser>::impl;
-		friend pimpl_impl<HTMLParser>;
+		using with_pimpl<html_parser>::impl;
+		friend pimpl_impl<html_parser>;
 
 	public:
 
-		HTMLParser();
+		html_parser();
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).

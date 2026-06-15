@@ -26,7 +26,7 @@ namespace docwire
 
 using namespace wvWare;
 
-static std::string read_vt_string(ThreadSafeOLEStreamReader* reader)
+static std::string read_vt_string(thread_safe_ole_stream_reader* reader)
 {
 	log_scope();
 	U16 string_type;
@@ -48,7 +48,7 @@ static std::string read_vt_string(ThreadSafeOLEStreamReader* reader)
 	return s;
 }
 
-static S32 read_vt_i4(ThreadSafeOLEStreamReader* reader)
+static S32 read_vt_i4(thread_safe_ole_stream_reader* reader)
 {
 	log_scope();
 	U16 string_type;
@@ -61,7 +61,7 @@ static S32 read_vt_i4(ThreadSafeOLEStreamReader* reader)
 	return i;
 }
 
-static S16 read_vt_i2(ThreadSafeOLEStreamReader* reader)
+static S16 read_vt_i2(thread_safe_ole_stream_reader* reader)
 {
 	log_scope();
 	U16 string_type;
@@ -74,7 +74,7 @@ static S16 read_vt_i2(ThreadSafeOLEStreamReader* reader)
 	return i;
 }
 
-static std::chrono::sys_seconds read_vt_filetime(ThreadSafeOLEStreamReader* reader)
+static std::chrono::sys_seconds read_vt_filetime(thread_safe_ole_stream_reader* reader)
 {
 	log_scope();
 	U16 type;
@@ -108,12 +108,12 @@ static std::chrono::sys_seconds read_vt_filetime(ThreadSafeOLEStreamReader* read
 	return std::chrono::sys_seconds{std::chrono::duration_cast<std::chrono::seconds>(time_since_unix_epoch)};
 }
 
-void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metadata& meta, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+void parse_oshared_summary_info(thread_safe_ole_storage& storage, attributes::metadata& meta, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 {
 	log_scope();
 	throw_if (!storage.isValid(), storage.getLastError(), storage.name());
-	ThreadSafeOLEStreamReader* reader = NULL;
-	reader = (ThreadSafeOLEStreamReader*)storage.createStreamReader("\005SummaryInformation");
+	thread_safe_ole_stream_reader* reader = NULL;
+	reader = (thread_safe_ole_stream_reader*)storage.createStreamReader("\005SummaryInformation");
 	throw_if (reader == NULL, storage.getLastError());
 	try
 	{
@@ -245,13 +245,13 @@ void parse_oshared_summary_info(ThreadSafeOLEStorage& storage, attributes::Metad
 	}
 }
 
-static ThreadSafeOLEStreamReader* open_oshared_document_summary_info(ThreadSafeOLEStorage& storage, size_t& field_set_stream_start)
+static thread_safe_ole_stream_reader* open_oshared_document_summary_info(thread_safe_ole_storage& storage, size_t& field_set_stream_start)
 {
 	log_scope();
-	ThreadSafeOLEStreamReader* reader = NULL;
+	thread_safe_ole_stream_reader* reader = NULL;
 	try
 	{
-		reader = (ThreadSafeOLEStreamReader*)storage.createStreamReader("\005DocumentSummaryInformation");
+		reader = (thread_safe_ole_stream_reader*)storage.createStreamReader("\005DocumentSummaryInformation");
 		throw_if (reader == NULL, storage.getLastError(), std::make_pair("stream_path", "\005DocumentSummaryInformation"));
 		field_set_stream_start = reader->tell();
 		U16 byte_order;
@@ -283,14 +283,14 @@ static ThreadSafeOLEStreamReader* open_oshared_document_summary_info(ThreadSafeO
 	}
 }
 
-std::string get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storage)
+std::string get_codepage_from_document_summary_info(thread_safe_ole_storage& storage)
 {
 	log_scope();
 	size_t field_set_stream_start;
 	throw_if (!storage.isValid(), "Error opening storage as OLE file.", storage.name());
 	try
 	{
-		std::unique_ptr<ThreadSafeOLEStreamReader> reader { open_oshared_document_summary_info(storage, field_set_stream_start) };
+		std::unique_ptr<thread_safe_ole_stream_reader> reader { open_oshared_document_summary_info(storage, field_set_stream_start) };
 		U32 offset;
 		reader->readU32(offset);
 		int property_set_pos = field_set_stream_start + offset;
@@ -331,11 +331,11 @@ std::string get_codepage_from_document_summary_info(ThreadSafeOLEStorage& storag
 	throw make_error("Information about codepage is missing.");
 }
 
-void parse_oshared_document_summary_info(ThreadSafeOLEStorage& storage, int& slide_count)
+void parse_oshared_document_summary_info(thread_safe_ole_storage& storage, int& slide_count)
 {
 	log_scope();
 	size_t field_set_stream_start;
-	ThreadSafeOLEStreamReader* reader = NULL;
+	thread_safe_ole_stream_reader* reader = NULL;
 	try
 	{
 		reader = open_oshared_document_summary_info(storage, field_set_stream_start);

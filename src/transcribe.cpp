@@ -26,19 +26,19 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<openai::Transcribe> : pimpl_impl_base
+struct pimpl_impl<openai::transcribe> : pimpl_impl_base
 {
-	pimpl_impl(const std::string& api_key, openai::Transcribe::Model model)
+	pimpl_impl(const std::string& api_key, openai::transcribe::Model model)
 		: m_api_key(api_key), m_model(model) {}
 	std::string m_api_key;
-	openai::Transcribe::Model m_model;
+	openai::transcribe::Model m_model;
 };
 
 namespace openai
 {
 
-Transcribe::Transcribe(const std::string& api_key, Model model)
-	: with_pimpl<Transcribe>(api_key, model)
+transcribe::transcribe(const std::string& api_key, Model model)
+	: with_pimpl<transcribe>(api_key, model)
 {
 	log_scope(model);
 }
@@ -46,20 +46,20 @@ Transcribe::Transcribe(const std::string& api_key, Model model)
 namespace
 {
 
-std::string model_to_string(Transcribe::Model model)
+std::string model_to_string(transcribe::Model model)
 {
 	switch (model)
 	{
-		case Transcribe::Model::gpt_4o_transcribe: return "gpt-4o-transcribe";
-		case Transcribe::Model::gpt_4o_mini_transcribe: return "gpt-4o-mini-transcribe";
-		case Transcribe::Model::whisper_1: return "whisper-1";
+		case transcribe::Model::gpt_4o_transcribe: return "gpt-4o-transcribe";
+		case transcribe::Model::gpt_4o_mini_transcribe: return "gpt-4o-mini-transcribe";
+		case transcribe::Model::whisper_1: return "whisper-1";
 		default: return "?";
 	}
 }
 
 } // anonymous namespace
 
-continuation Transcribe::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation transcribe::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	log_scope();
 	if (!msg->is<data_source>())
@@ -70,17 +70,17 @@ continuation Transcribe::operator()(message_ptr msg, const message_callbacks& em
 	auto response_stream = std::make_shared<std::ostringstream>();
 	try
 	{
-		in_stream | http::Post("https://api.openai.com/v1/audio/transcriptions", {{"model", model_to_string(impl().m_model)}, {"response_format", "text"}}, "file", DefaultFileName("audio.mp3"), impl().m_api_key) | response_stream;
+		in_stream | http::post("https://api.openai.com/v1/audio/transcriptions", {{"model", model_to_string(impl().m_model)}, {"response_format", "text"}}, "file", default_file_name("audio.mp3"), impl().m_api_key) | response_stream;
 	}
 	catch (const std::exception& e)
 	{
 		std::throw_with_nested(make_error("Error during transcription"));
 	}
-    auto cont = emit_message(document::Document{});
+    auto cont = emit_message(document::document{});
     if (cont == continuation::stop) return cont;
-    cont = emit_message(document::Text{response_stream->str()});
+    cont = emit_message(document::text{response_stream->str()});
     if (cont == continuation::stop) return cont;
-    return emit_message(document::CloseDocument{});
+    return emit_message(document::close_document{});
 }
 
 } // namespace openai

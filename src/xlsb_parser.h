@@ -19,16 +19,16 @@
 namespace docwire
 {
 
-class ZipReader;
+class zip_reader;
 
-class DOCWIRE_XLSB_EXPORT XLSBParser : public ChainElement, public with_pimpl<XLSBParser>
+class DOCWIRE_XLSB_EXPORT xlsb_parser : public chain_element, public with_pimpl<xlsb_parser>
 {
 	private:
-		friend pimpl_impl<XLSBParser>;
-		using with_pimpl<XLSBParser>::impl;
+		friend pimpl_impl<xlsb_parser>;
+		using with_pimpl<xlsb_parser>::impl;
 
 	public:
-		XLSBParser();
+		xlsb_parser();
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 };

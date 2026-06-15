@@ -21,11 +21,11 @@ namespace docwire
 /**
  * @brief Exports data to HTML format.
  */
-class DOCWIRE_HTML_EXPORT HtmlExporter: public ChainElement, public with_pimpl<HtmlExporter>
+class DOCWIRE_HTML_EXPORT html_exporter: public chain_element, public with_pimpl<html_exporter>
 {
 public:
 
-  HtmlExporter();
+  html_exporter();
 
 	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
@@ -35,7 +35,7 @@ public:
 	}
 
 private:
-	using with_pimpl<HtmlExporter>::impl;
+	using with_pimpl<html_exporter>::impl;
 };
 
 } // namespace docwire

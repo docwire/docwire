@@ -220,22 +220,22 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Equipped with a high-grade, scriptable, and trainable local OCR** that has LSTM neural networks-based character recognition OCR capabilities in more than 100 languages and multiple languages in single picture.
 
-- HTTP::Post transformer: Facilitate **seamless communication with external HTTP APIs or services**, enabling data exchange and integration with external systems.
+- HTTP::post transformer: Facilitate **seamless communication with external HTTP APIs or services**, enabling data exchange and integration with external systems.
 
 - HTTP Server: **Host your own data processing pipelines as HTTP services easily**. The built-in `http::server` allows you to expose any processing pipeline as an HTTP endpoint, enabling you to build powerful microservices for data processing.
 
 - **Integration with OpenAI API for most advanced NLP tasks**, including transformers like:
-    - TranslateTo: Translate text or image to different languages.
-    - Summarize: Generate summarized content from longer texts or description of images.
-    - ExtractEntities: Extract entities and key information from text and image.
-    - Classify: Perform text and image classification and categorization.
-    - ExtractKeywords: Identify and extract keywords from text and image.
-    - DetectSentiment: Analyze and detect sentiment in text and image.
-    - AnalyzeData: Perform data analysis on text content and images.
-    - Find: Search for phrases, objects or events in text and images (object detection, event detection).
-    - Chat: Conduct chat-based interactions and conversations with text input and image input.
-    - TextToSpeech: Perform written text into spoken words (voice) conversion (TTS).
-    - Transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
+    - translate_to: Translate text or image to different languages.
+    - summarize: Generate summarized content from longer texts or description of images.
+    - extract_entities: Extract entities and key information from text and image.
+    - classify: Perform text and image classification and categorization.
+    - extract_keywords: Identify and extract keywords from text and image.
+    - detect_sentiment: Analyze and detect sentiment in text and image.
+    - analyze_data: Perform data analysis on text content and images.
+    - find: Search for phrases, objects or events in text and images (object detection, event detection).
+    - chat: Conduct chat-based interactions and conversations with text input and image input.
+    - text_to_speech: Perform written text into spoken words (voice) conversion (TTS).
+    - transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
     - embed: Generate embedding of text via OpenAI.
    
    Supports multiple Open AI LLM models: gpt-5, gpt-5-mini, gpt-5-nano, gpt-5-chat-latest, gpt-4.1, gpt-4.1-mini, gpt-4.1-nano, gpt-4o, gpt-4o-mini, o3, o3-pro, o3-deep-research, o3-mini, o4-mini, o4-mini-deep-research, gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1, gpt-4o-transcribe, tts-1, tts-1-hd, text-embedding-3-small, text-embedding-3-large, text-embedding-ada-002. More are coming.
@@ -346,7 +346,7 @@ DocWire SDK's API fosters a seamless synergy between AI and data processing. By 
 Parse file in any format (Office, PDF, mail, etc) having its path, export to plain text and write to string stream:
 
 ```cpp
-std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | out_stream;
+std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | plain_text_exporter() | out_stream;
 ensure(out_stream.str()) == "Data processing refers to the activities performed on raw data...";
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/path_to_text_stream_8cpp-example.html)
@@ -354,7 +354,7 @@ ensure(out_stream.str()) == "Data processing refers to the activities performed 
 Parse file in any format (Office, PDF, mail, etc) having stream, export to HTML and write to stream:
 
 ```cpp
-std::ifstream("data_processing_definition.docx", std::ios_base::binary) | content_type::detector{} | office_formats_parser{} | HtmlExporter() | out_stream;
+std::ifstream("data_processing_definition.docx", std::ios_base::binary) | content_type::detector{} | office_formats_parser{} | html_exporter() | out_stream;
 ensure(out_stream.str()).contains("Data processing refers to the activities");
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/stream_to_html_8cpp-example.html)
@@ -362,7 +362,7 @@ ensure(out_stream.str()).contains("Data processing refers to the activities");
 Parse all files in any format inside archives (ZIP, TAR, RAR, GZ, BZ2, XZ) recursively:
 
 ```cpp
-std::filesystem::path("test.zip") | content_type::detector{} | archives_parser{} | office_formats_parser{} | OCRParser{} | PlainTextExporter() | std::cout;
+std::filesystem::path("test.zip") | content_type::detector{} | archives_parser{} | office_formats_parser{} | ocr_parser{} | plain_text_exporter() | std::cout;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/parse_archives_8cpp-example.html)
 
@@ -377,7 +377,7 @@ ensure(out_stream.str()) == "report";
 Classify file in any format (Office, PDF, mail, etc) to any categories using OpenAI service:
 
 ```cpp
-std::filesystem::path("...") | ... | openai::Classify({ "agreement", "invoice", "report", ...}, ...) | out_stream;
+std::filesystem::path("...") | ... | openai::classify({ "agreement", "invoice", "report", ...}, ...) | out_stream;
 ensure(out_stream.str()) == "report\n";
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_classify_8cpp-example.html)
@@ -393,7 +393,7 @@ ensure(fuzzy_match::ratio(out_stream.str(), "La procesación de datos se refiere
 Translate document in any format (Office, PDF, mail, etc) to other language using OpenAI service:
 
 ```cpp
-std::filesystem::path("...") | ... | openai::TranslateTo("spanish", ...) | out_stream;
+std::filesystem::path("...") | ... | openai::translate_to("spanish", ...) | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "El procesamiento de datos se refiere a las actividades...")) > 80;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_translate_8cpp-example.html)
@@ -409,7 +409,7 @@ ensure(out_stream.str()) == "positive";
 Detect sentiment of document in any format (Office, PDF, mail, etc) using OpenAI service:
 
 ```cpp
-std::filesystem::path("1.doc") | ... | openai::DetectSentiment(...) | std::cout;
+std::filesystem::path("1.doc") | ... | openai::detect_sentiment(...) | std::cout;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_sentiment_8cpp-example.html)
 
@@ -424,14 +424,14 @@ ensure(out_stream.str()).is_one_of({ "Data processing is the collection, organiz
 Make a voice summary of document in any format (Office, PDF, mail, etc) in two steps: summarize using GPT model and convert the summary to speech using text to speech model. Result is saved to mp3 file:
 
 ```cpp
-std::filesystem::path("1.doc") | ... | openai::Summarize(...) | openai::TextToSpeech(...) | std::ofstream("summary.mp3");
+std::filesystem::path("1.doc") | ... | openai::summarize(...) | openai::text_to_speech(...) | std::ofstream("summary.mp3");
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_voice_summary_8cpp-example.html)
 
 Make a text summary of voice recording (e.g. mp3 file with meeting recording) in two steps: convert voice to text and summarize text using OpenAI services (with non-default model selected):
 
 ```cpp
-std::filesystem::path("...mp3") | openai::Transcribe(...) | ... | openai::Summarize(..., openai::Model::gpt_4o) | out_stream;
+std::filesystem::path("...mp3") | openai::transcribe(...) | ... | openai::summarize(..., openai::Model::gpt_4o) | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "Data processing involves converting raw data...")) > 80;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_transcribe_summary_8cpp-example.html)
@@ -447,7 +447,7 @@ ensure(out_stream.str()).is_one_of({ "Data processing refers to the activities p
 Find phrases, objects and events in text or image using GPT model (with non-default model selected):
 
 ```cpp
-std::filesystem::path("scene_1.png") | ... | openai::Find("tree", ..., openai::Model::gpt_4o) | out_stream;
+std::filesystem::path("scene_1.png") | ... | openai::find("tree", ..., openai::Model::gpt_4o) | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "2\n- A tree is located on the left side...")) > 80;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_find_image_8cpp-example.html)
@@ -479,7 +479,7 @@ ensure(partial_sim) > dissim;
 Reusing single parsing chain to parse multiple input files:
 
 ```cpp
-auto chain = content_type::detector{} | office_formats_parser{} | PlainTextExporter() | std::cout; // create a chain of steps to parse a file
+auto chain = content_type::detector{} | office_formats_parser{} | plain_text_exporter() | std::cout; // create a chain of steps to parse a file
 for (int i = 1; i < 3; ++i)
   std::ifstream(std::to_string(i) + ".docx", std::ios_base::binary) | chain; // set the input file as an input stream
 ```
@@ -496,12 +496,12 @@ std::filesystem::path("1.pst") | content_type::detector{} | mail_parser{} | offi
   |  // Create an input from file path, parser and connect them to transformer
     [](message_ptr msg, const message_callbacks& emit_message)
     {
-      if (msg->is<mail::Mail>()) // if current node is mail
+      if (msg->is<mail::mail>()) // if current node is mail
       {
-        auto subject = msg->get<mail::Mail>().subject; // get the subject attribute
+        auto subject = msg->get<mail::mail>().subject; // get the subject attribute
         if (subject && subject->find("Hello") != std::string::npos) // if subject contains "Hello"
 ...
-  | PlainTextExporter() | std::cout;
+  | plain_text_exporter() | std::cout;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/filter_emails_by_subject_8cpp-example.html)
 
@@ -519,7 +519,7 @@ std::filesystem::path("1.pst") | content_type::detector{} | mail_parser{} | offi
   {
 ...
   } |
-  PlainTextExporter() | // sets exporter to plain text
+  plain_text_exporter() | // sets exporter to plain text
   std::cout;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/join_transformers_8cpp-example.html)
@@ -840,10 +840,10 @@ Functions like [errors::diagnostic_message](https://docwire.readthedocs.io/en/la
 For example `std::cerr << docwire::errors::diagnostic_message(e) << std::endl;` can give the following results:
 ```
 Error: "triggering_condition: impl().ArchiveFile == NULL"
-in void docwire::ZipReader::open()
+in void docwire::zip_reader::open()
 at /home/adrian/Work/docwire/src/zip_reader.cpp:146
 with context "Could not open zip archive"
-wrapping at: void docwire::pimpl_impl<docwire::XLSBParser>::parse(const docwire::data_source&, const docwire::message_callbacks&)
+wrapping at: void docwire::pimpl_impl<docwire::xlsb_parser>::parse(const docwire::data_source&, const docwire::message_callbacks&)
 at /home/adrian/Work/docwire/src/xlsb_parser.cpp:700
 with context "file encrypted error tag"
 with context "Microsoft Office Document Cryptography"

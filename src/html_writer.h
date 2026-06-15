@@ -21,11 +21,11 @@
 namespace docwire
 {
 
-class DOCWIRE_HTML_EXPORT HtmlWriter : public Writer, public with_pimpl<HtmlWriter>
+class DOCWIRE_HTML_EXPORT html_writer : public writer, public with_pimpl<html_writer>
 {
 public:
 
-  HtmlWriter();
+  html_writer();
 
   /**
    * @brief Converts text from callback to html format
@@ -35,7 +35,7 @@ public:
   void write_to(const message_ptr& msg, std::ostream &stream) override;
 
 private:
-  using with_pimpl<HtmlWriter>::impl;
+  using with_pimpl<html_writer>::impl;
 };
 } // namespace docwire
 

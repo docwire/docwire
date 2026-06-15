@@ -20,10 +20,10 @@
 namespace docwire
 {
 
-struct DefaultFileName
+struct default_file_name
 {
 	std::filesystem::path v;
-	explicit DefaultFileName(const std::filesystem::path& p)
+	explicit default_file_name(const std::filesystem::path& p)
 		: v(p) {}
 };
 
@@ -32,11 +32,11 @@ namespace http
 
 struct ssl_verify_peer { bool v; };
 
-class DOCWIRE_HTTP_EXPORT Post : public ChainElement, public with_pimpl<Post>
+class DOCWIRE_HTTP_EXPORT post : public chain_element, public with_pimpl<post>
 {
 public:
-	Post(const std::string& url, const std::string& oauth2_bearer_token = "", ssl_verify_peer ssl_verify_peer_v = {true});
-	Post(const std::string& url, const std::map<std::string, std::string>& form, const std::string& pipe_field_name, const DefaultFileName& default_file_name, const std::string& oauth2_bearer_token = "", ssl_verify_peer ssl_verify_peer_v = {true});
+	post(const std::string& url, const std::string& oauth2_bearer_token = "", ssl_verify_peer ssl_verify_peer_v = {true});
+	post(const std::string& url, const std::map<std::string, std::string>& form, const std::string& pipe_field_name, const default_file_name& default_file_name, const std::string& oauth2_bearer_token = "", ssl_verify_peer ssl_verify_peer_v = {true});
 
 	/**
 	 * @brief Executes transform for the given message; consumes msg.
@@ -53,7 +53,7 @@ public:
 	}
 
 private:
-	using with_pimpl<Post>::impl;
+	using with_pimpl<post>::impl;
 };
 
 } // namespace http

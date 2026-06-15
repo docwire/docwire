@@ -23,8 +23,6 @@
 namespace docwire
 {
 
-class Writer;
-
 template<class T>
 concept OStreamDerived = std::derived_from<T, std::ostream>;
 
@@ -32,22 +30,22 @@ template<typename T>
 concept ostream_derived_ref_qualified = OStreamDerived<std::remove_reference_t<T>>;
 
 /**
- *  @brief OutputChainElement class is responsible for saving data from parsing chain to an output stream.
+ *  @brief output_chain_element class is responsible for saving data from parsing chain to an output stream.
  *  @code
- *  std::ifstream("file.pdf", std::ios_base::in|std::ios_base::binary) | office_formats_parser{} | PlainTextExporter() | std::cout; // Imports file.pdf and saves it to std::cout as plain text
+ *  std::ifstream("file.pdf", std::ios_base::in|std::ios_base::binary) | office_formats_parser{} | plain_text_exporter() | std::cout; // Imports file.pdf and saves it to std::cout as plain text
  *  @endcode
  */
-class DOCWIRE_CORE_EXPORT OutputChainElement : public ChainElement
+class DOCWIRE_CORE_EXPORT output_chain_element : public chain_element
 {
 public:
   /**
-   * @param out_stream OutputChainElement stream. Parsing chain will be writing to this stream.
+   * @param out_stream output_chain_element stream. Parsing chain will be writing to this stream.
    */
-  OutputChainElement(ref_or_owned<std::ostream> out_stream)
+  output_chain_element(ref_or_owned<std::ostream> out_stream)
     : m_out_obj{out_stream}
   {}
 
-  OutputChainElement(ref_or_owned<std::vector<message_ptr>> out_vector)
+  output_chain_element(ref_or_owned<std::vector<message_ptr>> out_vector)
     : m_out_obj{out_vector}
   {}
 
@@ -62,24 +60,24 @@ private:
   std::variant<ref_or_owned<std::ostream>, ref_or_owned<std::vector<message_ptr>>> m_out_obj;
 };
 
-inline ParsingChain operator|(ref_or_owned<ChainElement> element, ref_or_owned<std::ostream> stream)
+inline parsing_chain operator|(ref_or_owned<chain_element> element, ref_or_owned<std::ostream> stream)
 {
-  return element | OutputChainElement(stream);
+  return element | output_chain_element(stream);
 }
 
-inline ParsingChain& operator|=(ParsingChain& chain, ref_or_owned<std::ostream> stream)
+inline parsing_chain& operator|=(parsing_chain& chain, ref_or_owned<std::ostream> stream)
 {
-  return chain |= OutputChainElement(stream);
+  return chain |= output_chain_element(stream);
 }
 
-inline ParsingChain operator|(ref_or_owned<ChainElement> element, ref_or_owned<std::vector<message_ptr>> vector)
+inline parsing_chain operator|(ref_or_owned<chain_element> element, ref_or_owned<std::vector<message_ptr>> vector)
 {
-  return element | OutputChainElement(vector);
+  return element | output_chain_element(vector);
 }
 
-inline ParsingChain& operator|=(ParsingChain& chain, ref_or_owned<std::vector<message_ptr>> vector)
+inline parsing_chain& operator|=(parsing_chain& chain, ref_or_owned<std::vector<message_ptr>> vector)
 {
-  return chain |= OutputChainElement(vector);
+  return chain |= output_chain_element(vector);
 }
 
 } // namespace docwire

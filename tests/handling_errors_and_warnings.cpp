@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
     std::filesystem::path("data_processing_definition.doc") |
       content_type::by_file_extension::detector{} |
       office_formats_parser{} |
-      PlainTextExporter() |
+      plain_text_exporter() |
       [](message_ptr msg, const message_callbacks& emit_message)
 	    {
 	      if (msg->is<std::exception_ptr>())

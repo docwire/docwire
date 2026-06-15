@@ -19,14 +19,14 @@
 namespace docwire
 {
 
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT DOCParser : public ChainElement, public with_pimpl<DOCParser>
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT doc_parser : public chain_element, public with_pimpl<doc_parser>
 {
 public:
-    DOCParser();
+    doc_parser();
     continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
     bool is_leaf() const override { return false; }
 private:
-    using with_pimpl<DOCParser>::impl;
+    using with_pimpl<doc_parser>::impl;
 };
 
 } // namespace docwire

@@ -103,7 +103,7 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const by_signature::d
  * @see content_type::outlook::detector
  * @see content_type::xlsb::detector
  */
-class detector : public ChainElement
+class detector : public chain_element
 {
 public:
 
@@ -129,9 +129,9 @@ public:
                 data_source& data = msg->get<data_source>();
                 content_type::detect(data, m_signatures_db_to_use.get());
             }
-            else if (msg->is<document::Image>())
+            else if (msg->is<document::image>())
             {
-                data_source& data = msg->get<document::Image>().source;
+                data_source& data = msg->get<document::image>().source;
                 content_type::detect(data, m_signatures_db_to_use.get());
             }
         }

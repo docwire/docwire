@@ -44,34 +44,34 @@ struct context
 	bool space_preserve = false;
 	bool stop_emit_signals = false;
 	size_t m_list_depth = 0;
-	std::map<std::string, typename CommonXMLDocumentParser<safety_level>::ListStyleVector> m_list_styles;
-	std::map<int, typename CommonXMLDocumentParser<safety_level>::Comment> m_comments;
-	std::map<std::string, typename CommonXMLDocumentParser<safety_level>::Relationship> m_relationships;
-	std::vector<typename CommonXMLDocumentParser<safety_level>::SharedString> m_shared_strings;
+	std::map<std::string, typename common_xml_document_parser<safety_level>::ListStyleVector> m_list_styles;
+	std::map<int, typename common_xml_document_parser<safety_level>::comment> m_comments;
+	std::map<std::string, typename common_xml_document_parser<safety_level>::relationship> m_relationships;
+	std::vector<typename common_xml_document_parser<safety_level>::shared_string> m_shared_strings;
 	bool m_disabled_text = false;
 };
 
 } // anonymous namespace
 
 template <safety_policy safety_level>
-struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<CommonXMLDocumentParser<safety_level>>
+struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<common_xml_document_parser<safety_level>>
 {
-	using command_handler = CommonXMLDocumentParser<safety_level>::CommandHandler;
-	using with_pimpl_owner<CommonXMLDocumentParser<safety_level>>::owner;
+	using command_handler = common_xml_document_parser<safety_level>::CommandHandler;
+	using with_pimpl_owner<common_xml_document_parser<safety_level>>::owner;
 
   template<typename T>
   command_handler add_command_handler(T member_function)
   {
     return [this, member_function](xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-                                 ZipReader* zipfile, std::string& text,
+                                 zip_reader* zipfile, std::string& text,
                                  bool& children_processed, std::string& level_suffix, bool first_on_level)
     {
     	(this->*member_function)(xml_node, mode, zipfile, text, children_processed, level_suffix, first_on_level);
     };
   }
 
-  pimpl_impl(CommonXMLDocumentParser<safety_level>& owner)
-  : with_pimpl_owner<CommonXMLDocumentParser<safety_level>>{owner}
+  pimpl_impl(common_xml_document_parser<safety_level>& owner)
+  : with_pimpl_owner<common_xml_document_parser<safety_level>>{owner}
   {
     m_command_handlers["#text"] = add_command_handler<>(&pimpl_impl::onODFOOXMLText);
     m_command_handlers["b"] = add_command_handler<>(&pimpl_impl::onODFOOXMLBold);
@@ -124,7 +124,7 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 	}
 
   void onpPr(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-           ZipReader* zipfile, std::string& text,
+           zip_reader* zipfile, std::string& text,
            bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     log_scope();
@@ -133,21 +133,21 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 
     if (m_context_stack.top().is_underline)
     {
-    	emit_message(document::CloseUnderline{});
+    	emit_message(document::close_underline{});
     }
     if (m_context_stack.top().is_italic)
     {
-    	emit_message(document::CloseItalic{});
+    	emit_message(document::close_italic{});
     }
     if (m_context_stack.top().is_bold)
     {
-    	emit_message(document::CloseBold{});
+    	emit_message(document::close_bold{});
     }
     reset_format();
   }
 
 	void onR(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-	           ZipReader* zipfile, std::string& text,
+	           zip_reader* zipfile, std::string& text,
 	           bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		log_scope();
@@ -156,21 +156,21 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 
 		if (m_context_stack.top().is_underline)
 		{
-			emit_message(document::CloseUnderline{});
+			emit_message(document::close_underline{});
 		}
 		if (m_context_stack.top().is_italic)
 		{
-			emit_message(document::CloseItalic{});
+			emit_message(document::close_italic{});
 		}
 		if (m_context_stack.top().is_bold)
 		{
-			emit_message(document::CloseBold{});
+			emit_message(document::close_bold{});
 		}
 		reset_format();
 	}
 
   void onrPr(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-                      ZipReader* zipfile, std::string& text,
+                      zip_reader* zipfile, std::string& text,
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     log_scope();
@@ -178,33 +178,33 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
     owner().parseXmlChildren(xml_node, mode, zipfile);
     if (m_context_stack.top().is_bold)
     {
-    	emit_message(document::Bold{});
+    	emit_message(document::bold{});
     }
     if (m_context_stack.top().is_italic)
     {
-    	emit_message(document::Italic{});
+    	emit_message(document::italic{});
     }
     if (m_context_stack.top().is_underline)
     {
-    	emit_message(document::Underline{});
+    	emit_message(document::underline{});
     }
     children_processed = true;
   }
 
   void onODFOOXMLPara(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-                      ZipReader* zipfile, std::string& text,
+                      zip_reader* zipfile, std::string& text,
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     log_scope();
     reset_format();
-    emit_message(document::Paragraph{});
+    emit_message(document::paragraph{});
     text += owner().parseXmlChildren(xml_node, mode, zipfile) + '\n';
     children_processed = true;
-    emit_message(document::CloseParagraph{});
+    emit_message(document::close_paragraph{});
   }
 
   void onODFOOXMLText(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-                        const ZipReader* zipfile, std::string& text,
+                        const zip_reader* zipfile, std::string& text,
                         bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     log_scope();
@@ -215,48 +215,48 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 	  text += content;
       children_processed = true;
       if (m_context_stack.top().space_preserve || !std::all_of(content.begin(), content.end(), [](auto c){return isspace(static_cast<unsigned char>(c));}))
-        emit_message(document::Text{.text = content});
+        emit_message(document::text{.text = content});
     }
   }
 
   void onODFOOXMLTable(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-                 ZipReader* zipfile, std::string& text,
+                 zip_reader* zipfile, std::string& text,
                  bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
 	log_scope();
     reset_format();
-    emit_message(document::Table{});
+    emit_message(document::table{});
     text += owner().parseXmlChildren(xml_node, mode, zipfile);
     children_processed = true;
-    emit_message(document::CloseTable{});
+    emit_message(document::close_table{});
   }
 
   void onODFOOXMLTableRow(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-                       ZipReader* zipfile, std::string& text,
+                       zip_reader* zipfile, std::string& text,
                        bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
 	log_scope();
     reset_format();
-    emit_message(document::TableRow{});
+    emit_message(document::table_row{});
     text += owner().parseXmlChildren(xml_node, mode, zipfile);
     children_processed = true;
-    emit_message(document::CloseTableRow{});
+    emit_message(document::close_table_row{});
   }
 
   void onODFOOXMLTableCell(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-                       ZipReader* zipfile, std::string& text,
+                       zip_reader* zipfile, std::string& text,
                        bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
 	log_scope();
     reset_format();
-    emit_message(document::TableCell{});
+    emit_message(document::table_cell{});
     text += owner().parseXmlChildren(xml_node, mode, zipfile);
     children_processed = true;
-    emit_message(document::CloseTableCell{});
+    emit_message(document::close_table_cell{});
   }
 
   void onODFOOXMLTextTag(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-                      ZipReader* zipfile, std::string& text,
+                      zip_reader* zipfile, std::string& text,
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     log_scope();
@@ -265,7 +265,7 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
   }
 
   void onODFOOXMLBold(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-                      const ZipReader* zipfile, std::string& text,
+                      const zip_reader* zipfile, std::string& text,
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     log_scope();
@@ -273,7 +273,7 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
   }
 
   void onODFOOXMLItalic(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-                      const ZipReader* zipfile, std::string& text,
+                      const zip_reader* zipfile, std::string& text,
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     log_scope();
@@ -281,7 +281,7 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
   }
 
   void onODFOOXMLUnderline(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-                      const ZipReader* zipfile, std::string& text,
+                      const zip_reader* zipfile, std::string& text,
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
     log_scope();
@@ -289,7 +289,7 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
   }
 
 	void onUnregisteredCommand(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-								const ZipReader* zipfile, std::string& text,
+								const zip_reader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		log_scope();
@@ -304,7 +304,7 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 	}
 
 	void executeCommand(const std::string& command, xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-						ZipReader* zipfile, std::string& text,
+						zip_reader* zipfile, std::string& text,
 						bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		log_scope(command);
@@ -317,7 +317,7 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 	}
 
 	void onODFText(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-								   const ZipReader* zipfile, std::string& text,
+								   const zip_reader* zipfile, std::string& text,
 								   bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
@@ -325,16 +325,16 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 		}
 
 	void onODFOOXMLTab(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-								  const ZipReader* zipfile, std::string& text,
+								  const zip_reader* zipfile, std::string& text,
 								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
 			text += "\t"; 
-			emit_message(document::Text{.text = "\t"});
+			emit_message(document::text{.text = "\t"});
 		}
 
 	void onODFOOXMLSpace(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-								  const ZipReader* zipfile, std::string& text,
+								  const zip_reader* zipfile, std::string& text,
 								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
@@ -343,31 +343,31 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 			{
 				text += " ";
 			}
-			emit_message(document::Text{.text = std::string(count, ' ')});
+			emit_message(document::text{.text = std::string(count, ' ')});
 		}
 
 	void onODFUrl(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-								  ZipReader* zipfile, std::string& text,
+								  zip_reader* zipfile, std::string& text,
 								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
 			std::string mlink { attribute_value(xml_node, "href").value_or("") };
-			emit_message(document::Link{.url = mlink});
+			emit_message(document::link{.url = mlink});
 			std::string text_link = owner().parseXmlChildren(xml_node, mode, zipfile);
 			text += formatUrl(mlink, text_link);
 			children_processed = true;
-			emit_message(document::CloseLink{});
+			emit_message(document::close_link{});
 		}
 
 	void onODFOOXMLListStyle(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-										const ZipReader* zipfile, std::string& text,
+										const zip_reader* zipfile, std::string& text,
 										bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
 			std::string style_code { attribute_value(xml_node, "name").value_or("") };
 			if (!style_code.empty())
 			{
-				typename CommonXMLDocumentParser<safety_level>::ListStyleVector list_style(10, CommonXMLDocumentParser<safety_level>::bullet);
+				typename common_xml_document_parser<safety_level>::ListStyleVector list_style(10, common_xml_document_parser<safety_level>::bullet);
 				for (auto node: children(xml_node))
 				{
 					std::string_view list_style_name = node.name();
@@ -375,9 +375,9 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 					if (level <= 10 && level > 0)
 					{
 						if (list_style_name == "list-level-style-number")
-							list_style[level - 1] = CommonXMLDocumentParser<safety_level>::number;
+							list_style[level - 1] = common_xml_document_parser<safety_level>::number;
 						else
-							list_style[level - 1] = CommonXMLDocumentParser<safety_level>::bullet;
+							list_style[level - 1] = common_xml_document_parser<safety_level>::bullet;
 					}
 				}
 				children_processed = true;
@@ -386,19 +386,19 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 		}
 
 	void onODFOOXMLList(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-								   ZipReader* zipfile, std::string& text,
+								   zip_reader* zipfile, std::string& text,
 								   bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
 			std::vector<std::string> list_vector;
 			owner().getListDepth()++;
 			std::string header;
-			typename CommonXMLDocumentParser<safety_level>::ODFOOXMLListStyle list_style = CommonXMLDocumentParser<safety_level>::bullet;
+			typename common_xml_document_parser<safety_level>::ODFOOXMLListStyle list_style = common_xml_document_parser<safety_level>::bullet;
 			std::string style_name { attribute_value(xml_node, "style-name").value_or("") };
 			if (owner().getListDepth() <= 10 && !style_name.empty() && owner().getListStyles().find(style_name) != owner().getListStyles().end())
 				list_style = owner().getListStyles()[style_name].at(owner().getListDepth() - 1);
-			std::string list_type = (list_style == CommonXMLDocumentParser<safety_level>::number ? "decimal" : "disc");
-			emit_message(document::List{.type = list_type});
+			std::string list_type = (list_style == common_xml_document_parser<safety_level>::number ? "decimal" : "disc");
+			emit_message(document::list{.type = list_type});
 
 			for (auto node: children(xml_node))
 			{
@@ -409,11 +409,11 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 				}
 				else
 				{
-					emit_message(document::ListItem{});
+					emit_message(document::list_item{});
 					list_vector.push_back(owner().parseXmlChildren(node, mode, zipfile));
 				}
 
-				emit_message(document::CloseListItem{});
+				emit_message(document::close_list_item{});
 			}
 
 			if (header.length() > 0)
@@ -422,12 +422,12 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 				if (list_vector.size() > 0)
 				{
 					text += "\n";
-					emit_message(document::BreakLine{});
+					emit_message(document::break_line{});
 				}
 			}
 			owner().getListDepth()--;
-			emit_message(document::CloseList{});
-			if (list_style == CommonXMLDocumentParser<safety_level>::number)
+			emit_message(document::close_list{});
+			if (list_style == common_xml_document_parser<safety_level>::number)
 				text += formatNumberedList(list_vector);
 			else
 				text += formatList(list_vector);
@@ -435,7 +435,7 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 		}
 
 	void onODFAnnotation(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-									ZipReader* zipfile, std::string& text,
+									zip_reader* zipfile, std::string& text,
 									bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
@@ -457,22 +457,22 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 					owner().activeEmittingSignals(true);
 				}
 			}
-			emit_message(document::Comment{.author = creator, .time = date, .comment = content});
+			emit_message(document::comment{.author = creator, .time = date, .comment = content});
 			text += owner().formatComment(creator, date, content);
 			children_processed = true;
 		}
 
 	void onODFLineBreak(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-								   const ZipReader* zipfile, std::string& text,
+								   const zip_reader* zipfile, std::string& text,
 								   bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
 			text += "\n";
-			emit_message(document::BreakLine{});
+			emit_message(document::break_line{});
 		}
 
 	void onODFHeading(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-								 ZipReader* zipfile, std::string& text,
+								 zip_reader* zipfile, std::string& text,
 								 bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
@@ -481,7 +481,7 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 		}
 
 	void onODFObject(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-								ZipReader* zipfile, std::string& text,
+								zip_reader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
 			log_scope();
@@ -506,7 +506,7 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 		}
 
 	void onOOXMLFldData(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
-								ZipReader* zipfile, std::string& text,
+								zip_reader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		log_scope();
@@ -515,20 +515,20 @@ struct pimpl_impl<CommonXMLDocumentParser<safety_level>> : with_pimpl_owner<Comm
 };
 
 template <safety_policy safety_level>
-void CommonXMLDocumentParser<safety_level>::activeEmittingSignals(bool flag)
+void common_xml_document_parser<safety_level>::activeEmittingSignals(bool flag)
 {
 	log_scope(flag);
 	impl().m_context_stack.top().stop_emit_signals = !flag;
 }
 
 template <safety_policy safety_level>
-void CommonXMLDocumentParser<safety_level>::registerODFOOXMLCommandHandler(const std::string& xml_tag, const CommandHandler& handler)
+void common_xml_document_parser<safety_level>::registerODFOOXMLCommandHandler(const std::string& xml_tag, const CommandHandler& handler)
 {
 	impl().m_command_handlers[xml_tag] = handler;
 }
 
 template <safety_policy safety_level>
-std::string CommonXMLDocumentParser<safety_level>::parseXmlData(xml::children_view<safety_level> xml_nodes, XmlParseMode mode, ZipReader* zipfile)
+std::string common_xml_document_parser<safety_level>::parseXmlData(xml::children_view<safety_level> xml_nodes, XmlParseMode mode, zip_reader* zipfile)
 {
 	log_scope();
 	std::string text;
@@ -562,8 +562,8 @@ std::string CommonXMLDocumentParser<safety_level>::parseXmlData(xml::children_vi
 }
 
 template <safety_policy safety_level>
-std::string CommonXMLDocumentParser<safety_level>::parseXmlChildren(
-  xml::node_ref<safety_level>& xml_node, XmlParseMode mode, ZipReader* zipfile)
+std::string common_xml_document_parser<safety_level>::parseXmlChildren(
+  xml::node_ref<safety_level>& xml_node, XmlParseMode mode, zip_reader* zipfile)
 {
 	log_scope();
 	std::string text;
@@ -572,7 +572,7 @@ std::string CommonXMLDocumentParser<safety_level>::parseXmlChildren(
 }
 
 template <safety_policy safety_level>
-void CommonXMLDocumentParser<safety_level>::extractText(std::string_view xml_contents, XmlParseMode mode, ZipReader* zipfile,
+void common_xml_document_parser<safety_level>::extractText(std::string_view xml_contents, XmlParseMode mode, zip_reader* zipfile,
 	std::string& text)
 {
 	log_scope();
@@ -596,7 +596,7 @@ void CommonXMLDocumentParser<safety_level>::extractText(std::string_view xml_con
 	{
 		if (mode == FIX_XML)
 		{
-			XmlFixer xml_fixer;
+			xml_fixer xml_fixer;
 			std::string fixed_xml = xml_fixer.fix(std::string{xml_contents});
 			xml::reader<safety_level> reader(std::move(fixed_xml), blanks());
 			text = parseXmlData(children(reader), mode, zipfile);
@@ -614,7 +614,7 @@ void CommonXMLDocumentParser<safety_level>::extractText(std::string_view xml_con
 }
 
 template <safety_policy safety_level>
-void CommonXMLDocumentParser<safety_level>::parseODFMetadata(std::string_view xml_content, attributes::Metadata& metadata) const
+void common_xml_document_parser<safety_level>::parseODFMetadata(std::string_view xml_content, attributes::metadata& metadata) const
 {
 	log_scope();
 	try
@@ -654,7 +654,7 @@ void CommonXMLDocumentParser<safety_level>::parseODFMetadata(std::string_view xm
 }
 
 template <safety_policy safety_level>
-const std::string CommonXMLDocumentParser<safety_level>::formatComment(const std::string& author, const std::string& time, const std::string& text)
+const std::string common_xml_document_parser<safety_level>::formatComment(const std::string& author, const std::string& time, const std::string& text)
 {
 	log_scope(author, time, text);
 	std::string comment = "\n[[[COMMENT BY " + author + " (" + time + ")]]]\n" + text;
@@ -665,66 +665,66 @@ const std::string CommonXMLDocumentParser<safety_level>::formatComment(const std
 }
 
 template <safety_policy safety_level>
-size_t& CommonXMLDocumentParser<safety_level>::getListDepth()
+size_t& common_xml_document_parser<safety_level>::getListDepth()
 {
 	return impl().m_context_stack.top().m_list_depth;
 }
 
 template <safety_policy safety_level>
-CommonXMLDocumentParser<safety_level>::ListStyleMap& CommonXMLDocumentParser<safety_level>::getListStyles()
+common_xml_document_parser<safety_level>::ListStyleMap& common_xml_document_parser<safety_level>::getListStyles()
 {
 	return impl().m_context_stack.top().m_list_styles;
 }
 
 template <safety_policy safety_level>
-CommonXMLDocumentParser<safety_level>::CommentMap& CommonXMLDocumentParser<safety_level>::getComments()
+common_xml_document_parser<safety_level>::CommentMap& common_xml_document_parser<safety_level>::getComments()
 {
 	return impl().m_context_stack.top().m_comments;
 }
 
 template <safety_policy safety_level>
-CommonXMLDocumentParser<safety_level>::RelationshipMap& CommonXMLDocumentParser<safety_level>::getRelationships()
+common_xml_document_parser<safety_level>::RelationshipMap& common_xml_document_parser<safety_level>::getRelationships()
 {
 	return impl().m_context_stack.top().m_relationships;
 }
 
 template <safety_policy safety_level>
-CommonXMLDocumentParser<safety_level>::SharedStringVector& CommonXMLDocumentParser<safety_level>::getSharedStrings()
+common_xml_document_parser<safety_level>::SharedStringVector& common_xml_document_parser<safety_level>::getSharedStrings()
 {
 	return impl().m_context_stack.top().m_shared_strings;
 }
 
 template <safety_policy safety_level>
-bool CommonXMLDocumentParser<safety_level>::disabledText() const
+bool common_xml_document_parser<safety_level>::disabledText() const
 {
 	return impl().m_context_stack.top().m_disabled_text;
 }
 
 template <safety_policy safety_level>
-void CommonXMLDocumentParser<safety_level>::disableText(bool disable)
+void common_xml_document_parser<safety_level>::disableText(bool disable)
 {
 	impl().m_context_stack.top().m_disabled_text = disable;
 }
 
 template <safety_policy safety_level>
-void CommonXMLDocumentParser<safety_level>::set_blanks(xml::reader_blanks blanks)
+void common_xml_document_parser<safety_level>::set_blanks(xml::reader_blanks blanks)
 {
 	impl().m_blanks = blanks;
 }
 
 template <safety_policy safety_level>
-CommonXMLDocumentParser<safety_level>::CommonXMLDocumentParser()
+common_xml_document_parser<safety_level>::common_xml_document_parser()
 {
 }
 
 template <safety_policy safety_level>
-xml::reader_blanks CommonXMLDocumentParser<safety_level>::blanks() const
+xml::reader_blanks common_xml_document_parser<safety_level>::blanks() const
 {
 	return impl().m_blanks;
 }
 
 template <safety_policy safety_level>
-CommonXMLDocumentParser<safety_level>::scoped_context_stack_push::scoped_context_stack_push(CommonXMLDocumentParser& parser, const message_callbacks& emit_message)
+common_xml_document_parser<safety_level>::scoped_context_stack_push::scoped_context_stack_push(common_xml_document_parser& parser, const message_callbacks& emit_message)
 	: m_parser{parser}
 {
 	log_scope();
@@ -732,17 +732,17 @@ CommonXMLDocumentParser<safety_level>::scoped_context_stack_push::scoped_context
 }
 
 template <safety_policy safety_level>
-CommonXMLDocumentParser<safety_level>::scoped_context_stack_push::~scoped_context_stack_push()
+common_xml_document_parser<safety_level>::scoped_context_stack_push::~scoped_context_stack_push()
 {
 	log_scope();
 	m_parser.impl().m_context_stack.pop();
 }
 
-template class DOCWIRE_ODF_OOXML_EXPORT CommonXMLDocumentParser<strict>;
-template class DOCWIRE_ODF_OOXML_EXPORT CommonXMLDocumentParser<relaxed>;
+template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<strict>;
+template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<relaxed>;
 
 // These are not required but help static analyzer
-template class pimpl_impl<CommonXMLDocumentParser<strict>>;
-template class pimpl_impl<CommonXMLDocumentParser<relaxed>>;
+template class pimpl_impl<common_xml_document_parser<strict>>;
+template class pimpl_impl<common_xml_document_parser<relaxed>>;
 
 } // namespace docwire

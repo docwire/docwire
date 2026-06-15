@@ -23,15 +23,15 @@ namespace docwire
 using message_transform_func = std::function<continuation(message_ptr, const message_callbacks& emit_message)>;
 
 /**
- * @brief Wraps single function (tag_transform_func) into ChainElement object
+ * @brief Wraps single function (tag_transform_func) into chain_element object
  */
-class DOCWIRE_CORE_EXPORT TransformerFunc : public ChainElement, public with_pimpl<TransformerFunc>
+class DOCWIRE_CORE_EXPORT transformer_func : public chain_element, public with_pimpl<transformer_func>
 {
 public:
   /**
    * @param transformer_function callback function, which will be called in transform().
    */
-  TransformerFunc(message_transform_func transformer_function);
+  transformer_func(message_transform_func transformer_function);
 
 	/**
 	 * @brief Executes transform on the given message.
@@ -47,28 +47,28 @@ public:
   }
 
 private:
-  using with_pimpl<TransformerFunc>::impl;
-  friend pimpl_impl<TransformerFunc>;
+  using with_pimpl<transformer_func>::impl;
+  friend pimpl_impl<transformer_func>;
 };
 
 template <typename T>
 requires (
   std::is_convertible_v<T, message_transform_func> &&
-  !std::is_base_of_v<ChainElement, std::remove_cvref_t<T>>
+  !std::is_base_of_v<chain_element, std::remove_cvref_t<T>>
 )
-ParsingChain operator|(ref_or_owned<ChainElement> element, T func)
+parsing_chain operator|(ref_or_owned<chain_element> element, T func)
 {
-  return element | TransformerFunc{func};
+  return element | transformer_func{func};
 }
 
 template <typename T>
 requires (
   std::is_convertible_v<T, message_transform_func> &&
-  !std::is_base_of_v<ChainElement, std::remove_cvref_t<T>>
+  !std::is_base_of_v<chain_element, std::remove_cvref_t<T>>
 )
-ParsingChain& operator|=(ParsingChain& chain, T func)
+parsing_chain& operator|=(parsing_chain& chain, T func)
 {
-  return chain |= TransformerFunc{func};
+  return chain |= transformer_func{func};
 }
 
 } // namespace docwire

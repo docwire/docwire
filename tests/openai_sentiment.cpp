@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("1.doc") | content_type::detector{} | office_formats_parser{} | PlainTextExporter() | openai::DetectSentiment(environment::get("OPENAI_API_KEY").value()) | std::cout;
+    std::filesystem::path("1.doc") | content_type::detector{} | office_formats_parser{} | plain_text_exporter() | openai::detect_sentiment(environment::get("OPENAI_API_KEY").value()) | std::cout;
   }
   catch (const std::exception& e)
   {

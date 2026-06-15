@@ -16,13 +16,13 @@
 namespace docwire
 {
 
-message_transform_func StandardFilter::filterByFolderName(const std::vector<std::string> &names)
+message_transform_func standard_filter::filterByFolderName(const std::vector<std::string> &names)
 {  
   return [names](message_ptr msg, const message_callbacks& emit_message) -> continuation
   {
-    if (!msg->is<mail::Folder>())
+    if (!msg->is<mail::folder>())
       return emit_message(std::move(msg));
-    auto folder_name = msg->get<mail::Folder>().name;
+    auto folder_name = msg->get<mail::folder>().name;
     if (folder_name)
     {
       if (!std::any_of(names.begin(), names.end(), [&folder_name](const std::string &name){return (*folder_name) == name;}))
@@ -34,15 +34,15 @@ message_transform_func StandardFilter::filterByFolderName(const std::vector<std:
   };
 }
 
-message_transform_func StandardFilter::filterByAttachmentType(const std::vector<file_extension>& types)
+message_transform_func standard_filter::filterByAttachmentType(const std::vector<file_extension>& types)
 {
   return [types](message_ptr msg, const message_callbacks& emit_message) -> continuation
   {
-    if (!msg->is<mail::Attachment>())
+    if (!msg->is<mail::attachment>())
       return emit_message(std::move(msg));
-    if (!msg->is<mail::Attachment>() || !msg->get<mail::Attachment>().extension)
+    if (!msg->is<mail::attachment>() || !msg->get<mail::attachment>().extension)
       return emit_message(std::move(msg));
-    auto attachment_type = msg->get<mail::Attachment>().extension;
+    auto attachment_type = msg->get<mail::attachment>().extension;
     if (attachment_type)
     {
       if (!std::any_of(types.begin(), types.end(), [&attachment_type](const file_extension& type){ return (*attachment_type) == type; }))
@@ -54,13 +54,13 @@ message_transform_func StandardFilter::filterByAttachmentType(const std::vector<
   };
 }
 
-message_transform_func StandardFilter::filterByMailMinCreationTime(unsigned int min_time)
+message_transform_func standard_filter::filterByMailMinCreationTime(unsigned int min_time)
 {
   return [min_time](message_ptr msg, const message_callbacks& emit_message) -> continuation
   {
-	  if (!msg->is<mail::Mail>())
+	  if (!msg->is<mail::mail>())
 		  return emit_message(std::move(msg));
-	  auto mail_creation_time = msg->get<mail::Mail>().date;
+	  auto mail_creation_time = msg->get<mail::mail>().date;
 	  if (mail_creation_time)
 	  {
 		  if (*mail_creation_time < min_time)
@@ -72,13 +72,13 @@ message_transform_func StandardFilter::filterByMailMinCreationTime(unsigned int 
   };
 }
 
-message_transform_func StandardFilter::filterByMailMaxCreationTime(unsigned int max_time)
+message_transform_func standard_filter::filterByMailMaxCreationTime(unsigned int max_time)
 {
 	return [max_time](message_ptr msg, const message_callbacks& emit_message) -> continuation
 	{
-		if (!msg->is<mail::Mail>())
+		if (!msg->is<mail::mail>())
 			return emit_message(std::move(msg));
-		auto mail_creation_time = msg->get<mail::Mail>().date;
+		auto mail_creation_time = msg->get<mail::mail>().date;
 		if (mail_creation_time)
 		{
 			if (*mail_creation_time > max_time)
@@ -90,7 +90,7 @@ message_transform_func StandardFilter::filterByMailMaxCreationTime(unsigned int 
 	};
 }
 
-message_transform_func StandardFilter::filterByMaxNodeNumber(unsigned int max_nodes_arg)
+message_transform_func standard_filter::filterByMaxNodeNumber(unsigned int max_nodes_arg)
 {
   return [max_nodes = max_nodes_arg, node_no = 0](message_ptr msg, const message_callbacks& emit_message) mutable -> continuation
   {

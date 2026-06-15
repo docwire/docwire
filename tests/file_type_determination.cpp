@@ -27,7 +27,7 @@ int main()
       confidence::high
     } |
     office_formats_parser{} | // more parsers can be added
-    PlainTextExporter() | out_stream;
+    plain_text_exporter() | out_stream;
     ensure(out_stream.str()) == expected_output_1;
     out_stream.str("");
 
@@ -39,7 +39,7 @@ int main()
     } |
     content_type::by_file_extension::detector{} |
     office_formats_parser{} | // more parsers can be added
-    PlainTextExporter() | out_stream;
+    plain_text_exporter() | out_stream;
     ensure(out_stream.str()) == expected_output_1;
     out_stream.str("");
 
@@ -47,7 +47,7 @@ int main()
     std::filesystem::path{"data_processing_definition.doc"} |
     content_type::by_file_extension::detector{} |
     office_formats_parser{} | // more parsers can be added
-    PlainTextExporter() | out_stream;
+    plain_text_exporter() | out_stream;
     ensure(out_stream.str()) == expected_output_1;
     out_stream.str("");
 
@@ -75,7 +75,7 @@ int main()
       return emit_message(std::move(msg));
     } |
     office_formats_parser{} | // more parsers can be added
-    PlainTextExporter() | out_stream;
+    plain_text_exporter() | out_stream;
     ensure(out_stream.str()) == expected_output_2;
     out_stream.str("");
     
@@ -83,8 +83,8 @@ int main()
     std::filesystem::path{"test.zip"} |
     content_type::detector{} |
     archives_parser{} |
-    DOCParser{} | // other formats will be skipped
-    PlainTextExporter() | out_stream;
+    doc_parser{} | // other formats will be skipped
+    plain_text_exporter() | out_stream;
     ensure(out_stream.str()) == expected_output_2;
   }
   catch (const std::exception& e)

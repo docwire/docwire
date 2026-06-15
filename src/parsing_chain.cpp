@@ -20,31 +20,31 @@ namespace docwire
 {
 
 template<>
-struct pimpl_impl<ParsingChain> : with_pimpl_owner<ParsingChain>
+struct pimpl_impl<parsing_chain> : with_pimpl_owner<parsing_chain>
 {
-  pimpl_impl(ParsingChain& owner, ref_or_owned<ChainElement> lhs_element, ref_or_owned<ChainElement> rhs_element)
+  pimpl_impl(parsing_chain& owner, ref_or_owned<chain_element> lhs_element, ref_or_owned<chain_element> rhs_element)
     : with_pimpl_owner{owner}, m_lhs_element{lhs_element}, m_rhs_element{rhs_element}
   {}
 
-  ref_or_owned<ChainElement> m_lhs_element;
-  ref_or_owned<ChainElement> m_rhs_element;
+  ref_or_owned<chain_element> m_lhs_element;
+  ref_or_owned<chain_element> m_rhs_element;
 };
 
-ParsingChain::ParsingChain(ref_or_owned<ChainElement> lhs_element, ref_or_owned<ChainElement> rhs_element)
-: with_pimpl<ParsingChain>(lhs_element, rhs_element)
+parsing_chain::parsing_chain(ref_or_owned<chain_element> lhs_element, ref_or_owned<chain_element> rhs_element)
+: with_pimpl<parsing_chain>(lhs_element, rhs_element)
 {}
 
-ParsingChain::ParsingChain(ParsingChain&& other)
-  : with_pimpl<ParsingChain>(std::move(static_cast<with_pimpl<ParsingChain>&>(other)))
+parsing_chain::parsing_chain(parsing_chain&& other)
+  : with_pimpl<parsing_chain>(std::move(static_cast<with_pimpl<parsing_chain>&>(other)))
 {}
 
-ParsingChain& ParsingChain::operator=(ParsingChain&& other)
+parsing_chain& parsing_chain::operator=(parsing_chain&& other)
 {
-  with_pimpl<ParsingChain>::operator=(std::move(static_cast<with_pimpl<ParsingChain>&>(other)));
+  with_pimpl<parsing_chain>::operator=(std::move(static_cast<with_pimpl<parsing_chain>&>(other)));
   return *this;
 }
 
-void ParsingChain::operator()(message_ptr msg)
+void parsing_chain::operator()(message_ptr msg)
 {
   log_scope(msg);
   operator()(std::move(msg),
@@ -63,7 +63,7 @@ void ParsingChain::operator()(message_ptr msg)
   });
 }
 
-continuation ParsingChain::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation parsing_chain::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
   log_scope(msg);
   auto lhs_callback = [this, &rhs_callbacks = emit_message](message_ptr msg)
@@ -82,24 +82,24 @@ continuation ParsingChain::operator()(message_ptr msg, const message_callbacks& 
     });
 }
 
-bool ParsingChain::is_leaf() const
+bool parsing_chain::is_leaf() const
 {
   return impl().m_rhs_element.get().is_leaf();
 }
 
-bool ParsingChain::is_generator() const
+bool parsing_chain::is_generator() const
 {
   return impl().m_lhs_element.get().is_generator();
 }
 
-bool ParsingChain::is_complete() const
+bool parsing_chain::is_complete() const
 {
   return is_generator() && is_leaf();
 }
 
-ParsingChain operator|(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement> rhs)
+parsing_chain operator|(ref_or_owned<chain_element> lhs, ref_or_owned<chain_element> rhs)
 {
-  ParsingChain chain{lhs, rhs};
+  parsing_chain chain{lhs, rhs};
   if (chain.is_complete())
   {
     chain(std::make_shared<message<pipeline::start_processing>>(pipeline::start_processing{}));

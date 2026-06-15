@@ -156,19 +156,19 @@ const std::vector<mime_type> supported_mime_types =
 	mime_type{"application/pdf"}
 };
 
-using PageElementVariant = std::variant<document::Text, document::Image>;
+using page_element_variant = std::variant<document::text, document::image>;
 
 // Helper to get a characteristic height for an element, prioritizing font_size for text.
-double get_element_characteristic_height(const PageElementVariant& element_variant) {
+double get_element_characteristic_height(const page_element_variant& element_variant) {
     return std::visit([](const auto& el) -> double {
         double h = 10.0; // Default height if no other info
-        if constexpr (std::is_same_v<std::decay_t<decltype(el)>, document::Text>) {
+        if constexpr (std::is_same_v<std::decay_t<decltype(el)>, document::text>) {
             if (el.font_size && *el.font_size > 0) {
                 h = *el.font_size; // Prioritize font_size for text
             } else if (el.position.height && *el.position.height > 0) {
                 h = *el.position.height;
             }
-        } else if constexpr (std::is_same_v<std::decay_t<decltype(el)>, document::Image>) {
+        } else if constexpr (std::is_same_v<std::decay_t<decltype(el)>, document::image>) {
             if (el.position.height && *el.position.height > 0) {
                 h = *el.position.height;
             }
@@ -177,9 +177,9 @@ double get_element_characteristic_height(const PageElementVariant& element_varia
     }, element_variant);
 }
 
-struct PageElementVariantComparator
+struct page_element_variant_comparator
 {
-	bool operator()(const PageElementVariant& lhs, const PageElementVariant& rhs) const
+	bool operator()(const page_element_variant& lhs, const page_element_variant& rhs) const
 	{
 		auto get_y = [](const auto& el) -> std::optional<double> {
 			return el.position.y;
@@ -229,7 +229,7 @@ bool begins_with_whitespace(const std::string& s) {
 } // anonymous namespace
 	
 template<>
-struct pimpl_impl<PDFParser> : pimpl_impl_base
+struct pimpl_impl<pdf_parser> : pimpl_impl_base
 {
 	std::stack<context> m_context_stack;
 
@@ -259,7 +259,7 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 		for (size_t page_num = 0; page_num < page_count; page_num++)
 		{
 			log_scope(page_num);
-			auto response = emit_message(document::Page{});
+			auto response = emit_message(document::page{});
 			if (response == continuation::skip)
 			{
 				continue;
@@ -270,7 +270,7 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 			}
 			try
 			{
-				std::multiset<PageElementVariant, PageElementVariantComparator> page_elements;
+				std::multiset<page_element_variant, page_element_variant_comparator> page_elements;
 				ScopedFPDFPage page { FPDF_LoadPage(pdf_document(), page_num) };
 				throw_if(!page);
 				// text_page is only needed for FPDFTextObj_GetText, so load it if/when a text object is found.
@@ -322,7 +322,7 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 									font_size_val = 10.0f; // Default if not found
 								}
     						}
-							page_elements.insert(document::Text{
+							page_elements.insert(document::text{
 								.text = utf8_text,
 								.position = {
 									.x = std::optional<double>{static_cast<double>(left)},
@@ -368,7 +368,7 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 
 							float left, bottom, right, top;
 							throw_if(!FPDFPageObj_GetBounds(object, &left, &bottom, &right, &top));
-							page_elements.insert(document::Image{
+							page_elements.insert(document::image{
                                 .source = std::move(image_source),
                                 .alt = std::nullopt, // PDFium does not easily provide this for FPDF_PAGEOBJ_IMAGE
                                 .position = {
@@ -393,7 +393,7 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 				if (stop_processing)
 					break;
 
-				const PageElementVariant* prev_element_variant = nullptr;
+				const page_element_variant* prev_element_variant = nullptr;
 				for (const auto& element : page_elements)
 				{
 					if (prev_element_variant)
@@ -418,13 +418,13 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 										// Helper to determine a reasonable space threshold based on element properties
 										auto get_space_threshold = [](const auto& el) -> double {
 											double threshold_val = 2.0; // Default small threshold if other properties are missing
-											if constexpr (std::is_same_v<std::decay_t<decltype(el)>, document::Text>) {
+											if constexpr (std::is_same_v<std::decay_t<decltype(el)>, document::text>) {
 												if (el.font_size && *el.font_size > 0) {
 													threshold_val = *el.font_size / 3.5; // Approx 1/3.5 of font size
 												} else if (el.position.height && *el.position.height > 0) {
 													threshold_val = *el.position.height / 3.0; // Approx 1/3 of height as fallback
 												}
-											} else if constexpr (std::is_same_v<std::decay_t<decltype(el)>, document::Image>) {
+											} else if constexpr (std::is_same_v<std::decay_t<decltype(el)>, document::image>) {
 												if (el.position.height && *el.position.height > 0) {
 													threshold_val = *el.position.height / 4.0; // Heuristic for images
 												}
@@ -434,10 +434,10 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 
 										auto get_effective_line_height = [](const auto& el) -> double {
 											double h = 10.0; // Default height
-											if constexpr (std::is_same_v<std::decay_t<decltype(el)>, document::Text>) {
+											if constexpr (std::is_same_v<std::decay_t<decltype(el)>, document::text>) {
 												if (el.font_size && *el.font_size > 0) h = *el.font_size;
 												else if (el.position.height && *el.position.height > 0) h = *el.position.height;
-											} else if constexpr (std::is_same_v<std::decay_t<decltype(el)>, document::Image>) {
+											} else if constexpr (std::is_same_v<std::decay_t<decltype(el)>, document::image>) {
 												if (el.position.height && *el.position.height > 0) h = *el.position.height;
 											}
 											return std::max(1.0, h); // Ensure at least 1.0
@@ -454,13 +454,13 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 											int num_newlines_to_emit = static_cast<int>(std::round(y_diff / max_relevant_line_height));
 											if (num_newlines_to_emit < 1) num_newlines_to_emit = 1;
 											for (int k = 0; k < num_newlines_to_emit; ++k) {
-												if (emit_message(document::BreakLine{}) == continuation::stop) { stop_processing = true; break; }
+												if (emit_message(document::break_line{}) == continuation::stop) { stop_processing = true; break; }
 											}
 										} else if (*current_el_concrete.position.x < *prev_el_concrete.position.x && std::abs(y_diff) < single_newline_threshold) {
-											if (emit_message(document::BreakLine{}) == continuation::stop) { stop_processing = true; }
-										} else if (std::holds_alternative<document::Text>(*prev_element_variant) && std::holds_alternative<document::Text>(element)) {
-											const auto& prev_text_el = std::get<document::Text>(*prev_element_variant);
-											const auto& current_text_el = std::get<document::Text>(element);
+											if (emit_message(document::break_line{}) == continuation::stop) { stop_processing = true; }
+										} else if (std::holds_alternative<document::text>(*prev_element_variant) && std::holds_alternative<document::text>(element)) {
+											const auto& prev_text_el = std::get<document::text>(*prev_element_variant);
+											const auto& current_text_el = std::get<document::text>(element);
 											// Ensure necessary fields have values
 											if (!prev_text_el.position.x || !prev_text_el.position.width || !current_text_el.position.x) return;
 
@@ -469,7 +469,7 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 											if (x_gap > space_threshold &&
 												!ends_with_whitespace(prev_text_el.text) &&
 												!begins_with_whitespace(current_text_el.text)) {
-												if (emit_message(document::Text{" "}) == continuation::stop) { stop_processing = true; }
+												if (emit_message(document::text{" "}) == continuation::stop) { stop_processing = true; }
 											}
 										} else if (prev_element_variant->index() != element.index() && std::abs(y_diff) < single_newline_threshold) {
 											// Different types (Text and Image) on the same visual line
@@ -484,21 +484,21 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 											if (x_gap > space_threshold) {
 												bool add_space_flag = true;
 												// Check if previous element is Text and ends with space
-												if constexpr (std::is_same_v<std::decay_t<decltype(prev_el_concrete)>, document::Text>) {
+												if constexpr (std::is_same_v<std::decay_t<decltype(prev_el_concrete)>, document::text>) {
 													if (ends_with_whitespace(prev_el_concrete.text)) {
 														add_space_flag = false;
 													}
 												}
 												// Check if current element is Text and begins with space (only if not already forbidden)
 												if (add_space_flag) {
-													if constexpr (std::is_same_v<std::decay_t<decltype(current_el_concrete)>, document::Text>) {
+													if constexpr (std::is_same_v<std::decay_t<decltype(current_el_concrete)>, document::text>) {
 														if (begins_with_whitespace(current_el_concrete.text)) {
 															add_space_flag = false;
 														}
 													}
 												}
 												if (add_space_flag) {
-													if (emit_message(document::Text{" "}) == continuation::stop) { stop_processing = true; }
+													if (emit_message(document::text{" "}) == continuation::stop) { stop_processing = true; }
 												}
 											}
 										}
@@ -513,7 +513,7 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 					{
 						std::visit([&](auto&& concrete_element) {
 							using T = std::decay_t<decltype(concrete_element)>;
-							if constexpr (std::is_same_v<T, document::Image>)
+							if constexpr (std::is_same_v<T, document::image>)
 							{
 								if (emit_message_back(std::move(concrete_element)) == continuation::stop) stop_processing = true;
 							}
@@ -521,7 +521,7 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 							{
 								if (emit_message(std::move(concrete_element)) == continuation::stop) stop_processing = true;
 							}
-						}, PageElementVariant{element}); // Copy to move from const multiset element
+						}, page_element_variant{element}); // Copy to move from const multiset element
 					}
 					catch (const std::exception&)
 					{
@@ -537,7 +537,7 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 			{
 				emit_message(errors::make_nested_ptr(std::current_exception(), make_error("Failed to process page", page_num)));
 			}
-			auto response2 = emit_message(document::ClosePage{});
+			auto response2 = emit_message(document::close_page{});
 			if (response2 == continuation::stop)
 			{
 				break;
@@ -561,7 +561,7 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 		return utf8_text;
 	}
 
-	void parseMetadata(attributes::Metadata& metadata)
+	void parseMetadata(attributes::metadata& metadata)
 	{
 		log_scope();
 		std::string author_str = get_meta_text("Author");
@@ -638,27 +638,27 @@ struct pimpl_impl<PDFParser> : pimpl_impl_base
 		}
 	}
 
-	attributes::Metadata metaData(const data_source& data);
+	attributes::metadata metaData(const data_source& data);
 	void parse(const data_source& data, const message_callbacks& emit_message);
 };
 
-PDFParser::PDFParser() = default;
+pdf_parser::pdf_parser() = default;
 
-attributes::Metadata pimpl_impl<PDFParser>::metaData(const data_source& data)
+attributes::metadata pimpl_impl<pdf_parser>::metaData(const data_source& data)
 {
-	attributes::Metadata metadata;
+	attributes::metadata metadata;
 	parseMetadata(metadata);
 	return metadata;
 }
 
-void pimpl_impl<PDFParser>::parse(const data_source& data, const message_callbacks& emit_message)
+void pimpl_impl<pdf_parser>::parse(const data_source& data, const message_callbacks& emit_message)
 {
 	log_scope(data);
 	message_counters counters;
 	auto counting_callbacks = make_counted_message_callbacks(emit_message, counters);
 	scoped::stack_push<context> context_guard{m_context_stack, {.emit_message = counting_callbacks}};
 	loadDocument(data);
-	emit_message(document::Document
+	emit_message(document::document
 		{
 			.metadata = [this, &data]()
 
@@ -669,10 +669,10 @@ void pimpl_impl<PDFParser>::parse(const data_source& data, const message_callbac
 	parseText();
 	if (counters.all_failed())
 		throw make_error("No objects were successfully processed", errors::uninterpretable_data{});
-	emit_message(document::CloseDocument{});
+	emit_message(document::close_document{});
 }
 
-continuation PDFParser::operator()(message_ptr msg, const message_callbacks& emit_message)
+continuation pdf_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));

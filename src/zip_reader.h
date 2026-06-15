@@ -20,11 +20,11 @@
 namespace docwire
 {
 
-class DOCWIRE_CORE_EXPORT ZipReader : public with_pimpl<ZipReader>
+class DOCWIRE_CORE_EXPORT zip_reader : public with_pimpl<zip_reader>
 {
 	public:
-		ZipReader(const data_source& data);
-		~ZipReader();
+		zip_reader(const data_source& data);
+		~zip_reader();
 		void open();
 		bool exists(const std::string& file_name) const;
 		bool read(const std::string& file_name, std::string* contents, int num_of_chars = 0);

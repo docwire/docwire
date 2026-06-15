@@ -25,12 +25,12 @@ namespace pipeline
 struct start_processing {};
 } // namespace pipeline
 
-class DOCWIRE_CORE_EXPORT ParsingChain : public ChainElement, public with_pimpl<ParsingChain>
+class DOCWIRE_CORE_EXPORT parsing_chain : public chain_element, public with_pimpl<parsing_chain>
 {
   public:
-    ParsingChain(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement> rhs);
-    ParsingChain(ParsingChain&& chain);
-    ParsingChain& operator=(ParsingChain&& chain);
+    parsing_chain(ref_or_owned<chain_element> lhs, ref_or_owned<chain_element> rhs);
+    parsing_chain(parsing_chain&& chain);
+    parsing_chain& operator=(parsing_chain&& chain);
 
     void operator()(message_ptr msg);
 
@@ -43,12 +43,12 @@ class DOCWIRE_CORE_EXPORT ParsingChain : public ChainElement, public with_pimpl<
     virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
   private:
-    using with_pimpl<ParsingChain>::impl;
+    using with_pimpl<parsing_chain>::impl;
 };
 
-DOCWIRE_CORE_EXPORT ParsingChain operator|(ref_or_owned<ChainElement> lhs, ref_or_owned<ChainElement> rhs);
+DOCWIRE_CORE_EXPORT parsing_chain operator|(ref_or_owned<chain_element> lhs, ref_or_owned<chain_element> rhs);
 
-inline ParsingChain& operator|=(ParsingChain& lhs, ref_or_owned<ChainElement> rhs)
+inline parsing_chain& operator|=(parsing_chain& lhs, ref_or_owned<chain_element> rhs)
 {
   lhs = std::move(lhs) | rhs;
   return lhs;

@@ -25,147 +25,147 @@ namespace docwire
 namespace document
 {
 
-struct DOCWIRE_CORE_EXPORT Paragraph
+struct DOCWIRE_CORE_EXPORT paragraph
 {
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseParagraph {};
+struct DOCWIRE_CORE_EXPORT close_paragraph {};
 
-struct DOCWIRE_CORE_EXPORT Section
+struct DOCWIRE_CORE_EXPORT section
 {
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseSection {};
+struct DOCWIRE_CORE_EXPORT close_section {};
 
-struct DOCWIRE_CORE_EXPORT Span
+struct DOCWIRE_CORE_EXPORT span
 {
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseSpan {};
+struct DOCWIRE_CORE_EXPORT close_span {};
 
-struct DOCWIRE_CORE_EXPORT BreakLine
+struct DOCWIRE_CORE_EXPORT break_line
 {
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT Bold
+struct DOCWIRE_CORE_EXPORT bold
 {
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseBold {};
+struct DOCWIRE_CORE_EXPORT close_bold {};
 
-struct DOCWIRE_CORE_EXPORT Italic
+struct DOCWIRE_CORE_EXPORT italic
 {
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseItalic {};
+struct DOCWIRE_CORE_EXPORT close_italic {};
 
-struct DOCWIRE_CORE_EXPORT Underline
+struct DOCWIRE_CORE_EXPORT underline
 {
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseUnderline {};
+struct DOCWIRE_CORE_EXPORT close_underline {};
 
-struct DOCWIRE_CORE_EXPORT Table
+struct DOCWIRE_CORE_EXPORT table
 {
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseTable {};
+struct DOCWIRE_CORE_EXPORT close_table {};
 
-struct DOCWIRE_CORE_EXPORT TableRow
+struct DOCWIRE_CORE_EXPORT table_row
 {
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseTableRow {};
+struct DOCWIRE_CORE_EXPORT close_table_row {};
 
-struct DOCWIRE_CORE_EXPORT TableCell
+struct DOCWIRE_CORE_EXPORT table_cell
 {
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseTableCell {};
+struct DOCWIRE_CORE_EXPORT close_table_cell {};
 
-struct DOCWIRE_CORE_EXPORT Caption
+struct DOCWIRE_CORE_EXPORT caption
 {
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseCaption {};
+struct DOCWIRE_CORE_EXPORT close_caption {};
 
-struct DOCWIRE_CORE_EXPORT Text
+struct DOCWIRE_CORE_EXPORT text
 {
   std::string text;
-  attributes::Position position; ///< Positional attributes.
+  attributes::position position; ///< Positional attributes.
   std::optional<double> font_size;    ///< Optional font size of the text.
 };
 
-struct DOCWIRE_CORE_EXPORT Link
+struct DOCWIRE_CORE_EXPORT link
 {
   std::optional<std::string> url;
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseLink {};
+struct DOCWIRE_CORE_EXPORT close_link {};
 
-struct DOCWIRE_CORE_EXPORT Image
+struct DOCWIRE_CORE_EXPORT image
 {
   data_source source;
   std::optional<std::string> alt;     ///< Optional alternative text for the image.
-  attributes::Position position; ///< Positional attributes.
-  attributes::Styling styling;
+  attributes::position position; ///< Positional attributes.
+  attributes::styling styling;
   std::optional<message_sequence_streamer> structured_content_streamer;
 };
 
-struct DOCWIRE_CORE_EXPORT Style
+struct DOCWIRE_CORE_EXPORT style
 {
   std::string css_text;
 };
 
-struct DOCWIRE_CORE_EXPORT List
+struct DOCWIRE_CORE_EXPORT list
 {
   std::string type = "decimal";
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseList {};
+struct DOCWIRE_CORE_EXPORT close_list {};
 
-struct DOCWIRE_CORE_EXPORT ListItem
+struct DOCWIRE_CORE_EXPORT list_item
 {
-  attributes::Styling styling;
+  attributes::styling styling;
 };
 
-struct DOCWIRE_CORE_EXPORT CloseListItem {};
+struct DOCWIRE_CORE_EXPORT close_list_item {};
 
-struct DOCWIRE_CORE_EXPORT Header {};
-struct DOCWIRE_CORE_EXPORT CloseHeader {};
+struct DOCWIRE_CORE_EXPORT header {};
+struct DOCWIRE_CORE_EXPORT close_header {};
 
-struct DOCWIRE_CORE_EXPORT Footer {};
-struct DOCWIRE_CORE_EXPORT CloseFooter {};
+struct DOCWIRE_CORE_EXPORT footer {};
+struct DOCWIRE_CORE_EXPORT close_footer {};
 
-struct DOCWIRE_CORE_EXPORT Comment
+struct DOCWIRE_CORE_EXPORT comment
 {
   std::optional<std::string> author;
   std::optional<std::string> time;
   std::optional<std::string> comment;
 };
 
-struct DOCWIRE_CORE_EXPORT Page { };
-struct DOCWIRE_CORE_EXPORT ClosePage { };
+struct DOCWIRE_CORE_EXPORT page { };
+struct DOCWIRE_CORE_EXPORT close_page { };
 
-struct DOCWIRE_CORE_EXPORT Document
+struct DOCWIRE_CORE_EXPORT document
 {
-  std::function<attributes::Metadata()> metadata = []() { return attributes::Metadata{}; };
+  std::function<attributes::metadata()> metadata = []() { return attributes::metadata{}; };
 };
 
-struct DOCWIRE_CORE_EXPORT CloseDocument { };
+struct DOCWIRE_CORE_EXPORT close_document { };
 
 } // namespace document
 } // namespace docwire
