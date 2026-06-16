@@ -23,7 +23,19 @@ include(ocr.cmake)
 include(mail.cmake)
 include(archives.cmake)
 include(ai.cmake)
-include(local_ai.cmake)
+
+if(DOCWIRE_LOCAL_CT2)
+    include(ai_ct2.cmake)
+endif()
+
+if(DOCWIRE_LLAMA)
+    include(ai_llama.cmake)
+endif()
+
+if(DOCWIRE_LOCAL_CT2 OR DOCWIRE_LLAMA)
+    include(local_ai.cmake)
+endif()
+
 include(fuzzy_match.cmake)
 include(content_type.cmake)
 

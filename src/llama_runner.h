@@ -9,35 +9,34 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#include "local_ai_embed.h"
-#include "ct2_runner.h"
-#include "resource_path.h"
-#include <string>
+#ifndef DOCWIRE_AI_LLAMA_RUNNER_H
+#define DOCWIRE_AI_LLAMA_RUNNER_H
 
-namespace
+#include "ai_runner.h"
+#include "ai_llama_export.h"
+#include "model_inference_config.h"
+#include "pimpl.h"
+
+namespace docwire::ai::llama
+{
+/**
+ * @brief This class is intended to load a Llama model with its correct model path and
+ * respective configuration and run inference on the prompt supplied along with
+ * the model configuration.
+ */
+class DOCWIRE_AI_LLAMA_EXPORT llama_runner : public ai_runner, public with_pimpl<llama_runner>
 {
 
-constexpr std::string_view default_passage_prefix = "passage: ";
-constexpr std::string_view default_query_prefix = "query: ";
+  public:
+    explicit llama_runner(const model_inference_config& config);
 
-std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
-{
-    return std::make_shared<docwire::ai::ct2::ct2_runner>(
-        docwire::resource_path("multilingual-e5-small-ct2-int8"));
-}
+    std::string process(const std::string& input) override;
 
-} // anonymous namespace
+    std::vector<double> embed(const std::string& input) override;
 
-namespace docwire::ai::local::passage
-{
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_passage_prefix})
-{}
-} // namespace docwire::ai::local::passage
+    virtual void unload() override;
+};
 
-namespace docwire::ai::local::query
-{
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_query_prefix})
-{}
-} // namespace docwire::ai::local::query
+} // namespace docwire::ai::llama
+
+#endif

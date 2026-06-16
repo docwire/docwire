@@ -9,35 +9,15 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#include "local_ai_embed.h"
-#include "ct2_runner.h"
-#include "resource_path.h"
-#include <string>
+#include "ai_translate.h"
+#include "model_chain_element.h"
 
-namespace
+namespace docwire::ai
 {
 
-constexpr std::string_view default_passage_prefix = "passage: ";
-constexpr std::string_view default_query_prefix = "query: ";
-
-std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
+translate::translate(const std::string& language, std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime)
+    : model_chain_element(
+          "Your task is to translate every message to " + language + " language.\n\n", runner, lifetime)
 {
-    return std::make_shared<docwire::ai::ct2::ct2_runner>(
-        docwire::resource_path("multilingual-e5-small-ct2-int8"));
 }
-
-} // anonymous namespace
-
-namespace docwire::ai::local::passage
-{
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_passage_prefix})
-{}
-} // namespace docwire::ai::local::passage
-
-namespace docwire::ai::local::query
-{
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_query_prefix})
-{}
-} // namespace docwire::ai::local::query
+} // namespace docwire::ai

@@ -9,35 +9,22 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#include "local_ai_embed.h"
-#include "ct2_runner.h"
-#include "resource_path.h"
-#include <string>
+#ifndef DOCWIRE_LOCAL_AI_TRANSLATE_H
+#define DOCWIRE_LOCAL_AI_TRANSLATE_H
 
-namespace
+#include "ai_translate.h"
+#include "local_ai_export.h"
+
+namespace docwire::ai::local
 {
 
-constexpr std::string_view default_passage_prefix = "passage: ";
-constexpr std::string_view default_query_prefix = "query: ";
-
-std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
+class DOCWIRE_LOCAL_AI_EXPORT translate : public docwire::ai::translate
 {
-    return std::make_shared<docwire::ai::ct2::ct2_runner>(
-        docwire::resource_path("multilingual-e5-small-ct2-int8"));
-}
+  public:
+ 	translate(const std::string& language);
+    explicit translate(const std::string& language, std::shared_ptr<ai_runner> runner);
+};
 
-} // anonymous namespace
+} // namespace docwire::ai::local
 
-namespace docwire::ai::local::passage
-{
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_passage_prefix})
-{}
-} // namespace docwire::ai::local::passage
-
-namespace docwire::ai::local::query
-{
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_query_prefix})
-{}
-} // namespace docwire::ai::local::query
+#endif // DOCWIRE_LOCAL_AI_TRANSLATE_H

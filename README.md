@@ -208,9 +208,13 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Configurable Safety Policies**: The SDK introduces a general concept of safety policies (`strict` vs. `relaxed`) to allow developers to choose between robust error-checking and maximum performance. In `strict` mode, operations are checked for validity (e.g., dereferencing null pointers, out-of-bounds access) and throw exceptions on violation. In `relaxed` mode, these checks are omitted for zero-overhead performance. This feature is currently available for XML-based parsers and will be expanded to other components.
 
-- **Build-in powerful flan-t5-large model**: This state-of-the-art transformer-based model is designed for a wide range of natural language processing tasks, including text translation, question answering, summarization, text generation, and more. It has been trained on a diverse range of data sources and can handle complex linguistic phenomena such as word order, syntax, and semantics. The model's versatility and ability to perform multiple tasks make it a valuable addition to the DocWire SDK, allowing developers to leverage its capabilities for a variety of NLP tasks within their applications. **The build-in model is optimized to run with descent speed on lower-end desktops and mobile devices without GPU acceleration and consuming less than 1 GB of memory**
+- **Llama.cpp Integration**: The SDK integrates seamlessly with llama.cpp, to allow the users of SDK to select a model of their choice and integrate within the workflow using `llama` wrapper provided in the SDK. **Llama.cpp integration comes as an optional feature.**
 
-- **Build-in powerful multilingual-e5-small model**: This powerful and efficient multilingual text embedding model is designed to generate high-quality vector representations (embeddings) for text in over 100 languages. These embeddings are crucial for a wide range of NLP tasks, including semantic search, retrieval-augmented generation (RAG), text clustering, and similarity comparison. The `multilingual-e5-small` model is optimized for performance, making it suitable for applications where both speed and accuracy are important.
+- **Optional powerful IBM Granite 4.0 1B model**: This compact yet capable language model can be installed as an optional feature for a wide range of natural language processing tasks, including text extraction, classification, question answering, summarization, and more. It runs via **llama.cpp** and is optimized for CPU inference on lower-end desktops without GPU acceleration.
+
+- **Flan-t5-large model**: This state-of-the-art transformer-based model is designed for a wide range of natural language processing tasks, including text translation, question answering, summarization, text generation, and more. It has been trained on a diverse range of data sources and can handle complex linguistic phenomena such as word order, syntax, and semantics. The model's versatility and ability to perform multiple tasks make it a valuable addition to the DocWire SDK, allowing developers to leverage its capabilities for a variety of NLP tasks within their applications. **This model is the default model for local AI feature with SDK and is optimized to run with descent speed on lower-end desktops and mobile devices without GPU acceleration and consuming less than 1 GB of memory**
+
+- **Powerful multilingual-e5-small model**: This powerful and efficient multilingual text embedding model is designed to generate high-quality vector representations (embeddings) for text in over 100 languages. These embeddings are crucial for a wide range of NLP tasks, including semantic search, retrieval-augmented generation (RAG), text clustering, and similarity comparison. The `multilingual-e5-small` model is optimized for performance, making it suitable for applications where both speed and accuracy are important. **This model is default model for embedding in the SDK.**
 
 - **Support for running locally more powerful AI models using ctranslate2 technology**: This technology is designed to be highly scalable and efficient on CPU and GPU, enabling efficient deployment of language models on resource-constrained devices. Quantization allows maintaining accuracy with smaller model sizes making it suitable for desktop and mobile applications. Parallel and asynchronous execution enables efficient utilization of hardware resources.
 
@@ -365,7 +369,7 @@ std::filesystem::path("test.zip") | content_type::detector{} | archives_parser{}
 Classify file in any format (Office, PDF, mail, etc) to any categories using build-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | local_ai::model_chain_element("Classify to...: agreement, invoice, report...") | out_stream;
+std::filesystem::path("...") | ... | ai::local::task("Classify to...: agreement, invoice, report...") | out_stream;
 ensure(out_stream.str()) == "report";
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/local_ai_classify_8cpp-example.html)
@@ -381,7 +385,7 @@ ensure(out_stream.str()) == "report\n";
 Translate document in any format (Office, PDF, mail, etc) to other language using build-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | local_ai::model_chain_element("Translate to spanish:\n\n") | out_stream;
+std::filesystem::path("...") | ... | ai::local::translate("spanish") | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "La procesación de datos se refiere a las actividades...")) > 80;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/local_ai_translate_8cpp-example.html)
@@ -397,7 +401,7 @@ ensure(fuzzy_match::ratio(out_stream.str(), "El procesamiento de datos se refier
 Detect sentiment of document in any format (Office, PDF, mail, etc) using build-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | local_ai::model_chain_element("Detect sentiment:\n\n") | out_stream;
+std::filesystem::path("...") | ... | ai::local::task("Detect sentiment:\n\n") | out_stream;
 ensure(out_stream.str()) == "positive";
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/local_ai_sentiment_8cpp-example.html)
@@ -412,7 +416,7 @@ std::filesystem::path("1.doc") | ... | openai::detect_sentiment(...) | std::cout
 Make a summary of document in any format (Office, PDF, mail, etc) using build-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | local_ai::model_chain_element("Write a short summary...") | out_stream;
+std::filesystem::path("...") | ... | ai::local::summarize() | out_stream;
 ensure(out_stream.str()).is_one_of({ "Data processing is the collection, organization, analysis, and interpretation of data to extract useful insights and support decision-making."...
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/local_ai_summary_8cpp-example.html)
@@ -435,7 +439,7 @@ ensure(fuzzy_match::ratio(out_stream.str(), "Data processing involves converting
 Find phrases, objects and events with smart matching in documents in any format (Office, PDF, mail, etc) using build-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | local_ai::model_chain_element("Find sentence about \"data conversion\"...") | out_stream;
+std::filesystem::path("...") | ... | ai::local::task("Find sentence about \"data conversion\"...") | out_stream;
 ensure(out_stream.str()).is_one_of({ "Data processing refers to the activities performed on raw data to convert it into meaningful information."...
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/local_ai_find_8cpp-example.html)
@@ -461,9 +465,9 @@ ensure(out_msgs[0]->get<ai::embedding>().values.size()) == 1536;
 Create embedding for document in any format (Office, PDF, mail, etc) using build-in local AI model, create embeddings for two queries and calculate similarity:
 
 ```cpp
-std::filesystem::path("data_processing_definition.doc") | ... | local_ai::embed(local_ai::embed::e5_passage_prefix) | passage_msgs;
+std::filesystem::path("data_processing_definition.doc") | ... | ai::local::passage::embedder{} | passage_msgs;
 ...
-docwire::data_source{std::string{"What is data processing?"}, ...} | local_ai::embed(local_ai::embed::e5_query_prefix) | similar_query_msgs;
+docwire::data_source{std::string{"What is data processing?"}, ...} | ai::local::query::embedder{} | similar_query_msgs;
 ...
 double sim = cosine_similarity(passage_embedding.values, similar_query_embedding.values);
 ...

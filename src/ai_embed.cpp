@@ -9,49 +9,51 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
-#define DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
-
-#include "local_ai_export.h"
-#include "pimpl.h"
-#include <filesystem>
-#include <vector>
+#include "ai_embed.h"
+#include "ai_elements.h"
+#include "data_source.h"
+#include "error_tags.h"
+#include "log_scope.h"
+#include "serialization_message.h" // IWYU pragma: keep
 #include <string>
+#include "throw_if.h"
+#include <vector>
 
-namespace docwire::local_ai
+namespace docwire
 {
 
-/**
- * @brief Class representing the AI model loaded to memory.
- *
- * Constructor loads model to memory and makes it ready for usage.
- * Destructor frees memory used by model.
- * It is important not to duplicate the object because memory consumption can be high.
- */
-class DOCWIRE_LOCAL_AI_EXPORT model_runner : public with_pimpl<model_runner>
+template <>
+struct pimpl_impl<ai::embed> : pimpl_impl_base
 {
-public:
-    /**
-     * @brief Constructor. Loads model to memory.
-     * @param model_data_path Path to the folder containing model files.
-     */
-    model_runner(const std::filesystem::path& model_data_path);
+    std::shared_ptr<ai::ai_runner> m_model_runner;
+    std::string m_prefix;
 
-    /**
-     * @brief Process input text using the model.
-     * @param input Text to process.
-     * @return Processed text.
-     */
-    std::string process(const std::string& input);
-
-    /**
-     * @brief Create embedding for the input text using the model.
-     * @param input Text to process.
-     * @return Vector of embedding values.
-     */
-    std::vector<double> embed(const std::string& input);
+    pimpl_impl(std::shared_ptr<ai::ai_runner> model_runner, std::string prefix)
+        : m_model_runner(std::move(model_runner)), m_prefix(std::move(prefix))
+    {
+    }
 };
 
-} // namespace docwire::local_ai
+namespace ai
+{
 
-#endif // DOCWIRE_LOCAL_AI_MODEL_RUNNER_H
+embed::embed(std::shared_ptr<ai_runner> model_runner, std::string prefix)
+    : with_pimpl<embed>(std::move(model_runner), std::move(prefix))
+{}
+
+continuation embed::operator()(message_ptr msg, const message_callbacks& emit_message)
+{
+    log_scope(msg);
+    if (!msg->is<data_source>())
+        return emit_message(std::move(msg));
+
+    const data_source& data = msg->get<data_source>();
+    throw_if(!data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}), "Input for ai::embed must be text/plain", errors::program_logic{});
+    std::string data_str = data.string();
+
+    std::string prefixed_input = impl().m_prefix + data_str;
+    std::vector<double> embedding_vector = impl().m_model_runner->embed(prefixed_input);
+    return emit_message(ai::embedding{std::move(embedding_vector)});
+}
+} // namespace ai
+} // namespace docwire

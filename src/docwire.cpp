@@ -8,7 +8,20 @@
 /*                                                                                                                                           */
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
+#include "ai_runner.h"
 
+#include "model_chain_element.h"
+#include "model_inference_config.h"
+#ifdef DOCWIRE_LOCAL_CT2
+#include "ct2_runner.h"
+#endif
+#ifdef DOCWIRE_LLAMA
+#include "llama_runner.h"
+#endif
+#ifdef DOCWIRE_LOCAL_AI
+#include "local_ai_embed.h"
+#include "local_ai_task.h"
+#endif
 #include "ai_elements.h"
 #include <boost/program_options.hpp>
 #include <memory>
@@ -20,7 +33,8 @@
 #include "archives_parser.h"
 #include "detect_sentiment.h"
 #include "embed.h"
-#include "local_ai_embed.h"
+
+
 #include "extract_entities.h"
 #include "extract_keywords.h"
 #include "find.h"
@@ -32,7 +46,6 @@
 #include <magic_enum/magic_enum_iostream.hpp>
 #include "mail_parser.h"
 #include "meta_data_exporter.h"
-#include "model_chain_element.h"
 #include "ocr_parser.h"
 #include "office_formats_parser.h"
 #include "output.h"
@@ -90,7 +103,7 @@ using magic_enum::istream_operators::operator>>;
 using magic_enum::ostream_operators::operator<<;
 
 enum class OutputType { plain_text, html, csv, metadata };
-
+enum class EmbedPrefixType { none, query, passage };
 template<typename T>
 std::string enum_names_str()
 {
@@ -104,6 +117,41 @@ std::string enum_names_str()
 	}
 	return names_str;
 }
+#ifdef DOCWIRE_LOCAL_AI
+static std::shared_ptr<ai::ai_runner>
+create_local_runner(const boost::program_options::variables_map& vm,
+                    const std::string& default_model)
+{
+    if (vm.count("local-ai-model"))
+    {
+        std::string model_path = vm["local-ai-model"].as<std::string>();
+        if (model_path.ends_with(".gguf"))
+        {
+	        #ifdef DOCWIRE_LLAMA
+	            ai::model_inference_config config;
+	            config.model_path = model_path;
+	            config.n_ctx = ai::context_size{4096};
+	            config.n_threads = ai::thread_count{4};
+	            return std::make_shared<ai::llama::llama_runner>(config);
+	        #else
+	            throw std::runtime_error("GGUF model support requires the llama-engine feature");
+	        #endif
+        }
+        #ifdef DOCWIRE_LOCAL_CT2
+        	return std::make_shared<ai::ct2::ct2_runner>(model_path);
+        #else
+        	throw std::runtime_error("CT2 model support requires the ct2-engine feature");
+        #endif
+    }
+    #ifdef DOCWIRE_LOCAL_CT2
+    return std::make_shared<ai::ct2::ct2_runner>(
+        resource_path(default_model)
+    );
+    #else
+    	throw std::runtime_error("Default local AI model requires the ct2-engine feature");
+    #endif
+}
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -117,12 +165,12 @@ int main(int argc, char* argv[])
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("help", "display help message")
-		("version", "display DocWire version")		
+		("version", "display DocWire version")
 		("input-file", po::value<std::string>()->required(), "path to file to process")
 		("output_type", po::value<OutputType>()->default_value(OutputType::plain_text), enum_names_str<OutputType>().c_str())
 		("http-post", po::value<std::string>(), "url to process data via http post")
 		("local-ai-prompt", po::value<std::string>(), "prompt to process text via local AI model")
-		("local-ai-embed", po::value<std::string>()->implicit_value(""), "generate embedding of text via local AI model. Optional argument is a prefix (e.g. \"passage: \" or \"query: \").")
+		("local-ai-embed", po::value<EmbedPrefixType>()->implicit_value(EmbedPrefixType::none), "generate embedding of text via local AI model. Optional argument selects the prefix type: (e.g. \"passage: \" or \"query: \" or \"none: \").")
 		("local-ai-model", po::value<std::string>(), "path to local AI model data (build-in default model is used if not specified)")
 		("openai-chat", po::value<std::string>(), "prompt to process text and images via OpenAI")
 		("openai-extract-entities", "extract entities from text and images via OpenAI")
@@ -378,19 +426,16 @@ int main(int argc, char* argv[])
 				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
 				image_detail);
 	}
-
+	#ifdef DOCWIRE_LOCAL_CT2
 	if (vm.count("local-ai-prompt"))
 	{
 		try
 		{
 			std::string prompt = vm["local-ai-prompt"].as<std::string>();
 
-			auto model_runner = vm.count("local-ai-model") ?
-				std::make_shared<local_ai::model_runner>(vm["local-ai-model"].as<std::string>()) :
-				std::make_shared<local_ai::model_runner>(resource_path("flan-t5-large-ct2-int8"));
-			
+			auto runner = create_local_runner(vm, "flan-t5-large-ct2-int8");
 			chain |=
-				local_ai::model_chain_element(prompt, model_runner);
+				ai::local::task(prompt, runner);
 		}
 		catch(const std::exception& e)
 		{
@@ -403,12 +448,15 @@ int main(int argc, char* argv[])
 	{
 		try
 		{
-			std::string prefix = vm["local-ai-embed"].as<std::string>();
-			auto model_runner = vm.count("local-ai-model") ?
-				std::make_shared<local_ai::model_runner>(vm["local-ai-model"].as<std::string>()) :
-				std::make_shared<local_ai::model_runner>(resource_path("multilingual-e5-small-ct2-int8"));
-			
-			chain |= local_ai::embed(model_runner, prefix);
+			EmbedPrefixType prefix_type = vm["local-ai-embed"].as<EmbedPrefixType>();
+			if (prefix_type == EmbedPrefixType::query)
+			{
+				chain |= ai::local::query::embedder();
+			} else if (prefix_type == EmbedPrefixType::passage) {
+          		chain |= ai::local::passage::embedder();
+	        } else {
+           		chain |= ai::local::passage::embedder();
+           	}
 			chain |= [](message_ptr msg, const message_callbacks& emit_message) -> continuation {
 				if (msg->is<ai::embedding>())
 				{
@@ -432,6 +480,16 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 	}
+	#else
+	if (vm.count("local-ai-prompt") || vm.count("local-ai-embed"))
+	{
+		std::cerr << "Error: Local AI features requested, but this build does not include "
+		             "DOCWIRE_LOCAL_CT2 support.\n"
+		             "Rebuild with DOCWIRE_LOCAL_CT2 enabled to use --local-ai-prompt or "
+		             "--local-ai-embed." << std::endl;
+		return 1;
+	}
+	#endif
 
 	if (vm.count("openai-find"))
 	{

@@ -33,7 +33,7 @@ double cosine_similarity(const std::vector<double>& a, const std::vector<double>
 
   // Use a practical epsilon for the squared norm to check for zero vectors.
   // This threshold is aligned with the one used for L2 normalization in
-  // model_runner.cpp (1e-6f). The squared value is 1e-12.
+  // ct2_runner.cpp (1e-6f). The squared value is 1e-12.
   // Returning 0.0 is a common and practical approach, implying orthogonality.
   constexpr double zero_vector_threshold_sq = 1e-12;
   if (norm_a < zero_vector_threshold_sq || norm_b < zero_vector_threshold_sq)

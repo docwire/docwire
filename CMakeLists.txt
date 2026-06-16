@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.17)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for VSCode CLangd extension
 
+option(DOCWIRE_LOCAL_CT2 "Enable local AI (Translation / Text Generation / Embedding models)" OFF)
+option(DOCWIRE_LLAMA    "Enable llama.cpp engine" OFF)
+
 # Get version from ChangeLog.md and store it in DOCWIRE_VERSION and SIMPLE_DOCWIRE_VERSION
 function(extract_version)
 	file(READ "${CMAKE_CURRENT_SOURCE_DIR}/doc/ChangeLog.md" changelog_text)
