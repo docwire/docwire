@@ -82,24 +82,37 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 		}
 	}
 
-	mime_type mime_type_from_mime_entity(const mime& mime_entity) const
+	class mime_wrapper : public mailio::mime
+	{
+		public:
+			const content_type_t& content_type() const
+			{
+				return const_cast<mime_wrapper*>(this)->mime::content_type();
+			}
+
+			using mailio::mime::mime_type_as_str;
+	};
+
+	static mime::content_type_t content_type_from_mime_entity(const mime& mime_entity)
 	{
 		log_scope();
-		class mime_wrapper : public mailio::mime
-		{
-		public:
-			mime_type get_mime_type() const
-			{
-				return mime_type { mime_type_as_str(content_type().type) + "/" + content_type().subtype };
-			}
-		};
-		return static_cast<const mime_wrapper&>(mime_entity).get_mime_type();
+		// Intentional non-polymorphic downcast hack to access 3rd-party protected member
+		return static_cast<const mime_wrapper&>(mime_entity).content_type();
+	}
+
+	static mime_type mime_type_from_mime_entity(const mime& mime_entity)
+	{
+		log_scope();
+		const mime::content_type_t& ct = content_type_from_mime_entity(mime_entity);
+		// Intentional non-polymorphic downcast hack to access 3rd-party protected member
+		return mime_type{ static_cast<const mime_wrapper&>(mime_entity).mime_type_as_str(ct.media_type()) + "/" + ct.media_subtype() };
 	}
 
 	void extractPlainText(const mime& mime_entity)
 	{
-		log_scope(std::string(mime_entity.name()), mime_entity.boundary(), mime_type_from_mime_entity(mime_entity));
-		if (mime_entity.content_type().type == mime::media_type_t::TEXT && (mime_entity.content_disposition() != mime::content_disposition_t::ATTACHMENT || std::string(mime_entity.name()).empty()))
+		const mime::content_type_t& ct = content_type_from_mime_entity(mime_entity);
+		log_scope(std::string(mime_entity.name()), ct.boundary(), mime_type_from_mime_entity(mime_entity));
+		if (ct.media_type() == mime::media_type_t::TEXT && (mime_entity.content_disposition() != mime::content_disposition_t::ATTACHMENT || std::string(mime_entity.name()).empty()))
 		{
 			log_scope();
 			std::string plain = mime_entity.content();
@@ -107,13 +120,13 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 			plain.erase(std::remove(plain.begin(), plain.end(), '\r'), plain.end());
 
 			bool skip_charset_decoding = false;
-			if (!mime_entity.content_type().charset.empty())
+			if (!ct.charset().empty())
 			{
 				log_scope();
-				convertToUtf8(mime_entity.content_type().charset, plain);
+				convertToUtf8(ct.charset(), plain);
 				skip_charset_decoding = true;
 			}
-			if (mime_entity.content_type().subtype == "html" || mime_entity.content_type().subtype == "xhtml")
+			if (ct.media_subtype() == "html" || ct.media_subtype() == "xhtml")
 			{
 				log_scope();
 				try
@@ -148,7 +161,7 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 				}
 			}
 		}
-		else if (mime_entity.content_type().type != mime::media_type_t::MULTIPART)
+		else if (ct.media_type() != mime::media_type_t::MULTIPART)
 		{
 			log_scope();
 			std::string plain = mime_entity.content();
@@ -178,14 +191,15 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 			emit_message(mail::close_attachment{});
 		}
 
-		if (mime_entity.content_type().subtype == "alternative")
+		if (ct.media_subtype() == "alternative")
 		{
 			log_scope();
 			const auto& parts = mime_entity.parts();
 
 			auto is_body_text = [](const mime& m, const std::vector<std::string>& subtypes) {
-				if (m.content_type().type != mime::media_type_t::TEXT) return false;
-				if (std::find(subtypes.begin(), subtypes.end(), m.content_type().subtype) == subtypes.end()) return false;
+				const mime::content_type_t& ct = content_type_from_mime_entity(m);
+				if (ct.media_type() != mime::media_type_t::TEXT) return false;
+				if (std::find(subtypes.begin(), subtypes.end(), ct.media_subtype()) == subtypes.end()) return false;
 				if (m.content().empty()) return false;
 				// Ensure it's not a named attachment, matching logic at the start of extractPlainText
 				if (m.content_disposition() == mime::content_disposition_t::ATTACHMENT && !std::string(m.name()).empty()) return false;
@@ -195,7 +209,8 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 			auto is_html_branch = [&](const mime& m) {
 				if (is_body_text(m, {"html", "xhtml"})) return true;
 				// Check for multipart/related wrapping the HTML
-				if (m.content_type().type == mime::media_type_t::MULTIPART && m.content_type().subtype == "related" && !m.parts().empty())
+				const mime::content_type_t& ct = content_type_from_mime_entity(m);
+				if (ct.media_type() == mime::media_type_t::MULTIPART && ct.media_subtype() == "related" && !m.parts().empty())
 					return is_body_text(m.parts()[0], {"html", "xhtml"});
 				return false;
 			};
@@ -321,10 +336,10 @@ private:
 		{
 			flush_header();
 			m_in_headers = false;
-			if (m_current_header_parser.content_type().type == mailio::mime::media_type_t::MULTIPART &&
-				!m_current_header_parser.boundary().empty())
+			const auto& ct = m_current_header_parser.content_type();
+			if (ct.media_type() == mailio::mime::media_type_t::MULTIPART && !ct.boundary().empty())
 			{
-				m_boundaries.push_back(m_current_header_parser.boundary());
+				m_boundaries.push_back(ct.boundary());
 			}
 			m_current_header_parser = header_parser{};
 			m_current_header_accumulator.clear();
