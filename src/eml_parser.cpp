@@ -93,7 +93,7 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 			using mailio::mime::mime_type_as_str;
 	};
 
-	static mime::content_type_t content_type_from_mime_entity(const mime& mime_entity)
+	static const mime::content_type_t& content_type_from_mime_entity(const mime& mime_entity)
 	{
 		log_scope();
 		// Intentional non-polymorphic downcast hack to access 3rd-party protected member
