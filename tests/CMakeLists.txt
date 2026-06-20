@@ -297,6 +297,14 @@ if(TARGET docwire_ai_llama)
 	    docwire_fuzzy_match
 	    docwire_http
     )
+
+    docwire_find_resource(GRANITE_MODEL_FULL_PATH REL_PATH "granite-4-1b-q8-0/granite-4.0-1b-Q8_0.gguf")
+    if(GRANITE_MODEL_FULL_PATH)
+        docwire_target_resources(local_ai_llama_integration "granite-4-1b-q8-0/granite-4.0-1b-Q8_0.gguf" SOURCE "${GRANITE_MODEL_FULL_PATH}")
+        docwire_deploy_resources(TARGETS local_ai_llama_integration)
+    else()
+        message(STATUS "Granite model not found (llama-granite feature not selected); local_ai_llama_integration will skip model loading at runtime.")
+    endif()
     add_test(NAME local_ai_llama_integration COMMAND local_ai_llama_integration)
     set_property(TEST local_ai_llama_integration PROPERTY LABELS "is_example;uses_model_runner")
 endif()
