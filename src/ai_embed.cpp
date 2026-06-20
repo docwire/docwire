@@ -28,7 +28,7 @@ struct pimpl_impl<ai::embed> : pimpl_impl_base
     std::shared_ptr<ai::ai_runner> m_model_runner;
     std::string m_prefix;
 
-    pimpl_impl(std::shared_ptr<ai::ai_runner> model_runner, std::string prefix)
+    pimpl_impl(not_null<std::shared_ptr<ai::ai_runner>> model_runner, std::string prefix)
         : m_model_runner(std::move(model_runner)), m_prefix(std::move(prefix))
     {
     }
@@ -37,7 +37,7 @@ struct pimpl_impl<ai::embed> : pimpl_impl_base
 namespace ai
 {
 
-embed::embed(std::shared_ptr<ai_runner> model_runner, std::string prefix)
+embed::embed(not_null<std::shared_ptr<ai_runner>> model_runner, std::string prefix)
     : with_pimpl<embed>(std::move(model_runner), std::move(prefix))
 {}
 

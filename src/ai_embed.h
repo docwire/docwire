@@ -15,6 +15,7 @@
 #include "ai_export.h"
 #include "ai_runner.h"
 #include "chain_element.h"
+#include "not_null.h"
 #include "pimpl.h"
 
 namespace docwire::ai
@@ -29,7 +30,7 @@ class DOCWIRE_AI_EXPORT embed : public chain_element, public with_pimpl<embed>
      * @param ai_runner The model runner to use for generating embeddings.
      * @param prefix The string to prepend to the input text. Use an empty string for no prefix.
      */
-    explicit embed(std::shared_ptr<ai_runner> model_runner, std::string prefix);
+    explicit embed(not_null<std::shared_ptr<ai_runner>> model_runner, std::string prefix);
     continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
     bool is_leaf() const override { return false; }
 
