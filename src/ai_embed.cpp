@@ -25,7 +25,7 @@ namespace docwire
 template <>
 struct pimpl_impl<ai::embed> : pimpl_impl_base
 {
-    std::shared_ptr<ai::ai_runner> m_model_runner;
+    not_null<std::shared_ptr<ai::ai_runner>> m_model_runner;
     std::string m_prefix;
 
     pimpl_impl(not_null<std::shared_ptr<ai::ai_runner>> model_runner, std::string prefix)
