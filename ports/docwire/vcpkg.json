@@ -29,7 +29,7 @@
 		{
 			"description": "Enable valgrind callgrind in automatic tests"
 		},
-		"local-ai":
+		"local-ai-ct2":
 		{
 			"description": "Enable local AI runtime",
 			"dependencies": [
@@ -43,7 +43,7 @@
 		{
 			"description": "Enable GGUF-based LLM inference (llama.cpp)",
 			"dependencies": [
-			{ "name": "docwire", "features": ["local-ai"] },
+			{ "name": "docwire", "features": ["local-ai-ct2"] },
 			"llama-cpp"
 			]
 		},

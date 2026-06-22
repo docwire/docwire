@@ -24,7 +24,7 @@ include(mail.cmake)
 include(archives.cmake)
 include(ai.cmake)
 
-if(DOCWIRE_LOCAL_CT2)
+if(DOCWIRE_CT2)
     include(ai_ct2.cmake)
 endif()
 
@@ -32,7 +32,7 @@ if(DOCWIRE_LLAMA)
     include(ai_llama.cmake)
 endif()
 
-if(DOCWIRE_LOCAL_CT2 OR DOCWIRE_LLAMA)
+if(DOCWIRE_CT2 OR DOCWIRE_LLAMA)
     include(local_ai.cmake)
 endif()
 

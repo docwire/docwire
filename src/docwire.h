@@ -19,7 +19,7 @@
 #include "ai_embed.h"
 #include "ai_task.h"
 #include "model_chain_element.h"
-#ifdef DOCWIRE_LOCAL_CT2
+#ifdef DOCWIRE_CT2
 #include "ct2_runner.h"
 #endif
 #ifdef DOCWIRE_LLAMA
