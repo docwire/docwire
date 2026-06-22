@@ -140,7 +140,7 @@ create_local_runner(const boost::program_options::variables_map& vm,
         #ifdef DOCWIRE_CT2
         	return std::make_shared<ai::ct2::ct2_runner>(model_path);
         #else
-        	throw std::runtime_error("CT2 model support requires the ct2-engine feature");
+        	throw std::runtime_error("CT2 model support requires the local-ai-ct2 feature");
         #endif
     }
     #ifdef DOCWIRE_CT2
@@ -148,7 +148,7 @@ create_local_runner(const boost::program_options::variables_map& vm,
         resource_path(default_model)
     );
     #else
-    	throw std::runtime_error("Default local AI model requires the ct2-engine feature");
+    	throw std::runtime_error("Default local AI model requires the local-ai-ct2 feature");
     #endif
 }
 #endif
