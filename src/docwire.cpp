@@ -134,7 +134,7 @@ create_local_runner(const boost::program_options::variables_map& vm,
 	            config.n_threads = ai::thread_count{4};
 	            return std::make_shared<ai::llama::llama_runner>(config);
 	        #else
-	            throw std::runtime_error("GGUF model support requires the llama-engine feature");
+	            throw std::runtime_error("GGUF model support requires the local-ai-llama feature");
 	        #endif
         }
         #ifdef DOCWIRE_CT2

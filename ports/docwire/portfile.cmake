@@ -14,7 +14,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 		tsan THREAD_SANITIZER
 		helgrind HELGRIND_ENABLED
 		local-ai-ct2 DOCWIRE_CT2
-        llama-engine DOCWIRE_LLAMA
+        local-ai-llama DOCWIRE_LLAMA
 )
 
 if(DEFINED ENV{CMAKE_MESSAGE_LOG_LEVEL})
