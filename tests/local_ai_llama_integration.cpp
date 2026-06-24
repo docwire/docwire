@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
 
   std::filesystem::path model_path;
   try {
-    model_path = resource_path("../models/granite-4.0-1b-Q8_0.gguf");
+  	model_path = resource_path("granite-4-1b-q8-0/granite-4.0-1b-Q8_0.gguf");
   } catch (const std::exception &) {
     std::cerr << "Model not found via resource_path(); skipping test.\n";
     return 0;
@@ -27,9 +27,20 @@ int main(int argc, char *argv[]) {
     auto runner = std::make_shared<docwire::ai::llama::llama_runner>(config);
 
     std::ofstream ofs("output.txt");
-    data_source(std::string("LLMs help process long documents."),
-                mime_type{"text/plain"}, confidence::highest) |
-        ai::local::task("Summarize:\n\n", runner) | out_stream | ofs;
+    if (!ofs)
+    {
+    	throw std::runtime_error("Failed to open output.txt for writing");
+    }
+    std::filesystem::path("data_processing_definition.doc") |
+    	content_type::detector{} | office_formats_parser{} | plain_text_exporter() |
+        ai::local::task("Summarize:\n\n", runner) | out_stream;
+
+    if (out_stream.str().empty())
+    {
+        throw std::runtime_error("Generated summary is empty");
+    }
+    ofs << out_stream.str();
+    ofs.close();
     std::cout << "Text exported to output.txt" << std::endl;
 
   } catch (const std::exception &e) {
