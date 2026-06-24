@@ -1,9 +1,9 @@
 
-message(STATUS "DOCWIRE_LOCAL_CT2 enabled: Building CT2 backend.")
+message(STATUS "DOCWIRE_CT2 enabled: Building CT2 backend.")
 
 add_library(docwire_ai_ct2 SHARED ct2_runner.cpp tokenizer.cpp)
 
-target_compile_definitions(docwire_ai_ct2 PUBLIC DOCWIRE_LOCAL_CT2)
+target_compile_definitions(docwire_ai_ct2 PUBLIC DOCWIRE_CT2)
 
 find_package(Boost REQUIRED COMPONENTS filesystem system json)
 find_package(ctranslate2 CONFIG REQUIRED)

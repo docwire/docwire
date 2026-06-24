@@ -12,7 +12,7 @@
 
 #include "model_chain_element.h"
 #include "model_inference_config.h"
-#ifdef DOCWIRE_LOCAL_CT2
+#ifdef DOCWIRE_CT2
 #include "ct2_runner.h"
 #endif
 #ifdef DOCWIRE_LLAMA
@@ -134,21 +134,21 @@ create_local_runner(const boost::program_options::variables_map& vm,
 	            config.n_threads = ai::thread_count{4};
 	            return std::make_shared<ai::llama::llama_runner>(config);
 	        #else
-	            throw std::runtime_error("GGUF model support requires the llama-engine feature");
+	            throw std::runtime_error("GGUF model support requires the local-ai-llama feature");
 	        #endif
         }
-        #ifdef DOCWIRE_LOCAL_CT2
+        #ifdef DOCWIRE_CT2
         	return std::make_shared<ai::ct2::ct2_runner>(model_path);
         #else
-        	throw std::runtime_error("CT2 model support requires the ct2-engine feature");
+        	throw std::runtime_error("CT2 model support requires the local-ai-ct2 feature");
         #endif
     }
-    #ifdef DOCWIRE_LOCAL_CT2
+    #ifdef DOCWIRE_CT2
     return std::make_shared<ai::ct2::ct2_runner>(
         resource_path(default_model)
     );
     #else
-    	throw std::runtime_error("Default local AI model requires the ct2-engine feature");
+    	throw std::runtime_error("Default local AI model requires the local-ai-ct2 feature");
     #endif
 }
 #endif
@@ -426,7 +426,7 @@ int main(int argc, char* argv[])
 				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
 				image_detail);
 	}
-	#ifdef DOCWIRE_LOCAL_CT2
+	#ifdef DOCWIRE_CT2
 	if (vm.count("local-ai-prompt"))
 	{
 		try
@@ -484,8 +484,8 @@ int main(int argc, char* argv[])
 	if (vm.count("local-ai-prompt") || vm.count("local-ai-embed"))
 	{
 		std::cerr << "Error: Local AI features requested, but this build does not include "
-		             "DOCWIRE_LOCAL_CT2 support.\n"
-		             "Rebuild with DOCWIRE_LOCAL_CT2 enabled to use --local-ai-prompt or "
+		             "DOCWIRE_CT2 support.\n"
+		             "Rebuild with DOCWIRE_CT2 enabled to use --local-ai-prompt or "
 		             "--local-ai-embed." << std::endl;
 		return 1;
 	}

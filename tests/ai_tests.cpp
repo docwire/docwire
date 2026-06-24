@@ -18,13 +18,13 @@
 #include "gtest/gtest.h"
 #include <magic_enum/magic_enum_iostream.hpp>
 #include "resource_path.h"
-#ifdef DOCWIRE_LOCAL_CT2
+#ifdef DOCWIRE_CT2
 #include "tokenizer.h"
 #endif
 
 using namespace docwire;
 
-#ifdef DOCWIRE_LOCAL_CT2
+#ifdef DOCWIRE_CT2
 TEST(tokenizer, flan_t5)
 {
     docwire::ai::ct2::tokenizer tokenizer { resource_path("flan-t5-large-ct2-int8") };

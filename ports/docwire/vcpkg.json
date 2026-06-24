@@ -29,7 +29,7 @@
 		{
 			"description": "Enable valgrind callgrind in automatic tests"
 		},
-		"local-ai":
+		"local-ai-ct2":
 		{
 			"description": "Enable local AI runtime",
 			"dependencies": [
@@ -39,19 +39,19 @@
 			"flan-t5-large-ct2-int8"
 			]
 	    },
-		"llama-engine":
+		"local-ai-llama":
 		{
 			"description": "Enable GGUF-based LLM inference (llama.cpp)",
 			"dependencies": [
-			{ "name": "docwire", "features": ["local-ai"] },
+			{ "name": "docwire", "features": ["local-ai-ct2"] },
 			"llama-cpp"
 			]
 		},
-    	"llama-granite":
+    	"local-ai-model-granite":
 		{
 			"description": "Install IBM Granite 4.0 1B Q8_0 GGUF model",
 			"dependencies": [
-			{ "name": "docwire", "features": ["llama-engine"] },
+			{ "name": "docwire", "features": ["local-ai-llama"] },
 			"granite-4-1b-q8-0"
 			]
 		}
