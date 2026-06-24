@@ -51,14 +51,14 @@ struct pimpl_impl<thread_safe_ole_storage> : pimpl_impl_base
 	struct directory_entry
 	{
 		std::string m_name;
-		enum ObjectType
+		enum object_type
 		{
 			unknown_unallocated = 0x01,
 			storage = 0x01,
 			stream = 0x02,
 			root_storage = 0x05
 		};
-		ObjectType m_object_type;
+		object_type m_object_type;
 		uint8_t m_color_flag{0};
 		uint32_t m_left_sibling{0};
 		uint32_t m_right_sibling{0};
@@ -293,7 +293,7 @@ struct pimpl_impl<thread_safe_ole_storage> : pimpl_impl_base
 						m_is_valid_ole = false;
 						return;
 					}
-					directory->m_object_type = (directory_entry::ObjectType)object_type;
+					directory->m_object_type = (directory_entry::object_type)object_type;
 					uint8_t color_flag;
 					if (!m_data_stream->read(&color_flag, sizeof(uint8_t), 1))
 					{

@@ -33,13 +33,13 @@ using namespace openai;
 template<>
 struct pimpl_impl<openai::chat> : pimpl_impl_base
 {
-	pimpl_impl(const std::string& system_message, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+	pimpl_impl(const std::string& system_message, const std::string& api_key, model model, float temperature, image_detail image_detail)
 		: m_system_message(system_message), m_api_key(api_key), m_model(model), m_temperature(temperature), m_image_detail(image_detail) {}
 	std::string m_system_message;
 	std::string m_api_key;
-	Model m_model;
+	model m_model;
 	float m_temperature;
-	ImageDetail m_image_detail;
+	image_detail m_image_detail;
 };
 
 }
@@ -49,7 +49,7 @@ namespace docwire
 namespace openai
 {
 
-chat::chat(const std::string& system_message, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+chat::chat(const std::string& system_message, const std::string& api_key, model model, float temperature, image_detail image_detail)
 	: with_pimpl<chat>(system_message, api_key, model, temperature, image_detail)
 {
 	log_scope(system_message, model, temperature, image_detail);
@@ -58,43 +58,43 @@ chat::chat(const std::string& system_message, const std::string& api_key, Model 
 namespace
 {
 
-std::string model_to_string(Model model)
+std::string model_to_string(model model)
 {
 	switch (model)
 	{
-		case Model::gpt_5: return "gpt-5";
-		case Model::gpt_5_mini: return "gpt-5-mini";
-		case Model::gpt_5_nano: return "gpt-5-nano";
-		case Model::gpt_5_chat_latest: return "gpt-5-chat-latest";
-		case Model::gpt_41: return "gpt-4.1";
-		case Model::gpt_41_mini: return "gpt-4.1-mini";
-		case Model::gpt_41_nano: return "gpt-4.1-nano";
-		case Model::gpt_4o: return "gpt-4o";
-		case Model::gpt_4o_mini: return "gpt-4o-mini";
-		case Model::o3: return "o3";
-		case Model::o3_pro: return "o3-pro";
-		case Model::o3_deep_research: return "o3-deep-research";
-		case Model::o3_mini: return "o3-mini";
-		case Model::o4_mini: return "o4-mini";
-		case Model::o4_mini_deep_research: return "o4-mini-deep-research";
+		case model::gpt_5: return "gpt-5";
+		case model::gpt_5_mini: return "gpt-5-mini";
+		case model::gpt_5_nano: return "gpt-5-nano";
+		case model::gpt_5_chat_latest: return "gpt-5-chat-latest";
+		case model::gpt_41: return "gpt-4.1";
+		case model::gpt_41_mini: return "gpt-4.1-mini";
+		case model::gpt_41_nano: return "gpt-4.1-nano";
+		case model::gpt_4o: return "gpt-4o";
+		case model::gpt_4o_mini: return "gpt-4o-mini";
+		case model::o3: return "o3";
+		case model::o3_pro: return "o3-pro";
+		case model::o3_deep_research: return "o3-deep-research";
+		case model::o3_mini: return "o3-mini";
+		case model::o4_mini: return "o4-mini";
+		case model::o4_mini_deep_research: return "o4-mini-deep-research";
 		default: throw make_error("Unexpected model value", model, errors::program_logic{});
 	}
 }
 
-std::string image_detail_to_string(ImageDetail image_detail)
+std::string image_detail_to_string(image_detail image_detail)
 {
 	switch (image_detail)
 	{
-		case ImageDetail::low: return "low";
-		case ImageDetail::high: return "high";
-		case ImageDetail::automatic: return "auto";
+		case image_detail::low: return "low";
+		case image_detail::high: return "high";
+		case image_detail::automatic: return "auto";
 		default: throw make_error("Unexpected image detail value", image_detail, errors::program_logic{});
 	}
 }
 
-enum class UserMsgType { text, image_url };
+enum class user_msg_type { text, image_url };
 
-std::string prepare_query(const std::string& system_msg, UserMsgType user_msg_type, const std::string& user_msg, Model model, float temperature, ImageDetail image_detail)
+std::string prepare_query(const std::string& system_msg, user_msg_type user_msg_type, const std::string& user_msg, model model, float temperature, image_detail image_detail)
 {
 	log_scope(system_msg, user_msg, model, temperature, image_detail);
 	boost::json::object query
@@ -104,7 +104,7 @@ std::string prepare_query(const std::string& system_msg, UserMsgType user_msg_ty
 			{
 				boost::json::object {{ "role", "system" }, {"content", system_msg}},
 				boost::json::object {{ "role", "user" }, {"content",
-					user_msg_type == UserMsgType::text ?
+					user_msg_type == user_msg_type::text ?
 						boost::json::value(user_msg) :
 						boost::json::array {
 							boost::json::object {
@@ -118,7 +118,7 @@ std::string prepare_query(const std::string& system_msg, UserMsgType user_msg_ty
 				}}
 			}
 		},
-		{ "temperature", model == Model::gpt_5 || model == Model::gpt_5_mini || model == Model::gpt_5_nano ? 1 : temperature }
+		{ "temperature", model == model::gpt_5 || model == model::gpt_5_mini || model == model::gpt_5_nano ? 1 : temperature }
 	};
 	return boost::json::serialize(query);
 }
@@ -164,18 +164,18 @@ continuation chat::operator()(message_ptr msg, const message_callbacks& emit_mes
 		return emit_message(std::move(msg));
 	log_entry();
 	const data_source& data = msg->get<data_source>();
-	UserMsgType user_msg_type;
+	user_msg_type user_msg_type;
 	std::string data_str;
 	if (data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}))
 	{
 		log_scope();
-		user_msg_type = UserMsgType::text;
+		user_msg_type = user_msg_type::text;
 		data_str = data.string();
 	}
 	else if (data.has_highest_confidence_mime_type_in({mime_type{"image/jpeg"}, mime_type{"image/png"}, mime_type{"image/gif"}, mime_type{"image/webp"}}))
 	{
 		log_scope();
-		user_msg_type = UserMsgType::image_url;
+		user_msg_type = user_msg_type::image_url;
 		std::span<const std::byte> input_data = data.span();
 		std::string base64Encoded = base64::encode(input_data);
 		log_entry(base64Encoded);

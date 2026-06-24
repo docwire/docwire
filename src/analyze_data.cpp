@@ -19,7 +19,7 @@ namespace docwire
 namespace openai
 {
 
-analyze_data::analyze_data(const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+analyze_data::analyze_data(const std::string& api_key, model model, float temperature, image_detail image_detail)
 	: chat("Your task is analyze data in every message and create a summary highlighting the most important insights, trends, key patterns, statistics, findings and other revelant information. Include conclusions that are usually made for type of data you will find in message.",
 		api_key, model, temperature, image_detail)
 {

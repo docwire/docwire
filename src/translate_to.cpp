@@ -19,7 +19,7 @@ namespace docwire
 namespace openai
 {
 
-translate_to::translate_to(const std::string& language, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+translate_to::translate_to(const std::string& language, const std::string& api_key, model model, float temperature, image_detail image_detail)
 	: chat("Your task is to translate every message to " + language + " language.", api_key, model, temperature, image_detail)
 {
 	log_scope(language, model, temperature, image_detail);

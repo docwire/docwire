@@ -47,7 +47,7 @@ class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser : public common_xml_document_par
     void setLastOOXMLRowNum(int r);
     int lastOOXMLColNum();
     void setLastOOXMLColNum(int c);
-    void parse(const data_source& data, XmlParseMode mode, const message_callbacks& emit_message);
+    void parse(const data_source& data, xml_parse_mode mode, const message_callbacks& emit_message);
     attributes::metadata metaData(zip_reader& zipfile) const;
 
 	public:

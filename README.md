@@ -431,7 +431,7 @@ std::filesystem::path("1.doc") | ... | openai::summarize(...) | openai::text_to_
 Make a text summary of voice recording (e.g. mp3 file with meeting recording) in two steps: convert voice to text and summarize text using OpenAI services (with non-default model selected):
 
 ```cpp
-std::filesystem::path("...mp3") | openai::transcribe(...) | ... | openai::summarize(..., openai::Model::gpt_4o) | out_stream;
+std::filesystem::path("...mp3") | openai::transcribe(...) | ... | openai::summarize(..., openai::model::gpt_4o) | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "Data processing involves converting raw data...")) > 80;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_transcribe_summary_8cpp-example.html)
@@ -447,7 +447,7 @@ ensure(out_stream.str()).is_one_of({ "Data processing refers to the activities p
 Find phrases, objects and events in text or image using GPT model (with non-default model selected):
 
 ```cpp
-std::filesystem::path("scene_1.png") | ... | openai::find("tree", ..., openai::Model::gpt_4o) | out_stream;
+std::filesystem::path("scene_1.png") | ... | openai::find("tree", ..., openai::model::gpt_4o) | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "2\n- A tree is located on the left side...")) > 80;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_find_image_8cpp-example.html)

@@ -15,7 +15,7 @@
 namespace docwire
 {
 
-enum class Language
+enum class language
 {
 	afr, ///< Afrikaans
 	amh, ///< Amharic

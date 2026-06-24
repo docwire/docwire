@@ -95,8 +95,8 @@ std::vector<std::string> get_misc_test_files_list() {
 
 class document_parsing_tests : public ::testing::TestWithParam<std::string> {
 protected:
-    std::vector<Language> get_ocr_languages_from_filename(const std::string& file_name) const {
-        std::vector<Language> langs;
+    std::vector<language> get_ocr_languages_from_filename(const std::string& file_name) const {
+        std::vector<language> langs;
         if (file_name.length() > 4 &&
             (boost::algorithm::ends_with(file_name, ".png") ||
              boost::algorithm::ends_with(file_name, ".bmp") ||
@@ -109,14 +109,14 @@ protected:
             boost::split(fn_parts, file_name, boost::is_any_of("-."));
             for (const std::string& fn_part : fn_parts) {
                 std::string_view fn_part_view = fn_part;
-                std::optional<Language> lang = magic_enum::enum_cast<Language>(fn_part_view, magic_enum::case_insensitive);
+                std::optional<language> lang = magic_enum::enum_cast<language>(fn_part_view, magic_enum::case_insensitive);
                 if (lang) {
                     langs.push_back(*lang);
                 }
             }
         }
         if (langs.empty()) {
-            langs.push_back(Language::pol);
+            langs.push_back(language::pol);
         }
         return langs;
     }
@@ -129,7 +129,7 @@ protected:
         std::string expected_text{ std::istreambuf_iterator<char>{expected_ifs},
                                    std::istreambuf_iterator<char>{}};
 
-        std::vector<Language> ocr_langs = get_ocr_languages_from_filename(file_name);
+        std::vector<language> ocr_langs = get_ocr_languages_from_filename(file_name);
 
         std::ostringstream output_stream{};
         try {

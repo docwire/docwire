@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("scene_1.png") | content_type::detector{} | openai::find("tree", environment::get("OPENAI_API_KEY").value(), openai::Model::gpt_4o) | out_stream;
+    std::filesystem::path("scene_1.png") | content_type::detector{} | openai::find("tree", environment::get("OPENAI_API_KEY").value(), openai::model::gpt_4o) | out_stream;
     ensure(fuzzy_match::ratio(out_stream.str(), "2\n- A tree is located on the left side of the image near the people.\n- Another tree is in the background near the center of the image.\n")) > 80;
   }
   catch (const std::exception& e)

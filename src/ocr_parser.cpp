@@ -87,7 +87,7 @@ template<>
 struct pimpl_impl<ocr_parser> : with_pimpl_owner<ocr_parser>
 {
     pimpl_impl(ocr_parser& owner) : with_pimpl_owner{owner} {}
-    std::vector<Language> m_languages;
+    std::vector<language> m_languages;
     ocr_confidence_threshold m_ocr_confidence_threshold;
     ocr_timeout m_ocr_timeout;
     ocr_data_path m_ocr_data_path;
@@ -235,7 +235,7 @@ const std::vector<mime_type> supported_mime_types
 
 } // anonymous namespace
 
-ocr_parser::ocr_parser(const std::vector<Language>& languages,
+ocr_parser::ocr_parser(const std::vector<language>& languages,
                      ocr_confidence_threshold ocr_confidence_threshold_arg,
                      ocr_timeout ocr_timeout_arg,
                      ocr_data_path ocr_data_path_arg)
@@ -247,7 +247,7 @@ ocr_parser::ocr_parser(const std::vector<Language>& languages,
     impl().m_ocr_data_path = ocr_data_path_arg.v.empty() ? default_tessdata_path() : ocr_data_path_arg;
 }
 
-void ocr_parser::parse(const data_source& data, const std::vector<Language>& languages)
+void ocr_parser::parse(const data_source& data, const std::vector<language>& languages)
 {
     log_scope(data, languages);
 
@@ -262,7 +262,7 @@ void ocr_parser::parse(const data_source& data, const std::vector<Language>& lan
     }
 
     std::string langs = std::accumulate(languages.begin(), languages.end(), std::string{},
-      [](const std::string& acc, const Language& lang)
+      [](const std::string& acc, const language& lang)
       {
         return acc + (acc.empty() ? "" : "+") + boost::lexical_cast<std::string>(lang);
       });
@@ -414,7 +414,7 @@ continuation ocr_parser::operator()(message_ptr msg, const message_callbacks& em
         log_scope(data);
         scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_message}};
         emit_message(document::document{.metadata = []() { return attributes::metadata{}; }});
-        parse(data, impl().m_languages.size() > 0 ? impl().m_languages : std::vector({ Language::eng }));
+        parse(data, impl().m_languages.size() > 0 ? impl().m_languages : std::vector({ language::eng }));
         emit_message(document::close_document{});
         return continuation::proceed;
     };

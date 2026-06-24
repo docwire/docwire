@@ -19,7 +19,7 @@ namespace docwire
 namespace openai
 {
 
-extract_keywords::extract_keywords(unsigned int max_keywords, const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+extract_keywords::extract_keywords(unsigned int max_keywords, const std::string& api_key, model model, float temperature, image_detail image_detail)
 	: chat("Your task is to identify and extract " +
 			std::to_string(max_keywords) +
 			" most important keywords or key phrases from every message. The goal is to capture the most relevant and significant terms within the text.",

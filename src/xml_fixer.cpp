@@ -79,8 +79,8 @@ struct attr
 
 struct xml_tag
 {
-	enum Type { HEADER, OPENING, CLOSING, OPENING_AND_CLOSING };
-	Type type;
+	enum tag_type { HEADER, OPENING, CLOSING, OPENING_AND_CLOSING };
+	tag_type type;
 	xml_name name;
 	std::list<attr> attrs;
 
@@ -88,7 +88,7 @@ struct xml_tag
 	{
 	}
 
-	xml_tag(Type _type, const xml_name& _name)
+	xml_tag(tag_type _type, const xml_name& _name)
 		: type(_type), name(_name)
 	{
 	}

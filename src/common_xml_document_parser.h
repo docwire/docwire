@@ -25,7 +25,7 @@ namespace docwire
 	class zip_reader;
 	class Metadata;
 
-enum XmlParseMode { PARSE_XML, FIX_XML, STRIP_XML };
+enum xml_parse_mode { PARSE_XML, FIX_XML, STRIP_XML };
 
 /**
  * @brief Base class for XML-based document parsers (ODF, OOXML, etc.).
@@ -47,7 +47,7 @@ class common_xml_document_parser: public chain_element, public with_pimpl<common
 	//public interface for derived classes (and its components)
 	public:
 		/// Enum for list styles (e.g., numbered or bulleted).
-		enum ODFOOXMLListStyle
+		enum odfooxml_list_style
 		{
 			number,
 			bullet
@@ -83,7 +83,7 @@ class common_xml_document_parser: public chain_element, public with_pimpl<common
 		};
 
 		/// Type alias for a vector of list styles.
-		typedef std::vector<ODFOOXMLListStyle> ListStyleVector;
+		typedef std::vector<odfooxml_list_style> ListStyleVector;
 		/// Type alias for a map of list style names to their definitions.
 		using ListStyleMap = std::map<std::string, common_xml_document_parser<safety_level>::ListStyleVector>;
 		/// Type alias for a map of comment IDs to Comment objects.
@@ -96,7 +96,7 @@ class common_xml_document_parser: public chain_element, public with_pimpl<common
 		/**
 		 * @brief Defines the function signature for an XML tag command handler.
 		 */
-		typedef std::function<void(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
+		typedef std::function<void(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
                                  zip_reader* zipfile, std::string& text,
                                  bool& children_processed, std::string& level_suffix, bool first_on_level)> CommandHandler;
 
@@ -120,7 +120,7 @@ class common_xml_document_parser: public chain_element, public with_pimpl<common
 		 * @param zipfile Pointer to the zip_reader if the XML is part of a zipped archive (e.g., DOCX, ODT).
 		 * @return The extracted text content.
 		 */
-		std::string parseXmlData(xml::children_view<safety_level> xml_nodes, XmlParseMode mode, zip_reader* zipfile);
+		std::string parseXmlData(xml::children_view<safety_level> xml_nodes, xml_parse_mode mode, zip_reader* zipfile);
 
 		/**
 		 * @brief Parses the children of a given XML node.
@@ -130,7 +130,7 @@ class common_xml_document_parser: public chain_element, public with_pimpl<common
 		 * @param zipfile Pointer to the zip_reader if applicable.
 		 * @return The extracted text content from the children.
 		 */
-		std::string parseXmlChildren(xml::node_ref<safety_level>& xml_node, XmlParseMode mode, zip_reader* zipfile);
+		std::string parseXmlChildren(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode, zip_reader* zipfile);
 
 		/**
 		 * @brief Extracts text from raw XML content.
@@ -142,7 +142,7 @@ class common_xml_document_parser: public chain_element, public with_pimpl<common
 		 * @param zipfile Pointer to the zip_reader if applicable.
 		 * @param text Output parameter where the extracted text will be appended.
 		 */
-		void extractText(std::string_view xml_contents, XmlParseMode mode, zip_reader* zipfile, std::string& text);
+		void extractText(std::string_view xml_contents, xml_parse_mode mode, zip_reader* zipfile, std::string& text);
 
 		/**
 		 * @brief Parses ODF metadata from XML content.

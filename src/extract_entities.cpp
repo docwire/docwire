@@ -19,7 +19,7 @@ namespace docwire
 namespace openai
 {
 
-extract_entities::extract_entities(const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+extract_entities::extract_entities(const std::string& api_key, model model, float temperature, image_detail image_detail)
 	: chat("Your task is to find all dates, timespans, addresses, companies and person names inside every message. Show it as formatted list.", api_key, model, temperature, image_detail)
 {
 	log_scope(model, temperature, image_detail);

@@ -35,7 +35,7 @@ namespace docwire
 
 using namespace wvWare;
 
-enum RecordType
+enum record_type
 {
 	RT_CSTRING = 0xFBA,
 	RT_DOCUMENT = 0x03E8,
