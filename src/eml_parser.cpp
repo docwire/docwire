@@ -341,6 +341,10 @@ private:
 	{
 		for (size_t j = m_boundaries.size() - 1; j > active_boundary_index; --j)
 		{
+			if (!m_boundaries[j].has_boundary)
+			{
+				inject_empty_part(m_boundaries[j].boundary, mime_entity);
+			}
 			std::string missing_closer = std::string(boundary_delimiter) + m_boundaries[j].boundary + std::string(boundary_delimiter);
 			mime_entity.parse_by_line(missing_closer);
 		}
