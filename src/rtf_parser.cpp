@@ -87,7 +87,7 @@ int parseCharCode(data_stream& data_stream)
 	return strtol(buf, (char **)NULL, 16);
 }
 
-enum RTFCommand
+enum rtf_command
 {
 	RTF_CODEPAGE,
 	RTF_FONT_CHARSET,
@@ -138,7 +138,7 @@ enum RTFCommand
 struct rtf_string_command
 {
 	const char* name;
-	RTFCommand cmd;
+	rtf_command cmd;
 };
 
 rtf_string_command rtf_commands[] =
@@ -205,7 +205,7 @@ struct rtf_parser_state
 	UString fldrslt_text;
 };
 
-RTFCommand commandNameToEnum(char* name)
+rtf_command commandNameToEnum(char* name)
 {
 	log_scope(name);
 	for (int i = 0; i < sizeof(rtf_commands) / sizeof(rtf_string_command); i++)
@@ -216,7 +216,7 @@ RTFCommand commandNameToEnum(char* name)
 	return RTF_UNKNOWN;
 }
 
-bool parseCommand(data_stream& data_stream, RTFCommand& cmd, long int& arg)
+bool parseCommand(data_stream& data_stream, rtf_command& cmd, long int& arg)
 {
 	log_scope();
 	char name[RTFNAMEMAXLEN + 1];
@@ -320,7 +320,7 @@ std::chrono::sys_seconds parse_dttm_time(int dttm)
 	return sys_days{ymd} + hours{hour} + minutes{min};
 }
 
-void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_state& state, RTFCommand cmd, long int arg,
+void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_state& state, rtf_command cmd, long int arg,
 	TextConverter*& converter, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 {
 	log_scope(cmd, arg);
@@ -435,7 +435,7 @@ void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_
 				char ch = data_stream.getc();
 				if (ch == '\\')
 				{
-					RTFCommand tmp_cmd;
+					rtf_command tmp_cmd;
 					long int tmp_arg;
 					parseCommand(data_stream, tmp_cmd, tmp_arg);
 				}
@@ -596,7 +596,7 @@ void parse_rtf_content(const data_source& data, const message_callbacks& emit_me
 			{
 				case '\\':
 				{
-					RTFCommand cmd;
+					rtf_command cmd;
 					long int arg;
 					if (!parseCommand(*stream, cmd, arg))
 						break;

@@ -24,7 +24,7 @@ namespace openai
 /**
  * @brief OpenAI models available for chat.
  */
-enum class Model
+enum class model
 {
 	/// GPT-5: The best model for coding and agentic tasks across domains
 	gpt_5,
@@ -58,7 +58,7 @@ enum class Model
 	o4_mini_deep_research
 };
 
-enum class ImageDetail
+enum class image_detail
 {
 	low, high, automatic
 };
@@ -66,7 +66,7 @@ enum class ImageDetail
 class DOCWIRE_OPENAI_EXPORT chat : public chain_element, public with_pimpl<chat>
 {
 public:
-	chat(const std::string& system_message, const std::string& api_key, Model model = Model::gpt_5, float temperature = 0.7, ImageDetail image_detail = ImageDetail::automatic);
+	chat(const std::string& system_message, const std::string& api_key, model model = model::gpt_5, float temperature = 0.7, image_detail image_detail = image_detail::automatic);
 
 	/**
 	* @brief Executes transform operation for given node data.

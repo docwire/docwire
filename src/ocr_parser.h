@@ -44,7 +44,7 @@ private:
 
 public:
 
-    ocr_parser(const std::vector<Language>& languages = {},
+    ocr_parser(const std::vector<language>& languages = {},
         ocr_confidence_threshold ocr_confidence_threshold_arg = {},
         ocr_timeout ocr_timeout_arg = {},
         ocr_data_path ocr_data_path_arg = {});
@@ -54,7 +54,7 @@ public:
     bool is_leaf() const override { return false; }
 
 private:
-    void parse(const data_source& data, const std::vector<Language>& languages);
+    void parse(const data_source& data, const std::vector<language>& languages);
 };
 
 } // namespace docwire

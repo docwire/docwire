@@ -22,7 +22,7 @@ namespace openai
 class DOCWIRE_OPENAI_EXPORT detect_sentiment : public chat
 {
 public:
-	detect_sentiment(const std::string& api_key, Model model = Model::gpt_5, float temperature = 0, ImageDetail image_detail = ImageDetail::automatic);
+	detect_sentiment(const std::string& api_key, model model = model::gpt_5, float temperature = 0, image_detail image_detail = image_detail::automatic);
 };
 
 } // namespace openai

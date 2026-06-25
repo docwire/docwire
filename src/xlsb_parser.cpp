@@ -165,7 +165,7 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 	class xlsb_reader
 	{
 		public:
-			enum RecordType
+			enum record_type
 			{
 				BRT_ROW_HDR = 0x0,
 				BRT_CELL_BLANK = 0x1,

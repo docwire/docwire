@@ -45,7 +45,7 @@ namespace
 	std::mutex xls_converter_mutex;
 	std::mutex parser_mutex;
 
-enum RecordType
+enum record_type
 {
 	XLS_BOF = 0x809,
 	XLS_CODEPAGE = 0x42,
@@ -69,7 +69,7 @@ enum RecordType
 	XLS_EOF = 0x0A
 };
 
-enum BiffVersion { BIFF2, BIFF3, BIFF4, BIFF5, BIFF8 };
+enum biff_version { BIFF2, BIFF3, BIFF4, BIFF5, BIFF8 };
 
 struct xf_record
 {
@@ -80,7 +80,7 @@ struct context
 {
 	const message_callbacks& emit_message;
 	std::string m_codepage = "cp1251";
-	BiffVersion m_biff_version;
+	biff_version m_biff_version;
 	std::vector<xf_record> m_xf_records;
 	double m_date_shift;
 	std::vector<std::string> m_shared_string_table;
@@ -746,7 +746,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 			U16 rec_type, rec_len;
 			throw_if (!reader.readU16(rec_type) || !reader.readU16(rec_len), reader.getLastError());
 			log_entry(rec_type, rec_len);
-			enum BofRecordTypes
+			enum bof_record_types
 			{
 				BOF_BIFF_2 = 0x009,
 				BOF_BIFF_3 = 0x209,

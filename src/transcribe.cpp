@@ -28,16 +28,16 @@ namespace docwire
 template<>
 struct pimpl_impl<openai::transcribe> : pimpl_impl_base
 {
-	pimpl_impl(const std::string& api_key, openai::transcribe::Model model)
+	pimpl_impl(const std::string& api_key, openai::transcribe::model model)
 		: m_api_key(api_key), m_model(model) {}
 	std::string m_api_key;
-	openai::transcribe::Model m_model;
+	openai::transcribe::model m_model;
 };
 
 namespace openai
 {
 
-transcribe::transcribe(const std::string& api_key, Model model)
+transcribe::transcribe(const std::string& api_key, model model)
 	: with_pimpl<transcribe>(api_key, model)
 {
 	log_scope(model);
@@ -46,13 +46,13 @@ transcribe::transcribe(const std::string& api_key, Model model)
 namespace
 {
 
-std::string model_to_string(transcribe::Model model)
+std::string model_to_string(transcribe::model model)
 {
 	switch (model)
 	{
-		case transcribe::Model::gpt_4o_transcribe: return "gpt-4o-transcribe";
-		case transcribe::Model::gpt_4o_mini_transcribe: return "gpt-4o-mini-transcribe";
-		case transcribe::Model::whisper_1: return "whisper-1";
+		case transcribe::model::gpt_4o_transcribe: return "gpt-4o-transcribe";
+		case transcribe::model::gpt_4o_mini_transcribe: return "gpt-4o-mini-transcribe";
+		case transcribe::model::whisper_1: return "whisper-1";
 		default: return "?";
 	}
 }

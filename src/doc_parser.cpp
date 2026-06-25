@@ -64,7 +64,7 @@ struct pimpl_impl<doc_parser> : pimpl_impl_base
     void parse(const data_source& data, const message_callbacks& emit_message);
 };
 
-enum class TableState
+enum class table_state
 {
 	in_table,
 	in_row,
@@ -79,7 +79,7 @@ struct current_header_footer
 };
 
 // constants are from MS Word Binary File Format Specification
-enum FieldType
+enum field_type
 {
 	FLT_NONE = 0,
 	FLT_FILLIN = 0x27,
@@ -87,7 +87,7 @@ enum FieldType
 	FLT_HYPERLINK = 0x58
 };
 
-enum FieldPart
+enum field_part
 {
 	FIELD_PART_NONE,
 	FIELD_PART_PARAMS,
@@ -96,12 +96,12 @@ enum FieldPart
 
 struct current_state
 {
-	std::stack<TableState> table_state;
+	std::stack<docwire::table_state> table_state;
 	current_header_footer header_footer;
 	std::list<std::string> obj_texts;
 	std::list<std::string>::iterator obj_texts_iter;
-	FieldType field_type;
-	FieldPart field_part;
+	docwire::field_type field_type;
+	docwire::field_part field_part;
 	UString field_params;
 	UString field_value;
 	current_state() : field_type(FLT_NONE), field_part(FIELD_PART_NONE) {};
@@ -327,15 +327,15 @@ class text_handler : public wvWare::TextHandler
 			log_scope();
 			if (!m_curr_state->table_state.empty())
 			{
-				if (m_curr_state->table_state.top() == TableState::in_table)
+				if (m_curr_state->table_state.top() == table_state::in_table)
 				{
 					m_emit_message(document::close_table{});
 					m_curr_state->table_state.pop();
 				}
-				else if (m_curr_state->table_state.top() == TableState::in_row)
+				else if (m_curr_state->table_state.top() == table_state::in_row)
 				{
 					m_emit_message(document::table_cell{});
-					m_curr_state->table_state.push(TableState::in_cell);
+					m_curr_state->table_state.push(table_state::in_cell);
 				}
 			}
 			m_emit_message(document::paragraph{});
@@ -413,7 +413,7 @@ class text_handler : public wvWare::TextHandler
 			SharedPtr<const Word97::CHP> chp)
 		{
 			log_scope();
-			m_curr_state->field_type = (FieldType)fld->flt;
+			m_curr_state->field_type = (field_type)fld->flt;
 			m_curr_state->field_part = FIELD_PART_PARAMS;
 			switch (fld->flt)
 			{
@@ -519,26 +519,26 @@ class table_handler : public wvWare::TableHandler
 		void tableRowStart(SharedPtr<const Word97::TAP> tap)
 		{
 			log_scope();
-			if (m_current_state.table_state.empty() || m_current_state.table_state.top() == TableState::in_cell)
+			if (m_current_state.table_state.empty() || m_current_state.table_state.top() == table_state::in_cell)
 			{
 				m_emit_message(document::table{});
-				m_current_state.table_state.push(TableState::in_table);
+				m_current_state.table_state.push(table_state::in_table);
 			}
-			throw_if (m_current_state.table_state.top() != TableState::in_table, errors::uninterpretable_data{});
+			throw_if (m_current_state.table_state.top() != table_state::in_table, errors::uninterpretable_data{});
 			m_emit_message(document::table_row{});
-			m_current_state.table_state.push(TableState::in_row);
+			m_current_state.table_state.push(table_state::in_row);
 		}
 
 		void tableRowEnd()
 		{
 			log_scope();
 			throw_if (m_current_state.table_state.empty(), errors::uninterpretable_data{});
-			if (m_current_state.table_state.top() == TableState::in_cell)
+			if (m_current_state.table_state.top() == table_state::in_cell)
 			{
 				m_emit_message(document::close_table_cell{});
 				m_current_state.table_state.pop();
 			}
-			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row, errors::uninterpretable_data{});
+			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != table_state::in_row, errors::uninterpretable_data{});
 			m_emit_message(document::close_table_row{});
 			m_current_state.table_state.pop();
 		}
@@ -546,20 +546,20 @@ class table_handler : public wvWare::TableHandler
 		void tableCellStart()
 		{
 			log_scope();
-			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_row, errors::uninterpretable_data{});
+			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != table_state::in_row, errors::uninterpretable_data{});
 			m_emit_message(document::table_cell{});
-			m_current_state.table_state.push(TableState::in_cell);
+			m_current_state.table_state.push(table_state::in_cell);
 		}
 
 		void tableCellEnd()
 		{
 			log_scope();
-			if (!m_current_state.table_state.empty() && m_current_state.table_state.top() == TableState::in_table)
+			if (!m_current_state.table_state.empty() && m_current_state.table_state.top() == table_state::in_table)
 			{
 				m_emit_message(document::close_table{});
 				m_current_state.table_state.pop();
 			}
-			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != TableState::in_cell, errors::uninterpretable_data{});
+			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != table_state::in_cell, errors::uninterpretable_data{});
 			m_emit_message(document::close_table_cell{});
 			m_current_state.table_state.pop();
 		}

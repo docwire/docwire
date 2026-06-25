@@ -313,7 +313,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 	class xml_reader
 	{
 		public:
-			enum XmlElementKind
+			enum xml_element_kind
 			{
 				opening_element,	//<something>
 				closing_element,	//</something>
@@ -324,7 +324,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 
 			struct xml_element
 			{
-				XmlElementKind m_kind;
+				xml_element_kind m_kind;
 				std::map<std::string, std::string> m_attributes;
 				std::string m_name;
 				std::string m_characters;
@@ -512,7 +512,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 
 	struct iwork_content
 	{
-		enum IWorkType
+		enum iwork_type
 		{
 			pages,
 			numbers,
@@ -831,7 +831,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 		bool m_inside_text_body;
 		int m_footnote_start;
 		int m_footnote_count;
-		IWorkType m_iwork_type;
+		iwork_type m_iwork_type;
 		xml_reader* m_xml_reader;
 		std::map<std::string, XmlElementHandler> m_handlers;
 
@@ -876,7 +876,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 			ClearTextualElements();
 		}
 
-		void setType(IWorkType iwork_type)
+		void setType(iwork_type iwork_type)
 		{
 			m_iwork_type = iwork_type;
 		}
@@ -2048,7 +2048,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 		}
 	}
 
-	iwork_content::IWorkType getIWorkType(xml_reader& xml_reader)
+	iwork_content::iwork_type getIWorkType(xml_reader& xml_reader)
 	{
 		log_scope();
 		xml_reader::xml_element current_element;
@@ -2085,7 +2085,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 		iwork_content iwork_content(xml_reader);
 
 		throw_if (!zipfile.loadDirectory());
-		iwork_content::IWorkType iwork_type = getIWorkType(xml_reader);
+		iwork_content::iwork_type iwork_type = getIWorkType(xml_reader);
 		throw_if (iwork_type == iwork_content::encrypted, errors::file_encrypted{});
 		iwork_content.setType(iwork_type);
 		text.clear();

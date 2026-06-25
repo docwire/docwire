@@ -22,7 +22,7 @@ namespace openai
 class DOCWIRE_OPENAI_EXPORT extract_keywords : public chat
 {
 public:
-	extract_keywords(unsigned int max_keywords, const std::string& api_key, Model model = Model::gpt_5, float temperature = 0.0f, ImageDetail image_detail = ImageDetail::automatic);
+	extract_keywords(unsigned int max_keywords, const std::string& api_key, model model = model::gpt_5, float temperature = 0.0f, image_detail image_detail = image_detail::automatic);
 };
 
 } // namespace openai

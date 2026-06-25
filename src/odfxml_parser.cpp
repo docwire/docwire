@@ -40,11 +40,11 @@ struct pimpl_impl<odfxml_parser<safety_level>> : with_pimpl_owner<odfxml_parser<
 {
 	using with_pimpl_owner<odfxml_parser<safety_level>>::owner;
 
-	void parse(const data_source& data, XmlParseMode mode, const message_callbacks& emit_message);
+	void parse(const data_source& data, xml_parse_mode mode, const message_callbacks& emit_message);
 	attributes::metadata extract_metadata(std::string_view xml_content) const;
 	pimpl_impl(odfxml_parser<safety_level>& owner) : with_pimpl_owner<odfxml_parser<safety_level>>{owner} {}
 
-		void onODFBody(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
+		void onODFBody(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
 							  const zip_reader* zipfile, std::string& text,
 							  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
@@ -60,7 +60,7 @@ struct pimpl_impl<odfxml_parser<safety_level>> : with_pimpl_owner<odfxml_parser<
 			owner().disableText(false);
 		}
 
-		void onODFObject(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
+		void onODFObject(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
 								zip_reader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
@@ -70,7 +70,7 @@ struct pimpl_impl<odfxml_parser<safety_level>> : with_pimpl_owner<odfxml_parser<
 			owner().disableText(false);
 		}
 
-		void onODFBinaryData(xml::node_ref<safety_level>& xml_node, XmlParseMode mode,
+		void onODFBinaryData(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
 									const zip_reader* zipfile, std::string& text,
 									bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
@@ -82,22 +82,22 @@ struct pimpl_impl<odfxml_parser<safety_level>> : with_pimpl_owner<odfxml_parser<
 template <safety_policy safety_level>
 odfxml_parser<safety_level>::odfxml_parser()
 {
-	registerODFOOXMLCommandHandler("body", [&impl=impl()](xml::node_ref<safety_level>& xml_node, XmlParseMode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+	registerODFOOXMLCommandHandler("body", [&impl=impl()](xml::node_ref<safety_level>& xml_node, xml_parse_mode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		impl.onODFBody(xml_node, mode, zipfile, text, children_processed, level_suffix, first_on_level);
 	});
-	registerODFOOXMLCommandHandler("object", [&impl=impl()](xml::node_ref<safety_level>& xml_node, XmlParseMode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+	registerODFOOXMLCommandHandler("object", [&impl=impl()](xml::node_ref<safety_level>& xml_node, xml_parse_mode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		impl.onODFObject(xml_node, mode, zipfile, text, children_processed, level_suffix, first_on_level);
 	});
-	registerODFOOXMLCommandHandler("binary-data", [&impl=impl()](xml::node_ref<safety_level>& xml_node, XmlParseMode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+	registerODFOOXMLCommandHandler("binary-data", [&impl=impl()](xml::node_ref<safety_level>& xml_node, xml_parse_mode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		impl.onODFBinaryData(xml_node, mode, zipfile, text, children_processed, level_suffix, first_on_level);
 	});
 }
 
 template <safety_policy safety_level>
-void pimpl_impl<odfxml_parser<safety_level>>::parse(const data_source& data, XmlParseMode mode, const message_callbacks& emit_message)
+void pimpl_impl<odfxml_parser<safety_level>>::parse(const data_source& data, xml_parse_mode mode, const message_callbacks& emit_message)
 {
 	log_scope(mode);
 	std::string_view xml_content = data.string_view();
@@ -171,7 +171,7 @@ continuation odfxml_parser<safety_level>::operator()(message_ptr msg, const mess
 	log_entry();
 	try
 	{
-		impl().parse(data, XmlParseMode::PARSE_XML, emit_message);
+		impl().parse(data, xml_parse_mode::PARSE_XML, emit_message);
 	}
 	catch (const std::exception& e)
 	{

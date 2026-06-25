@@ -19,7 +19,7 @@ namespace docwire
 namespace openai
 {
 
-detect_sentiment::detect_sentiment(const std::string& api_key, Model model, float temperature, ImageDetail image_detail)
+detect_sentiment::detect_sentiment(const std::string& api_key, model model, float temperature, image_detail image_detail)
 	: chat("Your task is to detect sentiment for every message",
 			api_key, model, temperature, image_detail)
 {
