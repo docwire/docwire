@@ -297,6 +297,7 @@ if(TARGET docwire_ai_llama)
 	    docwire_fuzzy_match
 	    docwire_http
     )
+
     add_test(NAME local_ai_llama_integration COMMAND local_ai_llama_integration)
     set_property(TEST local_ai_llama_integration PROPERTY LABELS "is_example;uses_model_runner")
 endif()
