@@ -417,12 +417,12 @@ int main(int argc, char* argv[])
 
 	if (vm.count("openai-translate-to"))
 	{
-		std::string language = vm["openai-translate-to"].as<std::string>();
+		std::string target_language = vm["openai-translate-to"].as<std::string>();
 		std::string api_key = vm["openai-key"].as<std::string>();
 		openai::model model = vm["openai-model"].as<openai::model>();
 		openai::image_detail image_detail = vm["openai-image-detail"].as<openai::image_detail>();
 		chain |=
-			openai::translate_to(language, api_key, model,
+			openai::translate_to(target_language, api_key, model,
 				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
 				image_detail);
 	}
