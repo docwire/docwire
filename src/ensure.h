@@ -174,7 +174,7 @@ public:
                 return; // Match found, success.
             }
         }
-        DOCWIRE_THROW_IF_AT_LOCATION(true, m_location, m_value, std::vector<T>{expected_values});
+        DOCWIRE_THROW_IF_AT_LOCATION(true, m_location, m_value, std::vector<T>(expected_values));
     }
 private:
     /**
