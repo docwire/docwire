@@ -306,11 +306,11 @@ private:
 			const bool is_closing = line == boundary_prefix + std::string(boundary_delimiter);
 			const bool is_new_part = !is_closing && (line == boundary_prefix);
 			if (is_new_part)
-			    boundary_state.has_boundary = true;
+			    boundary_state.is_open = true;
 
 			if (is_closing || is_new_part)
 			{
-				if(is_closing && !boundary_state.has_boundary){
+				if(is_closing && !boundary_state.is_open){
 					log_entry("Injecting empty MIME part before premature closing boundary",boundary);
 				    inject_empty_part(boundary, mime_entity);
 				}
@@ -341,7 +341,7 @@ private:
 	{
 		for (size_t j = m_boundaries.size() - 1; j > active_boundary_index; --j)
 		{
-			if (!m_boundaries[j].has_boundary)
+			if (!m_boundaries[j].is_open)
 			{
 				inject_empty_part(m_boundaries[j].boundary, mime_entity);
 			}
@@ -362,7 +362,7 @@ private:
 				m_boundaries.push_back(
 					boundary_state{
 			            .boundary = ct.boundary(),
-			            .has_boundary = false
+			            .is_open = false
         			}
 				);
 			}
@@ -399,7 +399,7 @@ private:
 	struct boundary_state
 	{
 		std::string boundary;
-		bool has_boundary;
+		bool is_open;
 	};
 	std::vector<boundary_state> m_boundaries;
 	header_parser m_current_header_parser;

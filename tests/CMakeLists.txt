@@ -190,6 +190,7 @@ while (TRUE)
 endwhile()
 
 set(common_examples
+	crash_eml_parser
     handling_errors_and_warnings
     file_type_determination
     path_to_text_stream
