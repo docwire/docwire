@@ -1,0 +1,10 @@
+From: sender@example.com
+To: recipient@example.com
+Subject: Nested multipart never started
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="outer"
+
+--outer
+Content-Type: multipart/alternative; boundary="inner"
+
+--outer--

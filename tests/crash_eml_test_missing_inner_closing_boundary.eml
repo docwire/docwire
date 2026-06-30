@@ -1,0 +1,15 @@
+From: sender@example.com
+To: recipient@example.com
+Subject: Missing inner closer
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="outer"
+
+--outer
+Content-Type: multipart/alternative; boundary="inner"
+
+--inner
+Content-Type: text/plain
+
+Hello World
+
+--outer--

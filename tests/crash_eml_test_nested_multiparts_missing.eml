@@ -1,0 +1,13 @@
+From: sender@example.com
+To: recipient@example.com
+Subject: Double nesting
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="A"
+
+--A
+Content-Type: multipart/alternative; boundary="B"
+
+--B
+Content-Type: multipart/related; boundary="C"
+
+--A--

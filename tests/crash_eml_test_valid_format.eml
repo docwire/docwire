@@ -1,0 +1,12 @@
+From: sender@example.com
+To: recipient@example.com
+Subject: One valid part
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="inner"
+
+--inner
+Content-Type: text/plain
+
+Hello
+
+--inner--
