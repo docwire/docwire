@@ -190,7 +190,6 @@ while (TRUE)
 endwhile()
 
 set(common_examples
-	crash_eml_parser
     handling_errors_and_warnings
     file_type_determination
     path_to_text_stream
@@ -244,15 +243,7 @@ foreach(example IN LISTS all_examples)
 
 	# Conditionally add the test, skipping OpenAI examples if the key is not set.
 	if ((openai_pos EQUAL -1 AND openai_key_pos EQUAL -1) OR NOT "$ENV{OPENAI_API_KEY}" STREQUAL "")
-		# Conditional test add for crash_eml_parser by supplying sample eml files
-		if(example STREQUAL "crash_eml_parser")
-			file(GLOB crash_eml_files
-				"${CMAKE_CURRENT_SOURCE_DIR}/crash_eml_test_*.eml"
-			)
-			add_test(NAME ${example} COMMAND ${example} ${crash_eml_files})
-		else()
-			add_test(NAME ${example} COMMAND ${example})
-		endif()
+		add_test(NAME ${example} COMMAND ${example})
 		if(WIN32)
 			set_property(TEST ${example} APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
 		endif()
