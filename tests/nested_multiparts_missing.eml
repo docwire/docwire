@@ -1,0 +1,16 @@
+From: "Test Sender" <sender@example.com>
+To: <recipient@example.com>
+Subject: Nested multipart never started
+Date: Wed, 11 Jun 2025 10:00:00 +0000
+Message-ID: <nested-multiparts-missing@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="outer"
+
+--outer
+Content-Type: multipart/alternative; boundary="inner"
+
+--outer
+Content-Type: text/plain
+
+Recovered after nested repair
+--outer--

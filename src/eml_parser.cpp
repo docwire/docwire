@@ -238,6 +238,8 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 			if (selected_part)
 				extractPlainText(*selected_part);
 		}
+		// TO DO: Handle the case, where boundary is declared but body does not
+		// contain a single boundary line.
 		else
 		{
 			log_scope(mime_entity.parts().size());
@@ -296,17 +298,24 @@ private:
 		for (size_t i = m_boundaries.size(); i > 0; --i)
 		{
 			const auto current_boundary_index = i - 1;
-			const std::string& boundary = m_boundaries[current_boundary_index];
+			auto& boundary_state = m_boundaries[current_boundary_index];
+			const std::string& boundary = boundary_state.boundary;
 
 			if (boundary.empty())
 				continue;
-			
+
 			const std::string boundary_prefix = std::string(boundary_delimiter) + boundary;
 			const bool is_closing = line == boundary_prefix + std::string(boundary_delimiter);
 			const bool is_new_part = !is_closing && (line == boundary_prefix);
+			if (is_new_part)
+			    boundary_state.is_open = true;
 
 			if (is_closing || is_new_part)
 			{
+				if(is_closing && !boundary_state.is_open){
+					log_entry("Injecting empty MIME part before premature closing boundary",boundary);
+				    inject_empty_part(boundary, mime_entity);
+				}
 				inject_missing_closers(current_boundary_index, mime_entity);
 				m_boundaries.resize(is_closing ? current_boundary_index : current_boundary_index + 1);
 				m_in_headers = is_new_part;
@@ -321,11 +330,24 @@ private:
 		return false;
 	}
 
+	void inject_empty_part(const std::string& boundary, mailio::message& mime_entity)
+	{
+	    const std::string boundary_line = std::string(boundary_delimiter) + boundary;
+	    mime_entity.parse_by_line(boundary_line);
+	    mime_entity.parse_by_line("Content-Type: text/plain");
+	    mime_entity.parse_by_line("");
+	    mime_entity.parse_by_line("");
+	}
+
 	void inject_missing_closers(size_t active_boundary_index, mailio::message& mime_entity)
 	{
 		for (size_t j = m_boundaries.size() - 1; j > active_boundary_index; --j)
 		{
-			std::string missing_closer = std::string(boundary_delimiter) + m_boundaries[j] + std::string(boundary_delimiter);
+			if (!m_boundaries[j].is_open)
+			{
+				inject_empty_part(m_boundaries[j].boundary, mime_entity);
+			}
+			std::string missing_closer = std::string(boundary_delimiter) + m_boundaries[j].boundary + std::string(boundary_delimiter);
 			mime_entity.parse_by_line(missing_closer);
 		}
 	}
@@ -339,7 +361,12 @@ private:
 			const auto& ct = m_current_header_parser.content_type();
 			if (ct.media_type() == mailio::mime::media_type_t::MULTIPART && !ct.boundary().empty())
 			{
-				m_boundaries.push_back(ct.boundary());
+				m_boundaries.push_back(
+					boundary_state{
+			            .boundary = ct.boundary(),
+			            .is_open = false
+        			}
+				);
 			}
 			m_current_header_parser = header_parser{};
 			m_current_header_accumulator.clear();
@@ -371,8 +398,12 @@ private:
 			m_current_header_accumulator.clear();
 		}
 	}
-
-	std::vector<std::string> m_boundaries;
+	struct boundary_state
+	{
+		std::string boundary;
+		bool is_open;
+	};
+	std::vector<boundary_state> m_boundaries;
 	header_parser m_current_header_parser;
 	std::string m_current_header_accumulator;
 	bool m_in_headers = true;
