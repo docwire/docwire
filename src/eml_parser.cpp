@@ -238,6 +238,8 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 			if (selected_part)
 				extractPlainText(*selected_part);
 		}
+		// TO DO: Handle the case, where boundary is declared but body does not
+		// contain a single boundary line.
 		else
 		{
 			log_scope(mime_entity.parts().size());
