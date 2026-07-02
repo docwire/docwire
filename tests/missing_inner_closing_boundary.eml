@@ -1,6 +1,8 @@
-From: sender@example.com
-To: recipient@example.com
-Subject: Missing inner closer
+From: "Test Sender" <sender@example.com>
+To: <recipient@example.com>
+Subject: Missing inner closing boundary
+Date: Wed, 11 Jun 2025 10:00:00 +0000
+Message-ID: <missing-inner-closing@example.com>
 MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="outer"
 
@@ -10,6 +12,5 @@ Content-Type: multipart/alternative; boundary="inner"
 --inner
 Content-Type: text/plain
 
-Hello World
-
+Inner text content
 --outer--

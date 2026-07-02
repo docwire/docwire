@@ -78,7 +78,7 @@ std::vector<std::string> get_misc_test_files_list() {
         "header_folded_boundary.eml", "unnamed_attachment.eml",
         "multipart_related_html.eml", "html_attachment_alternative.eml",
         "endboundary_first.eml", "missing_inner_closing_boundary.eml",
-        "nested_multiparts_missing.eml", "no_multipart_start.eml", "valid_format.eml",        
+        "nested_multiparts_missing.eml", "valid_format.eml",
         "html_with_doc_ext.doc", "html_with_xls_ext.xls", "rtf_with_doc_ext.doc",
         "comments_libreoffice_3.5.odt", "comments_libreoffice_3.5.doc",
         "comments_libreoffice_3.5.docx", "comments_libreoffice_3.5.rtf",

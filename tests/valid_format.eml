@@ -1,12 +1,27 @@
-From: sender@example.com
-To: recipient@example.com
-Subject: One valid part
+From: "Test Sender" <sender@example.com>
+To: <recipient@example.com>
+Subject: Valid nested multipart baseline
+Date: Wed, 11 Jun 2025 10:00:00 +0000
+Message-ID: <valid-format@example.com>
 MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="outer"
+
+--outer
 Content-Type: multipart/alternative; boundary="inner"
 
 --inner
 Content-Type: text/plain
 
-Hello
+Plain text version of the body.
+--inner
+Content-Type: text/html
 
+<html><body><p>HTML version of the body.</p></body></html>
 --inner--
+--outer
+Content-Type: text/plain; name="notes.txt"
+Content-Disposition: attachment; filename="notes.txt"
+
+Attachment content line one.
+Attachment content line two.
+--outer--
