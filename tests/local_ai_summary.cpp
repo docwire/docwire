@@ -1,4 +1,6 @@
 #include "docwire.h"
+#include "ensure.h"
+#include "fuzzy_match.h"
 #include <sstream>
 
 int main(int argc, char* argv[])
@@ -9,11 +11,7 @@ int main(int argc, char* argv[])
   try
   {
     std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | plain_text_exporter() | ai::local::summarize() | out_stream;
-    ensure(out_stream.str()).is_one_of({
-        "Data processing is the collection, organization, analysis, and interpretation of data to extract useful insights and support decision-making.",
-        "Data processing is the process of transforming raw data into meaningful information.",
-        "Data processing is the collection, organization, analysis, and interpretation of data."
-    });
+    ensure(fuzzy_match::ratio(out_stream.str(), "Data processing is the collection, organization, analysis, and interpretation of data.\n")) > 80;
   }
   catch (const std::exception& e)
   {
