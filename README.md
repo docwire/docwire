@@ -417,7 +417,7 @@ Make a summary of document in any format (Office, PDF, mail, etc) using build-in
 
 ```cpp
 std::filesystem::path("...") | ... | ai::local::summarize() | out_stream;
-ensure(fuzzy_match::ratio(out_stream.str(), "Data processing is the collection, organization, analysis, and interpretation of data.\n")) > 80
+ensure(fuzzy_match::ratio(out_stream.str(), "Data processing is the collection, organization, analysis, and interpretation of data.\n")) > 50
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/local_ai_summary_8cpp-example.html)
 
