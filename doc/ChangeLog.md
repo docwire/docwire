@@ -1,4 +1,4 @@
-## Version 2026.07.04
+## Version 2026.07.07
 
 This release introduces a major overhaul of the local AI subsystem, adding support for Llama.cpp and the IBM Granite model, alongside extensive naming standardization and build system improvements. A new abstract AI runner interface unifies inference backends, while rigorous snake_case normalization aligns the entire codebase with the project's coding guidelines.
 
