@@ -11,16 +11,16 @@ This release introduces a major overhaul of the local AI subsystem, adding suppo
 > 🦙🧠🔧📚
 
 - **Features**
-  - **Llama.cpp Integration**: Added an optional Llama.cpp backend (`docwire_ai_llama`) for running GGUF‑based models. A new `llama_runner` class implements the abstract `ai_runner` interface, providing `process()` and `embed()` methods with thread‑safe backend management.
+  - **Llama.cpp Integration**: Added an optional Llama.cpp backend (`docwire_ai_llama`) for running GGUF-based models. A new `llama_runner` class implements the abstract `ai_runner` interface, providing `process()` and `embed()` methods with thread-safe backend management.
   - **IBM Granite Model Support**: The new `local-ai-model-granite` feature installs the IBM Granite 4.0 1B Q8_0 GGUF model, making a compact yet capable LLM available out of the box.
   - **Abstract AI Runner Interface**: Introduced `docwire::ai::ai_runner` – a pure virtual base that defines `process()`, `embed()`, and `unload()` for all local AI backends. Backends guarantee thread safety and deterministic teardown.
   - **Modular AI Backends**: Split the local AI runtime into separate optional libraries: `docwire_ai_ct2` (CTranslate2) and `docwire_ai_llama` (Llama.cpp). A common `docwire_ai` library now contains shared components such as `ai::task`, `ai::summarize`, `ai::translate`, and `ai::embed`.
-  - **High‑Level Local AI API**: New convenience classes in the `ai::local` namespace (`summarize`, `translate`, `task`, `passage::embedder`, `query::embedder`) automatically select a default backend model, simplifying the most common use cases.
+  - **High-Level Local AI API**: New convenience classes in the `ai::local` namespace (`summarize`, `translate`, `task`, `passage::embedder`, `query::embedder`) automatically select a default backend model, simplifying the most common use cases.
   - **Documentation**: Added the **DocWire SDK Manifesto** and **Coding Guidelines** to the repository documentation (`doc/manifesto.md`, `doc/coding_guidelines.md`), outlining the project’s philosophy and architectural rules.
 
 - **Improvements**
-  - **Naming Normalisation**: All class/struct/enum names have been converted to `snake_case` according to the new coding guidelines. Publicly visible types such as `ChainElement`, `PlainTextExporter`, `HtmlWriter`, `ParsingChain`, `TransformerFunc`, `FileStream`, `ZipReader`, etc., are now `chain_element`, `plain_text_exporter`, `html_writer`, `parsing_chain`, `transformer_func`, `file_stream`, `zip_reader`, and so on. Document element tags (`document::Text` → `document::text`, `mail::Mail` → `mail::mail`, …) have been similarly renamed.
-  - **Enum Names Standardised**: Enumerations such as `Model`, `ImageDetail`, `Language`, `output_type` etc., inside various namespaces now follow snake_case (e.g., `openai::model`, `openai::image_detail`, etc.).
+  - **Naming Normalization**: All class/struct/enum names have been converted to `snake_case` according to the new coding guidelines. Publicly visible types such as `ChainElement`, `PlainTextExporter`, `HtmlWriter`, `ParsingChain`, `TransformerFunc`, `FileStream`, `ZipReader`, etc., are now `chain_element`, `plain_text_exporter`, `html_writer`, `parsing_chain`, `transformer_func`, `file_stream`, `zip_reader`, and so on. Document element tags (`document::Text` → `document::text`, `mail::Mail` → `mail::mail`, …) have been similarly renamed.
+  - **Enum Names Standardized**: Enumerations such as `Model`, `ImageDetail`, `Language`, `output_type` etc., inside various namespaces now follow snake_case (e.g., `openai::model`, `openai::image_detail`, etc.).
   - **Upgraded libbfio** to version `20260623` for improved stability and compatibility.
   - **ASan Fix for Recent MSVC**: Added `_DISABLE_OPTIONAL_ANNOTATION` to prevent link errors when building with AddressSanitizer on MSVC.
   - **CTranslate2 Build Fix**: The custom `spdlog` submodule has been replaced by the standard vcpkg `spdlog` port, resolving spdlog‑related build errors.
@@ -29,7 +29,7 @@ This release introduces a major overhaul of the local AI subsystem, adding suppo
 
 - **Refactor**
   - **Backend Separation**: The former monolithic `local_ai` library has been split into `docwire_ai_ct2` (CTranslate2 runner, tokenizer) and `docwire_ai_llama` (Llama.cpp runner). The `docwire_local_ai` library becomes a convenience layer that links the chosen backends.
-  - **Namespace & Module Reorganisation**:
+  - **Namespace & Module Reorganization**:
     - CTranslate2‑specific classes moved into `docwire::ai::ct2` (`ct2_runner`, `tokenizer`).
     - Llama.cpp‑specific code lives in `docwire::ai::llama`.
     - Shared AI chain elements reside directly in `docwire::ai`.
@@ -41,7 +41,7 @@ This release introduces a major overhaul of the local AI subsystem, adding suppo
   - **Backend Integration Tests**: Added `local_ai_ct2_integration` and `local_ai_llama_integration` tests that execute a full pipeline (document parsing → text extraction → local AI task) to validate the new backends.
   - **More Forgiving AI Tests**: Local AI summarization tests now use fuzzy matching instead of exact string comparison, reducing flakiness due to model output variation.
   - **EML Robustness Tests**: New test cases (`endboundary_first.eml`, `missing_inner_closing_boundary.eml`, `nested_multiparts_missing.eml`, `valid_format.eml`) ensure correct handling of malformed or non‑standard MIME boundaries.
-  - **Test Infrastructure Fixes**: Added a GoogleTest `PrintTo` stringification for the `ContentTypeTestCase` struct, resolving formatting issues in parameterised content‑type tests.
+  - **Test Infrastructure Fixes**: Added a GoogleTest `PrintTo` stringification for the `ContentTypeTestCase` struct, resolving formatting issues in parameterized content‑type tests.
   - **Build Guard**: Example tests that require local AI libraries are conditionally compiled only when the corresponding targets are available. 
 
 ## Version 2026.05.25
