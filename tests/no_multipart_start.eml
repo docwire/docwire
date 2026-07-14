@@ -1,0 +1,9 @@
+From: "Test Sender" <sender@example.com>
+To: <recipient@example.com>
+Subject: Multipart declared but no boundary lines present
+Date: Wed, 11 Jun 2025 10:00:00 +0000
+Message-ID: <no-multipart-start@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="root"
+
+Just plain text, no boundaries at all here.
