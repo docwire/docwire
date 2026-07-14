@@ -161,6 +161,24 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 				}
 			}
 		}
+		else if (ct.media_type() == mime::media_type_t::MULTIPART && mime_entity.parts().empty())
+		{
+			std::string plain_text = mime_entity.content();
+			if (!plain_text.empty())
+			{
+				// Fix for Degenerate multipart: the header declared a multipart Content-Type,
+				// but the body never contained any boundary-delimited parts.
+				log_scope();
+				try
+				{
+					emit_message_back(data_source { plain_text, mime_type{"text/plain"}, confidence::high});
+				}
+				catch (std::exception&)
+				{
+					emit_message(errors::make_nested_ptr(std::current_exception(), make_error("Failed to process malformed multipart body with no parts")));
+				}
+			}
+		}
 		else if (ct.media_type() != mime::media_type_t::MULTIPART)
 		{
 			log_scope();
@@ -237,22 +255,6 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 
 			if (selected_part)
 				extractPlainText(*selected_part);
-		}
-		else if (ct.media_type() == mime::media_type_t::MULTIPART && mime_entity.parts().empty() && !mime_entity.content().empty())
-		{
-			// Fix for Degenerate multipart: the header declared a multipart Content-Type,
-			// but the body never contained any boundary-delimited parts.
-			log_scope();
-			std::string plain_text = mime_entity.content();
-			plain_text.erase(std::remove(plain_text.begin(), plain_text.end(), '\r'), plain_text.end());
-			try
-			{
-				emit_message_back(data_source { plain_text, mime_type{"text/plain"}, confidence::high});
-			}
-			catch (std::exception&)
-			{
-				emit_message(errors::make_nested_ptr(std::current_exception(), make_error("Failed to process malformed multipart body with no parts")));
-			}
 		}
 		else
 		{
