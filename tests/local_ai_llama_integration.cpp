@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
   try {
     std::stringstream out_stream;
     docwire::ai::model_inference_config config;
-    config.model_path = model_path;
+    config.model_path = model_path.string();
     config.max_tokens = docwire::ai::token_limit{256};
     config.n_ctx = docwire::ai::context_size{4096};
     config.n_threads = docwire::ai::thread_count{4};
