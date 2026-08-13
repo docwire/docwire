@@ -238,9 +238,15 @@ static std::string GenerateTestName(const ::testing::TestParamInfo<content_type_
 
 static const std::vector<content_type_test_case> content_type_test_cases = {
     // Modern Office Formats
-    {"1.docx", {"application/zip"}, "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
-    {"1.xlsx", {"application/zip"}, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
-    {"1.pptx", {"application/zip"}, "application/vnd.openxmlformats-officedocument.presentationml.presentation"},
+    {"1.docx",
+    {"application/zip", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
+    {"1.xlsx",
+    {"application/zip", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+    {"1.pptx",
+    {"application/zip", "application/vnd.openxmlformats-officedocument.presentationml.presentation"},
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation"},
     
     // Legacy Office Formats
     {"1.doc", {"application/msword"}, "application/msword"},
@@ -248,7 +254,9 @@ static const std::vector<content_type_test_case> content_type_test_cases = {
     {"1.ppt", {"application/vnd.ms-powerpoint"}, "application/vnd.ms-powerpoint"},
     
     // Formats with Custom Detectors
-    {"1.xlsb", {"application/zip"}, "application/vnd.ms-excel.sheet.binary.macroenabled.12"},
+    {"1.xlsb",
+    {"application/zip", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+    "application/vnd.ms-excel.sheet.binary.macroenabled.12"},
     {"1.key", {"application/zip"}, "application/vnd.apple.keynote"},
     {"1.pages", {"application/zip"}, "application/vnd.apple.pages"},
     {"1.numbers", {"application/zip"}, "application/vnd.apple.numbers"},
