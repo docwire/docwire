@@ -50,6 +50,9 @@ list(REMOVE_ITEM HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/thread_safe_ole_stream_reader.h)
 install(FILES ${HEADERS} DESTINATION include/docwire)
 
+file(GLOB PLAIN_TEXT_HEADERS "plain_text/*.h")
+install(FILES ${PLAIN_TEXT_HEADERS} DESTINATION include/docwire/plain_text)
+
 include(GNUInstallDirs)
 
 include(CMakePackageConfigHelpers)
