@@ -1,7 +1,7 @@
 #ifndef DOCWIRE_PLAIN_TEXT_OUTPUT_WIDTH_H
 #define DOCWIRE_PLAIN_TEXT_OUTPUT_WIDTH_H
 
-#include "ranged.h"
+#include "../ranged.h"
 
 namespace docwire::plain_text {
 
