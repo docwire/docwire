@@ -393,10 +393,9 @@ TEST(plain_text_exporter, table_long_url_preserves_content)
         EXPECT_LE(line.size(), 80) << "Line too long: " << line;
 
     // Every character of the long URL must be retained.
-    // Count the total number of 'a' characters (excluding the fixed "Short" text).
-    // Note: the URL contains only 'a' after the prefix, so count equals URL length - prefix length.
-    const int prefix_len = std::string("https://example.com/").size(); // 19
-    const int total_a_expected = 500 - prefix_len;
+    // Count all 'a' characters in the output: one is in the fixed hostname
+    // ("example.com"), and the remaining 480 come from the appended padding.
+    const int total_a_expected = 481;
     EXPECT_EQ(std::count(result.begin(), result.end(), 'a'), total_a_expected);
 }
 
