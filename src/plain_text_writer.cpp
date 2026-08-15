@@ -10,11 +10,11 @@
 /*********************************************************************************************************************************************/
 
 #include <boost/container/flat_map.hpp>
-#include <iostream>
 #include <iomanip>
 #include <ctime>
 #include <sstream>
 #include <typeindex>
+#include <numeric>
 
 #include "mail_elements.h"
 #include "document_elements.h"
@@ -25,17 +25,24 @@
 #include "serialization_document_elements.h" // IWYU pragma: keep
 #include "serialization_mail_elements.h" // IWYU pragma: keep
 #include "throw_if.h"
+#include "plain_text/wrap_lines.h"
+#include "plain_text/allocate_columns_auto.h"
+#include "plain_text/render_table.h"
+#include "plain_text/compute_column_width_ranges.h"
+#include "plain_text/output_width.h"
 
 namespace docwire
 {
+using plain_text::output_width;
 
 class cell
 {
 public:
   cell(std::string eol_sequence,
     std::function<std::string(const document::link&)> format_link_opening,
-    std::function<std::string(const document::close_link&)> format_link_closing)
-  : writer(eol_sequence, format_link_opening, format_link_closing)
+    std::function<std::string(const document::close_link&)> format_link_closing,
+    output_width max_output_width)
+  : writer(eol_sequence, format_link_opening, format_link_closing, max_output_width)
   {}
 
   void write(const std::string& s)
@@ -63,31 +70,6 @@ public:
     stream.str(std::string());
   }
 
-  int width() const
-  {
-    int width = 0;
-    for (const auto & single_line : lines)
-    {
-      width = std::max(width, int(single_line.size()));
-    }
-    return width;
-  }
-
-  int height() const
-  {
-    return lines.size();
-  }
-
-  std::string getLine(unsigned int idx) const
-  {
-    return idx < lines.size() ? lines[idx] : "";
-  }
-
-  std::string result_text() const
-  {
-    return result;
-  }
-
   plain_text_writer writer;
   std::string result;
   std::vector<std::string> lines;
@@ -98,8 +80,9 @@ class nested_writer
 public:
   nested_writer(std::string eol_sequence, 
     std::function<std::string(const document::link&)> format_link_opening,
-    std::function<std::string(const document::close_link&)> format_link_closing)
-  : m_writer(eol_sequence, format_link_opening, format_link_closing)
+    std::function<std::string(const document::close_link&)> format_link_closing,
+    output_width max_output_width)
+  : m_writer(eol_sequence, format_link_opening, format_link_closing, max_output_width)
   {}
 
   void write(const message_ptr& msg)
@@ -124,7 +107,8 @@ struct pimpl_impl<plain_text_writer> : pimpl_impl_base
 
   pimpl_impl(const std::string& eol_sequence,
       std::function<std::string(const document::link&)> format_link_opening,
-      std::function<std::string(const document::close_link&)> format_link_closing)
+      std::function<std::string(const document::close_link&)> format_link_closing,
+      output_width max_output_width)
     : m_handlers{
         {typeid(mail::mail), [this](const message_ptr& msg) { return write_mail(msg->get<mail::mail>()); }},
         {typeid(mail::attachment), [this](const message_ptr& msg) { return write_attachment(msg->get<mail::attachment>()); }},
@@ -161,7 +145,8 @@ struct pimpl_impl<plain_text_writer> : pimpl_impl_base
     },
     m_eol_sequence(eol_sequence),
     m_format_link_opening(format_link_opening),
-    m_format_link_closing(format_link_closing)
+    m_format_link_closing(format_link_closing),
+    m_max_output_width(max_output_width)
   {}
 
   std::string timestampToString(unsigned int timestamp)
@@ -280,7 +265,7 @@ struct pimpl_impl<plain_text_writer> : pimpl_impl_base
     std::string text;
     if (image.structured_content_streamer)
     {
-      nested_writer writer{m_eol_sequence, m_format_link_opening, m_format_link_closing};  
+      nested_writer writer{m_eol_sequence, m_format_link_opening, m_format_link_closing, m_max_output_width};  
       image.structured_content_streamer.value()(
         message_callbacks
         {
@@ -429,62 +414,56 @@ struct pimpl_impl<plain_text_writer> : pimpl_impl_base
 		return std::make_shared<text_element>(m_eol_sequence + footer);
 	}
 
-  std::string add_shift(int count)
-  {
-    std::string shift;
-    for (int i = 0; i < count; ++i)
-    {
-      shift += " ";
-    }
-    return shift;
-  }
-
   std::string render_table()
   {
     std::string result;
-
     if (table_caption_writer)
-      result += table_caption_writer->result_text() + m_eol_sequence;
+        result += table_caption_writer->result_text() + m_eol_sequence;
+    if (table.empty())
+        return result;
 
-    int max_column_width = 0;
-    int cell_in_row = 0;
+    // Determine the maximum number of columns across all rows
+    size_t max_cols = 0;
+    for (const auto& row : table)
+        max_cols = std::max(max_cols, row.size());
 
-    for (const auto &row : table)
-    {
-      cell_in_row = std::max(cell_in_row, int(row.size()));
-      for (const auto &cell : row)
-      {
-        max_column_width = std::max(max_column_width, cell.width());
-      }
+    // Build raw (unwrapped) cell lines
+    std::vector<std::vector<std::vector<std::string>>> raw_cell_lines;
+    raw_cell_lines.reserve(table.size());
+    for (const auto& row : table) {
+        std::vector<std::vector<std::string>> raw_row;
+        raw_row.reserve(row.size());
+        for (const auto& cell : row)
+            raw_row.push_back(cell.lines);      // copy the raw lines
+        raw_row.resize(max_cols);               // pad missing columns with empty
+        raw_cell_lines.push_back(std::move(raw_row));
     }
-    // Limit the maximum column width for performance reasons
-    constexpr int column_width_limit = 1000;
-    max_column_width = std::min(max_column_width, column_width_limit);
 
-    for (const auto &row : table)
-    {
-      std::string row_result;
-      unsigned int max_row_height = 1; // empty rows or rows with all cells empty should be visible
-      for (const auto &cell : row)
-      {
-        max_row_height = std::max(int(max_row_height), cell.height());
-      }
-      for (unsigned int i = 0; i < max_row_height; ++i)
-      {
-        for (unsigned int j = 0; j < row.size(); ++j)
-        {
-          std::string l = row[j].getLine(i);
-          // limit length of l to column_width_limit
-          l = l.substr(0, std::min(l.size(), size_t(column_width_limit)));
-          row_result += l;
-          int size_diff = max_column_width - l.size();
-          int right_margin = j < (row.size() - 1) ? 2 : 0;
-          row_result += add_shift(size_diff + right_margin);
+    // Compute minimum and desired widths for all columns
+    auto [min_widths, desired_widths] = plain_text::compute_column_width_ranges(raw_cell_lines, max_cols);
+
+    // Allocate final column widths (strategy chosen automatically)
+    const int total_width = m_max_output_width.value();
+    const int inter_col_gap = 2;
+    auto [col_widths, gap] = plain_text::allocate_columns_auto(min_widths, desired_widths,
+                                                               total_width, inter_col_gap);
+
+    // Build wrapped cell lines using the allocated widths
+    std::vector<std::vector<std::vector<std::string>>> wrapped_cell_lines;
+    wrapped_cell_lines.reserve(table.size());
+    for (size_t r = 0; r < table.size(); ++r) {
+        std::vector<std::vector<std::string>> wrapped_row;
+        wrapped_row.reserve(max_cols);
+        for (size_t j = 0; j < max_cols; ++j) {
+            if (j < raw_cell_lines[r].size() && !raw_cell_lines[r][j].empty())
+                wrapped_row.push_back(plain_text::wrap_lines(raw_cell_lines[r][j], col_widths[j]));
+            else
+                wrapped_row.push_back({});
         }
-        row_result += m_eol_sequence;
-      }
-      result += row_result;
+        wrapped_cell_lines.push_back(std::move(wrapped_row));
     }
+
+    result += plain_text::render_table(wrapped_cell_lines, col_widths, gap, m_eol_sequence);
     return result;
   }
 
@@ -495,7 +474,7 @@ struct pimpl_impl<plain_text_writer> : pimpl_impl_base
       if (msgs[i]->is<document::table>())
       {
         std::stringstream ss;
-        plain_text_writer writer{m_eol_sequence, m_format_link_opening, m_format_link_closing};
+        plain_text_writer writer{m_eol_sequence, m_format_link_opening, m_format_link_closing, m_max_output_width};
         int open_table_msgs = 1;
         writer.write_to(msgs[i], ss);
         do
@@ -516,7 +495,7 @@ struct pimpl_impl<plain_text_writer> : pimpl_impl_base
         throw_if (table_caption_mode, "Table caption inside table caption", errors::program_logic{});
         throw_if (table_caption_writer, "Second caption inside table", errors::program_logic{});
         table_caption_mode = true;
-        table_caption_writer = nested_writer{m_eol_sequence, m_format_link_opening, m_format_link_closing};
+        table_caption_writer = nested_writer{m_eol_sequence, m_format_link_opening, m_format_link_closing, m_max_output_width};
       }
       else if (msgs[i]->is<document::close_caption>())
       {
@@ -530,7 +509,7 @@ struct pimpl_impl<plain_text_writer> : pimpl_impl_base
       else if (msgs[i]->is<document::table_cell>())
       {
         throw_if (table.empty(), "Cell inside table without rows", errors::program_logic{});
-        table.back().push_back(cell{m_eol_sequence, m_format_link_opening, m_format_link_closing});
+        table.back().push_back(cell{m_eol_sequence, m_format_link_opening, m_format_link_closing, m_max_output_width});
       }
       else if (!msgs[i]->is<document::close_table_row>() && !msgs[i]->is<document::close_table_cell>())
       {
@@ -604,12 +583,14 @@ struct pimpl_impl<plain_text_writer> : pimpl_impl_base
   std::optional<nested_writer> table_caption_writer;
   bool table_caption_mode{false};
   int m_nested_docs_counter { 0 };
+  output_width m_max_output_width;
 };
 
 plain_text_writer::plain_text_writer(const std::string& eol_sequence,
   std::function<std::string(const document::link&)> format_link_opening,
-  std::function<std::string(const document::close_link&)> format_link_closing)
-    : with_pimpl<plain_text_writer>(eol_sequence, format_link_opening, format_link_closing)
+  std::function<std::string(const document::close_link&)> format_link_closing,
+  output_width max_output_width)
+    : with_pimpl<plain_text_writer>(eol_sequence, format_link_opening, format_link_closing, max_output_width)
 {
 }
 

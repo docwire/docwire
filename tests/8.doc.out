@@ -9,27 +9,27 @@ one
 two
 three
 table:
-11  12  13  14
-21  22  23  24
-31  32  33  34
-41  42  43  44
+11                  12                  13                  14
+21                  22                  23                  24
+31                  32                  33                  34
+41                  42                  43                  44
 Table with hyperlinks:
-<http://www.first.com/>first    <http://www.second.com/>second
-<http://www.third.com/>third    <http://www.fourth.com/>fourth
+<http://www.first.com/>first            <http://www.second.com/>second
+<http://www.third.com/>third            <http://www.fourth.com/>fourth
 Tabela with lists:
-first    second   third  
-one      one      one    
-two      two      two    
-three    three    three  
-fourth   fiveth   sixth  
-one      one      one    
-two      two      two    
-three    three           
-seventh  eighth   nineth 
-                  one    
-                  two    
-                  three  
-                  four   
+first                       second                     third
+one                         one                        one
+two                         two                        two
+three                       three                      three
+fourth                      fiveth                     sixth
+one                         one                        one
+two                         two                        two
+three                       three                      
+seventh                     eighth                     nineth
+                                                       one
+                                                       two
+                                                       three
+                                                       four
 
 <mailto:email@example.com>email example
 

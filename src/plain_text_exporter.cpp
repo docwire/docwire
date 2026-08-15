@@ -23,8 +23,8 @@ namespace docwire
 template<>
 struct pimpl_impl<plain_text_exporter> : pimpl_impl_base
 {
-	pimpl_impl(eol_sequence eol_sequence, link_formatter link_formatter)
-		: m_writer{eol_sequence.v, link_formatter.format_opening, link_formatter.format_closing}
+	pimpl_impl(eol_sequence eol_sequence, link_formatter link_formatter, output_width max_output_width)
+		: m_writer{eol_sequence.v, link_formatter.format_opening, link_formatter.format_closing, max_output_width}
 	{}
 
 	std::shared_ptr<std::stringstream> m_stream;
@@ -32,8 +32,8 @@ struct pimpl_impl<plain_text_exporter> : pimpl_impl_base
 	int m_nested_docs_level { 0 };
 };
 
-plain_text_exporter::plain_text_exporter(eol_sequence eol_sequence, link_formatter link_formatter)
-	: with_pimpl<plain_text_exporter>(eol_sequence, link_formatter)
+plain_text_exporter::plain_text_exporter(eol_sequence eol_sequence, link_formatter link_formatter, output_width max_output_width)
+	: with_pimpl<plain_text_exporter>(eol_sequence, link_formatter, max_output_width)
 {}
 
 continuation plain_text_exporter::operator()(message_ptr msg, const message_callbacks& emit_message)

@@ -13,10 +13,13 @@
 #define DOCWIRE_PLAIN_TEXT_EXPORTER_H
 
 #include "chain_element.h"
+#include <functional>
 #include "document_elements.h"
+#include "plain_text/output_width.h"
 
 namespace docwire
 {
+using docwire::plain_text::output_width;
 
 struct eol_sequence { std::string v; };
 
@@ -32,7 +35,9 @@ struct link_formatter
 class DOCWIRE_CORE_EXPORT plain_text_exporter: public chain_element, public with_pimpl<plain_text_exporter>
 {
 public:
-	plain_text_exporter(eol_sequence eol = eol_sequence{"\n"}, link_formatter formatter = default_link_formatter);
+	plain_text_exporter(eol_sequence eol = eol_sequence{"\n"},
+	                   link_formatter formatter = default_link_formatter,
+	                   output_width max_output_width = output_width{80});
 
 	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 

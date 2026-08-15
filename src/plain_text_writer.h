@@ -19,16 +19,19 @@
 #include "writer.h"
 #include "message.h"
 #include "document_elements.h"
+#include "plain_text/output_width.h"
 
 namespace docwire
 {
+using docwire::plain_text::output_width;
 
 class DOCWIRE_CORE_EXPORT plain_text_writer : public writer, public with_pimpl<plain_text_writer>
 {
 public:
   plain_text_writer(const std::string& eol_sequence,
     std::function<std::string(const document::link&)> format_link_opening,
-    std::function<std::string(const document::close_link&)> format_link_closing);
+    std::function<std::string(const document::close_link&)> format_link_closing,
+    output_width max_output_width = output_width{80});
 
   /**
    * @brief Converts text from callback to plain text format.
