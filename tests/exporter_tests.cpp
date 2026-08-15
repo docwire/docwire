@@ -216,6 +216,45 @@ TEST(plain_text_exporter, table_wide_output)
     test_table_exporting<plain_text_exporter>(std::move(exporter), expected);
 }
 
+TEST(plain_text_exporter, table_caption_wrapped_by_output_width)
+{
+    plain_text_exporter exporter(eol_sequence{"\n"}, link_formatter{}, output_width{40});
+    std::ostringstream output_stream{};
+    auto parsing_chain = exporter | output_stream;
+
+    std::string long_caption(100, 'x');
+
+    auto msgs = make_message_vector
+    (
+        document::document{},
+        document::table{},
+        document::caption{},
+        document::text{.text = long_caption},
+        document::close_caption{},
+        document::table_row{},
+        document::table_cell{},
+        document::text{.text = "cell"},
+        document::close_table_cell{},
+        document::close_table_row{},
+        document::close_table{},
+        document::close_document{}
+    );
+
+    for (auto& msg : msgs)
+        parsing_chain(std::move(msg));
+
+    std::string result = output_stream.str();
+
+    // No line may exceed the configured width (caption included)
+    std::istringstream iss(result);
+    std::string line;
+    while (std::getline(iss, line))
+        EXPECT_LE(line.size(), 40) << "Line too long: " << line;
+
+    // All 100 'x' characters from the caption must be retained.
+    EXPECT_EQ(std::count(result.begin(), result.end(), 'x'), 100);
+}
+
 TEST(plain_text_exporter, table_variable_rows_long_content)
 {
     // Simulates an ODS table with variable column counts and a cell containing a very long string.

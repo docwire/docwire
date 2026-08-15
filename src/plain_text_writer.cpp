@@ -418,7 +418,23 @@ struct pimpl_impl<plain_text_writer> : pimpl_impl_base
   {
     std::string result;
     if (table_caption_writer)
-        result += table_caption_writer->result_text() + m_eol_sequence;
+    {
+        std::string caption = table_caption_writer->result_text();
+        // Split caption by eol and wrap each line to max_output_width
+        std::vector<std::string> caption_lines;
+        std::string::size_type start = 0;
+        std::string::size_type pos;
+        while ((pos = caption.find(m_eol_sequence, start)) != std::string::npos)
+        {
+            caption_lines.push_back(caption.substr(start, pos - start));
+            start = pos + m_eol_sequence.length();
+        }
+        if (start < caption.length())
+            caption_lines.push_back(caption.substr(start));
+        auto wrapped_caption_lines = plain_text::wrap_lines(caption_lines, m_max_output_width.value());
+        for (const auto& line : wrapped_caption_lines)
+            result += line + m_eol_sequence;
+    }
     if (table.empty())
         return result;
 
