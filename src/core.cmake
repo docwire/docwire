@@ -3,7 +3,6 @@ add_library(docwire_core SHARED
     convert_chrono.cpp
     convert_numeric.cpp
     cosine_similarity.cpp
-    data_source.cpp
     debug_assert.cpp
     diagnostic_message.cpp
     entities.cpp
@@ -26,8 +25,6 @@ add_library(docwire_core SHARED
     meta_data_exporter.cpp
     transformer_func.cpp
     meta_data_writer.cpp
-    chain_element.cpp
-    parsing_chain.cpp
     resource_path.cpp
     serialization_thread_id.cpp
     serialization_typeindex.cpp

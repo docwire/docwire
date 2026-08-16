@@ -44,6 +44,18 @@ public:
     : v{other.to_shared_ptr()}
   {}
 
+  /// Copy assignment operator.
+  ref_or_owned& operator=(const ref_or_owned<T>& other) {
+    v = other.v;
+    return *this;
+  }
+
+  /// Move assignment operator.
+  ref_or_owned& operator=(ref_or_owned<T>&& other) noexcept {
+    v = std::move(other.v);
+    return *this;
+  }
+
   /**
    * @brief Constructs a ref_or_owned object from a reference to an object.
    *

@@ -13,18 +13,18 @@
 #define DOCWIRE_CHAIN_ELEMENT_H
 
 #include "core_export.h"
-#include "pimpl.h"
 #include "message.h"
+#include "pimpl.h"
 
 namespace docwire
 {
 
 class parsing_chain;
 
-class DOCWIRE_CORE_EXPORT chain_element : public with_pimpl<chain_element>
+class DOCWIRE_CORE_EXPORT chain_element
 {
 public:
-  chain_element();
+  chain_element() = default;
   chain_element(chain_element&&) = default;
   virtual ~chain_element() = default;
   chain_element& operator=(chain_element&&) = default;

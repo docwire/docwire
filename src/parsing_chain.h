@@ -14,8 +14,11 @@
 
 #include "chain_element.h"
 #include "core_export.h"
-#include "pimpl.h"
+#include "log_scope.h"
 #include "ref_or_owned.h"
+#include "serialization_message.h"
+#include <memory>
+#include <utility>
 
 namespace docwire
 {
@@ -25,12 +28,12 @@ namespace pipeline
 struct start_processing {};
 } // namespace pipeline
 
-class DOCWIRE_CORE_EXPORT parsing_chain : public chain_element, public with_pimpl<parsing_chain>
+class DOCWIRE_CORE_EXPORT parsing_chain : public chain_element
 {
   public:
-    parsing_chain(ref_or_owned<chain_element> lhs, ref_or_owned<chain_element> rhs);
-    parsing_chain(parsing_chain&& chain);
-    parsing_chain& operator=(parsing_chain&& chain);
+    parsing_chain(ref_or_owned<chain_element> lhs_element, ref_or_owned<chain_element> rhs_element);
+    parsing_chain(parsing_chain&& chain) = default;
+    parsing_chain& operator=(parsing_chain&& chain) = default;
 
     void operator()(message_ptr msg);
 
@@ -43,10 +46,76 @@ class DOCWIRE_CORE_EXPORT parsing_chain : public chain_element, public with_pimp
     virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
   private:
-    using with_pimpl<parsing_chain>::impl;
+    ref_or_owned<chain_element> m_lhs_element;
+    ref_or_owned<chain_element> m_rhs_element;
 };
 
-DOCWIRE_CORE_EXPORT parsing_chain operator|(ref_or_owned<chain_element> lhs, ref_or_owned<chain_element> rhs);
+inline parsing_chain::parsing_chain(ref_or_owned<chain_element> lhs_element, ref_or_owned<chain_element> rhs_element)
+  : m_lhs_element{std::move(lhs_element)}, m_rhs_element{std::move(rhs_element)}
+{}
+
+inline void parsing_chain::operator()(message_ptr msg)
+{
+  DOCWIRE_LOG_SCOPE(msg);
+  operator()(std::move(msg),
+  {
+    [](message_ptr msg)
+    {
+      DOCWIRE_LOG_SCOPE(msg);
+      return continuation::proceed;
+    },
+    [this](message_ptr msg)
+    {
+      DOCWIRE_LOG_SCOPE(msg);
+      operator()(std::move(msg));
+      return continuation::proceed;
+    }
+  });
+}
+
+inline continuation parsing_chain::operator()(message_ptr msg, const message_callbacks& emit_message)
+{
+  DOCWIRE_LOG_SCOPE(msg);
+  auto lhs_callback = [this, &rhs_callbacks = emit_message](message_ptr msg)
+  {
+    DOCWIRE_LOG_SCOPE(msg);
+    return m_rhs_element.get()(std::move(msg), rhs_callbacks);
+  };
+  return m_lhs_element.get()(std::move(msg),
+    {
+      lhs_callback,
+      [emit_message](message_ptr msg)
+      {
+        DOCWIRE_LOG_SCOPE(msg);
+        return emit_message.back(std::move(msg));
+      }
+    });
+}
+
+inline bool parsing_chain::is_leaf() const
+{
+  return m_rhs_element.get().is_leaf();
+}
+
+inline bool parsing_chain::is_generator() const
+{
+  return m_lhs_element.get().is_generator();
+}
+
+inline bool parsing_chain::is_complete() const
+{
+  return is_generator() && is_leaf();
+}
+
+inline parsing_chain operator|(ref_or_owned<chain_element> lhs, ref_or_owned<chain_element> rhs)
+{
+  parsing_chain chain{std::move(lhs), std::move(rhs)};
+  if (chain.is_complete())
+  {
+    chain(std::make_shared<message<pipeline::start_processing>>(pipeline::start_processing{}));
+  }
+  return chain;
+}
 
 inline parsing_chain& operator|=(parsing_chain& lhs, ref_or_owned<chain_element> rhs)
 {

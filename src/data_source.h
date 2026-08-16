@@ -14,12 +14,22 @@
 
 #include "core_export.h"
 #include "file_extension.h"
+#include <algorithm>
 #include <filesystem>
+#include <fstream>
 #include <functional>
+#include <istream>
+#include <memory>
 #include <span>
 #include "memory_buffer.h"
 #include <optional>
+#include <string>
 #include <string_view>
+#include <utility>
+#include "error_tags.h"
+#include "memorystream.h"
+#include "serialization_filesystem.h"
+#include "throw_if.h"
 #include "unique_identifier.h"
 #include <unordered_map>
 #include <variant>
@@ -124,7 +134,7 @@ template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 	as required (lazy) and cached inside the class, for example file should be read to memory only once.
 	Performance is very important, for example we should not duplicate memory buffer that is passed to class.
 **/
-class DOCWIRE_CORE_EXPORT data_source
+class data_source
 {
 	public:
 		/**
@@ -317,6 +327,219 @@ class DOCWIRE_CORE_EXPORT data_source
 
 		void fill_memory_cache(std::optional<length_limit> limit) const;
 };
+
+namespace
+{
+
+void read_unseekable_stream_into_memory(std::shared_ptr<memory_buffer> buffer, std::shared_ptr<std::istream> stream, std::optional<length_limit> limit)
+{
+	constexpr size_t chunk_size = 4096;
+	size_t size = buffer->size();
+	for (;;)
+	{
+		if (limit && size >= limit->v)
+			break;
+		size_t to_read = limit ? std::min(chunk_size, limit->v - size) : chunk_size;
+		buffer->resize(size + to_read);
+		DOCWIRE_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read) && !stream->eof());
+		size_t bytes_read = stream->gcount();
+		size += bytes_read;
+		if (bytes_read < to_read)
+		{
+			buffer->resize(size);
+			break;
+		}
+	}
+}
+
+void read_seekable_stream_into_memory(std::shared_ptr<memory_buffer> buffer, std::optional<size_t>& stream_size, std::shared_ptr<std::istream> stream, std::optional<length_limit> limit)
+{
+	if (!stream_size)
+	{
+		DOCWIRE_THROW_IF (!stream->seekg(0, std::ios::end));
+		stream_size = stream->tellg();
+		DOCWIRE_THROW_IF (!stream->seekg(0, std::ios::beg));
+	}
+	size_t size = buffer->size();
+	if ((limit ? std::min(*stream_size, limit->v) : *stream_size) <= size)
+		return;
+	size_t to_read = (limit ? std::min(*stream_size, limit->v) : *stream_size) - size;
+	buffer->resize(size + to_read);
+	DOCWIRE_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read));
+}
+
+} // anonymous namespace
+
+inline std::span<const std::byte> data_source::span(std::optional<length_limit> limit) const
+{
+	return std::visit(
+		overloaded {
+			[this, limit](const std::vector<std::byte>& source)
+			{
+				size_t size = limit ? std::min(source.size(), limit->v) : source.size();
+				return std::span{source.data(), size};
+			},
+			[this, limit](const std::span<const std::byte>& source)
+			{
+				size_t size = limit ? std::min(source.size(), limit->v) : source.size();
+				return std::span{source.data(), size};
+			},
+			[this, limit](const std::string& source)
+			{
+				size_t size = limit ? std::min(source.size(), limit->v) : source.size();
+				return std::span{reinterpret_cast<const std::byte*>(source.data()), size};
+			},
+			[this, limit](const std::string_view& source)
+			{
+				size_t size = limit ? std::min(source.size(), limit->v) : source.size();
+				return std::span{reinterpret_cast<const std::byte*>(source.data()), size};
+			},
+			[this, limit](auto source)
+			{
+				fill_memory_cache(limit);
+				size_t size = limit ? std::min(m_memory_cache->size(), limit->v) : m_memory_cache->size();
+				return std::span<const std::byte>(m_memory_cache->data(), size);
+			}
+		}, m_source);
+}
+
+inline std::string data_source::string(std::optional<length_limit> limit) const
+{
+	return std::visit(
+		overloaded {
+			[this, limit](const std::vector<std::byte>& source)
+			{
+				if (limit)
+					return std::string{reinterpret_cast<const char*>(source.data()), std::min(source.size(), limit->v)};
+				else
+					return std::string{reinterpret_cast<const char*>(source.data()), source.size()};
+			},
+			[this, limit](const std::span<const std::byte>& source)
+			{
+				if (limit)
+					return std::string{reinterpret_cast<const char*>(source.data()), std::min(source.size(), limit->v)};
+				else
+					return std::string{reinterpret_cast<const char*>(source.data()), source.size()};
+			},
+			[this, limit](const std::string& source)
+			{
+				if (limit)
+					return source.substr(0, limit->v);
+				else
+					return source;
+			},
+			[this, limit](const std::string_view& source)
+			{
+				if (limit)
+					return std::string{source.substr(0, limit->v)};
+				else
+					return std::string{source};
+			},
+			[this, limit](auto source)
+			{
+				fill_memory_cache(limit);
+				if (limit)
+					return std::string{reinterpret_cast<const char*>(m_memory_cache->data()), std::min(m_memory_cache->size(), limit->v)};
+				else
+					return std::string{reinterpret_cast<const char*>(m_memory_cache->data()), m_memory_cache->size()};
+			}
+		}, m_source);
+}
+
+inline std::string_view data_source::string_view(std::optional<length_limit> limit) const
+{
+	return std::visit(
+		overloaded {
+			[this, limit](const std::string& source)
+			{
+				return std::string_view{source}.substr(0, limit ? limit->v : std::string_view::npos);
+			},
+			[this, limit](const std::string_view& source)
+			{
+				return source.substr(0, limit ? limit->v : std::string_view::npos);
+			},
+			[this, limit](const auto& source)
+			{
+				std::span<const std::byte> data_span = span(limit);
+				return std::string_view{reinterpret_cast<const char*>(data_span.data()), data_span.size()};
+			}
+		}, m_source);
+}
+
+inline std::shared_ptr<std::istream> data_source::istream() const
+{
+	return std::make_shared<imemorystream>(span());
+}
+
+inline std::optional<std::filesystem::path> data_source::path() const
+{
+	if (std::holds_alternative<std::filesystem::path>(m_source))
+		return std::get<std::filesystem::path>(m_source);
+	else
+		return std::nullopt;
+}
+
+inline std::optional<docwire::file_extension> data_source::file_extension() const
+{
+	if (m_file_extension)
+		return m_file_extension;
+	if (std::holds_alternative<std::filesystem::path>(m_source))
+		return docwire::file_extension{std::get<std::filesystem::path>(m_source)};
+	else
+		return std::nullopt;
+}
+
+inline bool data_source::has_highest_confidence_mime_type_in(const std::vector<mime_type>& mts) const
+{
+	std::optional<mime_type> mt = highest_confidence_mime_type();
+	DOCWIRE_THROW_IF(!mt, "Data source has no mime type", errors::uninterpretable_data{});
+	return std::find(mts.begin(), mts.end(), *mt) != mts.end();
+}
+
+inline void data_source::assert_not_encrypted() const
+{
+	bool is_encrypted = mime_type_confidence(mime_type { "application/encrypted" }) >= confidence::high;
+	DOCWIRE_THROW_IF(is_encrypted, errors::file_encrypted{});
+}
+
+inline void data_source::fill_memory_cache(std::optional<length_limit> limit) const
+{
+	std::visit(
+		overloaded {
+			[this, limit](const std::filesystem::path& source)
+			{
+				if (!m_memory_cache)
+				{
+					m_path_stream = std::make_shared<std::ifstream>(source, std::ios::binary);
+					DOCWIRE_THROW_IF (!m_path_stream->good(), source);
+					m_memory_cache = std::make_shared<memory_buffer>(0);
+				}
+				read_seekable_stream_into_memory(m_memory_cache, m_stream_size, m_path_stream, limit);
+			},
+			[this](const std::span<const std::byte>& source)
+			{
+				throw DOCWIRE_MAKE_ERROR("std::span cannot be cached in memory", errors::program_logic{});
+			},
+			[this](const std::string& source)
+			{
+				throw DOCWIRE_MAKE_ERROR("std::string cannot be cached in memory", errors::program_logic{});
+			},
+			[this, limit](seekable_stream_ptr source)
+			{
+				if (!m_memory_cache)
+					m_memory_cache = std::make_shared<memory_buffer>(0);
+				read_seekable_stream_into_memory(m_memory_cache, m_stream_size, source.v, limit);
+			},
+			[this, limit](unseekable_stream_ptr source)
+			{
+				if (!m_memory_cache)
+					m_memory_cache = std::make_shared<memory_buffer>(0);
+				read_unseekable_stream_into_memory(m_memory_cache, source.v, limit);
+			}
+		},
+		m_source
+	);
+}
 
 } // namespace docwire
 
