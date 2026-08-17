@@ -13,7 +13,6 @@ add_library(docwire_core SHARED
     csv_writer.cpp
     plain_text_writer.cpp
     standard_filter.cpp
-    output.cpp
     plain_text_exporter.cpp
     csv_exporter.cpp
     meta_data_exporter.cpp
@@ -21,8 +20,7 @@ add_library(docwire_core SHARED
     meta_data_writer.cpp
     resource_path.cpp
     type_name.cpp
-    zip_reader.cpp
-    input.cpp)
+    zip_reader.cpp)
 
 target_compile_features(docwire_core PUBLIC cxx_std_20)
 if(MSVC)

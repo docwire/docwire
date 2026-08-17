@@ -15,6 +15,9 @@
 #include <iostream>
 #include "chain_element.h"
 #include "data_source.h"
+#include "serialization_data_source.h" // IWYU pragma: keep
+#include "log_entry.h"
+#include "log_scope.h"
 #include "parsing_chain.h"
 
 namespace docwire
@@ -40,6 +43,17 @@ public:
 private:
   ref_or_owned<data_source> m_data;
 };
+
+inline continuation input_chain_element::operator()(message_ptr msg, const message_callbacks& emit_message)
+{
+  DOCWIRE_LOG_SCOPE();
+  if (msg->is<pipeline::start_processing>())
+  {
+    DOCWIRE_LOG_ENTRY(m_data.get());
+    return emit_message(std::move(m_data.get()));
+  }
+  return emit_message(std::move(msg));
+}
 
 inline parsing_chain operator|(ref_or_owned<data_source> data, ref_or_owned<chain_element> chain_element)
 {
