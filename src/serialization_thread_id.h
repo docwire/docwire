@@ -14,6 +14,7 @@
 
 #include "core_export.h"
 #include "serialization_base.h"
+#include <sstream>
 #include <thread>
 
 namespace docwire::serialization
@@ -22,7 +23,12 @@ namespace docwire::serialization
 template <>
 struct serializer<std::thread::id>
 {
-    DOCWIRE_CORE_EXPORT value full(const std::thread::id& i) const;
+    value full(const std::thread::id& i) const
+    {
+        std::ostringstream s;
+        s << i;
+        return s.str();
+    }
     value typed_summary(const std::thread::id& i) const { return decorate_with_typeid(full(i), type_name::pretty<std::thread::id>()); }
 };
 

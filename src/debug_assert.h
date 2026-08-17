@@ -19,12 +19,21 @@
 // and if it's false, prints a message and terminates the program.
 // In release builds (when NDEBUG is defined), it compiles to nothing.
 #ifndef NDEBUG
+#include "diagnostic_message.h"
+#include <exception>
+#include <iostream>
+#include <cstdlib>
+
 namespace docwire::errors
 {
     /**
      * @brief Terminates the program with a panic message in debug builds.
      */
-    [[noreturn]] DOCWIRE_CORE_EXPORT void panic(std::exception_ptr eptr);
+    [[noreturn]] inline void panic(std::exception_ptr eptr)
+    {
+        std::cerr << "Terminating due to contract violation: " << diagnostic_message(eptr) << std::endl;
+        std::abort();
+    }
 }
 #endif // NDEBUG
 

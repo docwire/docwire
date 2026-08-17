@@ -13,7 +13,10 @@
 #define DOCWIRE_COSINE_SIMILARITY_H
 
 #include "core_export.h"
+#include <cmath>
 #include <vector>
+#include "error_tags.h"
+#include "throw_if.h"
 
 namespace docwire
 {
@@ -32,7 +35,24 @@ namespace docwire
  *         - -1: The vectors have opposite orientations (maximum dissimilarity, e.g. "a wonderful day" and "a terrible day").
  *         Returns 0.0 if either vector has a magnitude close to zero.
  */
-DOCWIRE_CORE_EXPORT double cosine_similarity(const std::vector<double>& a, const std::vector<double>& b);
+inline double cosine_similarity(const std::vector<double>& a, const std::vector<double>& b)
+{
+  DOCWIRE_THROW_IF(a.size() != b.size(), "Vectors must have the same size", errors::program_logic{});
+  double dot_product = 0.0;
+  double norm_a = 0.0;
+  double norm_b = 0.0;
+  for (size_t i = 0; i < a.size(); ++i)
+  {
+    dot_product += a[i] * b[i];
+    norm_a += a[i] * a[i];
+    norm_b += b[i] * b[i];
+  }
+
+  constexpr double zero_vector_threshold_sq = 1e-12;
+  if (norm_a < zero_vector_threshold_sq || norm_b < zero_vector_threshold_sq)
+    return 0.0;
+  return dot_product / (std::sqrt(norm_a) * std::sqrt(norm_b));
+}
 
 } // namespace docwire
 #endif // DOCWIRE_COSINE_SIMILARITY_H

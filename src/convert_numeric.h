@@ -13,7 +13,12 @@
 #define DOCWIRE_CONVERT_NUMERIC_H
 
 #include "convert_base.h"
+#include <cerrno>
 #include <charconv>
+#include <cctype>
+#include <cstdlib>
+#include <string>
+#include <type_traits>
 #include "with_partial_match.h"
 #include "core_export.h"
 
@@ -35,9 +40,60 @@ concept std_from_chars_available = requires(const char* first, const char* last,
     { std::from_chars(first, last, value) } -> std::same_as<std::from_chars_result>;
 };
 
-DOCWIRE_CORE_EXPORT std::optional<float> from_chars_fallback(std::string_view sv, bool allow_partial, dest_type_tag<float>) noexcept;
-DOCWIRE_CORE_EXPORT std::optional<double> from_chars_fallback(std::string_view sv, bool allow_partial, dest_type_tag<double>) noexcept;
-DOCWIRE_CORE_EXPORT std::optional<long double> from_chars_fallback(std::string_view sv, bool allow_partial, dest_type_tag<long double>) noexcept;
+template <typename T>
+inline std::optional<T> from_chars_fallback_impl(std::string_view sv, bool allow_partial) noexcept
+{
+    static_assert(std::is_same_v<T, float> || std::is_same_v<T, double> || std::is_same_v<T, long double>,
+                  "T must be float, double, or long double");
+    try
+    {
+        std::string str(sv);
+        // std::from_chars does not skip leading whitespace.
+        if (!str.empty() && std::isspace(static_cast<unsigned char>(str[0])))
+            return std::nullopt;
+
+        char* end = nullptr;
+        errno = 0;
+        T value{};
+        if constexpr (std::is_same_v<T, float>)
+            value = std::strtof(str.c_str(), &end);
+        else if constexpr (std::is_same_v<T, double>)
+            value = std::strtod(str.c_str(), &end);
+        else if constexpr (std::is_same_v<T, long double>)
+            value = std::strtold(str.c_str(), &end);
+
+        if (errno == ERANGE)
+            return std::nullopt;
+
+        if (end == str.c_str())
+            return std::nullopt;
+
+        if (!allow_partial)
+            if (end != str.c_str() + str.size())
+                return std::nullopt;
+
+        return value;
+    }
+    catch (...)
+    {
+        return std::nullopt;
+    }
+}
+
+inline std::optional<float> from_chars_fallback(std::string_view sv, bool allow_partial, dest_type_tag<float>) noexcept
+{
+    return from_chars_fallback_impl<float>(sv, allow_partial);
+}
+
+inline std::optional<double> from_chars_fallback(std::string_view sv, bool allow_partial, dest_type_tag<double>) noexcept
+{
+    return from_chars_fallback_impl<double>(sv, allow_partial);
+}
+
+inline std::optional<long double> from_chars_fallback(std::string_view sv, bool allow_partial, dest_type_tag<long double>) noexcept
+{
+    return from_chars_fallback_impl<long double>(sv, allow_partial);
+}
 
 } // namespace detail
 

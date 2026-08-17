@@ -14,6 +14,7 @@
 
 #include "core_export.h"
 #include "serialization_base.h"
+#include "type_name_base.h"
 #include <typeindex>
 
 namespace docwire::serialization
@@ -22,7 +23,10 @@ namespace docwire::serialization
 template <>
 struct serializer<std::type_index>
 {
-    DOCWIRE_CORE_EXPORT value full(const std::type_index& t) const;
+    value full(const std::type_index& t) const
+    {
+        return docwire::type_name::from_type_index(t);
+    }
     value typed_summary(const std::type_index& t) const { return decorate_with_typeid(this->full(t), type_name::pretty<std::type_index>()); }
 };
 

@@ -1,11 +1,6 @@
 add_library(docwire_core SHARED
     charset_converter.cpp
-    convert_chrono.cpp
-    convert_numeric.cpp
-    cosine_similarity.cpp
-    debug_assert.cpp
     diagnostic_message.cpp
-    entities.cpp
     environment.cpp
     error.cpp
     json_serialization.cpp
@@ -15,7 +10,6 @@ add_library(docwire_core SHARED
     misc.cpp
     thread_safe_ole_storage.cpp
     thread_safe_ole_stream_reader.cpp
-    data_stream.cpp
     csv_writer.cpp
     plain_text_writer.cpp
     standard_filter.cpp
@@ -26,10 +20,7 @@ add_library(docwire_core SHARED
     transformer_func.cpp
     meta_data_writer.cpp
     resource_path.cpp
-    serialization_thread_id.cpp
-    serialization_typeindex.cpp
     type_name.cpp
-    unique_identifier.cpp
     zip_reader.cpp
     input.cpp)
 
