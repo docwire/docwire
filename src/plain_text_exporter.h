@@ -14,8 +14,14 @@
 
 #include "chain_element.h"
 #include <functional>
+#include <memory>
+#include <sstream>
 #include "document_elements.h"
+#include "error_tags.h"
 #include "plain_text/output_width.h"
+#include "plain_text_writer.h"
+#include "data_source.h"
+#include "throw_if.h"
 
 namespace docwire
 {
@@ -32,12 +38,14 @@ struct link_formatter
 /**
  * @brief Exports data to plain text format.
  */
-class DOCWIRE_CORE_EXPORT plain_text_exporter: public chain_element, public with_pimpl<plain_text_exporter>
+class DOCWIRE_CORE_EXPORT plain_text_exporter : public chain_element
 {
 public:
 	plain_text_exporter(eol_sequence eol = eol_sequence{"\n"},
 	                   link_formatter formatter = default_link_formatter,
-	                   output_width max_output_width = output_width{80});
+	                   output_width max_output_width = output_width{80})
+	  : m_writer{eol.v, formatter.format_opening, formatter.format_closing, max_output_width}
+	{}
 
 	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
@@ -59,8 +67,34 @@ private:
 		}
 	};
 
-	using with_pimpl<plain_text_exporter>::impl;
+	std::shared_ptr<std::stringstream> m_stream;
+	plain_text_writer m_writer;
+	int m_nested_docs_level{0};
 };
+
+inline continuation plain_text_exporter::operator()(message_ptr msg, const message_callbacks& emit_message)
+{
+	if (msg->is<std::exception_ptr>())
+		return emit_message(std::move(msg));
+	if (msg->is<document::document>() || !m_stream)
+	{
+		++m_nested_docs_level;
+		if (m_nested_docs_level == 1)
+			m_stream = std::make_shared<std::stringstream>();
+	}
+	m_writer.write_to(msg, *m_stream);
+	if (msg->is<document::close_document>())
+	{
+		DOCWIRE_THROW_IF(m_nested_docs_level <= 0, errors::program_logic{});
+		--m_nested_docs_level;
+		if (m_nested_docs_level == 0)
+		{
+			emit_message(data_source{seekable_stream_ptr{m_stream}, mime_type{"text/plain"}, confidence::highest});
+			m_stream.reset();
+		}
+	}
+	return continuation::proceed;
+}
 
 } // namespace docwire
 

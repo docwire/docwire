@@ -14,8 +14,11 @@
 
 #include "core_export.h"
 #include <iostream>
-
+#include <memory>
+#include <optional>
 #include "writer.h"
+#include "document_elements.h"
+#include "convert_chrono.h"
 
 namespace docwire
 {
@@ -30,6 +33,70 @@ public:
    */
   void write_to(const message_ptr& msg, std::ostream &stream) override;
 };
+
+inline std::shared_ptr<text_element>
+write_meta_data(const attributes::metadata& metadata)
+{
+  std::string text = "";
+  auto author = metadata.author;
+  if (metadata.author)
+  {
+    text += "Author: " + *author + "\n";
+  }
+  else
+  {
+    text += "Author: unidentified\n";
+  }
+  if (metadata.creation_date)
+  {
+    text += "Creation time: " + convert::to<std::string>(*metadata.creation_date) + "\n";
+  }
+  else
+  {
+    text += "Creation time: unidentified\n";
+  }
+  if (metadata.last_modified_by)
+  {
+    text += "Last modified by: " + *metadata.last_modified_by + "\n";
+  }
+  else
+  {
+    text += "Last modified by: unidentified\n";
+  }
+  if (metadata.last_modification_date)
+  {
+    text += "Last modification time: " + convert::to<std::string>(*metadata.last_modification_date) + "\n";
+  }
+  else
+  {
+    text += "Last modification time: unidentified\n";
+  }
+  if (metadata.page_count)
+  {
+    text += "Page count: " + std::to_string(*metadata.page_count) + "\n";
+  }
+  else
+  {
+    text += "Page count: unidentified\n";
+  }
+  if (metadata.word_count)
+  {
+    text += "Word count: " + std::to_string(*metadata.word_count) + "\n";
+  }
+  else
+  {
+    text += "Word count: unidentified\n";
+  }
+  return std::make_shared<text_element>(text);
+}
+
+inline void metadata_writer::write_to(const message_ptr& msg, std::ostream &file)
+{
+  if (msg->is<document::document>())
+  {
+    write_meta_data(msg->get<document::document>().metadata())->write_to(file);
+  }
+}
 } // namespace docwire
 
 #endif //DOCWIRE_METADATA_WRITER_H

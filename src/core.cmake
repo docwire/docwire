@@ -8,13 +8,8 @@ add_library(docwire_core SHARED
     misc.cpp
     thread_safe_ole_storage.cpp
     thread_safe_ole_stream_reader.cpp
-    csv_writer.cpp
     plain_text_writer.cpp
     standard_filter.cpp
-    plain_text_exporter.cpp
-    csv_exporter.cpp
-    meta_data_exporter.cpp
-    meta_data_writer.cpp
     resource_path.cpp
     type_name.cpp
     zip_reader.cpp)
