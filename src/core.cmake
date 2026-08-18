@@ -1,7 +1,5 @@
 add_library(docwire_core SHARED
     charset_converter.cpp
-    diagnostic_message.cpp
-    environment.cpp
     error.cpp
     json_serialization.cpp
     log_core.cpp
@@ -16,7 +14,6 @@ add_library(docwire_core SHARED
     plain_text_exporter.cpp
     csv_exporter.cpp
     meta_data_exporter.cpp
-    transformer_func.cpp
     meta_data_writer.cpp
     resource_path.cpp
     type_name.cpp

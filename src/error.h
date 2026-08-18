@@ -16,7 +16,6 @@
 #include "diagnostic_context.h" // IWYU pragma: keep
 #include <exception>
 #include "serialization_pair.h" // IWYU pragma: keep
-#include "stringification.h"
 #include "source_location.h"
 #include <tuple>
 #include <utility>
@@ -117,6 +116,19 @@ struct DOCWIRE_CORE_EXPORT base : public std::exception
 	 */
 	virtual const char* what() const noexcept override;
 };
+
+} // namespace docwire::errors
+
+namespace docwire::errors
+{
+std::string diagnostic_message(const std::exception& e);
+std::string diagnostic_message(std::exception_ptr eptr);
+} // namespace docwire::errors
+
+#include "stringification.h"
+
+namespace docwire::errors
+{
 
 /**
  * @brief Implementation of the error class for a variadic number of context items.

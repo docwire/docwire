@@ -13,13 +13,23 @@
 #define DOCWIRE_ENVIRONMENT_H
 
 #include "core_export.h"
+#include <cstdlib>
 #include <optional>
 #include <string>
 #include <string_view>
 
 namespace docwire::environment
 {
-    DOCWIRE_CORE_EXPORT std::optional<std::string> get(std::string_view name);
+    inline std::optional<std::string> get(std::string_view name)
+    {
+        const std::string name_str{name};
+        const char* value = std::getenv(name_str.c_str());
+        if (value)
+        {
+            return std::string{value};
+        }
+        return std::nullopt;
+    }
 }
 
 #endif // DOCWIRE_ENVIRONMENT_H

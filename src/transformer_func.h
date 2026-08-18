@@ -14,8 +14,10 @@
 
 #include "chain_element.h"
 #include "core_export.h"
+#include <functional>
 #include "parsing_chain.h"
 #include "ref_or_owned.h"
+#include <utility>
 
 namespace docwire
 {
@@ -25,13 +27,15 @@ using message_transform_func = std::function<continuation(message_ptr, const mes
 /**
  * @brief Wraps single function (tag_transform_func) into chain_element object
  */
-class DOCWIRE_CORE_EXPORT transformer_func : public chain_element, public with_pimpl<transformer_func>
+class DOCWIRE_CORE_EXPORT transformer_func : public chain_element
 {
 public:
   /**
    * @param transformer_function callback function, which will be called in transform().
    */
-  transformer_func(message_transform_func transformer_function);
+  transformer_func(message_transform_func transformer_function)
+    : m_transformer_function{std::move(transformer_function)}
+  {}
 
 	/**
 	 * @brief Executes transform on the given message.
@@ -39,7 +43,10 @@ public:
 	 * @param msg Incoming message.
 	 * @param emit_message Callback to emit downstream messages.
 	 */
-	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message) override
+	{
+		return m_transformer_function(std::move(msg), emit_message);
+	}
 
   bool is_leaf() const override
   {
@@ -47,8 +54,7 @@ public:
   }
 
 private:
-  using with_pimpl<transformer_func>::impl;
-  friend pimpl_impl<transformer_func>;
+  message_transform_func m_transformer_function;
 };
 
 template <typename T>
