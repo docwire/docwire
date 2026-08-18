@@ -9,12 +9,13 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#include <boost/container/flat_map.hpp>
+#include <array>
 #include <iomanip>
 #include <ctime>
 #include <sstream>
 #include <typeindex>
 #include <numeric>
+#include "static_flat_map.h"
 
 #include "mail_elements.h"
 #include "document_elements.h"
@@ -103,13 +104,14 @@ template<>
 struct pimpl_impl<plain_text_writer> : pimpl_impl_base
 {
   using handler_func = std::function<std::shared_ptr<text_element>(const message_ptr&)>;
-  const boost::container::flat_map<std::type_index, handler_func> m_handlers;
+  using text_handler_map = docwire::static_flat_map<std::type_index, handler_func, 26>;
+  const text_handler_map m_handlers;
 
   pimpl_impl(const std::string& eol_sequence,
       std::function<std::string(const document::link&)> format_link_opening,
       std::function<std::string(const document::close_link&)> format_link_closing,
       output_width max_output_width)
-    : m_handlers{
+    : m_handlers{std::to_array<text_handler_map::value_type>({
         {typeid(mail::mail), [this](const message_ptr& msg) { return write_mail(msg->get<mail::mail>()); }},
         {typeid(mail::attachment), [this](const message_ptr& msg) { return write_attachment(msg->get<mail::attachment>()); }},
         {typeid(mail::folder), [this](const message_ptr& msg) { return write_folder(msg->get<mail::folder>()); }},
@@ -142,7 +144,7 @@ struct pimpl_impl<plain_text_writer> : pimpl_impl_base
             m_nested_docs_counter--;
             return m_nested_docs_counter == 0 ? write_close_document(msg->get<document::close_document>()) : std::shared_ptr<text_element>();
         }},
-    },
+    })},
     m_eol_sequence(eol_sequence),
     m_format_link_opening(format_link_opening),
     m_format_link_closing(format_link_closing),
@@ -573,11 +575,10 @@ struct pimpl_impl<plain_text_writer> : pimpl_impl_base
 
     if (level == 0)
     {
-      auto it = m_handlers.find(std::type_index(msg->object_type()));
       std::shared_ptr<text_element> text_element;
-      if (it != m_handlers.end())
+      if (auto* handler = m_handlers.find(std::type_index(msg->object_type())))
       {
-        text_element = it->second(msg);
+        text_element = (*handler)(msg);
       }
       if (text_element)
         text_element->write_to(footer_mode ? footer_stream : stream);
