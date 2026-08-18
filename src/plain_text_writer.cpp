@@ -22,7 +22,7 @@
 #include "log_scope.h"
 #include "plain_text_writer.h"
 #include "error_tags.h"
-#include "misc.h"
+#include "time_utils.h"
 #include "serialization_document_elements.h" // IWYU pragma: keep
 #include "serialization_mail_elements.h" // IWYU pragma: keep
 #include "throw_if.h"

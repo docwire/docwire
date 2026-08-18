@@ -45,7 +45,6 @@ include(cli.cmake)
 
 file(GLOB HEADERS "*.h")
 list(REMOVE_ITEM HEADERS
-	${CMAKE_CURRENT_SOURCE_DIR}/misc.h
 	${CMAKE_CURRENT_SOURCE_DIR}/thread_safe_ole_storage.h
 	${CMAKE_CURRENT_SOURCE_DIR}/thread_safe_ole_stream_reader.h)
 install(FILES ${HEADERS} DESTINATION include/docwire)

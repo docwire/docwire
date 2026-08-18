@@ -17,7 +17,7 @@
 #include <stack>
 #include "log_scope.h"
 #include "make_error.h"
-#include "misc.h"
+#include "text_formatting.h"
 #include "nested_exception.h"
 #include "xml_fixer.h"
 #include "xml_root_element.h"

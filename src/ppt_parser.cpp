@@ -16,7 +16,7 @@
 #include "log_entry.h"
 #include "log_scope.h"
 #include <math.h>
-#include "misc.h"
+#include "detail/ustring_conversions.h"
 #include "nested_exception.h"
 #include "oshared.h"
 #include <stdio.h>

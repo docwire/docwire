@@ -14,7 +14,7 @@
 #include "data_stream.h"
 #include <cmath>
 #include "log_scope.h"
-#include "misc.h"
+#include "detail/ustring_conversions.h"
 #include <new>
 #include <memory>
 #include <cstdio>

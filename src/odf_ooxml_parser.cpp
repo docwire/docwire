@@ -23,7 +23,8 @@
 #include "make_error.h"
 #include "convert_chrono.h" // IWYU pragma: keep 
 #include "convert_numeric.h" // IWYU pragma: keep
-#include "misc.h"
+#include "office_crypto.h"
+#include "text_formatting.h"
 #include <mutex>
 #include "nested_exception.h"
 #include "xml_attributes.h"

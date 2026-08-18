@@ -5,7 +5,7 @@ add_library(docwire_core SHARED
     log_core.cpp
     log_cerr_redirection.cpp
     log_json_stream_sink.cpp
-    misc.cpp
+    office_crypto.cpp
     thread_safe_ole_storage.cpp
     thread_safe_ole_stream_reader.cpp
     plain_text_writer.cpp

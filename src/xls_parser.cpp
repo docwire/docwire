@@ -18,7 +18,8 @@
 #include "log_scope.h"
 #include <map>
 #include <math.h>
-#include "misc.h"
+#include "detail/ustring_conversions.h"
+#include "time_utils.h"
 #include <mutex>
 #include "nested_exception.h"
 #include "oshared.h"

@@ -16,7 +16,7 @@
 #include "log_cerr_redirection.h"
 #include "log_entry.h"
 #include "log_scope.h"
-#include "misc.h"
+#include "detail/ustring_conversions.h"
 #include "nested_exception.h"
 #include "throw_if.h"
 #include "wv2/src/parser.h"

@@ -31,7 +31,7 @@ extern "C"
 #include "error_tags.h"
 #include "log_entry.h"
 #include "log_scope.h"
-#include "misc.h"
+#include "time_utils.h"
 #include "make_error.h"
 #include "nested_exception.h"
 #include "serialization_message.h" // IWYU pragma: keep
