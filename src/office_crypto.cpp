@@ -2,7 +2,7 @@
 
 #include "serialization_data_source.h" // IWYU pragma: keep
 #include "log_scope.h"
-#include "thread_safe_ole_storage.h"
+#include "detail/thread_safe_ole_storage.h"
 #include <vector>
 
 namespace docwire

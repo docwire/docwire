@@ -18,8 +18,8 @@
 #include "log_scope.h"
 #include "throw_if.h"
 #include "wv2/src/utilities.h"
-#include "thread_safe_ole_stream_reader.h"
-#include "thread_safe_ole_storage.h"
+#include "detail/thread_safe_ole_stream_reader.h"
+#include "detail/thread_safe_ole_storage.h"
 
 namespace docwire
 {

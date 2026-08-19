@@ -33,8 +33,8 @@
 #include "wv2/src/utilities.h"
 #include <vector>
 #include <time.h>
-#include "thread_safe_ole_stream_reader.h"
-#include "thread_safe_ole_storage.h"
+#include "detail/thread_safe_ole_stream_reader.h"
+#include "detail/thread_safe_ole_storage.h"
 
 using namespace wvWare;
 
