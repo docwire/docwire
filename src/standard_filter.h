@@ -15,6 +15,10 @@
 #include "core_export.h"
 #include "file_extension.h"
 #include "transformer_func.h"
+#include "mail_elements.h"
+#include <algorithm>
+#include <string>
+#include <vector>
 
 namespace docwire
 {
@@ -28,38 +32,82 @@ namespace docwire
  *  plain_text_exporter{};
  * @endcode
  */
-class DOCWIRE_CORE_EXPORT standard_filter
+class standard_filter
 {
 public:
-  /**
-   * @brief Filters folders by name. Keeps only folders with names that exist in the given list.
-   * @param names list of names to keep
-   */
-  static message_transform_func filterByFolderName(const std::vector<std::string> &names);
+  static message_transform_func filterByFolderName(const std::vector<std::string>& names)
+  {
+    return [names](message_ptr msg, const message_callbacks& emit_message) -> continuation
+    {
+      if (!msg->is<mail::folder>())
+        return emit_message(std::move(msg));
+      auto folder_name = msg->get<mail::folder>().name;
+      if (folder_name)
+      {
+        if (!std::any_of(names.begin(), names.end(), [&folder_name](const std::string& name) { return (*folder_name) == name; }))
+          return continuation::skip;
+      }
+      return emit_message(std::move(msg));
+    };
+  }
 
-  /**
-   * @brief Filters attachments by type. Keeps only attachments with type that exist in the given list.
-   * @param types list of types to keep
-   */
-  static message_transform_func filterByAttachmentType(const std::vector<file_extension>& types);
+  static message_transform_func filterByAttachmentType(const std::vector<file_extension>& types)
+  {
+    return [types](message_ptr msg, const message_callbacks& emit_message) -> continuation
+    {
+      if (!msg->is<mail::attachment>())
+        return emit_message(std::move(msg));
+      auto attachment_type = msg->get<mail::attachment>().extension;
+      if (attachment_type)
+      {
+        if (!std::any_of(types.begin(), types.end(), [&attachment_type](const file_extension& type) { return (*attachment_type) == type; }))
+          return continuation::skip;
+      }
+      return emit_message(std::move(msg));
+    };
+  }
 
-  /**
-   * @brief Filters mail by creation date. Keeps only mails that are created after the given date.
-   * @param min_time minimum time to keep
-   */
-  static message_transform_func filterByMailMinCreationTime(unsigned int min_time);
+  static message_transform_func filterByMailMinCreationTime(unsigned int min_time)
+  {
+    return [min_time](message_ptr msg, const message_callbacks& emit_message) -> continuation
+    {
+      if (!msg->is<mail::mail>())
+        return emit_message(std::move(msg));
+      auto mail_creation_time = msg->get<mail::mail>().date;
+      if (mail_creation_time)
+      {
+        if (*mail_creation_time < min_time)
+          return continuation::skip;
+      }
+      return emit_message(std::move(msg));
+    };
+  }
 
-  /**
-   * @brief Filters mail by creation date. Keeps only mails that are created before the given date.
-   * @param max_time maximum time to keep
-   */
-  static message_transform_func filterByMailMaxCreationTime(unsigned int max_time);
+  static message_transform_func filterByMailMaxCreationTime(unsigned int max_time)
+  {
+    return [max_time](message_ptr msg, const message_callbacks& emit_message) -> continuation
+    {
+      if (!msg->is<mail::mail>())
+        return emit_message(std::move(msg));
+      auto mail_creation_time = msg->get<mail::mail>().date;
+      if (mail_creation_time)
+      {
+        if (*mail_creation_time > max_time)
+          return continuation::skip;
+      }
+      return emit_message(std::move(msg));
+    };
+  }
 
-  /**
-   * @brief
-   * @param max_nodes
-   */
-  static message_transform_func filterByMaxNodeNumber(unsigned int max_nodes);
+  static message_transform_func filterByMaxNodeNumber(unsigned int max_nodes_arg)
+  {
+    return [max_nodes = max_nodes_arg, node_no = 0](message_ptr msg, const message_callbacks& emit_message) mutable -> continuation
+    {
+      if (node_no++ == max_nodes)
+        return continuation::stop;
+      return emit_message(std::move(msg));
+    };
+  }
 };
 } // namespace docwire
 

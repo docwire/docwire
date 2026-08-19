@@ -6,7 +6,6 @@ add_library(docwire_core SHARED
     log_cerr_redirection.cpp
     log_json_stream_sink.cpp
     office_crypto.cpp
-    standard_filter.cpp
     resource_path.cpp
     type_name.cpp
     zip_reader.cpp)
