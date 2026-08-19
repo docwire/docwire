@@ -8,7 +8,6 @@ add_library(docwire_core SHARED
     office_crypto.cpp
     thread_safe_ole_storage.cpp
     thread_safe_ole_stream_reader.cpp
-    plain_text_writer.cpp
     standard_filter.cpp
     resource_path.cpp
     type_name.cpp
