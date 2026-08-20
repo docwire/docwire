@@ -1,5 +1,6 @@
 add_library(docwire_core SHARED
-    charset_converter.cpp
+    iconv_wrapper.cpp
+    minizip_wrapper.cpp
     error.cpp
     json_serialization.cpp
     log_core.cpp
@@ -7,8 +8,7 @@ add_library(docwire_core SHARED
     log_json_stream_sink.cpp
     office_crypto.cpp
     resource_path.cpp
-    type_name.cpp
-    zip_reader.cpp)
+    type_name.cpp)
 
 target_compile_features(docwire_core PUBLIC cxx_std_20)
 if(MSVC)

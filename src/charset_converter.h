@@ -12,20 +12,36 @@
 #ifndef DOCWIRE_CHARSET_CONVERTER_H
 #define DOCWIRE_CHARSET_CONVERTER_H
 
-#include <string_view>
-#include "core_export.h"
-#include "pimpl.h"
 #include <string>
+#include <string_view>
+#include <utility>
+#include "core_export.h"
+#include "iconv_wrapper.h"
 
 namespace docwire
 {
 
-class DOCWIRE_CORE_EXPORT charset_converter : public with_pimpl<charset_converter>
+class DOCWIRE_CORE_EXPORT charset_converter
 {
-	public:		
-		charset_converter(const std::string &from, const std::string &to);
-		~charset_converter();
-		std::string convert(std::string_view input) const;
+public:
+	charset_converter(std::string from, std::string to)
+		: m_state{0, std::move(from), std::move(to)}
+	{
+		detail::iconv::open(m_state);
+	}
+
+	~charset_converter()
+	{
+		detail::iconv::close(m_state);
+	}
+
+	std::string convert(std::string_view input) const
+	{
+		return detail::iconv::convert(const_cast<detail::iconv::state&>(m_state), input);
+	}
+
+private:
+	detail::iconv::state m_state;
 };
 
 } // namespace docwire
