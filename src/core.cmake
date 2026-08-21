@@ -3,9 +3,10 @@ add_library(docwire_core SHARED
     minizip_wrapper.cpp
     error.cpp
     json_serialization.cpp
-    log_core.cpp
-    log_cerr_redirection.cpp
-    log_json_stream_sink.cpp
+    log_filter_globals.cpp
+    log_cerr_redirection_globals.cpp
+    log_sink_globals.cpp
+    boost_datetime_wrapper.cpp
     office_crypto.cpp
     resource_path.cpp
     type_name.cpp)

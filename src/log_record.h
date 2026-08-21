@@ -9,55 +9,57 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#include "log_json_stream_sink.h"
+#ifndef DOCWIRE_LOG_RECORD_H
+#define DOCWIRE_LOG_RECORD_H
 
-#include "json_serialization.h"
+#include "core_export.h"
+#include "serialization_base.h"
+#include "source_location.h"
+
+#include <atomic>
+#include <functional>
 #include <mutex>
 
 namespace docwire::log
 {
 
-std::function<void(const record&)> json_stream_sink(ref_or_owned<std::ostream> stream)
+/**
+ * @brief Immutable log record containing the source location and structured context.
+ */
+struct record;
+
+namespace detail
 {
-	// This state object will be captured by the lambda. Its destructor will
-	// be called at program exit, ensuring the JSON array is properly closed.
-	struct stream_state
-	{
-		ref_or_owned<std::ostream> m_stream;
-		bool m_first_log = true;
-		std::mutex m_mutex;
-
-		explicit stream_state(ref_or_owned<std::ostream> s) : m_stream(std::move(s)) {}
-		~stream_state()
-		{
-			if (!m_first_log)
-			{
-                std::lock_guard lock(m_mutex);
-				m_stream.get() << std::endl << "]" << std::endl;
-			}
-		}
-	};
-
-	auto state = std::make_shared<stream_state>(std::move(stream));
-
-	return [state](const record& rec)
-    {
-		serialization::object log_record_object = create_base_metadata(rec.m_location);
-		log_record_object.v["log"] = rec.m_context;
-		std::string json_output = serialization::to_json(log_record_object);
-
-		std::lock_guard lock(state->m_mutex);
-		if (state->m_first_log)
-		{
-			state->m_stream.get() << "[" << std::endl;
-			state->m_first_log = false;
-		}
-		else
-		{
-			state->m_stream.get() << "," << std::endl;
-		}
-		state->m_stream.get() << json_output;
-	};
+DOCWIRE_CORE_EXPORT extern std::mutex g_log_callback_mutex;
+DOCWIRE_CORE_EXPORT extern std::function<void(const record&)> g_log_callback;
+DOCWIRE_CORE_EXPORT extern std::atomic<bool> g_logging_enabled;
 }
 
+struct record
+{
+    source_location m_location;
+    serialization::array m_context;
+
+    record(source_location location, serialization::array&& context)
+        : m_location(location), m_context(std::move(context))
+    {
+    }
+
+    ~record()
+    {
+        try
+        {
+            std::lock_guard lock(detail::g_log_callback_mutex);
+            if (detail::g_logging_enabled.load(std::memory_order_acquire) && detail::g_log_callback)
+                detail::g_log_callback(*this);
+        }
+        catch (...)
+        {
+            // Destructors must never throw.
+        }
+    }
+};
+
 } // namespace docwire::log
+
+#endif // DOCWIRE_LOG_RECORD_H

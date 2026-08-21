@@ -13,8 +13,16 @@
 #define DOCWIRE_LOG_CERR_REDIRECTION_H
 
 #include "core_export.h"
-#include "pimpl.h"
+#include "log_cerr_redirection_globals.h"
+#include "log_core.h"
+#include "log_entry.h"
+#include "serialization_base.h"
 #include "source_location.h"
+
+#include <iostream>
+#include <mutex>
+#include <sstream>
+#include <streambuf>
 #include <string_view>
 
 namespace docwire::log
@@ -23,20 +31,74 @@ namespace docwire::log
 /// @brief Tag for log entries that contain content redirected from `stderr`.
 struct DOCWIRE_CORE_EXPORT stderr_redirect { static constexpr std::string_view string() { return "stderr_redirect"; } };
 
-class DOCWIRE_CORE_EXPORT cerr_redirection : public with_pimpl<cerr_redirection>
+class DOCWIRE_CORE_EXPORT cerr_redirection
 {
 public:
 	/**
 	 * @brief Constructs a cerr_redirection object, capturing the source location.
 	 * @param location The source location where the redirection is initiated.
 	 */
-	explicit cerr_redirection(const source_location& location = source_location::current());
+	explicit cerr_redirection(const source_location& location = source_location::current())
+	{
+#ifndef NDEBUG
+		m_location = location;
+#endif
+		redirect();
+	}
 
 	cerr_redirection(const cerr_redirection&) = delete;
 	cerr_redirection& operator=(const cerr_redirection&) = delete;
-	~cerr_redirection();
-	void redirect();
-	void restore();
+
+	~cerr_redirection()
+	{
+		if (m_redirected)
+			restore();
+	}
+
+	void redirect()
+	{
+		m_cerr_redirection_mutex_lock = std::unique_lock<std::mutex>(detail::cerr_redirection_mutex);
+#ifndef NDEBUG
+		m_cerr_buf_backup = std::cerr.rdbuf(m_string_stream.rdbuf());
+#else
+		class null_streambuf : public std::streambuf
+		{
+		public:
+			int_type overflow(int_type c) override { return c; }
+		};
+		static null_streambuf null_buf;
+		m_cerr_buf_backup = std::cerr.rdbuf(&null_buf);
+#endif
+		m_redirected = true;
+	}
+
+	void restore()
+	{
+		std::cerr.rdbuf(m_cerr_buf_backup);
+		m_cerr_buf_backup = nullptr;
+#ifndef NDEBUG
+		std::string redirected_cerr = m_string_stream.str();
+		source_location location = m_location;
+#endif
+		m_redirected = false;
+		if (m_cerr_redirection_mutex_lock.owns_lock())
+			m_cerr_redirection_mutex_lock.unlock();
+#ifndef NDEBUG
+		if (detail::is_logging_enabled() && !redirected_cerr.empty())
+		{
+			entry(location, std::make_tuple(stderr_redirect{}, serialization::object{{{"redirected_cerr", redirected_cerr}}}));
+		}
+#endif
+	}
+
+private:
+	bool m_redirected{false};
+	std::streambuf* m_cerr_buf_backup{nullptr};
+#ifndef NDEBUG
+	source_location m_location;
+	std::ostringstream m_string_stream;
+#endif
+	std::unique_lock<std::mutex> m_cerr_redirection_mutex_lock;
 };
 
 } // namespace docwire::log
