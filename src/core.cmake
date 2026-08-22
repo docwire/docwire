@@ -7,8 +7,8 @@ add_library(docwire_core SHARED
     log_cerr_redirection_globals.cpp
     log_sink_globals.cpp
     boost_datetime_wrapper.cpp
+    boost_dll_wrapper.cpp
     office_crypto.cpp
-    resource_path.cpp
     type_name.cpp)
 
 target_compile_features(docwire_core PUBLIC cxx_std_20)

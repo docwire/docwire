@@ -12,18 +12,18 @@
 #ifndef DOCWIRE_RESOURCE_PATH_H
 #define DOCWIRE_RESOURCE_PATH_H
 
+#include "boost_dll_wrapper.h"
 #include "core_export.h"
+#include "error_tags.h"
+#include <algorithm>
 #include <filesystem>
+#include <fstream>
+#include <vector>
+#include "make_error.h"
 
 namespace docwire
 {
 
-namespace detail
-{
-typedef std::filesystem::path(this_line_location_t)();
-DOCWIRE_CORE_EXPORT std::filesystem::path this_line_location_helper(const this_line_location_t& this_line_location_instance);
-DOCWIRE_CORE_EXPORT std::filesystem::path resource_path(const std::filesystem::path& module_path, const std::filesystem::path& resource_rel_path);
-}
 
 // Anonymous namespace to make sure that inline methods are instantiated in
 // current translation unit and are not shadowed by instantiations from other units.
@@ -36,6 +36,8 @@ static inline std::filesystem::path this_line_location()
     return detail::this_line_location_helper(f);
 }
 
+} // anonymous namespace
+
 /**
  * @brief Locates a resource file or directory at runtime.
  *
@@ -47,12 +49,60 @@ static inline std::filesystem::path this_line_location()
  * @return The absolute path to the found resource.
  * @throws docwire::errors::base if the resource cannot be found.
  */
-static inline std::filesystem::path resource_path(const std::filesystem::path& resource_rel_path)
+inline std::filesystem::path resource_path(const std::filesystem::path& resource_rel_path)
 {
-    return docwire::detail::resource_path(this_line_location(), resource_rel_path);
-}
+    std::vector<std::filesystem::path> paths_to_check;
 
-} // anonymous namespace
+    auto add_search_paths = [&](const std::filesystem::path& base_path) {
+        if (base_path.empty())
+            return;
+
+        auto base_dir = base_path.parent_path();
+
+        // Check ./share
+        paths_to_check.push_back(base_dir / "share" / resource_rel_path);
+
+        // Check ../share
+        paths_to_check.push_back(base_dir.parent_path() / "share" / resource_rel_path);
+
+        // Handle vcpkg debug layout: .../debug/bin/ -> .../share/
+        if (base_dir.parent_path().filename() == "debug")
+        {
+            paths_to_check.push_back(base_dir.parent_path().parent_path() / "share" / resource_rel_path);
+        }
+    };
+
+    add_search_paths(this_line_location());
+    add_search_paths(detail::program_location());
+
+    // Remove duplicates while preserving order
+    std::vector<std::filesystem::path> unique_paths;
+    for (const auto& path : paths_to_check)
+    {
+        if (std::find(unique_paths.begin(), unique_paths.end(), path) == unique_paths.end())
+        {
+            unique_paths.push_back(path);
+        }
+    }
+
+    for (const auto& path : unique_paths)
+    {
+        if (std::filesystem::exists(path))
+            return path;
+
+        auto path_file = path;
+        path_file += ".path";
+        if (std::filesystem::exists(path_file))
+        {
+            std::ifstream ifs(path_file);
+            std::string redirected_path;
+            if (std::getline(ifs, redirected_path) && !redirected_path.empty() && std::filesystem::exists(redirected_path))
+                return redirected_path;
+        }
+    }
+
+    throw DOCWIRE_MAKE_ERROR("Resource not found", resource_rel_path, errors::program_corrupted{});
+}
 
 } // namespace docwire
 
