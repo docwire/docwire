@@ -25,7 +25,7 @@
 #include "log_entry.h"
 #include "log_scope.h"
 #include "make_error.h"
-#include "office_crypto.h"
+#include "detail/office_crypto.h"
 #include <map>
 #include "serialization_data_source.h" // IWYU pragma: keep
 #include <sstream>

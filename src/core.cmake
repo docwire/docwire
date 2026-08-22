@@ -1,15 +1,13 @@
 add_library(docwire_core SHARED
     iconv_wrapper.cpp
     minizip_wrapper.cpp
-    error.cpp
-    json_serialization.cpp
     log_filter_globals.cpp
     log_cerr_redirection_globals.cpp
     log_sink_globals.cpp
     boost_datetime_wrapper.cpp
     boost_dll_wrapper.cpp
-    office_crypto.cpp
-    type_name.cpp)
+    boost_json_wrapper.cpp
+    boost_demangle_wrapper.cpp)
 
 target_compile_features(docwire_core PUBLIC cxx_std_20)
 if(MSVC)

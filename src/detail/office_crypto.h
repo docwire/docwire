@@ -1,6 +1,8 @@
-#include "office_crypto.h"
+#ifndef DOCWIRE_DETAIL_OFFICE_CRYPTO_H
+#define DOCWIRE_DETAIL_OFFICE_CRYPTO_H
 
-#include "serialization_data_source.h" // IWYU pragma: keep
+#include "data_source.h"
+#include "serialization_data_source.h"
 #include "log_scope.h"
 #include "detail/thread_safe_ole_storage.h"
 #include <vector>
@@ -8,7 +10,7 @@
 namespace docwire
 {
 
-bool is_encrypted_with_ms_offcrypto(const data_source& data)
+inline bool is_encrypted_with_ms_offcrypto(const data_source& data)
 {
 	DOCWIRE_LOG_SCOPE(data);
 	thread_safe_ole_storage storage(data.span());
@@ -28,3 +30,5 @@ bool is_encrypted_with_ms_offcrypto(const data_source& data)
 }
 
 } // namespace docwire
+
+#endif // DOCWIRE_DETAIL_OFFICE_CRYPTO_H

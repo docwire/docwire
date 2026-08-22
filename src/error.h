@@ -15,6 +15,7 @@
 #include "core_export.h"
 #include "diagnostic_context.h" // IWYU pragma: keep
 #include <exception>
+#include <typeinfo>
 #include "serialization_pair.h" // IWYU pragma: keep
 #include "source_location.h"
 #include <tuple>
@@ -80,7 +81,10 @@ struct DOCWIRE_CORE_EXPORT base : public std::exception
 	 *
 	 * @param location The source location of the exception (initialized by current location by default).
 	 */
-	base(const source_location& location = source_location::current());
+	base(const source_location& location = source_location::current())
+		: location(location)
+	{
+	}
 
 	/**
 	 * @brief Get the type information of the context.
@@ -114,7 +118,10 @@ struct DOCWIRE_CORE_EXPORT base : public std::exception
 	 * @return The exception type.
 	 * @see diagnostic_message
 	 */
-	virtual const char* what() const noexcept override;
+	virtual const char* what() const noexcept override
+	{
+		return typeid(*this).name();
+	}
 };
 
 } // namespace docwire::errors

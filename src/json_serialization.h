@@ -14,6 +14,7 @@
 
 #include "core_export.h"
 #include "serialization_base.h"
+#include "boost_json_wrapper.h"
 
 namespace docwire::serialization
 {
@@ -27,7 +28,10 @@ namespace docwire::serialization
  * @param s_val The `docwire::serialization::value` to convert.
  * @return A string containing the JSON representation of the value.
  */
-DOCWIRE_CORE_EXPORT std::string to_json(const value& s_val);
+inline std::string to_json(const value& s_val)
+{
+    return detail::to_json_string(s_val);
+}
 
 } // namespace docwire::serialization
 
