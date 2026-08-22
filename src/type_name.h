@@ -48,6 +48,7 @@ inline std::string normalize_name(const std::string& name)
     replace_all(normalized, " [", "[");
     replace_all(normalized, ", ", ",");
     replace_all(normalized, " >", ">");
+    replace_all(normalized, "std::basic_string<char,std::char_traits<char>,std::allocator<char>>", "std::string");
     return normalized;
 }
 

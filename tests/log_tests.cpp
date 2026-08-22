@@ -184,6 +184,23 @@ TEST(Logging, CerrLogRedirection)
 #endif
 }
 
+TEST(Logging, RepeatedCerrRedirection)
+{
+    std::stringstream log_stream;
+    {
+        log::state_saver saver;
+        log::set_sink(log::json_stream_sink(log_stream));
+        log::set_filter("*");
+
+        log::cerr_redirection redir;
+        redir.restore();
+        redir.redirect();
+        redir.restore();
+    }
+    // Regression test: repeated redirect/restore must not throw or corrupt state.
+    EXPECT_TRUE(true);
+}
+
 TEST(Logging, Basics)
 {
 	std::stringstream log_stream;

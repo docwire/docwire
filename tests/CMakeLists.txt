@@ -15,6 +15,15 @@ add_executable(docwire_tests
 	http_tests.cpp
 	data_source_tests.cpp
 	xml_tests.cpp
+	resource_path_tests.cpp
+	static_flat_map_tests.cpp
+	json_serialization_tests.cpp
+	type_name_tests.cpp
+	log_filter_tests.cpp
+	iconv_wrapper_tests.cpp
+	minizip_wrapper_tests.cpp
+	odr_smoke_test.cpp
+	odr_smoke_test_b.cpp
 )
 
 target_link_libraries(docwire_tests PRIVATE
