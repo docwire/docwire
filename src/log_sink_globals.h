@@ -22,7 +22,7 @@
 namespace docwire::log::detail
 {
 
-DOCWIRE_CORE_EXPORT extern std::mutex g_log_callback_mutex;
+DOCWIRE_CORE_EXPORT extern std::recursive_mutex g_log_callback_mutex;
 DOCWIRE_CORE_EXPORT extern std::function<void(const record&)> g_log_callback;
 DOCWIRE_CORE_EXPORT extern std::atomic<bool> g_logging_enabled;
 

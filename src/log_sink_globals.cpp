@@ -14,7 +14,7 @@
 namespace docwire::log::detail
 {
 
-std::mutex g_log_callback_mutex;
+std::recursive_mutex g_log_callback_mutex;
 std::function<void(const record&)> g_log_callback;
 std::atomic<bool> g_logging_enabled{false};
 
