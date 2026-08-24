@@ -72,7 +72,7 @@ class DOCWIRE_CORE_EXPORT thread_safe_ole_storage : public wvWare::OLEStorage
 		bool m_is_valid_ole;
 		std::string m_error;
 		std::string m_file_name;
-		data_stream* m_data_stream;
+		std::unique_ptr<data_stream> m_data_stream;
 		uint16_t m_sector_size{0}, m_mini_sector_size{0};
 		uint32_t m_number_of_directories;
 		uint16_t m_header_version{0};
@@ -112,8 +112,7 @@ inline thread_safe_ole_storage::thread_safe_ole_storage(const std::string& file_
 {
 	m_file_name = file_name;
 	m_is_valid_ole = true;
-	m_data_stream = nullptr;
-	m_data_stream = new file_stream(file_name);
+	m_data_stream = std::make_unique<file_stream>(file_name);
 	if (!m_data_stream->open())
 	{
 		m_is_valid_ole = false;
@@ -131,8 +130,7 @@ inline void thread_safe_ole_storage::init_from_buffer(std::span<const std::byte>
 {
 	m_file_name = "Memory buffer";
 	m_is_valid_ole = true;
-	m_data_stream = nullptr;
-	m_data_stream = new buffer_stream(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+	m_data_stream = std::make_unique<buffer_stream>(reinterpret_cast<const char*>(buffer.data()), buffer.size());
 	if (!m_data_stream->open())
 	{
 		m_is_valid_ole = false;
