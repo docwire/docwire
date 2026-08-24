@@ -328,10 +328,10 @@ class data_source
 		void fill_memory_cache(std::optional<length_limit> limit) const;
 };
 
-namespace
+namespace detail
 {
 
-void read_unseekable_stream_into_memory(std::shared_ptr<memory_buffer> buffer, std::shared_ptr<std::istream> stream, std::optional<length_limit> limit)
+inline void read_unseekable_stream_into_memory(std::shared_ptr<memory_buffer> buffer, std::shared_ptr<std::istream> stream, std::optional<length_limit> limit)
 {
 	constexpr size_t chunk_size = 4096;
 	size_t size = buffer->size();
@@ -352,7 +352,7 @@ void read_unseekable_stream_into_memory(std::shared_ptr<memory_buffer> buffer, s
 	}
 }
 
-void read_seekable_stream_into_memory(std::shared_ptr<memory_buffer> buffer, std::optional<size_t>& stream_size, std::shared_ptr<std::istream> stream, std::optional<length_limit> limit)
+inline void read_seekable_stream_into_memory(std::shared_ptr<memory_buffer> buffer, std::optional<size_t>& stream_size, std::shared_ptr<std::istream> stream, std::optional<length_limit> limit)
 {
 	if (!stream_size)
 	{
@@ -368,7 +368,7 @@ void read_seekable_stream_into_memory(std::shared_ptr<memory_buffer> buffer, std
 	DOCWIRE_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read));
 }
 
-} // anonymous namespace
+} // namespace detail
 
 inline std::span<const std::byte> data_source::span(std::optional<length_limit> limit) const
 {
@@ -514,7 +514,7 @@ inline void data_source::fill_memory_cache(std::optional<length_limit> limit) co
 					DOCWIRE_THROW_IF (!m_path_stream->good(), source);
 					m_memory_cache = std::make_shared<memory_buffer>(0);
 				}
-				read_seekable_stream_into_memory(m_memory_cache, m_stream_size, m_path_stream, limit);
+				detail::read_seekable_stream_into_memory(m_memory_cache, m_stream_size, m_path_stream, limit);
 			},
 			[this](const std::span<const std::byte>& source)
 			{
@@ -528,13 +528,13 @@ inline void data_source::fill_memory_cache(std::optional<length_limit> limit) co
 			{
 				if (!m_memory_cache)
 					m_memory_cache = std::make_shared<memory_buffer>(0);
-				read_seekable_stream_into_memory(m_memory_cache, m_stream_size, source.v, limit);
+				detail::read_seekable_stream_into_memory(m_memory_cache, m_stream_size, source.v, limit);
 			},
 			[this, limit](unseekable_stream_ptr source)
 			{
 				if (!m_memory_cache)
 					m_memory_cache = std::make_shared<memory_buffer>(0);
-				read_unseekable_stream_into_memory(m_memory_cache, source.v, limit);
+				detail::read_unseekable_stream_into_memory(m_memory_cache, source.v, limit);
 			}
 		},
 		m_source
