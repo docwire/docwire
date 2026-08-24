@@ -25,6 +25,8 @@ DOCWIRE_CORE_EXPORT void open(state& st)
 
 DOCWIRE_CORE_EXPORT void close(state& st) noexcept
 {
+    if (st.descriptor == 0)
+        return;
     iconv_t descriptor = reinterpret_cast<iconv_t>(st.descriptor);
     if (descriptor != (iconv_t)(-1))
         iconv_close(descriptor);
@@ -33,6 +35,9 @@ DOCWIRE_CORE_EXPORT void close(state& st) noexcept
 
 DOCWIRE_CORE_EXPORT std::string convert(state& st, std::string_view input)
 {
+    if (st.descriptor == 0)
+        throw make_error("Cannot convert: iconv descriptor is not open");
+
     if (input.empty())
         return {};
 
