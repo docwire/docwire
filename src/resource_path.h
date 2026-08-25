@@ -25,18 +25,11 @@ namespace docwire
 {
 
 
-// Anonymous namespace to make sure that inline methods are instantiated in
-// current translation unit and are not shadowed by instantiations from other units.
-namespace
-{
-
-static inline std::filesystem::path this_line_location()
+inline std::filesystem::path this_line_location()
 {
     detail::this_line_location_t& f = this_line_location;
     return detail::this_line_location_helper(f);
 }
-
-} // anonymous namespace
 
 /**
  * @brief Locates a resource file or directory at runtime.
