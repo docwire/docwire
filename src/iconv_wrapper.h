@@ -17,7 +17,7 @@
 #include <string_view>
 #include "core_export.h"
 
-namespace docwire::detail::iconv
+namespace docwire::detail::iconv_wrapper
 {
 
 struct state
@@ -31,6 +31,6 @@ DOCWIRE_CORE_EXPORT void open(state& st);
 DOCWIRE_CORE_EXPORT void close(state& st) noexcept;
 DOCWIRE_CORE_EXPORT std::string convert(state& st, std::string_view input);
 
-} // namespace docwire::detail::iconv
+} // namespace docwire::detail::iconv_wrapper
 
 #endif

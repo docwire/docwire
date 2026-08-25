@@ -18,7 +18,15 @@
 #include "throw_if.h"
 #include "error.h"
 
-namespace docwire::detail::iconv
+#ifdef open
+#undef open
+#endif
+
+#ifdef close
+#undef close
+#endif
+
+namespace docwire::detail::iconv_wrapper
 {
 
 namespace
@@ -88,4 +96,4 @@ DOCWIRE_CORE_EXPORT std::string convert(state& st, std::string_view input)
     return output;
 }
 
-} // namespace docwire::detail::iconv
+} // namespace docwire::detail::iconv_wrapper

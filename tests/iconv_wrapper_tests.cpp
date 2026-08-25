@@ -7,13 +7,13 @@ using namespace docwire;
 
 TEST(IconvWrapper, ConvertUtf8ToUtf16)
 {
-    detail::iconv::state state;
+    detail::iconv_wrapper::state state;
     state.from = "UTF-8";
     state.to = "UTF-16LE";
 
-    detail::iconv::open(state);
-    auto result = detail::iconv::convert(state, "hello");
-    detail::iconv::close(state);
+    detail::iconv_wrapper::open(state);
+    auto result = detail::iconv_wrapper::convert(state, "hello");
+    detail::iconv_wrapper::close(state);
 
     EXPECT_FALSE(result.empty());
 }
@@ -24,9 +24,9 @@ TEST(IconvWrapper, EmptyInput)
     state.from = "UTF-8";
     state.to = "UTF-16LE";
 
-    detail::iconv::open(state);
-    auto result = detail::iconv::convert(state, "");
-    detail::iconv::close(state);
+    detail::iconv_wrapper::open(state);
+    auto result = detail::iconv_wrapper::convert(state, "");
+    detail::iconv_wrapper::close(state);
 
     EXPECT_TRUE(result.empty());
 }
@@ -37,5 +37,5 @@ TEST(IconvWrapper, InvalidCharsetThrows)
     state.from = "UTF-8";
     state.to = "INVALID-CHARSET";
 
-    EXPECT_THROW(detail::iconv::open(state), std::exception);
+    EXPECT_THROW(detail::iconv_wrapper::open(state), std::exception);
 }
