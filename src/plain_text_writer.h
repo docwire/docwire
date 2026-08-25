@@ -592,7 +592,7 @@ struct plain_text_writer::impl
   int level { 0 };
   std::vector<message_ptr> msgs;
   std::string list_type;
-  int list_counter;
+  int list_counter{1};
   bool list_mode{ false };
   bool header_mode{false};
   bool footer_mode{false};
