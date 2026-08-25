@@ -1,6 +1,8 @@
 add_library(docwire_xlsb SHARED xlsb_parser.cpp)
 
-target_link_libraries(docwire_xlsb PRIVATE docwire_core)
+target_link_libraries(docwire_xlsb PRIVATE
+    docwire_core
+    docwire_ole_utils)
 
 install(TARGETS docwire_xlsb EXPORT docwire_targets)
 if(MSVC)

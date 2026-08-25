@@ -3,7 +3,10 @@ add_library(docwire_odf_ooxml SHARED
     odf_ooxml_parser.cpp
     odfxml_parser.cpp)
 
-target_link_libraries(docwire_odf_ooxml PRIVATE docwire_xml docwire_core)
+target_link_libraries(docwire_odf_ooxml PRIVATE
+    docwire_xml
+    docwire_core
+    docwire_ole_utils)
 
 install(TARGETS docwire_odf_ooxml EXPORT docwire_targets)
 if(MSVC)

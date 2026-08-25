@@ -8,6 +8,7 @@ add_subdirectory(wv2)
 include(docwire_resources.cmake)
 
 include(core.cmake)
+include(ole_utils.cmake)
 include(base64.cmake)
 include(odf_ooxml.cmake)
 include(ole_office_formats.cmake)
