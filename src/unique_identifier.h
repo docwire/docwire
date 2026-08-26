@@ -56,7 +56,7 @@ public:
     bool operator==(const unique_identifier& other) const = default;
 
 private:
-	inline static DOCWIRE_CORE_EXPORT std::atomic<size_t> m_counter{0}; ///< Counter used for generating unique identifiers.
+	inline static std::atomic<size_t> m_counter{0}; ///< Counter used for generating unique identifiers.
 	size_t m_id;                          ///< Unique identifier value.
 
 	friend struct std::hash<unique_identifier>;
