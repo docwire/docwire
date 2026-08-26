@@ -20,7 +20,7 @@ TEST(IconvWrapper, ConvertUtf8ToUtf16)
 
 TEST(IconvWrapper, EmptyInput)
 {
-    detail::iconv::state state;
+    detail::iconv_wrapper::state state;
     state.from = "UTF-8";
     state.to = "UTF-16LE";
 
@@ -33,7 +33,7 @@ TEST(IconvWrapper, EmptyInput)
 
 TEST(IconvWrapper, InvalidCharsetThrows)
 {
-    detail::iconv::state state;
+    detail::iconv_wrapper::state state;
     state.from = "UTF-8";
     state.to = "INVALID-CHARSET";
 

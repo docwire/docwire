@@ -27,21 +27,21 @@ public:
 	charset_converter(std::string from, std::string to)
 		: m_state{0, std::move(from), std::move(to)}
 	{
-		detail::iconv::open(m_state);
+		detail::iconv_wrapper::open(m_state);
 	}
 
 	~charset_converter()
 	{
-		detail::iconv::close(m_state);
+		detail::iconv_wrapper::close(m_state);
 	}
 
 	std::string convert(std::string_view input) const
 	{
-		return detail::iconv::convert(const_cast<detail::iconv::state&>(m_state), input);
+		return detail::iconv_wrapper::convert(const_cast<detail::iconv_wrapper::state&>(m_state), input);
 	}
 
 private:
-	detail::iconv::state m_state;
+	detail::iconv_wrapper::state m_state;
 };
 
 } // namespace docwire
