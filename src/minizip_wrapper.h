@@ -29,6 +29,8 @@ struct state
     std::uintptr_t buffer{};  // opaque pointer to internal zipped_buffer
     std::unordered_map<std::string, std::uintptr_t> directory;
     bool opened_for_chunks{ false };
+
+    ~state();
 };
 
 DOCWIRE_CORE_EXPORT void open(state& st, std::span<const std::byte> source);
@@ -40,6 +42,11 @@ DOCWIRE_CORE_EXPORT bool read_chunk(state& st, const std::string& file_name, cha
 DOCWIRE_CORE_EXPORT bool read_chunk(state& st, const std::string& file_name, std::string* contents, int num_of_chars);
 DOCWIRE_CORE_EXPORT void close_reading_file_for_chunks(state& st);
 DOCWIRE_CORE_EXPORT bool load_directory(state& st);
+
+inline state::~state()
+{
+    close(*this);
+}
 
 } // namespace docwire::detail::minizip
 
