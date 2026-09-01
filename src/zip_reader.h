@@ -20,7 +20,7 @@
 namespace docwire
 {
 
-class DOCWIRE_CORE_EXPORT zip_reader
+class zip_reader
 {
 public:
 	explicit zip_reader(const data_source& data)
