@@ -27,7 +27,7 @@ namespace docwire
  * of identifiers should be very fast. Generation is thread-safe, which means that identifiers will not be duplicated
  * between different threads.
  */
-class DOCWIRE_CORE_EXPORT unique_identifier
+class unique_identifier
 {
 public:
 	/**

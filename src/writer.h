@@ -37,7 +37,7 @@ private:
 /**
  * @brief The Writer class is used to write data from callbacks to an output stream.
  */
-class DOCWIRE_CORE_EXPORT writer
+class writer
 {
 public:
   /**

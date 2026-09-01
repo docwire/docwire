@@ -43,7 +43,7 @@ namespace docwire
 {
 using docwire::plain_text::output_width;
 
-class DOCWIRE_CORE_EXPORT plain_text_writer : public writer
+class plain_text_writer : public writer
 {
 public:
   plain_text_writer(const std::string& eol_sequence,

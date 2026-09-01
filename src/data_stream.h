@@ -37,7 +37,7 @@ class data_stream
 		virtual data_stream* clone() = 0;
 };
 
-class DOCWIRE_CORE_EXPORT file_stream : public data_stream
+class file_stream : public data_stream
 {
 	public:
 		file_stream(const std::string& file_name);
@@ -60,7 +60,7 @@ class DOCWIRE_CORE_EXPORT file_stream : public data_stream
 		bool m_opened;
 };
 
-class DOCWIRE_CORE_EXPORT buffer_stream : public data_stream
+class buffer_stream : public data_stream
 {
 	public:
 		buffer_stream(const char* buffer, size_t size);

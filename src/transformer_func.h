@@ -27,7 +27,7 @@ using message_transform_func = std::function<continuation(message_ptr, const mes
 /**
  * @brief Wraps single function (tag_transform_func) into chain_element object
  */
-class DOCWIRE_CORE_EXPORT transformer_func : public chain_element
+class transformer_func : public chain_element
 {
 public:
   /**

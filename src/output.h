@@ -40,7 +40,7 @@ concept ostream_derived_ref_qualified = OStreamDerived<std::remove_reference_t<T
  *  std::ifstream("file.pdf", std::ios_base::in|std::ios_base::binary) | office_formats_parser{} | plain_text_exporter() | std::cout; // Imports file.pdf and saves it to std::cout as plain text
  *  @endcode
  */
-class DOCWIRE_CORE_EXPORT output_chain_element : public chain_element
+class output_chain_element : public chain_element
 {
 public:
   /**

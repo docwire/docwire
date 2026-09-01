@@ -21,7 +21,7 @@
 namespace docwire
 {
 
-class DOCWIRE_CORE_EXPORT charset_converter
+class charset_converter
 {
 public:
 	charset_converter(std::string from, std::string to)

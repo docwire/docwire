@@ -20,7 +20,7 @@
 namespace docwire::type_name
 {
 
-DOCWIRE_CORE_EXPORT std::string from_type_index(std::type_index t);
+std::string from_type_index(std::type_index t);
 
 template<typename T>
 struct pretty_impl {
@@ -75,7 +75,7 @@ struct pretty_impl<const T&> {
 template<typename T>
 inline std::string pretty() { return pretty_impl<T>{}(); }
 
-DOCWIRE_CORE_EXPORT std::string pretty_function(const std::string& function_name);
+std::string pretty_function(const std::string& function_name);
 
 } // namespace docwire::type_name
 

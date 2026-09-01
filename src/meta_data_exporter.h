@@ -28,7 +28,7 @@ namespace docwire
 /**
  * @brief Exports meta data only to plain text format.
  */
-class DOCWIRE_CORE_EXPORT metadata_exporter : public chain_element
+class metadata_exporter : public chain_element
 {
 public:
   metadata_exporter() = default;

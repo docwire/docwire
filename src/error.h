@@ -72,7 +72,7 @@ namespace docwire::errors
  * @see errors::diagnostic_message
  * @see @ref handling_errors_and_warnings.cpp "handling errors and warnings example"
  */
-struct DOCWIRE_CORE_EXPORT base : public std::exception
+struct base : public std::exception
 {
 	/// @brief The source location where the exception was thrown.
 	source_location location;

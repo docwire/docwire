@@ -28,7 +28,7 @@ namespace pipeline
 struct start_processing {};
 } // namespace pipeline
 
-class DOCWIRE_CORE_EXPORT parsing_chain : public chain_element
+class parsing_chain : public chain_element
 {
   public:
     parsing_chain(ref_or_owned<chain_element> lhs_element, ref_or_owned<chain_element> rhs_element);

@@ -29,20 +29,20 @@ namespace docwire::log
  *
  * Example: `log_entry(log_tags::audit{}, "User logged in", user_id);`
  */
-struct DOCWIRE_CORE_EXPORT audit { static constexpr std::string_view string() { return "audit"; } };
+struct audit { static constexpr std::string_view string() { return "audit"; } };
 
 /// @brief Tag automatically added to a log entry when a `log_scope` is entered.
-struct DOCWIRE_CORE_EXPORT scope_enter { static constexpr std::string_view string() { return "scope_enter"; } };
+struct scope_enter { static constexpr std::string_view string() { return "scope_enter"; } };
 
 /// @brief Tag automatically added to a log entry when a `log_scope` is exited.
-struct DOCWIRE_CORE_EXPORT scope_exit { static constexpr std::string_view string() { return "scope_exit"; } };
+struct scope_exit { static constexpr std::string_view string() { return "scope_exit"; } };
 
 /**
  * @brief Tag automatically added to a log entry created by `log_return`.
  *
  * This allows for easy filtering of all return value logs.
  */
-struct DOCWIRE_CORE_EXPORT return_value { static constexpr std::string_view string() { return "return"; } };
+struct return_value { static constexpr std::string_view string() { return "return"; } };
 
 } // namespace docwire::log
 

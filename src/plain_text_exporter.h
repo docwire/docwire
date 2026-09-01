@@ -38,7 +38,7 @@ struct link_formatter
 /**
  * @brief Exports data to plain text format.
  */
-class DOCWIRE_CORE_EXPORT plain_text_exporter : public chain_element
+class plain_text_exporter : public chain_element
 {
 public:
 	plain_text_exporter(eol_sequence eol = eol_sequence{"\n"},

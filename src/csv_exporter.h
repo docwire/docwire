@@ -25,7 +25,7 @@ namespace docwire
 /**
  * @brief Exports data to CSV format.
  */
-class DOCWIRE_CORE_EXPORT csv_exporter : public chain_element
+class csv_exporter : public chain_element
 {
 public:
     csv_exporter() = default;

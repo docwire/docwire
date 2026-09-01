@@ -29,9 +29,9 @@ namespace docwire::log
 {
 
 /// @brief Tag for log entries that contain content redirected from `stderr`.
-struct DOCWIRE_CORE_EXPORT stderr_redirect { static constexpr std::string_view string() { return "stderr_redirect"; } };
+struct stderr_redirect { static constexpr std::string_view string() { return "stderr_redirect"; } };
 
-class DOCWIRE_CORE_EXPORT cerr_redirection
+class cerr_redirection
 {
 public:
 	/**
