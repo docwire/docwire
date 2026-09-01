@@ -21,8 +21,8 @@
 #include <numeric>
 #include "document_elements.h"
 #include <sstream>
-#include <typeindex>
 #include <functional>
+#include "type_id.h"
 
 namespace docwire
 {
@@ -95,53 +95,53 @@ struct pimpl_impl<html_writer> : pimpl_impl_base
   bool m_header_is_open { false };
   int m_nested_docs_counter { 0 };
   using handler_func = std::function<std::shared_ptr<text_element>(const message_ptr&)>;
-  const boost::container::flat_map<std::type_index, handler_func> m_handlers;
+  const boost::container::flat_map<docwire::type_id, handler_func> m_handlers;
 
   pimpl_impl()
     : m_handlers{
-        {typeid(document::paragraph), [](const message_ptr& msg) { return tag_with_attributes("p", styling_attributes(msg->get<document::paragraph>())); }},
-        {typeid(document::close_paragraph), [](const message_ptr&) { return std::make_shared<text_element>("</p>"); }},
-        {typeid(document::section), [](const message_ptr& msg) { return tag_with_attributes("div", styling_attributes(msg->get<document::section>())); }},
-        {typeid(document::close_section), [](const message_ptr&) { return std::make_shared<text_element>("</div>"); }},
-        {typeid(document::span), [](const message_ptr& msg) { return tag_with_attributes("span", styling_attributes(msg->get<document::span>())); }},
-        {typeid(document::close_span), [](const message_ptr&) { return std::make_shared<text_element>("</span>"); }},
-        {typeid(document::bold), [](const message_ptr& msg) { return tag_with_attributes("b", styling_attributes(msg->get<document::bold>())); }},
-        {typeid(document::close_bold), [](const message_ptr&) { return std::make_shared<text_element>("</b>"); }},
-        {typeid(document::italic), [](const message_ptr& msg) { return tag_with_attributes("i", styling_attributes(msg->get<document::italic>())); }},
-        {typeid(document::close_italic), [](const message_ptr&) { return std::make_shared<text_element>("</i>"); }},
-        {typeid(document::underline), [](const message_ptr& msg) { return tag_with_attributes("u", styling_attributes(msg->get<document::underline>())); }},
-        {typeid(document::close_underline), [](const message_ptr&) { return std::make_shared<text_element>("</u>"); }},
-        {typeid(document::table), [](const message_ptr& msg) { return tag_with_attributes("table", styling_attributes(msg->get<document::table>())); }},
-        {typeid(document::close_table), [](const message_ptr&) { return std::make_shared<text_element>("</table>"); }},
-        {typeid(document::table_row), [](const message_ptr& msg) { return tag_with_attributes("tr", styling_attributes(msg->get<document::table_row>())); }},
-        {typeid(document::close_table_row), [](const message_ptr&) { return std::make_shared<text_element>("</tr>"); }},
-        {typeid(document::table_cell), [](const message_ptr& msg) { return tag_with_attributes("td", styling_attributes(msg->get<document::table_cell>())); }},
-        {typeid(document::close_table_cell), [](const message_ptr&) { return std::make_shared<text_element>("</td>"); }},
-        {typeid(document::caption), [](const message_ptr& msg) { return tag_with_attributes("caption", styling_attributes(msg->get<document::caption>())); }},
-        {typeid(document::close_caption), [](const message_ptr&) { return std::make_shared<text_element>("</caption>"); }},
-        {typeid(document::break_line), [](const message_ptr& msg) { return tag_with_attributes("br", styling_attributes(msg->get<document::break_line>())); }},
-        {typeid(document::text), [](const message_ptr& msg) { return std::make_shared<text_element>(encoded(msg->get<document::text>().text)); }},
-        {typeid(document::link), [this](const message_ptr& msg) { return this->write_link(msg->get<document::link>()); }},
-        {typeid(document::close_link), [](const message_ptr&) { return std::make_shared<text_element>("</a>"); }},
-        {typeid(document::image), [this](const message_ptr& msg) { return this->write_image(msg->get<document::image>()); }},
-        {typeid(document::list), [this](const message_ptr& msg) { return this->write_list(msg->get<document::list>()); }},
-        {typeid(document::close_list), [](const message_ptr&) { return std::make_shared<text_element>("</ul>"); }},
-        {typeid(document::list_item), [](const message_ptr&) { return std::make_shared<text_element>("<li>"); }},
-        {typeid(document::close_list_item), [](const message_ptr&) { return std::make_shared<text_element>("</li>"); }},
-        {typeid(document::header), [](const message_ptr&) { return std::make_shared<text_element>("<header>"); }},
-        {typeid(document::close_header), [](const message_ptr&) { return std::make_shared<text_element>("</header>"); }},
-        {typeid(document::footer), [](const message_ptr&) { return std::make_shared<text_element>("<footer>"); }},
-        {typeid(document::close_footer), [](const message_ptr&) { return std::make_shared<text_element>("</footer>"); }},
-        {typeid(document::document), [this](const message_ptr& msg) {
+        {type_id_of<document::paragraph>(), [](const message_ptr& msg) { return tag_with_attributes("p", styling_attributes(msg->get<document::paragraph>())); }},
+        {type_id_of<document::close_paragraph>(), [](const message_ptr&) { return std::make_shared<text_element>("</p>"); }},
+        {type_id_of<document::section>(), [](const message_ptr& msg) { return tag_with_attributes("div", styling_attributes(msg->get<document::section>())); }},
+        {type_id_of<document::close_section>(), [](const message_ptr&) { return std::make_shared<text_element>("</div>"); }},
+        {type_id_of<document::span>(), [](const message_ptr& msg) { return tag_with_attributes("span", styling_attributes(msg->get<document::span>())); }},
+        {type_id_of<document::close_span>(), [](const message_ptr&) { return std::make_shared<text_element>("</span>"); }},
+        {type_id_of<document::bold>(), [](const message_ptr& msg) { return tag_with_attributes("b", styling_attributes(msg->get<document::bold>())); }},
+        {type_id_of<document::close_bold>(), [](const message_ptr&) { return std::make_shared<text_element>("</b>"); }},
+        {type_id_of<document::italic>(), [](const message_ptr& msg) { return tag_with_attributes("i", styling_attributes(msg->get<document::italic>())); }},
+        {type_id_of<document::close_italic>(), [](const message_ptr&) { return std::make_shared<text_element>("</i>"); }},
+        {type_id_of<document::underline>(), [](const message_ptr& msg) { return tag_with_attributes("u", styling_attributes(msg->get<document::underline>())); }},
+        {type_id_of<document::close_underline>(), [](const message_ptr&) { return std::make_shared<text_element>("</u>"); }},
+        {type_id_of<document::table>(), [](const message_ptr& msg) { return tag_with_attributes("table", styling_attributes(msg->get<document::table>())); }},
+        {type_id_of<document::close_table>(), [](const message_ptr&) { return std::make_shared<text_element>("</table>"); }},
+        {type_id_of<document::table_row>(), [](const message_ptr& msg) { return tag_with_attributes("tr", styling_attributes(msg->get<document::table_row>())); }},
+        {type_id_of<document::close_table_row>(), [](const message_ptr&) { return std::make_shared<text_element>("</tr>"); }},
+        {type_id_of<document::table_cell>(), [](const message_ptr& msg) { return tag_with_attributes("td", styling_attributes(msg->get<document::table_cell>())); }},
+        {type_id_of<document::close_table_cell>(), [](const message_ptr&) { return std::make_shared<text_element>("</td>"); }},
+        {type_id_of<document::caption>(), [](const message_ptr& msg) { return tag_with_attributes("caption", styling_attributes(msg->get<document::caption>())); }},
+        {type_id_of<document::close_caption>(), [](const message_ptr&) { return std::make_shared<text_element>("</caption>"); }},
+        {type_id_of<document::break_line>(), [](const message_ptr& msg) { return tag_with_attributes("br", styling_attributes(msg->get<document::break_line>())); }},
+        {type_id_of<document::text>(), [](const message_ptr& msg) { return std::make_shared<text_element>(encoded(msg->get<document::text>().text)); }},
+        {type_id_of<document::link>(), [this](const message_ptr& msg) { return this->write_link(msg->get<document::link>()); }},
+        {type_id_of<document::close_link>(), [](const message_ptr&) { return std::make_shared<text_element>("</a>"); }},
+        {type_id_of<document::image>(), [this](const message_ptr& msg) { return this->write_image(msg->get<document::image>()); }},
+        {type_id_of<document::list>(), [this](const message_ptr& msg) { return this->write_list(msg->get<document::list>()); }},
+        {type_id_of<document::close_list>(), [](const message_ptr&) { return std::make_shared<text_element>("</ul>"); }},
+        {type_id_of<document::list_item>(), [](const message_ptr&) { return std::make_shared<text_element>("<li>"); }},
+        {type_id_of<document::close_list_item>(), [](const message_ptr&) { return std::make_shared<text_element>("</li>"); }},
+        {type_id_of<document::header>(), [](const message_ptr&) { return std::make_shared<text_element>("<header>"); }},
+        {type_id_of<document::close_header>(), [](const message_ptr&) { return std::make_shared<text_element>("</header>"); }},
+        {type_id_of<document::footer>(), [](const message_ptr&) { return std::make_shared<text_element>("<footer>"); }},
+        {type_id_of<document::close_footer>(), [](const message_ptr&) { return std::make_shared<text_element>("</footer>"); }},
+        {type_id_of<document::document>(), [this](const message_ptr& msg) {
             this->m_nested_docs_counter++;
             return this->m_nested_docs_counter == 1 ? this->write_open_header(msg->get<document::document>()) : std::shared_ptr<text_element>();
         }},
-        {typeid(document::close_document), [this](const message_ptr& msg) {
+        {type_id_of<document::close_document>(), [this](const message_ptr& msg) {
             throw_if(this->m_nested_docs_counter <= 0, errors::program_logic{});
             this->m_nested_docs_counter--;
             return this->m_nested_docs_counter == 0 ? this->write_footer() : std::shared_ptr<text_element>();
         }},
-        {typeid(document::style), [this](const message_ptr& msg) { return this->write_style(msg->get<document::style>()); }},
+        {type_id_of<document::style>(), [this](const message_ptr& msg) { return this->write_style(msg->get<document::style>()); }},
     }
   {}
 
@@ -250,7 +250,7 @@ struct pimpl_impl<html_writer> : pimpl_impl_base
     if (!is_header_content && m_header_is_open)
       write_close_header_open_body()->write_to(stream);
 
-    auto it = m_handlers.find(std::type_index(msg->object_type_info()));
+    auto it = m_handlers.find(msg->object_type_id());
     std::shared_ptr<text_element> text_element = (it != m_handlers.end())
                                                     ? it->second(msg)
                                                     : std::shared_ptr<docwire::text_element>();

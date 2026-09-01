@@ -21,9 +21,9 @@
 #include <numeric>
 #include <optional>
 #include <sstream>
-#include <typeindex>
 #include <vector>
 #include <ctime>
+#include "type_id.h"
 
 #include "static_flat_map.h"
 #include "writer.h"
@@ -68,7 +68,7 @@ private:
 struct plain_text_writer::impl
 {
   using handler_func = std::function<std::shared_ptr<text_element>(const message_ptr&)>;
-  using text_handler_map = docwire::static_flat_map<std::type_index, handler_func, 26>;
+  using text_handler_map = docwire::static_flat_map<docwire::type_id, handler_func, 26>;
 
   class cell
   {
@@ -139,35 +139,35 @@ struct plain_text_writer::impl
        std::function<std::string(const document::close_link&)> format_link_closing,
        output_width max_output_width)
     : m_handlers(std::to_array<text_handler_map::value_type>({
-        {typeid(mail::mail), [this](const message_ptr& msg) { return write_mail(msg->get<mail::mail>()); }},
-        {typeid(mail::attachment), [this](const message_ptr& msg) { return write_attachment(msg->get<mail::attachment>()); }},
-        {typeid(mail::folder), [this](const message_ptr& msg) { return write_folder(msg->get<mail::folder>()); }},
-        {typeid(document::text), [this](const message_ptr& msg) { return write_text(msg->get<document::text>()); }},
-        {typeid(mail::close_mail_body), [this](const message_ptr& msg) { return write_close_mail_body(msg->get<mail::close_mail_body>()); }},
-        {typeid(mail::close_attachment), [this](const message_ptr& msg) { return write_close_attachment(msg->get<mail::close_attachment>()); }},
-        {typeid(document::break_line), [this](const message_ptr& msg) { return write_new_line(msg->get<document::break_line>()); }},
-        {typeid(document::close_paragraph), [this](const message_ptr& msg) { return write_new_paragraph(msg->get<document::close_paragraph>()); }},
-        {typeid(document::close_section), [this](const message_ptr& msg) { return write_new_paragraph(document::close_paragraph()); }},
-        {typeid(document::table), [this](const message_ptr& msg) { return turn_on_table_mode(msg->get<document::table>()); }},
-        {typeid(document::close_table), [this](const message_ptr& msg) { return turn_off_table_mode(msg->get<document::close_table>()); }},
-        {typeid(document::link), [this](const message_ptr& msg) { return std::make_shared<text_element>(m_format_link_opening(msg->get<document::link>())); }},
-        {typeid(document::close_link), [this](const message_ptr& msg) { return std::make_shared<text_element>(m_format_link_closing(msg->get<document::close_link>())); }},
-        {typeid(document::image), [this](const message_ptr& msg) { return write_image(msg->get<document::image>()); }},
-        {typeid(document::list), [this](const message_ptr& msg) { return write_list(msg->get<document::list>()); }},
-        {typeid(document::close_list), [this](const message_ptr& msg) { return write_close_list(msg->get<document::close_list>()); }},
-        {typeid(document::list_item), [this](const message_ptr& msg) { return write_list_item(msg->get<document::list_item>()); }},
-        {typeid(document::close_list_item), [this](const message_ptr& msg) { return write_close_list_item(msg->get<document::close_list_item>()); }},
-        {typeid(document::header), [this](const message_ptr& msg) { return write_header(msg->get<document::header>()); }},
-        {typeid(document::close_header), [this](const message_ptr& msg) { return write_close_header(msg->get<document::close_header>()); }},
-        {typeid(document::footer), [this](const message_ptr& msg) { return write_footer(msg->get<document::footer>()); }},
-        {typeid(document::close_footer), [this](const message_ptr& msg) { return write_close_footer(msg->get<document::close_footer>()); }},
-        {typeid(document::comment), [this](const message_ptr& msg) { return write_comment(msg->get<document::comment>()); }},
-        {typeid(document::close_page), [this](const message_ptr& msg) { return write_close_page(msg->get<document::close_page>()); }},
-        {typeid(document::document), [this](const message_ptr& msg) {
+        {type_id_of<mail::mail>(), [this](const message_ptr& msg) { return write_mail(msg->get<mail::mail>()); }},
+        {type_id_of<mail::attachment>(), [this](const message_ptr& msg) { return write_attachment(msg->get<mail::attachment>()); }},
+        {type_id_of<mail::folder>(), [this](const message_ptr& msg) { return write_folder(msg->get<mail::folder>()); }},
+        {type_id_of<document::text>(), [this](const message_ptr& msg) { return write_text(msg->get<document::text>()); }},
+        {type_id_of<mail::close_mail_body>(), [this](const message_ptr& msg) { return write_close_mail_body(msg->get<mail::close_mail_body>()); }},
+        {type_id_of<mail::close_attachment>(), [this](const message_ptr& msg) { return write_close_attachment(msg->get<mail::close_attachment>()); }},
+        {type_id_of<document::break_line>(), [this](const message_ptr& msg) { return write_new_line(msg->get<document::break_line>()); }},
+        {type_id_of<document::close_paragraph>(), [this](const message_ptr& msg) { return write_new_paragraph(msg->get<document::close_paragraph>()); }},
+        {type_id_of<document::close_section>(), [this](const message_ptr& msg) { return write_new_paragraph(document::close_paragraph()); }},
+        {type_id_of<document::table>(), [this](const message_ptr& msg) { return turn_on_table_mode(msg->get<document::table>()); }},
+        {type_id_of<document::close_table>(), [this](const message_ptr& msg) { return turn_off_table_mode(msg->get<document::close_table>()); }},
+        {type_id_of<document::link>(), [this](const message_ptr& msg) { return std::make_shared<text_element>(m_format_link_opening(msg->get<document::link>())); }},
+        {type_id_of<document::close_link>(), [this](const message_ptr& msg) { return std::make_shared<text_element>(m_format_link_closing(msg->get<document::close_link>())); }},
+        {type_id_of<document::image>(), [this](const message_ptr& msg) { return write_image(msg->get<document::image>()); }},
+        {type_id_of<document::list>(), [this](const message_ptr& msg) { return write_list(msg->get<document::list>()); }},
+        {type_id_of<document::close_list>(), [this](const message_ptr& msg) { return write_close_list(msg->get<document::close_list>()); }},
+        {type_id_of<document::list_item>(), [this](const message_ptr& msg) { return write_list_item(msg->get<document::list_item>()); }},
+        {type_id_of<document::close_list_item>(), [this](const message_ptr& msg) { return write_close_list_item(msg->get<document::close_list_item>()); }},
+        {type_id_of<document::header>(), [this](const message_ptr& msg) { return write_header(msg->get<document::header>()); }},
+        {type_id_of<document::close_header>(), [this](const message_ptr& msg) { return write_close_header(msg->get<document::close_header>()); }},
+        {type_id_of<document::footer>(), [this](const message_ptr& msg) { return write_footer(msg->get<document::footer>()); }},
+        {type_id_of<document::close_footer>(), [this](const message_ptr& msg) { return write_close_footer(msg->get<document::close_footer>()); }},
+        {type_id_of<document::comment>(), [this](const message_ptr& msg) { return write_comment(msg->get<document::comment>()); }},
+        {type_id_of<document::close_page>(), [this](const message_ptr& msg) { return write_close_page(msg->get<document::close_page>()); }},
+        {type_id_of<document::document>(), [this](const message_ptr& msg) {
             m_nested_docs_counter++;
             return std::shared_ptr<text_element>();
         }},
-        {typeid(document::close_document), [this](const message_ptr& msg) {
+        {type_id_of<document::close_document>(), [this](const message_ptr& msg) {
             m_nested_docs_counter--;
             return m_nested_docs_counter == 0 ? write_close_document(msg->get<document::close_document>()) : std::shared_ptr<text_element>();
         }},
@@ -576,7 +576,7 @@ struct plain_text_writer::impl
     if (level == 0)
     {
       std::shared_ptr<text_element> text_element;
-      if (auto* handler = m_handlers.find(std::type_index(msg->object_type_info())))
+      if (auto* handler = m_handlers.find(msg->object_type_id()))
       {
         text_element = (*handler)(msg);
       }
