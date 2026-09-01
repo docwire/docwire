@@ -26,7 +26,7 @@ namespace docwire
 class data_stream;
 class thread_safe_ole_storage;
 
-class DOCWIRE_CORE_EXPORT thread_safe_ole_stream_reader : public wvWare::OLEStreamReader
+class thread_safe_ole_stream_reader : public wvWare::OLEStreamReader
 {
 	friend class thread_safe_ole_storage;
 public:

@@ -30,7 +30,7 @@
 namespace docwire
 {
 
-class DOCWIRE_CORE_EXPORT thread_safe_ole_storage : public wvWare::OLEStorage
+class thread_safe_ole_storage : public wvWare::OLEStorage
 {
 	public:
 		explicit thread_safe_ole_storage(const std::string& file_name);
