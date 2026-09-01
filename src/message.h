@@ -15,7 +15,7 @@
 #include <functional>
 #include <memory>
 #include <typeinfo>
-#include "type_id.hpp"
+#include "type_id.h"
 
 namespace docwire
 {

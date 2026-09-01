@@ -18,7 +18,7 @@
 #include <typeinfo>
 #include "serialization_pair.h" // IWYU pragma: keep
 #include "source_location.h"
-#include "type_id.hpp"
+#include "type_id.h"
 #include <tuple>
 #include <utility>
 
