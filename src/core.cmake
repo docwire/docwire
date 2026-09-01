@@ -7,7 +7,8 @@ add_library(docwire_core SHARED
     boost_datetime_wrapper.cpp
     boost_dll_wrapper.cpp
     boost_json_wrapper.cpp
-    boost_demangle_wrapper.cpp)
+    boost_demangle_wrapper.cpp
+    error_tags_exports.cpp)
 
 target_compile_features(docwire_core PUBLIC cxx_std_20)
 if(MSVC)
