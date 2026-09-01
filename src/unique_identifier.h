@@ -13,7 +13,8 @@
 #define DOCWIRE_UNIQUE_IDENTIFIER_H
 
 #include "core_export.h"
-#include <atomic>
+#include <cstddef>
+#include "unique_identifier_globals.h"
 #include <compare>
 #include <functional>
 
@@ -33,7 +34,7 @@ public:
 	/**
 	 * @brief Default constructor that generates new unique identifier.
 	 */
-	unique_identifier() : m_id(m_counter++) {}
+	unique_identifier() : m_id(detail::next_unique_identifier()) {}
 
 	/**
 	 * @brief Copy constructor.
@@ -56,7 +57,6 @@ public:
     bool operator==(const unique_identifier& other) const = default;
 
 private:
-	inline static std::atomic<size_t> m_counter{0}; ///< Counter used for generating unique identifiers.
 	size_t m_id;                          ///< Unique identifier value.
 
 	friend struct std::hash<unique_identifier>;

@@ -1,6 +1,7 @@
 add_library(docwire_core SHARED
     iconv_wrapper.cpp
     minizip_wrapper.cpp
+    unique_identifier_globals.cpp
     log_filter_globals.cpp
     log_cerr_redirection_globals.cpp
     log_sink_globals.cpp
