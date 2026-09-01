@@ -29,7 +29,7 @@ bool contains_type(const std::exception& e)
 		const errors::base& error = dynamic_cast<const errors::base&>(e);
 		for (size_t i = 0; i < error.context_count(); ++i)
 		{
-			if (error.context_type(i) == typeid(T))
+			if (error.context_type_id(i) == type_id_of<T>())
 				return true;
 		}
 	}

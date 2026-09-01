@@ -24,6 +24,7 @@ add_executable(docwire_tests
 	minizip_wrapper_tests.cpp
 	odr_smoke_test.cpp
 	odr_smoke_test_b.cpp
+	type_id_tests.cpp
 )
 
 target_link_libraries(docwire_tests PRIVATE

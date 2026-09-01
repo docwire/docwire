@@ -36,7 +36,7 @@ namespace docwire::errors
  * }
  * @endcode
  */
-struct DOCWIRE_CORE_EXPORT program_logic
+struct program_logic
 {
 	static constexpr std::string_view string() { return "program logic error tag"; }
 };
@@ -60,7 +60,7 @@ struct DOCWIRE_CORE_EXPORT program_logic
  * }
  * @endcode
  */
-struct DOCWIRE_CORE_EXPORT program_corrupted
+struct program_corrupted
 {
 	static constexpr std::string_view string() { return "program corrupted error tag"; }
 };
@@ -84,7 +84,7 @@ struct DOCWIRE_CORE_EXPORT program_corrupted
  * }
  * @endcode
  */
-struct DOCWIRE_CORE_EXPORT uninterpretable_data
+struct uninterpretable_data
 {
 	static constexpr std::string_view string() { return "uninterpretable data error tag"; }
 };
@@ -108,7 +108,7 @@ struct DOCWIRE_CORE_EXPORT uninterpretable_data
  * }
  * @endcode
  */
-struct DOCWIRE_CORE_EXPORT network_failure
+struct network_failure
 {
 	static constexpr std::string_view string() { return "network failure error tag"; }
 };
@@ -130,7 +130,7 @@ struct DOCWIRE_CORE_EXPORT network_failure
  * }
  * @endcode
  */
-struct DOCWIRE_CORE_EXPORT file_encrypted
+struct file_encrypted
 {
 	static constexpr std::string_view string() { return "file encrypted error tag"; }
 };

@@ -21,7 +21,7 @@ namespace docwire
 
 class parsing_chain;
 
-class DOCWIRE_CORE_EXPORT chain_element
+class chain_element
 {
 public:
   chain_element() = default;

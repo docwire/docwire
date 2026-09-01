@@ -23,7 +23,7 @@ struct serializer<message_base>
 {
     value full(const message_base& msg) const
     {
-        return object{{{"object_type", type_name::from_type_index(msg.object_type())}}};
+        return object{{{"object_type", type_name::from_type_index(msg.object_type_info())}}};
     }
     value typed_summary(const message_base& msg) const { return decorate_with_typeid(full(msg), type_name::pretty<message_base>()); }
 };

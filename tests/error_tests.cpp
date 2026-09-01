@@ -34,7 +34,7 @@ TEST (errors, throwing)
     }
     catch (const errors::base& e)
     {
-        ASSERT_EQ(e.context_type(0), typeid(const char*));
+        ASSERT_EQ(e.context_type_id(0), type_id_of<const char*>());
         ASSERT_EQ(e.context_string(0), "test");
     }
     try
@@ -44,7 +44,7 @@ TEST (errors, throwing)
     }
     catch (const errors::base& e)
     {
-        ASSERT_EQ(e.context_type(0), typeid(std::pair<std::string, std::string>));
+        ASSERT_EQ(e.context_type_id(0), (type_id_of<std::pair<std::string, std::string>>()));
         ASSERT_EQ(e.context_string(0), "s: test");
     }
     try
@@ -53,7 +53,7 @@ TEST (errors, throwing)
     }
     catch (const errors::base& e)
     {
-        ASSERT_EQ(e.context_type(0), typeid(errors::network_failure));
+        ASSERT_EQ(e.context_type_id(0), type_id_of<errors::network_failure>());
         ASSERT_EQ(e.context_string(0), "network failure error tag");
     }
     try
@@ -64,11 +64,11 @@ TEST (errors, throwing)
     catch (const errors::base& e)
     {
         ASSERT_EQ(e.context_count(), 3);
-        ASSERT_EQ(e.context_type(0), typeid(std::pair<std::string, const char *>));
+        ASSERT_EQ(e.context_type_id(0), (type_id_of<std::pair<std::string, const char*>>()));
         ASSERT_EQ(e.context_string(0), "triggering_condition: 2 < 3");
-        ASSERT_EQ(e.context_type(1), typeid(errors::file_encrypted));
+        ASSERT_EQ(e.context_type_id(1), type_id_of<errors::file_encrypted>());
         ASSERT_EQ(e.context_string(1), "file encrypted error tag");
-        ASSERT_EQ(e.context_type(2), typeid(std::pair<std::string, std::string>));
+        ASSERT_EQ(e.context_type_id(2), (type_id_of<std::pair<std::string, std::string>>()));
         ASSERT_EQ(e.context_string(2), "s: test");
     }
 }

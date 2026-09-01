@@ -15,6 +15,7 @@
 #include <functional>
 #include <memory>
 #include <typeinfo>
+#include "type_id.hpp"
 
 namespace docwire
 {
@@ -29,12 +30,13 @@ struct message;
 struct message_base
 {
   virtual ~message_base() = default;
-  virtual std::type_info const& object_type() const noexcept = 0;
+  virtual type_id object_type_id() const noexcept = 0;
+  virtual const std::type_info& object_type_info() const noexcept = 0;
 
   template <typename T>
   bool is() const noexcept
   {
-    return object_type() == typeid(T);
+    return object_type_id() == type_id_of<T>();
   }
   template <typename T>
   const T& get() const
@@ -54,9 +56,10 @@ struct message : message_base
 {
   T object;
   message(T&& object) : object(std::move(object)) {}
-  std::type_info const& object_type() const noexcept override
+  const std::type_info& object_type_info() const noexcept override { return typeid(T); }
+  type_id object_type_id() const noexcept override
 	{
-		return typeid(T);
+		return type_id_of<T>();
 	}
 };
 

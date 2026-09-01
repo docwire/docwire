@@ -18,6 +18,7 @@
 #include <typeinfo>
 #include "serialization_pair.h" // IWYU pragma: keep
 #include "source_location.h"
+#include "type_id.hpp"
 #include <tuple>
 #include <utility>
 
@@ -93,7 +94,7 @@ struct DOCWIRE_CORE_EXPORT base : public std::exception
 	 * @return The type information of the context item at the given index.
 	 * @see context_string
 	 */
-	virtual std::type_info const& context_type(size_t index) const noexcept = 0;
+	virtual type_id context_type_id(size_t index) const noexcept = 0;
 
 	/**
 	 * @brief Get the string representation of the context.
@@ -174,9 +175,9 @@ private:
     }
 
     template<size_t I>
-    const std::type_info& context_type_impl() const noexcept
+    type_id context_type_impl() const noexcept
     {
-        return typeid(std::get<I>(context));
+        return type_id_of<std::decay_t<decltype(std::get<I>(context))>>();
     }
 
     template <size_t... Is>
@@ -187,8 +188,8 @@ private:
     }
 
     template <size_t... Is>
-    const std::type_info& context_type_at(size_t index, std::index_sequence<Is...>) const noexcept {
-        using FuncType = const std::type_info&(impl::*)() const noexcept;
+    type_id context_type_at(size_t index, std::index_sequence<Is...>) const noexcept {
+        using FuncType = type_id(impl::*)() const noexcept;
         static constexpr FuncType funcs[] = { &impl::template context_type_impl<Is>... };
         return (this->*funcs[index])();
     }
@@ -218,7 +219,7 @@ public:
 	 * @see context_string
 	 * @see context
 	 */
-	std::type_info const& context_type(size_t index) const noexcept override
+	type_id context_type_id(size_t index) const noexcept override
 	{
 		return context_type_at(index, std::make_index_sequence<sizeof...(T)>{});
 	}

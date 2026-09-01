@@ -134,7 +134,7 @@ template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 	as required (lazy) and cached inside the class, for example file should be read to memory only once.
 	Performance is very important, for example we should not duplicate memory buffer that is passed to class.
 **/
-class DOCWIRE_CORE_EXPORT data_source
+class data_source
 {
 	public:
 		/**

@@ -42,7 +42,7 @@ public:
             return false;
         }
         if (!msg->is<T>()) {
-            *listener << "which holds a value of type " << msg->object_type().name();
+            *listener << "which holds a value of type " << msg->object_type_info().name();
             return false;
         }
         const T& value = msg->get<T>();

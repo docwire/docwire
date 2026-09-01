@@ -250,7 +250,7 @@ struct pimpl_impl<html_writer> : pimpl_impl_base
     if (!is_header_content && m_header_is_open)
       write_close_header_open_body()->write_to(stream);
 
-    auto it = m_handlers.find(std::type_index(msg->object_type()));
+    auto it = m_handlers.find(std::type_index(msg->object_type_info()));
     std::shared_ptr<text_element> text_element = (it != m_handlers.end())
                                                     ? it->second(msg)
                                                     : std::shared_ptr<docwire::text_element>();

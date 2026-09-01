@@ -576,7 +576,7 @@ struct plain_text_writer::impl
     if (level == 0)
     {
       std::shared_ptr<text_element> text_element;
-      if (auto* handler = m_handlers.find(std::type_index(msg->object_type())))
+      if (auto* handler = m_handlers.find(std::type_index(msg->object_type_info())))
       {
         text_element = (*handler)(msg);
       }
