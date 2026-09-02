@@ -5,11 +5,11 @@ cmake_minimum_required(VERSION 3.16)
 # -----------------------------------------------------
 
 if(DEFINED CUSTOM_DOXYGEN_EXECUTABLE)
-    include(FindDoxygen)
-    set(DOXYGEN_EXECUTABLE "${CUSTOM_DOXYGEN_EXECUTABLE}")
-else()
-    find_package(Doxygen 1.18.0 REQUIRED)
+    set(DOXYGEN_EXECUTABLE "${CUSTOM_DOXYGEN_EXECUTABLE}"
+        CACHE FILEPATH "Path to Doxygen executable" FORCE)
 endif()
+
+find_package(Doxygen 1.18.0 REQUIRED)
 
 # -----------------------------------------------------
 # Set some of the doxygen configs
