@@ -26,8 +26,8 @@ file(RENAME ${CUTLASS_SOURCE_PATH} ${SOURCE_PATH}/third_party/cutlass)
 vcpkg_from_github(
 	OUT_SOURCE_PATH CXXOPTS_SOURCE_PATH
 	REPO jarro2783/cxxopts
-	REF c74846a891b3cc3bfa992d588b1295f528d43039
-	SHA512 3e92a67f8d6cb1ba0f80e35b47c9beb9ea14d995bb3e296765475ff31a0b499f3080e359fa87a63273e1e8c5396d4af39d9a47dbe6fa06074bb63a642cf6bfda
+	REF 44380e5a44706ab7347f400698c703eb2a196202
+	SHA512 05fc050219a3e41fcf8fe33249f8153d1e4b44360c7aeddba06dedb5c4e2b3145c5ef6c76594732fb67cefc8658a392d11ade441ea48a33892b9e93b7952861f
 )
 file(REMOVE_RECURSE ${SOURCE_PATH}/third_party/cxxopts)
 file(RENAME ${CXXOPTS_SOURCE_PATH} ${SOURCE_PATH}/third_party/cxxopts)
@@ -85,9 +85,23 @@ else()
 	set(WITH_ACCELERATE "OFF") # Apple Accelerate is not available on other platforms
 endif()
 
+# CTranslate2 v4.3.1 hits an ODR violation when CPU dispatch is enabled and
+# built with GCC 15 (confirmed on Ubuntu 26.04 CI): kernels.cc, kernels_avx.cc,
+# and kernels_avx2.cc each emit duplicate template instantiations for the
+# AVX2 CpuIsa variant, causing a linker error ("multiple definition of
+# ctranslate2::cpu::exp<(CpuIsa)2>...", etc.) across ~15 elementwise/
+# normalization functions. Disabling dispatch collapses these into a single TU,
+# avoiding the collision. This is scoped to Linux only because that is where the
+# failure was reproduced. Also, it is not yet confirmed whether MSVC/Clang builds hit
+# the same GCC-specific instantiation bug.
+set(CT2_EXTRA_OPTIONS "")
+if(VCPKG_TARGET_IS_LINUX)
+    list(APPEND CT2_EXTRA_OPTIONS -DENABLE_CPU_DISPATCH=OFF)
+endif()
+
 vcpkg_cmake_configure(
 	SOURCE_PATH "${SOURCE_PATH}"
-	OPTIONS -DOPENMP_RUNTIME=${OPENMP_RUNTIME} -DWITH_MKL=OFF -DWITH_DNNL=${WITH_DNNL} -DWITH_ACCELERATE=${WITH_ACCELERATE}
+	OPTIONS -DOPENMP_RUNTIME=${OPENMP_RUNTIME} -DWITH_MKL=OFF -DWITH_DNNL=${WITH_DNNL} -DWITH_ACCELERATE=${WITH_ACCELERATE} ${CT2_EXTRA_OPTIONS}
 )
 
 vcpkg_cmake_install()

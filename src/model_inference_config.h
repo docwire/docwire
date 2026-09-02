@@ -13,6 +13,7 @@
 #define DOCWIRE_AI_MODEL_INFERENCE_CONFIG_H
 #include "model_inference_config_type.h"
 #include <string>
+#include <filesystem>
 
 namespace docwire::ai
 {
@@ -21,7 +22,7 @@ namespace docwire::ai
  */
 struct model_inference_config
 {
-    std::string model_path;
+    std::filesystem::path model_path;
     context_size n_ctx{4096};
     batch_size n_batch{1024};
     thread_count n_threads{4};
