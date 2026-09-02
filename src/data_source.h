@@ -339,7 +339,7 @@ inline void read_unseekable_stream_into_memory(std::shared_ptr<memory_buffer> bu
 	{
 		if (limit && size >= limit->v)
 			break;
-		size_t to_read = limit ? std::min(chunk_size, limit->v - size) : chunk_size;
+		size_t to_read = limit ? (std::min)(chunk_size, limit->v - size) : chunk_size;
 		buffer->resize(size + to_read);
 		DOCWIRE_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read) && !stream->eof());
 		size_t bytes_read = stream->gcount();
@@ -361,9 +361,9 @@ inline void read_seekable_stream_into_memory(std::shared_ptr<memory_buffer> buff
 		DOCWIRE_THROW_IF (!stream->seekg(0, std::ios::beg));
 	}
 	size_t size = buffer->size();
-	if ((limit ? std::min(*stream_size, limit->v) : *stream_size) <= size)
+	if ((limit ? (std::min)(*stream_size, limit->v) : *stream_size) <= size)
 		return;
-	size_t to_read = (limit ? std::min(*stream_size, limit->v) : *stream_size) - size;
+	size_t to_read = (limit ? (std::min)(*stream_size, limit->v) : *stream_size) - size;
 	buffer->resize(size + to_read);
 	DOCWIRE_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read));
 }
@@ -376,28 +376,28 @@ inline std::span<const std::byte> data_source::span(std::optional<length_limit> 
 		overloaded {
 			[this, limit](const std::vector<std::byte>& source)
 			{
-				size_t size = limit ? std::min(source.size(), limit->v) : source.size();
+				size_t size = limit ? (std::min)(source.size(), limit->v) : source.size();
 				return std::span{source.data(), size};
 			},
 			[this, limit](const std::span<const std::byte>& source)
 			{
-				size_t size = limit ? std::min(source.size(), limit->v) : source.size();
+				size_t size = limit ? (std::min)(source.size(), limit->v) : source.size();
 				return std::span{source.data(), size};
 			},
 			[this, limit](const std::string& source)
 			{
-				size_t size = limit ? std::min(source.size(), limit->v) : source.size();
+				size_t size = limit ? (std::min)(source.size(), limit->v) : source.size();
 				return std::span{reinterpret_cast<const std::byte*>(source.data()), size};
 			},
 			[this, limit](const std::string_view& source)
 			{
-				size_t size = limit ? std::min(source.size(), limit->v) : source.size();
+				size_t size = limit ? (std::min)(source.size(), limit->v) : source.size();
 				return std::span{reinterpret_cast<const std::byte*>(source.data()), size};
 			},
 			[this, limit](auto source)
 			{
 				fill_memory_cache(limit);
-				size_t size = limit ? std::min(m_memory_cache->size(), limit->v) : m_memory_cache->size();
+				size_t size = limit ? (std::min)(m_memory_cache->size(), limit->v) : m_memory_cache->size();
 				return std::span<const std::byte>(m_memory_cache->data(), size);
 			}
 		}, m_source);
@@ -410,14 +410,14 @@ inline std::string data_source::string(std::optional<length_limit> limit) const
 			[this, limit](const std::vector<std::byte>& source)
 			{
 				if (limit)
-					return std::string{reinterpret_cast<const char*>(source.data()), std::min(source.size(), limit->v)};
+					return std::string{reinterpret_cast<const char*>(source.data()), (std::min)(source.size(), limit->v)};
 				else
 					return std::string{reinterpret_cast<const char*>(source.data()), source.size()};
 			},
 			[this, limit](const std::span<const std::byte>& source)
 			{
 				if (limit)
-					return std::string{reinterpret_cast<const char*>(source.data()), std::min(source.size(), limit->v)};
+					return std::string{reinterpret_cast<const char*>(source.data()), (std::min)(source.size(), limit->v)};
 				else
 					return std::string{reinterpret_cast<const char*>(source.data()), source.size()};
 			},
@@ -439,7 +439,7 @@ inline std::string data_source::string(std::optional<length_limit> limit) const
 			{
 				fill_memory_cache(limit);
 				if (limit)
-					return std::string{reinterpret_cast<const char*>(m_memory_cache->data()), std::min(m_memory_cache->size(), limit->v)};
+					return std::string{reinterpret_cast<const char*>(m_memory_cache->data()), (std::min)(m_memory_cache->size(), limit->v)};
 				else
 					return std::string{reinterpret_cast<const char*>(m_memory_cache->data()), m_memory_cache->size()};
 			}
