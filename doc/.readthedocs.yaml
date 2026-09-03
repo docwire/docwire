@@ -7,9 +7,13 @@ build:
     - cmake
   jobs:
     pre_build:
+      - wget -q -L https://github.com/doxygen/doxygen/releases/download/Release_1_18_0/doxygen-1.18.0.linux.bin.tar.gz -O /tmp/doxygen.tar.gz
+      - echo "14fa81bdc34171edb5f1f02b1d60e74802f0439b77fa44e592565d517d72df90  /tmp/doxygen.tar.gz" | sha256sum --check --
+      - tar -xzf /tmp/doxygen.tar.gz -C /tmp
+      - export PATH="/tmp/doxygen-1.18.0/bin:$PATH"
       - touch conf.py index.rst
     post_build:
-      - cd doc && cmake .
+      - cd doc && cmake -DCUSTOM_DOXYGEN_EXECUTABLE=/tmp/doxygen-1.18.0/bin/doxygen .
       - cd doc && cmake --build . --target doxygen
       - mkdir --parents $READTHEDOCS_OUTPUT/html/
       - cp --recursive doc/html/* $READTHEDOCS_OUTPUT/html/

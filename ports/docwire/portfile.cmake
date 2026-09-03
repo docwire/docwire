@@ -8,6 +8,13 @@ else()
 	)
 endif()
 
+# Doxygen version used by documentation builds
+set(DOXYGEN_VERSION "1.18.0")
+
+# Doxygen GitHub release tag: "Release_1_18_0"
+string(REPLACE "." "_" DOXYGEN_RELEASE_TAG_SUFFIX "${DOXYGEN_VERSION}")
+set(DOXYGEN_RELEASE_TAG "Release_${DOXYGEN_RELEASE_TAG_SUFFIX}")
+
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 	FEATURES
 		asan ADDRESS_SANITIZER
@@ -15,10 +22,61 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 		helgrind HELGRIND_ENABLED
 		local-ai-ct2 DOCWIRE_CT2
         local-ai-llama DOCWIRE_LLAMA
+        docs DOCWIRE_DOC
 )
 
 if(DEFINED ENV{CMAKE_MESSAGE_LOG_LEVEL})
 	list(APPEND FEATURE_OPTIONS "-DCMAKE_MESSAGE_LOG_LEVEL=$ENV{CMAKE_MESSAGE_LOG_LEVEL}")
+endif()
+
+if(DOCWIRE_DOC)
+    if(VCPKG_HOST_IS_WINDOWS)
+        set(DOXYGEN_ASSET "doxygen-${DOXYGEN_VERSION}.windows.x64.bin.zip")
+        set(DOXYGEN_SHA512 "c4f7b45a4ae5f49b9d232036ec200033be7a44c41dfa717f121c05a06a9377838795ef9e931267dcb4d73be2d3bb34c97d79f46f464c8a4d62ef4664210e5491")
+        set(DOXYGEN_EXE_SUFFIX ".exe")
+    elseif(VCPKG_HOST_IS_OSX)
+        vcpkg_execute_in_download_mode(
+            COMMAND uname -m
+            OUTPUT_VARIABLE _host_arch
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        set(DOXYGEN_EXE_SUFFIX "")
+        if(_host_arch STREQUAL "arm64")
+            set(DOXYGEN_ASSET "doxygen-${DOXYGEN_VERSION}-mac-arm.zip")
+            set(DOXYGEN_SHA512 "f56f65f46bb8b8e184677997f63ca6fabcc80da3339e28de7249bac5ce851fd91171447037e1750ef952e5192036fc74593eb57d3c0b39a656624105d63ed530")
+        else()
+            set(DOXYGEN_ASSET "doxygen-${DOXYGEN_VERSION}-mac-intel.zip")
+            set(DOXYGEN_SHA512 "70fb5e7c55681193d9a5f27e684e61187c3af6b793dd2527c20fec23548de1540d0f8a9045f62f161c68853879b3a6233a1d372c5938d505cf3edd035b5f77a1")
+        endif()
+    else()
+        set(DOXYGEN_ASSET "doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz")
+        set(DOXYGEN_SHA512 "fd8a26b73dbb29e18ad1966ea44ce09409e23ea6a91b218dcb65d36fb118fcc385ef5b92be93856a54e2746630a2c4c9a4940d0df940e494f918d2a290ed8f96")
+        set(DOXYGEN_EXE_SUFFIX "")
+    endif()
+
+    vcpkg_download_distfile(
+        DOXYGEN_ARCHIVE
+        URLS "https://github.com/doxygen/doxygen/releases/download/${DOXYGEN_RELEASE_TAG}/${DOXYGEN_ASSET}"
+        FILENAME "${DOXYGEN_ASSET}"
+        SHA512 "${DOXYGEN_SHA512}"
+    )
+
+    set(DOXYGEN_EXTRACT_DIR "${CURRENT_BUILDTREES_DIR}/doxygen-${DOXYGEN_VERSION}")
+    file(REMOVE_RECURSE "${DOXYGEN_EXTRACT_DIR}")
+    file(ARCHIVE_EXTRACT
+        INPUT "${DOXYGEN_ARCHIVE}"
+        DESTINATION "${DOXYGEN_EXTRACT_DIR}"
+    )
+
+    file(GLOB_RECURSE DOXYGEN_EXECUTABLE
+        "${DOXYGEN_EXTRACT_DIR}/doxygen${DOXYGEN_EXE_SUFFIX}"
+    )
+    list(GET DOXYGEN_EXECUTABLE 0 DOXYGEN_EXECUTABLE)
+
+
+    list(APPEND FEATURE_OPTIONS
+        "-DCUSTOM_DOXYGEN_EXECUTABLE=${DOXYGEN_EXECUTABLE}"
+    )
 endif()
 
 vcpkg_cmake_configure(

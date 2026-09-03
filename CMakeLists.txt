@@ -35,7 +35,7 @@ if(MSVC)
     add_compile_definitions(_WIN32_WINNT=0x0A00)
 endif()
 
-option(DOCWIRE_DOC "Compile Documentation" ON)
+option(DOCWIRE_DOC "Compile Documentation" OFF)
 option(DOCWIRE_TRACE "Enable Tracing" OFF)
 option(ADDRESS_SANITIZER "Enable address sanitizer" OFF)
 

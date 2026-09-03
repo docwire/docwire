@@ -24,20 +24,22 @@ jobs:
     strategy:
       fail-fast: ${{ (github.event_name == 'schedule' && github.repository == 'docwire/docwire') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_tests_openai == 'true') || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests:openai')) }}
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04, windows-2022, windows-2025, macos-14, macos-15]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04, windows-2022, windows-2025, macos-15, macos-26]
         sanitizer: ["", asan, tsan]
         include:
           - os: ubuntu-22.04
             triplet: x64-linux-dynamic
           - os: ubuntu-24.04
             triplet: x64-linux-dynamic
+          - os: ubuntu-26.04
+            triplet: x64-linux-dynamic
           - os: windows-2022
             triplet: x64-windows
           - os: windows-2025
             triplet: x64-windows
-          - os: macos-14
-            triplet: arm64-osx-dynamic
           - os: macos-15
+            triplet: arm64-osx-dynamic
+          - os: macos-26
             triplet: arm64-osx-dynamic
           - os: ubuntu-24.04
             triplet: x64-linux-dynamic
@@ -64,12 +66,11 @@ jobs:
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
       - name: Build DocWire SDK
         run: |
-          ${{ matrix.os == 'ubuntu-24.04' && 'sudo apt-get install -y mono-complete' || '' }}
+          ${{ (matrix.os == 'ubuntu-24.04' || matrix.os == 'ubuntu-26.04') && 'sudo apt-get install -y mono-complete' || '' }}
           ${{ (matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind') && 'sudo apt-get update && sudo apt-get install -y gcc-14 g++-14 valgrind && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100 --slave /usr/bin/g++ g++ /usr/bin/g++-14' || '' }}
-          ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint doxygen autoconf-archive' || '' }}
-          ${{ runner.os == 'macOS' && 'brew install --formula md5sha1sum automake autogen doxygen autoconf-archive' || '' }}
-          ${{ matrix.os == 'macos-15' && 'brew install --formula mono' || '' }}
-          ${{ runner.os == 'Windows' && 'choco install doxygen.install graphviz -y' || '' }}
+          ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint autoconf-archive' || '' }}
+          ${{ runner.os == 'macOS' && 'brew install --formula md5sha1sum automake autogen autoconf-archive' || '' }}
+          ${{ runner.os == 'macOS' && 'brew install --formula mono' || '' }}
           ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
           CREATE_ARCHIVE: "1"
@@ -77,7 +78,7 @@ jobs:
           BINARY_CACHE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           BINARY_CACHE_GITHUB_OWNERS: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner != github.event.pull_request.base.repo.owner) && format('{0} {1}', github.event.pull_request.base.repo.owner.login, github.event.pull_request.head.repo.owner.login) || github.repository_owner }}
           OPENAI_API_KEY: ${{ ((github.event_name == 'schedule' && github.repository == 'docwire/docwire') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_tests_openai == 'true') || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests:openai'))) && secrets.OPENAI_API_KEY || '' }}
-          FEATURES: ${{ matrix.sanitizer != '' && format('[tests,{0}]', matrix.sanitizer) || '[tests]' }}
+          FEATURES: ${{ matrix.sanitizer != '' && format('[local-ai-ct2,tests,docs,{0}]', matrix.sanitizer) || '[local-ai-ct2,tests,docs]' }}
           ASAN_OPTIONS: ${{ matrix.sanitizer == 'asan' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
           TSAN_OPTIONS: ${{ matrix.sanitizer == 'tsan' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
           DEBUG: ${{ runner.debug }}
