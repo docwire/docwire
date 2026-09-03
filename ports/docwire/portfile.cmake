@@ -30,7 +30,6 @@ if(DEFINED ENV{CMAKE_MESSAGE_LOG_LEVEL})
 endif()
 
 if(DOCWIRE_DOC)
-    message(STATUS "DocWire DOC: VCPKG_HOST_IS_WINDOWS=${VCPKG_HOST_IS_WINDOWS}; VCPKG_HOST_IS_OSX=${VCPKG_HOST_IS_OSX}; CMAKE_HOST_SYSTEM_PROCESSOR=${CMAKE_HOST_SYSTEM_PROCESSOR}; VCPKG_TARGET_IS_OSX=${VCPKG_TARGET_IS_OSX}; VCPKG_TARGET_ARCHITECTURE=${VCPKG_TARGET_ARCHITECTURE}")
     if(VCPKG_HOST_IS_WINDOWS)
         set(DOXYGEN_ASSET "doxygen-${DOXYGEN_VERSION}.windows.x64.bin.zip")
         set(DOXYGEN_SHA512 "c4f7b45a4ae5f49b9d232036ec200033be7a44c41dfa717f121c05a06a9377838795ef9e931267dcb4d73be2d3bb34c97d79f46f464c8a4d62ef4664210e5491")
@@ -55,8 +54,6 @@ if(DOCWIRE_DOC)
         set(DOXYGEN_EXE_SUFFIX "")
     endif()
 
-    message(STATUS "DocWire DOC selected asset: ${DOXYGEN_ASSET}; SHA512=${DOXYGEN_SHA512}; EXE_SUFFIX=${DOXYGEN_EXE_SUFFIX}")
-
     vcpkg_download_distfile(
         DOXYGEN_ARCHIVE
         URLS "https://github.com/doxygen/doxygen/releases/download/${DOXYGEN_RELEASE_TAG}/${DOXYGEN_ASSET}"
@@ -76,47 +73,6 @@ if(DOCWIRE_DOC)
     )
     list(GET DOXYGEN_EXECUTABLE 0 DOXYGEN_EXECUTABLE)
 
-    message(STATUS "DocWire DOC found Doxygen executable: ${DOXYGEN_EXECUTABLE}")
-
-    if(VCPKG_HOST_IS_OSX)
-        execute_process(
-            COMMAND uname -m
-            OUTPUT_VARIABLE _debug_host_arch
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-        message(STATUS "DOC DEBUG uname -m: '${_debug_host_arch}'")
-
-        execute_process(
-            COMMAND sw_vers
-            OUTPUT_VARIABLE _debug_sw_vers
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-        message(STATUS "DOC DEBUG sw_vers:\n${_debug_sw_vers}")
-
-        execute_process(
-            COMMAND file "${DOXYGEN_EXECUTABLE}"
-            OUTPUT_VARIABLE _debug_file
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-        message(STATUS "DOC DEBUG file:\n${_debug_file}")
-
-        execute_process(
-            COMMAND otool -l "${DOXYGEN_EXECUTABLE}"
-            OUTPUT_VARIABLE _debug_otool
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-        message(STATUS "DOC DEBUG otool -l:\n${_debug_otool}")
-
-        execute_process(
-            COMMAND "${DOXYGEN_EXECUTABLE}" --version
-            RESULT_VARIABLE _debug_doxygen_result
-            OUTPUT_VARIABLE _debug_doxygen_output
-            ERROR_VARIABLE _debug_doxygen_error
-        )
-        message(STATUS "DOC DEBUG doxygen --version result: ${_debug_doxygen_result}")
-        message(STATUS "DOC DEBUG doxygen --version output: '${_debug_doxygen_output}'")
-        message(STATUS "DOC DEBUG doxygen --version error: '${_debug_doxygen_error}'")
-    endif()
 
     list(APPEND FEATURE_OPTIONS
         "-DCUSTOM_DOXYGEN_EXECUTABLE=${DOXYGEN_EXECUTABLE}"

@@ -5,16 +5,11 @@ cmake_minimum_required(VERSION 3.16)
 # -----------------------------------------------------
 
 if(DEFINED CUSTOM_DOXYGEN_EXECUTABLE)
-    message(STATUS "DocWire DOC custom Doxygen requested: ${CUSTOM_DOXYGEN_EXECUTABLE}")
     set(DOXYGEN_EXECUTABLE "${CUSTOM_DOXYGEN_EXECUTABLE}"
         CACHE FILEPATH "Path to Doxygen executable" FORCE)
-else()
-    message(STATUS "DocWire DOC no CUSTOM_DOXYGEN_EXECUTABLE; using find_package")
 endif()
 
 find_package(Doxygen 1.18.0 REQUIRED)
-
-message(STATUS "DocWire DOC selected Doxygen executable after find_package: ${DOXYGEN_EXECUTABLE}")
 
 # -----------------------------------------------------
 # Set some of the doxygen configs
