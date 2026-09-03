@@ -74,6 +74,46 @@ if(DOCWIRE_DOC)
 
     message(STATUS "DocWire DOC found Doxygen executable: ${DOXYGEN_EXECUTABLE}")
 
+    if(VCPKG_HOST_IS_OSX)
+        execute_process(
+            COMMAND uname -m
+            OUTPUT_VARIABLE _debug_host_arch
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        message(STATUS "DOC DEBUG uname -m: '${_debug_host_arch}'")
+
+        execute_process(
+            COMMAND sw_vers
+            OUTPUT_VARIABLE _debug_sw_vers
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        message(STATUS "DOC DEBUG sw_vers:\n${_debug_sw_vers}")
+
+        execute_process(
+            COMMAND file "${DOXYGEN_EXECUTABLE}"
+            OUTPUT_VARIABLE _debug_file
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        message(STATUS "DOC DEBUG file:\n${_debug_file}")
+
+        execute_process(
+            COMMAND otool -l "${DOXYGEN_EXECUTABLE}"
+            OUTPUT_VARIABLE _debug_otool
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        message(STATUS "DOC DEBUG otool -l:\n${_debug_otool}")
+
+        execute_process(
+            COMMAND "${DOXYGEN_EXECUTABLE}" --version
+            RESULT_VARIABLE _debug_doxygen_result
+            OUTPUT_VARIABLE _debug_doxygen_output
+            ERROR_VARIABLE _debug_doxygen_error
+        )
+        message(STATUS "DOC DEBUG doxygen --version result: ${_debug_doxygen_result}")
+        message(STATUS "DOC DEBUG doxygen --version output: '${_debug_doxygen_output}'")
+        message(STATUS "DOC DEBUG doxygen --version error: '${_debug_doxygen_error}'")
+    endif()
+
     list(APPEND FEATURE_OPTIONS
         "-DCUSTOM_DOXYGEN_EXECUTABLE=${DOXYGEN_EXECUTABLE}"
     )
