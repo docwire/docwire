@@ -32,8 +32,13 @@ if(DOCWIRE_DOC)
         set(DOXYGEN_SHA512 "c4f7b45a4ae5f49b9d232036ec200033be7a44c41dfa717f121c05a06a9377838795ef9e931267dcb4d73be2d3bb34c97d79f46f464c8a4d62ef4664210e5491")
         set(DOXYGEN_EXE_SUFFIX ".exe")
     elseif(VCPKG_HOST_IS_OSX)
+        vcpkg_execute_in_download_mode(
+            COMMAND uname -m
+            OUTPUT_VARIABLE _host_arch
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
         set(DOXYGEN_EXE_SUFFIX "")
-        if(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64")
+        if(_host_arch STREQUAL "arm64")
             set(DOXYGEN_ASSET "doxygen-${DOXYGEN_VERSION}-mac-arm.zip")
             set(DOXYGEN_SHA512 "f56f65f46bb8b8e184677997f63ca6fabcc80da3339e28de7249bac5ce851fd91171447037e1750ef952e5192036fc74593eb57d3c0b39a656624105d63ed530")
         else()
