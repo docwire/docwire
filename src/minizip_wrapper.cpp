@@ -102,6 +102,15 @@ int buffer_error(voidpf opaque, voidpf stream)
     return 0;
 }
 
+void clear_directory(state& st)
+{
+    for (auto& [name, ptr] : st.directory)
+    {
+        delete reinterpret_cast<unz_file_pos*>(ptr);
+    }
+    st.directory.clear();
+}
+
 } // anonymous namespace
 
 DOCWIRE_CORE_EXPORT void open(state& st, std::span<const std::byte> source)
@@ -136,11 +145,7 @@ DOCWIRE_CORE_EXPORT void close(state& st) noexcept
         delete reinterpret_cast<zipped_buffer*>(st.buffer);
         st.buffer = 0;
     }
-    for (auto& [name, ptr] : st.directory)
-    {
-        delete reinterpret_cast<unz_file_pos*>(ptr);
-    }
-    st.directory.clear();
+    clear_directory(st);
     st.opened_for_chunks = false;
 }
 
@@ -281,7 +286,7 @@ DOCWIRE_CORE_EXPORT void close_reading_file_for_chunks(state& st)
 DOCWIRE_CORE_EXPORT bool load_directory(state& st)
 {
     unzFile archive = reinterpret_cast<unzFile>(st.archive);
-    st.directory.clear();
+    clear_directory(st);
     if (unzGoToFirstFile(archive) != UNZ_OK)
         return false;
     for (;;)
