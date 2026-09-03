@@ -11,6 +11,10 @@ endif()
 # Doxygen version used by documentation builds
 set(DOXYGEN_VERSION "1.18.0")
 
+# Doxygen GitHub release tag: "Release_1_18_0"
+string(REPLACE "." "_" DOXYGEN_RELEASE_TAG_SUFFIX "${DOXYGEN_VERSION}")
+set(DOXYGEN_RELEASE_TAG "Release_${DOXYGEN_RELEASE_TAG_SUFFIX}")
+
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 	FEATURES
 		asan ADDRESS_SANITIZER
@@ -55,7 +59,7 @@ if(DOCWIRE_DOC)
 
     vcpkg_download_distfile(
         DOXYGEN_ARCHIVE
-        URLS "https://www.doxygen.nl/files/${DOXYGEN_ASSET}"
+        URLS "https://github.com/doxygen/doxygen/releases/download/${DOXYGEN_RELEASE_TAG}/${DOXYGEN_ASSET}"
         FILENAME "${DOXYGEN_ASSET}"
         SHA512 "${DOXYGEN_SHA512}"
     )
