@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: ${{ (github.event_name == 'schedule' && github.repository == 'docwire/docwire') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_tests_openai == 'true') || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-tests:openai')) }}
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04, windows-2022, windows-2025, macos-14, macos-15]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04, windows-2022, windows-2025, macos-15, macos-26]
         sanitizer: ["", asan, tsan]
         include:
           - os: ubuntu-22.04
@@ -37,9 +37,9 @@ jobs:
             triplet: x64-windows
           - os: windows-2025
             triplet: x64-windows
-          - os: macos-14
-            triplet: arm64-osx-dynamic
           - os: macos-15
+            triplet: arm64-osx-dynamic
+          - os: macos-26
             triplet: arm64-osx-dynamic
           - os: ubuntu-24.04
             triplet: x64-linux-dynamic
@@ -70,7 +70,7 @@ jobs:
           ${{ (matrix.sanitizer == 'memcheck' || matrix.sanitizer == 'helgrind' || matrix.sanitizer == 'callgrind') && 'sudo apt-get update && sudo apt-get install -y gcc-14 g++-14 valgrind && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100 --slave /usr/bin/g++ g++ /usr/bin/g++-14' || '' }}
           ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint autoconf-archive' || '' }}
           ${{ runner.os == 'macOS' && 'brew install --formula md5sha1sum automake autogen autoconf-archive' || '' }}
-          ${{ matrix.os == 'macos-15' && 'brew install --formula mono' || '' }}
+          ${{ runner.os == 'macOS' && 'brew install --formula mono' || '' }}
           ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
           CREATE_ARCHIVE: "1"
