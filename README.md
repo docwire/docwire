@@ -523,14 +523,15 @@ DocWire has embraced vcpkg as the preferred installation method for several comp
 By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, user-friendly, and well-supported solution that guarantees a smooth installation experience.
 
 ### Supported Platforms
- DocWire SDK is compatible with a variety of operating systems. Windows, Linux, and macOS are supported officially (Supported triplets are: x64-linux-dynamic, x64-windows, x64-osx-dynamic and arm64-osx-dynamic). but in theory it can be run on other operating systems as well. To ensure compatibility our continuous integration tests run on the following GitHub runners:
+ DocWire SDK is compatible with a variety of operating systems. Windows, Linux, and macOS are supported officially (Supported triplets are: x64-linux-dynamic, x64-windows, x64-osx-dynamic and arm64-osx-dynamic), but in theory it can be run on other operating systems as well. To ensure compatibility, our continuous integration tests run on the following GitHub runners:
 
+- [ubuntu-26.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2604-Readme.md)
 - [ubuntu-24.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)
 - [ubuntu-22.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
 - [windows-2025](https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md)
 - [windows-2022](https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md)
+- [macos-26](https://github.com/actions/runner-images/blob/main/images/macos/macos-26-Readme.md)
 - [macos-15](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md)
-- [macos-14](https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md)
 
 As the project evolves, we will continue to expand the list of officially supported platforms to ensure broad compatibility and meet the needs of our users.
 
