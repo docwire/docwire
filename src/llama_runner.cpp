@@ -138,7 +138,7 @@ template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
         llama_model_params model_params = llama_model_default_params();
 
         model = docwire::ai::llama::llama_handle<llama_model>(
-            llama_model_load_from_file(config.model_path.c_str(), model_params));
+            llama_model_load_from_file(config.model_path.string().c_str(), model_params));
 
         throw_if(!model, "Failed to load llama model.", errors::program_corrupted{});
         vocab = llama_model_get_vocab(model.get());
