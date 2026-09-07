@@ -110,6 +110,8 @@ DocWire is actively evolving to meet future data processing demands.
 <a name="features"></a>
 ## Features
 
+Features marked **(planned)** are on the public roadmap and may not be fully available in the current release.
+
 - **Secure and privacy-preserving data processing** - all operations can be done locally without sending data to the cloud
 - Able to extract/import and export **text, images, formatting, and metadata along with annotations**
 - **Data can be transformed** between import and export (filtering, aggregating, translation, text classification, sentiment analysis, named entity recognition etc).
@@ -176,8 +178,9 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
     - transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
     - embed: Generate embedding of text via OpenAI.
    
-   Supports multiple Open AI LLM models: gpt-5, gpt-5-mini, gpt-5-nano, gpt-5-chat-latest, gpt-4.1, gpt-4.1-mini, gpt-4.1-nano, gpt-4o, gpt-4o-mini, o3, o3-pro, o3-deep-research, o3-mini, o4-mini, o4-mini-deep-research, gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1, gpt-4o-transcribe, tts-1, tts-1-hd, text-embedding-3-small, text-embedding-3-large, text-embedding-ada-002. More are coming.
+   Supports multiple Open AI LLM models: GPT-5, GPT-5 mini, GPT-5 nano, GPT-5 Chat Latest, GPT-4.1, GPT-4.1 mini, GPT-4.1 nano, GPT-4o, GPT-4o mini, o3, o3-pro, o3-deep-research, o3-mini, o4-mini, o4-mini-deep-research, gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1, gpt-4o-mini-tts, tts-1, tts-1-hd, text-embedding-3-small, text-embedding-3-large, text-embedding-ada-002. More are coming.
 
+- **OpenRouter support (planned)**: Expanding cloud LLM integrations to support a wide range of open and commercial models through OpenRouter.
 - **Incremental parsing** returning data as soon as they are available
 
 - **Structured Content Extraction**: DocWire SDK excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
@@ -186,27 +189,27 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Document Element Extraction**: Extract specific document elements such as paragraphs, headings, and lists, which can then be used to generate embeddings for each element.
 
-- **Semantic Chunking**: Group related content using the SDK's chunking feature to create contextually rich embeddings that capture the nuances of the document's structure.
+- **Semantic Chunking (planned)**: Group related content using the SDK's chunking feature to create contextually rich embeddings that capture the nuances of the document's structure.
 
 - **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1openai_1_1embed.html) or [local_ai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1local__ai_1_1embed.html) or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT, to generate embeddings that can be used in various NLP tasks.
 
 - **Enhancing AI/NLP Pipelines**: Embeddings obtained from DocWire SDK can be used to enhance AI/NLP pipelines, enabling more accurate and context-aware applications such as document classification, sentiment analysis, and information retrieval.
 
-- **Advanced Document Chunking**: DocWire SDK introduces sophisticated chunking capabilities, leveraging metadata and document elements to partition documents into smaller, semantically coherent parts. This feature is invaluable for applications such as Retrieval Augmented Generation (RAG), where the ability to process and retrieve information from specific document segments can significantly enhance the performance of AI models. By understanding the structure and semantics of each document, DocWire SDK can intelligently divide content into meaningful units, preserving the context and coherence necessary for high-quality AI interactions.
+- **Advanced Document Chunking (planned)**: DocWire SDK introduces sophisticated chunking capabilities, leveraging metadata and document elements to partition documents into smaller, semantically coherent parts. This feature is invaluable for applications such as Retrieval Augmented Generation (RAG), where the ability to process and retrieve information from specific document segments can significantly enhance the performance of AI models. By understanding the structure and semantics of each document, DocWire SDK can intelligently divide content into meaningful units, preserving the context and coherence necessary for high-quality AI interactions.
 
-- **Semantic Unit Coherence**: The SDK's chunking mechanism is designed to maintain the coherence of semantic units established during partitioning. This ensures that when a document is sp
+- **Semantic Unit Coherence (planned)**: The SDK's chunking mechanism is designed to maintain the coherence of semantic units established during partitioning. This ensures that when a document is sp
 lit into chunks, each piece retains its contextual integrity, making it suitable for use cases where understanding the flow and connection between segments is crucial, such as in conversat
 ional AI, document summarization, and topic extraction.
 
 - **NLP Model Training Data Preparation**: Prepare your training data with precision. DocWire SDK's structured content extraction is ideal for preparing datasets for NLP model training. By extracting only the relevant sections of text, you can create clean, focused datasets that lead to more effective and efficient model training.
 
-- **Data Sanitization for AI Safety**: Ensure the safety and integrity of your AI models. DocWire SDK's data sanitization capabilities help prevent the introduction of biased, sensitive, or inappropriate content into your models, safeguarding the quality and reliability of your AI applications.
+- **Data Sanitization for AI Safety (planned)**: Ensure the safety and integrity of your AI models. DocWire SDK's data sanitization capabilities help prevent the introduction of biased, sensitive, or inappropriate content into your models, safeguarding the quality and reliability of your AI applications.
 
-- **Customizable Data Cleaning Pipelines**: Tailor your data cleaning process to fit the unique needs of your project. With DocWire SDK, you can build customizable pipelines that automate the cleaning, normalization, and transformation of your data, saving time and reducing the potential for human error.
+- **Customizable Data Cleaning Pipelines (planned)**: Tailor your data cleaning process to fit the unique needs of your project. With DocWire SDK, you can build customizable pipelines that automate the cleaning, normalization, and transformation of your data, saving time and reducing the potential for human error.
 
-- **Seamless Integration with AI and NLP Libraries**: DocWire SDK is designed to work hand-in-hand with popular AI and NLP libraries. Its flexible API allows for easy integration, enabling you to preprocess data within the same framework used for model training and inference.
+- **Seamless Integration with AI and NLP Libraries (in progress)**: DocWire SDK is designed to work hand-in-hand with popular AI and NLP libraries. Its flexible API allows for easy integration, enabling you to preprocess data within the same framework used for model training and inference.
 
-- **Enhanced AI and NLP Support**: DocWire SDK is not only a tool for data extraction but also a powerful ally for AI and NLP developers. With its advanced chunking and semantic unit preservation, the SDK is perfectly suited for preparing data for AI models that require a deep understanding of document structure and content. Whether you're working on machine learning, deep learning, or any other AI project, DocWire SDK provides the features you need to ensure your data is ready for the challenge.
+- **Enhanced AI and NLP Support (planned)**: DocWire SDK is not only a tool for data extraction but also a powerful ally for AI and NLP developers. With its advanced chunking and semantic unit preservation, the SDK is perfectly suited for preparing data for AI models that require a deep understanding of document structure and content. Whether you're working on machine learning, deep learning, or any other AI project, DocWire SDK provides the features you need to ensure your data is ready for the challenge.
 
 - **Cross-platform**: Linux, Windows, MacOSX, and more to come
 - **Can be embedded** in your application (SDK)
