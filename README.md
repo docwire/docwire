@@ -525,7 +525,16 @@ DocWire has embraced vcpkg as the preferred installation method for several comp
 By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, user-friendly, and well-supported solution that guarantees a smooth installation experience.
 
 ### Supported Platforms
- DocWire SDK is compatible with a variety of operating systems. Windows, Linux, and macOS are supported officially (Supported triplets are: x64-linux-dynamic, x64-windows, x64-osx-dynamic and arm64-osx-dynamic), but in theory it can be run on other operating systems as well. To ensure compatibility, our continuous integration tests run on the following GitHub runners:
+
+DocWire SDK is compatible with a variety of operating systems. Windows, Linux, and macOS are supported officially. The officially supported and CI-tested triplets are:
+
+- `x64-linux-dynamic`
+- `x64-windows`
+- `arm64-osx-dynamic`
+
+Other configurations may work, including `x64-osx-dynamic` on Intel macOS via the build script, but they are not part of the automated CI matrix and are therefore not considered officially supported at this time.
+
+To ensure compatibility, our continuous integration tests run on the following GitHub runners:
 
 - [ubuntu-26.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2604-Readme.md)
 - [ubuntu-24.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)
@@ -990,7 +999,7 @@ Unlock the power of OpenAI with the following options:
 - **&ndash;&ndash;openai-summarize**: Summarize text and images via OpenAI.
 - **&ndash;&ndash;openai-detect-sentiment**: Detect sentiment of text and images via OpenAI.
 - **&ndash;&ndash;openai-analyze-data**: Analyze text and images for important insights and generate conclusions via OpenAI.
-- **&ndash;&ndash;openai-classify <category>**: Classify text and images via OpenAI to one of the specified categories.
+- **&ndash;&ndash;openai-classify <category> [<category> ...]**: Classify text and images via OpenAI to one of the specified categories. Multiple categories can be provided.
 - **&ndash;&ndash;openai-translate-to <language>**: Language to translate text and images to via OpenAI.
 - **&ndash;&ndash;openai-find <what>**: Find specified phrase, object or event in text and images via OpenAI.
 - **&ndash;&ndash;openai-text-to-speech**: Convert text to speech via OpenAI
@@ -1008,17 +1017,28 @@ Unlock the power of OpenAI with the following options:
 ### Additional Options
 
 - **&ndash;&ndash;language <lang> (default: eng)**: Set the document language(s) for OCR as ISO 639-3 identifiers like: spa, fra, deu, rus, chi_sim, chi_tra etc. More than 100 languages are supported. Multiple languages can be enabled.
-- **&ndash;&ndash;ocr-confidence-threshold <value> (default: 75)**: Set the OCR confidence threshold (0-100). Words with confidence below this will be excluded.
-- **&ndash;&ndash;use-stream <yes|no> (default: 0)**: Pass the file stream to the SDK instead of the filename.
-- **&ndash;&ndash;min_creation_time <timestamp>**: Filter emails by minimum creation time (currently applicable only to emails in PST/OST files).
-- **&ndash;&ndash;max_creation_time <timestamp>**: Filter emails by maximum creation time (currently applicable only to emails in PST/OST files).
+
+- **&ndash;&ndash;ocr-confidence-threshold <value>**: Set the OCR confidence threshold (0-100). Words with confidence below this will be excluded. The CLI passes this value to the OCR parser when provided; if omitted, the parser’s own default behavior applies.
+
+- **&ndash;&ndash;local-processing <yes|no> (default: yes)**: Process documents locally, including local OCR. When set to `no`, local parsers are skipped; this is useful when combining DocWire with OpenAI processing for image/PDF data.
+
+- **&ndash;&ndash;use-stream <yes|no> (default: no)**: Pass the file stream to the SDK instead of the filename.
+
+- **&ndash;&ndash;http-post <url>**: Send processed data to an HTTP endpoint via HTTP POST.
+
+- **&ndash;&ndash;min_creation_time <timestamp>**: Filter emails by minimum creation time. Currently applies only to emails in PST/OST files.
+
+- **&ndash;&ndash;max_creation_time <timestamp>**: Filter emails by maximum creation time. Currently applies only to emails in PST/OST files.
+
 - **&ndash;&ndash;max_nodes_number <number>**: Filter by the maximum number of nodes.
+
 - **&ndash;&ndash;folder_name <name>**: Filter emails by folder name.
+
 - **&ndash;&ndash;attachment_extension <type>**: Filter by attachment type.
-- **&ndash;&ndash;table-style <style> (default: table_look, deprecated)**: Set the table style. Available styles include table_look, one_row, and one_col.
-- **&ndash;&ndash;url-style <style> (default: extended, deprecated)**: Set the URL style. Available styles include text_only, extended, and underscored.
-- **&ndash;&ndash;list-style-prefix <prefix> (default: " * ", deprecated)**: Set the output list prefix.
+
 - **&ndash;&ndash;log_file <file_path>**: Set the path to the log file.
+
+- **&ndash;&ndash;log-filter <filter>**: Set a custom log filter. Filters are comma-separated and can include tags such as `audit`, function names such as `@func:my_func`, and file names such as `@file:*_parser.cpp`. Prepend `-` to exclude entries.
 
 Note: The "min_creation_time" and "max_creation_time" options currently work only for emails within PST/OST files.
 
