@@ -667,17 +667,20 @@ To explore the possibilities of an LTS agreement or to discuss specific requirem
 <a name="logging"></a>
 ## Logging
 
-DocWire SDK features a powerful, modern, and highly configurable logging framework designed for both deep debugging and zero-overhead production use.
+DocWire SDK provides a structured logging framework designed for developer diagnostics and production audit trails. It is built around typed log records, configurable sinks, and compile-time filtering.
 
-### Key Features
+### Structured log records
 
-- **Structured JSON Output**: All log records are generated as structured JSON objects, making them easy to parse, query, and integrate with modern log analysis platforms (e.g., ELK stack, Splunk, Datadog).
-- **Zero-Cost in Release Builds**: By default, most logging calls are completely compiled out in release builds (`NDEBUG` is defined). This means they have zero performance impact on your production code. Only logs explicitly marked with a persistent tag (like `log::audit`) are retained.
-- **Rich Contextual Information**: Logs automatically capture source location (file, line, function), thread ID, and a precise timestamp. You can also add any serializable C++ object to the log context for deep insights.
-- **Sink and Filter Model**: The framework is silent by default. You can programmatically set a "sink" (a callback function that receives log records) and a "filter" (a string that specifies which logs to enable) to control the logging output.
-- **Powerful Filtering**: Filter logs based on source file, function name, or custom tags using a simple wildcard-based syntax.
+Every log record contains:
 
-### Example Log Record
+- source location (file, line, function),
+- thread ID,
+- precise timestamp,
+- optional typed C++ context values.
+
+Records are generated as structured JSON objects, making them easy to consume with common log analysis platforms.
+
+Example log record:
 
 ```json
 {
@@ -693,13 +696,32 @@ DocWire SDK features a powerful, modern, and highly configurable logging framewo
 }
 ```
 
-### Basic Usage
+### Sinks and filters
 
-The framework provides simple macros for logging:
+The logging framework is silent by default. Output is controlled by two independent mechanisms:
 
-- `log_entry(...)`: Creates a single log record.
-- `log_scope(...)`: Creates a log entry at the beginning of a scope and another at the end.
-- `log_forward(...)`: Logs the value of an expression and returns it, allowing you to log intermediate values in a chain of calls.
+- **Sink** – a callback that receives each enabled `docwire::log::record`.
+- **Filter** – a string expression that selects which records are enabled, based on source file, function name, or custom tags.
+
+This separation allows developers to route logs to files, stdout, custom collectors, or completely disable them for zero overhead.
+
+### Release-build zero cost
+
+Most logging records are completely compiled out in release builds when `NDEBUG` is defined. Only records explicitly marked as persistent audit records are retained. This gives production applications the ability to keep audit-worthy logs while eliminating normal debug logging.
+
+### Convenience macros
+
+The framework includes convenience macros such as:
+
+- `log_entry(...)` – emits a single log record,
+- `log_scope(...)` – emits a record at scope entry and exit,
+- `log_forward(...)` – logs a value and returns it, useful for logging intermediate values in expression chains.
+
+These macros wrap the structured logging system and are intended for developer-facing diagnostics. The underlying record, sink, and filter infrastructure remains the stable public interface.
+
+### Audit interface (architectural direction)
+
+DocWire’s longer-term design includes a dependency-injected `Audit` interface that receives raw C++ values without premature string serialization. This interface is planned to provide zero-cost, compile-time-optional audit output for semantic events, while keeping the current structured logging framework suitable for general developer logs. The existing persistent audit tag is an early step in that direction.
 
 <a name="api-documentation"></a>
 ## API Documentation
