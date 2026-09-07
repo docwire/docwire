@@ -15,7 +15,7 @@ SourceForge Community Choice 2023 · Microsoft for Startups 2022
 - [Why DocWire and Key Benefits](#why-docwire-and-key-benefits)
 - [Roadmap](#roadmap)
 - [Features](#features)
-- [Revolutionary API concept](#api-concept)
+- [API Concept](#api-concept)
 - [Examples](#examples)
 - [Awards](#awards)
 - [Installation](#installation)
@@ -144,7 +144,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Modern C++20 XML Parsing**: A new, expressive, and safe API for parsing XML documents. It features a single-pass, forward-only reader and utilizes C++20 ranges and views for efficient and elegant node filtering and manipulation. [You can find example how to parse XML documents here](https://docwire.readthedocs.io/en/latest/xml_parsing_example_8cpp-example.html).
 
-- **Configurable Safety Policies**: The SDK provides `strict` and `relaxed` safety policies for XML-based parsers, with other components being migrated. In `strict` mode, developer contract violations are logged to `Audit` and surfaced as errors; low-level invalid access may trigger a documented panic. In `relaxed` mode, trusted developer checks are compiled out for zero overhead. Validation of untrusted external input is never disabled.
+- **Configurable Safety Policies**: The SDK provides `strict` and `relaxed` safety policies for XML-based parsers, with other components to follow. In `strict` mode, developer contract violations throw typed exceptions through the current error framework. In `relaxed` mode, trusted developer checks are compiled out for zero overhead. Relaxed mode should be used only for trusted XML input; untrusted input should use strict validation. The SDK is evolving toward injectable error policies that will also support `docwire::expected`-based propagation.
 
 - **Llama.cpp Integration** (optional `local-ai-llama` feature): The SDK integrates seamlessly with llama.cpp, allowing users to select a model of their choice and integrate it within the workflow using the `llama` wrapper provided in the SDK. This feature is optional and must be enabled at build time.
 
