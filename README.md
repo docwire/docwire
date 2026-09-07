@@ -591,6 +591,82 @@ Please refer to ["vcpkg in MSBuild projects" on Microsoft Learn](https://learn.m
 For other building systems check your build system specific documentation for how to use prebuilt binaries.
 Please refer to ["Manual Integration" on Microsoft Learn](https://learn.microsoft.com/en-us/vcpkg/users/buildsystems/manual-integration) for more information.
 
+### Optional Features
+
+DocWire SDK can be built with additional features via vcpkg features. By default, the build scripts install the core SDK without optional features.
+
+#### Available features
+
+- **`local-ai-ct2`** – Enables local AI runtime based on CTranslate2, including Flan-t5-large (translation, summarization, text generation) and multilingual-e5-small (text embeddings).
+- **`local-ai-llama`** – Enables GGUF-based LLM inference using llama.cpp. Requires `local-ai-ct2`.
+- **`local-ai-model-granite`** – Installs the IBM Granite 4.0 1B Q8_0 GGUF model. Requires `local-ai-llama` and therefore also `local-ai-ct2`.
+- **`docs`** – Builds the Doxygen documentation.
+- **`tests`** – Enables automatic tests.
+- **`asan`**, **`tsan`**, **`memcheck`**, **`helgrind`**, **`callgrind`** – Enable various testing and debugging instruments.
+
+#### Enabling features with build scripts
+
+When using `build.sh` or `build.ps1`, set the `FEATURES` environment variable to a vcpkg feature list before running the script.
+
+Linux or macOS:
+
+```bash
+FEATURES="[local-ai-ct2]" ./build.sh
+```
+
+To enable multiple features:
+
+```bash
+FEATURES="[local-ai-ct2,tests]" ./build.sh
+```
+
+To enable the Granite model:
+
+```bash
+FEATURES="[local-ai-model-granite]" ./build.sh
+```
+
+Because `local-ai-model-granite` depends on `local-ai-llama`, vcpkg automatically enables the required local AI backends.
+
+PowerShell:
+
+```powershell
+$env:FEATURES = "[local-ai-ct2]"
+.\build.ps1
+```
+
+For multiple features:
+
+```powershell
+$env:FEATURES = "[local-ai-ct2,tests]"
+.\build.ps1
+```
+
+#### Enabling features with vcpkg manifest
+
+When DocWire is a dependency in another project, specify features in your `vcpkg.json` manifest:
+
+```json
+{
+  "dependencies": [
+    {
+      "name": "docwire",
+      "features": ["local-ai-ct2"]
+    }
+  ]
+}
+```
+
+#### Enabling features with CMake directly
+
+If you build DocWire with CMake directly, using a vcpkg toolchain, you can set the corresponding CMake options:
+
+```bash
+cmake -DDOCWIRE_CT2=ON -DDOCWIRE_LLAMA=ON ..
+```
+
+When building directly with CMake, responsibility for providing model resources and dependencies falls on the developer. The vcpkg feature pathway is recommended for easier setup.
+
 ### Installation in preexisting vcpkg instance
 You need to do the configuration, installation and integration manually. Please follow recommendations in vcpkg documentation and check content of build.sh or build.ps1 script for details.
 
