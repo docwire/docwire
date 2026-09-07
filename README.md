@@ -2,7 +2,7 @@
 
 **Mechanical sympathy for data processing.**
 
-DocWire SDK is a C++20 data processing toolkit designed for deterministic execution, allocator-aware memory management, and auditable data flow. It parses, transforms, exports, and analyzes nearly 100 formats, including Office documents, PDF, email mailboxes, archives, OCR, web content, and AI workflows.
+DocWire SDK is a local-first C++20 data processing toolkit designed for deterministic execution, allocator-aware memory management, and auditable data flow. It parses, transforms, exports, and analyzes nearly 100 formats, including Office documents, PDF, email mailboxes, archives, OCR, web content, and AI workflows. Optional cloud AI integrations are available as explicit pipeline steps for cases where larger hosted models are required.
 
 Pipelines are composed with `operator|` and can be reused as configurations. Execution happens when the pipeline is invoked. The SDK is being extended with policy-based memory and error handling.
 
@@ -56,7 +56,7 @@ Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is 
 
 **For Businesses:** DocWire processes diverse document formats including PDF, DOC, XLS, email boxes, databases, websites, and integrates cloud and local AI models.
 
-**Input and Output Sources:** Email boxes, cloud drives, local filesystem, ERP systems, databases, and web services can be connected to DocWire pipelines.
+**Input and Output Sources:** Email boxes, local filesystem, and web services can be connected to DocWire pipelines today. Cloud drives, ERP systems, and databases are planned extensions. Cloud AI providers are supported through explicit input/output integrations rather than hidden background calls.
 
 ## Roadmap
 
@@ -89,6 +89,7 @@ DocWire is actively evolving to meet future data processing demands.
 
 - Enhanced AI Capabilities: Exploring new models, optimizing local model size, speed, and quality.
 - Advanced Data Sanitization Techniques: Detecting and redacting sensitive information automatically.
+- Hybrid Privacy Workflows: Locally anonymize or redact sensitive data before optionally sending non-sensitive context to a cloud LLM, then merge the returned results locally.
 - Customizable Data Preparation Workflows: Defining and automating data cleaning and formatting steps.
 - Enhanced Support for Multilingual Data Processing: Handling a wide range of languages and scripts.
 - Long-Term Memory for AI Models: Integrating vector databases for efficient long-term context.
@@ -112,7 +113,7 @@ DocWire is actively evolving to meet future data processing demands.
 
 Features marked **(planned)** are on the public roadmap and may not be fully available in the current release.
 
-- **Secure and privacy-preserving data processing** - all operations can be done locally without sending data to the cloud
+- **Local-first and privacy-preserving data processing** - the goal is for every processing stage to support an on-premise implementation. Today, parsing, OCR, local document AI, and local text embeddings can run fully offline. A few AI capabilities, such as image/audio understanding and the largest cloud LLM models, are available only through explicit OpenAI integration. No data is sent to a cloud service unless a cloud transformer is explicitly added to the pipeline. Hybrid privacy workflows, such as local anonymization before optional cloud processing, are planned.
 - Able to extract/import and export **text, images, formatting, and metadata along with annotations**
 - **Data can be transformed** between import and export (filtering, aggregating, translation, text classification, sentiment analysis, named entity recognition etc).
 
@@ -180,7 +181,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
    
    Supports multiple Open AI LLM models: GPT-5, GPT-5 mini, GPT-5 nano, GPT-5 Chat Latest, GPT-4.1, GPT-4.1 mini, GPT-4.1 nano, GPT-4o, GPT-4o mini, o3, o3-pro, o3-deep-research, o3-mini, o4-mini, o4-mini-deep-research, gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1, gpt-4o-mini-tts, tts-1, tts-1-hd, text-embedding-3-small, text-embedding-3-large, text-embedding-ada-002. More are coming.
 
-- **OpenRouter support (planned)**: Expanding cloud LLM integrations to support a wide range of open and commercial models through OpenRouter.
+- **OpenRouter support (planned)**: Expanding optional cloud LLM integrations to support a wide range of open and commercial models through OpenRouter. Cloud integrations remain opt-in and do not change the local-first core behavior.
 - **Incremental parsing** returning data as soon as they are available
 
 - **Structured Content Extraction**: DocWire SDK excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
