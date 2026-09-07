@@ -216,67 +216,74 @@ ional AI, document summarization, and topic extraction.
 - **Small binaries, fast** native C++ code
 
 <a name="api-concept"></a>
-## Revolutionary API concept
+## API Concept
 
-### Seamless Integration of PipeChain and DataTree
+DocWire processes data as a typed, lazy pipeline. You connect sources, parsers, transformers, and destinations using `operator|`. Building the pipeline does not execute it. Execution happens only when the pipeline is invoked.
 
-Welcome to the DocWire SDK, where we redefine document processing through groundbreaking API concepts. In this chapter, let's delve into the two pillars shaping our approach: PipeChain and DataTree. Revolutionize your document processing with an SDK that seamlessly blends familiar development practices like C++ ranges, DOM tree and SAX parser-inspired processing model providing an unparalleled and dynamic coding experience. Explore the revolutionary synergy between PipeChain and DataTree.
+### PipeChain and DataTree
 
-### PipeChain: Streamlining Data Flow
+DocWire combines two views of data processing:
 
-**Expressive Code Flow**:
-Unlock the power of PipeChain, a concept inspired by C++ ranges that brings a familiar and expressive coding experience.
+- **PipeChain** is the pipeline assembly line. Parsers, transformers, and exporters are connected by `operator|` into a reusable, ordered processing path.
+- **DataTree** is the structured information flow inside that pipeline. Messages represent document elements such as files, folders, emails, attachments, pages, paragraphs, tables, links, images, and metadata.
 
-**Versatile Chain Elements**:
-Break free from rigidity. Our chain elements transcend traditional boundaries, accommodating everything from document parsers to custom exporters. Just as manipulating DOM elements, you'll find these versatile elements provide unparalleled flexibility.
+This gives the flexibility of streaming SAX-style processing with the structural clarity of a DOM-like tree, without copying large input payloads.
 
-**Extensible Functionality**:
-Expand your capabilities effortlessly. Our chain elements support a variety of functionalities, allowing you to seamlessly integrate new components, akin to extending SAX parser or DOM tree iterator behavior.
+### Pipeline as an assembly line
 
-**Examples of Information Flowing Through PipeChain**:
-- **Emails**: Process and analyze email content seamlessly within the chain, extracting key information like subject, sender, and attachments.
-- **Email Attachments**: Dive into attachments effortlessly, extracting details such as file types, sizes, and embedded content.
-- **Folders**: Navigate through folders, organizing and processing documents or emails stored within them.
-- **Archives**: Unpack archives with ease, whether they contain documents, images, or nested folders.
-- **Mailboxes**: Manage entire mailboxes as a cohesive unit, transforming and exporting data efficiently.
-- **Pages**: Navigate through pages of documents, extracting text, styles, and metadata.
-- **Paragraphs**: Process paragraphs individually, extracting and transforming text, styles, and more.
-- **Tables**: Efficiently handle tabular data, extracting, transforming, and exporting information seamlessly.
-- **Links**: Navigate through hyperlinks, capturing URLs, anchor text, and associated metadata.
-- **Images**: Process images effortlessly, extracting details like format, dimensions, and embedded text.
+Every object in the chain is a pipeline element: a source, a step, or a destination. When connected with `operator|`, each element receives messages and can emit further messages. The pipeline is inspired by C++20 ranges and value-oriented data processing.
 
-### DataTree: Navigating the Information Landscape
+Current SDK elements may be chain element objects or callable transformers. The API is evolving toward noun-style step names such as `plain_text_exporter{}` while preserving today's function-style elements.
 
-**Tree of Information Flow**:
-Dive into the structured information universe with DataTree, reminiscent of navigating the DOM tree in HTML. Beyond the document tree, our API handles the intricate tree of documents within archives, attachments within emails, and more.
+### Message-driven information flow
 
-**Transformative Chain Elements**:
-Explore the transformative power of DataTree with document parsers, custom transformers, and dynamic exporters. Each chain element acts as a SAX parser, providing a dynamic and efficient approach to processing. Like SAX parsers, our chain elements efficiently traverse and process data as it flows through the pipeline.
+Instead of copying whole documents between stages, DocWire emits lightweight message nodes that represent the document structure. These nodes provide typed access to the underlying data and can be filtered, transformed, or forwarded by later pipeline elements.
 
-**Unified Transformation**:
-Harmonize your processing across different levels of the information tree, similar to traversing the DOM tree. Whether it's a document page or an attachment within an email, our unified transformation approach ensures coherence throughout.
+For nested formats, the messages form a tree-like flow:
 
-**AI-Enhanced Chunking and Semantic Analysis**:
-The DocWire SDK API is designed to facilitate the integration of AI-enhanced chunking and semantic analysis directly into the PipeChain. This allows developers to apply AI-driven logic to the partitioning of documents, ensuring that chunks are created with a keen understanding of the content's meaning and structure. By incorporating AI models into the chunking process, developers can create data segments that are primed for high-level AI tasks such as summarization, question answering, and knowledge extraction.
+- mailbox
+  - folder
+    - email
+      - attachment
+        - document
+          - page
+            - paragraph, table, image, link, metadata
 
-### Uniting PipeChain and DataTree: Elevate Your Processing
+This DataTree model gives one consistent API for documents, email boxes, archives, and web content. Parsers convert each level into messages. Exporters and transformers consume only the message types they understand.
 
-**Comprehensive Structure**:
-Merge the structured flow of PipeChain with the depth of information in DataTree, creating a revolutionary approach that is as comfortable as working with the DOM tree in HTML. Embrace a comprehensive system that navigates, transforms, and exports data seamlessly.
+### Lazy, reusable pipelines
 
-**Effortless Adaptability**:
-Experience the synergy of PipeChain and DataTree, effortlessly adapting to diverse document structures. Elevate your document processing game with a harmonious blend of expressive code, structured information, and an efficient SAX parser-inspired processing model.
+A pipeline object is a graph definition. It can be assigned to a variable, reused for multiple inputs, and executed only when called.
 
-### AI-Enhanced Document Processing
+For example, connecting elements does not start parsing. The same parsed chain can later process several files without recreating the configuration.
 
-**AI-Driven Insights and Transformations**:
-DocWire SDK's API is designed to accommodate the integration of AI-driven insights and transformations. By incorporating AI models directly into the PipeChain, developers can enrich the data processing pipeline with advanced capabilities such as semantic analysis, context-aware summarization, and intelligent content categorization. This integration allows for the dynamic application of AI insights at various stages of the document processing workflow, enhancing the overall value and utility of the extracted data.
+### Custom pipeline elements
 
-**Custom AI Model Integration**:
-The API concept extends to support custom AI model integration, enabling developers to inject their own trained models into the processing chain. This flexibility ensures that the SDK can adapt to the unique requirements of specialized AI applications, providing a tailored processing environment that aligns with the developer's vision.
+Developers can add custom parsers, transformers, and exporters as chain elements. A transformer can inspect a message, decide whether to forward it, replace it with a different message, or emit multiple derived messages.
 
-**Seamless AI and Data Processing Synergy**:
-DocWire SDK's API fosters a seamless synergy between AI and data processing. By blending AI functionalities with traditional data extraction, the API offers a unified approach to document processing that leverages the best of both worlds. This synergy is particularly advantageous for developers working on cutting-edge AI projects, as it allows them to harness the full potential of their models within a robust data processing framework.
+This makes it possible to filter email messages, transform document content, generate embeddings, or integrate custom business logic directly into the processing pipeline.
+
+### AI and document understanding as pipeline steps
+
+AI capabilities are normal pipeline elements. A local or remote AI model can be inserted wherever a transformer fits.
+
+This allows common workflows such as:
+
+- classification,
+- summarization,
+- translation,
+- sentiment analysis,
+- entity and keyword extraction,
+- embeddings,
+- chunking and semantic segmentation.
+
+Because these are pipeline steps, they can be combined with parsing, OCR, filtering, and exporting in one reusable processing chain.
+
+### Memory and policy-based execution
+
+DocWire is designed around explicit, injectable execution policies. The SDK exposes pipeline components as objects, so they can be composed with allocator, audit, and error-policy selection as the architecture evolves.
+
+This allows host applications to choose deterministic memory and error behavior without changing the parsing or export logic.
 
 <a name="examples"></a>
 ## Examples
