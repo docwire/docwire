@@ -14,6 +14,15 @@ SourceForge Community Choice 2023 · Microsoft for Startups 2022
 
 DocWire exists because modern data processing often trades predictable execution, memory ownership, and auditability for framework convenience.
 
+Most data processing stacks are built for the easy case: clean inputs, unlimited cloud resources, and a human in the loop when something breaks. The real world looks different:
+
+- A **medical wearable** cannot drain its battery parsing a malformed data stream.
+- A **compliance system** cannot hallucinate an audit trail.
+- A **trading platform** cannot tolerate a garbage-collection pause at the wrong moment.
+- An **autonomous system** cannot crash because of an undocumented proprietary file format.
+
+These are not edge cases. They are the normal operating conditions of any system that runs in production, at scale, in a regulated or time-critical environment. DocWire SDK is built for exactly these conditions.
+
 We are building a toolkit with **mechanical sympathy** for the hardware it runs on:
 
 - **Predictability** – deterministic execution, no hidden allocations.
@@ -41,6 +50,7 @@ We are building a toolkit with **mechanical sympathy** for the hardware it runs 
 - [Authors](#authors)
 - [External links](#external-links)
 
+<a name="engineering-principles"></a>
 ## Engineering Principles
 
 ### Predictability
@@ -59,6 +69,7 @@ DocWire is designed for allocator-aware memory management. Components can use no
 
 Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is reported as an error without crashing the host process. Structural validation of incoming data is always required; it can never be disabled by optimized build modes.
 
+<a name="why-docwire-and-key-benefits"></a>
 ## Why DocWire and Key Benefits
 
 **For Developers:** DocWire provides a flexible C++ API to build data processing pipelines. It supports custom chain elements and integrates with existing codebases.
@@ -71,6 +82,7 @@ Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is 
 
 **Input and Output Sources:** Email boxes, local filesystem, and web services can be connected to DocWire pipelines today. Cloud drives, ERP systems, and databases are planned extensions. Cloud AI providers are supported through explicit input/output integrations rather than hidden background calls.
 
+<a name="roadmap"></a>
 ## Roadmap
 
 DocWire is actively evolving to meet future data processing demands.
@@ -199,7 +211,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Structured Content Extraction**: DocWire SDK excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
 
-- **Preprocessing for Embeddings**: Use DocWire SDK to clean and preprocess text data, ensuring that the input to your embedding models is of high quality and free from noise.
+- **Preprocessing for Embeddings (planned)**: DocWire will provide built-in cleaning and preprocessing utilities to ensure high-quality input for embedding models. Current extraction already yields structured text; advanced tokenization/detokenization and output sanitization are under development.
 
 - **Document Element Extraction**: Extract specific document elements such as paragraphs, headings, and lists, which can then be used to generate embeddings for each element.
 
