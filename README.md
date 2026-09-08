@@ -179,7 +179,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
     - transcribe: Convert spoken language (voice) into written text (transcription, Automatic Speech Recognition).
     - embed: Generate embedding of text via OpenAI.
    
-   Supports multiple Open AI LLM models: GPT-5, GPT-5 mini, GPT-5 nano, GPT-5 Chat Latest, GPT-4.1, GPT-4.1 mini, GPT-4.1 nano, GPT-4o, GPT-4o mini, o3, o3-pro, o3-deep-research, o3-mini, o4-mini, o4-mini-deep-research, gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1, gpt-4o-mini-tts, tts-1, tts-1-hd, text-embedding-3-small, text-embedding-3-large, text-embedding-ada-002. More are coming.
+   OpenAI services support multiple model families, including chat models (GPT-5, GPT-5 mini, GPT-5 nano, GPT-5 Chat Latest, GPT-4.1, GPT-4.1 mini, GPT-4.1 nano, GPT-4o, GPT-4o mini, o3, o3-pro, o3-deep-research, o3-mini, o4-mini, o4-mini-deep-research), transcribe models (gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1), TTS models (gpt-4o-mini-tts, tts-1, tts-1-hd), and embedding models (text-embedding-3-small, text-embedding-3-large, text-embedding-ada-002). More are coming.
 
 - **OpenRouter support (planned)**: Expanding optional cloud LLM integrations to support a wide range of open and commercial models through OpenRouter. Cloud integrations remain opt-in and do not change the local-first core behavior.
 - **Incremental parsing** returning data as soon as they are available
@@ -198,9 +198,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Advanced Document Chunking (planned)**: DocWire SDK introduces sophisticated chunking capabilities, leveraging metadata and document elements to partition documents into smaller, semantically coherent parts. This feature is invaluable for applications such as Retrieval Augmented Generation (RAG), where the ability to process and retrieve information from specific document segments can significantly enhance the performance of AI models. By understanding the structure and semantics of each document, DocWire SDK can intelligently divide content into meaningful units, preserving the context and coherence necessary for high-quality AI interactions.
 
-- **Semantic Unit Coherence (planned)**: The SDK's chunking mechanism is designed to maintain the coherence of semantic units established during partitioning. This ensures that when a document is sp
-lit into chunks, each piece retains its contextual integrity, making it suitable for use cases where understanding the flow and connection between segments is crucial, such as in conversat
-ional AI, document summarization, and topic extraction.
+- **Semantic Unit Coherence (planned)**: The SDK's chunking mechanism is designed to maintain the coherence of semantic units established during partitioning. This ensures that when a document is split into chunks, each piece retains its contextual integrity, making it suitable for use cases where understanding the flow and connection between segments is crucial, such as in conversational AI, document summarization, and topic extraction.
 
 - **NLP Model Training Data Preparation**: Prepare your training data with precision. DocWire SDK's structured content extraction is ideal for preparing datasets for NLP model training. By extracting only the relevant sections of text, you can create clean, focused datasets that lead to more effective and efficient model training.
 
@@ -318,7 +316,7 @@ std::filesystem::path("test.zip") | content_type::detector{} | archives_parser{}
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/parse_archives_8cpp-example.html)
 
-Classify file in any format (Office, PDF, mail, etc) to any categories using build-in local AI model:
+Classify file in any format (Office, PDF, mail, etc) to any categories using built-in local AI model:
 
 ```cpp
 std::filesystem::path("...") | ... | ai::local::task("Classify to...: agreement, invoice, report...") | out_stream;
@@ -334,7 +332,7 @@ ensure(out_stream.str()) == "report\n";
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_classify_8cpp-example.html)
 
-Translate document in any format (Office, PDF, mail, etc) to other language using build-in local AI model:
+Translate document in any format (Office, PDF, mail, etc) to other language using built-in local AI model:
 
 ```cpp
 std::filesystem::path("...") | ... | ai::local::translate("spanish") | out_stream;
@@ -350,7 +348,7 @@ ensure(fuzzy_match::ratio(out_stream.str(), "El procesamiento de datos se refier
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_translate_8cpp-example.html)
 
-Detect sentiment of document in any format (Office, PDF, mail, etc) using build-in local AI model:
+Detect sentiment of document in any format (Office, PDF, mail, etc) using built-in local AI model:
 
 ```cpp
 std::filesystem::path("...") | ... | ai::local::task("Detect sentiment:\n\n") | out_stream;
@@ -365,7 +363,7 @@ std::filesystem::path("1.doc") | ... | openai::detect_sentiment(...) | std::cout
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_sentiment_8cpp-example.html)
 
-Make a summary of document in any format (Office, PDF, mail, etc) using build-in local AI model:
+Make a summary of document in any format (Office, PDF, mail, etc) using built-in local AI model:
 
 ```cpp
 std::filesystem::path("...") | ... | ai::local::summarize() | out_stream;
@@ -388,7 +386,7 @@ ensure(fuzzy_match::ratio(out_stream.str(), "Data processing involves converting
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_transcribe_summary_8cpp-example.html)
 
-Find phrases, objects and events with smart matching in documents in any format (Office, PDF, mail, etc) using build-in local AI model:
+Find phrases, objects and events with smart matching in documents in any format (Office, PDF, mail, etc) using built-in local AI model:
 
 ```cpp
 std::filesystem::path("...") | ... | ai::local::task("Find sentence about \"data conversion\"...") | out_stream;
@@ -992,7 +990,7 @@ Process data securely using offline AI models with the following options:
 
 - **&ndash;&ndash;local-ai-prompt <prompt>**: prompt to process text via local AI model
 - **&ndash;&ndash;local-ai-embed [passage|query|none]**: generate an embedding of text via a local AI model. The optional argument selects the embedding mode: `passage` for passage/document embeddings, `query` for query embeddings, or `none` for the default local embedding mode. If the option is provided without a value, `none` is used.
-- **&ndash;&ndash;local-ai-model <path>**: path to local AI model data (build-in default model is used if not specified)
+- **&ndash;&ndash;local-ai-model <path>**: path to local AI model data (built-in default model is used if not specified)
 
 ### OpenAI Integration
 
