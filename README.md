@@ -30,7 +30,8 @@ We are building a toolkit with **mechanical sympathy** for the hardware it runs 
 - **Edge optimization** – zero-copy pipelines, allocator-aware memory.
 - **Graceful degradation** – malformed input returns errors, not crashes.
 
-[Read the full manifesto →](doc/manifesto.md)
+[Read the full manifesto →](https://docwire.readthedocs.io/en/latest/manifesto.html)
+[Read the engineering rules →](https://docwire.readthedocs.io/en/latest/coding_guidelines.html)
 
 ## Table of Contents
 - [Engineering Principles](#engineering-principles)

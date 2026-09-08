@@ -32,6 +32,22 @@ set(DOXYGEN_GENERATE_TREEVIEW YES)
 set(DOXYGEN_USE_MDFILE_AS_MAINPAGE ${CMAKE_CURRENT_BINARY_DIR}/readme.md)
 
 # -----------------------------------------------------
+# Create Doxygen pages for Manifesto and Coding Guidelines
+# -----------------------------------------------------
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/manifesto.md
+     DOXYGEN_MANIFESTO_MD)
+string(PREPEND DOXYGEN_MANIFESTO_MD "\\page manifesto Manifesto\n\n")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/manifesto.md
+     "${DOXYGEN_MANIFESTO_MD}")
+
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/coding_guidelines.md
+     DOXYGEN_CODING_GUIDELINES_MD)
+string(PREPEND DOXYGEN_CODING_GUIDELINES_MD
+       "\\page coding_guidelines Coding Guidelines\n\n")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/coding_guidelines.md
+     "${DOXYGEN_CODING_GUIDELINES_MD}")
+
+# -----------------------------------------------------
 # Generate 'doxygen' target
 # -----------------------------------------------------
 
@@ -46,6 +62,8 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/readme.md ${readme_contents})
 doxygen_add_docs(
     doxygen
     ${CMAKE_CURRENT_BINARY_DIR}/readme.md
+    ${CMAKE_CURRENT_BINARY_DIR}/manifesto.md
+    ${CMAKE_CURRENT_BINARY_DIR}/coding_guidelines.md
     ${HEADERS}
     ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
     COMMENT "Generate html documentation of DocWire SDK"
