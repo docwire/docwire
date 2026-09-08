@@ -80,9 +80,9 @@ Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is 
 
 **The layer your AI pipeline is missing:** Raw documents are rarely LLM-ready. Dirty PDFs, malformed email archives, legacy Office files, OCR scans, and mixed-format datasets must be normalized before they can be embedded, chunked, or summarized. DocWire ingests and structures that unstructured input into clean, typed document elements—on-premise by default, with structured logging today and an injected audit interface under active development—and optional cloud AI steps.
 
-**For Businesses:** DocWire processes unstructured data from diverse sources including PDF, Office documents, email boxes, web services, and more. It integrates cloud and local AI models as explicit processing steps. Database and ERP connectors are planned as input/output extensions.
+**For Businesses:** DocWire processes unstructured, semi-structured, and structured data from diverse sources including PDF, Office documents, email boxes, web services, JSON, XML, CSV, and more. It integrates cloud and local AI models as explicit processing steps. Direct database, ERP, message-queue, and industrial-stream connectors are planned extensions.
 
-**Input and Output Sources:** Email boxes, local filesystem, and web services can be connected to DocWire pipelines today. Cloud drives, ERP systems, relational databases, message queues, and industrial data streams are planned extensions. Cloud AI providers are supported through explicit pipeline integrations, not hidden background calls.
+**Input and Output Sources:** Email boxes, local filesystem, structured files such as JSON, XML, and CSV, and HTTP/web services can be connected to DocWire pipelines today. Cloud drives, ERP systems, relational databases, message queues, and industrial data streams are planned extensions. Cloud AI providers are supported through explicit pipeline integrations, not hidden background calls.
 
 <a name="roadmap"></a>
 ## Roadmap
@@ -142,6 +142,7 @@ Features marked **(planned)** are on the public roadmap and may not be fully ava
 
 - **Local-first and privacy-preserving data processing** - the goal is for every processing stage to support an on-premise implementation. Today, parsing, OCR, local document AI, and local text embeddings can run fully offline. A few AI capabilities, such as image/audio understanding and the largest cloud LLM models, are available only through explicit OpenAI integration. No data is sent to a cloud service unless a cloud transformer is explicitly added to the pipeline. Hybrid privacy workflows, such as local anonymization before optional cloud processing, are planned.
 - Able to extract/import and export **text, images, formatting, and metadata along with annotations**
+- **Handles unstructured and structured payloads**: documents, images, web content, JSON, XML, CSV, and other structured or semi-structured formats can be processed in the same pipeline model.
 - **Data can be transformed** between import and export (filtering, aggregating, translation, text classification, sentiment analysis, named entity recognition etc).
 
 - **Equipped with multiple parsers**:
@@ -254,7 +255,7 @@ DocWire is infrastructure, not a wrapper. You control the parsing chain, memory 
 DocWire combines two views of data processing:
 
 - **PipeChain** is the pipeline assembly line. Parsers, transformers, and exporters are connected by `operator|` into a reusable, ordered processing path.
-- **DataTree** is the structured information flow inside that pipeline. Messages represent document elements such as files, folders, emails, attachments, pages, paragraphs, tables, links, images, and metadata.
+- **DataTree** is the structured information flow inside that pipeline. Messages represent data elements such as files, folders, emails, attachments, documents, pages, paragraphs, tables, links, images, structured records, and metadata.
 
 This gives the flexibility of streaming SAX-style processing with the structural clarity of a DOM-like tree, without copying large input payloads.
 
@@ -278,7 +279,7 @@ For nested formats, the messages form a tree-like flow:
           - page
             - paragraph, table, image, link, metadata
 
-This DataTree model gives one consistent API for documents, email boxes, archives, and web content. Parsers convert each level into messages. Exporters and transformers consume only the message types they understand.
+This DataTree model gives one consistent API for documents, email boxes, archives, web content, structured files, and HTTP/API payloads. Parsers convert each level into messages. Exporters and transformers consume only the message types they understand.
 
 ### Lazy, reusable pipelines
 
