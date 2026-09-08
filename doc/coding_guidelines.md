@@ -447,9 +447,11 @@ auto err2 = memory_pipe();
 The ErrorPolicy controls propagation:
 
 - The default `expected` policy returns a value or an error code.
-- A host-provided exception policy throws a typed SDK exception at the public API boundary.
+- A host-provided exception policy throws a typed SDK exception at the point of failure inside the core algorithm.
 
-SDK business logic must not directly use `throw`, `try`, or `catch`. It must push rich context to `Audit` and then delegate error propagation to the injected ErrorPolicy. Direct exception syntax is allowed only inside ErrorPolicy implementations and explicit host-facing adapters.
+Because `ErrorPolicy` is a template parameter on the fallible algorithm, the exception path is generated inline at the deep failure site. On the happy path, an exception-based `ErrorPolicy` compiles to zero extra error-check branches. On failure, it performs stack unwinding from that exact point. This is what gives exception mode its happy-path speed, while the default `expected` policy gives explicit branch handling.
+
+SDK business logic must not directly use `throw`, `try`, or `catch`. It must push rich context to `Audit` and then delegate error propagation to the injected ErrorPolicy. Direct `throw`, `try`, and `catch` syntax is allowed only inside ErrorPolicy implementations. Core SDK algorithms must never throw directly; they delegate failure propagation to the injected ErrorPolicy.
 
 **The Why:** Coarse-grained error categories remain register-friendly control-flow markers whether propagated as `expected` or exceptions. Templating on ErrorPolicy preserves deterministic, branch-explicit error handling by default while allowing host applications to opt into zero-cost happy-path exceptions. The default SDK policy remains exception-free, so deterministic execution is not compromised.
 
@@ -470,7 +472,7 @@ SDK business logic must not directly use `throw`, `try`, or `catch`. It must pus
    The SDK evaluates the `SafetyPolicy::check_*` flag, pushes a diagnostic trace to the stateful `Audit` interface, and then delegates to the injected `ErrorPolicy`.
 
    * **Default `expected` ErrorPolicy:** returns `unexpected(program_logic)`.
-   * **Host exception ErrorPolicy:** throws a typed SDK exception at the public API boundary.
+   * **Host exception ErrorPolicy:** throws a typed SDK exception at the exact point of contract failure inside the domain API.
    * **`relaxed` SafetyPolicy:** the check is erased from the compiler's view via `if constexpr`. Pure Undefined Behavior (UB).
 
 3. **Low-Level Standard Mimics (Error return is impossible):**
