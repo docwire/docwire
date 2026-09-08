@@ -80,9 +80,9 @@ Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is 
 
 **The layer your AI pipeline is missing:** Raw documents are rarely LLM-ready. Dirty PDFs, malformed email archives, legacy Office files, OCR scans, and mixed-format datasets must be normalized before they can be embedded, chunked, or summarized. DocWire ingests and structures that unstructured input into clean, typed document elements—on-premise by default, with explicit audit output and optional cloud AI steps.
 
-**For Businesses:** DocWire processes diverse document formats including PDF, DOC, XLS, email boxes, and websites, and integrates cloud and local AI models. Database connectors are planned as an input/output extension.
+**For Businesses:** DocWire processes unstructured data from diverse sources including PDF, Office documents, email boxes, web services, and more. It integrates cloud and local AI models as explicit processing steps. Database and ERP connectors are planned as input/output extensions.
 
-**Input and Output Sources:** Email boxes, local filesystem, and web services can be connected to DocWire pipelines today. Cloud drives, ERP systems, and databases are planned extensions. Cloud AI providers are supported through explicit input/output integrations rather than hidden background calls.
+**Input and Output Sources:** Email boxes, local filesystem, and web services can be connected to DocWire pipelines today. Cloud drives, ERP systems, relational databases, message queues, and industrial data streams are planned extensions. Cloud AI providers are supported through explicit pipeline integrations, not hidden background calls.
 
 <a name="roadmap"></a>
 ## Roadmap
