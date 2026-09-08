@@ -1,12 +1,30 @@
 # DocWire SDK
 
-**Mechanical sympathy for data processing.**
+**The local-first C++20 SDK for data processing.**
 
-DocWire SDK is a local-first C++20 data processing toolkit built according to our [manifesto](https://docwire.readthedocs.io/en/latest/manifesto.html): deterministic execution, allocator-aware memory management, and auditable data flow. It ingests, normalizes, transforms, and exports unstructured, semi-structured, and structured data from diverse sources, including Office documents, PDF files, email mailboxes, archives, scanned images, web content, JSON, XML, CSV, and more. Local and optional cloud AI steps can be inserted into the same pipeline for classification, summarization, translation, embeddings, and other AI workflows. Optional cloud AI integrations are available as explicit pipeline stages for cases where larger hosted models are required.
+<a name="what-is-docwire-sdk"></a>
+## What is DocWire SDK?
 
-Pipelines are composed with `operator|` and can be reused as configurations. Execution happens when the pipeline is invoked. The SDK deliberately targets C++20, supporting conservative enterprise toolchains while using Concepts, `std::span`, and constexpr-driven design for zero-cost abstractions. It is being extended with policy-based memory and error handling.
+DocWire SDK is an embeddable software development kit (SDK): a set of reusable C++ building blocks for building data-processing pipelines and infrastructure. It is not a single parser, ETL service, or cloud tool. You compile it into your own application and control how data flows through it.
 
-DocWire is production-tested today and is continuously extending its architectural core toward fully policy-driven parsing, transformation, and export.
+DocWire treats data processing in the broad sense used by modern data-protection frameworks: collection, organisation, structuring, storage, adaptation, alteration, retrieval, consultation, use, disclosure by transmission, combination, restriction, erasure, and destruction. The goal is for DocWire components to cover the complete data-processing life cycle. Parts of that life cycle are available today; the rest are defined in the roadmap.
+
+### What you can do with DocWire today
+
+- **Ingest** files, email boxes, archives, HTTP request payloads, JSON, XML, CSV, and more.
+- **Normalize and structure** raw input using format detection, parsers, OCR, document element extraction, and structured-data handling.
+- **Transform** data with filters, translations, summaries, classification, entity extraction, sentiment analysis, embeddings, and optional local or cloud AI steps.
+- **Export or act** through plain text, HTML, CSV, metadata, stdout, files, HTTP POST, or the built-in HTTP server.
+- **Compose pipelines** with `operator|` and embed them directly into your own C++20 application.
+- **Run on-premise by default**; cloud processing is used only when you explicitly add a cloud pipeline step.
+
+### Built on three principles
+
+1. **It is an SDK.** Reusable, embeddable components—not a closed black-box product.
+2. **It is data infrastructure.** The same pipeline model is intended to cover documents, structured records, streams, sensors, and hardware effects.
+3. **It is mechanically sympathetic.** The design follows DocWire’s engineering principles of predictability, auditability, edge optimization, and graceful degradation.
+
+DocWire is production-tested today and is continuously extending its architectural core.
 
 SourceForge Community Choice 2023 · Microsoft for Startups 2022
 
@@ -34,6 +52,7 @@ We are building a toolkit with **mechanical sympathy** for the hardware it runs 
 [Read the engineering rules →](https://docwire.readthedocs.io/en/latest/coding_guidelines.html)
 
 ## Table of Contents
+- [What is DocWire SDK?](#what-is-docwire-sdk)
 - [Engineering Principles](#engineering-principles)
 - [Why DocWire and Key Benefits](#why-docwire-and-key-benefits)
 - [Roadmap](#roadmap)
