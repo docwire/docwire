@@ -1016,7 +1016,7 @@ docwire [options] file_name
 Process data securely using offline AI models with the following options:
 
 - **&ndash;&ndash;local-ai-prompt <prompt>**: prompt to process text via local AI model
-- **&ndash;&ndash;local-ai-embed [passage|query|none]**: generate an embedding of text via a local AI model. `passage` selects passage/document embeddings and `query` selects query embeddings. `none` is accepted for command-line compatibility and currently uses the same local embedding path as `passage`. If the option is provided without a value, `passage` is used.
+- **&ndash;&ndash;local-ai-embed [passage|query|none]**: generate an embedding of text via a local AI model. `passage` selects passage/document embeddings and `query` selects query embeddings. `none` is accepted and currently uses the same local embedding path as `passage`. If the option is provided without a value, `none` is used, which currently maps to the passage embedder.
 - **&ndash;&ndash;local-ai-model <path>**: path to local AI model data (built-in default model is used if not specified)
 
 ### OpenAI Integration
