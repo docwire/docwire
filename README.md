@@ -52,9 +52,9 @@ Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is 
 
 **Optimized for NLP and AI Projects:** DocWire includes data cleaning and preprocessing utilities, content filtering, tokenization/detokenization, output sanitization, and document element extraction. It can prepare datasets for AI training, inference, and embedding workflows.
 
-**Enhanced AI/NLP Integration:** DocWire supports partitioning and chunking of document elements. This enables generation of embeddings for semantic search, retrieval augmented generation (RAG), document clustering, and similarity analysis.
+**Enhanced AI/NLP Integration:** DocWire supports structured document element extraction. Semantic partitioning and context-aware chunking are under active development. Extracted elements can be used to generate embeddings for semantic search, retrieval augmented generation (RAG), document clustering, and similarity analysis.
 
-**For Businesses:** DocWire processes diverse document formats including PDF, DOC, XLS, email boxes, databases, websites, and integrates cloud and local AI models.
+**For Businesses:** DocWire processes diverse document formats including PDF, DOC, XLS, email boxes, and websites, and integrates cloud and local AI models. Database connectors are planned as an input/output extension.
 
 **Input and Output Sources:** Email boxes, local filesystem, and web services can be connected to DocWire pipelines today. Cloud drives, ERP systems, and databases are planned extensions. Cloud AI providers are supported through explicit input/output integrations rather than hidden background calls.
 
@@ -192,7 +192,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Semantic Chunking (planned)**: Group related content using the SDK's chunking feature to create contextually rich embeddings that capture the nuances of the document's structure.
 
-- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1openai_1_1embed.html) or [local_ai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1local__ai_1_1embed.html) or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT, to generate embeddings that can be used in various NLP tasks.
+- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1openai_1_1embed.html), the local embedding steps `ai::local::passage::embedder` and `ai::local::query::embedder`, or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT. Generated embeddings can be used in various NLP tasks.
 
 - **Enhancing AI/NLP Pipelines**: Embeddings obtained from DocWire SDK can be used to enhance AI/NLP pipelines, enabling more accurate and context-aware applications such as document classification, sentiment analysis, and information retrieval.
 
@@ -278,8 +278,9 @@ This allows common workflows such as:
 - translation,
 - sentiment analysis,
 - entity and keyword extraction,
-- embeddings,
-- chunking and semantic segmentation.
+- embeddings.
+
+Semantic chunking and document segmentation are planned extensions of the same pipeline model.
 
 Because these are pipeline steps, they can be combined with parsing, OCR, filtering, and exporting in one reusable processing chain.
 
@@ -990,7 +991,7 @@ docwire [options] file_name
 Process data securely using offline AI models with the following options:
 
 - **&ndash;&ndash;local-ai-prompt <prompt>**: prompt to process text via local AI model
-- **&ndash;&ndash;local-ai-embed <prefix>**: generate embedding of text via local AI model. Optional argument is a prefix (e.g. "passage: " or "query: ")
+- **&ndash;&ndash;local-ai-embed [passage|query|none]**: generate an embedding of text via a local AI model. The optional argument selects the embedding mode: `passage` for passage/document embeddings, `query` for query embeddings, or `none` for the default local embedding mode. If the option is provided without a value, `none` is used.
 - **&ndash;&ndash;local-ai-model <path>**: path to local AI model data (build-in default model is used if not specified)
 
 ### OpenAI Integration
@@ -1065,7 +1066,7 @@ docwire --local-ai-prompt "What is the conclusion of the following document?" da
 ### Secure offline AI embedding generation
 
 ```bash
-docwire --local-ai-embed "passage: " data_processing_definition.doc
+docwire --local-ai-embed passage data_processing_definition.doc
 ```
 
 #### Leveraging OpenAI for Intelligent Document Analysis
