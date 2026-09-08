@@ -2,13 +2,26 @@
 
 **Mechanical sympathy for data processing.**
 
-DocWire SDK is a local-first C++20 data processing toolkit designed for deterministic execution, allocator-aware memory management, and auditable data flow. It parses, transforms, exports, and analyzes nearly 100 formats, including Office documents, PDF, email mailboxes, archives, OCR, web content, and AI workflows. Optional cloud AI integrations are available as explicit pipeline steps for cases where larger hosted models are required.
+DocWire SDK is a local-first C++20 data processing toolkit built according to our [manifesto](doc/manifesto.md): deterministic execution, allocator-aware memory management, and auditable data flow. It parses, transforms, exports, and analyzes nearly 100 formats, including Office documents, PDF, email mailboxes, archives, OCR, web content, and AI workflows. Optional cloud AI integrations are available as explicit pipeline steps for cases where larger hosted models are required.
 
 Pipelines are composed with `operator|` and can be reused as configurations. Execution happens when the pipeline is invoked. The SDK is being extended with policy-based memory and error handling.
 
 DocWire is production-tested today and is continuously extending its architectural core toward fully policy-driven parsing, transformation, and export.
 
 SourceForge Community Choice 2023 · Microsoft for Startups 2022
+
+## Manifesto
+
+DocWire exists because modern data processing often trades predictable execution, memory ownership, and auditability for framework convenience.
+
+We are building a toolkit with **mechanical sympathy** for the hardware it runs on:
+
+- **Predictability** – deterministic execution, no hidden allocations.
+- **Auditability** – visible data flow and injected audit output.
+- **Edge optimization** – zero-copy pipelines, allocator-aware memory.
+- **Graceful degradation** – malformed input returns errors, not crashes.
+
+[Read the full manifesto →](doc/manifesto.md)
 
 ## Table of Contents
 - [Engineering Principles](#engineering-principles)
