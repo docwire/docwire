@@ -2,7 +2,7 @@
 
 **Mechanical sympathy for data processing.**
 
-DocWire SDK is a local-first C++20 data processing toolkit built according to our [manifesto](doc/manifesto.md): deterministic execution, allocator-aware memory management, and auditable data flow. It parses, transforms, exports, and analyzes nearly 100 formats, including Office documents, PDF, email mailboxes, archives, OCR, web content, and AI workflows. Optional cloud AI integrations are available as explicit pipeline steps for cases where larger hosted models are required.
+DocWire SDK is a local-first C++20 data processing toolkit built according to our [manifesto](doc/manifesto.md): deterministic execution, allocator-aware memory management, and auditable data flow. It ingests, normalizes, transforms, and exports unstructured data from diverse sources, including Office documents, PDF files, email mailboxes, archives, scanned images, web content, and more. Local and optional cloud AI steps can be inserted into the same pipeline for classification, summarization, translation, embeddings, and other AI workflows. Optional cloud AI integrations are available as explicit pipeline stages for cases where larger hosted models are required.
 
 Pipelines are composed with `operator|` and can be reused as configurations. Execution happens when the pipeline is invoked. The SDK deliberately targets C++20, supporting conservative enterprise toolchains while using Concepts, `std::span`, and constexpr-driven design for zero-cost abstractions. It is being extended with policy-based memory and error handling.
 
