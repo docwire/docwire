@@ -278,7 +278,7 @@ Current SDK elements may be chain element objects or callable transformers. The 
 
 ### Message-driven information flow
 
-Instead of copying whole documents between stages, DocWire emits lightweight message nodes that represent the document structure. These nodes provide typed access to the underlying data and can be filtered, transformed, or forwarded by later pipeline elements.
+Instead of copying whole data payloads between stages, DocWire emits lightweight message nodes that represent the structured data flow. These nodes provide typed access to the underlying data and can be filtered, transformed, or forwarded by later pipeline elements.
 
 For nested formats, the messages form a tree-like flow:
 
