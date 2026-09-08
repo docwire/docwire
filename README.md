@@ -1,6 +1,8 @@
 # DocWire SDK
 
-**The local-first C++20 SDK for data processing.**
+**Deterministic, auditable, and secure data processing in C++20.**
+
+**On-premise by default. No compromises on computational speed.**
 
 <a name="what-is-docwire-sdk"></a>
 ## What is DocWire SDK?
