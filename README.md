@@ -59,11 +59,11 @@ DocWire rejects hidden allocations, background work, and implicit global state. 
 
 ### Auditability
 
-DocWire gives developers control over diagnostics and audit output. The SDK avoids hidden global state and provides structured logging and configurable sinks. The roadmap includes a dependency-injected `Audit` interface that emits typed C++ values without premature string serialization.
+DocWire gives developers control over diagnostics and audit output. The SDK avoids hidden global state and provides structured logging and configurable sinks. A dependency-injected `Audit` interface is under active development.
 
 ### Edge Optimization
 
-DocWire is designed for allocator-aware memory management. Components can use non-owning views over input payloads and are intended to support injected allocators, including arena-backed low-latency allocation. Standard heap allocators remain supported.
+Non-owning views already avoid copies across many pipeline boundaries. The architecture is moving toward fully injected allocator policies, including arena-backed low-latency allocation, while retaining standard heap allocator support.
 
 ### Graceful Degradation
 
@@ -77,6 +77,8 @@ Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is 
 **Optimized for NLP and AI Projects:** DocWire includes structured document element extraction, content filtering, and pluggable message transformations. Planned enhancements include tokenization/detokenization, output sanitization, and customizable data cleaning pipelines. It can prepare datasets for AI training, inference, and embedding workflows.
 
 **Enhanced AI/NLP Integration:** DocWire supports structured document element extraction. Semantic partitioning and context-aware chunking are under active development. Extracted elements can be used to generate embeddings for semantic search, retrieval augmented generation (RAG), document clustering, and similarity analysis.
+
+**The layer your AI pipeline is missing:** Raw documents are rarely LLM-ready. Dirty PDFs, malformed email archives, legacy Office files, OCR scans, and mixed-format datasets must be normalized before they can be embedded, chunked, or summarized. DocWire ingests and structures that unstructured input into clean, typed document elements—on-premise by default, with explicit audit output and optional cloud AI steps.
 
 **For Businesses:** DocWire processes diverse document formats including PDF, DOC, XLS, email boxes, and websites, and integrates cloud and local AI models. Database connectors are planned as an input/output extension.
 
@@ -245,7 +247,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 <a name="api-concept"></a>
 ## API Concept
 
-DocWire processes data as a typed, lazy pipeline. You connect sources, parsers, transformers, and destinations using `operator|`. Building the pipeline does not execute it. Execution happens only when the pipeline is invoked.
+DocWire is infrastructure, not a wrapper. You control the parsing chain, memory ownership, and data flow instead of depending on an opaque third-party service. The SDK processes data as a typed, lazy pipeline. You connect sources, parsers, transformers, and destinations using `operator|`. Building the pipeline does not execute it. Execution happens only when the pipeline is invoked.
 
 ### PipeChain and DataTree
 
@@ -790,7 +792,7 @@ To explore the possibilities of an LTS agreement or to discuss specific requirem
 <a name="logging"></a>
 ## Logging
 
-DocWire SDK provides a structured logging framework designed for developer diagnostics and production audit trails. It is built around typed log records, configurable sinks, and compile-time filtering.
+DocWire SDK provides a structured logging framework designed for developer diagnostics and production audit trails. It is built around typed log records, configurable sinks, and runtime expression-based filters. Most debug log records are compiled out in release builds, while persistent audit records remain.
 
 ### Structured log records
 
