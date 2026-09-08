@@ -442,36 +442,45 @@ auto err2 = memory_pipe();
 
 ### [ERR-ROUTING-VALUE_BASED]
 
-**The Rule:** Standard C++ exceptions (`throw`, `try`, `catch`) are strictly banned. All fallible algorithms must return a value-based result utilizing the internal template `docwire::expected<T, E = docwire::error_category>`. The error payload must be a Trivially Copyable type (e.g., an enum or bitmask) representing coarse-grained control-flow states (e.g., `program_logic`, `uninterpretable_data`, `network_failure`).
+**The Rule:** All fallible SDK algorithms must be templated on an injected **ErrorPolicy**, defaulting to the exception-free `docwire::expected<T, E = docwire::error_category>` policy. The error payload must be a Trivially Copyable type (e.g., an enum or bitmask) representing coarse-grained control-flow states such as `program_logic`, `uninterpretable_data`, and `network_failure`.
 
-**The Why:** Maintaining hundreds of specific error codes creates maintenance hell. Coarse-grained categories tell the caller how to route the flow (Abort, Retry, Skip) while keeping the return value register-fast. Using a custom expected template with a defaulted error argument provides a terse API (`expected<page>`) while allowing us to strictly dictate access violation physics.
+The ErrorPolicy controls propagation:
+
+- The default `expected` policy returns a value or an error code.
+- A host-provided exception policy throws a typed SDK exception at the public API boundary.
+
+SDK business logic must not directly use `throw`, `try`, or `catch`. It must push rich context to `Audit` and then delegate error propagation to the injected ErrorPolicy. Direct exception syntax is allowed only inside ErrorPolicy implementations and explicit host-facing adapters.
+
+**The Why:** Coarse-grained error categories remain register-friendly control-flow markers whether propagated as `expected` or exceptions. Templating on ErrorPolicy preserves deterministic, branch-explicit error handling by default while allowing host applications to opt into zero-cost happy-path exceptions. The default SDK policy remains exception-free, so deterministic execution is not compromised.
 
 ### [ERR-CONTEXT-DELEGATION]
 
-**The Rule:** Rich error context (e.g., dynamic strings, nested call stacks, memory-backed variable captures) must never be stored inside or linked from the `expected` return object. Whenever a failure occurs, the algorithm must push its rich diagnostic data to the injected `Audit` interface *before* returning the trivially copyable error code.
+**The Rule:** Rich error context (e.g., dynamic strings, nested call stacks, memory-backed variable captures) must never be stored inside or linked from the error object returned or thrown by the injected `ErrorPolicy`. Whenever a failure occurs, the algorithm must push its rich diagnostic data to the injected `Audit` interface *before* delegating the trivially copyable error code to the `ErrorPolicy`.
 
 **The Why:** Keeping the return type strictly for control flow preserves the zero-heap, $O(1)$ CPU return physics. Delegating the rich context to the independent `Audit` channel ensures that critical telemetry (warnings, skipped corrupted files) is preserved in the application's audit trail even if the pipeline cleanly recovers from the error.
 
 ### [ERR-CONTRACT-VIOLATIONS]
 
-**The Rule:** When a developer violates an internal API contract, the SDK's response must follow this hierarchy based on the injected `SafetyPolicy`:
+**The Rule:** When a developer violates an internal API contract, the SDK's response must follow this hierarchy based on the injected `SafetyPolicy` and `ErrorPolicy`:
 
 1. **Compile-Time Priority:** Enforced at compile-time using strong types per `[DESIGN-CONTRACTS-COMPILE_TIME]`.
 
-2. **High-Level Domain APIs (Return `expected` is possible):**
+2. **High-Level Domain APIs (Error propagation is possible):**
 
-   * **`strict` mode:** The SDK evaluates the `SafetyPolicy::check_*` flag, pushes a diagnostic trace to the stateful Audit interface, and safely returns `unexpected(program_logic)`.
+   The SDK evaluates the `SafetyPolicy::check_*` flag, pushes a diagnostic trace to the stateful `Audit` interface, and then delegates to the injected `ErrorPolicy`.
 
-   * **`relaxed` mode:** The check is erased from the compiler's view via `if constexpr`. Pure Undefined Behavior (UB).
+   * **Default `expected` ErrorPolicy:** returns `unexpected(program_logic)`.
+   * **Host exception ErrorPolicy:** throws a typed SDK exception at the public API boundary.
+   * **`relaxed` SafetyPolicy:** the check is erased from the compiler's view via `if constexpr`. Pure Undefined Behavior (UB).
 
-3. **Low-Level Standard Mimics (Return `expected` is impossible):**
-   For mechanical primitives (e.g., `expected::value()`, `span::operator[]`), changing the return signature is forbidden, and DocWire explicitly bans throwing internal exceptions.
+3. **Low-Level Standard Mimics (Error return is impossible):**
 
-   * **`strict` mode:** The SDK must trigger a fatal panic by delegating directly to the stateless template policy (e.g., `SafetyPolicy::panic()`). The SDK defaults this policy to `std::abort()`, but the host application is free to inject a custom policy.
+   For mechanical primitives (e.g., `expected::value()`, `span::operator[]`), changing the return signature is forbidden.
 
+   * **`strict` mode:** The SDK must trigger a fatal panic by delegating directly to the stateless `SafetyPolicy` (e.g., `SafetyPolicy::panic()`). The SDK defaults this policy to `std::abort()`, but the host application is free to inject a custom policy.
    * **`relaxed` mode:** The check is erased. Pure Undefined Behavior (UB).
 
-**The Why:** This hierarchy flawlessly balances safety, standard C++ expectations, and peak performance. It guarantees recoverable logic bugs are safely logged and routed via `expected`, while unrecoverable violations in low-level primitives trigger configurable, zero-overhead fatal panics. By delegating the failure context to the `Audit` stream before returning the error, the SDK proves the mathematical impossibility of the user's request (exonerating the SDK from "crash blame"). This also grants the host application total control: their injected `Audit` implementation can optionally trigger a debug trap, throw an exception, or safely terminate the process on their own terms.
+**The Why:** This hierarchy balances safety, standard C++ expectations, and performance while keeping safety policy and error policy orthogonal. Recoverable contract violations are audited and then propagated through the selected ErrorPolicy. Unrecoverable low-level violations still trigger a configurable `SafetyPolicy` panic. The default path remains deterministic and exception-free; hosts that choose an exception ErrorPolicy accept local stack unwinding only at the boundary they control.
 
 ### [ERR-RECURSION-LIMIT]
 
