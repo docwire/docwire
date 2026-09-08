@@ -78,7 +78,7 @@ Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is 
 
 **Enhanced AI/NLP Integration:** DocWire supports structured document element extraction. Semantic partitioning and context-aware chunking are under active development. Extracted elements can be used to generate embeddings for semantic search, retrieval augmented generation (RAG), document clustering, and similarity analysis.
 
-**The layer your AI pipeline is missing:** Raw documents are rarely LLM-ready. Dirty PDFs, malformed email archives, legacy Office files, OCR scans, and mixed-format datasets must be normalized before they can be embedded, chunked, or summarized. DocWire ingests and structures that unstructured input into clean, typed document elements—on-premise by default, with explicit audit output and optional cloud AI steps.
+**The layer your AI pipeline is missing:** Raw documents are rarely LLM-ready. Dirty PDFs, malformed email archives, legacy Office files, OCR scans, and mixed-format datasets must be normalized before they can be embedded, chunked, or summarized. DocWire ingests and structures that unstructured input into clean, typed document elements—on-premise by default, with structured logging today and an injected audit interface under active development—and optional cloud AI steps.
 
 **For Businesses:** DocWire processes unstructured data from diverse sources including PDF, Office documents, email boxes, web services, and more. It integrates cloud and local AI models as explicit processing steps. Database and ERP connectors are planned as input/output extensions.
 
