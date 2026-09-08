@@ -36,8 +36,8 @@ SourceForge Community Choice 2023 · Microsoft for Startups 2022
 - [Manifesto](#manifesto)
 - [Engineering Principles](#engineering-principles)
 - [Why DocWire and Key Benefits](#why-docwire-and-key-benefits)
-- [Roadmap](#roadmap)
 - [Features](#features)
+- [Roadmap](#roadmap)
 - [API Concept](#api-concept)
 - [Examples](#examples)
 - [Awards](#awards)
@@ -109,67 +109,6 @@ Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is 
 
 **Input and Output Sources:** Email boxes, local filesystem, structured files such as JSON, XML, and CSV, and HTTP/web services can be connected to DocWire pipelines today. Cloud drives, ERP systems, relational databases, message queues, and industrial data streams are planned extensions. A pipeline can end in an exporter or in an effect, such as posting data, publishing a message, sending an email, or commanding hardware. Cloud AI providers are supported through explicit pipeline integrations, not hidden background calls.
 
-<a name="roadmap"></a>
-## Roadmap
-
-DocWire is actively evolving to meet future data processing demands.
-
-### Future Capabilities
-
-- Comprehensive Data Import/Export to all known sources and destinations.
-- Advanced Data Processing using standard algorithms and AI models.
-- Online Integrations and Offline Processing with locally operating AI models.
-- Multiplatform Support across servers, personal computers, and mobile devices.
-- Embedded Opensource Libraries for consistent API and license compliance.
-- Enhanced Cloud Integration.
-- Improved NLP Integration.
-- Powerhouse for data processing across formats.
-- Enhanced Structured Content Extraction for AI Applications.
-- Customizable Content Selection for Model Training.
-- Future Enhancements for Chunking and Semantic Analysis.
-- Intelligent Partitioning for Diverse Document Formats.
-- Seamless Integration with LLMs and NLP Libraries.
-- Integration with Advanced NLP Libraries.
-- Support for Custom AI Model Deployment.
-- Embeddings Extraction Interface.
-- Embeddings-Based Retrieval.
-- Embeddings Storage and Management.
-- Embeddings Visualization Tools.
-- Top-notch Documentation and Support.
-
-### Backend, Edge, Embedded, and Real-Time Data Flows
-
-- Audio and speech-to-text connectors and processors.
-- Video container decoding and frame extraction.
-- Sensor, camera, and microphone input adapters.
-- Time-series and event-stream processing.
-- Database, message-queue, and industrial-protocol connectors.
-- Filesystem, object-store, queue, email, webhook, and actuator destinations.
-- Deterministic on-device AI inference for constrained edge workflows.
-- Time-aware and event-driven processing while preserving local-first execution.
-
-### Research and Development Goals
-
-- Enhanced AI Capabilities: Exploring new models, optimizing local model size, speed, and quality.
-- Advanced Data Sanitization Techniques: Detecting and redacting sensitive information automatically.
-- Hybrid Privacy Workflows: Locally anonymize or redact sensitive data before optionally sending non-sensitive context to a cloud LLM, then merge the returned results locally.
-- Customizable Data Preparation Workflows: Defining and automating data cleaning and formatting steps.
-- Enhanced Support for Multilingual Data Processing: Handling a wide range of languages and scripts.
-- Long-Term Memory for AI Models: Integrating vector databases for efficient long-term context.
-- AI Document Layout Analysis: Understanding and processing various document formats.
-- Advanced Semantic Partitioning: Enhancing semantic unit detection and delineation.
-- Embeddings Optimization: Improving speed and accuracy of embeddings generation.
-- Contextual Embeddings Research: Generating contextual embeddings for richer AI inputs.
-- Embeddings for Cross-Lingual Applications: Supporting multilingual NLP tasks.
-- Embeddings in Unsupervised Learning: Clustering and anomaly detection.
-- Context-Aware Chunking Algorithms: Preserving narrative flow in document segmentation.
-- Document Element Detection and Classification: Identifying headers, footers, sidebars, etc.
-- Optimization with C++ Meta-Programming: Compile-time optimizations and zero-overhead abstractions.
-- Caching Techniques: Reducing latency for repeated operations.
-- Processing of Encrypted Data: Zero-knowledge processing while preserving confidentiality.
-- Quantum Computing Integration: Investigating quantum algorithms for data processing.
-- Blockchain Integration: Secure and transparent data processing.
-- IoT Device Support: Real-time data analysis in IoT ecosystems.
 
 <a name="features"></a>
 ## Features
@@ -280,6 +219,68 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 - **Parsing process can be easily designed** by connecting objects with the pipe `|` operator into a chain
 - **Custom parsing chain elements can be added** (parsers, transformers, exporters)
 - **Small binaries, fast** native C++ code
+
+<a name="roadmap"></a>
+## Roadmap
+
+DocWire is actively evolving to meet future data processing demands.
+
+### Future Capabilities
+
+- Comprehensive Data Import/Export to all known sources and destinations.
+- Advanced Data Processing using standard algorithms and AI models.
+- Online Integrations and Offline Processing with locally operating AI models.
+- Multiplatform Support across servers, personal computers, and mobile devices.
+- Embedded Opensource Libraries for consistent API and license compliance.
+- Enhanced Cloud Integration.
+- Improved NLP Integration.
+- Powerhouse for data processing across formats.
+- Enhanced Structured Content Extraction for AI Applications.
+- Customizable Content Selection for Model Training.
+- Future Enhancements for Chunking and Semantic Analysis.
+- Intelligent Partitioning for Diverse Document Formats.
+- Seamless Integration with LLMs and NLP Libraries.
+- Integration with Advanced NLP Libraries.
+- Support for Custom AI Model Deployment.
+- Embeddings Extraction Interface.
+- Embeddings-Based Retrieval.
+- Embeddings Storage and Management.
+- Embeddings Visualization Tools.
+- Top-notch Documentation and Support.
+
+### Backend, Edge, Embedded, and Real-Time Data Flows
+
+- Audio and speech-to-text connectors and processors.
+- Video container decoding and frame extraction.
+- Sensor, camera, and microphone input adapters.
+- Time-series and event-stream processing.
+- Database, message-queue, and industrial-protocol connectors.
+- Filesystem, object-store, queue, email, webhook, and actuator destinations.
+- Deterministic on-device AI inference for constrained edge workflows.
+- Time-aware and event-driven processing while preserving local-first execution.
+
+### Research and Development Goals
+
+- Enhanced AI Capabilities: Exploring new models, optimizing local model size, speed, and quality.
+- Advanced Data Sanitization Techniques: Detecting and redacting sensitive information automatically.
+- Hybrid Privacy Workflows: Locally anonymize or redact sensitive data before optionally sending non-sensitive context to a cloud LLM, then merge the returned results locally.
+- Customizable Data Preparation Workflows: Defining and automating data cleaning and formatting steps.
+- Enhanced Support for Multilingual Data Processing: Handling a wide range of languages and scripts.
+- Long-Term Memory for AI Models: Integrating vector databases for efficient long-term context.
+- AI Document Layout Analysis: Understanding and processing various document formats.
+- Advanced Semantic Partitioning: Enhancing semantic unit detection and delineation.
+- Embeddings Optimization: Improving speed and accuracy of embeddings generation.
+- Contextual Embeddings Research: Generating contextual embeddings for richer AI inputs.
+- Embeddings for Cross-Lingual Applications: Supporting multilingual NLP tasks.
+- Embeddings in Unsupervised Learning: Clustering and anomaly detection.
+- Context-Aware Chunking Algorithms: Preserving narrative flow in document segmentation.
+- Document Element Detection and Classification: Identifying headers, footers, sidebars, etc.
+- Optimization with C++ Meta-Programming: Compile-time optimizations and zero-overhead abstractions.
+- Caching Techniques: Reducing latency for repeated operations.
+- Processing of Encrypted Data: Zero-knowledge processing while preserving confidentiality.
+- Quantum Computing Integration: Investigating quantum algorithms for data processing.
+- Blockchain Integration: Secure and transparent data processing.
+- IoT Device Support: Real-time data analysis in IoT ecosystems.
 
 <a name="api-concept"></a>
 ## API Concept
