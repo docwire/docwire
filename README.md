@@ -28,6 +28,28 @@ DocWire is production-tested today and is continuously extending its architectur
 
 SourceForge Community Choice 2023 · Microsoft for Startups 2022
 
+## Table of Contents
+
+- [What is DocWire SDK?](#what-is-docwire-sdk)
+- [Manifesto](#manifesto)
+- [Engineering Principles](#engineering-principles)
+- [Why DocWire and Key Benefits](#why-docwire-and-key-benefits)
+- [Roadmap](#roadmap)
+- [Features](#features)
+- [API Concept](#api-concept)
+- [Examples](#examples)
+- [Awards](#awards)
+- [Installation](#installation)
+- [Versioning](#versioning)
+- [Logging](#logging)
+- [Error handling: robust and secure](#error-handling-robust-and-secure)
+- [API documentation](#api-documentation)
+- [Console application](#console-application)
+- [License](#license)
+- [Authors](#authors)
+- [External links](#external-links)
+
+<a name="manifesto"></a>
 ## Manifesto
 
 DocWire exists because modern data processing often trades predictable execution, memory ownership, and auditability for framework convenience.
@@ -50,25 +72,6 @@ We are building a toolkit with **mechanical sympathy** for the hardware it runs 
 
 [Read the full manifesto →](https://docwire.readthedocs.io/en/latest/manifesto.html)
 [Read the engineering rules →](https://docwire.readthedocs.io/en/latest/coding_guidelines.html)
-
-## Table of Contents
-- [What is DocWire SDK?](#what-is-docwire-sdk)
-- [Engineering Principles](#engineering-principles)
-- [Why DocWire and Key Benefits](#why-docwire-and-key-benefits)
-- [Roadmap](#roadmap)
-- [Features](#features)
-- [API Concept](#api-concept)
-- [Examples](#examples)
-- [Awards](#awards)
-- [Installation](#installation)
-- [Versioning](#versioning)
-- [Logging](#logging)
-- [Error handling: robust and secure](#error-handling-robust-and-secure)
-- [API documentation](#api-documentation)
-- [Console application](#console-application)
-- [License](#license)
-- [Authors](#authors)
-- [External links](#external-links)
 
 <a name="engineering-principles"></a>
 ## Engineering Principles
