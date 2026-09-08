@@ -50,7 +50,7 @@ Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is 
 
 **For Developers:** DocWire provides a flexible C++ API to build data processing pipelines. It supports custom chain elements and integrates with existing codebases.
 
-**Optimized for NLP and AI Projects:** DocWire includes data cleaning and preprocessing utilities, content filtering, tokenization/detokenization, output sanitization, and document element extraction. It can prepare datasets for AI training, inference, and embedding workflows.
+**Optimized for NLP and AI Projects:** DocWire includes structured document element extraction, content filtering, and pluggable message transformations. Planned enhancements include tokenization/detokenization, output sanitization, and customizable data cleaning pipelines. It can prepare datasets for AI training, inference, and embedding workflows.
 
 **Enhanced AI/NLP Integration:** DocWire supports structured document element extraction. Semantic partitioning and context-aware chunking are under active development. Extracted elements can be used to generate embeddings for semantic search, retrieval augmented generation (RAG), document clustering, and similarity analysis.
 
@@ -412,7 +412,7 @@ ensure(out_msgs[0]->get<ai::embedding>().values.size()) == 1536;
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/openai_embedding_8cpp-example.html)
 
-Create embedding for document in any format (Office, PDF, mail, etc) using build-in local AI model, create embeddings for two queries and calculate similarity:
+Create embedding for document in any format (Office, PDF, mail, etc) using built-in local AI model, create embeddings for two queries and calculate similarity:
 
 ```cpp
 std::filesystem::path("data_processing_definition.doc") | ... | ai::local::passage::embedder{} | passage_msgs;
@@ -989,7 +989,7 @@ docwire [options] file_name
 Process data securely using offline AI models with the following options:
 
 - **&ndash;&ndash;local-ai-prompt <prompt>**: prompt to process text via local AI model
-- **&ndash;&ndash;local-ai-embed [passage|query|none]**: generate an embedding of text via a local AI model. The optional argument selects the embedding mode: `passage` for passage/document embeddings, `query` for query embeddings, or `none` for the default local embedding mode. If the option is provided without a value, `none` is used.
+- **&ndash;&ndash;local-ai-embed [passage|query|none]**: generate an embedding of text via a local AI model. `passage` selects passage/document embeddings and `query` selects query embeddings. `none` is accepted for command-line compatibility and currently uses the same local embedding path as `passage`. If the option is provided without a value, `passage` is used.
 - **&ndash;&ndash;local-ai-model <path>**: path to local AI model data (built-in default model is used if not specified)
 
 ### OpenAI Integration
