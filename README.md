@@ -82,7 +82,7 @@ Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is 
 
 **For Businesses:** DocWire processes unstructured, semi-structured, and structured data from diverse sources including PDF, Office documents, email boxes, web services, JSON, XML, CSV, and more. It integrates cloud and local AI models as explicit processing steps. Direct database, ERP, message-queue, and industrial-stream connectors are planned extensions.
 
-**Input and Output Sources:** Email boxes, local filesystem, structured files such as JSON, XML, and CSV, and HTTP/web services can be connected to DocWire pipelines today. Cloud drives, ERP systems, relational databases, message queues, and industrial data streams are planned extensions. Cloud AI providers are supported through explicit pipeline integrations, not hidden background calls.
+**Input and Output Sources:** Email boxes, local filesystem, structured files such as JSON, XML, and CSV, and HTTP/web services can be connected to DocWire pipelines today. Cloud drives, ERP systems, relational databases, message queues, and industrial data streams are planned extensions. A pipeline can end in an exporter or in an effect, such as posting data, publishing a message, sending an email, or commanding hardware. Cloud AI providers are supported through explicit pipeline integrations, not hidden background calls.
 
 <a name="roadmap"></a>
 ## Roadmap
@@ -111,6 +111,17 @@ DocWire is actively evolving to meet future data processing demands.
 - Embeddings Storage and Management.
 - Embeddings Visualization Tools.
 - Top-notch Documentation and Support.
+
+### Backend, Edge, Embedded, and Real-Time Data Flows
+
+- Audio and speech-to-text connectors and processors.
+- Video container decoding and frame extraction.
+- Sensor, camera, and microphone input adapters.
+- Time-series and event-stream processing.
+- Database, message-queue, and industrial-protocol connectors.
+- Filesystem, object-store, queue, email, webhook, and actuator destinations.
+- Deterministic on-device AI inference for constrained edge workflows.
+- Time-aware and event-driven processing while preserving local-first execution.
 
 ### Research and Development Goals
 
@@ -315,6 +326,22 @@ Because these are pipeline steps, they can be combined with parsing, OCR, filter
 DocWire is designed around explicit, injectable execution policies. The SDK exposes pipeline components as objects, so they can be composed with allocator, audit, and error-policy selection as the architecture evolves.
 
 This allows host applications to choose deterministic memory and error behavior without changing the parsing or export logic.
+
+### Beyond Documents: A General Data-Processing Foundation
+
+DocWire’s pipeline model is intentionally generic. A source can be a file, socket, sensor stream, camera, audio stream, database cursor, message queue, or API. A destination can export data or perform an effect: publish a message, send an email, write a record, call a webhook, raise an alert, or command hardware.
+
+The SDK is organized around a small number of long-lived component families:
+
+- **Connectors and sources** – files, HTTP endpoints, structured data, and, over time, message queues, databases, sensors, cameras, microphones, and industrial protocols.
+- **Normalizers and parsers** – Office documents, PDF, email, archives, OCR, JSON, XML, CSV, and other structured or semi-structured payloads. Planned additions include audio, video, time-series, schema validation, and industrial/medical formats.
+- **Transformers and processors** – filtering, aggregation, translation, classification, sentiment analysis, entity extraction, embedding, and other AI steps.
+- **Destinations and effects** – exporters such as plain text, HTML, CSV, HTTP POST, and metadata, with planned database writers, queue publishers, email senders, webhooks, filesystem/object stores, and actuator commands.
+- **Execution policies** – allocator, error, audit, safety, and resource-lifecycle policies that control determinism, memory behavior, and observability.
+- **Resource and model management** – explicit resource factories for files, models, network resources, and future device/stream lifecycles.
+- **Orchestration primitives** – reusable pipeline fragments, branching, filtering, and composition, without imposing a host threading model or global runtime.
+
+A pipeline may end in a destination that exports data, or in an effect that acts on it. This distinction keeps document extraction, AI orchestration, real-time event processing, and embedded control on the same architecture.
 
 <a name="examples"></a>
 ## Examples
