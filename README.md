@@ -237,7 +237,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Enhanced AI and NLP Support (planned)**: DocWire SDK is not only a tool for data extraction but also a powerful ally for AI and NLP developers. With its advanced chunking and semantic unit preservation, the SDK is perfectly suited for preparing data for AI models that require a deep understanding of document structure and content. Whether you're working on machine learning, deep learning, or any other AI project, DocWire SDK provides the features you need to ensure your data is ready for the challenge.
 
-- **Cross-platform**: Linux, Windows, MacOSX, and more to come
+- **Cross-platform**: Linux, Windows, macOS, and more to come
 - **Can be embedded** in your application (SDK)
 - **Can be integrated** with other data mining and data analytics applications
 - **Parsing process can be easily designed** by connecting objects with the pipe `|` operator into a chain
