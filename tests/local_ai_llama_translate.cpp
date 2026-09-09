@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
     model_path = resource_path("granite-4-1b-q8-0/granite-4.0-1b-Q8_0.gguf");
   } catch (const std::exception &) {
     std::cerr << "Model not found via resource_path(); skipping test.\n";
-    return 0;
+    return 1;
   }
 
   try {
