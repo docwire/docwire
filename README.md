@@ -28,8 +28,6 @@ DocWire treats data processing in the broad sense used by modern data-protection
 
 DocWire is production-tested today and is continuously extending its architectural core.
 
-SourceForge Community Choice 2023 · Microsoft for Startups 2022
-
 ## Table of Contents
 
 - [What is DocWire SDK?](#what-is-docwire-sdk)
@@ -40,7 +38,6 @@ SourceForge Community Choice 2023 · Microsoft for Startups 2022
 - [Roadmap](#roadmap)
 - [API Concept](#api-concept)
 - [Examples](#examples)
-- [Awards](#awards)
 - [Installation](#installation)
 - [Versioning](#versioning)
 - [Logging](#logging)
@@ -589,12 +586,6 @@ for (auto product_node : products)
 }
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/xml_parsing_example_8cpp-example.html)
-
-<a name="awards"></a>
-## Awards
-
-- SourceForge Community Choice (2023) - project has qualified for this award out of over 500,000 open source projects on SourceForge
-- Microsoft for Startups grant (2022) - project was selected by Microsoft to accelerate its grow by providing Expert Guidance, development tools, Azure and GitHub cloud infrastructure and OpenAI machine learning utilities
 
 <a name="installation"></a>
 ## Installation
