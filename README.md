@@ -977,6 +977,7 @@ catch (const docwire::errors::base& e)
     retry();
 }
 ```
+[Full example](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 #### Embedded source location
 
@@ -985,22 +986,24 @@ Error objects include embedded source location information, providing essential 
 ```cpp
 catch (const docwire::errors::base& e)
 {
-  std::cerr << e.source_location.file_name() << ":" << e.source_location.line() << std::endl;
+  std::cerr << e.location.file_name() << ":" << e.location.line() << std::endl;
 }
 ```
+[Full example](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 #### Secure error messages
 
 To reduce the risk of security breaches, the framework avoids including sensitive information in formatted error messages. There is no implicit stringification of context values, and the standard `what()` method is secured to return only the exception type name. Sensitive information can be retrieved from the error object on-demand only:
 
 ```cpp
-std::cerr << e.content_type() << ": " << e.context_string();
+std::cerr << docwire::errors::diagnostic_message(e) << std::endl;
 // or
-if (docwire::errors::contains_type<std::filesystem::path>(e))
+if (auto* impl_ptr = dynamic_cast<docwire::errors::impl<std::filesystem::path>*>(&e))
 {
-  auto fn = dynamic_cast<docwire::errors::impl<std::filesystem::path>>(e).context;
+  auto fn = impl_ptr->context;
 }
 ```
+[Full example](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 #### Easy context data retrieval
 
