@@ -1001,6 +1001,7 @@ std::cerr << docwire::errors::diagnostic_message(e) << std::endl;
 if (auto* impl_ptr = dynamic_cast<docwire::errors::impl<std::filesystem::path>*>(&e))
 {
   auto fn = impl_ptr->context;
+  (void)fn; // avoid unused variable warning
 }
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
