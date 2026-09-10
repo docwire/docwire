@@ -4,6 +4,7 @@
 #include "error_tags.h"
 #include "error.h"
 #include "make_error.h"
+#include "contains_type.h"
 #include <filesystem>
 #include <iostream>
 #include <sstream>

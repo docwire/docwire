@@ -68,17 +68,8 @@ static void readme()
 {
   // warning TODO: Generate readme string literal automatically.
   std::cout <<
-	"/*********************************************************************************************************************************************/\n"
-	"/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */\n"
-	"/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */\n"
-	"/*  document analysis. Offline processing possible for security and confidentiality                                                          */\n"
-	"/*                                                                                                                                           */\n"
-	"/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */\n"
-	"/*  Project homepage: https://github.com/docwire/docwire                                                                                     */\n"
-	"/*                                                                                                                                           */\n"
-	"/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */\n"
-	"/*********************************************************************************************************************************************/\n"
-          ;
+	"DocWire SDK: Deterministic, auditable, and secure data processing in C++20.\n"
+	"On-premise by default. No compromises on computational speed.\n";
 }
 
 static void version()
