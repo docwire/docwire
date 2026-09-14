@@ -14,6 +14,7 @@
 
 #include "safety_policy.h"
 #include "chain_element.h"
+#include "audit.hpp"
 #include "xml_export.h"
 
 namespace docwire
@@ -23,16 +24,23 @@ namespace docwire
  * @brief A parser for generic XML documents.
  * @tparam safety_level The safety policy to use.
  */
-template <safety_policy safety_level = default_safety_level>
+template <safety_policy safety_level = default_safety_level,
+          typename auditor_type = docwire::audit::null_auditor>
 class DOCWIRE_XML_EXPORT xml_parser : public chain_element
 {
 public:
+	xml_parser() = default;
+	explicit xml_parser(auditor_type& auditor) : m_auditor(auditor) {}
+
 	/**
 	 * @brief Processes a message in the parsing chain.
 	 * @return The continuation status.
 	 */
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 	bool is_leaf() const override { return false; }
+
+private:
+	docwire::audit::handle<auditor_type> m_auditor;
 };
 
 } // namespace docwire

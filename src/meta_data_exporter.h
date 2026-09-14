@@ -18,7 +18,7 @@
 #include <sstream>
 #include "document_elements.h"
 #include "meta_data_writer.h"
-#include "log_scope.h"
+#include "audit.hpp"
 #include "data_source.h"
 #include "serialization_message.h"
 
@@ -28,10 +28,15 @@ namespace docwire
 /**
  * @brief Exports meta data only to plain text format.
  */
+template<typename auditor_type = docwire::audit::null_auditor>
 class metadata_exporter : public chain_element
 {
 public:
   metadata_exporter() = default;
+
+  explicit metadata_exporter(auditor_type& auditor)
+    : m_auditor(auditor)
+  {}
 
 	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 
@@ -43,11 +48,13 @@ public:
 private:
   std::shared_ptr<std::stringstream> m_stream;
   metadata_writer m_writer;
+  docwire::audit::handle<auditor_type> m_auditor;
 };
 
-inline continuation metadata_exporter::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+inline continuation metadata_exporter<auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	DOCWIRE_LOG_SCOPE(msg);
+	docwire::audit::scope _{m_auditor, msg};
 	if (msg->is<std::exception_ptr>())
 		return emit_message(std::move(msg));
 	if (msg->is<document::document>() || !m_stream)

@@ -14,23 +14,30 @@
 
 #include "html_export.h"
 #include "chain_element.h"
+#include "audit.hpp"
 #include "pimpl.h"
 
 namespace docwire
 {
-class DOCWIRE_HTML_EXPORT html_parser : public chain_element, public with_pimpl<html_parser>
+template<typename auditor_type = docwire::audit::null_auditor>
+class DOCWIRE_HTML_EXPORT html_parser : public chain_element, public with_pimpl<html_parser<auditor_type>>
 {
 	private:
-		using with_pimpl<html_parser>::impl;
+		using with_pimpl<html_parser<auditor_type>>::impl;
 		friend pimpl_impl<html_parser>;
 
 	public:
 
-		html_parser();
+		html_parser() requires std::same_as<auditor_type, docwire::audit::null_auditor>;
+		explicit html_parser(auditor_type& auditor);
+
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).
 		void skipCharsetDecoding();
+
+	private:
+		docwire::audit::handle<auditor_type> m_auditor;
 };
 
 } // namespace docwire

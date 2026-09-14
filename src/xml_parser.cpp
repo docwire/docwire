@@ -11,10 +11,10 @@
 
 #include "xml_parser.h"
 
+#include "audit.hpp"
+#include "audit/legacy_log_audit.hpp"
 #include "data_source.h"
 #include "document_elements.h"
-#include "log_entry.h"
-#include "log_scope.h"
 #include "make_error.h"
 #include "serialization_message.h" // IWYU pragma: keep
 #include "xml_children.h"
@@ -24,10 +24,12 @@ namespace docwire
 
 namespace
 {
-template<safety_policy safety_level>
-void parseXmlData(const message_callbacks& emit_message, xml::children_view<safety_level> view)
+template<safety_policy safety_level, typename auditor_type>
+void parseXmlData(docwire::audit::handle<auditor_type> auditor,
+                  const message_callbacks& emit_message,
+                  xml::children_view<safety_level> view)
 {
-	log::scope _{};
+	docwire::audit::scope _{auditor};
 	for (auto node: view)
 	{
 		std::string_view tag_name = node.name();
@@ -43,7 +45,7 @@ void parseXmlData(const message_callbacks& emit_message, xml::children_view<safe
 		{
 			if (full_tag_name == "w:p")
 				emit_message(document::paragraph{});
-			parseXmlData(emit_message, children(node));
+			parseXmlData(auditor, emit_message, children(node));
 			if (full_tag_name == "w:p")
 				emit_message(document::close_paragraph{});
 			else if (full_tag_name == "w:tab")
@@ -60,10 +62,10 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-template <safety_policy safety_level>
-continuation xml_parser<safety_level>::operator()(message_ptr msg, const message_callbacks& emit_message)
+template <safety_policy safety_level, typename auditor_type>
+continuation xml_parser<safety_level, auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	log::scope _{ "msg"_v = msg };
+	docwire::audit::scope _{m_auditor, "msg"_v = msg};
 
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
@@ -74,12 +76,12 @@ continuation xml_parser<safety_level>::operator()(message_ptr msg, const message
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 		return emit_message(std::move(msg));
 
-	log_entry();
+	docwire::audit::entry(m_auditor);
 	try
 	{
 		emit_message(document::document{});
 		xml::reader<safety_level> reader(data.string_view()); // Correctly uses the non-owning constructor
-		parseXmlData(emit_message, children(reader));
+		parseXmlData(m_auditor, emit_message, children(reader));
 		emit_message(document::close_document{});
 	}
 	catch (const std::exception& e)
@@ -89,7 +91,9 @@ continuation xml_parser<safety_level>::operator()(message_ptr msg, const message
 	return continuation::proceed;
 }
 
-template class DOCWIRE_XML_EXPORT xml_parser<strict>;
-template class DOCWIRE_XML_EXPORT xml_parser<relaxed>;
+template class DOCWIRE_XML_EXPORT xml_parser<strict, docwire::audit::null_auditor>;
+template class DOCWIRE_XML_EXPORT xml_parser<relaxed, docwire::audit::null_auditor>;
+template class DOCWIRE_XML_EXPORT xml_parser<strict, docwire::audit::legacy_log_audit>;
+template class DOCWIRE_XML_EXPORT xml_parser<relaxed, docwire::audit::legacy_log_audit>;
 
 } // namespace docwire
