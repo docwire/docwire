@@ -25,6 +25,7 @@
 #ifdef DOCWIRE_LLAMA
 #include "llama_runner.h"
 #include "model_inference_config.h"
+#include "llama_models.h"
 #endif
 #ifdef DOCWIRE_LOCAL_AI
 #include "local_ai_summarize.h"

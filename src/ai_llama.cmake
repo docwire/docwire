@@ -1,7 +1,7 @@
 
 message(STATUS "DOCWIRE_LLAMA enabled: building llama backend")
 
-add_library(docwire_ai_llama SHARED llama_runner.cpp)
+add_library(docwire_ai_llama SHARED llama_runner.cpp llama_models.cpp)
 
 find_package(llama CONFIG REQUIRED)
 
