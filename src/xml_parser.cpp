@@ -45,7 +45,7 @@ void parseXmlData(docwire::audit::handle<auditor_type> auditor,
 		{
 			if (full_tag_name == "w:p")
 				emit_message(document::paragraph{});
-			parseXmlData(auditor, emit_message, children(node));
+			parseXmlData(auditor, emit_message, children(node, auditor));
 			if (full_tag_name == "w:p")
 				emit_message(document::close_paragraph{});
 			else if (full_tag_name == "w:tab")
@@ -81,7 +81,7 @@ continuation xml_parser<safety_level, auditor_type>::operator()(message_ptr msg,
 	{
 		emit_message(document::document{});
 		xml::reader<safety_level> reader(data.string_view()); // Correctly uses the non-owning constructor
-		parseXmlData(m_auditor, emit_message, children(reader));
+		parseXmlData(m_auditor, emit_message, children(reader, m_auditor));
 		emit_message(document::close_document{});
 	}
 	catch (const std::exception& e)

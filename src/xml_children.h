@@ -13,7 +13,7 @@
 #define DOCWIRE_XML_CHILDREN_VIEW_H
 
 #include "xml_descendants.h"
-#include "log_scope.h"
+#include "audit.hpp"
 #include <ranges>
 #include "xml_node_ref.h"
 
@@ -28,14 +28,15 @@ namespace docwire::xml
  * @sa descendants_view
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
-template <safety_policy safety_level = default_safety_level>
+template <safety_policy safety_level = default_safety_level,
+          typename auditor_type = docwire::audit::null_auditor>
 class children_view : public std::ranges::view_base
 {
 public:
     class iterator;
     iterator begin() const
     {
-        return iterator{m_state, m_depth};
+        return iterator{m_state, m_depth, m_auditor};
     }
     sentinel end() const
     {
@@ -47,21 +48,23 @@ public:
      * @param state The shared iterator state.
      * @param depth The target depth for children.
      */
-    explicit children_view(not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> state, int depth)
-        : m_state(std::move(state)), m_depth(depth) {}
+    explicit children_view(not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> state, int depth,
+                           docwire::audit::handle<auditor_type> auditor)
+        : m_state(std::move(state)), m_depth(depth), m_auditor(auditor) {}
 
 private:
 	not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> m_state;
 	int m_depth;
+	docwire::audit::handle<auditor_type> m_auditor;
 };
 
 /**
  * @brief Iterator for traversing direct child nodes.
  */
-template <safety_policy safety_level>
-class children_view<safety_level>::iterator final
+template <safety_policy safety_level, typename auditor_type>
+class children_view<safety_level, auditor_type>::iterator final
 {
-	friend class children_view<safety_level>;
+	friend class children_view<safety_level, auditor_type>;
 
 public:
     using iterator_concept  = std::input_iterator_tag;
@@ -77,7 +80,7 @@ public:
 
     iterator& operator++()
     {
-        log::scope _{ "depth"_v = m_depth };
+        docwire::audit::scope _{m_auditor, "depth"_v = m_depth};
         ++m_desc_iter;
         find_next_child();
         return *this;
@@ -89,8 +92,10 @@ public:
     }
 
 private:
-    explicit iterator(not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> state, int depth)
-        : m_depth{depth}, m_desc_iter(descendants_view<safety_level>{state, m_depth - 1}.begin())
+    explicit iterator(not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> state, int depth,
+                      docwire::audit::handle<auditor_type> auditor)
+        : m_depth{depth}, m_desc_iter(descendants_view<safety_level>{state, m_depth - 1}.begin()),
+          m_auditor(auditor)
     {
         find_next_child();
     }
@@ -106,6 +111,7 @@ private:
 
     int m_depth;
     typename descendants_view<safety_level>::iterator m_desc_iter;
+    docwire::audit::handle<auditor_type> m_auditor;
 };
 
 /**
@@ -115,10 +121,17 @@ private:
  * @warning This function relies on a single-pass XML reader.
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
-template<safety_policy safety_level>
-children_view<safety_level> children(const node_ref<safety_level>& node)
+template<safety_policy safety_level, typename auditor_type>
+children_view<safety_level, auditor_type> children(const node_ref<safety_level>& node,
+                                                   docwire::audit::handle<auditor_type> auditor)
 {
-    return children_view<safety_level>{node.state(), node.depth() + 1};
+    return children_view<safety_level, auditor_type>{node.state(), node.depth() + 1, auditor};
+}
+
+template<safety_policy safety_level>
+children_view<safety_level, docwire::audit::null_auditor> children(const node_ref<safety_level>& node)
+{
+    return children(node, docwire::audit::handle<docwire::audit::null_auditor>{});
 }
 
 /**
@@ -128,10 +141,17 @@ children_view<safety_level> children(const node_ref<safety_level>& node)
  * @warning This function relies on a single-pass XML reader.
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
-template<safety_policy safety_level>
-children_view<safety_level> children(reader<safety_level>& reader)
+template<safety_policy safety_level, typename auditor_type>
+children_view<safety_level, auditor_type> children(reader<safety_level>& reader,
+                                                   docwire::audit::handle<auditor_type> auditor)
 {
-    return children_view<safety_level>{std::make_shared<iterator_state<safety_level>>(reader), 0};
+    return children_view<safety_level, auditor_type>{std::make_shared<iterator_state<safety_level>>(reader), 0, auditor};
+}
+
+template<safety_policy safety_level>
+children_view<safety_level, docwire::audit::null_auditor> children(reader<safety_level>& reader)
+{
+    return children(reader, docwire::audit::handle<docwire::audit::null_auditor>{});
 }
 
 }
