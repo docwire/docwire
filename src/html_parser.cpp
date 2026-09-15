@@ -520,7 +520,7 @@ void pimpl_impl<html_parser<auditor_type>>::parse_document(const std::string& ht
 		{
 			.metadata = [this, head]()
 			{
-				audit::entry{auditor(), []{ return "Extracting metadata."; }};
+				audit::entry(auditor(), []{ return "Extracting metadata."; });
 				if (!m_context_stack.top().head_parsed)
 				{
 					m_context_stack.top().in_metadata = true;
@@ -586,13 +586,13 @@ void pimpl_impl<html_parser<auditor_type>>::process_text(const lxb_dom_node_t* n
 	audit::scope audit_scope{auditor(), audit::no_context};
 	if (m_context_stack.top().in_head && !m_context_stack.top().in_style)
 	{
-		audit::entry{auditor(), audit::no_context};
+		audit::entry(auditor(), audit::no_context);
 		return;
 	}
     const lxb_char_t* data = lxb_dom_node_text_content(const_cast<lxb_dom_node_t*>(node), nullptr);
     if (data == nullptr)
 	{
-		audit::entry{auditor(), audit::no_context};
+		audit::entry(auditor(), audit::no_context);
 		return;
 	}
     std::string text((const char*)data);
@@ -612,16 +612,16 @@ void pimpl_impl<html_parser<auditor_type>>::process_text(const lxb_dom_node_t* n
 		static const std::regex whitespaces_regex(R"(\s+)");
 		text = std::regex_replace(text, whitespaces_regex, " ");
 	}
-	docwire::audit::entry{auditor(), [&]{ return "text"_v = text; }};
+	docwire::audit::entry(auditor(), [&]{ return "text"_v = text; });
 	bool last_char_was_space = isspace((unsigned char)m_context_stack.top().last_char_in_inline_formatting_context);
-	docwire::audit::entry{auditor(), [&]{ return "last_char_was_space"_v = last_char_was_space; }};
+	docwire::audit::entry(auditor(), [&]{ return "last_char_was_space"_v = last_char_was_space; });
 	// Reduce whitespaces between text nodes (end of previous and beginning of current.
 	// Remove whitespaces from beginning of inline formatting context.
 	if (last_char_was_space || m_context_stack.top().last_char_in_inline_formatting_context == '\0')
 	{
 		docwire::audit::scope trim_audit_scope{auditor(), audit::no_context};
 		boost::trim_left(text);
-		docwire::audit::entry{auditor(), [&]{ return "text"_v = text; }};
+		docwire::audit::entry(auditor(), [&]{ return "text"_v = text; });
 	}
 	if (!text.empty())
 	{

@@ -6,13 +6,16 @@
 #include "meta_data_exporter.h"
 #include "named.h"
 #include "source_location.h"
+#include "stringification.h"
 #include "xml_parser.h"
 
 #include <gtest/gtest.h>
+#include <memory>
 #include <sstream>
+#include <string>
 #include <string_view>
 #include <type_traits>
-#include <memory>
+#include <vector>
 
 using namespace docwire;
 
@@ -23,12 +26,14 @@ struct recording_auditor
 {
     int record_count = 0;
     docwire::source_location last_location;
+    std::vector<std::string> values;
 
     template<typename... Args>
-    void record(docwire::source_location location, Args&&...)
+    void record(docwire::source_location location, Args&&... args)
     {
         ++record_count;
         last_location = location;
+        (values.push_back(stringify(std::forward<Args>(args))), ...);
     }
 };
 
@@ -42,16 +47,19 @@ struct non_empty_auditor
 TEST(AuditEntry, NullAuditorDoesNothing)
 {
     audit::null_auditor auditor;
-    audit::entry(auditor, []{ return std::make_tuple(42, "text"); });
+    audit::entry(auditor, []{ return "text"; });
     SUCCEED();
 }
 
 TEST(AuditEntry, RecordsUsingNonEmptyAuditor)
 {
     recording_auditor auditor;
-    audit::entry(auditor, []{ return std::make_tuple(42, "text"); });
+    int value = 42;
+    audit::entry(auditor, [&]{ return "value"_v = value; });
 
     EXPECT_EQ(auditor.record_count, 1);
+    ASSERT_EQ(auditor.values.size(), 1);
+    EXPECT_EQ(auditor.values[0], "value: 42");
     EXPECT_NE(std::string_view(auditor.last_location.function_name()).find("TestBody"),
               std::string_view::npos);
 }
@@ -59,9 +67,11 @@ TEST(AuditEntry, RecordsUsingNonEmptyAuditor)
 TEST(AuditEntry, StringLiteralContext)
 {
     recording_auditor auditor;
-    audit::entry{auditor, []{ return "plain string literal"; }};
+    audit::entry(auditor, []{ return "plain string literal"; });
 
     EXPECT_EQ(auditor.record_count, 1);
+    ASSERT_EQ(auditor.values.size(), 1);
+    EXPECT_EQ(auditor.values[0], "plain string literal");
     EXPECT_NE(std::string_view(auditor.last_location.function_name()).find("TestBody"),
               std::string_view::npos);
 }
@@ -72,18 +82,21 @@ TEST(AuditEntry, MultipleNamedValuesUsingCommaOperator)
     int a = 1;
     int b = 2;
 
-    audit::entry{auditor, [&]{
+    audit::entry(auditor, [&]{
         return "a"_v = a, "b"_v = b;
-    }};
+    });
 
     EXPECT_EQ(auditor.record_count, 1);
+    ASSERT_EQ(auditor.values.size(), 2);
+    EXPECT_EQ(auditor.values[0], "a: 1");
+    EXPECT_EQ(auditor.values[1], "b: 2");
 }
 
 TEST(AuditScope, RecordsEnterAndExit)
 {
     recording_auditor auditor;
     {
-        audit::scope _{auditor, []{ return std::make_tuple("scope_variable"_v = 123); }};
+        audit::scope audit_scope{auditor, []{ return "scope_variable"_v = 123; }};
         EXPECT_EQ(auditor.record_count, 1);
         EXPECT_NE(std::string_view(auditor.last_location.function_name()).find("TestBody"),
                   std::string_view::npos);

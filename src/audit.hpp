@@ -114,41 +114,23 @@ protected:
     const auditor_type& auditor() const noexcept { return auditor_ref<auditor_type>::auditor(); }
 };
 
-template<typename auditor_type, typename context_fn_type>
-class entry
+template<typename auditor_type, std::invocable<> context_fn_type>
+void entry(auditor_ref<auditor_type> auditor, context_fn_type&& context_fn,
+           source_location location = source_location::current())
 {
-    static_assert(auditor<auditor_type>);
-
-public:
-    entry(auditor_ref<auditor_type> auditor, context_fn_type&& context_fn,
-          source_location location = source_location::current())
-        : m_auditor(auditor),
-          m_location(location)
+    if constexpr (!std::is_same_v<auditor_type, null_auditor>)
     {
-        detail::record_context(m_auditor.auditor(), m_location,
+        detail::record_context(auditor.auditor(), location,
                                std::forward<context_fn_type>(context_fn)());
     }
+}
 
-    entry(const entry&) = delete;
-    entry& operator=(const entry&) = delete;
-
-private:
-    auditor_ref<auditor_type> m_auditor;
-    source_location m_location;
-};
-
-template<typename context_fn_type>
-class entry<null_auditor, context_fn_type>
+template<auditor auditor_type, std::invocable<> context_fn_type>
+void entry(auditor_type& auditor, context_fn_type&& context_fn,
+           source_location location = source_location::current())
 {
-public:
-    constexpr entry(auditor_ref<null_auditor>, context_fn_type&&, source_location = source_location::current()) noexcept {}
-};
-
-template<typename auditor_type, typename context_fn_type>
-entry(auditor_ref<auditor_type>, context_fn_type&&) -> entry<auditor_type, context_fn_type>;
-
-template<auditor auditor_type, typename context_fn_type>
-entry(auditor_type&, context_fn_type&&) -> entry<auditor_type, context_fn_type>;
+    entry(auditor_ref<auditor_type>(auditor), std::forward<context_fn_type>(context_fn), location);
+}
 
 template<typename auditor_type, typename context_fn_type>
 class scope
