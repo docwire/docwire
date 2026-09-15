@@ -31,8 +31,7 @@ class DOCWIRE_HTML_EXPORT html_parser
 
 	public:
 
-		html_parser() requires std::same_as<auditor_type, audit::null_auditor>;
-		explicit html_parser(auditor_type& auditor);
+		explicit html_parser(audit::holder<auditor_type> auditor = {});
 
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }

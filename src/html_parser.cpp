@@ -395,7 +395,7 @@ struct pimpl_impl<html_parser<auditor_type>> : pimpl_impl_base, private audit::h
 	using auditor_type_t = auditor_type;
 
 	pimpl_impl() = default;
-	explicit pimpl_impl(auditor_type& auditor) : audit::holder<auditor_type>(auditor) {}
+	explicit pimpl_impl(audit::holder<auditor_type> auditor) : audit::holder<auditor_type>(auditor) {}
 
 	template <typename T>
 	continuation emit_message(T&& object) const
@@ -892,14 +892,7 @@ void pimpl_impl<html_parser<auditor_type>>::process_tag(const lxb_dom_node_t* no
 }
 
 template<typename auditor_type>
-requires std::same_as<auditor_type, docwire::audit::null_auditor>
-html_parser<auditor_type>::html_parser()
-    : with_pimpl<html_parser<auditor_type>>()
-{
-}
-
-template<typename auditor_type>
-html_parser<auditor_type>::html_parser(auditor_type& auditor)
+html_parser<auditor_type>::html_parser(audit::holder<auditor_type> auditor)
     : with_pimpl<html_parser<auditor_type>>(auditor),
       audit::holder<auditor_type>(auditor)
 {

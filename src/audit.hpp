@@ -29,7 +29,7 @@ template<typename Auditor>
 class holder
 {
 public:
-    constexpr explicit holder(Auditor& auditor) noexcept
+    constexpr holder(Auditor& auditor) noexcept
         : m_ptr(&auditor)
     {}
 

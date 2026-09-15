@@ -29,8 +29,9 @@ template <safety_policy safety_level = default_safety_level,
 class DOCWIRE_XML_EXPORT xml_parser : public chain_element, private audit::holder<auditor_type>
 {
 public:
-	xml_parser() = default;
-	explicit xml_parser(auditor_type& auditor) : audit::holder<auditor_type>(auditor) {}
+	explicit xml_parser(audit::holder<auditor_type> auditor = {})
+		: audit::holder<auditor_type>(auditor)
+	{}
 
 	/**
 	 * @brief Processes a message in the parsing chain.

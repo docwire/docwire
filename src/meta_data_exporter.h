@@ -32,9 +32,7 @@ template<typename auditor_type = audit::null_auditor>
 class metadata_exporter : public chain_element, private audit::holder<auditor_type>
 {
 public:
-  metadata_exporter() = default;
-
-  explicit metadata_exporter(auditor_type& auditor)
+  explicit metadata_exporter(audit::holder<auditor_type> auditor = {})
     : audit::holder<auditor_type>(auditor)
   {}
 
