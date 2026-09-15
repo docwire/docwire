@@ -121,6 +121,20 @@ TEST(AuditEntry, MultipleNamedValuesUsingCommaOperator)
     EXPECT_EQ(auditor.values[1], "b: 2");
 }
 
+TEST(AuditEntry, WithPrecedingTag)
+{
+    recording_auditor auditor;
+    bool evaluated = false;
+
+    audit::entry(auditor, log::audit{}, [&] {
+        evaluated = true;
+        return "value"_v = 7;
+    });
+
+    EXPECT_TRUE(evaluated);
+    EXPECT_EQ(auditor.record_count, 1);
+}
+
 TEST(AuditScope, RecordsEnterAndExit)
 {
     recording_auditor auditor;
@@ -153,7 +167,7 @@ TEST(LegacyLogAudit, SerializesSharedPtr)
         log::set_filter("*");
 
         audit::legacy_log_audit legacy;
-        legacy.record(source_location::current(), std::make_shared<int>(42));
+        legacy.record(source_location::current(), []{ return std::make_shared<int>(42); });
     }
 
     std::string output = log_stream.str();

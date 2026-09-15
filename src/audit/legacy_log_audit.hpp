@@ -10,6 +10,7 @@ namespace docwire::audit
 struct legacy_log_audit
 {
     template<typename... Args>
+    requires audit::detail::record_args_valid<Args...>
     void record(source_location location, Args&&... args)
     {
         constexpr auto tags = docwire::log::detail::collect_tags<Args...>();

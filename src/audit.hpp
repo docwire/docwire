@@ -1,6 +1,7 @@
 #ifndef DOCWIRE_AUDIT_H
 #define DOCWIRE_AUDIT_H
 
+#include "diagnostic_context.h"
 #include "log_tags.h"
 #include "source_location.h"
 
@@ -25,8 +26,16 @@ concept auditor = requires(A& a, source_location loc)
     { a.record(loc) } -> std::same_as<void>;
 };
 
+template<typename T>
+concept audit_tag = docwire::context_tag<T>;
+
 namespace detail
 {
+
+template <typename... Args>
+concept record_args_valid =
+    (1 == (std::invocable<std::decay_t<Args>> + ... + 0)) &&
+    ((std::invocable<std::decay_t<Args>> || audit_tag<std::decay_t<Args>>) && ...);
 
 template <typename T>
 struct is_std_tuple : std::false_type {};
@@ -114,18 +123,23 @@ protected:
     const auditor_type& auditor() const noexcept { return auditor_ref<auditor_type>::auditor(); }
 };
 
-template<typename auditor_type, std::invocable<> context_fn_type>
-void entry(auditor_ref<auditor_type> auditor, context_fn_type&& context_fn,
+template<typename auditor_type, audit_tag... tag_type, std::invocable<> context_fn_type>
+void entry(auditor_ref<auditor_type> auditor,
+           tag_type... tags,
+           context_fn_type&& context_fn,
            source_location location = source_location::current())
 {
-    auditor.auditor().record(location, std::forward<context_fn_type>(context_fn));
+    auditor.auditor().record(location, tags..., std::forward<context_fn_type>(context_fn));
 }
 
-template<auditor auditor_type, std::invocable<> context_fn_type>
-void entry(auditor_type& auditor, context_fn_type&& context_fn,
+template<auditor auditor_type, audit_tag... tag_type, std::invocable<> context_fn_type>
+void entry(auditor_type& auditor,
+           tag_type... tags,
+           context_fn_type&& context_fn,
            source_location location = source_location::current())
 {
-    entry(auditor_ref<auditor_type>(auditor), std::forward<context_fn_type>(context_fn), location);
+    entry(auditor_ref<auditor_type>(auditor), tags...,
+          std::forward<context_fn_type>(context_fn), location);
 }
 
 template<typename auditor_type, typename context_fn_type>
