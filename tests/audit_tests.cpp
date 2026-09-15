@@ -71,6 +71,11 @@ struct non_empty_auditor
     int state = 0;
 };
 
+struct audit_test_tag
+{
+    static constexpr std::string_view string() { return "audit_test_tag"; }
+};
+
 } // namespace
 
 TEST(AuditEntry, NullAuditorDoesNothing)
@@ -126,7 +131,7 @@ TEST(AuditEntry, WithPrecedingTag)
     recording_auditor auditor;
     bool evaluated = false;
 
-    audit::entry(auditor, log::audit{}, [&] {
+    audit::entry(auditor, audit_test_tag{}, [&] {
         evaluated = true;
         return "value"_v = 7;
     });
