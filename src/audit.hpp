@@ -60,6 +60,13 @@ void entry(holder<Auditor> auditor, Args&&... args,
     auditor.auditor().record(location, std::forward<Args>(args)...);
 }
 
+template<auditor Auditor, typename... Args>
+void entry(Auditor& auditor, Args&&... args,
+           source_location location = source_location::current())
+{
+    entry(holder<Auditor>(auditor), std::forward<Args>(args)..., location);
+}
+
 template<typename Auditor, typename... Args>
 class scope
 {
@@ -100,6 +107,9 @@ public:
 
 template<typename Auditor, typename... Args>
 scope(holder<Auditor>, Args&&...) -> scope<Auditor, Args...>;
+
+template<auditor Auditor, typename... Args>
+scope(Auditor&, Args&&...) -> scope<Auditor, Args...>;
 
 } // namespace docwire::audit
 

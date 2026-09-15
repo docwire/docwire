@@ -484,12 +484,13 @@ template<typename auditor_type>
 void pimpl_impl<html_parser<auditor_type>>::parse_document(const std::string& html_content_arg, const message_callbacks& emit_message)
 {
 	audit::scope _{auditor()};
+	auto auditor_holder = audit::holder<auditor_type>{auditor()};
 	std::string html_content = html_content_arg;
 	if (!m_skip_decoding)
 	{
 		try
 		{
-			ensure_html_utf8_encoding(auditor(), html_content);
+			ensure_html_utf8_encoding(auditor_holder, html_content);
 		}
 		catch (std::exception&)
 		{
@@ -507,7 +508,7 @@ void pimpl_impl<html_parser<auditor_type>>::parse_document(const std::string& ht
 	throw_if(lxb_html_document_parse(document.get(), (const lxb_char_t *)html_content.data(), html_content.size()) != LXB_STATUS_OK,
 		"Failed to parse HTML document");
 
-	fix_dom(auditor(), lxb_dom_interface_node(document.get()));
+	fix_dom(auditor_holder, lxb_dom_interface_node(document.get()));
 
 	lxb_dom_node_t* head = lxb_dom_interface_node(lxb_html_document_head_element(document.get()));
 	const lxb_char_t* head_text;
@@ -596,34 +597,34 @@ void pimpl_impl<html_parser<auditor_type>>::process_text(const lxb_dom_node_t* n
     std::string text((const char*)data);
 	if (m_context_stack.top().in_style)
 	{
-		docwire::audit::scope _{m_auditor};
+		docwire::audit::scope _{auditor()};
 		m_context_stack.top().style_text += text;
-		docwire::audit::entry(m_auditor);
+		docwire::audit::entry(auditor());
 		return;
 	}
 	// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace#what_is_whitespace
 	// Convert all whitespaces into spaces and reduce all adjacent spaces into a single space
 	{
-		docwire::audit::scope _{m_auditor};
+		docwire::audit::scope _{auditor()};
 		static std::mutex whitespaces_regex_mutex;
 		std::lock_guard<std::mutex> whitespaces_regex_mutex_lock(whitespaces_regex_mutex);
 		static const std::regex whitespaces_regex(R"(\s+)");
 		text = std::regex_replace(text, whitespaces_regex, " ");
 	}
-	docwire::audit::entry(m_auditor, text);
+	docwire::audit::entry(auditor(), text);
 	bool last_char_was_space = isspace((unsigned char)m_context_stack.top().last_char_in_inline_formatting_context);
-	docwire::audit::entry(m_auditor, last_char_was_space);
+	docwire::audit::entry(auditor(), last_char_was_space);
 	// Reduce whitespaces between text nodes (end of previous and beginning of current.
 	// Remove whitespaces from beginning of inline formatting context.
 	if (last_char_was_space || m_context_stack.top().last_char_in_inline_formatting_context == '\0')
 	{
-		docwire::audit::scope _{m_auditor};
+		docwire::audit::scope _{auditor()};
 		boost::trim_left(text);
-		docwire::audit::entry(m_auditor, text);
+		docwire::audit::entry(auditor(), text);
 	}
 	if (!text.empty())
 	{
-		docwire::audit::scope _{m_auditor};
+		docwire::audit::scope _{auditor()};
 		m_context_stack.top().last_char_in_inline_formatting_context = text.back();
 		// buffer text because whitespaces from end of inline formatting context should be removed.
 		m_context_stack.top().buffered_text += text;
