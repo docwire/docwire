@@ -74,7 +74,7 @@ attributes::styling html_node_styling(const lxb_dom_node_t* node)
 template<typename auditor_type>
 void convert_to_utf8(audit::auditor_ref<auditor_type> auditor, std::string& text, const std::string& charset)
 {
-	audit::scope audit_scope{auditor, [&]{ return std::make_tuple(charset); }};
+	audit::scope audit_scope{auditor, [&]{ return "charset"_v = charset; }};
 	if (boost::iequals(charset, "utf-8"))
 		return;
 	charset_converter converter(charset, "UTF-8");
@@ -208,7 +208,7 @@ void ensure_html_utf8_encoding(audit::auditor_ref<auditor_type> auditor, std::st
 	{
 		std::throw_with_nested(make_error("Cannot convert charset", *charset));
 	}
-	audit::entry{auditor, [&]{ return std::make_tuple(html_content); }};
+	audit::entry{auditor, [&]{ return "html_content"_v = html_content; }};
 }
 
 template<typename auditor_type>
@@ -222,7 +222,7 @@ void move_child_node_to_parent(audit::auditor_ref<auditor_type> auditor, lxb_dom
 template<typename auditor_type>
 void fix_dom_in_table_insertion_mode(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
 {
-	audit::scope audit_scope{auditor, [&]{ return std::make_tuple(child_tag_id); }};
+	audit::scope audit_scope{auditor, [&]{ return "child_tag_id"_v = child_tag_id; }};
 	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intable
 	if (child_tag_id == LXB_TAG_CAPTION)
 	{
@@ -261,7 +261,7 @@ void fix_dom_in_table_insertion_mode(audit::auditor_ref<auditor_type> auditor, l
 template<typename auditor_type>
 void fix_dom_in_table_body_insertion_mode(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
 {
-	audit::scope audit_scope{auditor, [&]{ return std::make_tuple(child_tag_id); }};
+	audit::scope audit_scope{auditor, [&]{ return "child_tag_id"_v = child_tag_id; }};
 	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intbody
 	if (child_tag_id == LXB_TAG_TR)
 	{
@@ -286,7 +286,7 @@ void fix_dom_in_table_body_insertion_mode(audit::auditor_ref<auditor_type> audit
 template<typename auditor_type>
 void fix_dom_in_table_row_insertion_mode(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
 {
-	audit::scope audit_scope{auditor, [&]{ return std::make_tuple(child_tag_id); }};
+	audit::scope audit_scope{auditor, [&]{ return "child_tag_id"_v = child_tag_id; }};
 	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intr
 	if (child_tag_id == LXB_TAG_TH || child_tag_id == LXB_TAG_TD)
 	{
@@ -520,7 +520,7 @@ void pimpl_impl<html_parser<auditor_type>>::parse_document(const std::string& ht
 		{
 			.metadata = [this, head]()
 			{
-				audit::entry{auditor(), [&]{ return std::make_tuple("Extracting metadata."); }};
+				audit::entry{auditor(), [&]{ return "message"_v = "Extracting metadata."; }};
 				if (!m_context_stack.top().head_parsed)
 				{
 					m_context_stack.top().in_metadata = true;
@@ -612,16 +612,16 @@ void pimpl_impl<html_parser<auditor_type>>::process_text(const lxb_dom_node_t* n
 		static const std::regex whitespaces_regex(R"(\s+)");
 		text = std::regex_replace(text, whitespaces_regex, " ");
 	}
-	docwire::audit::entry{auditor(), [&]{ return std::make_tuple(text); }};
+	docwire::audit::entry{auditor(), [&]{ return "text"_v = text; }};
 	bool last_char_was_space = isspace((unsigned char)m_context_stack.top().last_char_in_inline_formatting_context);
-	docwire::audit::entry{auditor(), [&]{ return std::make_tuple(last_char_was_space); }};
+	docwire::audit::entry{auditor(), [&]{ return "last_char_was_space"_v = last_char_was_space; }};
 	// Reduce whitespaces between text nodes (end of previous and beginning of current.
 	// Remove whitespaces from beginning of inline formatting context.
 	if (last_char_was_space || m_context_stack.top().last_char_in_inline_formatting_context == '\0')
 	{
 		docwire::audit::scope trim_audit_scope{auditor(), audit::no_context};
 		boost::trim_left(text);
-		docwire::audit::entry{auditor(), [&]{ return std::make_tuple(text); }};
+		docwire::audit::entry{auditor(), [&]{ return "text"_v = text; }};
 	}
 	if (!text.empty())
 	{
@@ -635,7 +635,7 @@ void pimpl_impl<html_parser<auditor_type>>::process_text(const lxb_dom_node_t* n
 template<typename auditor_type>
 void pimpl_impl<html_parser<auditor_type>>::process_tag(const lxb_dom_node_t* node, bool is_closing)
 {
-	audit::scope audit_scope{auditor(), [&]{ return std::make_tuple(is_closing); }};
+	audit::scope audit_scope{auditor(), [&]{ return "is_closing"_v = is_closing; }};
     const lxb_dom_element_t* element = lxb_dom_interface_element(node);
     lxb_tag_id_t tag_id = lxb_dom_element_tag_id(const_cast<lxb_dom_element_t*>(element));
 	if (!m_context_stack.top().buffered_text.empty())
@@ -903,7 +903,7 @@ html_parser<auditor_type>::html_parser(audit::auditor_ref<auditor_type> auditor)
 template<typename auditor_type>
 void pimpl_impl<html_parser<auditor_type>>::parse(const data_source& data, const message_callbacks& emit_message)
 {
-	audit::scope audit_scope{auditor(), [&]{ return std::make_tuple(data); }};
+	audit::scope audit_scope{auditor(), [&]{ return "data"_v = data; }};
 	std::string content = data.string();
 	parse_document(content, emit_message);
 	emit_message(document::close_document{});
@@ -912,7 +912,7 @@ void pimpl_impl<html_parser<auditor_type>>::parse(const data_source& data, const
 template<typename auditor_type>
 continuation html_parser<auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	audit::scope audit_scope{auditor(), [&]{ return std::make_tuple(msg); }};
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
 

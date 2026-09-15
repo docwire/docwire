@@ -80,7 +80,7 @@ public:
 
     iterator& operator++()
     {
-        audit::scope audit_scope{m_auditor, [&]{ return std::make_tuple("depth"_v = m_depth); }};
+        audit::scope audit_scope{m_auditor, [&]{ return "depth"_v = m_depth; }};
         ++m_desc_iter;
         find_next_child();
         return *this;

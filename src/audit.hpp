@@ -25,6 +25,52 @@ concept auditor = requires(A& a, source_location loc)
     { a.record(loc) } -> std::same_as<void>;
 };
 
+namespace detail
+{
+
+template <typename T>
+struct is_std_tuple : std::false_type {};
+
+template <typename... Args>
+struct is_std_tuple<std::tuple<Args...>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool is_std_tuple_v = is_std_tuple<T>::value;
+
+template <typename Auditor, typename Result>
+void record_context(Auditor& auditor, source_location location, Result&& result)
+{
+    using result_type = std::decay_t<Result>;
+
+    if constexpr (is_std_tuple_v<result_type>)
+    {
+        std::apply([&](auto&&... args) {
+            auditor.record(location, std::forward<decltype(args)>(args)...);
+        }, std::forward<Result>(result));
+    }
+    else
+    {
+        auditor.record(location, std::forward<Result>(result));
+    }
+}
+
+template <typename Result>
+auto normalize_context_tuple(Result&& result)
+{
+    using result_type = std::decay_t<Result>;
+
+    if constexpr (is_std_tuple_v<result_type>)
+    {
+        return std::forward<Result>(result);
+    }
+    else
+    {
+        return std::make_tuple(std::forward<Result>(result));
+    }
+}
+
+} // namespace detail
+
 /// @brief A no-op context provider for audit entries and scopes that carry no structured context.
 /// @note Using this guarantees that no context is evaluated or stored for the audit expression.
 inline constexpr auto no_context = []() noexcept -> std::tuple<> { return {}; };
@@ -79,9 +125,8 @@ public:
         : m_auditor(auditor),
           m_location(location)
     {
-        std::apply([&](const auto&... args) {
-            m_auditor.auditor().record(m_location, args...);
-        }, std::forward<context_fn_type>(context_fn)());
+        detail::record_context(m_auditor.auditor(), m_location,
+                               std::forward<context_fn_type>(context_fn)());
     }
 
     entry(const entry&) = delete;
@@ -108,13 +153,14 @@ entry(auditor_type&, context_fn_type&&) -> entry<auditor_type, context_fn_type>;
 template<typename auditor_type, typename context_fn_type>
 class scope
 {
-    using context_tuple_type = std::decay_t<std::invoke_result_t<context_fn_type&>>;
+    using context_result_type = std::decay_t<std::invoke_result_t<context_fn_type&>>;
+    using context_tuple_type = std::decay_t<decltype(detail::normalize_context_tuple(std::declval<context_result_type>()))>;
 
 public:
     scope(auditor_ref<auditor_type> auditor, context_fn_type&& context_fn,
           source_location location = source_location::current())
         : m_auditor(auditor),
-          m_args(std::forward<context_fn_type>(context_fn)()),
+          m_args(detail::normalize_context_tuple(std::forward<context_fn_type>(context_fn)())),
           m_location(location)
     {
         std::apply([&](const auto&... args) {

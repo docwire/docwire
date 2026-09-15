@@ -65,7 +65,7 @@ const std::vector<mime_type> supported_mime_types =
 template <safety_policy safety_level, typename auditor_type>
 continuation xml_parser<safety_level, auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	audit::scope audit_scope{auditor(), [&]{ return std::make_tuple("msg"_v = msg); }};
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
 
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
