@@ -65,19 +65,43 @@ protected:
 };
 
 template<typename auditor_type, typename... Args>
-void entry(auditor_ref<auditor_type> auditor_ref_handle, Args&&... args,
-           source_location location = source_location::current())
+class entry
 {
     static_assert(auditor<auditor_type>);
-    auditor_ref_handle.auditor().record(location, std::forward<Args>(args)...);
-}
+
+public:
+    entry(auditor_ref<auditor_type> auditor, Args&&... args,
+          source_location location = source_location::current())
+        : m_auditor(auditor),
+          m_args(std::forward<Args>(args)...),
+          m_location(location)
+    {
+        std::apply([&](const auto&... args) {
+            m_auditor.auditor().record(m_location, args...);
+        }, m_args);
+    }
+
+    entry(const entry&) = delete;
+    entry& operator=(const entry&) = delete;
+
+private:
+    auditor_ref<auditor_type> m_auditor;
+    std::tuple<std::decay_t<Args>...> m_args;
+    source_location m_location;
+};
+
+template<typename... Args>
+class entry<null_auditor, Args...>
+{
+public:
+    constexpr entry(auditor_ref<null_auditor>, Args&&..., source_location = source_location::current()) noexcept {}
+};
+
+template<typename auditor_type, typename... Args>
+entry(auditor_ref<auditor_type>, Args&&...) -> entry<auditor_type, Args...>;
 
 template<auditor auditor_type, typename... Args>
-void entry(auditor_type& auditor, Args&&... args,
-           source_location location = source_location::current())
-{
-    entry(auditor_ref<auditor_type>(auditor), std::forward<Args>(args)..., location);
-}
+entry(auditor_type&, Args&&...) -> entry<auditor_type, Args...>;
 
 template<typename auditor_type, typename... Args>
 class scope

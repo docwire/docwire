@@ -92,6 +92,12 @@ serialization::value to_log_value(const docwire::named::value<T>& p)
     return context_obj;
 }
 
+template<typename T>
+serialization::value to_log_value(const T& value)
+{
+    return serialization::typed_summary(value);
+}
+
 } // namespace detail
 
 namespace detail
