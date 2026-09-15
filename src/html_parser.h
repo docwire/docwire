@@ -27,6 +27,7 @@ class DOCWIRE_HTML_EXPORT html_parser
 {
 	private:
 		using with_pimpl<html_parser<auditor_type>>::impl;
+		using audit::with_auditor<auditor_type>::auditor;
 		friend pimpl_impl<html_parser>;
 
 	public:

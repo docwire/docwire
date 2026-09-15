@@ -393,6 +393,7 @@ template<typename auditor_type>
 struct pimpl_impl<html_parser<auditor_type>> : pimpl_impl_base, private audit::with_auditor<auditor_type>
 {
 	using auditor_type_t = auditor_type;
+	using audit::with_auditor<auditor_type>::auditor;
 
 	pimpl_impl() = default;
 	explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor) : audit::with_auditor<auditor_type>(auditor) {}

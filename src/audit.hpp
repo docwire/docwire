@@ -65,11 +65,11 @@ protected:
 };
 
 template<typename Auditor, typename... Args>
-void entry(auditor_ref<Auditor> auditor, Args&&... args,
+void entry(auditor_ref<Auditor> auditor_ref_handle, Args&&... args,
            source_location location = source_location::current())
 {
     static_assert(auditor<Auditor>);
-    auditor.auditor().record(location, std::forward<Args>(args)...);
+    auditor_ref_handle.auditor().record(location, std::forward<Args>(args)...);
 }
 
 template<auditor Auditor, typename... Args>

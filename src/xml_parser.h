@@ -28,6 +28,7 @@ template <safety_policy safety_level = default_safety_level,
           typename auditor_type = audit::null_auditor>
 class DOCWIRE_XML_EXPORT xml_parser : public chain_element, private audit::with_auditor<auditor_type>
 {
+    using audit::with_auditor<auditor_type>::auditor;
 public:
 	explicit xml_parser(audit::auditor_ref<auditor_type> auditor = {})
 		: audit::with_auditor<auditor_type>(auditor)

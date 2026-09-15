@@ -31,6 +31,7 @@ namespace docwire
 template<typename auditor_type = audit::null_auditor>
 class metadata_exporter : public chain_element, private audit::with_auditor<auditor_type>
 {
+    using audit::with_auditor<auditor_type>::auditor;
 public:
   explicit metadata_exporter(audit::auditor_ref<auditor_type> auditor = {})
     : audit::with_auditor<auditor_type>(auditor)
