@@ -76,7 +76,7 @@ continuation xml_parser<safety_level, auditor_type>::operator()(message_ptr msg,
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 		return emit_message(std::move(msg));
 
-	audit::entry(auditor());
+	audit::entry{auditor()};
 	try
 	{
 		emit_message(document::document{});

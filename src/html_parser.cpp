@@ -208,7 +208,7 @@ void ensure_html_utf8_encoding(audit::auditor_ref<auditor_type> auditor, std::st
 	{
 		std::throw_with_nested(make_error("Cannot convert charset", *charset));
 	}
-	audit::entry(auditor, html_content);
+	audit::entry{auditor, html_content};
 }
 
 template<typename auditor_type>
@@ -520,7 +520,7 @@ void pimpl_impl<html_parser<auditor_type>>::parse_document(const std::string& ht
 		{
 			.metadata = [this, head]()
 			{
-				audit::entry(auditor(), "Extracting metadata.");
+				audit::entry{auditor(), "Extracting metadata."};
 				if (!m_context_stack.top().head_parsed)
 				{
 					m_context_stack.top().in_metadata = true;
@@ -586,13 +586,13 @@ void pimpl_impl<html_parser<auditor_type>>::process_text(const lxb_dom_node_t* n
 	audit::scope _{auditor()};
 	if (m_context_stack.top().in_head && !m_context_stack.top().in_style)
 	{
-		audit::entry(auditor());
+		audit::entry{auditor()};
 		return;
 	}
     const lxb_char_t* data = lxb_dom_node_text_content(const_cast<lxb_dom_node_t*>(node), nullptr);
     if (data == nullptr)
 	{
-		audit::entry(auditor());
+		audit::entry{auditor()};
 		return;
 	}
     std::string text((const char*)data);
@@ -600,7 +600,7 @@ void pimpl_impl<html_parser<auditor_type>>::process_text(const lxb_dom_node_t* n
 	{
 		docwire::audit::scope _{auditor()};
 		m_context_stack.top().style_text += text;
-		docwire::audit::entry(auditor());
+		docwire::audit::entry{auditor()};
 		return;
 	}
 	// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace#what_is_whitespace
@@ -612,16 +612,16 @@ void pimpl_impl<html_parser<auditor_type>>::process_text(const lxb_dom_node_t* n
 		static const std::regex whitespaces_regex(R"(\s+)");
 		text = std::regex_replace(text, whitespaces_regex, " ");
 	}
-	docwire::audit::entry(auditor(), text);
+	docwire::audit::entry{auditor(), text};
 	bool last_char_was_space = isspace((unsigned char)m_context_stack.top().last_char_in_inline_formatting_context);
-	docwire::audit::entry(auditor(), last_char_was_space);
+	docwire::audit::entry{auditor(), last_char_was_space};
 	// Reduce whitespaces between text nodes (end of previous and beginning of current.
 	// Remove whitespaces from beginning of inline formatting context.
 	if (last_char_was_space || m_context_stack.top().last_char_in_inline_formatting_context == '\0')
 	{
 		docwire::audit::scope _{auditor()};
 		boost::trim_left(text);
-		docwire::audit::entry(auditor(), text);
+		docwire::audit::entry{auditor(), text};
 	}
 	if (!text.empty())
 	{
