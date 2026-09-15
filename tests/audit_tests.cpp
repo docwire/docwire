@@ -131,10 +131,10 @@ TEST(AuditEntry, WithPrecedingTag)
     recording_auditor auditor;
     bool evaluated = false;
 
-    audit::entry(auditor, audit_test_tag{}, [&] {
+    audit::entry(auditor, [&] {
         evaluated = true;
         return "value"_v = 7;
-    });
+    }, audit_test_tag{});
 
     EXPECT_TRUE(evaluated);
     EXPECT_EQ(auditor.record_count, 1);

@@ -33,6 +33,16 @@ concept auditor = requires(A& a, source_location loc)
 template<typename T>
 concept audit_tag = docwire::context_tag<T>;
 
+template<audit_tag... TagTypes>
+struct tags
+{
+    explicit constexpr tags(TagTypes...) noexcept {}
+    static constexpr std::tuple<TagTypes...> as_tuple() noexcept { return {}; }
+};
+
+template<audit_tag... TagTypes>
+tags(TagTypes...) -> tags<TagTypes...>;
+
 namespace detail
 {
 
@@ -123,23 +133,59 @@ protected:
     const auditor_type& auditor() const noexcept { return auditor_ref<auditor_type>::auditor(); }
 };
 
-template<typename auditor_type, audit_tag... tag_type, std::invocable<> context_fn_type>
+template<typename auditor_type, std::invocable<> context_fn_type>
 void entry(auditor_ref<auditor_type> auditor,
-           tag_type... tags,
            context_fn_type&& context_fn,
            source_location location = source_location::current())
 {
-    auditor.auditor().record(location, tags..., std::forward<context_fn_type>(context_fn));
+    auditor.auditor().record(location, std::forward<context_fn_type>(context_fn));
 }
 
-template<auditor auditor_type, audit_tag... tag_type, std::invocable<> context_fn_type>
+template<auditor auditor_type, std::invocable<> context_fn_type>
 void entry(auditor_type& auditor,
-           tag_type... tags,
            context_fn_type&& context_fn,
            source_location location = source_location::current())
 {
-    entry(auditor_ref<auditor_type>(auditor), tags...,
-          std::forward<context_fn_type>(context_fn), location);
+    entry(auditor_ref<auditor_type>(auditor), std::forward<context_fn_type>(context_fn), location);
+}
+
+template<typename auditor_type, std::invocable<> context_fn_type, audit_tag TagType>
+void entry(auditor_ref<auditor_type> auditor,
+           context_fn_type&& context_fn,
+           TagType tag,
+           source_location location = source_location::current())
+{
+    auditor.auditor().record(location, tag, std::forward<context_fn_type>(context_fn));
+}
+
+template<auditor auditor_type, std::invocable<> context_fn_type, audit_tag TagType>
+void entry(auditor_type& auditor,
+           context_fn_type&& context_fn,
+           TagType tag,
+           source_location location = source_location::current())
+{
+    entry(auditor_ref<auditor_type>(auditor), std::forward<context_fn_type>(context_fn), tag, location);
+}
+
+template<typename auditor_type, std::invocable<> context_fn_type, audit_tag... TagTypes>
+void entry(auditor_ref<auditor_type> auditor,
+           context_fn_type&& context_fn,
+           tags<TagTypes...> tags_arg,
+           source_location location = source_location::current())
+{
+    std::apply([&](auto... tag_vals) {
+        auditor.auditor().record(location, tag_vals..., std::forward<context_fn_type>(context_fn));
+    }, tags<TagTypes...>::as_tuple());
+}
+
+template<auditor auditor_type, std::invocable<> context_fn_type, audit_tag... TagTypes>
+void entry(auditor_type& auditor,
+           context_fn_type&& context_fn,
+           tags<TagTypes...> tags_arg,
+           source_location location = source_location::current())
+{
+    entry(auditor_ref<auditor_type>(auditor), std::forward<context_fn_type>(context_fn),
+          tags_arg, location);
 }
 
 template<typename auditor_type, typename context_fn_type>
