@@ -118,11 +118,7 @@ template<typename auditor_type, std::invocable<> context_fn_type>
 void entry(auditor_ref<auditor_type> auditor, context_fn_type&& context_fn,
            source_location location = source_location::current())
 {
-    if constexpr (!std::is_same_v<auditor_type, null_auditor>)
-    {
-        detail::record_context(auditor.auditor(), location,
-                               std::forward<context_fn_type>(context_fn)());
-    }
+    auditor.auditor().record(location, std::forward<context_fn_type>(context_fn));
 }
 
 template<auditor auditor_type, std::invocable<> context_fn_type>
@@ -135,26 +131,21 @@ void entry(auditor_type& auditor, context_fn_type&& context_fn,
 template<typename auditor_type, typename context_fn_type>
 class scope
 {
-    using context_result_type = std::decay_t<std::invoke_result_t<context_fn_type&>>;
-    using context_tuple_type = std::decay_t<decltype(detail::normalize_context_tuple(std::declval<context_result_type>()))>;
+    using stored_context_fn_type = std::decay_t<context_fn_type>;
 
 public:
     scope(auditor_ref<auditor_type> auditor, context_fn_type&& context_fn,
           source_location location = source_location::current())
         : m_auditor(auditor),
-          m_args(detail::normalize_context_tuple(std::forward<context_fn_type>(context_fn)())),
+          m_context_fn(std::forward<context_fn_type>(context_fn)),
           m_location(location)
     {
-        std::apply([&](const auto&... args) {
-            m_auditor.auditor().record(m_location, docwire::log::scope_enter{}, args...);
-        }, m_args);
+        m_auditor.auditor().record(m_location, docwire::log::scope_enter{}, m_context_fn);
     }
 
     ~scope()
     {
-        std::apply([&](const auto&... args) {
-            m_auditor.auditor().record(m_location, docwire::log::scope_exit{}, args...);
-        }, m_args);
+        m_auditor.auditor().record(m_location, docwire::log::scope_exit{}, m_context_fn);
     }
 
     scope(const scope&) = delete;
@@ -162,7 +153,7 @@ public:
 
 private:
     auditor_ref<auditor_type> m_auditor;
-    context_tuple_type m_args;
+    stored_context_fn_type m_context_fn;
     source_location m_location;
 };
 

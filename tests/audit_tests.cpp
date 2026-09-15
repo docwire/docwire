@@ -33,7 +33,36 @@ struct recording_auditor
     {
         ++record_count;
         last_location = location;
-        (values.push_back(stringify(std::forward<Args>(args))), ...);
+
+        auto append_value = [this](auto&& result)
+        {
+            using result_type = std::decay_t<decltype(result)>;
+            if constexpr (audit::detail::is_std_tuple_v<result_type>)
+            {
+                std::apply([this](auto&&... item) {
+                    (values.push_back(stringify(std::forward<decltype(item)>(item))), ...);
+                }, std::forward<decltype(result)>(result));
+            }
+            else
+            {
+                values.push_back(stringify(std::forward<decltype(result)>(result)));
+            }
+        };
+
+        auto process_arg = [&](auto&& arg)
+        {
+            using arg_type = std::decay_t<decltype(arg)>;
+            if constexpr (std::invocable<arg_type>)
+            {
+                append_value(std::invoke(std::forward<decltype(arg)>(arg)));
+            }
+            else
+            {
+                values.push_back(stringify(std::forward<decltype(arg)>(arg)));
+            }
+        };
+
+        (process_arg(std::forward<Args>(args)), ...);
     }
 };
 
