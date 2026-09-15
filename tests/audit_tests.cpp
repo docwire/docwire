@@ -56,6 +56,29 @@ TEST(AuditEntry, RecordsUsingNonEmptyAuditor)
               std::string_view::npos);
 }
 
+TEST(AuditEntry, StringLiteralContext)
+{
+    recording_auditor auditor;
+    audit::entry{auditor, []{ return "plain string literal"; }};
+
+    EXPECT_EQ(auditor.record_count, 1);
+    EXPECT_NE(std::string_view(auditor.last_location.function_name()).find("TestBody"),
+              std::string_view::npos);
+}
+
+TEST(AuditEntry, MultipleNamedValuesUsingCommaOperator)
+{
+    recording_auditor auditor;
+    int a = 1;
+    int b = 2;
+
+    audit::entry{auditor, [&]{
+        return "a"_v = a, "b"_v = b;
+    }};
+
+    EXPECT_EQ(auditor.record_count, 1);
+}
+
 TEST(AuditScope, RecordsEnterAndExit)
 {
     recording_auditor auditor;

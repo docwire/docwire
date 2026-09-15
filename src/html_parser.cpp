@@ -520,7 +520,7 @@ void pimpl_impl<html_parser<auditor_type>>::parse_document(const std::string& ht
 		{
 			.metadata = [this, head]()
 			{
-				audit::entry{auditor(), [&]{ return "message"_v = "Extracting metadata."; }};
+				audit::entry{auditor(), []{ return "Extracting metadata."; }};
 				if (!m_context_stack.top().head_parsed)
 				{
 					m_context_stack.top().in_metadata = true;
