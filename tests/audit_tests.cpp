@@ -42,14 +42,14 @@ struct non_empty_auditor
 TEST(AuditEntry, NullAuditorDoesNothing)
 {
     audit::null_auditor auditor;
-    audit::entry(auditor, 42, "text");
+    audit::entry(auditor, []{ return std::make_tuple(42, "text"); });
     SUCCEED();
 }
 
 TEST(AuditEntry, RecordsUsingNonEmptyAuditor)
 {
     recording_auditor auditor;
-    audit::entry(auditor, 42, "text");
+    audit::entry(auditor, []{ return std::make_tuple(42, "text"); });
 
     EXPECT_EQ(auditor.record_count, 1);
     EXPECT_NE(std::string_view(auditor.last_location.function_name()).find("TestBody"),
@@ -60,7 +60,7 @@ TEST(AuditScope, RecordsEnterAndExit)
 {
     recording_auditor auditor;
     {
-        audit::scope _{auditor, "scope_variable"_v = 123};
+        audit::scope _{auditor, []{ return std::make_tuple("scope_variable"_v = 123); }};
         EXPECT_EQ(auditor.record_count, 1);
         EXPECT_NE(std::string_view(auditor.last_location.function_name()).find("TestBody"),
                   std::string_view::npos);

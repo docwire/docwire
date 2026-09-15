@@ -52,7 +52,7 @@ private:
 template<typename auditor_type>
 inline continuation metadata_exporter<auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	audit::scope audit_scope{auditor(), msg};
+	audit::scope audit_scope{auditor(), [&]{ return std::make_tuple(msg); }};
 	if (msg->is<std::exception_ptr>())
 		return emit_message(std::move(msg));
 	if (msg->is<document::document>() || !m_stream)

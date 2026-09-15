@@ -25,6 +25,10 @@ concept auditor = requires(A& a, source_location loc)
     { a.record(loc) } -> std::same_as<void>;
 };
 
+/// @brief A no-op context provider for audit entries and scopes that carry no structured context.
+/// @note Using this guarantees that no context is evaluated or stored for the audit expression.
+inline constexpr auto no_context = []() noexcept -> std::tuple<> { return {}; };
+
 template<typename auditor_type>
 class auditor_ref
 {
@@ -64,21 +68,20 @@ protected:
     const auditor_type& auditor() const noexcept { return auditor_ref<auditor_type>::auditor(); }
 };
 
-template<typename auditor_type, typename... Args>
+template<typename auditor_type, typename context_fn_type>
 class entry
 {
     static_assert(auditor<auditor_type>);
 
 public:
-    entry(auditor_ref<auditor_type> auditor, Args&&... args,
+    entry(auditor_ref<auditor_type> auditor, context_fn_type&& context_fn,
           source_location location = source_location::current())
         : m_auditor(auditor),
-          m_args(std::forward<Args>(args)...),
           m_location(location)
     {
         std::apply([&](const auto&... args) {
             m_auditor.auditor().record(m_location, args...);
-        }, m_args);
+        }, std::forward<context_fn_type>(context_fn)());
     }
 
     entry(const entry&) = delete;
@@ -86,31 +89,32 @@ public:
 
 private:
     auditor_ref<auditor_type> m_auditor;
-    std::tuple<std::decay_t<Args>...> m_args;
     source_location m_location;
 };
 
-template<typename... Args>
-class entry<null_auditor, Args...>
+template<typename context_fn_type>
+class entry<null_auditor, context_fn_type>
 {
 public:
-    constexpr entry(auditor_ref<null_auditor>, Args&&..., source_location = source_location::current()) noexcept {}
+    constexpr entry(auditor_ref<null_auditor>, context_fn_type&&, source_location = source_location::current()) noexcept {}
 };
 
-template<typename auditor_type, typename... Args>
-entry(auditor_ref<auditor_type>, Args&&...) -> entry<auditor_type, Args...>;
+template<typename auditor_type, typename context_fn_type>
+entry(auditor_ref<auditor_type>, context_fn_type&&) -> entry<auditor_type, context_fn_type>;
 
-template<auditor auditor_type, typename... Args>
-entry(auditor_type&, Args&&...) -> entry<auditor_type, Args...>;
+template<auditor auditor_type, typename context_fn_type>
+entry(auditor_type&, context_fn_type&&) -> entry<auditor_type, context_fn_type>;
 
-template<typename auditor_type, typename... Args>
+template<typename auditor_type, typename context_fn_type>
 class scope
 {
+    using context_tuple_type = std::decay_t<std::invoke_result_t<context_fn_type&>>;
+
 public:
-    scope(auditor_ref<auditor_type> auditor, Args&&... args,
+    scope(auditor_ref<auditor_type> auditor, context_fn_type&& context_fn,
           source_location location = source_location::current())
         : m_auditor(auditor),
-          m_args(std::forward<Args>(args)...),
+          m_args(std::forward<context_fn_type>(context_fn)()),
           m_location(location)
     {
         std::apply([&](const auto&... args) {
@@ -130,23 +134,23 @@ public:
 
 private:
     auditor_ref<auditor_type> m_auditor;
-    std::tuple<std::decay_t<Args>...> m_args;
+    context_tuple_type m_args;
     source_location m_location;
 };
 
-template<typename... Args>
-class scope<null_auditor, Args...>
+template<typename context_fn_type>
+class scope<null_auditor, context_fn_type>
 {
 public:
-    constexpr scope(auditor_ref<null_auditor>, Args&&..., source_location = source_location::current()) noexcept {}
+    constexpr scope(auditor_ref<null_auditor>, context_fn_type&&, source_location = source_location::current()) noexcept {}
     ~scope() noexcept {}
 };
 
-template<typename auditor_type, typename... Args>
-scope(auditor_ref<auditor_type>, Args&&...) -> scope<auditor_type, Args...>;
+template<typename auditor_type, typename context_fn_type>
+scope(auditor_ref<auditor_type>, context_fn_type&&) -> scope<auditor_type, context_fn_type>;
 
-template<auditor auditor_type, typename... Args>
-scope(auditor_type&, Args&&...) -> scope<auditor_type, Args...>;
+template<auditor auditor_type, typename context_fn_type>
+scope(auditor_type&, context_fn_type&&) -> scope<auditor_type, context_fn_type>;
 
 } // namespace docwire::audit
 
