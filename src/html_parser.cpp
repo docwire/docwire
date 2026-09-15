@@ -208,7 +208,7 @@ void ensure_html_utf8_encoding(audit::auditor_ref<auditor_type> auditor, std::st
 	{
 		std::throw_with_nested(make_error("Cannot convert charset", *charset));
 	}
-	audit::entry{auditor, [&]{ return "html_content"_v = html_content; }};
+	audit::entry(auditor, [&]{ return "html_content"_v = html_content; });
 }
 
 template<typename auditor_type>
@@ -600,7 +600,7 @@ void pimpl_impl<html_parser<auditor_type>>::process_text(const lxb_dom_node_t* n
 	{
 		docwire::audit::scope style_audit_scope{auditor(), audit::no_context};
 		m_context_stack.top().style_text += text;
-		docwire::audit::entry{auditor(), audit::no_context};
+		docwire::audit::entry(auditor(), audit::no_context);
 		return;
 	}
 	// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace#what_is_whitespace
