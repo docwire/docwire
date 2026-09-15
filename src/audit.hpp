@@ -25,79 +25,79 @@ concept auditor = requires(A& a, source_location loc)
     { a.record(loc) } -> std::same_as<void>;
 };
 
-template<typename Auditor>
+template<typename auditor_type>
 class auditor_ref
 {
 public:
-    constexpr auditor_ref(Auditor& auditor) noexcept
+    constexpr auditor_ref(auditor_type& auditor) noexcept
         : m_ptr(&auditor)
     {}
 
-    constexpr Auditor& auditor() noexcept { return *m_ptr; }
-    constexpr const Auditor& auditor() const noexcept { return *m_ptr; }
+    constexpr auditor_type& auditor() noexcept { return *m_ptr; }
+    constexpr const auditor_type& auditor() const noexcept { return *m_ptr; }
 
 private:
-    Auditor* m_ptr;
+    auditor_type* m_ptr;
 };
 
-template<typename Auditor>
-requires std::is_empty_v<Auditor>
-class auditor_ref<Auditor> : public Auditor
+template<typename auditor_type>
+requires std::is_empty_v<auditor_type>
+class auditor_ref<auditor_type> : public auditor_type
 {
 public:
-    constexpr auditor_ref() requires std::default_initializable<Auditor> = default;
-    constexpr auditor_ref(Auditor&) noexcept {}
+    constexpr auditor_ref() requires std::default_initializable<auditor_type> = default;
+    constexpr auditor_ref(auditor_type&) noexcept {}
 
-    constexpr Auditor& auditor() noexcept { return *this; }
-    constexpr const Auditor& auditor() const noexcept { return *this; }
+    constexpr auditor_type& auditor() noexcept { return *this; }
+    constexpr const auditor_type& auditor() const noexcept { return *this; }
 };
 
-template<typename Auditor>
-class with_auditor : private auditor_ref<Auditor>
+template<typename auditor_type>
+class with_auditor : private auditor_ref<auditor_type>
 {
 protected:
     with_auditor() = default;
-    explicit with_auditor(auditor_ref<Auditor> auditor)
-        : auditor_ref<Auditor>(auditor) {}
+    explicit with_auditor(auditor_ref<auditor_type> auditor)
+        : auditor_ref<auditor_type>(auditor) {}
 
-    Auditor& auditor() noexcept { return auditor_ref<Auditor>::auditor(); }
-    const Auditor& auditor() const noexcept { return auditor_ref<Auditor>::auditor(); }
+    auditor_type& auditor() noexcept { return auditor_ref<auditor_type>::auditor(); }
+    const auditor_type& auditor() const noexcept { return auditor_ref<auditor_type>::auditor(); }
 };
 
-template<typename Auditor, typename... Args>
-void entry(auditor_ref<Auditor> auditor_ref_handle, Args&&... args,
+template<typename auditor_type, typename... Args>
+void entry(auditor_ref<auditor_type> auditor_ref_handle, Args&&... args,
            source_location location = source_location::current())
 {
-    static_assert(auditor<Auditor>);
+    static_assert(auditor<auditor_type>);
     auditor_ref_handle.auditor().record(location, std::forward<Args>(args)...);
 }
 
-template<auditor Auditor, typename... Args>
-void entry(Auditor& auditor, Args&&... args,
+template<auditor auditor_type, typename... Args>
+void entry(auditor_type& auditor, Args&&... args,
            source_location location = source_location::current())
 {
-    entry(auditor_ref<Auditor>(auditor), std::forward<Args>(args)..., location);
+    entry(auditor_ref<auditor_type>(auditor), std::forward<Args>(args)..., location);
 }
 
-template<typename Auditor, typename... Args>
+template<typename auditor_type, typename... Args>
 class scope
 {
 public:
-    scope(auditor_ref<Auditor> auditor, Args&&... args,
+    scope(auditor_ref<auditor_type> auditor, Args&&... args,
           source_location location = source_location::current())
         : m_auditor(auditor),
           m_args(std::forward<Args>(args)...),
           m_location(location)
     {
         std::apply([&](const auto&... args) {
-            audit::entry(m_auditor, docwire::log::scope_enter{}, args..., m_location);
+            m_auditor.auditor().record(m_location, docwire::log::scope_enter{}, args...);
         }, m_args);
     }
 
     ~scope()
     {
         std::apply([&](const auto&... args) {
-            audit::entry(m_auditor, docwire::log::scope_exit{}, args..., m_location);
+            m_auditor.auditor().record(m_location, docwire::log::scope_exit{}, args...);
         }, m_args);
     }
 
@@ -105,7 +105,7 @@ public:
     scope& operator=(const scope&) = delete;
 
 private:
-    auditor_ref<Auditor> m_auditor;
+    auditor_ref<auditor_type> m_auditor;
     std::tuple<std::decay_t<Args>...> m_args;
     source_location m_location;
 };
@@ -117,11 +117,11 @@ public:
     constexpr scope(auditor_ref<null_auditor>, Args&&..., source_location = source_location::current()) noexcept {}
 };
 
-template<typename Auditor, typename... Args>
-scope(auditor_ref<Auditor>, Args&&...) -> scope<Auditor, Args...>;
+template<typename auditor_type, typename... Args>
+scope(auditor_ref<auditor_type>, Args&&...) -> scope<auditor_type, Args...>;
 
-template<auditor Auditor, typename... Args>
-scope(Auditor&, Args&&...) -> scope<Auditor, Args...>;
+template<auditor auditor_type, typename... Args>
+scope(auditor_type&, Args&&...) -> scope<auditor_type, Args...>;
 
 } // namespace docwire::audit
 
