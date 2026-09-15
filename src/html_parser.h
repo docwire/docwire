@@ -19,8 +19,11 @@
 
 namespace docwire
 {
-template<typename auditor_type = docwire::audit::null_auditor>
-class DOCWIRE_HTML_EXPORT html_parser : public chain_element, public with_pimpl<html_parser<auditor_type>>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_HTML_EXPORT html_parser
+    : public chain_element,
+      public with_pimpl<html_parser<auditor_type>>,
+      private audit::holder<auditor_type>
 {
 	private:
 		using with_pimpl<html_parser<auditor_type>>::impl;
@@ -28,16 +31,13 @@ class DOCWIRE_HTML_EXPORT html_parser : public chain_element, public with_pimpl<
 
 	public:
 
-		html_parser() requires std::same_as<auditor_type, docwire::audit::null_auditor>;
+		html_parser() requires std::same_as<auditor_type, audit::null_auditor>;
 		explicit html_parser(auditor_type& auditor);
 
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 		bool is_leaf() const override { return false; }
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).
 		void skipCharsetDecoding();
-
-	private:
-		docwire::audit::handle<auditor_type> m_auditor;
 };
 
 } // namespace docwire

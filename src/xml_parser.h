@@ -25,12 +25,12 @@ namespace docwire
  * @tparam safety_level The safety policy to use.
  */
 template <safety_policy safety_level = default_safety_level,
-          typename auditor_type = docwire::audit::null_auditor>
-class DOCWIRE_XML_EXPORT xml_parser : public chain_element
+          typename auditor_type = audit::null_auditor>
+class DOCWIRE_XML_EXPORT xml_parser : public chain_element, private audit::holder<auditor_type>
 {
 public:
 	xml_parser() = default;
-	explicit xml_parser(auditor_type& auditor) : m_auditor(auditor) {}
+	explicit xml_parser(auditor_type& auditor) : audit::holder<auditor_type>(auditor) {}
 
 	/**
 	 * @brief Processes a message in the parsing chain.
@@ -38,9 +38,6 @@ public:
 	 */
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
 	bool is_leaf() const override { return false; }
-
-private:
-	docwire::audit::handle<auditor_type> m_auditor;
 };
 
 } // namespace docwire

@@ -29,7 +29,7 @@ namespace docwire::xml
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
 template <safety_policy safety_level = default_safety_level,
-          typename auditor_type = docwire::audit::null_auditor>
+          typename auditor_type = audit::null_auditor>
 class children_view : public std::ranges::view_base
 {
 public:
@@ -49,13 +49,13 @@ public:
      * @param depth The target depth for children.
      */
     explicit children_view(not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> state, int depth,
-                           docwire::audit::handle<auditor_type> auditor)
+                           audit::holder<auditor_type> auditor)
         : m_state(std::move(state)), m_depth(depth), m_auditor(auditor) {}
 
 private:
 	not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> m_state;
 	int m_depth;
-	docwire::audit::handle<auditor_type> m_auditor;
+	audit::holder<auditor_type> m_auditor;
 };
 
 /**
@@ -80,7 +80,7 @@ public:
 
     iterator& operator++()
     {
-        docwire::audit::scope _{m_auditor, "depth"_v = m_depth};
+        audit::scope _{m_auditor, "depth"_v = m_depth};
         ++m_desc_iter;
         find_next_child();
         return *this;
@@ -93,7 +93,7 @@ public:
 
 private:
     explicit iterator(not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> state, int depth,
-                      docwire::audit::handle<auditor_type> auditor)
+                      audit::holder<auditor_type> auditor)
         : m_depth{depth}, m_desc_iter(descendants_view<safety_level>{state, m_depth - 1}.begin()),
           m_auditor(auditor)
     {
@@ -111,7 +111,7 @@ private:
 
     int m_depth;
     typename descendants_view<safety_level>::iterator m_desc_iter;
-    docwire::audit::handle<auditor_type> m_auditor;
+    audit::holder<auditor_type> m_auditor;
 };
 
 /**
@@ -123,15 +123,15 @@ private:
  */
 template<safety_policy safety_level, typename auditor_type>
 children_view<safety_level, auditor_type> children(const node_ref<safety_level>& node,
-                                                   docwire::audit::handle<auditor_type> auditor)
+                                                   audit::holder<auditor_type> auditor)
 {
     return children_view<safety_level, auditor_type>{node.state(), node.depth() + 1, auditor};
 }
 
 template<safety_policy safety_level>
-children_view<safety_level, docwire::audit::null_auditor> children(const node_ref<safety_level>& node)
+children_view<safety_level, audit::null_auditor> children(const node_ref<safety_level>& node)
 {
-    return children(node, docwire::audit::handle<docwire::audit::null_auditor>{});
+    return children(node, audit::holder<audit::null_auditor>{});
 }
 
 /**
@@ -143,15 +143,15 @@ children_view<safety_level, docwire::audit::null_auditor> children(const node_re
  */
 template<safety_policy safety_level, typename auditor_type>
 children_view<safety_level, auditor_type> children(reader<safety_level>& reader,
-                                                   docwire::audit::handle<auditor_type> auditor)
+                                                   audit::holder<auditor_type> auditor)
 {
     return children_view<safety_level, auditor_type>{std::make_shared<iterator_state<safety_level>>(reader), 0, auditor};
 }
 
 template<safety_policy safety_level>
-children_view<safety_level, docwire::audit::null_auditor> children(reader<safety_level>& reader)
+children_view<safety_level, audit::null_auditor> children(reader<safety_level>& reader)
 {
-    return children(reader, docwire::audit::handle<docwire::audit::null_auditor>{});
+    return children(reader, audit::holder<audit::null_auditor>{});
 }
 
 }

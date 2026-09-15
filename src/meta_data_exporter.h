@@ -28,14 +28,14 @@ namespace docwire
 /**
  * @brief Exports meta data only to plain text format.
  */
-template<typename auditor_type = docwire::audit::null_auditor>
-class metadata_exporter : public chain_element
+template<typename auditor_type = audit::null_auditor>
+class metadata_exporter : public chain_element, private audit::holder<auditor_type>
 {
 public:
   metadata_exporter() = default;
 
   explicit metadata_exporter(auditor_type& auditor)
-    : m_auditor(auditor)
+    : audit::holder<auditor_type>(auditor)
   {}
 
 	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
@@ -48,13 +48,12 @@ public:
 private:
   std::shared_ptr<std::stringstream> m_stream;
   metadata_writer m_writer;
-  docwire::audit::handle<auditor_type> m_auditor;
 };
 
 template<typename auditor_type>
 inline continuation metadata_exporter<auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	docwire::audit::scope _{m_auditor, msg};
+	audit::scope _{auditor(), msg};
 	if (msg->is<std::exception_ptr>())
 		return emit_message(std::move(msg));
 	if (msg->is<document::document>() || !m_stream)

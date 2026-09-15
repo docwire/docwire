@@ -5,7 +5,6 @@
 #include "source_location.h"
 
 #include <concepts>
-#include <span>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
@@ -27,43 +26,45 @@ concept auditor = requires(A& a, source_location loc)
 };
 
 template<typename Auditor>
-class handle
+class holder
 {
 public:
-    constexpr explicit handle(Auditor& auditor) noexcept
+    constexpr explicit holder(Auditor& auditor) noexcept
         : m_ptr(&auditor)
     {}
 
-    constexpr Auditor& get() const noexcept { return *m_ptr; }
+    constexpr Auditor& auditor() noexcept { return *m_ptr; }
+    constexpr const Auditor& auditor() const noexcept { return *m_ptr; }
 
 private:
     Auditor* m_ptr;
 };
 
-template<>
-class handle<null_auditor>
+template<typename Auditor>
+requires std::is_empty_v<Auditor>
+class holder<Auditor> : public Auditor
 {
 public:
-    constexpr handle() noexcept = default;
-    constexpr handle(null_auditor&) noexcept {}
+    constexpr holder() requires std::default_initializable<Auditor> = default;
+    constexpr holder(Auditor&) noexcept {}
+
+    constexpr Auditor& auditor() noexcept { return *this; }
+    constexpr const Auditor& auditor() const noexcept { return *this; }
 };
 
-template<typename... Args>
-void entry(handle<null_auditor>, Args&&..., source_location = source_location::current()) noexcept {}
-
 template<typename Auditor, typename... Args>
-void entry(handle<Auditor> auditor, Args&&... args,
+void entry(holder<Auditor> auditor, Args&&... args,
            source_location location = source_location::current())
 {
     static_assert(auditor<Auditor>);
-    auditor.get().record(location, std::forward<Args>(args)...);
+    auditor.auditor().record(location, std::forward<Args>(args)...);
 }
 
 template<typename Auditor, typename... Args>
 class scope
 {
 public:
-    scope(handle<Auditor> auditor, Args&&... args,
+    scope(holder<Auditor> auditor, Args&&... args,
           source_location location = source_location::current())
         : m_auditor(auditor),
           m_args(std::forward<Args>(args)...),
@@ -85,7 +86,7 @@ public:
     scope& operator=(const scope&) = delete;
 
 private:
-    handle<Auditor> m_auditor;
+    holder<Auditor> m_auditor;
     std::tuple<std::decay_t<Args>...> m_args;
     source_location m_location;
 };
@@ -94,11 +95,11 @@ template<typename... Args>
 class scope<null_auditor, Args...>
 {
 public:
-    constexpr scope(handle<null_auditor>, Args&&..., source_location = source_location::current()) noexcept {}
+    constexpr scope(holder<null_auditor>, Args&&..., source_location = source_location::current()) noexcept {}
 };
 
 template<typename Auditor, typename... Args>
-scope(handle<Auditor>, Args&&...) -> scope<Auditor, Args...>;
+scope(holder<Auditor>, Args&&...) -> scope<Auditor, Args...>;
 
 } // namespace docwire::audit
 

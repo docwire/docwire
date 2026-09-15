@@ -25,11 +25,11 @@ namespace docwire
 namespace
 {
 template<safety_policy safety_level, typename auditor_type>
-void parseXmlData(docwire::audit::handle<auditor_type> auditor,
+void parseXmlData(audit::holder<auditor_type> auditor,
                   const message_callbacks& emit_message,
-                  xml::children_view<safety_level> view)
+                  xml::children_view<safety_level, auditor_type> view)
 {
-	docwire::audit::scope _{auditor};
+	audit::scope _{auditor};
 	for (auto node: view)
 	{
 		std::string_view tag_name = node.name();
@@ -65,7 +65,7 @@ const std::vector<mime_type> supported_mime_types =
 template <safety_policy safety_level, typename auditor_type>
 continuation xml_parser<safety_level, auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	docwire::audit::scope _{m_auditor, "msg"_v = msg};
+	audit::scope _{auditor(), "msg"_v = msg};
 
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
@@ -76,12 +76,12 @@ continuation xml_parser<safety_level, auditor_type>::operator()(message_ptr msg,
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 		return emit_message(std::move(msg));
 
-	docwire::audit::entry(m_auditor);
+	audit::entry(auditor());
 	try
 	{
 		emit_message(document::document{});
 		xml::reader<safety_level> reader(data.string_view()); // Correctly uses the non-owning constructor
-		parseXmlData(m_auditor, emit_message, children(reader, m_auditor));
+		parseXmlData(audit::holder<auditor_type>(auditor()), emit_message, children(reader, audit::holder<auditor_type>(auditor())));
 		emit_message(document::close_document{});
 	}
 	catch (const std::exception& e)
@@ -91,9 +91,9 @@ continuation xml_parser<safety_level, auditor_type>::operator()(message_ptr msg,
 	return continuation::proceed;
 }
 
-template class DOCWIRE_XML_EXPORT xml_parser<strict, docwire::audit::null_auditor>;
-template class DOCWIRE_XML_EXPORT xml_parser<relaxed, docwire::audit::null_auditor>;
-template class DOCWIRE_XML_EXPORT xml_parser<strict, docwire::audit::legacy_log_audit>;
-template class DOCWIRE_XML_EXPORT xml_parser<relaxed, docwire::audit::legacy_log_audit>;
+template class DOCWIRE_XML_EXPORT xml_parser<strict, audit::null_auditor>;
+template class DOCWIRE_XML_EXPORT xml_parser<relaxed, audit::null_auditor>;
+template class DOCWIRE_XML_EXPORT xml_parser<strict, audit::legacy_log_audit>;
+template class DOCWIRE_XML_EXPORT xml_parser<relaxed, audit::legacy_log_audit>;
 
 } // namespace docwire
