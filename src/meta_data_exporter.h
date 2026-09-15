@@ -29,11 +29,11 @@ namespace docwire
  * @brief Exports meta data only to plain text format.
  */
 template<typename auditor_type = audit::null_auditor>
-class metadata_exporter : public chain_element, private audit::holder<auditor_type>
+class metadata_exporter : public chain_element, private audit::with_auditor<auditor_type>
 {
 public:
-  explicit metadata_exporter(audit::holder<auditor_type> auditor = {})
-    : audit::holder<auditor_type>(auditor)
+  explicit metadata_exporter(audit::auditor_ref<auditor_type> auditor = {})
+    : audit::with_auditor<auditor_type>(auditor)
   {}
 
 	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;

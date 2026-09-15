@@ -25,7 +25,7 @@ namespace docwire
 namespace
 {
 template<safety_policy safety_level, typename auditor_type>
-void parseXmlData(audit::holder<auditor_type> auditor,
+void parseXmlData(audit::auditor_ref<auditor_type> auditor,
                   const message_callbacks& emit_message,
                   xml::children_view<safety_level, auditor_type> view)
 {
@@ -81,7 +81,7 @@ continuation xml_parser<safety_level, auditor_type>::operator()(message_ptr msg,
 	{
 		emit_message(document::document{});
 		xml::reader<safety_level> reader(data.string_view()); // Correctly uses the non-owning constructor
-		parseXmlData(audit::holder<auditor_type>(auditor()), emit_message, children(reader, audit::holder<auditor_type>(auditor())));
+		parseXmlData(audit::auditor_ref<auditor_type>(auditor()), emit_message, children(reader, audit::auditor_ref<auditor_type>(auditor())));
 		emit_message(document::close_document{});
 	}
 	catch (const std::exception& e)

@@ -72,7 +72,7 @@ attributes::styling html_node_styling(const lxb_dom_node_t* node)
 }
 
 template<typename auditor_type>
-void convert_to_utf8(audit::holder<auditor_type> auditor, std::string& text, const std::string& charset)
+void convert_to_utf8(audit::auditor_ref<auditor_type> auditor, std::string& text, const std::string& charset)
 {
 	audit::scope _{auditor, charset};
 	if (boost::iequals(charset, "utf-8"))
@@ -82,7 +82,7 @@ void convert_to_utf8(audit::holder<auditor_type> auditor, std::string& text, con
 }
 
 template<typename auditor_type>
-std::optional<std::string> get_encoding_from_meta_tags(audit::holder<auditor_type> auditor, const std::string& html_content)
+std::optional<std::string> get_encoding_from_meta_tags(audit::auditor_ref<auditor_type> auditor, const std::string& html_content)
 {
 	audit::scope _{auditor};
 	std::unique_ptr<lxb_html_encoding_t, decltype([](lxb_html_encoding_t* h)
@@ -104,7 +104,7 @@ std::optional<std::string> get_encoding_from_meta_tags(audit::holder<auditor_typ
 }
 
 template<typename auditor_type>
-std::optional<std::string> get_encoding_from_xml_declaration(audit::holder<auditor_type> auditor, const std::string& html_content)
+std::optional<std::string> get_encoding_from_xml_declaration(audit::auditor_ref<auditor_type> auditor, const std::string& html_content)
 {
 	audit::scope _{auditor};
 	// if this is xhtml document, information about encoding may be stored between <?xml and ?>.
@@ -136,7 +136,7 @@ std::optional<std::string> get_encoding_from_xml_declaration(audit::holder<audit
 }
 
 template<typename auditor_type>
-std::optional<std::string> guess_encoding(audit::holder<auditor_type> auditor, const std::string& text)
+std::optional<std::string> guess_encoding(audit::auditor_ref<auditor_type> auditor, const std::string& text)
 {
 	audit::scope _{auditor};
 	std::unique_ptr<void, decltype([](csd_t h)
@@ -154,7 +154,7 @@ std::optional<std::string> guess_encoding(audit::holder<auditor_type> auditor, c
 }
 
 template<typename auditor_type>
-std::optional<std::string> determine_encoding(audit::holder<auditor_type> auditor, const std::string& html_content)
+std::optional<std::string> determine_encoding(audit::auditor_ref<auditor_type> auditor, const std::string& html_content)
 {
 	audit::scope _{auditor};
 	std::optional<std::string> charset;
@@ -183,7 +183,7 @@ std::optional<std::string> determine_encoding(audit::holder<auditor_type> audito
 }
 
 template<typename auditor_type>
-void ensure_html_utf8_encoding(audit::holder<auditor_type> auditor, std::string& html_content)
+void ensure_html_utf8_encoding(audit::auditor_ref<auditor_type> auditor, std::string& html_content)
 {
 	audit::scope _{auditor};
 	std::optional<std::string> charset;
@@ -212,7 +212,7 @@ void ensure_html_utf8_encoding(audit::holder<auditor_type> auditor, std::string&
 }
 
 template<typename auditor_type>
-void move_child_node_to_parent(audit::holder<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node)
+void move_child_node_to_parent(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node)
 {
 	audit::scope _{auditor};
 	lxb_dom_node_remove_wo_events(child_node);
@@ -220,7 +220,7 @@ void move_child_node_to_parent(audit::holder<auditor_type> auditor, lxb_dom_node
 }
 
 template<typename auditor_type>
-void fix_dom_in_table_insertion_mode(audit::holder<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
+void fix_dom_in_table_insertion_mode(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
 {
 	audit::scope _{auditor, child_tag_id};
 	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intable
@@ -259,7 +259,7 @@ void fix_dom_in_table_insertion_mode(audit::holder<auditor_type> auditor, lxb_do
 }
 
 template<typename auditor_type>
-void fix_dom_in_table_body_insertion_mode(audit::holder<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
+void fix_dom_in_table_body_insertion_mode(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
 {
 	audit::scope _{auditor, child_tag_id};
 	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intbody
@@ -284,7 +284,7 @@ void fix_dom_in_table_body_insertion_mode(audit::holder<auditor_type> auditor, l
 }
 
 template<typename auditor_type>
-void fix_dom_in_table_row_insertion_mode(audit::holder<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
+void fix_dom_in_table_row_insertion_mode(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
 {
 	audit::scope _{auditor, child_tag_id};
 	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intr
@@ -303,7 +303,7 @@ void fix_dom_in_table_row_insertion_mode(audit::holder<auditor_type> auditor, lx
 }
 
 template<typename auditor_type>
-void fix_dom(audit::holder<auditor_type> auditor, lxb_dom_node_t* node)
+void fix_dom(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node)
 {
 	audit::scope _{auditor};
 	// First of all fix all child nodes as it may cause moving some nodes to the parent (this node)
@@ -390,12 +390,12 @@ data_source create_image_source(const std::string& src)
 } // unnamed namespace
 
 template<typename auditor_type>
-struct pimpl_impl<html_parser<auditor_type>> : pimpl_impl_base, private audit::holder<auditor_type>
+struct pimpl_impl<html_parser<auditor_type>> : pimpl_impl_base, private audit::with_auditor<auditor_type>
 {
 	using auditor_type_t = auditor_type;
 
 	pimpl_impl() = default;
-	explicit pimpl_impl(audit::holder<auditor_type> auditor) : audit::holder<auditor_type>(auditor) {}
+	explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor) : audit::with_auditor<auditor_type>(auditor) {}
 
 	template <typename T>
 	continuation emit_message(T&& object) const
@@ -484,7 +484,7 @@ template<typename auditor_type>
 void pimpl_impl<html_parser<auditor_type>>::parse_document(const std::string& html_content_arg, const message_callbacks& emit_message)
 {
 	audit::scope _{auditor()};
-	auto auditor_holder = audit::holder<auditor_type>{auditor()};
+	auto auditor_holder = audit::auditor_ref<auditor_type>{auditor()};
 	std::string html_content = html_content_arg;
 	if (!m_skip_decoding)
 	{
@@ -893,9 +893,9 @@ void pimpl_impl<html_parser<auditor_type>>::process_tag(const lxb_dom_node_t* no
 }
 
 template<typename auditor_type>
-html_parser<auditor_type>::html_parser(audit::holder<auditor_type> auditor)
+html_parser<auditor_type>::html_parser(audit::auditor_ref<auditor_type> auditor)
     : with_pimpl<html_parser<auditor_type>>(auditor),
-      audit::holder<auditor_type>(auditor)
+      audit::with_auditor<auditor_type>(auditor)
 {
 }
 

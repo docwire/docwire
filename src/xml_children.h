@@ -49,13 +49,13 @@ public:
      * @param depth The target depth for children.
      */
     explicit children_view(not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> state, int depth,
-                           audit::holder<auditor_type> auditor)
+                           audit::auditor_ref<auditor_type> auditor)
         : m_state(std::move(state)), m_depth(depth), m_auditor(auditor) {}
 
 private:
 	not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> m_state;
 	int m_depth;
-	audit::holder<auditor_type> m_auditor;
+	audit::auditor_ref<auditor_type> m_auditor;
 };
 
 /**
@@ -93,7 +93,7 @@ public:
 
 private:
     explicit iterator(not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> state, int depth,
-                      audit::holder<auditor_type> auditor)
+                      audit::auditor_ref<auditor_type> auditor)
         : m_depth{depth}, m_desc_iter(descendants_view<safety_level>{state, m_depth - 1}.begin()),
           m_auditor(auditor)
     {
@@ -111,7 +111,7 @@ private:
 
     int m_depth;
     typename descendants_view<safety_level>::iterator m_desc_iter;
-    audit::holder<auditor_type> m_auditor;
+    audit::auditor_ref<auditor_type> m_auditor;
 };
 
 /**
@@ -123,7 +123,7 @@ private:
  */
 template<safety_policy safety_level, typename auditor_type>
 children_view<safety_level, auditor_type> children(const node_ref<safety_level>& node,
-                                                   audit::holder<auditor_type> auditor)
+                                                   audit::auditor_ref<auditor_type> auditor)
 {
     return children_view<safety_level, auditor_type>{node.state(), node.depth() + 1, auditor};
 }
@@ -131,7 +131,7 @@ children_view<safety_level, auditor_type> children(const node_ref<safety_level>&
 template<safety_policy safety_level>
 children_view<safety_level, audit::null_auditor> children(const node_ref<safety_level>& node)
 {
-    return children(node, audit::holder<audit::null_auditor>{});
+    return children(node, audit::auditor_ref<audit::null_auditor>{});
 }
 
 /**
@@ -143,7 +143,7 @@ children_view<safety_level, audit::null_auditor> children(const node_ref<safety_
  */
 template<safety_policy safety_level, typename auditor_type>
 children_view<safety_level, auditor_type> children(reader<safety_level>& reader,
-                                                   audit::holder<auditor_type> auditor)
+                                                   audit::auditor_ref<auditor_type> auditor)
 {
     return children_view<safety_level, auditor_type>{std::make_shared<iterator_state<safety_level>>(reader), 0, auditor};
 }
@@ -151,7 +151,7 @@ children_view<safety_level, auditor_type> children(reader<safety_level>& reader,
 template<safety_policy safety_level>
 children_view<safety_level, audit::null_auditor> children(reader<safety_level>& reader)
 {
-    return children(reader, audit::holder<audit::null_auditor>{});
+    return children(reader, audit::auditor_ref<audit::null_auditor>{});
 }
 
 }
