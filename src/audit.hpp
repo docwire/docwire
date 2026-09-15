@@ -139,6 +139,7 @@ class scope<null_auditor, Args...>
 {
 public:
     constexpr scope(auditor_ref<null_auditor>, Args&&..., source_location = source_location::current()) noexcept {}
+    ~scope() noexcept {}
 };
 
 template<typename auditor_type, typename... Args>

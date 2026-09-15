@@ -80,7 +80,7 @@ public:
 
     iterator& operator++()
     {
-        audit::scope _{m_auditor, "depth"_v = m_depth};
+        audit::scope audit_scope{m_auditor, "depth"_v = m_depth};
         ++m_desc_iter;
         find_next_child();
         return *this;

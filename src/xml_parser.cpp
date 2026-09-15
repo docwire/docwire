@@ -29,7 +29,7 @@ void parseXmlData(audit::auditor_ref<auditor_type> auditor,
                   const message_callbacks& emit_message,
                   xml::children_view<safety_level, auditor_type> view)
 {
-	audit::scope _{auditor};
+	audit::scope audit_scope{auditor};
 	for (auto node: view)
 	{
 		std::string_view tag_name = node.name();
@@ -65,7 +65,7 @@ const std::vector<mime_type> supported_mime_types =
 template <safety_policy safety_level, typename auditor_type>
 continuation xml_parser<safety_level, auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	audit::scope _{auditor(), "msg"_v = msg};
+	audit::scope audit_scope{auditor(), "msg"_v = msg};
 
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
