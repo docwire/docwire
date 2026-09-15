@@ -20,10 +20,14 @@ struct null_auditor
     constexpr void record(source_location, Args&&...) const noexcept {}
 };
 
+/// @brief A no-op context provider for audit entries and scopes that carry no structured context.
+/// @note Using this guarantees that no context is evaluated or stored for the audit expression.
+inline constexpr auto no_context = []() noexcept -> std::tuple<> { return {}; };
+
 template<typename A>
 concept auditor = requires(A& a, source_location loc)
 {
-    { a.record(loc) } -> std::same_as<void>;
+    { a.record(loc, no_context) } -> std::same_as<void>;
 };
 
 template<typename T>
@@ -79,10 +83,6 @@ auto normalize_context_tuple(Result&& result)
 }
 
 } // namespace detail
-
-/// @brief A no-op context provider for audit entries and scopes that carry no structured context.
-/// @note Using this guarantees that no context is evaluated or stored for the audit expression.
-inline constexpr auto no_context = []() noexcept -> std::tuple<> { return {}; };
 
 template<typename auditor_type>
 class auditor_ref
