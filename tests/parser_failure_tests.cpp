@@ -153,7 +153,7 @@ TEST(PartialAndTotalFailures, HTML_Partial)
     int count = 0;
     std::string text_output;
     bool error_received = false;
-    TestParserFailures<html_parser>("embedded_images.html",
+    TestParserFailures<html_parser<>>("embedded_images.html",
         // back inspector
         [&](message_ptr msg) {
             if (msg->is<document::image>()) {
@@ -178,7 +178,7 @@ TEST(PartialAndTotalFailures, HTML_Partial)
 TEST(PartialAndTotalFailures, HTML_Total)
 {
     EXPECT_THROW({
-        TestParserFailures<html_parser>("embedded_images.html",
+        TestParserFailures<html_parser<>>("embedded_images.html",
             [](message_ptr msg) {
                 throw std::runtime_error("Simulated image failure");
             },
