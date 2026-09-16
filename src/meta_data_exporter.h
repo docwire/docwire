@@ -18,7 +18,7 @@
 #include <sstream>
 #include "document_elements.h"
 #include "meta_data_writer.h"
-#include "audit.hpp"
+#include "audit.h"
 #include "data_source.h"
 #include "serialization_message.h"
 

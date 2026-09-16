@@ -1,4 +1,4 @@
-#include "audit.hpp"
+#include "audit.h"
 #include "audit/legacy_log_audit.hpp"
 #include "log_core.h"
 #include "log_json_stream_sink.h"

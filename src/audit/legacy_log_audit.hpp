@@ -1,7 +1,7 @@
 #ifndef DOCWIRE_AUDIT_LEGACY_LOG_AUDIT_H
 #define DOCWIRE_AUDIT_LEGACY_LOG_AUDIT_H
 
-#include "audit.hpp"
+#include "audit_detail.h"
 #include "log_entry.h"
 
 namespace docwire::audit
