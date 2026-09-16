@@ -27,7 +27,7 @@
 #include "charset_converter.h"
 #include "convert_chrono.h" // IWYU pragma: keep
 #include "data_source.h"
-#include "audit.h"
+#include "audit.hpp"
 #include "audit/legacy_log_audit.hpp"
 #include "make_error.h"
 #include <mutex>

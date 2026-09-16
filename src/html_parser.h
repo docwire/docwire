@@ -14,7 +14,7 @@
 
 #include "html_export.h"
 #include "chain_element.h"
-#include "audit.h"
+#include "audit.hpp"
 #include "pimpl.h"
 
 namespace docwire

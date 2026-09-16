@@ -11,7 +11,7 @@
 
 #include "xml_parser.h"
 
-#include "audit.h"
+#include "audit.hpp"
 #include "audit/legacy_log_audit.hpp"
 #include "data_source.h"
 #include "document_elements.h"

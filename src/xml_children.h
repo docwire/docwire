@@ -13,7 +13,7 @@
 #define DOCWIRE_XML_CHILDREN_VIEW_H
 
 #include "xml_descendants.h"
-#include "audit.h"
+#include "audit.hpp"
 #include <ranges>
 #include "xml_node_ref.h"
 

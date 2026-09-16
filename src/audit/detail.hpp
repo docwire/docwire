@@ -1,8 +1,8 @@
 #ifndef DOCWIRE_AUDIT_DETAIL_H
 #define DOCWIRE_AUDIT_DETAIL_H
 
-#include "audit_core.h"
-#include "audit_tag.h"
+#include "audit/core.hpp"
+#include "audit/audit_tag.hpp"
 
 #include <concepts>
 #include <tuple>

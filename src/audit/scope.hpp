@@ -1,8 +1,7 @@
 #ifndef DOCWIRE_AUDIT_SCOPE_H
 #define DOCWIRE_AUDIT_SCOPE_H
 
-#include "audit_ref.h"
-#include "audit_tag.h"
+#include "audit/auditor_ref.hpp"
 #include "log_tags.h"
 #include "source_location.h"
 

@@ -14,7 +14,7 @@
 
 #include "safety_policy.h"
 #include "chain_element.h"
-#include "audit.h"
+#include "audit.hpp"
 #include "xml_export.h"
 
 namespace docwire

@@ -1,15 +1,12 @@
-#ifndef DOCWIRE_AUDIT_TAG_H
-#define DOCWIRE_AUDIT_TAG_H
+#ifndef DOCWIRE_AUDIT_TAGS_H
+#define DOCWIRE_AUDIT_TAGS_H
 
-#include "diagnostic_context.h"
+#include "audit/audit_tag.hpp"
 
 #include <tuple>
 
 namespace docwire::audit
 {
-
-template<typename T>
-concept audit_tag = docwire::context_tag<T>;
 
 template<audit_tag... TagTypes>
 struct tags
