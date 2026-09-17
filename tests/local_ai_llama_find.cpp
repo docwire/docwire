@@ -1,5 +1,4 @@
 #include "docwire.h"
-#include <fstream>
 #include <iostream>
 #include <sstream>
 
@@ -16,22 +15,19 @@ int main(int argc, char *argv[]) {
     config.min_probability = docwire::ai::min_p{0.05f};
     auto runner = std::make_shared<docwire::ai::llama::llama_runner>(config);
 
-    std::ofstream ofs("output.txt");
-    if (!ofs)
-    {
-    	throw std::runtime_error("Failed to open output.txt for writing");
-    }
     std::filesystem::path("data_processing_definition.doc") |
-    	content_type::detector{} | office_formats_parser{} | plain_text_exporter() |
-        ai::local::task("Summarize:\n\n", runner) | out_stream;
-
-    if (out_stream.str().empty())
-    {
-        throw std::runtime_error("Generated summary is empty");
-    }
-    ofs << out_stream.str();
-    ofs.close();
-    std::cout << "Text exported to output.txt" << std::endl;
+        content_type::detector{} | office_formats_parser{} |
+        plain_text_exporter() |
+        ai::local::task("Find exact sentence present about \"data conversion\" in the "
+                        "following text:\n\n",
+                        runner) |
+        out_stream;
+    ensure(out_stream.str())
+        .is_one_of({"Data processing refers to the activities performed on raw "
+                    "data to convert it into meaningful information.",
+                    "Data processing is the activities performed on raw data "
+                    "to convert it into meaningful information."});
+    std::cout << "Result: " + out_stream.str();
 
   } catch (const std::exception &e) {
     std::cerr << errors::diagnostic_message(e) << std::endl;
