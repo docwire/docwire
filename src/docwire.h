@@ -21,16 +21,24 @@
 #include "model_chain_element.h"
 #ifdef DOCWIRE_CT2
 #include "ct2_runner.h"
+#include "local_ai_ct2_embed.h"
+#include "local_ai_ct2_runner_factory.h"
+#include "local_ai_ct2_summarize.h"
+#include "local_ai_ct2_translate.h"
+#include "local_ai_ct2_task.h"
 #endif
 #ifdef DOCWIRE_LLAMA
 #include "llama_runner.h"
 #include "model_inference_config.h"
 #include "llama_models.h"
+#include "local_ai_llama_runner_factory.h"
+#include "local_ai_llama_summarize.h"
+#include "local_ai_llama_task.h"
+#include "local_ai_llama_translate.h"
 #endif
 #ifdef DOCWIRE_LOCAL_AI
 #include "local_ai_summarize.h"
 #include "local_ai_translate.h"
-#include "local_ai_embed.h"
 #include "local_ai_task.h"
 #endif
 #include "ai_elements.h"

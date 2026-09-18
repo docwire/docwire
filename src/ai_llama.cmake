@@ -13,6 +13,7 @@ docwire_find_resource(GRANITE_MODEL_FULL_PATH REL_PATH "granite-4-1b-q8-0/granit
 if(GRANITE_MODEL_FULL_PATH)
     docwire_target_resources(docwire_ai_llama "granite-4-1b-q8-0/granite-4.0-1b-Q8_0.gguf" SOURCE "${GRANITE_MODEL_FULL_PATH}")
     docwire_deploy_resources(TARGETS docwire_ai_llama)
+    target_compile_definitions(docwire_ai_llama PUBLIC DOCWIRE_GRANITE)
 else()
     message(STATUS "Granite model not found (llama-granite feature not selected); model loading will be skipped at runtime.")
 endif()

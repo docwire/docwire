@@ -192,7 +192,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Semantic Chunking (planned)**: Group related content using the SDK's chunking feature to create contextually rich embeddings that capture the nuances of the document's structure.
 
-- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1openai_1_1embed.html), the local embedding steps `ai::local::passage::embedder` and `ai::local::query::embedder`, or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT. Generated embeddings can be used in various NLP tasks.
+- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1openai_1_1embed.html), the local embedding steps `ai::local::ct2::passage::embedder` and `ai::local::ct2::query::embedder`, or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT. Generated embeddings can be used in various NLP tasks.
 
 - **Enhancing AI/NLP Pipelines**: Embeddings obtained from DocWire SDK can be used to enhance AI/NLP pipelines, enabling more accurate and context-aware applications such as document classification, sentiment analysis, and information retrieval.
 
@@ -394,13 +394,16 @@ std::filesystem::path("test.zip") | content_type::detector{} | archives_parser{}
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/parse_archives_8cpp-example.html)
 
+The examples below use `ai::local::ct2::*`, which comes with a built-in default CT2 model and needs no configuration. Alternatively, `ai::local::llama::*` can be used for integrating `.gguf` models with `llama.cpp` and running various tasks on them. 
+A backend-agnostic `ai::local::*` family also exists (`task`, `translate`, `summarize`) that takes an explicit runner instead, so it can be pointed at either `ai::local::ct2::make_default_runner()` or the llama.cpp backend via `ai::local::llama::make_runner(...)` / `make_default_runner()`.
+
 Classify file in any format (Office, PDF, mail, etc) to any categories using built-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | ai::local::task("Classify to...: agreement, invoice, report...") | out_stream;
+std::filesystem::path("...") | ... | ai::local::ct2::task("Classify to...: agreement, invoice, report...") | out_stream;
 ensure(out_stream.str()) == "report";
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/local_ai_classify_8cpp-example.html)
+[Full example](https://docwire.readthedocs.io/en/latest/local_ai_ct2_classify_8cpp-example.html)
 
 Classify file in any format (Office, PDF, mail, etc) to any categories using OpenAI service:
 
@@ -413,10 +416,10 @@ ensure(out_stream.str()) == "report\n";
 Translate document in any format (Office, PDF, mail, etc) to other language using built-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | ai::local::translate("spanish") | out_stream;
+std::filesystem::path("...") | ... | ai::local::ct2::translate("spanish") | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "La procesación de datos se refiere a las actividades...")) > 80;
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/local_ai_translate_8cpp-example.html)
+[Full example](https://docwire.readthedocs.io/en/latest/local_ai_ct2_translate_8cpp-example.html)
 
 Translate document in any format (Office, PDF, mail, etc) to other language using OpenAI service:
 
@@ -429,10 +432,10 @@ ensure(fuzzy_match::ratio(out_stream.str(), "El procesamiento de datos se refier
 Detect sentiment of document in any format (Office, PDF, mail, etc) using built-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | ai::local::task("Detect sentiment:\n\n") | out_stream;
+std::filesystem::path("...") | ... | ai::local::ct2::task("Detect sentiment:\n\n") | out_stream;
 ensure(out_stream.str()) == "positive";
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/local_ai_sentiment_8cpp-example.html)
+[Full example](https://docwire.readthedocs.io/en/latest/local_ai_ct2_sentiment_8cpp-example.html)
 
 Detect sentiment of document in any format (Office, PDF, mail, etc) using OpenAI service:
 
@@ -444,10 +447,10 @@ std::filesystem::path("1.doc") | ... | openai::detect_sentiment(...) | std::cout
 Make a summary of document in any format (Office, PDF, mail, etc) using built-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | ai::local::summarize() | out_stream;
+std::filesystem::path("...") | ... | ai::local::ct2::summarize() | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "Data processing is the collection, organization, analysis, and interpretation of data.\n")) > 50
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/local_ai_summary_8cpp-example.html)
+[Full example](https://docwire.readthedocs.io/en/latest/local_ai_ct2_summary_8cpp-example.html)
 
 Make a voice summary of document in any format (Office, PDF, mail, etc) in two steps: summarize using GPT model and convert the summary to speech using text to speech model. Result is saved to mp3 file:
 
@@ -467,10 +470,10 @@ ensure(fuzzy_match::ratio(out_stream.str(), "Data processing involves converting
 Find phrases, objects and events with smart matching in documents in any format (Office, PDF, mail, etc) using built-in local AI model:
 
 ```cpp
-std::filesystem::path("...") | ... | ai::local::task("Find sentence about \"data conversion\"...") | out_stream;
+std::filesystem::path("...") | ... | ai::local::ct2::task("Find sentence about \"data conversion\"...") | out_stream;
 ensure(out_stream.str()).is_one_of({ "Data processing refers to the activities performed on raw data to convert it into meaningful information."...
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/local_ai_find_8cpp-example.html)
+[Full example](https://docwire.readthedocs.io/en/latest/local_ai_ct2_find_8cpp-example.html)
 
 Find phrases, objects and events in text or image using GPT model (with non-default model selected):
 
@@ -493,9 +496,9 @@ ensure(out_msgs[0]->get<ai::embedding>().values.size()) == 1536;
 Create embedding for document in any format (Office, PDF, mail, etc) using built-in local AI model, create embeddings for two queries and calculate similarity:
 
 ```cpp
-std::filesystem::path("data_processing_definition.doc") | ... | ai::local::passage::embedder{} | passage_msgs;
+std::filesystem::path("data_processing_definition.doc") | ... | ai::local::ct2::passage::embedder{} | passage_msgs;
 ...
-docwire::data_source{std::string{"What is data processing?"}, ...} | ai::local::query::embedder{} | similar_query_msgs;
+docwire::data_source{std::string{"What is data processing?"}, ...} | ai::local::ct2::query::embedder{} | similar_query_msgs;
 ...
 double sim = cosine_similarity(passage_embedding.values, similar_query_embedding.values);
 ...
@@ -685,8 +688,8 @@ DocWire SDK can be built with additional features via vcpkg features. By default
 #### Available features
 
 - **`local-ai-ct2`** – Enables local AI runtime based on CTranslate2, including Flan-t5-large (translation, summarization, text generation) and multilingual-e5-small (text embeddings).
-- **`local-ai-llama`** – Enables GGUF-based LLM inference using llama.cpp. Requires `local-ai-ct2`.
-- **`local-ai-model-granite`** – Installs the IBM Granite 4.0 1B Q8_0 GGUF model. Requires `local-ai-llama` and therefore also `local-ai-ct2`.
+- **`local-ai-llama`** – Enables GGUF-based LLM inference using llama.cpp.
+- **`local-ai-model-granite`** – Installs the IBM Granite 4.0 1B Q8_0 GGUF model. Requires `local-ai-llama`.
 - **`docs`** – Builds the Doxygen documentation.
 - **`tests`** – Enables automatic tests.
 - **`asan`**, **`tsan`**, **`memcheck`**, **`helgrind`**, **`callgrind`** – Enable various testing and debugging instruments.
@@ -713,7 +716,7 @@ To enable the Granite model:
 FEATURES="[local-ai-model-granite]" ./build.sh
 ```
 
-Because `local-ai-model-granite` depends on `local-ai-llama`, vcpkg automatically enables the required local AI backends.
+Because `local-ai-model-granite` depends on `local-ai-llama`, vcpkg automatically enables the required local AI backend.
 
 PowerShell:
 

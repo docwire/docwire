@@ -14,12 +14,14 @@
 #include "model_inference_config.h"
 #ifdef DOCWIRE_CT2
 #include "ct2_runner.h"
+#include "local_ai_ct2_embed.h"
+#include "local_ai_ct2_runner_factory.h"
 #endif
 #ifdef DOCWIRE_LLAMA
 #include "llama_runner.h"
+#include "local_ai_llama_runner_factory.h"
 #endif
 #ifdef DOCWIRE_LOCAL_AI
-#include "local_ai_embed.h"
 #include "local_ai_task.h"
 #endif
 #include "ai_elements.h"
@@ -110,8 +112,7 @@ std::string enum_names_str()
 }
 #ifdef DOCWIRE_LOCAL_AI
 static std::shared_ptr<ai::ai_runner>
-create_local_runner(const boost::program_options::variables_map& vm,
-                    const std::string& default_model)
+create_local_runner(const boost::program_options::variables_map& vm)
 {
     if (vm.count("local-ai-model"))
     {
@@ -134,15 +135,21 @@ create_local_runner(const boost::program_options::variables_map& vm,
         	throw std::runtime_error("CT2 model support requires the local-ai-ct2 feature");
         #endif
     }
+
     #ifdef DOCWIRE_CT2
-    return std::make_shared<ai::ct2::ct2_runner>(
-        resource_path(default_model)
-    );
+        return ai::local::ct2::make_default_runner();
+    #elif defined(DOCWIRE_LLAMA) && defined(DOCWIRE_GRANITE)
+        return ai::local::llama::make_default_runner();
+    #elif defined(DOCWIRE_LLAMA)
+        throw std::runtime_error(
+            "No default local AI model available for this build. "
+            "Specify --local-ai-model, or rebuild with the local-ai-model-granite "
+            "feature to get a built-in default.");
     #else
-    	throw std::runtime_error("Default local AI model requires the local-ai-ct2 feature");
+        throw std::runtime_error("Default local AI model requires the local-ai-ct2 or local-ai-llama feature");
     #endif
 }
-#endif
+#endif // DOCWIRE_LOCAL_AI
 
 int main(int argc, char* argv[])
 {
@@ -161,7 +168,7 @@ int main(int argc, char* argv[])
 		("output_type", po::value<output_type>()->default_value(output_type::plain_text), enum_names_str<output_type>().c_str())
 		("http-post", po::value<std::string>(), "url to process data via http post")
 		("local-ai-prompt", po::value<std::string>(), "prompt to process text via local AI model")
-		("local-ai-embed", po::value<embed_prefix_type>()->implicit_value(embed_prefix_type::none), "generate embedding of text via local AI model. Optional argument selects the prefix type: (e.g. \"passage: \" or \"query: \" or \"none: \").")
+		("local-ai-ct2-embed", po::value<embed_prefix_type>()->implicit_value(embed_prefix_type::none), "generate embedding of text via local AI model. Optional argument selects the prefix type: (e.g. \"passage: \" or \"query: \" or \"none: \").")
 		("local-ai-model", po::value<std::string>(), "path to local AI model data (build-in default model is used if not specified)")
 		("openai-chat", po::value<std::string>(), "prompt to process text and images via OpenAI")
 		("openai-extract-entities", "extract entities from text and images via OpenAI")
@@ -417,69 +424,79 @@ int main(int argc, char* argv[])
 				vm.count("openai-temperature") ? vm["openai-temperature"].as<float>() : 0,
 				image_detail);
 	}
-	#ifdef DOCWIRE_CT2
-	if (vm.count("local-ai-prompt"))
-	{
-		try
+	#ifdef DOCWIRE_LOCAL_AI
+		if (vm.count("local-ai-prompt"))
 		{
-			std::string prompt = vm["local-ai-prompt"].as<std::string>();
-
-			auto runner = create_local_runner(vm, "flan-t5-large-ct2-int8");
-			chain |=
-				ai::local::task(prompt, runner);
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << "Error: " << errors::diagnostic_message(e) << std::endl;
-			return 1;
-		}
-	}
-
-	if (vm.count("local-ai-embed"))
-	{
-		try
-		{
-			embed_prefix_type prefix_type = vm["local-ai-embed"].as<embed_prefix_type>();
-			if (prefix_type == embed_prefix_type::query)
+			try
 			{
-				chain |= ai::local::query::embedder();
-			} else if (prefix_type == embed_prefix_type::passage) {
-          		chain |= ai::local::passage::embedder();
-	        } else {
-           		chain |= ai::local::passage::embedder();
-           	}
-			chain |= [](message_ptr msg, const message_callbacks& emit_message) -> continuation {
-				if (msg->is<ai::embedding>())
-				{
-					const auto& embedding_vec = msg->get<ai::embedding>().values;
-					std::string embedding_str = "[";
-					for (size_t i = 0; i < embedding_vec.size(); ++i)
-					{
-						embedding_str += std::to_string(embedding_vec[i]);
-						if (i < embedding_vec.size() - 1)
-							embedding_str += ", ";
-					}
-					embedding_str += "]";
-					return emit_message(data_source{embedding_str});
-				}
-				return emit_message(std::move(msg));
-			};
+				std::string prompt = vm["local-ai-prompt"].as<std::string>();
+
+				auto runner = create_local_runner(vm);
+				chain |=
+					ai::local::task(prompt, runner);
+			}
+			catch(const std::exception& e)
+			{
+				std::cerr << "Error: " << errors::diagnostic_message(e) << std::endl;
+				return 1;
+			}
 		}
-		catch(const std::exception& e)
+	#else
+		if (vm.count("local-ai-prompt"))
 		{
-			std::cerr << "Error: " << errors::diagnostic_message(e) << std::endl;
+			std::cerr << "Error: Local AI prompt requested, but this build does not include "
+			             "DOCWIRE_CT2 or DOCWIRE_LLAMA support.\n"
+			             "Rebuild with one of them enabled to use --local-ai-prompt." << std::endl;
 			return 1;
 		}
-	}
+	#endif
+
+	#ifdef DOCWIRE_CT2
+		if (vm.count("local-ai-ct2-embed"))
+		{
+			try
+			{
+				embed_prefix_type prefix_type = vm["local-ai-ct2-embed"].as<embed_prefix_type>();
+				if (prefix_type == embed_prefix_type::query)
+				{
+					chain |= ai::local::ct2::query::embedder();
+				} else if (prefix_type == embed_prefix_type::passage) {
+	          		chain |= ai::local::ct2::passage::embedder();
+		        } else {
+	           		chain |= ai::local::ct2::passage::embedder();
+	           	}
+				chain |= [](message_ptr msg, const message_callbacks& emit_message) -> continuation {
+					if (msg->is<ai::embedding>())
+					{
+						const auto& embedding_vec = msg->get<ai::embedding>().values;
+						std::string embedding_str = "[";
+						for (size_t i = 0; i < embedding_vec.size(); ++i)
+						{
+							embedding_str += std::to_string(embedding_vec[i]);
+							if (i < embedding_vec.size() - 1)
+								embedding_str += ", ";
+						}
+						embedding_str += "]";
+						return emit_message(data_source{embedding_str});
+					}
+					return emit_message(std::move(msg));
+				};
+			}
+			catch(const std::exception& e)
+			{
+				std::cerr << "Error: " << errors::diagnostic_message(e) << std::endl;
+				return 1;
+			}
+		}
 	#else
-	if (vm.count("local-ai-prompt") || vm.count("local-ai-embed"))
-	{
-		std::cerr << "Error: Local AI features requested, but this build does not include "
-		             "DOCWIRE_CT2 support.\n"
-		             "Rebuild with DOCWIRE_CT2 enabled to use --local-ai-prompt or "
-		             "--local-ai-embed." << std::endl;
-		return 1;
-	}
+		if (vm.count("local-ai-prompt") || vm.count("local-ai-ct2-embed"))
+		{
+			std::cerr << "Error: Local AI features requested, but this build does not include "
+			             "DOCWIRE_CT2 support.\n"
+			             "Rebuild with DOCWIRE_CT2 enabled to use --local-ai-prompt or "
+			             "--local-ai-ct2-embed." << std::endl;
+			return 1;
+		}
 	#endif
 
 	if (vm.count("openai-find"))

@@ -9,20 +9,23 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_TRANSLATE_H
-#define DOCWIRE_LOCAL_AI_TRANSLATE_H
+#ifndef DOCWIRE_LOCAL_AI_CT2_RUNNER_FACTORY_H
+#define DOCWIRE_LOCAL_AI_CT2_RUNNER_FACTORY_H
 
-#include "ai_translate.h"
+#include "ai_runner.h"
+#include "ct2_runner.h"
+#include "resource_path.h"
+#include <memory>
 
-namespace docwire::ai::local {
-
-class translate : public docwire::ai::translate {
-public:
-  explicit translate(const std::string &language,
-                     std::shared_ptr<ai_runner> runner)
-      : docwire::ai::translate(language, runner){};
+namespace docwire::ai::local::ct2 {
+inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner() {
+  return std::make_shared<docwire::ai::ct2::ct2_runner>(
+      resource_path("flan-t5-large-ct2-int8"));
+};
+inline std::shared_ptr<docwire::ai::ai_runner> make_embedding_runner() {
+  return std::make_shared<docwire::ai::ct2::ct2_runner>(
+      resource_path("multilingual-e5-small-ct2-int8"));
 };
 
-} // namespace docwire::ai::local
-
-#endif // DOCWIRE_LOCAL_AI_TRANSLATE_H
+} // namespace docwire::ai::local::ct2
+#endif
