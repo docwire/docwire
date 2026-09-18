@@ -277,6 +277,7 @@ function(license_description_from_license_id license_id out_var)
 	string(REPLACE "-only" "" license_id ${license_id})
 	string(REPLACE "-or-later" "" license_id ${license_id})
 	# license descriptions from https://choosealicense.com
+	set(license_desc_0BSD "A permissive license that imposes no conditions and permits unrestricted use, copying, modification, and/or distribution for any purpose with or without fee. It is textually derived from the ISC license, not from the BSD family.")
 	set(license_desc_BSL-1.0 "A simple permissive license only requiring preservation of copyright and license notices for source (and not binary) distribution. Licensed works, modifications, and larger works may be distributed under different terms and without source code.")
 	set(license_desc_MIT "A short and simple permissive license with conditions only requiring preservation of copyright and license notices. Licensed works, modifications, and larger works may be distributed under different terms and without source code.")
 	set(license_desc_BSD-2-Clause "A permissive license that comes in two variants, the BSD 2-Clause and BSD 3-Clause. Both have very minute differences to the MIT license.")
