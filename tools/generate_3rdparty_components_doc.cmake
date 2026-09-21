@@ -296,6 +296,7 @@ function(license_description_from_license_id license_id out_var)
 	set(license_desc_FTL "The FreeType License (FTL) is the most commonly used one. It is a BSD-style license with a credit clause and thus compatible with the GNU Public License (GPL) version 3, but not with the GPL version 2.")
 	# license description generated from http://www.libpng.org/pub/png/src/libpng-LICENSE.txt
 	set(license_desc_libpng-2.0 "The libpng-2.0 license is a permissive open-source license that allows the use, modification, and distribution of the libpng library in both commercial and non-commercial projects, with a disclaimer of warranty.")
+	set(license_desc_IJG "Independent JPEG Group License. You may use and distribute this software freely, provided you acknowledge its use in your documentation and do not claim authorship.")
 	# license description generated from LICENSE file
 	set(license_desc_bzip2-1.0.6 "bzip2 license is similar to the standard BSD 3-Clause License with some specific wording related to marking altered source versions.")
 	# license description from https://gitlab.com/libtiff/libtiff
