@@ -218,13 +218,13 @@ set(common_examples
     xml_parsing_example
 )
 
-set(local_ai_examples
+set(local_ai_ct2_examples
     local_embedding_similarity
-    local_ai_classify
-    local_ai_translate
-    local_ai_sentiment
-    local_ai_summary
-    local_ai_find
+    local_ai_ct2_classify
+    local_ai_ct2_translate
+    local_ai_ct2_sentiment
+    local_ai_ct2_summary
+    local_ai_ct2_find
 )
 
 set(local_ai_llama_examples
@@ -239,7 +239,7 @@ set(local_ai_llama_examples
 set(all_examples ${common_examples})
 
 if(TARGET docwire_ai_ct2)
-    list(APPEND all_examples ${local_ai_examples})
+    list(APPEND all_examples ${local_ai_ct2_examples})
 endif()
 
 if(TARGET docwire_ai_llama)

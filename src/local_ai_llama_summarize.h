@@ -9,20 +9,36 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_TRANSLATE_H
-#define DOCWIRE_LOCAL_AI_TRANSLATE_H
+#ifndef DOCWIRE_LOCAL_AI_LLAMA_SUMMARIZE_H
+#define DOCWIRE_LOCAL_AI_LLAMA_SUMMARIZE_H
 
-#include "ai_translate.h"
+#include "ai_summarize.h"
+#include "model_inference_config.h"
+#include "local_ai_llama_runner_factory.h"
+#include <filesystem>
 
-namespace docwire::ai::local {
+namespace docwire::ai::local::llama {
 
-class translate : public docwire::ai::translate {
+class summarize : public docwire::ai::summarize {
 public:
-  explicit translate(const std::string &language,
-                     std::shared_ptr<ai_runner> runner)
-      : docwire::ai::translate(language, runner){};
+#ifdef DOCWIRE_GRANITE
+  // Constructor with Default Granite model
+  explicit summarize(
+      model_lifetime_policy lifetime = model_lifetime_policy::persistent)
+      : docwire::ai::summarize(make_default_runner(), lifetime){};
+#endif
+  // Constructor allowing custom model path but with default config
+  explicit summarize(
+      const std::filesystem::path &model_path,
+      model_lifetime_policy lifetime = model_lifetime_policy::persistent)
+      : docwire::ai::summarize(make_runner(model_path), lifetime){};
+  // Constructor allowing custom model and relevant config
+  explicit summarize(
+      docwire::ai::model_inference_config config,
+      model_lifetime_policy lifetime = model_lifetime_policy::persistent)
+      : docwire::ai::summarize(make_runner(config), lifetime){};
 };
 
-} // namespace docwire::ai::local
+} // namespace docwire::ai::local::llama
 
-#endif // DOCWIRE_LOCAL_AI_TRANSLATE_H
+#endif // DOCWIRE_LOCAL_AI_LLAMA_SUMMARIZE_H

@@ -9,20 +9,21 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#include "ct2_runner.h"
-#include "resource_path.h"
-#include "local_ai_summarize.h"
+#ifndef DOCWIRE_AI_FIND_H
+#define DOCWIRE_AI_FIND_H
 
-namespace docwire::ai::local
+#include "ai_export.h"
+#include "model_chain_element.h"
+
+namespace docwire::ai
 {
 
-summarize::summarize(model_lifetime_policy lifetime)
-    : docwire::ai::summarize(
-        std::make_shared<docwire::ai::ct2::ct2_runner>(resource_path("flan-t5-large-ct2-int8")), lifetime)
-{}
+class DOCWIRE_AI_EXPORT find : public model_chain_element
+{
+  	public:
+    	explicit find(const std::string& what, std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
+};
 
-summarize::summarize(std::shared_ptr<docwire::ai::ai_runner> runner, model_lifetime_policy lifetime)
-    : docwire::ai::summarize(runner, lifetime)
-{}
+} // namespace docwire::ai
 
-}
+#endif // DOCWIRE_AI_FIND_H

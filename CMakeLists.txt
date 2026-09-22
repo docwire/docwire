@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.17)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for VSCode CLangd extension
 
-option(DOCWIRE_CT2 "Enable default CT2 local models (Translation / Text Generation / Embedding models)" OFF)
+option(DOCWIRE_CT2 "Enable CT2 models (Translation / Text Generation / Embedding models)" OFF)
 option(DOCWIRE_LLAMA    "Enable llama.cpp engine" OFF)
+option(DOCWIRE_GRANITE "Enable IBM Granite model" OFF)
 
 # Get version from ChangeLog.md and store it in DOCWIRE_VERSION and SIMPLE_DOCWIRE_VERSION
 function(extract_version)

@@ -14,15 +14,14 @@ int main(int argc, char *argv[]) {
     config.n_threads = docwire::ai::thread_count{4};
     config.temp = docwire::ai::temperature{0.2f};
     config.min_probability = docwire::ai::min_p{0.05f};
-    auto runner = std::make_shared<docwire::ai::llama::llama_runner>(config);
 
     std::filesystem::path("document_processing_market_trends.odt") |
         content_type::detector{} | office_formats_parser{} |
         plain_text_exporter() |
-        ai::local::task("Classify to one of the following categories and "
+        ai::local::llama::task("Classify to one of the following categories and "
                         "answer with exact category name: agreement, invoice, "
                         "report, legal, user manual, other:\n\n",
-                        runner) |
+                        config) |
         out_stream;
 
     if (out_stream.str().empty()) {

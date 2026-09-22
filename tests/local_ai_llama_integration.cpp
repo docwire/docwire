@@ -14,7 +14,6 @@ int main(int argc, char *argv[]) {
     config.n_threads = docwire::ai::thread_count{4};
     config.temp = docwire::ai::temperature{0.2f};
     config.min_probability = docwire::ai::min_p{0.05f};
-    auto runner = std::make_shared<docwire::ai::llama::llama_runner>(config);
 
     std::ofstream ofs("output.txt");
     if (!ofs)
@@ -23,7 +22,7 @@ int main(int argc, char *argv[]) {
     }
     std::filesystem::path("data_processing_definition.doc") |
     	content_type::detector{} | office_formats_parser{} | plain_text_exporter() |
-        ai::local::task("Summarize:\n\n", runner) | out_stream;
+        ai::local::llama::task("Summarize:\n\n", config) | out_stream;
 
     if (out_stream.str().empty())
     {

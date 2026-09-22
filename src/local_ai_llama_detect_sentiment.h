@@ -8,19 +8,37 @@
 /*                                                                                                                                           */
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
-#include "local_ai_translate.h"
-#include "ct2_runner.h"
-#include "resource_path.h"
 
-namespace docwire::ai::local
-{
+#ifndef DOCWIRE_LOCAL_AI_LLAMA_DETECT_SENTIMENT_H
+#define DOCWIRE_LOCAL_AI_LLAMA_DETECT_SENTIMENT_H
 
-translate::translate(const std::string& language)
-	: docwire::ai::translate(language,
-		std::make_shared<docwire::ai::ct2::ct2_runner>(resource_path("flan-t5-large-ct2-int8")))
-{}
+#include "ai_detect_sentiment.h"
+#include "model_inference_config.h"
+#include "local_ai_llama_runner_factory.h"
+#include <filesystem>
 
-translate::translate(const std::string& language, std::shared_ptr<ai_runner> runner)
-    : docwire::ai::translate(language, runner)
-{}
-} // namespace docwire::ai::local
+namespace docwire::ai::local::llama {
+
+class detect_sentiment : public docwire::ai::detect_sentiment {
+public:
+#ifdef DOCWIRE_GRANITE
+  // Constructor with Default Granite model
+  explicit detect_sentiment(
+      model_lifetime_policy lifetime = model_lifetime_policy::persistent)
+      : docwire::ai::detect_sentiment(make_default_runner(), lifetime){};
+#endif
+  // Constructor allowing custom model path but with default config
+  explicit detect_sentiment(
+      const std::filesystem::path &model_path,
+      model_lifetime_policy lifetime = model_lifetime_policy::persistent)
+      : docwire::ai::detect_sentiment(make_runner(model_path), lifetime){};
+  // Constructor allowing custom model and relevant config
+  explicit detect_sentiment(
+      docwire::ai::model_inference_config config,
+      model_lifetime_policy lifetime = model_lifetime_policy::persistent)
+      : docwire::ai::detect_sentiment(make_runner(config), lifetime){};
+};
+
+} // namespace docwire::ai::local::llama
+
+#endif // DOCWIRE_LOCAL_AI_LLAMA_DETECT_SENTIMENT_H

@@ -9,20 +9,21 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_TRANSLATE_H
-#define DOCWIRE_LOCAL_AI_TRANSLATE_H
+#ifndef DOCWIRE_LOCAL_AI_DETECT_SENTIMENT_H
+#define DOCWIRE_LOCAL_AI_DETECT_SENTIMENT_H
 
-#include "ai_translate.h"
+#include "ai_detect_sentiment.h"
 
 namespace docwire::ai::local {
 
-class translate : public docwire::ai::translate {
+class detect_sentiment : public docwire::ai::detect_sentiment {
 public:
-  explicit translate(const std::string &language,
-                     std::shared_ptr<ai_runner> runner)
-      : docwire::ai::translate(language, runner){};
+  explicit detect_sentiment(
+      std::shared_ptr<docwire::ai::ai_runner> runner,
+      model_lifetime_policy lifetime = model_lifetime_policy::persistent)
+      : docwire::ai::detect_sentiment(runner, lifetime){};
 };
 
 } // namespace docwire::ai::local
 
-#endif // DOCWIRE_LOCAL_AI_TRANSLATE_H
+#endif // DOCWIRE_LOCAL_AI_DETECT_SENTIMENT_H

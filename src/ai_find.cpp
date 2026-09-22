@@ -9,20 +9,15 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_TRANSLATE_H
-#define DOCWIRE_LOCAL_AI_TRANSLATE_H
+#include "ai_find.h"
+#include "model_chain_element.h"
 
-#include "ai_translate.h"
+namespace docwire::ai
+{
 
-namespace docwire::ai::local {
-
-class translate : public docwire::ai::translate {
-public:
-  explicit translate(const std::string &language,
-                     std::shared_ptr<ai_runner> runner)
-      : docwire::ai::translate(language, runner){};
-};
-
-} // namespace docwire::ai::local
-
-#endif // DOCWIRE_LOCAL_AI_TRANSLATE_H
+find::find(const std::string& what, std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime)
+    : model_chain_element(
+          "Find exact sentence present about " + what + " in the following text:\n\n", runner, lifetime)
+{
+}
+} // namespace docwire::ai

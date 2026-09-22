@@ -9,20 +9,20 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_TRANSLATE_H
-#define DOCWIRE_LOCAL_AI_TRANSLATE_H
+#ifndef DOCWIRE_LOCAL_AI_FIND_H
+#define DOCWIRE_LOCAL_AI_FIND_H
 
-#include "ai_translate.h"
+#include "ai_find.h"
 
 namespace docwire::ai::local {
 
-class translate : public docwire::ai::translate {
+class find : public docwire::ai::find {
 public:
-  explicit translate(const std::string &language,
+  explicit find(const std::string &what,
                      std::shared_ptr<ai_runner> runner)
-      : docwire::ai::translate(language, runner){};
+  : docwire::ai::find(what, runner){};
 };
 
 } // namespace docwire::ai::local
 
-#endif // DOCWIRE_LOCAL_AI_TRANSLATE_H
+#endif // DOCWIRE_LOCAL_AI_FIND_H

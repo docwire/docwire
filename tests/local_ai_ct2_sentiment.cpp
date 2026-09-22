@@ -1,4 +1,5 @@
 #include "docwire.h"
+#include "local_ai_ct2_detect_sentiment.h"
 #include <sstream>
 
 int main(int argc, char* argv[])
@@ -8,7 +9,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | plain_text_exporter() | ai::local::task("Detect sentiment:\n\n") | out_stream;
+    std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | plain_text_exporter() | ai::local::ct2::detect_sentiment() | out_stream;
     ensure(out_stream.str()) == "positive";
   }
   catch (const std::exception& e)

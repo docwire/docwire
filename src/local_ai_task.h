@@ -12,17 +12,16 @@
 #ifndef DOCWIRE_LOCAL_AI_TASK_H
 #define DOCWIRE_LOCAL_AI_TASK_H
 
-#include "local_ai_export.h"
 #include "ai_task.h"
 
-namespace docwire::ai::local
-{
+namespace docwire::ai::local {
 
-class DOCWIRE_LOCAL_AI_EXPORT task : public docwire::ai::task
-{
+class task : public docwire::ai::task {
 public:
-    explicit task(const std::string& prompt, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
-    explicit task(const std::string& prompt, std::shared_ptr<docwire::ai::ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
+  explicit task(
+      const std::string &prompt, std::shared_ptr<docwire::ai::ai_runner> runner,
+      model_lifetime_policy lifetime = model_lifetime_policy::persistent)
+      : docwire::ai::task(prompt, runner, lifetime){};
 };
 
 } // namespace docwire::ai::local

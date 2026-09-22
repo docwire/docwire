@@ -22,6 +22,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 		helgrind HELGRIND_ENABLED
 		local-ai-ct2 DOCWIRE_CT2
         local-ai-llama DOCWIRE_LLAMA
+        local-ai-model-granite DOCWIRE_GRANITE
         docs DOCWIRE_DOC
 )
 
