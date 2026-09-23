@@ -43,8 +43,6 @@ concept ostream_derived_ref_qualified = OStreamDerived<std::remove_reference_t<T
 class output_chain_element : public chain_element<output_chain_element>
 {
 public:
-  static constexpr bool is_leaf = true;
-
   /**
    * @param out_stream output_chain_element stream. Parsing chain will be writing to this stream.
    */
@@ -61,6 +59,14 @@ public:
 private:
   std::variant<ref_or_owned<std::ostream>, ref_or_owned<std::vector<message_ptr>>> m_out_obj;
 };
+
+namespace pipeline
+{
+
+template <>
+struct is_leaf<output_chain_element> : std::true_type {};
+
+} // namespace pipeline
 
 inline continuation output_chain_element::operator()(message_ptr msg, const message_callbacks& emit_message)
 {

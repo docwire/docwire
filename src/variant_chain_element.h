@@ -78,21 +78,18 @@ private:
     using first_alternative = std::tuple_element_t<0, std::tuple<Ts...>>;
 
     static constexpr bool first_is_generator =
-        pipeline_category<first_alternative>::is_generator;
+        pipeline::is_generator<first_alternative>::value;
 
     static constexpr bool first_is_leaf =
-        pipeline_category<first_alternative>::is_leaf;
+        pipeline::is_leaf<first_alternative>::value;
 
-    static_assert(((pipeline_category<Ts>::is_generator == first_is_generator) && ...),
+    static_assert(((pipeline::is_generator<Ts>::value == first_is_generator) && ...),
                   "All variant chain elements must share the same generator category");
 
-    static_assert(((pipeline_category<Ts>::is_leaf == first_is_leaf) && ...),
+    static_assert(((pipeline::is_leaf<Ts>::value == first_is_leaf) && ...),
                   "All variant chain elements must share the same leaf category");
 
 public:
-    static constexpr bool is_generator = first_is_generator;
-    static constexpr bool is_leaf = first_is_leaf;
-
     variant_chain_element() = default;
 
     template <typename V>
@@ -115,6 +112,19 @@ public:
 private:
     ref_or_owned<std::variant<Ts...>> m_value;
 };
+
+namespace pipeline
+{
+
+template <typename... Ts>
+struct is_generator<variant_chain_element<std::variant<Ts...>>>
+    : std::bool_constant<(is_generator<Ts>::value && ...)> {};
+
+template <typename... Ts>
+struct is_leaf<variant_chain_element<std::variant<Ts...>>>
+    : std::bool_constant<(is_leaf<Ts>::value && ...)> {};
+
+} // namespace pipeline
 
 template <typename... Ts>
 variant_chain_element(std::variant<Ts...>)

@@ -27,10 +27,6 @@ template <typename L, typename R>
 class parsing_chain : public chain_element<parsing_chain<L, R>>
 {
   public:
-    static constexpr bool is_generator = L::is_generator;
-    static constexpr bool is_leaf = R::is_leaf;
-    static constexpr bool is_complete = is_generator && is_leaf;
-
     parsing_chain(ref_or_owned<L> lhs_element, ref_or_owned<R> rhs_element)
       : m_lhs_element{std::move(lhs_element)}, m_rhs_element{std::move(rhs_element)}
     {}
@@ -80,6 +76,19 @@ class parsing_chain : public chain_element<parsing_chain<L, R>>
     ref_or_owned<L> m_lhs_element;
     ref_or_owned<R> m_rhs_element;
 };
+
+namespace pipeline
+{
+
+template <typename L, typename R>
+struct is_generator<parsing_chain<L, R>>
+    : is_generator<L> {};
+
+template <typename L, typename R>
+struct is_leaf<parsing_chain<L, R>>
+    : is_leaf<R> {};
+
+} // namespace pipeline
 
 } // namespace docwire
 

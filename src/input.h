@@ -34,8 +34,6 @@ concept istream_derived_ref_qualified = IStreamDerived<std::remove_reference_t<T
 class input_chain_element : public chain_element<input_chain_element>
 {
 public:
-  static constexpr bool is_generator = true;
-
   explicit input_chain_element(ref_or_owned<data_source> data)
     : m_data{data}
   {}
@@ -45,6 +43,14 @@ public:
 private:
   ref_or_owned<data_source> m_data;
 };
+
+namespace pipeline
+{
+
+template <>
+struct is_generator<input_chain_element> : std::true_type {};
+
+} // namespace pipeline
 
 inline continuation input_chain_element::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
