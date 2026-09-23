@@ -38,21 +38,6 @@ concept variant_alternative_invocable =
         { element(std::move(msg), cb) } -> std::convertible_to<continuation>;
     };
 
-template <typename T>
-struct pipeline_category
-{
-    static constexpr bool is_generator = false;
-    static constexpr bool is_leaf = false;
-};
-
-template <typename T>
-    requires chain_element_type<T>
-struct pipeline_category<T>
-{
-    static constexpr bool is_generator = std::remove_cvref_t<T>::is_generator;
-    static constexpr bool is_leaf = std::remove_cvref_t<T>::is_leaf;
-};
-
 /**
  * @brief A pipeline element wrapping a `std::variant` of alternative chain elements.
  *
