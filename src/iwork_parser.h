@@ -19,7 +19,7 @@
 namespace docwire
 {
 
-class DOCWIRE_IWORK_EXPORT iwork_parser : public chain_element<iwork_parser>, public with_pimpl<iwork_parser>
+class DOCWIRE_IWORK_EXPORT iwork_parser : public pipeline::transformer_element<iwork_parser>, public with_pimpl<iwork_parser>
 {
 	public:
 		iwork_parser();

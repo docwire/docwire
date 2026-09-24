@@ -24,7 +24,7 @@ namespace docwire
  * @tparam safety_level The safety policy to use.
  */
 template <safety_policy safety_level = default_safety_level>
-class DOCWIRE_XML_EXPORT xml_parser : public chain_element<xml_parser<safety_level>>
+class DOCWIRE_XML_EXPORT xml_parser : public pipeline::transformer_element<xml_parser<safety_level>>
 {
 public:
 	/**

@@ -25,7 +25,7 @@ namespace docwire
 /**
  * @brief Exports data to CSV format.
  */
-class csv_exporter : public chain_element<csv_exporter>
+class csv_exporter : public pipeline::transformer_element<csv_exporter>
 {
 public:
     csv_exporter() = default;

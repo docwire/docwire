@@ -22,7 +22,7 @@ namespace docwire
 /**
  * @brief Exports data to HTML format.
  */
-class DOCWIRE_HTML_EXPORT html_exporter: public chain_element<html_exporter>, public with_pimpl<html_exporter>
+class DOCWIRE_HTML_EXPORT html_exporter: public pipeline::transformer_element<html_exporter>, public with_pimpl<html_exporter>
 {
 public:
 

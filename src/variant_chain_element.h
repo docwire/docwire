@@ -38,6 +38,40 @@ concept variant_alternative_invocable =
         { element(std::move(msg), cb) } -> std::convertible_to<continuation>;
     };
 
+namespace pipeline::detail
+{
+
+/**
+ * @brief Computes the common pipeline role of a variant's alternatives.
+ *
+ * All alternatives must share the same role.
+ */
+template <typename... Ts>
+struct variant_common_role
+{
+    static_assert(sizeof...(Ts) > 0,
+                  "variant_chain_element requires at least one alternative");
+
+    using first_alternative = std::tuple_element_t<0, std::tuple<Ts...>>;
+
+    static constexpr role value = pipeline::role_v<first_alternative>;
+
+    static_assert(((pipeline::role_v<Ts> == value) && ...),
+                  "All variant chain elements must share the same pipeline role");
+};
+
+/**
+ * @brief Maps a pipeline role to its category base.
+ */
+template <role R, typename Derived>
+using role_base_t =
+    std::conditional_t<R == role::source, source_element<Derived>,
+    std::conditional_t<R == role::transformer, transformer_element<Derived>,
+    std::conditional_t<R == role::consumer, consumer_element<Derived>,
+    complete_pipeline<Derived>>>>;
+
+} // namespace pipeline::detail
+
 /**
  * @brief A pipeline element wrapping a `std::variant` of alternative chain elements.
  *
@@ -47,11 +81,8 @@ concept variant_alternative_invocable =
  * lowers to a tagged-union jump table and inlines a direct call per alternative.
  * This stays consistent with the "no `virtual`, no `std::function`" policy.
  *
- * All alternatives MUST share the same pipeline category:
- *  - every alternative must agree on `is_generator`, and
- *  - every alternative must agree on `is_leaf`.
- *
- * A variant mixing intermediate elements, sources, or terminals is rejected at
+ * All alternatives MUST share the same pipeline role (source, transformer, or
+ * consumer). A variant mixing elements of different roles is rejected at
  * compile time via `static_assert`. Use `noop_transformer` as an alternative to
  * represent an absent (optional) step.
  *
@@ -66,28 +97,13 @@ class variant_chain_element;
 
 template <typename... Ts>
 class variant_chain_element<std::variant<Ts...>>
-    : public chain_element<variant_chain_element<std::variant<Ts...>>>
+    : public pipeline::detail::role_base_t<
+          pipeline::detail::variant_common_role<Ts...>::value,
+          variant_chain_element<std::variant<Ts...>>>
 {
 private:
-    static_assert(sizeof...(Ts) > 0,
-                  "variant_chain_element requires at least one alternative");
-
     static_assert((variant_alternative_invocable<Ts> && ...),
                   "All variant alternatives must accept (message_ptr, const message_callbacks&)");
-
-    using first_alternative = std::tuple_element_t<0, std::tuple<Ts...>>;
-
-    static constexpr bool first_is_generator =
-        pipeline::is_generator<first_alternative>::value;
-
-    static constexpr bool first_is_leaf =
-        pipeline::is_leaf<first_alternative>::value;
-
-    static_assert(((pipeline::is_generator<Ts>::value == first_is_generator) && ...),
-                  "All variant chain elements must share the same generator category");
-
-    static_assert(((pipeline::is_leaf<Ts>::value == first_is_leaf) && ...),
-                  "All variant chain elements must share the same leaf category");
 
 public:
     variant_chain_element() = default;
@@ -112,19 +128,6 @@ public:
 private:
     ref_or_owned<std::variant<Ts...>> m_value;
 };
-
-namespace pipeline
-{
-
-template <typename... Ts>
-struct is_generator<variant_chain_element<std::variant<Ts...>>>
-    : std::bool_constant<(is_generator<Ts>::value && ...)> {};
-
-template <typename... Ts>
-struct is_leaf<variant_chain_element<std::variant<Ts...>>>
-    : std::bool_constant<(is_leaf<Ts>::value && ...)> {};
-
-} // namespace pipeline
 
 template <typename... Ts>
 variant_chain_element(std::variant<Ts...>)

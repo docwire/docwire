@@ -19,7 +19,7 @@
 
 namespace docwire
 {
-class DOCWIRE_PDF_EXPORT pdf_parser : public chain_element<pdf_parser>, public with_pimpl<pdf_parser>
+class DOCWIRE_PDF_EXPORT pdf_parser : public pipeline::transformer_element<pdf_parser>, public with_pimpl<pdf_parser>
 {
 	private:
 		using with_pimpl<pdf_parser>::impl;

@@ -21,7 +21,7 @@
 namespace docwire
 {
 
-class DOCWIRE_MAIL_EXPORT pst_parser : public chain_element<pst_parser>, public with_pimpl<pst_parser>
+class DOCWIRE_MAIL_EXPORT pst_parser : public pipeline::transformer_element<pst_parser>, public with_pimpl<pst_parser>
 {
 private:
   using with_pimpl<pst_parser>::impl;

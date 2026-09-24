@@ -22,7 +22,7 @@ namespace docwire
 struct parse_paragraphs { bool v; };
 struct parse_lines { bool v; };
 
-class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser : public chain_element<txt_parser>, public with_pimpl<txt_parser>
+class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser : public pipeline::transformer_element<txt_parser>, public with_pimpl<txt_parser>
 {
 	public:
 

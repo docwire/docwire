@@ -54,7 +54,7 @@ DOCWIRE_CONTENT_TYPE_EXPORT std::optional<file_extension> to_extension(const mim
 * @see content_type::detector
 * @see content_type::by_file_extension::detect
 */
-class detector : public chain_element<detector>
+class detector : public pipeline::transformer_element<detector>
 {
 public:
     continuation operator()(message_ptr msg, const message_callbacks& emit_message)

@@ -18,7 +18,7 @@
 
 namespace docwire
 {
-class DOCWIRE_HTML_EXPORT html_parser : public chain_element<html_parser>, public with_pimpl<html_parser>
+class DOCWIRE_HTML_EXPORT html_parser : public pipeline::transformer_element<html_parser>, public with_pimpl<html_parser>
 {
 	private:
 		using with_pimpl<html_parser>::impl;

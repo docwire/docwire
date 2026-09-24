@@ -34,7 +34,7 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
  * @see content_type::detector
  * @see content_type::odf_flat::detect
  */
-class detector : public chain_element<detector>
+class detector : public pipeline::transformer_element<detector>
 {
 public:
     continuation operator()(message_ptr msg, const message_callbacks& emit_message)

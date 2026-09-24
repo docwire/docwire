@@ -20,7 +20,7 @@ namespace docwire
 
 class thread_safe_ole_storage;
 
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser : public chain_element<ppt_parser>
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser : public pipeline::transformer_element<ppt_parser>
 {
 	public:
 		ppt_parser();

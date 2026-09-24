@@ -103,7 +103,7 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const by_signature::d
  * @see content_type::outlook::detector
  * @see content_type::xlsb::detector
  */
-class detector : public chain_element<detector>
+class detector : public pipeline::transformer_element<detector>
 {
 public:
 

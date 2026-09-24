@@ -18,13 +18,58 @@
 #include "ref_or_owned.h"
 #include "serialization_message.h"
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 namespace docwire
 {
 
+namespace pipeline::detail
+{
+
+/**
+ * @brief Selects the public role base of a `parsing_chain<L, R>`.
+ *
+ * | Left        | Right       | Base                  |
+ * |-------------|-------------|-----------------------|
+ * | source      | transformer | `source_element`      |
+ * | transformer | transformer | `transformer_element` |
+ * | transformer | consumer    | `consumer_element`    |
+ * | source      | consumer    | `complete_pipeline`   |
+ */
 template <typename L, typename R>
-class parsing_chain : public chain_element<parsing_chain<L, R>>
+struct parsing_chain_base_selector
+{
+    static constexpr bool lhs_source = pipeline::source<L>;
+    static constexpr bool lhs_transformer = pipeline::transformer<L>;
+    static constexpr bool rhs_transformer = pipeline::transformer<R>;
+    static constexpr bool rhs_consumer = pipeline::consumer<R>;
+
+    using type =
+        std::conditional_t<lhs_source && rhs_transformer,
+            pipeline::source_element<parsing_chain<L, R>>,
+        std::conditional_t<lhs_transformer && rhs_transformer,
+            pipeline::transformer_element<parsing_chain<L, R>>,
+        std::conditional_t<lhs_transformer && rhs_consumer,
+            pipeline::consumer_element<parsing_chain<L, R>>,
+        std::conditional_t<lhs_source && rhs_consumer,
+            pipeline::complete_pipeline<parsing_chain<L, R>>,
+        void>>>>;
+};
+
+} // namespace pipeline::detail
+
+/**
+ * @brief The role base selected for a `parsing_chain<L, R>`.
+ *
+ * @see parsing_chain
+ */
+template <typename L, typename R>
+using parsing_chain_base_t =
+    typename pipeline::detail::parsing_chain_base_selector<L, R>::type;
+
+template <typename L, typename R>
+class parsing_chain : public parsing_chain_base_t<L, R>
 {
   public:
     parsing_chain(ref_or_owned<L> lhs_element, ref_or_owned<R> rhs_element)
@@ -77,18 +122,38 @@ class parsing_chain : public chain_element<parsing_chain<L, R>>
     ref_or_owned<R> m_rhs_element;
 };
 
-namespace pipeline
+/**
+ * @brief Composes two pipeline elements into a lazily evaluated chain.
+ *
+ * The operator only participates for grammatically valid connections: a source
+ * or transformer on the left, and a transformer or consumer on the right. A
+ * `source | consumer` combination produces a complete, immediately executed
+ * pipeline.
+ *
+ * @see parsing_chain
+ * @see complete_pipeline
+ */
+template <typename L, typename R>
+    requires pipeline::source_or_transformer<L>
+          && pipeline::transformer_or_consumer<R>
+auto operator|(L&& lhs, R&& rhs)
 {
+    using lhs_t = std::remove_cvref_t<L>;
+    using rhs_t = std::remove_cvref_t<R>;
 
-template <typename L, typename R>
-struct is_generator<parsing_chain<L, R>>
-    : is_generator<L> {};
+    parsing_chain<lhs_t, rhs_t> chain{
+        ref_or_owned<lhs_t>{std::forward<L>(lhs)},
+        ref_or_owned<rhs_t>{std::forward<R>(rhs)}
+    };
 
-template <typename L, typename R>
-struct is_leaf<parsing_chain<L, R>>
-    : is_leaf<R> {};
+    if constexpr (pipeline::source<L> && pipeline::consumer<R>)
+    {
+        chain(std::make_shared<message<pipeline::start_processing>>(
+            pipeline::start_processing{}));
+    }
 
-} // namespace pipeline
+    return chain;
+}
 
 } // namespace docwire
 

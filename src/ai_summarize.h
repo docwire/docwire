@@ -20,7 +20,7 @@ namespace docwire::ai
 
 class DOCWIRE_AI_EXPORT summarize
     : public model_chain_element,
-      public chain_element<summarize>
+      public pipeline::transformer_element<summarize>
 {
   	public:
     	explicit summarize(std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);

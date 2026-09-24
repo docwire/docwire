@@ -19,7 +19,7 @@ namespace docwire::ai::local
 {
 
 class DOCWIRE_LOCAL_AI_EXPORT translate
-    : public docwire::chain_element<translate>
+    : public docwire::pipeline::transformer_element<translate>
     , public docwire::ai::translate
 {
   public:

@@ -35,7 +35,7 @@ namespace docwire
  * @tparam safety_level The safety policy to use.
  */
 template <safety_policy safety_level = default_safety_level>
-class office_formats_parser : public chain_element<office_formats_parser<safety_level>>
+class office_formats_parser : public pipeline::transformer_element<office_formats_parser<safety_level>>
 {
     public:
         /**

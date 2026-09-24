@@ -22,7 +22,7 @@ namespace docwire
 namespace openai
 {
 
-class DOCWIRE_OPENAI_EXPORT transcribe : public chain_element<transcribe>, public with_pimpl<transcribe>
+class DOCWIRE_OPENAI_EXPORT transcribe : public pipeline::transformer_element<transcribe>, public with_pimpl<transcribe>
 {
 public:
 	enum class model

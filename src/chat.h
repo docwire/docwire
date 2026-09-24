@@ -64,7 +64,7 @@ enum class image_detail
 	low, high, automatic
 };
 
-class DOCWIRE_OPENAI_EXPORT chat : public chain_element<chat>, public with_pimpl<chat>
+class DOCWIRE_OPENAI_EXPORT chat : public pipeline::transformer_element<chat>, public with_pimpl<chat>
 {
 public:
 	chat(const std::string& system_message, const std::string& api_key, model model = model::gpt_5, float temperature = 0.7, image_detail image_detail = image_detail::automatic);

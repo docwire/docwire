@@ -40,7 +40,7 @@ concept ostream_derived_ref_qualified = OStreamDerived<std::remove_reference_t<T
  *  std::ifstream("file.pdf", std::ios_base::in|std::ios_base::binary) | office_formats_parser{} | plain_text_exporter() | std::cout; // Imports file.pdf and saves it to std::cout as plain text
  *  @endcode
  */
-class output_chain_element : public chain_element<output_chain_element>
+class output_chain_element : public pipeline::consumer_element<output_chain_element>
 {
 public:
   /**
@@ -59,14 +59,6 @@ public:
 private:
   std::variant<ref_or_owned<std::ostream>, ref_or_owned<std::vector<message_ptr>>> m_out_obj;
 };
-
-namespace pipeline
-{
-
-template <>
-struct is_leaf<output_chain_element> : std::true_type {};
-
-} // namespace pipeline
 
 inline continuation output_chain_element::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
@@ -87,14 +79,14 @@ inline continuation output_chain_element::operator()(message_ptr msg, const mess
 }
 
 template <typename ChainElement>
-    requires std::derived_from<std::remove_cvref_t<ChainElement>, chain_element<std::remove_cvref_t<ChainElement>>>
+    requires pipeline::source_or_transformer<ChainElement>
 auto operator|(ChainElement&& element, ref_or_owned<std::ostream> stream)
 {
   return std::forward<ChainElement>(element) | output_chain_element(stream);
 }
 
 template <typename ChainElement>
-    requires std::derived_from<std::remove_cvref_t<ChainElement>, chain_element<std::remove_cvref_t<ChainElement>>>
+    requires pipeline::source_or_transformer<ChainElement>
 auto operator|(ChainElement&& element, ref_or_owned<std::vector<message_ptr>> vector)
 {
   return std::forward<ChainElement>(element) | output_chain_element(vector);

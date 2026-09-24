@@ -28,7 +28,7 @@ namespace docwire
  * @brief A chain element that skips messages not belonging to one of the
  *        specified mail folders.
  */
-class filter_by_folder_name : public chain_element<filter_by_folder_name>
+class filter_by_folder_name : public pipeline::transformer_element<filter_by_folder_name>
 {
 public:
   explicit filter_by_folder_name(std::vector<std::string> names)
@@ -57,7 +57,7 @@ private:
  * @brief A chain element that skips attachments not matching one of the
  *        specified file extensions.
  */
-class filter_by_attachment_type : public chain_element<filter_by_attachment_type>
+class filter_by_attachment_type : public pipeline::transformer_element<filter_by_attachment_type>
 {
 public:
   explicit filter_by_attachment_type(std::vector<file_extension> types)
@@ -86,7 +86,7 @@ private:
  * @brief A chain element that skips mail messages created before the given
  *        minimum time.
  */
-class filter_by_mail_min_creation_time : public chain_element<filter_by_mail_min_creation_time>
+class filter_by_mail_min_creation_time : public pipeline::transformer_element<filter_by_mail_min_creation_time>
 {
 public:
   explicit filter_by_mail_min_creation_time(unsigned int min_time)
@@ -114,7 +114,7 @@ private:
  * @brief A chain element that skips mail messages created after the given
  *        maximum time.
  */
-class filter_by_mail_max_creation_time : public chain_element<filter_by_mail_max_creation_time>
+class filter_by_mail_max_creation_time : public pipeline::transformer_element<filter_by_mail_max_creation_time>
 {
 public:
   explicit filter_by_mail_max_creation_time(unsigned int max_time)
@@ -142,7 +142,7 @@ private:
  * @brief A chain element that stops the pipeline after a given number of
  *        messages.
  */
-class filter_by_max_node_number : public chain_element<filter_by_max_node_number>
+class filter_by_max_node_number : public pipeline::transformer_element<filter_by_max_node_number>
 {
 public:
   explicit filter_by_max_node_number(unsigned int max_nodes)

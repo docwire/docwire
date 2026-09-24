@@ -19,7 +19,7 @@
 namespace docwire
 {
 
-class mail_parser : public chain_element<mail_parser>
+class mail_parser : public pipeline::transformer_element<mail_parser>
 {
     public:
         continuation operator()(message_ptr msg, const message_callbacks& emit_message)

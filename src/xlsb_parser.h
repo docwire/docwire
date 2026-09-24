@@ -22,7 +22,7 @@ namespace docwire
 
 class zip_reader;
 
-class DOCWIRE_XLSB_EXPORT xlsb_parser : public chain_element<xlsb_parser>, public with_pimpl<xlsb_parser>
+class DOCWIRE_XLSB_EXPORT xlsb_parser : public pipeline::transformer_element<xlsb_parser>, public with_pimpl<xlsb_parser>
 {
 	private:
 		friend pimpl_impl<xlsb_parser>;

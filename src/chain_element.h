@@ -30,34 +30,32 @@ namespace pipeline
 struct start_processing {};
 
 /**
- * @brief Compile-time detection of generator (source) pipeline elements.
+ * @brief The role a pipeline element plays inside a chain.
  *
- * A generator produces the initial message of a pipeline (e.g.
- * `input_chain_element`). There are no implicit defaults: only types that
- * explicitly specialize this trait are considered generators.
- *
- * @tparam T The type to classify.
- *
- * @see is_leaf
- * @see chain_element
+ * @see source_element
+ * @see transformer_element
+ * @see consumer_element
+ * @see complete_pipeline
  */
-template <typename T>
-struct is_generator : std::false_type {};
+enum class role
+{
+    source,
+    transformer,
+    consumer,
+    complete
+};
 
-/**
- * @brief Compile-time detection of leaf (terminal) pipeline elements.
- *
- * A leaf terminates a pipeline (e.g. `output_chain_element`). There are no
- * implicit defaults: only types that explicitly specialize this trait are
- * considered leaves.
- *
- * @tparam T The type to classify.
- *
- * @see is_generator
- * @see chain_element
- */
-template <typename T>
-struct is_leaf : std::false_type {};
+template <typename Derived>
+class source_element;
+
+template <typename Derived>
+class transformer_element;
+
+template <typename Derived>
+class consumer_element;
+
+template <typename Derived>
+class complete_pipeline;
 
 } // namespace pipeline
 
@@ -84,51 +82,153 @@ public:
     {
         return static_cast<const Derived&>(*this);
     }
-
-    template <typename Self, typename Other>
-        requires std::same_as<std::remove_cvref_t<Self>, Derived>
-              && std::derived_from<std::remove_cvref_t<Other>,
-                                  chain_element<std::remove_cvref_t<Other>>>
-    friend auto operator|(Self&& lhs, Other&& rhs)
-    {
-        using L = std::remove_cvref_t<Self>;
-        using R = std::remove_cvref_t<Other>;
-
-        parsing_chain<L, R> chain{
-            ref_or_owned<L>{std::forward<Self>(lhs)},
-            ref_or_owned<R>{std::forward<Other>(rhs)}
-        };
-
-        if constexpr (pipeline::is_generator<L>::value
-                   && pipeline::is_leaf<R>::value)
-        {
-            chain(std::make_shared<message<pipeline::start_processing>>(
-                pipeline::start_processing{}));
-        }
-
-        return chain;
-    }
 };
+
+namespace pipeline
+{
+
+/**
+ * @brief Category base for pipeline elements that produce the initial message.
+ *
+ * @tparam Derived The concrete pipeline element type (CRTP).
+ *
+ * @see transformer_element
+ * @see consumer_element
+ */
+template <typename Derived>
+class source_element : public chain_element<Derived>
+{
+};
+
+/**
+ * @brief Category base for pipeline elements that consume and emit messages.
+ *
+ * @tparam Derived The concrete pipeline element type (CRTP).
+ *
+ * @see source_element
+ * @see consumer_element
+ */
+template <typename Derived>
+class transformer_element : public chain_element<Derived>
+{
+};
+
+/**
+ * @brief Category base for pipeline elements that terminate a pipeline.
+ *
+ * @tparam Derived The concrete pipeline element type (CRTP).
+ *
+ * @see source_element
+ * @see transformer_element
+ */
+template <typename Derived>
+class consumer_element : public chain_element<Derived>
+{
+};
+
+/**
+ * @brief The terminal, executable pipeline object.
+ *
+ * @note This type deliberately does NOT derive from `chain_element`, so a fully
+ * assembled pipeline cannot be piped any further.
+ *
+ * @tparam Derived The concrete pipeline type (CRTP).
+ */
+template <typename Derived>
+class complete_pipeline
+{
+};
+
+/**
+ * @brief Checks whether `T` plays the `source` role (produces the initial message).
+ */
+template <typename T>
+concept source =
+    std::derived_from<std::remove_cvref_t<T>,
+                      source_element<std::remove_cvref_t<T>>>;
+
+/**
+ * @brief Checks whether `T` plays the `transformer` role (consumes and emits messages).
+ */
+template <typename T>
+concept transformer =
+    std::derived_from<std::remove_cvref_t<T>,
+                      transformer_element<std::remove_cvref_t<T>>>;
+
+/**
+ * @brief Checks whether `T` plays the `consumer` role (terminates the pipeline).
+ */
+template <typename T>
+concept consumer =
+    std::derived_from<std::remove_cvref_t<T>,
+                      consumer_element<std::remove_cvref_t<T>>>;
+
+/**
+ * @brief Checks whether `T` is a fully assembled, executable pipeline.
+ */
+template <typename T>
+concept complete =
+    std::derived_from<std::remove_cvref_t<T>,
+                      complete_pipeline<std::remove_cvref_t<T>>>;
+
+/**
+ * @brief Checks whether `T` may appear on the left-hand side of `operator|`.
+ */
+template <typename T>
+concept source_or_transformer = source<T> || transformer<T>;
+
+/**
+ * @brief Checks whether `T` may appear on the right-hand side of `operator|`.
+ */
+template <typename T>
+concept transformer_or_consumer = transformer<T> || consumer<T>;
+
+/**
+ * @brief Compile-time classification of a pipeline element's role.
+ *
+ * @tparam T The type to classify.
+ *
+ * @see role
+ */
+template <typename T>
+constexpr role role_of()
+{
+    using U = std::remove_cvref_t<T>;
+    static_assert(source<U> || transformer<U> || consumer<U> || complete<U>,
+                  "Type does not model a pipeline element role");
+    if constexpr (source<U>)
+        return role::source;
+    else if constexpr (transformer<U>)
+        return role::transformer;
+    else if constexpr (consumer<U>)
+        return role::consumer;
+    else
+        return role::complete;
+}
+
+/**
+ * @brief The pipeline role of `T` as a compile-time constant.
+ */
+template <typename T>
+inline constexpr role role_v = role_of<T>();
+
+} // namespace pipeline
 
 /**
  * @brief Checks whether a type models the pipeline chain element protocol.
  *
- * A type models `chain_element_type` when it derives from
- * `chain_element<Derived>` using itself as the derived type, which is required
- * for the pipeline composition operator (`operator|`) to participate.
+ * A type models `chain_element_type` when it plays any of the three pipelining
+ * roles: source, transformer, or consumer.
  *
  * @tparam T The type to test.
  *
- * @see chain_element
- * @see variant_chain_element
- * @see noop_transformer
- * @note This concept is the canonical way to constrain overloads that accept
- * arbitrary pipeline elements without knowing their concrete category.
+ * @see pipeline::source
+ * @see pipeline::transformer
+ * @see pipeline::consumer
  */
 template <typename T>
 concept chain_element_type =
-    std::derived_from<std::remove_cvref_t<T>,
-                      chain_element<std::remove_cvref_t<T>>>;
+    pipeline::source<T> || pipeline::transformer<T> || pipeline::consumer<T>;
 
 }
 #endif //DOCWIRE_CHAIN_ELEMENT_H

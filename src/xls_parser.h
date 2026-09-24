@@ -22,7 +22,7 @@ namespace docwire
 
 class thread_safe_ole_storage;
 
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser : public chain_element<xls_parser>, public with_pimpl<xls_parser>
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser : public pipeline::transformer_element<xls_parser>, public with_pimpl<xls_parser>
 {
 	private:
 		friend pimpl_impl<xls_parser>;

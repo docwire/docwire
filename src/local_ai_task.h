@@ -19,7 +19,7 @@ namespace docwire::ai::local
 {
 
 class DOCWIRE_LOCAL_AI_EXPORT task
-    : public docwire::chain_element<task>
+    : public docwire::pipeline::transformer_element<task>
     , public docwire::ai::task
 {
 public:

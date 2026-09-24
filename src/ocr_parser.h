@@ -36,7 +36,7 @@ struct ocr_confidence_threshold { std::optional<float> v; };
 struct ocr_data_path { std::filesystem::path v; };
 struct ocr_timeout { std::optional<int32_t> v; };
 
-class DOCWIRE_OCR_EXPORT ocr_parser : public chain_element<ocr_parser>, public with_pimpl<ocr_parser>
+class DOCWIRE_OCR_EXPORT ocr_parser : public pipeline::transformer_element<ocr_parser>, public with_pimpl<ocr_parser>
 {
 private:
     using with_pimpl<ocr_parser>::impl;

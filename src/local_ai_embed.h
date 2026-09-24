@@ -24,7 +24,7 @@ namespace docwire::ai::local::passage
  * is applied automatically. No model-specific knowledge required at the call site.
  */
 class DOCWIRE_LOCAL_AI_EXPORT embedder
-    : public docwire::chain_element<embedder>
+    : public docwire::pipeline::transformer_element<embedder>
     , public docwire::ai::embed
 {
   public:
@@ -42,7 +42,7 @@ namespace docwire::ai::local::query
 
  */
 class DOCWIRE_LOCAL_AI_EXPORT embedder
-    : public docwire::chain_element<embedder>
+    : public docwire::pipeline::transformer_element<embedder>
     , public docwire::ai::embed
 {
   public:

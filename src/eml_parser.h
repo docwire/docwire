@@ -20,7 +20,7 @@
 namespace docwire
 {
 
-class DOCWIRE_MAIL_EXPORT eml_parser : public chain_element<eml_parser>, public with_pimpl<eml_parser>
+class DOCWIRE_MAIL_EXPORT eml_parser : public pipeline::transformer_element<eml_parser>, public with_pimpl<eml_parser>
 {
 	private:
 		using with_pimpl<eml_parser>::impl;

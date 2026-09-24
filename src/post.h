@@ -33,7 +33,7 @@ namespace http
 
 struct ssl_verify_peer { bool v; };
 
-class DOCWIRE_HTTP_EXPORT post : public chain_element<post>, public with_pimpl<post>
+class DOCWIRE_HTTP_EXPORT post : public pipeline::transformer_element<post>, public with_pimpl<post>
 {
 public:
 	post(const std::string& url, const std::string& oauth2_bearer_token = "", ssl_verify_peer ssl_verify_peer_v = {true});

@@ -19,7 +19,7 @@ namespace docwire::ai::local
 {
 
 class DOCWIRE_LOCAL_AI_EXPORT summarize
-    : public docwire::chain_element<summarize>
+    : public docwire::pipeline::transformer_element<summarize>
     , public docwire::ai::summarize
 {
 public:

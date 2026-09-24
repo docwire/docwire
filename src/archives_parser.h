@@ -18,7 +18,7 @@
 namespace docwire
 {
 
-class DOCWIRE_ARCHIVES_EXPORT archives_parser : public chain_element<archives_parser>
+class DOCWIRE_ARCHIVES_EXPORT archives_parser : public pipeline::transformer_element<archives_parser>
 {
 public:
 

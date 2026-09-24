@@ -18,7 +18,7 @@
 namespace docwire
 {
 
-class DOCWIRE_RTF_EXPORT rtf_parser : public chain_element<rtf_parser>
+class DOCWIRE_RTF_EXPORT rtf_parser : public pipeline::transformer_element<rtf_parser>
 {
 	public:
 		rtf_parser();

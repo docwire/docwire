@@ -28,7 +28,7 @@ namespace docwire
  * The callable type is preserved by value. No `std::function` is used.
  */
 template <typename Func>
-class transformer_func : public chain_element<transformer_func<Func>>
+class transformer_func : public pipeline::transformer_element<transformer_func<Func>>
 {
 public:
     transformer_func(Func func)

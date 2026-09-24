@@ -31,7 +31,7 @@ concept IStreamDerived = std::derived_from<T, std::istream>;
 template<typename T>
 concept istream_derived_ref_qualified = IStreamDerived<std::remove_reference_t<T>>;
 
-class input_chain_element : public chain_element<input_chain_element>
+class input_chain_element : public pipeline::source_element<input_chain_element>
 {
 public:
   explicit input_chain_element(ref_or_owned<data_source> data)
@@ -43,14 +43,6 @@ public:
 private:
   ref_or_owned<data_source> m_data;
 };
-
-namespace pipeline
-{
-
-template <>
-struct is_generator<input_chain_element> : std::true_type {};
-
-} // namespace pipeline
 
 inline continuation input_chain_element::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
@@ -64,21 +56,21 @@ inline continuation input_chain_element::operator()(message_ptr msg, const messa
 }
 
 template <typename ChainElement>
-    requires std::derived_from<std::remove_cvref_t<ChainElement>, chain_element<std::remove_cvref_t<ChainElement>>>
+    requires pipeline::transformer_or_consumer<ChainElement>
 auto operator|(ref_or_owned<data_source> data, ChainElement&& chain_element)
 {
   return input_chain_element{data} | std::forward<ChainElement>(chain_element);
 }
 
 template <typename ChainElement>
-    requires std::derived_from<std::remove_cvref_t<ChainElement>, chain_element<std::remove_cvref_t<ChainElement>>>
+    requires pipeline::transformer_or_consumer<ChainElement>
 auto operator|(ref_or_owned<std::istream> stream, ChainElement&& chain_element)
 {
   return input_chain_element{data_source{seekable_stream_ptr{stream.to_shared_ptr()}}} | std::forward<ChainElement>(chain_element);
 }
 
 template<data_source_compatible_type_ref_qualified T, typename ChainElement>
-    requires std::derived_from<std::remove_cvref_t<ChainElement>, chain_element<std::remove_cvref_t<ChainElement>>>
+    requires pipeline::transformer_or_consumer<ChainElement>
 auto operator|(T&& v, ChainElement&& chain_element)
 {
   return input_chain_element{data_source{std::forward<T>(v)}} | std::forward<ChainElement>(chain_element);

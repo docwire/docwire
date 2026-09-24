@@ -27,7 +27,7 @@ namespace docwire
 template <safety_policy safety_level = default_safety_level>
 class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser
     : public common_xml_document_parser<safety_level>,
-      public chain_element<odfxml_parser<safety_level>>,
+      public pipeline::transformer_element<odfxml_parser<safety_level>>,
       public with_pimpl<odfxml_parser<safety_level>>
 {
 	private:

@@ -25,13 +25,12 @@ namespace docwire
  * an alternative inside a `variant_chain_element` so an optional pipeline step
  * can be represented without a separate primitive.
  *
- * @note This element is an intermediate step: `is_generator` and `is_leaf`
- * both inherit the default `false` values from `chain_element`.
+ * @note This element is an intermediate step, modeled by `transformer_element`.
  *
  * @see variant_chain_element
  * @see chain_element
  */
-class noop_transformer : public chain_element<noop_transformer>
+class noop_transformer : public pipeline::transformer_element<noop_transformer>
 {
 public:
     /**

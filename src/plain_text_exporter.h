@@ -38,7 +38,7 @@ struct link_formatter
 /**
  * @brief Exports data to plain text format.
  */
-class plain_text_exporter : public chain_element<plain_text_exporter>
+class plain_text_exporter : public pipeline::transformer_element<plain_text_exporter>
 {
 public:
 	plain_text_exporter(eol_sequence eol = eol_sequence{"\n"},
