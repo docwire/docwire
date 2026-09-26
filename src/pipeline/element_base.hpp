@@ -9,12 +9,12 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CHAIN_ELEMENT_H
-#define DOCWIRE_CHAIN_ELEMENT_H
+#ifndef DOCWIRE_PIPELINE_ELEMENT_BASE_H
+#define DOCWIRE_PIPELINE_ELEMENT_BASE_H
 
-// Compatibility shim. The core pipeline machinery now lives in
-// docwire::pipeline, see pipeline/element_base.hpp.
-#include "pipeline/element_base.hpp"
+#include "../core_export.h"
+#include "../message.h"
+#include "../ref_or_owned.h"
 
 #include <concepts>
 #include <memory>
@@ -262,4 +262,4 @@ inline constexpr role role_v = role_of<T>();
 } // namespace pipeline
 
 }
-#endif //DOCWIRE_CHAIN_ELEMENT_H
+#endif //DOCWIRE_PIPELINE_ELEMENT_BASE_H

@@ -16,11 +16,11 @@
 #include "http_listener.h"
 #include "ssl_certificate.h"
 #include "http_export.h"
-#include "input.h"
+#include "pipeline/input_element.hpp"
 #include "log_scope.h"
 #include "make_error.h"
 #include "message.h"
-#include "output.h"
+#include "pipeline/output_element.hpp"
 #include <cstdint>
 #include <exception>
 #include <functional>
@@ -255,8 +255,8 @@ private:
             // input generator is piped in, so that the intermediate chain is
             // not considered "complete" and does not run prematurely. Only the
             // fully assembled chain runs, exactly once.
-            auto pipeline_with_output = pipeline | output_chain_element{response_messages};
-            input_chain_element{std::move(request_data_source)} | pipeline_with_output;
+            auto pipeline_with_output = pipeline | pipeline::output_element{response_messages};
+            pipeline::input_element{std::move(request_data_source)} | pipeline_with_output;
 
             if (response_messages->empty())
             {

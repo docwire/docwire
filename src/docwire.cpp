@@ -49,7 +49,7 @@
 #include "meta_data_exporter.h"
 #include "ocr_parser.h"
 #include "office_formats_parser.h"
-#include "output.h"
+#include "pipeline/output_element.hpp"
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "resource_path.h"
@@ -59,10 +59,10 @@
 #include "transcribe.h"
 #include "translate_to.h"
 #include "version.h"
-#include "parsing_chain.h"
-#include "input.h"
+#include "pipeline/chain_expression.hpp"
+#include "pipeline/input_element.hpp"
 #include "transformer_func.h"
-#include "variant_chain_element.h"
+#include "pipeline/variant_expression.hpp"
 #include <set>
 #include <variant>
 
@@ -161,12 +161,12 @@ template <typename Factory>
 auto maybe(bool condition, Factory&& factory)
 {
     using T = std::decay_t<std::invoke_result_t<Factory>>;
-    using V = std::variant<noop_transformer, T>;
+    using V = std::variant<pipeline::noop_transformer, T>;
 
     if (condition)
         return V{std::invoke(std::forward<Factory>(factory))};
 
-    return V{noop_transformer{}};
+    return V{pipeline::noop_transformer{}};
 }
 
 /**
@@ -176,9 +176,9 @@ auto maybe(bool condition, Factory&& factory)
 template <typename Pipeline>
 void run_pipeline(data_source&& data, Pipeline&& pipeline)
 {
-    input_chain_element{std::move(data)}
+    pipeline::input_element{std::move(data)}
         | std::forward<Pipeline>(pipeline)
-        | output_chain_element{std::cout};
+        | pipeline::output_element{std::cout};
 }
 
 } // namespace

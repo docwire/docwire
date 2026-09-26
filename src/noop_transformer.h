@@ -12,40 +12,9 @@
 #ifndef DOCWIRE_NOOP_TRANSFORMER_H
 #define DOCWIRE_NOOP_TRANSFORMER_H
 
-#include "chain_element.h"
-#include <utility>
+// Compatibility shim. The noop transformer now lives in
+// docwire::pipeline, see pipeline/noop_transformer.hpp.
+#include "pipeline/noop_transformer.hpp"
 
-namespace docwire
-{
-
-/**
- * @brief A chain element that forwards every message unchanged.
- *
- * This is an explicit "no operation" intermediate step. Its primary use is as
- * an alternative inside a `variant_chain_element` so an optional pipeline step
- * can be represented without a separate primitive.
- *
- * @note This element is an intermediate step, modeled by `transformer_element`.
- *
- * @see variant_chain_element
- * @see chain_element
- */
-class noop_transformer : public pipeline::transformer_element<noop_transformer>
-{
-public:
-    /**
-     * @brief Forwards the given message downstream unchanged.
-     *
-     * @param msg The message to forward.
-     * @param emit_message The downstream emission callbacks.
-     * @return The continuation status reported by the downstream chain.
-     */
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
-    {
-        return emit_message(std::move(msg));
-    }
-};
-
-} // namespace docwire
 
 #endif // DOCWIRE_NOOP_TRANSFORMER_H

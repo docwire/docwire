@@ -12,69 +12,8 @@
 #ifndef DOCWIRE_INPUT_H
 #define DOCWIRE_INPUT_H
 
-#include <concepts>
-#include <iostream>
-#include <type_traits>
-#include "chain_element.h"
-#include "data_source.h"
-#include "serialization_data_source.h" // IWYU pragma: keep
-#include "log_entry.h"
-#include "log_scope.h"
-#include "parsing_chain.h"
+// Compatibility shim. The input source element now lives in
+// docwire::pipeline, see pipeline/input_element.hpp.
+#include "pipeline/input_element.hpp"
 
-namespace docwire
-{
-
-template<class T>
-concept IStreamDerived = std::derived_from<T, std::istream>;
-
-template<typename T>
-concept istream_derived_ref_qualified = IStreamDerived<std::remove_reference_t<T>>;
-
-class input_chain_element : public pipeline::source_element<input_chain_element>
-{
-public:
-  explicit input_chain_element(ref_or_owned<data_source> data)
-    : m_data{data}
-  {}
-
-  continuation operator()(message_ptr msg, const message_callbacks& emit_message);
-
-private:
-  ref_or_owned<data_source> m_data;
-};
-
-inline continuation input_chain_element::operator()(message_ptr msg, const message_callbacks& emit_message)
-{
-  DOCWIRE_LOG_SCOPE();
-  if (msg->is<pipeline::start_processing>())
-  {
-    DOCWIRE_LOG_ENTRY(m_data.get());
-    return emit_message(std::move(m_data.get()));
-  }
-  return emit_message(std::move(msg));
-}
-
-template <typename ChainElement>
-    requires pipeline::transformer_or_consumer<ChainElement>
-auto operator|(ref_or_owned<data_source> data, ChainElement&& chain_element)
-{
-  return input_chain_element{data} | std::forward<ChainElement>(chain_element);
-}
-
-template <typename ChainElement>
-    requires pipeline::transformer_or_consumer<ChainElement>
-auto operator|(ref_or_owned<std::istream> stream, ChainElement&& chain_element)
-{
-  return input_chain_element{data_source{seekable_stream_ptr{stream.to_shared_ptr()}}} | std::forward<ChainElement>(chain_element);
-}
-
-template<data_source_compatible_type_ref_qualified T, typename ChainElement>
-    requires pipeline::transformer_or_consumer<ChainElement>
-auto operator|(T&& v, ChainElement&& chain_element)
-{
-  return input_chain_element{data_source{std::forward<T>(v)}} | std::forward<ChainElement>(chain_element);
-}
-
-}
 #endif //DOCWIRE_INPUT_H
