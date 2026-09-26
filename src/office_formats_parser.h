@@ -21,7 +21,7 @@
 #include "xls_parser.h"
 #include "xlsb_parser.h"
 #include "odf_ooxml_parser.h"
-#include "parsing_chain.h"
+#include "pipeline/chain_expression.hpp"
 #include "ppt_parser.h"
 #include "rtf_parser.h"
 #include "txt_parser.h"

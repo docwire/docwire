@@ -13,7 +13,7 @@
 #define DOCWIRE_XML_PARSER_H
 
 #include "safety_policy.h"
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "xml_export.h"
 
 namespace docwire

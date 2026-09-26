@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_CONTENT_TYPE_H
 #define DOCWIRE_CONTENT_TYPE_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "content_type_by_signature.h"
 #include "ref_or_owned.h"
 

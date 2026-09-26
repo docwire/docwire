@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_OCR_PARSER_H
 #define DOCWIRE_OCR_PARSER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include <cstdint>
 #include "data_source.h"
 #include <filesystem>

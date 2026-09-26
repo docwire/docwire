@@ -14,7 +14,7 @@
 
 #include "mail_export.h"
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "pimpl.h"
 
 namespace docwire

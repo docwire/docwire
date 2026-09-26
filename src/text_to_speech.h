@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_OPENAI_TEXT_TO_SPEECH_H
 #define DOCWIRE_OPENAI_TEXT_TO_SPEECH_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "openai_export.h"
 #include "message.h"
 #include "pimpl.h"

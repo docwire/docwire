@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_META_DATA_EXPORTER_H
 #define DOCWIRE_META_DATA_EXPORTER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "core_export.h"
 #include <memory>
 #include <sstream>

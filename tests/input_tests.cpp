@@ -21,9 +21,9 @@
 #include <iterator>
 #include <magic_enum/magic_enum_iostream.hpp>
 #include "office_formats_parser.h"
-#include "output.h"
+#include "pipeline/output_element.hpp"
 #include "plain_text_exporter.h"
-#include "input.h"
+#include "pipeline/input_element.hpp"
 
 using namespace docwire;
 

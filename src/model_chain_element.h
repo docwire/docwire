@@ -13,7 +13,7 @@
 #define DOCWIRE_AI_MODEL_CHAIN_ELEMENT_H
 
 #include "ai_runner.h"
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "ai_export.h"
 
 namespace docwire::ai

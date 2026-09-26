@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_TXT_PARSER_H
 #define DOCWIRE_TXT_PARSER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "plain_text_export.h"
 #include "pimpl.h"
 

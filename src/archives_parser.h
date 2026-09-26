@@ -13,7 +13,7 @@
 #define DOCWIRE_ARCHIVES_PARSER_H
 
 #include "archives_export.h"
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 
 namespace docwire
 {

@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_PDF_PARSER_H
 #define DOCWIRE_PDF_PARSER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "pdf_export.h"
 #include "pimpl.h"
 #include "message.h"

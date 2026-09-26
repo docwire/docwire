@@ -13,7 +13,7 @@
 #define DOCWIRE_COMMON_XML_PARSER_H
 
 #include "attributes.h"
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "pimpl.h"
 #include "xml_children.h"
 #include <string>

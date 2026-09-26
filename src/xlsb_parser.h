@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_XLSB_PARSER_H
 #define DOCWIRE_XLSB_PARSER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "message.h"
 #include "pimpl.h"
 #include "xlsb_export.h"

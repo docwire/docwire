@@ -36,10 +36,10 @@
 #include <algorithm>
 #include "ocr_parser.h"
 #include "office_formats_parser.h"
-#include "output.h"
+#include "pipeline/output_element.hpp"
 #include "plain_text_exporter.h"
 #include "transformer_func.h"
-#include "input.h"
+#include "pipeline/input_element.hpp"
 #include "log.h"
 
 using namespace docwire;

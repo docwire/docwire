@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_HTTP_POST_H
 #define DOCWIRE_HTTP_POST_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "http_export.h"
 #include "pimpl.h"
 #include <filesystem>

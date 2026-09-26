@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_CSV_EXPORTER_H
 #define DOCWIRE_CSV_EXPORTER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "csv_writer.h"
 #include "data_source.h"
 #include "document_elements.h"

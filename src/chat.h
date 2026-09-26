@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_OPENAI_CHAT_H
 #define DOCWIRE_OPENAI_CHAT_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "openai_export.h"
 #include "pimpl.h"
 #include <string>

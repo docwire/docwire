@@ -13,7 +13,7 @@
 #define DOCWIRE_PPT_PARSER_H
 
 #include "ole_office_formats_export.h"
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 
 namespace docwire
 {

@@ -23,13 +23,13 @@
 #include <fstream>
 #include <magic_enum/magic_enum_iostream.hpp>
 #include "office_formats_parser.h"
-#include "output.h"
+#include "pipeline/output_element.hpp"
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "serialization_document_elements.h" // IWYU pragma: keep
 #include <thread>
 #include "transformer_func.h"
-#include "input.h"
+#include "pipeline/input_element.hpp"
 #include "http_server.h"
 
 using namespace docwire;

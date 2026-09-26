@@ -14,7 +14,7 @@
 
 #include "ai_export.h"
 #include "ai_runner.h"
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "not_null.h"
 #include "pimpl.h"
 

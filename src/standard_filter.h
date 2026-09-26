@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_STANDARD_FILTER_H
 #define DOCWIRE_STANDARD_FILTER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "core_export.h"
 #include "file_extension.h"
 #include "mail_elements.h"

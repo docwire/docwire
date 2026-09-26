@@ -11,8 +11,8 @@
 
 #include "message_matchers.h"
 #include "html_parser.h"
-#include "input.h"
-#include "output.h"
+#include "pipeline/input_element.hpp"
+#include "pipeline/output_element.hpp"
 
 using namespace docwire;
 using namespace testing;
