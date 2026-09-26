@@ -21,24 +21,24 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire
+namespace docwire::pipeline
 {
 
-namespace pipeline::detail
+namespace detail
 {
 
 /**
- * @brief Selects the public role base of a `parsing_chain<L, R>`.
+ * @brief Selects the public role base of a `chain_expression<L, R>`.
  *
- * | Left        | Right       | Base                  |
- * |-------------|-------------|-----------------------|
- * | source      | transformer | `source_element`      |
- * | transformer | transformer | `transformer_element` |
- * | transformer | consumer    | `consumer_element`    |
- * | source      | consumer    | `complete_pipeline`   |
+ * | Left        | Right       | Base                    |
+ * |-------------|-------------|-------------------------|
+ * | source      | transformer | `source_element`        |
+ * | transformer | transformer | `transformer_element`   |
+ * | transformer | consumer    | `consumer_element`      |
+ * | source      | consumer    | `complete_expression`   |
  */
 template <typename L, typename R>
-struct parsing_chain_base_selector
+struct chain_base_selector
 {
     static constexpr bool lhs_source = pipeline::source<L>;
     static constexpr bool lhs_transformer = pipeline::transformer<L>;
@@ -47,37 +47,48 @@ struct parsing_chain_base_selector
 
     using type =
         std::conditional_t<lhs_source && rhs_transformer,
-            pipeline::source_element<parsing_chain<L, R>>,
+            pipeline::source_element<chain_expression<L, R>>,
         std::conditional_t<lhs_transformer && rhs_transformer,
-            pipeline::transformer_element<parsing_chain<L, R>>,
+            pipeline::transformer_element<chain_expression<L, R>>,
         std::conditional_t<lhs_transformer && rhs_consumer,
-            pipeline::consumer_element<parsing_chain<L, R>>,
+            pipeline::consumer_element<chain_expression<L, R>>,
         std::conditional_t<lhs_source && rhs_consumer,
-            pipeline::complete_pipeline<parsing_chain<L, R>>,
+            pipeline::complete_expression<chain_expression<L, R>>,
         void>>>>;
 };
 
-} // namespace pipeline::detail
+} // namespace detail
 
 /**
- * @brief The role base selected for a `parsing_chain<L, R>`.
+ * @brief The role base selected for a `chain_expression<L, R>`.
  *
- * @see parsing_chain
+ * @see chain_expression
  */
 template <typename L, typename R>
-using parsing_chain_base_t =
-    typename pipeline::detail::parsing_chain_base_selector<L, R>::type;
+using chain_base_t =
+    typename detail::chain_base_selector<L, R>::type;
 
+/**
+ * @brief The internal pipeline node produced by `operator|`.
+ *
+ * This expression-tree node encodes, in its type, the static composition of two
+ * pipeline elements. It is an implementation detail and is almost never written
+ * explicitly by users; its presence is detected by the `pipeline::chain`
+ * concept.
+ *
+ * @see pipeline::chain
+ * @see operator|
+ */
 template <typename L, typename R>
-class parsing_chain : public parsing_chain_base_t<L, R>
+class chain_expression : public chain_base_t<L, R>
 {
   public:
-    parsing_chain(ref_or_owned<L> lhs_element, ref_or_owned<R> rhs_element)
+    chain_expression(ref_or_owned<L> lhs_element, ref_or_owned<R> rhs_element)
       : m_lhs_element{std::move(lhs_element)}, m_rhs_element{std::move(rhs_element)}
     {}
 
-    parsing_chain(parsing_chain&& chain) = default;
-    parsing_chain& operator=(parsing_chain&& chain) = default;
+    chain_expression(chain_expression&& chain) = default;
+    chain_expression& operator=(chain_expression&& chain) = default;
 
     void operator()(message_ptr msg)
     {
@@ -122,6 +133,11 @@ class parsing_chain : public parsing_chain_base_t<L, R>
     ref_or_owned<R> m_rhs_element;
 };
 
+} // namespace docwire::pipeline
+
+namespace docwire
+{
+
 /**
  * @brief Composes two pipeline elements into a lazily evaluated chain.
  *
@@ -130,8 +146,8 @@ class parsing_chain : public parsing_chain_base_t<L, R>
  * `source | consumer` combination produces a complete, immediately executed
  * pipeline.
  *
- * @see parsing_chain
- * @see complete_pipeline
+ * @see chain_expression
+ * @see complete_expression
  */
 template <typename L, typename R>
     requires pipeline::source_or_transformer<L>
@@ -141,7 +157,7 @@ auto operator|(L&& lhs, R&& rhs)
     using lhs_t = std::remove_cvref_t<L>;
     using rhs_t = std::remove_cvref_t<R>;
 
-    parsing_chain<lhs_t, rhs_t> chain{
+    pipeline::chain_expression<lhs_t, rhs_t> chain{
         ref_or_owned<lhs_t>{std::forward<L>(lhs)},
         ref_or_owned<rhs_t>{std::forward<R>(rhs)}
     };

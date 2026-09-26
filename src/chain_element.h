@@ -55,23 +55,36 @@ template <typename Derived>
 class consumer_element;
 
 template <typename Derived>
-class complete_pipeline;
-
-} // namespace pipeline
+class complete_expression;
 
 template <typename L, typename R>
-class parsing_chain;
+class chain_expression;
 
+/**
+ * @brief Base class for all pipeline chain elements.
+ *
+ * Every source, transformer, and consumer shares this CRTP base, which grants
+ * access to the most-derived type required by the static dispatch machinery.
+ * A fully assembled pipeline (`complete_expression`) deliberately does NOT
+ * derive from this base, so it cannot be piped any further.
+ *
+ * @tparam Derived The concrete pipeline element type (CRTP).
+ *
+ * @see element
+ * @see source_element
+ * @see transformer_element
+ * @see consumer_element
+ */
 template <typename Derived>
-class chain_element
+class element_base
 {
 public:
-    chain_element() = default;
-    chain_element(const chain_element&) = default;
-    chain_element& operator=(const chain_element&) = default;
-    chain_element(chain_element&&) = default;
-    chain_element& operator=(chain_element&&) = default;
-    ~chain_element() = default;
+    element_base() = default;
+    element_base(const element_base&) = default;
+    element_base& operator=(const element_base&) = default;
+    element_base(element_base&&) = default;
+    element_base& operator=(element_base&&) = default;
+    ~element_base() = default;
 
     Derived& derived() noexcept
     {
@@ -84,9 +97,6 @@ public:
     }
 };
 
-namespace pipeline
-{
-
 /**
  * @brief Category base for pipeline elements that produce the initial message.
  *
@@ -96,7 +106,7 @@ namespace pipeline
  * @see consumer_element
  */
 template <typename Derived>
-class source_element : public chain_element<Derived>
+class source_element : public element_base<Derived>
 {
 };
 
@@ -109,7 +119,7 @@ class source_element : public chain_element<Derived>
  * @see consumer_element
  */
 template <typename Derived>
-class transformer_element : public chain_element<Derived>
+class transformer_element : public element_base<Derived>
 {
 };
 
@@ -122,20 +132,20 @@ class transformer_element : public chain_element<Derived>
  * @see transformer_element
  */
 template <typename Derived>
-class consumer_element : public chain_element<Derived>
+class consumer_element : public element_base<Derived>
 {
 };
 
 /**
  * @brief The terminal, executable pipeline object.
  *
- * @note This type deliberately does NOT derive from `chain_element`, so a fully
+ * @note This type deliberately does NOT derive from `element_base`, so a fully
  * assembled pipeline cannot be piped any further.
  *
  * @tparam Derived The concrete pipeline type (CRTP).
  */
 template <typename Derived>
-class complete_pipeline
+class complete_expression
 {
 };
 
@@ -169,7 +179,44 @@ concept consumer =
 template <typename T>
 concept complete =
     std::derived_from<std::remove_cvref_t<T>,
-                      complete_pipeline<std::remove_cvref_t<T>>>;
+                      complete_expression<std::remove_cvref_t<T>>>;
+
+/**
+ * @brief Checks whether `T` is a pipeline chain element.
+ *
+ * A chain element plays one of the three pipelining roles: source, transformer,
+ * or consumer. A fully assembled pipeline (`complete_expression`) is
+ * intentionally excluded.
+ *
+ * @see source
+ * @see transformer
+ * @see consumer
+ * @see element_base
+ */
+template <typename T>
+concept element =
+    std::derived_from<std::remove_cvref_t<T>,
+                      element_base<std::remove_cvref_t<T>>>;
+
+/**
+ * @brief Detects the internal chain expression node produced by `operator|`.
+ *
+ * @see chain
+ * @see chain_expression
+ */
+template <typename T>
+struct is_chain_expression : std::false_type {};
+
+template <typename L, typename R>
+struct is_chain_expression<chain_expression<L, R>> : std::true_type {};
+
+/**
+ * @brief Checks whether `T` is a composed pipeline chain expression.
+ *
+ * @see chain_expression
+ */
+template <typename T>
+concept chain = is_chain_expression<std::remove_cvref_t<T>>::value;
 
 /**
  * @brief Checks whether `T` may appear on the left-hand side of `operator|`.
@@ -213,22 +260,6 @@ template <typename T>
 inline constexpr role role_v = role_of<T>();
 
 } // namespace pipeline
-
-/**
- * @brief Checks whether a type models the pipeline chain element protocol.
- *
- * A type models `chain_element_type` when it plays any of the three pipelining
- * roles: source, transformer, or consumer.
- *
- * @tparam T The type to test.
- *
- * @see pipeline::source
- * @see pipeline::transformer
- * @see pipeline::consumer
- */
-template <typename T>
-concept chain_element_type =
-    pipeline::source<T> || pipeline::transformer<T> || pipeline::consumer<T>;
 
 }
 #endif //DOCWIRE_CHAIN_ELEMENT_H

@@ -68,7 +68,7 @@ using role_base_t =
     std::conditional_t<R == role::source, source_element<Derived>,
     std::conditional_t<R == role::transformer, transformer_element<Derived>,
     std::conditional_t<R == role::consumer, consumer_element<Derived>,
-    complete_pipeline<Derived>>>>;
+    complete_expression<Derived>>>>;
 
 } // namespace pipeline::detail
 
@@ -134,7 +134,7 @@ variant_chain_element(std::variant<Ts...>)
     -> variant_chain_element<std::variant<Ts...>>;
 
 template <typename L, typename Variant>
-    requires chain_element_type<L> && std_variant<Variant>
+    requires pipeline::element<L> && std_variant<Variant>
 auto operator|(L&& lhs, Variant&& rhs)
 {
     using variant_type = std::remove_cvref_t<Variant>;
@@ -143,7 +143,7 @@ auto operator|(L&& lhs, Variant&& rhs)
 }
 
 template <typename Variant, typename R>
-    requires std_variant<Variant> && chain_element_type<R>
+    requires std_variant<Variant> && pipeline::element<R>
 auto operator|(Variant&& lhs, R&& rhs)
 {
     using variant_type = std::remove_cvref_t<Variant>;
