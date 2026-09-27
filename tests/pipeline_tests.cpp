@@ -91,18 +91,16 @@ using complete_pipeline =
 static_assert(pipeline::complete<complete_pipeline>);
 static_assert(!pipeline::element<complete_pipeline>);
 
-static_assert(!requires {
-    std::declval<plus_one>() | std::declval<int_source>();
-});
-static_assert(!requires {
-    std::declval<int_capture>() | std::declval<plus_one>();
-});
-static_assert(!requires {
-    std::declval<int_capture>() | std::declval<int_capture>();
-});
-static_assert(!requires {
-    std::declval<int_source>() | std::declval<int_source>();
-});
+template <typename L, typename R>
+concept can_pipe = requires(L&& lhs, R&& rhs)
+{
+    std::forward<L>(lhs) | std::forward<R>(rhs);
+};
+
+static_assert(!can_pipe<plus_one, int_source>);
+static_assert(!can_pipe<int_capture, plus_one>);
+static_assert(!can_pipe<int_capture, int_capture>);
+static_assert(!can_pipe<int_source, int_source>);
 
 TEST(pipeline, source_transformer_consumer_runtime)
 {
