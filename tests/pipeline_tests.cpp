@@ -45,6 +45,11 @@ struct plus_one : pipeline::transformer_element<plus_one>
 
 struct int_capture : pipeline::consumer_element<int_capture>
 {
+    explicit int_capture(int* output)
+        : value{output}
+    {
+    }
+
     int* value = nullptr;
 
     continuation operator()(message_ptr msg, const message_callbacks&)
