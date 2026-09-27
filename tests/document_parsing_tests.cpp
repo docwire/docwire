@@ -38,7 +38,7 @@
 #include "office_formats_parser.h"
 #include "pipeline/output_element.hpp"
 #include "plain_text_exporter.h"
-#include "transformer_func.h"
+#include "pipeline/function_transformer.hpp"
 #include "pipeline/input_element.hpp"
 #include "log.h"
 

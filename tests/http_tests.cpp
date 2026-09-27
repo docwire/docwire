@@ -28,7 +28,7 @@
 #include "post.h"
 #include "serialization_document_elements.h" // IWYU pragma: keep
 #include <thread>
-#include "transformer_func.h"
+#include "pipeline/function_transformer.hpp"
 #include "pipeline/input_element.hpp"
 #include "http_server.h"
 
@@ -256,7 +256,7 @@ TEST(Http, ServerNonFatalError)
 
     // 2. Create routes for an error-producing pipeline and a successful one.
     auto error_route = http::route{"/error", [] {
-        return transformer_func{
+        return pipeline::function_transformer{
             [](message_ptr, const message_callbacks& emit_message) -> continuation {
                 return emit_message(make_error_ptr("Error from pipeline processing"));
             }
@@ -266,7 +266,7 @@ TEST(Http, ServerNonFatalError)
     }};
 
     auto success_route = http::route{"/success", [] {
-        return transformer_func{
+        return pipeline::function_transformer{
             [](message_ptr msg, const message_callbacks& emit_message) {
                 return emit_message(std::move(msg));
             }
