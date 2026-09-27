@@ -61,7 +61,7 @@
 #include "version.h"
 #include "pipeline/chain_expression.hpp"
 #include "pipeline/input_element.hpp"
-#include "transformer_func.h"
+#include "pipeline/function_transformer.hpp"
 #include "pipeline/variant_expression.hpp"
 #include <set>
 #include <variant>
@@ -455,7 +455,7 @@ int main(int argc, char* argv[])
 				vm["openai-key"].as<std::string>(),
 				vm["openai-embed-model"].as<openai::embed::model>());
 		})
-		| transformer_func{
+		| pipeline::function_transformer{
 			[](message_ptr msg,
 			   const message_callbacks& emit_message) -> continuation
 			{
@@ -474,7 +474,7 @@ int main(int argc, char* argv[])
 				}
 				return emit_message(std::move(msg));
 			}}
-		| transformer_func{
+		| pipeline::function_transformer{
 			[](message_ptr msg,
 			   const message_callbacks& emit_message) -> continuation
 			{
