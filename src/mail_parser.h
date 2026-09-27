@@ -28,7 +28,7 @@ class mail_parser : public pipeline::transformer_element<mail_parser>
         }
 
     private:
-        parsing_chain<eml_parser, pst_parser> m_chain{eml_parser{}, pst_parser{}};
+        pipeline::chain_expression<eml_parser, pst_parser> m_chain{eml_parser{}, pst_parser{}};
 };
 
 } // namespace docwire
