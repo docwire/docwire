@@ -455,9 +455,8 @@ int main(int argc, char* argv[])
 				vm["openai-key"].as<std::string>(),
 				vm["openai-embed-model"].as<openai::embed::model>());
 		})
-		| pipeline::function_transformer{
-			[](message_ptr msg,
-			   const message_callbacks& emit_message) -> continuation
+		| [](message_ptr msg,
+			 const message_callbacks& emit_message) -> continuation
 			{
 				if (msg->is<ai::embedding>())
 				{
@@ -473,10 +472,9 @@ int main(int argc, char* argv[])
 					return emit_message(data_source{embedding_str});
 				}
 				return emit_message(std::move(msg));
-			}}
-		| pipeline::function_transformer{
-			[](message_ptr msg,
-			   const message_callbacks& emit_message) -> continuation
+			}
+		| [](message_ptr msg,
+			 const message_callbacks& emit_message) -> continuation
 			{
 				if (msg->is<std::exception_ptr>())
 					std::clog << "[WARNING] "
@@ -484,7 +482,7 @@ int main(int argc, char* argv[])
 							   msg->get<std::exception_ptr>())
 						<< std::endl;
 				return emit_message(std::move(msg));
-			}};
+			};
 
 	if (vm.count("openai-transcribe"))
 	{
