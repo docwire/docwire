@@ -93,19 +93,10 @@ class chain_expression : public chain_base_t<L, R>
     {
       DOCWIRE_LOG_SCOPE(msg);
       operator()(std::move(msg),
-      {
-        [](message_ptr msg)
         {
-          DOCWIRE_LOG_SCOPE(msg);
-          return continuation::proceed;
-        },
-        [this](message_ptr msg)
-        {
-          DOCWIRE_LOG_SCOPE(msg);
-          operator()(std::move(msg));
-          return continuation::proceed;
-        }
-      });
+          [](message_ptr) { return continuation::proceed; },
+          [](message_ptr) { return continuation::proceed; }
+        });
     }
 
     continuation operator()(message_ptr msg, const message_callbacks& emit_message)
