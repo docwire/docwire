@@ -13,7 +13,6 @@
 #define DOCWIRE_PIPELINE_CHAIN_EXPRESSION_H
 
 #include "element_base.hpp"
-#include "../core_export.h"
 #include "../log_scope.h"
 #include "../ref_or_owned.h"
 #include "../serialization_message.h"

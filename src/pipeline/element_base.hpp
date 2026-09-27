@@ -12,7 +12,6 @@
 #ifndef DOCWIRE_PIPELINE_ELEMENT_BASE_H
 #define DOCWIRE_PIPELINE_ELEMENT_BASE_H
 
-#include "../core_export.h"
 #include "../message.h"
 #include "../ref_or_owned.h"
 
