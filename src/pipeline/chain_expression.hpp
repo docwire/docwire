@@ -105,7 +105,7 @@ class chain_expression : public chain_base_t<L, R>
 
       auto downstream = emit_message;
 
-      auto lhs_callback = [this, downstream](message_ptr msg)
+      auto lhs_callback = [this, &lhs_callback, downstream](message_ptr msg)
       {
         DOCWIRE_LOG_SCOPE(msg);
 
