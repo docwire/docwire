@@ -102,20 +102,26 @@ class chain_expression : public chain_base_t<L, R>
     continuation operator()(message_ptr msg, const message_callbacks& emit_message)
     {
       DOCWIRE_LOG_SCOPE(msg);
-      auto lhs_callback = [this, &rhs_callbacks = emit_message](message_ptr msg)
+
+      auto downstream = emit_message;
+
+      auto lhs_callback = [this, downstream](message_ptr msg)
       {
         DOCWIRE_LOG_SCOPE(msg);
-        return m_rhs_element.get()(std::move(msg), rhs_callbacks);
-      };
-      return m_lhs_element.get()(std::move(msg),
+
+        auto back_to_left = [this, lhs_callback, back_upstream = downstream.m_back](message_ptr msg)
         {
-          lhs_callback,
-          [emit_message](message_ptr msg)
-          {
-            DOCWIRE_LOG_SCOPE(msg);
-            return emit_message.back(std::move(msg));
-          }
-        });
+          DOCWIRE_LOG_SCOPE(msg);
+          return m_lhs_element.get()(std::move(msg),
+              message_callbacks{lhs_callback, back_upstream});
+        };
+
+        return m_rhs_element.get()(std::move(msg),
+            message_callbacks{downstream.m_further, back_to_left});
+      };
+
+      return m_lhs_element.get()(std::move(msg),
+          message_callbacks{lhs_callback, downstream.m_back});
     }
 
   private:
