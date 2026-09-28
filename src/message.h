@@ -12,8 +12,10 @@
 #ifndef DOCWIRE_MESSAGE_H
 #define DOCWIRE_MESSAGE_H
 
+#include <concepts>
 #include <functional>
 #include <memory>
+#include <type_traits>
 #include <typeinfo>
 #include "type_id.h"
 
@@ -73,16 +75,22 @@ struct message_callbacks
   continuation further(message_ptr msg) const { return m_further(std::move(msg)); }
   
   template <typename T>
+      requires (!std::is_convertible_v<std::remove_cvref_t<T>, message_ptr>
+                && !std::derived_from<std::remove_cvref_t<T>, message_base>)
   continuation further(T&& object) const { return m_further(std::make_shared<message<T>>(std::forward<T>(object))); }
 
   continuation back(message_ptr msg) const { return m_back(std::move(msg)); }
 
   template <typename T>
+      requires (!std::is_convertible_v<std::remove_cvref_t<T>, message_ptr>
+                && !std::derived_from<std::remove_cvref_t<T>, message_base>)
   continuation back(T&& object) const { return m_back(std::make_shared<message<T>>(std::forward<T>(object))); }
 
   continuation operator()(message_ptr msg) const { return further(std::move(msg)); }
 
   template <typename T>
+      requires (!std::is_convertible_v<std::remove_cvref_t<T>, message_ptr>
+                && !std::derived_from<std::remove_cvref_t<T>, message_base>)
   continuation operator()(T&& object) const { return further(std::forward<T>(object)); }
 };
 
