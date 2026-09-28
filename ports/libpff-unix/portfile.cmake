@@ -1,7 +1,7 @@
 vcpkg_download_distfile(ARCHIVE
-	URLS "https://github.com/libyal/libpff/releases/download/20211114/libpff-alpha-20211114.tar.gz"
-	FILENAME "libpff-alpha-20211114.tar.gz"
-	SHA512 ad2cf4b0841c448b60738cd2f340868c0f11eb34167bfe5b093645a2a080d694e199afe4fef5eeea1016487820132be33f8e51910d2142ff032320ad2dbeb59d
+	URLS "https://github.com/libyal/libpff/releases/download/20260926/libpff-alpha-20260926.tar.gz"
+	FILENAME "libpff-alpha-20260926.tar.gz"
+	SHA512 5a6277789371be256aeed8f568b0364e3da54c1f3c4d04b3fb74c39ab5e9de129fb5c65d1a0e4ec2c68f096a6f65a372059a7e5299ccfbb520ee96a4a4c5e8ec
 )
 
 vcpkg_extract_source_archive_ex(
