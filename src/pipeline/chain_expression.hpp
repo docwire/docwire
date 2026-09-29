@@ -90,6 +90,24 @@ class chain_expression : public chain_base_t<L, R>
     chain_expression(chain_expression&& chain) = default;
     chain_expression& operator=(chain_expression&& chain) = default;
 
+    /**
+     * @brief Executes the fully assembled pipeline once.
+     *
+     * For a `source | consumer` chain, `operator|` passes an initial
+     * `pipeline::start_processing` message into this method to start the
+     * pipeline.
+     *
+     * The supplied `back` callback also calls this same method. That means
+     * any message emitted backwards is sent to the beginning of the entire
+     * pipeline and is processed again from the source.
+     *
+     * @param msg The initial message. This must be
+     *            `pipeline::start_processing` for normal startup, or another
+     *            payload for a re-entered back message.
+     *
+     * @note A back-emitted message must not be `pipeline::start_processing`.
+     *       See `message_callbacks::back`.
+     */
     void operator()(message_ptr msg)
     {
       DOCWIRE_LOG_SCOPE(msg);

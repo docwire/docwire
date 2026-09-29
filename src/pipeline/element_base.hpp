@@ -99,6 +99,10 @@ public:
 /**
  * @brief Category base for pipeline elements that produce the initial message.
  *
+ * A source is called with `pipeline::start_processing` to start the pipeline.
+ * It may also be called with a back-emitted message; in that case it must
+ * forward that message downstream instead of producing new start data.
+ *
  * @tparam Derived The concrete pipeline element type (CRTP).
  *
  * @see transformer_element
@@ -112,6 +116,9 @@ class source_element : public element_base<Derived>
 /**
  * @brief Category base for pipeline elements that consume and emit messages.
  *
+ * A transformer must forward messages it does not recognize. The safe default
+ * is `return emit_message.further(std::move(msg));`.
+ *
  * @tparam Derived The concrete pipeline element type (CRTP).
  *
  * @see source_element
@@ -124,6 +131,9 @@ class transformer_element : public element_base<Derived>
 
 /**
  * @brief Category base for pipeline elements that terminate a pipeline.
+ *
+ * A consumer must forward messages it does not recognize. The safe default is
+ * `return emit_message.further(std::move(msg));`.
  *
  * @tparam Derived The concrete pipeline element type (CRTP).
  *

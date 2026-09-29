@@ -31,6 +31,18 @@ concept IStreamDerived = std::derived_from<T, std::istream>;
 template<typename T>
 concept istream_derived_ref_qualified = IStreamDerived<std::remove_reference_t<T>>;
 
+/**
+ * @brief The standard pipeline source backed by a `data_source`.
+ *
+ * The first call is expected to carry `pipeline::start_processing`;
+ * `input_element` then emits the wrapped `data_source` downstream.
+ *
+ * Later back-emitted messages are forwarded downstream unchanged so that the
+ * fully assembled pipeline can process them again.
+ *
+ * @note A back-emitted message must not be `pipeline::start_processing`.
+ *       See `message_callbacks::back`.
+ */
 class input_element : public source_element<input_element>
 {
 public:
