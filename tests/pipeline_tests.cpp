@@ -62,9 +62,12 @@ struct int_capture : pipeline::consumer_element<int_capture>
 
 struct int_zero_source : pipeline::source_element<int_zero_source>
 {
-    continuation operator()(message_ptr, const message_callbacks& emit_message)
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
     {
-        return emit_message.further(std::make_shared<message<int>>(0));
+        if (msg->is<pipeline::start_processing>())
+            return emit_message.further(std::make_shared<message<int>>(0));
+
+        return emit_message.further(std::move(msg));
     }
 };
 
