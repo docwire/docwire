@@ -61,6 +61,7 @@ if (VCPKG_TARGET_IS_WINDOWS)
 		SOURCE_PATH "${SOURCE_PATH}"
 		PROJECT_SUBPATH "msvscpp/libpff.sln"
 		INCLUDES_SUBPATH include
+		ALLOW_ROOT_INCLUDES
 	)
 	# The libpff solution transitively builds the libyal helper libraries
 	# (libbfio, libcdata, libcerror, ...) and copies their import/static
