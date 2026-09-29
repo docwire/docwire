@@ -60,6 +60,66 @@ struct int_capture : pipeline::consumer_element<int_capture>
     }
 };
 
+struct int_zero_source : pipeline::source_element<int_zero_source>
+{
+    continuation operator()(message_ptr, const message_callbacks& emit_message)
+    {
+        return emit_message.further(std::make_shared<message<int>>(0));
+    }
+};
+
+struct back_echo_left : pipeline::transformer_element<back_echo_left>
+{
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
+    {
+        if (msg->is<int>())
+        {
+            const int value = msg->get<int>();
+            if (value == 0)
+                return emit_message.further(std::string{"to_back_emitter"});
+            if (value == 2)
+                return emit_message.further(std::string{"from_back_echo_left"});
+        }
+        return emit_message.further(std::move(msg));
+    }
+};
+
+struct back_emit_right : pipeline::transformer_element<back_emit_right>
+{
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
+    {
+        if (msg->is<std::string>())
+        {
+            const std::string value = msg->get<std::string>();
+            if (value == "to_back_emitter")
+                return emit_message.back(2);
+        }
+        return emit_message.further(std::move(msg));
+    }
+};
+
+struct string_capture : pipeline::consumer_element<string_capture>
+{
+    explicit string_capture(std::string* output)
+        : output{output}
+    {
+    }
+
+    std::string* output = nullptr;
+
+    continuation operator()(message_ptr msg, const message_callbacks&)
+    {
+        if (msg->is<std::string>())
+            *output = msg->get<std::string>();
+        return continuation::proceed;
+    }
+};
+
+static_assert(pipeline::source<int_zero_source>);
+static_assert(pipeline::transformer<back_echo_left>);
+static_assert(pipeline::transformer<back_emit_right>);
+static_assert(pipeline::consumer<string_capture>);
+
 } // namespace
 
 static_assert(pipeline::source<int_source>);
@@ -139,4 +199,16 @@ TEST(pipeline, lambda_is_wrapped_as_transformer)
         | int_capture{&result};
 
     EXPECT_EQ(result, 43);
+}
+
+TEST(pipeline, back_routing_from_right_to_left)
+{
+    std::string result;
+
+    int_zero_source{}
+        | back_echo_left{}
+        | back_emit_right{}
+        | string_capture{&result};
+
+    EXPECT_EQ(result, "from_back_echo_left");
 }
