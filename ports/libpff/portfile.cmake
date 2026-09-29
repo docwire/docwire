@@ -61,6 +61,36 @@ if (VCPKG_TARGET_IS_WINDOWS)
 		SOURCE_PATH "${SOURCE_PATH}"
 		PROJECT_SUBPATH "msvscpp/libpff.sln"
 	)
+	# The libpff solution transitively builds the libyal helper libraries
+	# (libbfio, libcdata, libcerror, ...) and copies their import/static
+	# libraries into this package. Those libraries are already provided by
+	# the dedicated libbfio overlay port, so remove the duplicate artifacts
+	# installed here to avoid conflicting files with libbfio.
+	set(libyal_helper_libraries
+		libbfio
+		libcdata
+		libcerror
+		libclocale
+		libcnotify
+		libcsplit
+		libcthreads
+		libfdata
+		libfcache
+		libfdatetime
+		libfguid
+		libfmapi
+		libfole
+		libfsntfs
+		libfwnt
+		libregf
+		libuna
+	)
+	foreach(libyal_helper_library ${libyal_helper_libraries})
+		file(REMOVE
+			"${CURRENT_PACKAGES_DIR}/lib/${libyal_helper_library}.lib"
+			"${CURRENT_PACKAGES_DIR}/debug/lib/${libyal_helper_library}.lib"
+		)
+	endforeach()
 else()
 	vcpkg_configure_make(
 		SOURCE_PATH "${SOURCE_PATH}"
