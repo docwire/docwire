@@ -10,6 +10,33 @@ vcpkg_extract_source_archive_ex(
 )
 
 if (VCPKG_TARGET_IS_WINDOWS)
+	# The pypff project requires Python.h, which is not a dependency of this port.
+	# Remove it from the solution before devenv upgrades the old solution.
+	file(STRINGS "${SOURCE_PATH}/msvscpp/libpff.sln" _libpff_sln_lines)
+	set(_libpff_sln_lines_filtered)
+	set(_skip_pypff FALSE)
+	foreach(_line IN LISTS _libpff_sln_lines)
+		if(_skip_pypff)
+			if(_line STREQUAL "EndProject")
+				set(_skip_pypff FALSE)
+			endif()
+			continue()
+		endif()
+
+		if(_line MATCHES "Project\\(.*\\) = \"pypff\",")
+			set(_skip_pypff TRUE)
+			continue()
+		endif()
+
+		if(_line MATCHES "\\{E221DB4C-B254-47CB-993D-DC7FED580DA1\\}")
+			continue()
+		endif()
+
+		list(APPEND _libpff_sln_lines_filtered "${_line}")
+	endforeach()
+	list(JOIN _libpff_sln_lines_filtered "\r\n" _libpff_sln_content)
+	file(WRITE "${SOURCE_PATH}/msvscpp/libpff.sln" "${_libpff_sln_content}")
+
 	vcpkg_execute_required_process(
 		COMMAND "devenv.exe"
 		"libpff.sln"
