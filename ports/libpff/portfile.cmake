@@ -69,9 +69,11 @@ if (VCPKG_TARGET_IS_WINDOWS)
 	set(libyal_helper_libraries
 		libbfio
 		libcdata
+		libcfile
 		libcerror
 		libclocale
 		libcnotify
+		libcpath
 		libcsplit
 		libcthreads
 		libfdata
