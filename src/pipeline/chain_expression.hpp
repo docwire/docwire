@@ -96,7 +96,11 @@ class chain_expression : public chain_base_t<L, R>
       operator()(std::move(msg),
         {
           [](message_ptr) { return continuation::proceed; },
-          [](message_ptr) { return continuation::proceed; }
+          [this](message_ptr back_msg)
+          {
+            operator()(std::move(back_msg));
+            return continuation::proceed;
+          }
         });
     }
 
@@ -104,29 +108,14 @@ class chain_expression : public chain_base_t<L, R>
     {
       DOCWIRE_LOG_SCOPE(msg);
 
-      auto downstream = emit_message;
-
-      auto lhs_callback =
-          std::make_shared<std::function<continuation(message_ptr)>>();
-
-      auto back_to_left =
-          [this, lhs_callback, back_upstream = downstream.m_back](message_ptr msg)
+      auto lhs_callback = [this, emit_message](message_ptr msg)
       {
         DOCWIRE_LOG_SCOPE(msg);
-        return m_lhs_element.get()(std::move(msg),
-            message_callbacks{*lhs_callback, back_upstream});
-      };
-
-      *lhs_callback =
-          [this, back_to_left, downstream](message_ptr msg)
-      {
-        DOCWIRE_LOG_SCOPE(msg);
-        return m_rhs_element.get()(std::move(msg),
-            message_callbacks{downstream.m_further, back_to_left});
+        return m_rhs_element.get()(std::move(msg), emit_message);
       };
 
       return m_lhs_element.get()(std::move(msg),
-          message_callbacks{*lhs_callback, downstream.m_back});
+          message_callbacks{lhs_callback, emit_message.m_back});
     }
 
   private:
