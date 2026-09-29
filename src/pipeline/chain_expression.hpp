@@ -126,7 +126,7 @@ class chain_expression : public chain_base_t<L, R>
     {
       DOCWIRE_LOG_SCOPE(msg);
 
-      auto lhs_callback = [this, emit_message](message_ptr msg)
+      auto lhs_callback = [this, &emit_message](message_ptr msg)
       {
         DOCWIRE_LOG_SCOPE(msg);
         return m_rhs_element.get()(std::move(msg), emit_message);
