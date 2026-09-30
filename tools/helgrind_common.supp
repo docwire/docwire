@@ -112,13 +112,13 @@
    docwire_httplib_server_listen
    Helgrind:Dubious
    ...
-   fun:_ZN7docwire10pimpl_implINS_4http6serverEE25httplib_listen_noninlinedEv
+   fun:_ZN7docwire6detail13http_listener4impl25httplib_listen_noninlinedEv
 }
 {
    docwire_httplib_server_stop
    Helgrind:Dubious
    ...
-   fun:_ZN7docwire10pimpl_implINS_4http6serverEE23httplib_stop_noninlinedEv
+   fun:_ZN7docwire6detail13http_listener4impl23httplib_stop_noninlinedEv
 }
 
 # ------------------------------------------------------------------------------

@@ -12,6 +12,7 @@
 #include "http_listener.h"
 
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/config.hpp>
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -140,6 +141,19 @@ struct http_listener::impl
         });
     }
 
+    BOOST_NOINLINE void httplib_listen_noninlined()
+    {
+        log_scope();
+        server->listen_after_bind();
+    }
+
+    BOOST_NOINLINE void httplib_stop_noninlined()
+    {
+        log_scope();
+        if (server && server->is_running())
+            server->stop();
+    }
+
     void listen_after_bind()
     {
         log_scope();
@@ -147,7 +161,7 @@ struct http_listener::impl
         throw_if(!server->bind_to_port(address.c_str(), port),
                  "Failed to bind HTTP server", address, port);
 
-        server->listen_after_bind();
+        httplib_listen_noninlined();
     }
 
     void wait_until_ready()
@@ -159,8 +173,7 @@ struct http_listener::impl
     void stop()
     {
         log_scope();
-        if (server && server->is_running())
-            server->stop();
+        httplib_stop_noninlined();
     }
 };
 
