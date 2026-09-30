@@ -108,16 +108,15 @@ class chain_expression : public chain_base_t<L, R>
      * @note A back-emitted message must not be `pipeline::start_processing`.
      *       See `message_callbacks::back`.
      */
-    void operator()(message_ptr msg)
+    continuation operator()(message_ptr msg)
     {
       DOCWIRE_LOG_SCOPE(msg);
-      operator()(std::move(msg),
+      return operator()(std::move(msg),
         {
           [](message_ptr) { return continuation::proceed; },
           [this](message_ptr back_msg)
           {
-            operator()(std::move(back_msg));
-            return continuation::proceed;
+            return operator()(std::move(back_msg));
           }
         });
     }
