@@ -18,7 +18,9 @@
 namespace docwire::ai::local
 {
 
-class DOCWIRE_LOCAL_AI_EXPORT summarize : public docwire::ai::summarize
+class DOCWIRE_LOCAL_AI_EXPORT summarize
+    : public docwire::pipeline::transformer_element<summarize>
+    , public docwire::ai::summarize
 {
 public:
     summarize(model_lifetime_policy lifetime = model_lifetime_policy::persistent);

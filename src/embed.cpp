@@ -13,10 +13,10 @@
 
 #include <boost/json.hpp>
 #include "error_tags.h"
-#include "input.h"
+#include "pipeline/input_element.hpp"
 #include "log_scope.h"
 #include "make_error.h"
-#include "output.h"
+#include "pipeline/output_element.hpp"
 #include "post.h"
 #include "ai_elements.h"
 #include "serialization_enum.h" // IWYU pragma: keep

@@ -18,7 +18,12 @@ endif()
 
 # Link against the specific DocWire libraries your application needs.
 # docwire_core is always required. Other modules are optional based on usage.
-target_link_libraries(integration_example PRIVATE docwire_core docwire_content_type docwire_office_formats)
+target_link_libraries(integration_example PRIVATE
+    docwire_core
+    docwire_content_type
+    docwire_office_formats
+    docwire_http
+)
 
 include(GNUInstallDirs)
 

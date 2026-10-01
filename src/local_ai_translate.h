@@ -18,7 +18,9 @@
 namespace docwire::ai::local
 {
 
-class DOCWIRE_LOCAL_AI_EXPORT translate : public docwire::ai::translate
+class DOCWIRE_LOCAL_AI_EXPORT translate
+    : public docwire::pipeline::transformer_element<translate>
+    , public docwire::ai::translate
 {
   public:
  	translate(const std::string& language);

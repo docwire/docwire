@@ -12,8 +12,9 @@
 #ifndef DOCWIRE_TXT_PARSER_H
 #define DOCWIRE_TXT_PARSER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "plain_text_export.h"
+#include "pimpl.h"
 
 namespace docwire
 {
@@ -21,7 +22,7 @@ namespace docwire
 struct parse_paragraphs { bool v; };
 struct parse_lines { bool v; };
 
-class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser : public chain_element, public with_pimpl<txt_parser>
+class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser : public pipeline::transformer_element<txt_parser>, public with_pimpl<txt_parser>
 {
 	public:
 
@@ -29,8 +30,7 @@ class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser : public chain_element, public with_p
 		parse_paragraphs parse_paragraphs_arg = parse_paragraphs{true},
 		parse_lines parse_lines_arg = parse_lines{true});
     
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-    bool is_leaf() const override { return false; }
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 private:
 	using with_pimpl<txt_parser>::impl;

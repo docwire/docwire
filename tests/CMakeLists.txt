@@ -25,6 +25,7 @@ add_executable(docwire_tests
 	odr_smoke_test.cpp
 	odr_smoke_test_b.cpp
 	type_id_tests.cpp
+	pipeline_tests.cpp
 )
 
 target_link_libraries(docwire_tests PRIVATE

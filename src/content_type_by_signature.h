@@ -12,9 +12,10 @@
 #ifndef DOCWIRE_CONTENT_TYPE_BY_SIGNATURE_H
 #define DOCWIRE_CONTENT_TYPE_BY_SIGNATURE_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "content_type_export.h"
 #include "data_source.h"
+#include "pimpl.h"
 #include "document_elements.h"
 #include "make_error.h"
 #include "nested_exception.h"
@@ -89,7 +90,7 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& datab
 * @see content_type::detector
 * @see content_type::by_signature::detect
 */
-class detector : public chain_element
+class detector : public pipeline::transformer_element<detector>
 {
 public:
 
@@ -109,7 +110,7 @@ public:
     explicit detector(ref_or_owned<database> database_to_use = database{}, allow_multiple allow_multiple = {false})
         : m_database_to_use(database_to_use), m_allow_multiple{allow_multiple} {}
 
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
     {
         try
         {
@@ -130,11 +131,6 @@ public:
         }
         return emit_message(std::move(msg));
     }
-
-    bool is_leaf() const override
-	{
-		return false;
-	}
 
 private:
     ref_or_owned<database> m_database_to_use;

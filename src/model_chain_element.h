@@ -13,7 +13,7 @@
 #define DOCWIRE_AI_MODEL_CHAIN_ELEMENT_H
 
 #include "ai_runner.h"
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "ai_export.h"
 
 namespace docwire::ai
@@ -36,7 +36,7 @@ enum class model_lifetime_policy
  * passing the text to the model runner. The output of the model runner is
  * then emitted as a new message_ptr object.
  */
-class DOCWIRE_AI_EXPORT model_chain_element : public chain_element
+class DOCWIRE_AI_EXPORT model_chain_element
 {
   public:
     /**
@@ -70,17 +70,7 @@ class DOCWIRE_AI_EXPORT model_chain_element : public chain_element
      * @param msg The input message to process.
      * @param emit_message Callback used to emit derived messages downstream.
      */
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-
-    /**
-     * @brief Check if the model chain element is a leaf.
-     *
-     * The model chain element is never a leaf, so this function always returns
-     * false.
-     *
-     * @return false Always false.
-     */
-    bool is_leaf() const override { return false; }
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
   private:
     std::string m_prompt;

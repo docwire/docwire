@@ -23,13 +23,13 @@
 #include <fstream>
 #include <magic_enum/magic_enum_iostream.hpp>
 #include "office_formats_parser.h"
-#include "output.h"
+#include "pipeline/output_element.hpp"
 #include "plain_text_exporter.h"
 #include "post.h"
 #include "serialization_document_elements.h" // IWYU pragma: keep
 #include <thread>
-#include "transformer_func.h"
-#include "input.h"
+#include "pipeline/function_transformer.hpp"
+#include "pipeline/input_element.hpp"
 #include "http_server.h"
 
 using namespace docwire;
@@ -86,12 +86,13 @@ TEST(Http, postForm)
 
 namespace {
 // RAII helper to start a server in a thread and ensure it's stopped on scope exit.
+template <typename Server>
 struct scoped_server {
-    http::server server;
+    Server server;
     std::thread server_thread;
 
     // Takes server by value to move it into the member.
-    explicit scoped_server(http::server s)
+    explicit scoped_server(Server s)
         : server(std::move(s)),
           server_thread([this]() {
               try {
@@ -123,10 +124,36 @@ protected:
     {
         const std::string url = (is_https ? "https://" : "http://") + addr.v + ":" + std::to_string(port.v) + route_path;
 
-        http::server server = is_https ?
-            http::server(addr, port, http::generate_self_signed_cert(addr.v, "US", "DocWire Test"), create_routes()) :
-            http::server(addr, port, create_routes());
+        auto pipeline_factory = [] {
+            return office_formats_parser{}
+                 | plain_text_exporter{}
+                 | [](message_ptr msg, const message_callbacks& emit_message)
+                 {
+                     if (msg->is<data_source>())
+                     {
+                         auto original_text = msg->get<data_source>().string();
+                         return emit_message(data_source{
+                             original_text + " processed",
+                             mime_type{"text/plain"},
+                             confidence::highest});
+                     }
+                     return emit_message(std::move(msg));
+                 };
+        };
 
+        auto make_server = [&](bool is_https) {
+            auto route = http::route{route_path, pipeline_factory};
+            if (is_https)
+                return http::server(
+                    addr,
+                    port,
+                    http::generate_self_signed_cert(addr.v, "US", "DocWire Test"),
+                    route);
+
+            return http::server(addr, port, route);
+        };
+
+        auto server = make_server(is_https);
         scoped_server server_runner{std::move(server)};
     
         std::ostringstream response_stream;
@@ -162,23 +189,6 @@ protected:
         EXPECT_EQ(response_stream.str(), expected_response_body);
     }
 
-    http::server::pipeline_factory create_pipeline_factory() {
-        return []() -> parsing_chain {
-            return office_formats_parser{} | plain_text_exporter{} | [](message_ptr msg, const message_callbacks& emit_message) {
-                if (msg->is<data_source>()) {
-                    auto original_text = msg->get<data_source>().string();
-                    return emit_message(data_source{original_text + " processed", mime_type{"text/plain"}, confidence::highest});
-                }
-                return emit_message(std::move(msg));
-            };
-        };
-    }
-
-    http::server::route_list create_routes() {
-        http::server::route_list routes;
-        routes.push_back({route_path, create_pipeline_factory()});
-        return routes;
-    }
 };
 
 TEST_F(http_server_test, ServerAndpost)
@@ -211,7 +221,12 @@ TEST(Http, ServerErrorHandling)
     };
 
     // Instantiate the server-under-test with the invalid address.
-    http::server server_under_test(addr, port, {}, http::thread_num{1}, http::error_handler{test_error_handler});
+    http::server server_under_test(
+        addr,
+        port,
+        http::thread_num{1},
+        http::error_handler{test_error_handler},
+        http::body_limit{1024 * 1024 * 1024});
 
     // Attempt to start the server. It should throw an exception because it cannot bind.
     try
@@ -239,26 +254,38 @@ TEST(Http, ServerNonFatalError)
         error = eptr;
     };
 
-    // 2. Create factories for an error-producing pipeline and a successful one.
-    http::server::route_list routes;
-    routes.push_back({"/error", []() -> parsing_chain {
-        return transformer_func{[](message_ptr, const message_callbacks& emit_message) -> continuation {
-            return emit_message(make_error_ptr("Error from pipeline processing"));
-        }} | [](message_ptr msg, const message_callbacks& emit_message) {
+    // 2. Create routes for an error-producing pipeline and a successful one.
+    auto error_route = http::route{"/error", [] {
+        return pipeline::function_transformer{
+            [](message_ptr, const message_callbacks& emit_message) -> continuation {
+                return emit_message(make_error_ptr("Error from pipeline processing"));
+            }
+        } | [](message_ptr msg, const message_callbacks& emit_message) {
             return emit_message(std::move(msg));
         };
-    }});
-    routes.push_back({"/success", []() -> parsing_chain {
-        return transformer_func{[](message_ptr msg, const message_callbacks& emit_message) {
-            return emit_message(std::move(msg));
-        }} | [](message_ptr msg, const message_callbacks& emit_message)
-        {
+    }};
+
+    auto success_route = http::route{"/success", [] {
+        return pipeline::function_transformer{
+            [](message_ptr msg, const message_callbacks& emit_message) {
+                return emit_message(std::move(msg));
+            }
+        } | [](message_ptr msg, const message_callbacks& emit_message) {
             return emit_message(std::move(msg));
         };
-    }});
+    }};
 
     // 3. Instantiate and start the server.
-    scoped_server server_runner{http::server(addr, port, std::move(routes), http::thread_num{1}, http::error_handler{test_error_handler})};
+    auto server = http::server(
+        addr,
+        port,
+        http::thread_num{1},
+        http::error_handler{test_error_handler},
+        http::body_limit{1024 * 1024 * 1024},
+        std::move(error_route),
+        std::move(success_route));
+
+    scoped_server server_runner{std::move(server)};
 
     // 4. Make a request to the error-producing endpoint. This should trigger the error handler and throw on the client side.
     ASSERT_THROW(

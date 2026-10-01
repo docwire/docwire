@@ -12,11 +12,11 @@
 #include "text_to_speech.h"
 
 #include <boost/json.hpp>
-#include "input.h"
+#include "pipeline/input_element.hpp"
 #include "log_entry.h"
 #include "log_scope.h"
 #include "make_error.h"
-#include "output.h"
+#include "pipeline/output_element.hpp"
 #include "post.h"
 #include "serialization_enum.h" // IWYU pragma: keep
 #include <sstream>

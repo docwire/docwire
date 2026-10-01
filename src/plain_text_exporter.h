@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_PLAIN_TEXT_EXPORTER_H
 #define DOCWIRE_PLAIN_TEXT_EXPORTER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include <functional>
 #include <memory>
 #include <sstream>
@@ -38,7 +38,7 @@ struct link_formatter
 /**
  * @brief Exports data to plain text format.
  */
-class plain_text_exporter : public chain_element
+class plain_text_exporter : public pipeline::transformer_element<plain_text_exporter>
 {
 public:
 	plain_text_exporter(eol_sequence eol = eol_sequence{"\n"},
@@ -47,12 +47,7 @@ public:
 	  : m_writer{eol.v, formatter.format_opening, formatter.format_closing, max_output_width}
 	{}
 
-	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-
-	bool is_leaf() const override
-	{
-		return false;
-	}
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 private:
 	inline static const link_formatter default_link_formatter =

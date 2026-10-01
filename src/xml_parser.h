@@ -13,7 +13,7 @@
 #define DOCWIRE_XML_PARSER_H
 
 #include "safety_policy.h"
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "xml_export.h"
 
 namespace docwire
@@ -24,15 +24,14 @@ namespace docwire
  * @tparam safety_level The safety policy to use.
  */
 template <safety_policy safety_level = default_safety_level>
-class DOCWIRE_XML_EXPORT xml_parser : public chain_element
+class DOCWIRE_XML_EXPORT xml_parser : public pipeline::transformer_element<xml_parser<safety_level>>
 {
 public:
 	/**
 	 * @brief Processes a message in the parsing chain.
 	 * @return The continuation status.
 	 */
-	continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-	bool is_leaf() const override { return false; }
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
 
 } // namespace docwire

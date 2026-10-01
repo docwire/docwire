@@ -14,13 +14,13 @@
 #include <boost/json.hpp>
 #include "gtest/gtest.h"
 #include "html_exporter.h"
-#include "input.h"
+#include "pipeline/input_element.hpp"
 #include <magic_enum/magic_enum_iostream.hpp>
 #include <optional>
 #include <numeric>
 #include <algorithm>
 #include "html_parser.h"
-#include "output.h"
+#include "pipeline/output_element.hpp"
 #include "plain_text_exporter.h"
 #include "plain_text/wrap.h"
 #include "plain_text/wrap_lines.h"

@@ -13,7 +13,7 @@
 #define DOCWIRE_XLS_PARSER_H
 
 #include "ole_office_formats_export.h"
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "pimpl.h"
 #include <string>
 
@@ -22,7 +22,7 @@ namespace docwire
 
 class thread_safe_ole_storage;
 
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser : public chain_element, public with_pimpl<xls_parser>
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser : public pipeline::transformer_element<xls_parser>, public with_pimpl<xls_parser>
 {
 	private:
 		friend pimpl_impl<xls_parser>;
@@ -30,8 +30,7 @@ class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser : public chain_element, publi
 
 	public:
 		xls_parser();
-		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-		bool is_leaf() const override { return false; }
+		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 		std::string parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message);
 };
 

@@ -12,8 +12,9 @@
 #ifndef DOCWIRE_HTTP_POST_H
 #define DOCWIRE_HTTP_POST_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "http_export.h"
+#include "pimpl.h"
 #include <filesystem>
 #include <map>
 
@@ -32,7 +33,7 @@ namespace http
 
 struct ssl_verify_peer { bool v; };
 
-class DOCWIRE_HTTP_EXPORT post : public chain_element, public with_pimpl<post>
+class DOCWIRE_HTTP_EXPORT post : public pipeline::transformer_element<post>, public with_pimpl<post>
 {
 public:
 	post(const std::string& url, const std::string& oauth2_bearer_token = "", ssl_verify_peer ssl_verify_peer_v = {true});
@@ -45,12 +46,7 @@ public:
 	 * @param msg Message to process.
 	 * @param emit_message Emission callbacks for produced messages.
 	 */
-	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-
-	bool is_leaf() const override
-	{
-		return false;
-	}
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 private:
 	using with_pimpl<post>::impl;

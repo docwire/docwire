@@ -13,18 +13,22 @@
 #define DOCWIRE_MAIL_PARSER_H
 
 #include "eml_parser.h"
-#include "parsing_chain.h"
+#include "pipeline/chain_expression.hpp"
 #include "pst_parser.h"
 
 namespace docwire
 {
 
-class mail_parser : public parsing_chain
+class mail_parser : public pipeline::transformer_element<mail_parser>
 {
     public:
-        mail_parser()
-            : parsing_chain{eml_parser{} | pst_parser{}}
-        {}
+        continuation operator()(message_ptr msg, const message_callbacks& emit_message)
+        {
+            return m_chain(msg, emit_message);
+        }
+
+    private:
+        pipeline::chain_expression<eml_parser, pst_parser> m_chain{eml_parser{}, pst_parser{}};
 };
 
 } // namespace docwire

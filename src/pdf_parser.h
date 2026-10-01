@@ -12,14 +12,14 @@
 #ifndef DOCWIRE_PDF_PARSER_H
 #define DOCWIRE_PDF_PARSER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "pdf_export.h"
 #include "pimpl.h"
 #include "message.h"
 
 namespace docwire
 {
-class DOCWIRE_PDF_EXPORT pdf_parser : public chain_element, public with_pimpl<pdf_parser>
+class DOCWIRE_PDF_EXPORT pdf_parser : public pipeline::transformer_element<pdf_parser>, public with_pimpl<pdf_parser>
 {
 	private:
 		using with_pimpl<pdf_parser>::impl;
@@ -27,8 +27,7 @@ class DOCWIRE_PDF_EXPORT pdf_parser : public chain_element, public with_pimpl<pd
 
 	public:
 		pdf_parser();
-		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-		bool is_leaf() const override { return false; }
+		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
 
 } // namespace docwire

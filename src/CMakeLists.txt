@@ -44,10 +44,13 @@ include(http.cmake)
 include(openai.cmake)
 include(cli.cmake)
 
-file(GLOB HEADERS "*.h")
+file(GLOB HEADERS "*.h" "*.hpp")
 install(FILES ${HEADERS} DESTINATION include/docwire)
 
-file(GLOB PLAIN_TEXT_HEADERS "plain_text/*.h")
+file(GLOB PIPELINE_HEADERS "pipeline/*.hpp")
+install(FILES ${PIPELINE_HEADERS} DESTINATION include/docwire/pipeline)
+
+file(GLOB PLAIN_TEXT_HEADERS "plain_text/*.h" "plain_text/*.hpp")
 install(FILES ${PLAIN_TEXT_HEADERS} DESTINATION include/docwire/plain_text)
 
 include(GNUInstallDirs)

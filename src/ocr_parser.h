@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_OCR_PARSER_H
 #define DOCWIRE_OCR_PARSER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include <cstdint>
 #include "data_source.h"
 #include <filesystem>
@@ -36,7 +36,7 @@ struct ocr_confidence_threshold { std::optional<float> v; };
 struct ocr_data_path { std::filesystem::path v; };
 struct ocr_timeout { std::optional<int32_t> v; };
 
-class DOCWIRE_OCR_EXPORT ocr_parser : public chain_element, public with_pimpl<ocr_parser>
+class DOCWIRE_OCR_EXPORT ocr_parser : public pipeline::transformer_element<ocr_parser>, public with_pimpl<ocr_parser>
 {
 private:
     using with_pimpl<ocr_parser>::impl;
@@ -49,9 +49,7 @@ public:
         ocr_timeout ocr_timeout_arg = {},
         ocr_data_path ocr_data_path_arg = {});
 
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-
-    bool is_leaf() const override { return false; }
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 private:
     void parse(const data_source& data, const std::vector<language>& languages);
