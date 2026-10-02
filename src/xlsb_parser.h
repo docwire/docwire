@@ -12,8 +12,9 @@
 #ifndef DOCWIRE_XLSB_PARSER_H
 #define DOCWIRE_XLSB_PARSER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "message.h"
+#include "pimpl.h"
 #include "xlsb_export.h"
 
 namespace docwire
@@ -21,7 +22,7 @@ namespace docwire
 
 class zip_reader;
 
-class DOCWIRE_XLSB_EXPORT xlsb_parser : public chain_element, public with_pimpl<xlsb_parser>
+class DOCWIRE_XLSB_EXPORT xlsb_parser : public pipeline::transformer_element<xlsb_parser>, public with_pimpl<xlsb_parser>
 {
 	private:
 		friend pimpl_impl<xlsb_parser>;
@@ -29,8 +30,7 @@ class DOCWIRE_XLSB_EXPORT xlsb_parser : public chain_element, public with_pimpl<
 
 	public:
 		xlsb_parser();
-		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-		bool is_leaf() const override { return false; }
+		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
 
 } // namespace docwire

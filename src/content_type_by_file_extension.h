@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_CONTENT_TYPE_BY_FILE_EXTENSION_H
 #define DOCWIRE_CONTENT_TYPE_BY_FILE_EXTENSION_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "content_type_export.h"
 #include "data_source.h"
 #include "document_elements.h"
@@ -54,10 +54,10 @@ DOCWIRE_CONTENT_TYPE_EXPORT std::optional<file_extension> to_extension(const mim
 * @see content_type::detector
 * @see content_type::by_file_extension::detect
 */
-class detector : public chain_element
+class detector : public pipeline::transformer_element<detector>
 {
 public:
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
     {
         if (msg->is<data_source>())
         {
@@ -71,11 +71,6 @@ public:
         }
 	    return emit_message(std::move(msg));
     }
-
-    bool is_leaf() const override
-	{
-		return false;
-	}
 };
 
 } // namespace docwire::content_type::by_file_extension

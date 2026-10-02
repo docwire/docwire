@@ -214,7 +214,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 - **Can be embedded** in your application (SDK)
 - **Can be integrated** with other data mining and data analytics applications
 - **Parsing process can be easily designed** by connecting objects with the pipe `|` operator into a chain
-- **Custom parsing chain elements can be added** (parsers, transformers, exporters)
+- **Custom pipeline elements can be added** (parsers, transformers, exporters)
 - **Small binaries, fast** native C++ code
 
 <a name="roadmap"></a>
@@ -295,9 +295,15 @@ This gives the flexibility of streaming SAX-style processing with the structural
 
 ### Pipeline as an assembly line
 
-Every object in the chain is a pipeline element: a source, a step, or a destination. When connected with `operator|`, each element receives messages and can emit further messages. The pipeline is inspired by C++20 ranges and value-oriented data processing.
+Every object in the chain is a pipeline element with a compile-time role:
 
-Current SDK elements may be chain element objects or callable transformers. The API is evolving toward noun-style step names such as `plain_text_exporter{}` while preserving today's function-style elements.
+- `pipeline::source_element`: produces the initial message.
+- `pipeline::transformer_element`: consumes and emits messages.
+- `pipeline::consumer_element`: terminates the pipeline.
+
+When connected with `operator|`, each element receives messages and can emit further messages. The pipeline is inspired by C++20 ranges and value-oriented data processing.
+
+Callables can be attached directly as transformers. They are automatically wrapped by `pipeline::function_transformer`, while concrete steps remain noun-style objects such as `plain_text_exporter{}` or `pdf_parser{}`.
 
 ### Message-driven information flow
 
@@ -315,6 +321,8 @@ For nested formats, the messages form a tree-like flow:
 
 This DataTree model gives one consistent API for documents, email boxes, archives, web content, structured files, and HTTP/API payloads. Parsers convert each level into messages. Exporters and transformers consume only the message types they understand.
 
+Elements emit messages in one of two directions. `further` sends a message to the next element on the right. `back` sends a message back to the beginning of the fully assembled pipeline so that embedded or nested content can be processed through the whole pipeline again. For example, a PDF parser can send an embedded image back so that it reaches OCR.
+
 ### Lazy, reusable pipelines
 
 A pipeline object is a graph definition. It can be assigned to a variable, reused for multiple inputs, and executed only when called.
@@ -323,7 +331,13 @@ For example, connecting elements does not start parsing. The same parsed chain c
 
 ### Custom pipeline elements
 
-Developers can add custom parsers, transformers, and exporters as chain elements. A transformer can inspect a message, decide whether to forward it, replace it with a different message, or emit multiple derived messages.
+Developers can add custom pipeline elements by deriving from:
+
+- `pipeline::source_element<MySource>`,
+- `pipeline::transformer_element<MyTransformer>`,
+- or `pipeline::consumer_element<MyConsumer>`.
+
+A source reacts to `pipeline::start_processing` and produces the first message. A transformer can inspect a message, decide whether to forward it, replace it with a different message, or emit multiple derived messages. A consumer usually terminates the pipeline.
 
 This makes it possible to filter email messages, transform document content, generate embeddings, or integrate custom business logic directly into the processing pipeline.
 

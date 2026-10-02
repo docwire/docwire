@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_CSV_EXPORTER_H
 #define DOCWIRE_CSV_EXPORTER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "csv_writer.h"
 #include "data_source.h"
 #include "document_elements.h"
@@ -25,12 +25,12 @@ namespace docwire
 /**
  * @brief Exports data to CSV format.
  */
-class csv_exporter : public chain_element
+class csv_exporter : public pipeline::transformer_element<csv_exporter>
 {
 public:
     csv_exporter() = default;
 
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
     {
         if (msg->is<std::exception_ptr>())
             return emit_message(std::move(msg));
@@ -43,11 +43,6 @@ public:
             m_stream.reset();
         }
         return continuation::proceed;
-    }
-
-    bool is_leaf() const override
-    {
-        return false;
     }
 
 private:

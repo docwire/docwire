@@ -25,6 +25,7 @@
 #ifdef DOCWIRE_LLAMA
 #include "llama_runner.h"
 #include "model_inference_config.h"
+#include "llama_models.h"
 #endif
 #ifdef DOCWIRE_LOCAL_AI
 #include "local_ai_summarize.h"
@@ -51,9 +52,8 @@
 #include "environment.h"
 #include "find.h"
 #include "fuzzy_match.h"
-#include "input.h"
+#include "pipeline.hpp"
 #include "log.h"
-#include "output.h"
 #include "mail_elements.h"
 #include "mail_parser.h"
 #include "ocr_parser.h"
@@ -61,12 +61,10 @@
 #include "plain_text_exporter.h"
 #include "plain_text_writer.h"
 #include "html_exporter.h"
-#include "parsing_chain.h"
 #include "serialization.h"
 #include "summarize.h"
 #include "text_to_speech.h"
 #include "transcribe.h"
-#include "transformer_func.h"
 #include "translate_to.h"
 #include "type_name.h"
 #include "xml.h"

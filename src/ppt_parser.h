@@ -13,19 +13,18 @@
 #define DOCWIRE_PPT_PARSER_H
 
 #include "ole_office_formats_export.h"
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 
 namespace docwire
 {
 
 class thread_safe_ole_storage;
 
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser : public chain_element
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser : public pipeline::transformer_element<ppt_parser>
 {
 	public:
 		ppt_parser();
-		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-		bool is_leaf() const override { return false; }
+		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
 
 } // namespace docwire

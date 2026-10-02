@@ -36,10 +36,10 @@
 #include <algorithm>
 #include "ocr_parser.h"
 #include "office_formats_parser.h"
-#include "output.h"
+#include "pipeline/output_element.hpp"
 #include "plain_text_exporter.h"
-#include "transformer_func.h"
-#include "input.h"
+#include "pipeline/function_transformer.hpp"
+#include "pipeline/input_element.hpp"
 #include "log.h"
 
 using namespace docwire;
@@ -231,14 +231,16 @@ INSTANTIATE_TEST_SUITE_P(
       return name;
     });
 
-class callback_test : public ::testing::TestWithParam<std::tuple<const char*, const char*, message_transform_func>>
+class callback_test : public ::testing::TestWithParam<
+    std::tuple<const char*, const char*, docwire::filter_by_mail_min_creation_time>>
 {
 };
 
 
 TEST_P(callback_test, ParseFromPathTest)
 {
-    const auto [name, out_name, callback] = GetParam();
+    const auto [name, out_name, callback_param] = GetParam();
+    auto callback = callback_param;
 
     // GIVEN
     std::string file_name{ name };

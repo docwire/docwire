@@ -1,6 +1,8 @@
 add_library(docwire_http SHARED
     http_server.cpp
     post.cpp
+    ssl_certificate.cpp
+    http_listener.cpp
 )
 
 find_package(httplib CONFIG REQUIRED COMPONENTS OpenSSL)

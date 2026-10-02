@@ -25,6 +25,7 @@ add_executable(docwire_tests
 	odr_smoke_test.cpp
 	odr_smoke_test_b.cpp
 	type_id_tests.cpp
+	pipeline_tests.cpp
 )
 
 target_link_libraries(docwire_tests PRIVATE
@@ -227,11 +228,23 @@ set(local_ai_examples
     local_ai_find
 )
 
+set(local_ai_llama_examples
+	local_ai_llama_classify
+	local_ai_llama_translate
+    local_ai_llama_sentiment
+    local_ai_llama_summary
+    local_ai_llama_find
+)
+
 # Merge lists conditionally
 set(all_examples ${common_examples})
 
 if(TARGET docwire_ai_ct2)
     list(APPEND all_examples ${local_ai_examples})
+endif()
+
+if(TARGET docwire_ai_llama)
+	list(APPEND all_examples ${local_ai_llama_examples})
 endif()
 
 foreach(example IN LISTS all_examples)

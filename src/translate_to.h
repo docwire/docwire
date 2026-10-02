@@ -19,7 +19,9 @@ namespace docwire
 namespace openai
 {
 
-class DOCWIRE_OPENAI_EXPORT translate_to : public chat
+class DOCWIRE_OPENAI_EXPORT translate_to
+    : public pipeline::transformer_element<translate_to>
+    , public chat
 {
 public:
 	translate_to(const std::string& language, const std::string& api_key, model model = model::gpt_5, float temperature = 0.0f, image_detail image_detail = image_detail::automatic);

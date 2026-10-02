@@ -113,12 +113,7 @@
 			"name": "libiconv"
 		},
 		{
-			"name": "libpff-unix",
-			"platform": "!windows"
-		},
-		{
-			"name": "libpff",
-			"platform": "windows"
+			"name": "libpff"
 		},
 		{
 			"name": "mailio"

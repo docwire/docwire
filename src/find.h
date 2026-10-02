@@ -19,7 +19,9 @@ namespace docwire
 namespace openai
 {
 
-class DOCWIRE_OPENAI_EXPORT find : public chat
+class DOCWIRE_OPENAI_EXPORT find
+    : public pipeline::transformer_element<find>
+    , public chat
 {
 public:
 	find(const std::string& what, const std::string& api_key, model model = model::gpt_5, float temperature = 0.0f, image_detail image_detail = image_detail::automatic);

@@ -18,6 +18,7 @@
 #include <iostream>
 #include <llama.h>
 #include <mutex>
+#include <string>
 
 namespace docwire
 {
@@ -136,9 +137,10 @@ template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
             return;
 
         llama_model_params model_params = llama_model_default_params();
-
+        auto u8_model_path = config.model_path.u8string();
+        std::string model_path(reinterpret_cast<const char*>(u8_model_path.data()), u8_model_path.size());
         model = docwire::ai::llama::llama_handle<llama_model>(
-            llama_model_load_from_file(config.model_path.c_str(), model_params));
+            llama_model_load_from_file(model_path.c_str(), model_params));
 
         throw_if(!model, "Failed to load llama model.", errors::program_corrupted{});
         vocab = llama_model_get_vocab(model.get());

@@ -21,7 +21,7 @@
 #include "xls_parser.h"
 #include "xlsb_parser.h"
 #include "odf_ooxml_parser.h"
-#include "parsing_chain.h"
+#include "pipeline/chain_expression.hpp"
 #include "ppt_parser.h"
 #include "rtf_parser.h"
 #include "txt_parser.h"
@@ -35,15 +35,21 @@ namespace docwire
  * @tparam safety_level The safety policy to use.
  */
 template <safety_policy safety_level = default_safety_level>
-class office_formats_parser : public parsing_chain
+class office_formats_parser : public pipeline::transformer_element<office_formats_parser<safety_level>>
 {
     public:
         /**
-         * @brief Constructs the composite parser with a predefined chain of format parsers.
+         * @brief Executes the composite chain of format parsers.
          */
-        office_formats_parser()
-            : parsing_chain{
-                html_parser{} |
+        continuation operator()(message_ptr msg, const message_callbacks& emit_message)
+        {
+            return m_chain(msg, emit_message);
+        }
+
+    private:
+        static auto make_chain()
+        {
+            return html_parser{} |
                 doc_parser{} |
                 pdf_parser{} |
                 xls_parser{} |
@@ -54,9 +60,10 @@ class office_formats_parser : public parsing_chain
                 odf_ooxml_parser<safety_level>{} |
                 odfxml_parser<safety_level>{} |
                 xml_parser<safety_level>{} |
-                txt_parser{}
-            }
-        {}
+                txt_parser{};
+        }
+
+        decltype(make_chain()) m_chain{make_chain()};
 };
 
 } // namespace docwire

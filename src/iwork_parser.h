@@ -13,18 +13,18 @@
 #define DOCWIRE_IWORK_PARSER_H
 
 #include "iwork_export.h"
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
+#include "pimpl.h"
 
 namespace docwire
 {
 
-class DOCWIRE_IWORK_EXPORT iwork_parser : public chain_element, public with_pimpl<iwork_parser>
+class DOCWIRE_IWORK_EXPORT iwork_parser : public pipeline::transformer_element<iwork_parser>, public with_pimpl<iwork_parser>
 {
 	public:
 		iwork_parser();
 
-		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-		bool is_leaf() const override { return false; }
+		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 	private:
 		using with_pimpl<iwork_parser>::impl;
