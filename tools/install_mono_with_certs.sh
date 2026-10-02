@@ -18,6 +18,6 @@ install -m 0644 ca-certificates-mono-extracted/usr/lib/mono/4.5/cert-sync.exe /u
 install -m 0644 ca-certificates-mono-extracted/usr/lib/mono/4.5/cert-sync.exe.config /usr/lib/mono/4.5/cert-sync.exe.config 2>/dev/null || true
 
 # Populate the machine trust store used by Mono.Btls
-cert-sync --machine /etc/ssl/certs/ca-certificates.crt
+cert-sync /etc/ssl/certs/ca-certificates.crt
 
 rm -rf ca-certificates-mono.deb ca-certificates-mono-extracted
