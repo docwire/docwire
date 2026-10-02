@@ -51,7 +51,17 @@ if ($env:BINARY_CACHE_GITHUB_TOKEN)
         $SOURCE_NAME = "${OWNER}_github"
         & "$NUGET" sources add -source "$SOURCE_URL" -storepasswordincleartext -name "$SOURCE_NAME" -username $env:BINARY_CACHE_GITHUB_USER -password $env:BINARY_CACHE_GITHUB_TOKEN
         & "$NUGET" setapikey $env:BINARY_CACHE_GITHUB_TOKEN -source "$SOURCE_URL"
-        $nugetSearchOutput = & "$NUGET" search docwire -Source $SOURCE_NAME -NonInteractive 2>&1
+        $previousErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
+        try
+        {
+            $nugetSearchOutput = & "$NUGET" search docwire -Source $SOURCE_NAME -NonInteractive 2>&1
+        }
+        finally
+        {
+            $ErrorActionPreference = $previousErrorActionPreference
+        }
+
         if ($LASTEXITCODE -ne 0)
         {
             Write-Host "ERROR: NuGet source check failed for source '$SOURCE_NAME'." -ForegroundColor Red
