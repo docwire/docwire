@@ -8,6 +8,15 @@ cd /tmp
 wget -q "https://download.mono-project.com/repo/ubuntu/pool/main/m/mono/ca-certificates-mono_6.13.0.1204-0nightly6+ubuntu2004b1_all.deb" \
   -O ca-certificates-mono.deb
 
+EXPECTED_SHA256="e7674fd2442c9c8c1b303659ad50eefbd1b27878fcfe8a87242a2d526e3b4092"
+ACTUAL_SHA256=$(sha256sum ca-certificates-mono.deb | awk '{print $1}')
+if [[ "$ACTUAL_SHA256" != "$EXPECTED_SHA256" ]]; then
+    echo "ERROR: SHA256 mismatch for ca-certificates-mono.deb" >&2
+    echo "Expected: $EXPECTED_SHA256" >&2
+    echo "Actual:   $ACTUAL_SHA256" >&2
+    exit 1
+fi
+
 rm -rf ca-certificates-mono-extracted
 dpkg-deb -x ca-certificates-mono.deb ca-certificates-mono-extracted
 

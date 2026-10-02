@@ -27,11 +27,14 @@ if [[ -n "$BINARY_CACHE_GITHUB_TOKEN" ]]; then
 		SOURCE_NAME="${OWNER}_github"
 		mono "$NUGET" sources add -source "$SOURCE_URL" -storepasswordincleartext -name "$SOURCE_NAME" -username "$BINARY_CACHE_GITHUB_USER" -password "$BINARY_CACHE_GITHUB_TOKEN"
 		mono "$NUGET" setapikey "$BINARY_CACHE_GITHUB_TOKEN" -source "$SOURCE_URL"
-		if ! mono "$NUGET" search docwire -Source "$SOURCE_NAME" -NonInteractive >/dev/null 2>&1; then
-			echo "ERROR: Mono cannot establish a TLS connection to NuGet source '$SOURCE_NAME'." >&2
-			echo "Check that the Mono certificate store is synchronized with the system CA bundle." >&2
+		if ! mono "$NUGET" search docwire -Source "$SOURCE_NAME" -NonInteractive > /tmp/nuget_search.log 2>&1; then
+			echo "ERROR: NuGet source check failed for source '$SOURCE_NAME'." >&2
+			cat /tmp/nuget_search.log >&2
+			echo "Review the NuGet error above. If it includes CERTIFICATE_VERIFY_FAILED, ensure the Mono certificate store is synchronized with the system CA bundle." >&2
+			rm -f /tmp/nuget_search.log
 			exit 1
 		fi
+		rm -f /tmp/nuget_search.log
 		echo "TLS connection to NuGet source '$SOURCE_NAME' successful."
 		VCPKG_BINARY_SOURCES+=";nuget,$SOURCE_NAME,readwrite"
 	done
