@@ -51,6 +51,25 @@ if ($env:BINARY_CACHE_GITHUB_TOKEN)
         $SOURCE_NAME = "${OWNER}_github"
         & "$NUGET" sources add -source "$SOURCE_URL" -storepasswordincleartext -name "$SOURCE_NAME" -username $env:BINARY_CACHE_GITHUB_USER -password $env:BINARY_CACHE_GITHUB_TOKEN
         & "$NUGET" setapikey $env:BINARY_CACHE_GITHUB_TOKEN -source "$SOURCE_URL"
+        $previousErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
+        try
+        {
+            $nugetSearchOutput = & "$NUGET" search docwire -Source $SOURCE_NAME -NonInteractive 2>&1
+        }
+        finally
+        {
+            $ErrorActionPreference = $previousErrorActionPreference
+        }
+
+        if ($LASTEXITCODE -ne 0)
+        {
+            Write-Host "ERROR: NuGet source check failed for source '$SOURCE_NAME'." -ForegroundColor Red
+            $nugetSearchOutput | Write-Host -ForegroundColor Red
+            Write-Host "Review the NuGet error above. If it includes CERTIFICATE_VERIFY_FAILED, ensure the OS or Mono certificate store is synchronized with the system CA bundle." -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "TLS connection to NuGet source '$SOURCE_NAME' successful." -ForegroundColor Green
         $VCPKG_BINARY_SOURCES += ";nuget,$SOURCE_NAME,readwrite"
     }
     $env:VCPKG_BINARY_SOURCES = "clear" + $VCPKG_BINARY_SOURCES
