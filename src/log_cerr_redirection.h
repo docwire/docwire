@@ -29,12 +29,10 @@
 namespace docwire::log
 {
 
-namespace audit = ::docwire::audit;
-
 /// @brief Tag for log entries that contain content redirected from `stderr`.
 struct stderr_redirect { static constexpr std::string_view string() { return "stderr_redirect"; } };
 
-template<typename auditor_type = audit::null_auditor>
+template<typename auditor_type = ::docwire::audit::null_auditor>
 class cerr_redirection
 {
 public:
@@ -44,7 +42,7 @@ public:
 	 * @param location The source location where the redirection is initiated.
 	 */
 	explicit cerr_redirection(
-		audit::auditor_ref<auditor_type> auditor = {},
+		::docwire::audit::auditor_ref<auditor_type> auditor = {},
 		const source_location& location = source_location::current())
 		: m_auditor{auditor}
 	{
@@ -94,7 +92,7 @@ public:
 #ifndef NDEBUG
 		if (!redirected_cerr.empty())
 		{
-			audit::entry(m_auditor, [&] {
+			::docwire::audit::entry(m_auditor, [&] {
 				return std::make_tuple(stderr_redirect{}, serialization::object{{{"redirected_cerr", redirected_cerr}}});
 			});
 		}
@@ -104,7 +102,7 @@ public:
 private:
 	bool m_redirected{false};
 	std::streambuf* m_cerr_buf_backup{nullptr};
-	audit::auditor_ref<auditor_type> m_auditor;
+	::docwire::audit::auditor_ref<auditor_type> m_auditor;
 #ifndef NDEBUG
 	source_location m_location;
 	std::ostringstream m_string_stream;
