@@ -39,6 +39,7 @@ class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser
 		friend pimpl_impl<odfxml_parser<safety_level, auditor_type>>;
 
 		using base_type::registerODFOOXMLCommandHandler;
+		using base_type::auditor;
 		using scoped_context_stack_push = base_type::scoped_context_stack_push;
 
 	protected:

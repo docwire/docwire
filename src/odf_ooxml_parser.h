@@ -45,6 +45,7 @@ class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser
     using base_type::parseXmlChildren;
     using base_type::getSharedStrings;
     using base_type::activeEmittingSignals;
+    using base_type::auditor;
     using shared_string = base_type::shared_string;
     using scoped_context_stack_push = base_type::scoped_context_stack_push;
 
