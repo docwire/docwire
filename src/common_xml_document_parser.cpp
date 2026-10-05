@@ -15,7 +15,9 @@
 #include <functional>
 #include <type_traits>
 #include <stack>
-#include "log_scope.h"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
 #include "make_error.h"
 #include "text_formatting.h"
 #include "nested_exception.h"
@@ -34,7 +36,7 @@ namespace docwire
 namespace
 {
 
-template <safety_policy safety_level>
+template <safety_policy safety_level, typename auditor_type>
 struct context
 {
 	const message_callbacks& emit_message;
@@ -44,20 +46,23 @@ struct context
 	bool space_preserve = false;
 	bool stop_emit_signals = false;
 	size_t m_list_depth = 0;
-	std::map<std::string, typename common_xml_document_parser<safety_level>::ListStyleVector> m_list_styles;
-	std::map<int, typename common_xml_document_parser<safety_level>::comment> m_comments;
-	std::map<std::string, typename common_xml_document_parser<safety_level>::relationship> m_relationships;
-	std::vector<typename common_xml_document_parser<safety_level>::shared_string> m_shared_strings;
+	std::map<std::string, typename common_xml_document_parser<safety_level, auditor_type>::ListStyleVector> m_list_styles;
+	std::map<int, typename common_xml_document_parser<safety_level, auditor_type>::comment> m_comments;
+	std::map<std::string, typename common_xml_document_parser<safety_level, auditor_type>::relationship> m_relationships;
+	std::vector<typename common_xml_document_parser<safety_level, auditor_type>::shared_string> m_shared_strings;
 	bool m_disabled_text = false;
 };
 
 } // anonymous namespace
 
-template <safety_policy safety_level>
-struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<common_xml_document_parser<safety_level>>
+template <safety_policy safety_level, typename auditor_type>
+struct pimpl_impl<common_xml_document_parser<safety_level, auditor_type>>
+    : with_pimpl_owner<common_xml_document_parser<safety_level, auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
-	using command_handler = common_xml_document_parser<safety_level>::CommandHandler;
-	using with_pimpl_owner<common_xml_document_parser<safety_level>>::owner;
+	using command_handler = common_xml_document_parser<safety_level, auditor_type>::CommandHandler;
+	using with_pimpl_owner<common_xml_document_parser<safety_level, auditor_type>>::owner;
+	using audit::with_auditor<auditor_type>::auditor;
 
   template<typename T>
   command_handler add_command_handler(T member_function)
@@ -70,8 +75,9 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
     };
   }
 
-  pimpl_impl(common_xml_document_parser<safety_level>& owner)
-  : with_pimpl_owner<common_xml_document_parser<safety_level>>{owner}
+  pimpl_impl(common_xml_document_parser<safety_level, auditor_type>& owner)
+  : with_pimpl_owner<common_xml_document_parser<safety_level, auditor_type>>{owner},
+    audit::with_auditor<auditor_type>{owner.auditor()}
   {
     m_command_handlers["#text"] = add_command_handler<>(&pimpl_impl::onODFOOXMLText);
     m_command_handlers["b"] = add_command_handler<>(&pimpl_impl::onODFOOXMLBold);
@@ -104,12 +110,12 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 
 	std::map<std::string, command_handler> m_command_handlers;
 	xml::reader_blanks m_blanks = xml::reader_blanks::keep;
-  	std::stack<context<safety_level>> m_context_stack;
+  	std::stack<context<safety_level, auditor_type>> m_context_stack;
 
 	template <typename T>
 	continuation emit_message(T&& object) const
 	{
-		log_scope(m_context_stack.top().stop_emit_signals);
+		audit::scope audit_scope{auditor(), [&]{ return "stop_emit_signals"_v = m_context_stack.top().stop_emit_signals; }};
 		if (!m_context_stack.top().stop_emit_signals || std::is_same_v<std::decay_t<T>, std::exception_ptr>)
 			return m_context_stack.top().emit_message(std::forward<T>(object));
 		else
@@ -127,7 +133,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
            zip_reader* zipfile, std::string& text,
            bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-    log_scope();
+    audit::scope audit_scope{auditor(), audit::no_context};
     text += owner().parseXmlChildren(xml_node, mode, zipfile);
     children_processed = true;
 
@@ -150,7 +156,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 	           zip_reader* zipfile, std::string& text,
 	           bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		text += owner().parseXmlChildren(xml_node, mode, zipfile);
 		children_processed = true;
 
@@ -173,7 +179,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
                       zip_reader* zipfile, std::string& text,
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-    log_scope();
+    audit::scope audit_scope{auditor(), audit::no_context};
     reset_format();
     owner().parseXmlChildren(xml_node, mode, zipfile);
     if (m_context_stack.top().is_bold)
@@ -195,7 +201,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
                       zip_reader* zipfile, std::string& text,
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-    log_scope();
+    audit::scope audit_scope{auditor(), audit::no_context};
     reset_format();
     emit_message(document::paragraph{});
     text += owner().parseXmlChildren(xml_node, mode, zipfile) + '\n';
@@ -207,11 +213,11 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
                         const zip_reader* zipfile, std::string& text,
                         bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-    log_scope();
+    audit::scope audit_scope{auditor(), audit::no_context};
     if (m_context_stack.top().m_disabled_text == false)
     {
       std::string content { xml_node.content() };
-	  log_entry(content);
+	  audit::entry(auditor(), [&]{ return "content"_v = content; });
 	  text += content;
       children_processed = true;
       if (m_context_stack.top().space_preserve || !std::all_of(content.begin(), content.end(), [](auto c){return isspace(static_cast<unsigned char>(c));}))
@@ -223,7 +229,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
                  zip_reader* zipfile, std::string& text,
                  bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
     reset_format();
     emit_message(document::table{});
     text += owner().parseXmlChildren(xml_node, mode, zipfile);
@@ -235,7 +241,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
                        zip_reader* zipfile, std::string& text,
                        bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
     reset_format();
     emit_message(document::table_row{});
     text += owner().parseXmlChildren(xml_node, mode, zipfile);
@@ -247,7 +253,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
                        zip_reader* zipfile, std::string& text,
                        bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
     reset_format();
     emit_message(document::table_cell{});
     text += owner().parseXmlChildren(xml_node, mode, zipfile);
@@ -259,7 +265,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
                       zip_reader* zipfile, std::string& text,
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-    log_scope();
+    audit::scope audit_scope{auditor(), audit::no_context};
     text += owner().parseXmlChildren(xml_node, mode, zipfile);
     children_processed = true;
   }
@@ -268,7 +274,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
                       const zip_reader* zipfile, std::string& text,
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-    log_scope();
+    audit::scope audit_scope{auditor(), audit::no_context};
 	m_context_stack.top().is_bold = attribute_value(xml_node, "val").value_or("") != "false";
   }
 
@@ -276,7 +282,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
                       const zip_reader* zipfile, std::string& text,
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-    log_scope();
+    audit::scope audit_scope{auditor(), audit::no_context};
 	m_context_stack.top().is_italic = attribute_value(xml_node, "val").value_or("") != "false";
   }
 
@@ -284,7 +290,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
                       const zip_reader* zipfile, std::string& text,
                       bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-    log_scope();
+    audit::scope audit_scope{auditor(), audit::no_context};
 	m_context_stack.top().is_underline = attribute_value(xml_node, "val").value_or("") != "none";
   }
 
@@ -292,7 +298,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 								const zip_reader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		// By default, children_processed is false, allowing the main loop to descend into children.
 		// This is the desired behavior for unknown wrapper tags.
 		// We only need to override this for non-element nodes (like comments or processing instructions)
@@ -307,7 +313,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 						zip_reader* zipfile, std::string& text,
 						bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
-		log_scope(command);
+		audit::scope audit_scope{auditor(), [&]{ return "command"_v = command; }};
 		children_processed = false;
 		typename std::map<std::string, command_handler>::iterator it = m_command_handlers.find(command);
 		if (it != m_command_handlers.end())
@@ -320,7 +326,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 								   const zip_reader* zipfile, std::string& text,
 								   bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			text += xml_node.content();
 		}
 
@@ -328,7 +334,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 								  const zip_reader* zipfile, std::string& text,
 								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			text += "\t"; 
 			emit_message(document::text{.text = "\t"});
 		}
@@ -337,7 +343,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 								  const zip_reader* zipfile, std::string& text,
 								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			int count = xml::attribute_value<int>(xml_node, "c").value_or(1);
 			for (int i = 0; i < count; i++)
 			{
@@ -350,7 +356,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 								  zip_reader* zipfile, std::string& text,
 								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			std::string mlink { attribute_value(xml_node, "href").value_or("") };
 			emit_message(document::link{.url = mlink});
 			std::string text_link = owner().parseXmlChildren(xml_node, mode, zipfile);
@@ -363,11 +369,11 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 										const zip_reader* zipfile, std::string& text,
 										bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			std::string style_code { attribute_value(xml_node, "name").value_or("") };
 			if (!style_code.empty())
 			{
-				typename common_xml_document_parser<safety_level>::ListStyleVector list_style(10, common_xml_document_parser<safety_level>::bullet);
+				typename common_xml_document_parser<safety_level, auditor_type>::ListStyleVector list_style(10, common_xml_document_parser<safety_level, auditor_type>::bullet);
 				for (auto node: children(xml_node))
 				{
 					std::string_view list_style_name = node.name();
@@ -375,9 +381,9 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 					if (level <= 10 && level > 0)
 					{
 						if (list_style_name == "list-level-style-number")
-							list_style[level - 1] = common_xml_document_parser<safety_level>::number;
+							list_style[level - 1] = common_xml_document_parser<safety_level, auditor_type>::number;
 						else
-							list_style[level - 1] = common_xml_document_parser<safety_level>::bullet;
+							list_style[level - 1] = common_xml_document_parser<safety_level, auditor_type>::bullet;
 					}
 				}
 				children_processed = true;
@@ -389,15 +395,15 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 								   zip_reader* zipfile, std::string& text,
 								   bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			std::vector<std::string> list_vector;
 			owner().getListDepth()++;
 			std::string header;
-			typename common_xml_document_parser<safety_level>::odfooxml_list_style list_style = common_xml_document_parser<safety_level>::bullet;
+			typename common_xml_document_parser<safety_level, auditor_type>::odfooxml_list_style list_style = common_xml_document_parser<safety_level, auditor_type>::bullet;
 			std::string style_name { attribute_value(xml_node, "style-name").value_or("") };
 			if (owner().getListDepth() <= 10 && !style_name.empty() && owner().getListStyles().find(style_name) != owner().getListStyles().end())
 				list_style = owner().getListStyles()[style_name].at(owner().getListDepth() - 1);
-			std::string list_type = (list_style == common_xml_document_parser<safety_level>::number ? "decimal" : "disc");
+			std::string list_type = (list_style == common_xml_document_parser<safety_level, auditor_type>::number ? "decimal" : "disc");
 			emit_message(document::list{.type = list_type});
 
 			for (auto node: children(xml_node))
@@ -427,7 +433,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 			}
 			owner().getListDepth()--;
 			emit_message(document::close_list{});
-			if (list_style == common_xml_document_parser<safety_level>::number)
+			if (list_style == common_xml_document_parser<safety_level, auditor_type>::number)
 				text += formatNumberedList(list_vector);
 			else
 				text += formatList(list_vector);
@@ -438,7 +444,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 									zip_reader* zipfile, std::string& text,
 									bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			std::string creator;
 			std::string date;
 			std::string content;
@@ -466,7 +472,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 								   const zip_reader* zipfile, std::string& text,
 								   bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			text += "\n";
 			emit_message(document::break_line{});
 		}
@@ -475,7 +481,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 								 zip_reader* zipfile, std::string& text,
 								 bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			text += owner().parseXmlChildren(xml_node, mode, zipfile) + '\n';
 			children_processed = true;
 		}
@@ -484,7 +490,7 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 								zip_reader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			std::string_view href = attribute_value(xml_node, "href").value_or("");
 			std::string content_fn = std::string{href.substr(0, 2) == "./" ? href.substr(2) : href} + "/content.xml";
 			std::string content;
@@ -509,28 +515,28 @@ struct pimpl_impl<common_xml_document_parser<safety_level>> : with_pimpl_owner<c
 								zip_reader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		children_processed = true;
 	}
 };
 
-template <safety_policy safety_level>
-void common_xml_document_parser<safety_level>::activeEmittingSignals(bool flag)
+template <safety_policy safety_level, typename auditor_type>
+void common_xml_document_parser<safety_level, auditor_type>::activeEmittingSignals(bool flag)
 {
-	log_scope(flag);
+	audit::scope audit_scope{auditor(), [&]{ return "flag"_v = flag; }};
 	impl().m_context_stack.top().stop_emit_signals = !flag;
 }
 
-template <safety_policy safety_level>
-void common_xml_document_parser<safety_level>::registerODFOOXMLCommandHandler(const std::string& xml_tag, const CommandHandler& handler)
+template <safety_policy safety_level, typename auditor_type>
+void common_xml_document_parser<safety_level, auditor_type>::registerODFOOXMLCommandHandler(const std::string& xml_tag, const CommandHandler& handler)
 {
 	impl().m_command_handlers[xml_tag] = handler;
 }
 
-template <safety_policy safety_level>
-std::string common_xml_document_parser<safety_level>::parseXmlData(xml::children_view<safety_level> xml_nodes, xml_parse_mode mode, zip_reader* zipfile)
+template <safety_policy safety_level, typename auditor_type>
+std::string common_xml_document_parser<safety_level, auditor_type>::parseXmlData(xml::children_view<safety_level> xml_nodes, xml_parse_mode mode, zip_reader* zipfile)
 {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
 	std::string text;
 	std::string level_suffix;
 	bool first_on_level = true;
@@ -561,21 +567,21 @@ std::string common_xml_document_parser<safety_level>::parseXmlData(xml::children
 	return text;
 }
 
-template <safety_policy safety_level>
-std::string common_xml_document_parser<safety_level>::parseXmlChildren(
+template <safety_policy safety_level, typename auditor_type>
+std::string common_xml_document_parser<safety_level, auditor_type>::parseXmlChildren(
   xml::node_ref<safety_level>& xml_node, xml_parse_mode mode, zip_reader* zipfile)
 {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
 	std::string text;
 	text = parseXmlData(children(xml_node), mode, zipfile);
 	return text;
 }
 
-template <safety_policy safety_level>
-void common_xml_document_parser<safety_level>::extractText(std::string_view xml_contents, xml_parse_mode mode, zip_reader* zipfile,
+template <safety_policy safety_level, typename auditor_type>
+void common_xml_document_parser<safety_level, auditor_type>::extractText(std::string_view xml_contents, xml_parse_mode mode, zip_reader* zipfile,
 	std::string& text)
 {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
 	if (mode == STRIP_XML)
 	{
 		text = "";
@@ -613,10 +619,10 @@ void common_xml_document_parser<safety_level>::extractText(std::string_view xml_
 	}
 }
 
-template <safety_policy safety_level>
-void common_xml_document_parser<safety_level>::parseODFMetadata(std::string_view xml_content, attributes::metadata& metadata) const
+template <safety_policy safety_level, typename auditor_type>
+void common_xml_document_parser<safety_level, auditor_type>::parseODFMetadata(std::string_view xml_content, attributes::metadata& metadata) const
 {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
 	try
 	{
 		xml::reader<safety_level> xml_reader(xml_content, xml::reader_blanks::ignore);
@@ -653,10 +659,10 @@ void common_xml_document_parser<safety_level>::parseODFMetadata(std::string_view
 	}
 }
 
-template <safety_policy safety_level>
-const std::string common_xml_document_parser<safety_level>::formatComment(const std::string& author, const std::string& time, const std::string& text)
+template <safety_policy safety_level, typename auditor_type>
+const std::string common_xml_document_parser<safety_level, auditor_type>::formatComment(const std::string& author, const std::string& time, const std::string& text)
 {
-	log_scope(author, time, text);
+	audit::scope audit_scope{auditor(), [&]{ return "author"_v = author, "time"_v = time, "text"_v = text; }};
 	std::string comment = "\n[[[COMMENT BY " + author + " (" + time + ")]]]\n" + text;
 	if (text.empty() || *text.rbegin() != '\n')
 		comment += "\n";
@@ -664,85 +670,90 @@ const std::string common_xml_document_parser<safety_level>::formatComment(const 
 	return comment;
 }
 
-template <safety_policy safety_level>
-size_t& common_xml_document_parser<safety_level>::getListDepth()
+template <safety_policy safety_level, typename auditor_type>
+size_t& common_xml_document_parser<safety_level, auditor_type>::getListDepth()
 {
 	return impl().m_context_stack.top().m_list_depth;
 }
 
-template <safety_policy safety_level>
-common_xml_document_parser<safety_level>::ListStyleMap& common_xml_document_parser<safety_level>::getListStyles()
+template <safety_policy safety_level, typename auditor_type>
+common_xml_document_parser<safety_level, auditor_type>::ListStyleMap& common_xml_document_parser<safety_level, auditor_type>::getListStyles()
 {
 	return impl().m_context_stack.top().m_list_styles;
 }
 
-template <safety_policy safety_level>
-common_xml_document_parser<safety_level>::CommentMap& common_xml_document_parser<safety_level>::getComments()
+template <safety_policy safety_level, typename auditor_type>
+common_xml_document_parser<safety_level, auditor_type>::CommentMap& common_xml_document_parser<safety_level, auditor_type>::getComments()
 {
 	return impl().m_context_stack.top().m_comments;
 }
 
-template <safety_policy safety_level>
-common_xml_document_parser<safety_level>::RelationshipMap& common_xml_document_parser<safety_level>::getRelationships()
+template <safety_policy safety_level, typename auditor_type>
+common_xml_document_parser<safety_level, auditor_type>::RelationshipMap& common_xml_document_parser<safety_level, auditor_type>::getRelationships()
 {
 	return impl().m_context_stack.top().m_relationships;
 }
 
-template <safety_policy safety_level>
-common_xml_document_parser<safety_level>::SharedStringVector& common_xml_document_parser<safety_level>::getSharedStrings()
+template <safety_policy safety_level, typename auditor_type>
+common_xml_document_parser<safety_level, auditor_type>::SharedStringVector& common_xml_document_parser<safety_level, auditor_type>::getSharedStrings()
 {
 	return impl().m_context_stack.top().m_shared_strings;
 }
 
-template <safety_policy safety_level>
-bool common_xml_document_parser<safety_level>::disabledText() const
+template <safety_policy safety_level, typename auditor_type>
+bool common_xml_document_parser<safety_level, auditor_type>::disabledText() const
 {
 	return impl().m_context_stack.top().m_disabled_text;
 }
 
-template <safety_policy safety_level>
-void common_xml_document_parser<safety_level>::disableText(bool disable)
+template <safety_policy safety_level, typename auditor_type>
+void common_xml_document_parser<safety_level, auditor_type>::disableText(bool disable)
 {
 	impl().m_context_stack.top().m_disabled_text = disable;
 }
 
-template <safety_policy safety_level>
-void common_xml_document_parser<safety_level>::set_blanks(xml::reader_blanks blanks)
+template <safety_policy safety_level, typename auditor_type>
+void common_xml_document_parser<safety_level, auditor_type>::set_blanks(xml::reader_blanks blanks)
 {
 	impl().m_blanks = blanks;
 }
 
-template <safety_policy safety_level>
-common_xml_document_parser<safety_level>::common_xml_document_parser()
+template <safety_policy safety_level, typename auditor_type>
+common_xml_document_parser<safety_level, auditor_type>::common_xml_document_parser(audit::auditor_ref<auditor_type> auditor)
+	: audit::with_auditor<auditor_type>{auditor}
 {
 }
 
-template <safety_policy safety_level>
-xml::reader_blanks common_xml_document_parser<safety_level>::blanks() const
+template <safety_policy safety_level, typename auditor_type>
+xml::reader_blanks common_xml_document_parser<safety_level, auditor_type>::blanks() const
 {
 	return impl().m_blanks;
 }
 
-template <safety_policy safety_level>
-common_xml_document_parser<safety_level>::scoped_context_stack_push::scoped_context_stack_push(common_xml_document_parser& parser, const message_callbacks& emit_message)
+template <safety_policy safety_level, typename auditor_type>
+common_xml_document_parser<safety_level, auditor_type>::scoped_context_stack_push::scoped_context_stack_push(common_xml_document_parser& parser, const message_callbacks& emit_message)
 	: m_parser{parser}
 {
-	log_scope();
+	audit::scope audit_scope{parser.auditor(), audit::no_context};
 	m_parser.impl().m_context_stack.push({emit_message});
 }
 
-template <safety_policy safety_level>
-common_xml_document_parser<safety_level>::scoped_context_stack_push::~scoped_context_stack_push()
+template <safety_policy safety_level, typename auditor_type>
+common_xml_document_parser<safety_level, auditor_type>::scoped_context_stack_push::~scoped_context_stack_push()
 {
-	log_scope();
+	audit::scope audit_scope{m_parser.auditor(), audit::no_context};
 	m_parser.impl().m_context_stack.pop();
 }
 
-template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<strict>;
-template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<relaxed>;
+template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<strict, audit::null_auditor>;
+template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, audit::null_auditor>;
+template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<strict, audit::legacy_log_audit>;
+template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, audit::legacy_log_audit>;
 
 // These are not required but help static analyzer
-template class pimpl_impl<common_xml_document_parser<strict>>;
-template class pimpl_impl<common_xml_document_parser<relaxed>>;
+template class pimpl_impl<common_xml_document_parser<strict, audit::null_auditor>>;
+template class pimpl_impl<common_xml_document_parser<relaxed, audit::null_auditor>>;
+template class pimpl_impl<common_xml_document_parser<strict, audit::legacy_log_audit>>;
+template class pimpl_impl<common_xml_document_parser<relaxed, audit::legacy_log_audit>>;
 
 } // namespace docwire

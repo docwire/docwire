@@ -13,6 +13,7 @@
 #define DOCWIRE_COMMON_XML_PARSER_H
 
 #include "attributes.h"
+#include "audit.hpp"
 #include "pipeline/element_base.hpp"
 #include "pimpl.h"
 #include "xml_children.h"
@@ -37,12 +38,16 @@ enum xml_parse_mode { PARSE_XML, FIX_XML, STRIP_XML };
  * @sa xml::reader
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
-template <safety_policy safety_level = default_safety_level>
-class common_xml_document_parser: public with_pimpl<common_xml_document_parser<safety_level>>
+template <safety_policy safety_level = default_safety_level,
+          typename auditor_type = audit::null_auditor>
+class common_xml_document_parser
+    : public with_pimpl<common_xml_document_parser<safety_level, auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
 	private:
-		friend pimpl_impl<common_xml_document_parser<safety_level>>;
-		using with_pimpl<common_xml_document_parser<safety_level>>::impl;
+		friend pimpl_impl<common_xml_document_parser<safety_level, auditor_type>>;
+		using with_pimpl<common_xml_document_parser<safety_level, auditor_type>>::impl;
+		using audit::with_auditor<auditor_type>::auditor;
 
 	//public interface for derived classes (and its components)
 	public:
@@ -85,11 +90,11 @@ class common_xml_document_parser: public with_pimpl<common_xml_document_parser<s
 		/// Type alias for a vector of list styles.
 		typedef std::vector<odfooxml_list_style> ListStyleVector;
 		/// Type alias for a map of list style names to their definitions.
-		using ListStyleMap = std::map<std::string, common_xml_document_parser<safety_level>::ListStyleVector>;
+		using ListStyleMap = std::map<std::string, common_xml_document_parser<safety_level, auditor_type>::ListStyleVector>;
 		/// Type alias for a map of comment IDs to Comment objects.
-		using CommentMap = std::map<int, common_xml_document_parser<safety_level>::comment>;
+		using CommentMap = std::map<int, common_xml_document_parser<safety_level, auditor_type>::comment>;
 		/// Type alias for a map of relationship IDs to Relationship objects.
-		using RelationshipMap = std::map<std::string, common_xml_document_parser<safety_level>::relationship>;
+		using RelationshipMap = std::map<std::string, common_xml_document_parser<safety_level, auditor_type>::relationship>;
 		/// Type alias for a vector of shared strings.
 		using SharedStringVector = std::vector<shared_string>;
 
@@ -195,7 +200,7 @@ class common_xml_document_parser: public with_pimpl<common_xml_document_parser<s
 		/**
 		 * @brief Default constructor.
 		 */
-		common_xml_document_parser();
+		common_xml_document_parser(audit::auditor_ref<auditor_type> auditor = {});
 
 	protected:
 		/**
