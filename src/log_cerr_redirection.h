@@ -90,9 +90,12 @@ public:
 		if (m_cerr_redirection_mutex_lock.owns_lock())
 			m_cerr_redirection_mutex_lock.unlock();
 #ifndef NDEBUG
-		audit::entry(m_auditor, [&] {
-			return std::make_tuple(stderr_redirect{}, serialization::object{{{"redirected_cerr", redirected_cerr}}});
-		});
+		if (!redirected_cerr.empty())
+		{
+			audit::entry(m_auditor, [&] {
+				return std::make_tuple(stderr_redirect{}, serialization::object{{{"redirected_cerr", redirected_cerr}}});
+			});
+		}
 #endif
 	}
 
