@@ -522,7 +522,7 @@ int main(int argc, char* argv[])
 			std::variant<plain_text_exporter,
 			             html_exporter,
 			             csv_exporter,
-			             metadata_exporter>;
+			             metadata_exporter<audit::null_auditor>>;
 
 		exporter_variant formatter = plain_text_exporter{};
 
