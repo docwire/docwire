@@ -12,8 +12,6 @@
 #include "xml_reader.h"
 
 #include "checked.h"
-#include "log_scope.h"
-#include "log_entry.h"
 #include "not_null.h"
 #include "throw_if.h"
 #include <cstddef>
@@ -76,7 +74,6 @@ struct pimpl_impl<xml::reader<safety_level>> : pimpl_impl_base
     pimpl_impl(std::string_view xml_sv, xml::reader_blanks blanks_option)
         : m_reader(xml::make_xml_text_reader_safely(xml_sv, blanks_option))
     {
-		log::scope _{ "xml_sv"_v = xml_sv, "blanks_option"_v = blanks_option };
     }
 
 	std::string_view name() const
@@ -87,7 +84,6 @@ struct pimpl_impl<xml::reader<safety_level>> : pimpl_impl_base
 
 	non_negative<int, safety_level> depth() const
 	{
-		log::scope _{};
 		const at_least<-1, int, safety_level> api_result{xmlTextReaderDepth(m_reader.get())};
 		const non_negative<int, safety_level> valid_result{api_result};
 		return valid_result;
@@ -118,7 +114,6 @@ struct pimpl_impl<xml::reader<safety_level>> : pimpl_impl_base
 				std::rethrow_exception(m_callback_exception);
 
 			throw_if(api_result != 1, "xmlTextReaderRead failed", errors::uninterpretable_data{});
-			log_entry(type(), depth().get(), name());
 		}
 		while (should_skip());
 		return true;
