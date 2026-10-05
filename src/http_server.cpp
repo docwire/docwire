@@ -19,23 +19,18 @@
 namespace docwire::http
 {
 
-template<typename auditor_type>
+namespace detail
+{
+
 certificate_info generate_self_signed_cert_impl(
     const std::string& common_name,
     const std::string& country,
-    const std::string& organization,
-    audit::auditor_ref<auditor_type> auditor)
+    const std::string& organization)
 {
-    audit::scope audit_scope{auditor, [&]{
-        return "common_name"_v = common_name, "country"_v = country, "organization"_v = organization;
-    }};
     auto material = ::docwire::detail::ssl_certificate::generate_self_signed_pem(common_name, country, organization);
     return certificate_info{std::move(material.key), std::move(material.cert)};
 }
 
-certificate_info generate_self_signed_cert(const std::string& common_name, const std::string& country, const std::string& organization)
-{
-    return generate_self_signed_cert_impl(common_name, country, organization, audit::auditor_ref<audit::null_auditor>{});
-}
+} // namespace detail
 
 } // namespace docwire::http

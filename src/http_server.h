@@ -295,15 +295,37 @@ private:
     ::docwire::detail::http_listener m_listener;
 };
 
+namespace detail
+{
+DOCWIRE_HTTP_EXPORT certificate_info generate_self_signed_cert_impl(
+    const std::string& common_name,
+    const std::string& country,
+    const std::string& organization);
+}
+
 /**
  * @brief Generates a self-signed certificate and private key.
  *
  * @param common_name The common name for the certificate (e.g., "localhost" or an IP address).
  * @param country The country name for the certificate.
  * @param organization The organization name for the certificate.
+ * @param auditor Optional injected auditor for observability.
  * @return A certificate_info struct containing the private key and certificate in PEM format.
  */
-DOCWIRE_HTTP_EXPORT certificate_info generate_self_signed_cert(const std::string& common_name, const std::string& country, const std::string& organization);
+template<typename auditor_type = audit::null_auditor>
+certificate_info generate_self_signed_cert(
+    const std::string& common_name,
+    const std::string& country,
+    const std::string& organization,
+    audit::auditor_ref<auditor_type> auditor = {})
+{
+    audit::scope audit_scope{auditor, [&]{
+        return "common_name"_v = common_name,
+               "country"_v = country,
+               "organization"_v = organization;
+    }};
+    return detail::generate_self_signed_cert_impl(common_name, country, organization);
+}
 
 } // namespace docwire::http
 
