@@ -19,7 +19,6 @@
 #include <string>
 #include <utility>
 #include "httplib_patched.h"
-#include "log_scope.h"
 #include "make_error.h"
 #include "throw_if.h"
 
@@ -58,8 +57,6 @@ struct http_listener::impl
         , port{input_options.port}
         , thread_num{input_options.thread_num}
     {
-        log_scope(address, port, thread_num);
-
         if (input_options.certificate)
         {
             certificate.emplace(std::move(*input_options.certificate));
@@ -143,21 +140,17 @@ struct http_listener::impl
 
     BOOST_NOINLINE void httplib_listen_noninlined()
     {
-        log_scope();
         server->listen_after_bind();
     }
 
     BOOST_NOINLINE void httplib_stop_noninlined()
     {
-        log_scope();
         if (server && server->is_running())
             server->stop();
     }
 
     void listen_after_bind()
     {
-        log_scope();
-
         throw_if(!server->bind_to_port(address.c_str(), port),
                  "Failed to bind HTTP server", address, port);
 
@@ -172,7 +165,6 @@ struct http_listener::impl
 
     void stop()
     {
-        log_scope();
         httplib_stop_noninlined();
     }
 };

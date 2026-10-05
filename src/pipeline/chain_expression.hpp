@@ -13,8 +13,9 @@
 #define DOCWIRE_PIPELINE_CHAIN_EXPRESSION_H
 
 #include "element_base.hpp"
-#include "../log_scope.h"
 #include "../ref_or_owned.h"
+#include "../audit/auditor_ref.hpp"
+#include "../audit/scope.hpp"
 #include "../serialization_message.h"
 #include <functional>
 #include <memory>
@@ -108,26 +109,29 @@ class chain_expression : public chain_base_t<L, R>
      * @note A back-emitted message must not be `pipeline::start_processing`.
      *       See `message_callbacks::back`.
      */
-    continuation operator()(message_ptr msg)
+    template<typename auditor_type = audit::null_auditor>
+    continuation operator()(message_ptr msg, audit::auditor_ref<auditor_type> auditor = {})
     {
-      DOCWIRE_LOG_SCOPE(msg);
+      audit::scope audit_scope{auditor, [&]{ return "msg"_v = msg; }};
       return operator()(std::move(msg),
         {
           [](message_ptr) { return continuation::proceed; },
-          [this](message_ptr back_msg)
+          [this, auditor](message_ptr back_msg)
           {
-            return operator()(std::move(back_msg));
+            return operator()(std::move(back_msg), auditor);
           }
         });
     }
 
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
+    template<typename auditor_type = audit::null_auditor>
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message,
+                            audit::auditor_ref<auditor_type> auditor = {})
     {
-      DOCWIRE_LOG_SCOPE(msg);
+      audit::scope audit_scope{auditor, [&]{ return "msg"_v = msg; }};
 
-      auto lhs_callback = [this, &emit_message](message_ptr msg)
+      auto lhs_callback = [this, &emit_message, auditor](message_ptr msg)
       {
-        DOCWIRE_LOG_SCOPE(msg);
+        audit::scope inner_audit_scope{auditor, [&]{ return "msg"_v = msg; }};
         return m_rhs_element.get()(std::move(msg), emit_message);
       };
 

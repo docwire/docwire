@@ -17,7 +17,8 @@
 #include "ssl_certificate.h"
 #include "http_export.h"
 #include "pipeline/input_element.hpp"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/scope.hpp"
 #include "make_error.h"
 #include "message.h"
 #include "pipeline/output_element.hpp"
@@ -134,9 +135,10 @@ public:
      * This method starts the underlying network event loop and will not return
      * until stop() is called from another thread or a signal handler.
      */
-    void operator()()
+    template<typename auditor_type = audit::null_auditor>
+    void operator()(audit::auditor_ref<auditor_type> auditor = {})
     {
-        DOCWIRE_LOG_SCOPE();
+        audit::scope audit_scope{auditor, audit::no_context};
         try
         {
             m_listener.listen_after_bind();
@@ -150,9 +152,10 @@ public:
     /**
      * @brief Blocks until the server is ready to accept connections.
      */
-    void wait_until_ready()
+    template<typename auditor_type = audit::null_auditor>
+    void wait_until_ready(audit::auditor_ref<auditor_type> auditor = {})
     {
-        DOCWIRE_LOG_SCOPE();
+        audit::scope audit_scope{auditor, audit::no_context};
         m_listener.wait_until_ready();
     }
 
@@ -162,9 +165,10 @@ public:
      * This is a thread-safe method that signals the event loop to stop,
      * allowing the operator()() call to unblock and return.
      */
-    void stop()
+    template<typename auditor_type = audit::null_auditor>
+    void stop(audit::auditor_ref<auditor_type> auditor = {})
     {
-        DOCWIRE_LOG_SCOPE();
+        audit::scope audit_scope{auditor, audit::no_context};
         m_listener.stop();
     }
 
