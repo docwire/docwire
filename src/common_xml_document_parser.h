@@ -44,10 +44,12 @@ class common_xml_document_parser
     : public with_pimpl<common_xml_document_parser<safety_level, auditor_type>>,
       private audit::with_auditor<auditor_type>
 {
+	protected:
+		using audit::with_auditor<auditor_type>::auditor;
+
 	private:
 		friend pimpl_impl<common_xml_document_parser<safety_level, auditor_type>>;
 		using with_pimpl<common_xml_document_parser<safety_level, auditor_type>>::impl;
-		using audit::with_auditor<auditor_type>::auditor;
 
 	//public interface for derived classes (and its components)
 	public:

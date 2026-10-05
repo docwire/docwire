@@ -12,6 +12,7 @@
 #ifndef DOCWIRE_ODFXML_PARSER_H
 #define DOCWIRE_ODFXML_PARSER_H
 
+#include "audit.hpp"
 #include "common_xml_document_parser.h"
 #include "odf_ooxml_export.h"
 #include "pimpl.h"
@@ -23,17 +24,19 @@ namespace docwire
 /**
  * @brief A parser for flat ODF XML documents.
  * @tparam safety_level The safety policy to use.
+ * @tparam auditor_type The injected auditor type.
  */
-template <safety_policy safety_level = default_safety_level>
+template <safety_policy safety_level = default_safety_level,
+          typename auditor_type = audit::null_auditor>
 class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser
-    : public common_xml_document_parser<safety_level>,
-      public pipeline::transformer_element<odfxml_parser<safety_level>>,
-      public with_pimpl<odfxml_parser<safety_level>>
+    : public common_xml_document_parser<safety_level, auditor_type>,
+      public pipeline::transformer_element<odfxml_parser<safety_level, auditor_type>>,
+      public with_pimpl<odfxml_parser<safety_level, auditor_type>>
 {
 	private:
-		using base_type = common_xml_document_parser<safety_level>;
-		using with_pimpl<odfxml_parser<safety_level>>::impl;
-		friend pimpl_impl<odfxml_parser<safety_level>>;
+		using base_type = common_xml_document_parser<safety_level, auditor_type>;
+		using with_pimpl<odfxml_parser<safety_level, auditor_type>>::impl;
+		friend pimpl_impl<odfxml_parser<safety_level, auditor_type>>;
 
 		using base_type::registerODFOOXMLCommandHandler;
 		using scoped_context_stack_push = base_type::scoped_context_stack_push;
@@ -46,9 +49,9 @@ class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser
 
 	public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Constructs the parser with an injected auditor.
 		 */
-		odfxml_parser();
+		explicit odfxml_parser(audit::auditor_ref<auditor_type> auditor = {});
 		/**
 		 * @brief Processes a message in the parsing chain.
 		 * @return The continuation status.

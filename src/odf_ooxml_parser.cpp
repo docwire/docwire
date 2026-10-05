@@ -18,8 +18,9 @@
 #include "xml_fixer.h"
 #include "zip_reader.h"
 #include "error_tags.h"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
 #include "make_error.h"
 #include "convert_chrono.h" // IWYU pragma: keep 
 #include "convert_numeric.h" // IWYU pragma: keep
@@ -89,15 +90,21 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-template <safety_policy safety_level>
-struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_parser<safety_level>>
+template <safety_policy safety_level, typename auditor_type>
+struct pimpl_impl<odf_ooxml_parser<safety_level, auditor_type>>
+    : with_pimpl_owner<odf_ooxml_parser<safety_level, auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
-	using owner_type = odf_ooxml_parser<safety_level>;
+	using owner_type = odf_ooxml_parser<safety_level, auditor_type>;
 	using comment = owner_type::comment;
 	using relationship = owner_type::relationship;
-	using with_pimpl_owner<odf_ooxml_parser<safety_level>>::owner;
+	using with_pimpl_owner<odf_ooxml_parser<safety_level, auditor_type>>::owner;
+	using audit::with_auditor<auditor_type>::auditor;
 
-	pimpl_impl(odf_ooxml_parser<safety_level>& owner) : with_pimpl_owner<odf_ooxml_parser<safety_level>>{owner} {}
+	pimpl_impl(odf_ooxml_parser<safety_level, auditor_type>& owner)
+		: with_pimpl_owner<odf_ooxml_parser<safety_level, auditor_type>>{owner},
+		  audit::with_auditor<auditor_type>{owner.auditor()}
+	{}
 
 	std::stack<context> m_context_stack;
 
@@ -107,11 +114,11 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
 		return m_context_stack.top().emit_message(std::forward<T>(object));
 	}
 
-		static void onOOXMLAttribute(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
+		void onOOXMLAttribute(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
 									 const zip_reader* zipfile, std::string& text,
 									 bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			children_processed = true;
 		}
 
@@ -119,7 +126,7 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
                            zip_reader* zipfile, std::string& text,
                            bool& children_processed, std::string& level_suffix, bool first_on_level)
     {
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		owner_type& p = owner();
 		p.setLastOOXMLColNum(0);
 		const int expected_row_num = p.lastOOXMLRowNum() + 1;
@@ -143,7 +150,7 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
                          zip_reader* zipfile, std::string& text,
                          bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-	  log_scope();
+	  audit::scope audit_scope{auditor(), audit::no_context};
 	  owner_type& p = owner();
 	  p.setLastOOXMLRowNum(0);
     emit_message(document::table{});
@@ -155,7 +162,7 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
 								zip_reader* zipfile, std::string& text,
 								bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			if (!first_on_level)
       {
 				text += "\t";
@@ -216,11 +223,11 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
 			children_processed = true;
 		}
 
-		static void onOOXMLHeaderFooter(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
+		void onOOXMLHeaderFooter(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
 										const zip_reader* zipfile, std::string& text,
 										bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			// Ignore headers and footers. They can contain some commands like font settings that can mess up output.
 			// warning TODO: Better headers and footers support
 			children_processed = true;
@@ -230,7 +237,7 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
 											const zip_reader* zipfile, std::string& text,
 											bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			auto comment_id = attribute_value<int>(xml_node, "id");
 			if (comment_id && owner().getComments().count(*comment_id))
 			{
@@ -246,7 +253,7 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
 								  zip_reader* zipfile, std::string& text,
 								  bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			std::string rid { attribute_value(xml_node, "id").value_or("") };
 			if (owner().getRelationships().count(rid))
 			{
@@ -261,19 +268,19 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
 				emit_message(make_error_ptr("Relationship not found, skipping", rid));
 		}
 
-		static void onOOXMLInstrtext(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
+		void onOOXMLInstrtext(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
 									 const zip_reader* zipfile, std::string& text,
 									 bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			children_processed = true;
 		}
 
-		static void onOOXMLTableStyleId(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
+		void onOOXMLTableStyleId(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
 									 const zip_reader* zipfile, std::string& text,
 									 bool& children_processed, std::string& level_suffix, bool first_on_level)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			// Ignore style identifier that is embedded as text inside this tag not to treat it as a document text.
 			children_processed = true;
 		}
@@ -283,7 +290,7 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
                                zip_reader* zipfile, std::string& text,
                                bool& children_processed, std::string& level_suffix, bool first_on_level)
   {
-    log_scope();
+    audit::scope audit_scope{auditor(), audit::no_context};
     owner().activeEmittingSignals(false);
     text += owner().parseXmlChildren(xml_node, mode, zipfile);
     children_processed = true;
@@ -292,9 +299,9 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
 
 	void onOOXMLBreak(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
 								const zip_reader* zipfile, std::string& text,
-								bool& children_processed, std::string& level_suffix, bool first_on_level) const
+								bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		text += "\n";
 
 		emit_message(document::break_line{});
@@ -311,7 +318,7 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
 
 	void readOOXMLComments(zip_reader& zipfile, xml_parse_mode mode)
 	{
-		log_scope(mode);
+		audit::scope audit_scope{auditor(), [&]{ return "mode"_v = mode; }};
 		std::string content;
 		throw_if (!zipfile.read("word/comments.xml", &content), "Error reading word/comments.xml");
 		std::string xml;
@@ -350,7 +357,7 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
 
 	void readOOXMLRelationships(zip_reader& zipfile, xml_parse_mode mode)
 	{
-		log_scope(mode);
+		audit::scope audit_scope{auditor(), [&]{ return "mode"_v = mode; }};
 		std::string content;
 		throw_if (!zipfile.read("word/_rels/document.xml.rels", &content), "Error reading word/_rels/document.xml.rels");
 		std::string xml;
@@ -388,7 +395,7 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
 
 	void readStyles(zip_reader& zipfile, xml_parse_mode mode, const message_callbacks& emit_message)
 	{
-		log_scope(mode);
+		audit::scope audit_scope{auditor(), [&]{ return "mode"_v = mode; }};
 		std::string content;
 		throw_if (!zipfile.read("styles.xml", &content), "Error reading styles.xml");
 		std::string xml;
@@ -411,10 +418,11 @@ struct pimpl_impl<odf_ooxml_parser<safety_level>> : with_pimpl_owner<odf_ooxml_p
 	}
 };
 
-template <safety_policy safety_level>
-odf_ooxml_parser<safety_level>::odf_ooxml_parser()
+template <safety_policy safety_level, typename auditor_type>
+odf_ooxml_parser<safety_level, auditor_type>::odf_ooxml_parser(audit::auditor_ref<auditor_type> auditor)
+	: common_xml_document_parser<safety_level, auditor_type>(auditor)
 {
-	registerODFOOXMLCommandHandler("attrName", [impl=impl()](xml::node_ref<safety_level>& xml_node, xml_parse_mode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+	registerODFOOXMLCommandHandler("attrName", [&impl=impl()](xml::node_ref<safety_level>& xml_node, xml_parse_mode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		impl.onOOXMLAttribute(xml_node, mode, zipfile, text, children_processed, level_suffix, first_on_level);
 	});
@@ -450,44 +458,44 @@ odf_ooxml_parser<safety_level>::odf_ooxml_parser()
 	{
 		impl.onOOXMLStyle(xml_node, mode, zipfile, text, children_processed, level_suffix, first_on_level);
     });
-	registerODFOOXMLCommandHandler("instrText", [impl=impl()](xml::node_ref<safety_level>& xml_node, xml_parse_mode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+	registerODFOOXMLCommandHandler("instrText", [&impl=impl()](xml::node_ref<safety_level>& xml_node, xml_parse_mode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		impl.onOOXMLInstrtext(xml_node, mode, zipfile, text, children_processed, level_suffix, first_on_level);
 	});
-	registerODFOOXMLCommandHandler("tableStyleId", [impl=impl()](xml::node_ref<safety_level>& xml_node, xml_parse_mode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
+	registerODFOOXMLCommandHandler("tableStyleId", [&impl=impl()](xml::node_ref<safety_level>& xml_node, xml_parse_mode mode, zip_reader* zipfile, std::string& text, bool& children_processed, std::string& level_suffix, bool first_on_level)
 	{
 		impl.onOOXMLTableStyleId(xml_node, mode, zipfile, text, children_processed, level_suffix, first_on_level);
 	});
 }
 
-template <safety_policy safety_level>
-int odf_ooxml_parser<safety_level>::lastOOXMLRowNum()
+template <safety_policy safety_level, typename auditor_type>
+int odf_ooxml_parser<safety_level, auditor_type>::lastOOXMLRowNum()
 {
 	return impl().m_context_stack.top().last_ooxml_row_num;
 }
 
-template <safety_policy safety_level>
-void odf_ooxml_parser<safety_level>::setLastOOXMLRowNum(int r)
+template <safety_policy safety_level, typename auditor_type>
+void odf_ooxml_parser<safety_level, auditor_type>::setLastOOXMLRowNum(int r)
 {
 	impl().m_context_stack.top().last_ooxml_row_num = r;
 }
 
-template <safety_policy safety_level>
-int odf_ooxml_parser<safety_level>::lastOOXMLColNum()
+template <safety_policy safety_level, typename auditor_type>
+int odf_ooxml_parser<safety_level, auditor_type>::lastOOXMLColNum()
 {
 	return impl().m_context_stack.top().last_ooxml_col_num;
 }
 
-template <safety_policy safety_level>
-void odf_ooxml_parser<safety_level>::setLastOOXMLColNum(int c)
+template <safety_policy safety_level, typename auditor_type>
+void odf_ooxml_parser<safety_level, auditor_type>::setLastOOXMLColNum(int c)
 {
 	impl().m_context_stack.top().last_ooxml_col_num = c;
 }
 
-template <safety_policy safety_level>
-void odf_ooxml_parser<safety_level>::parse(const data_source& data, xml_parse_mode mode, const message_callbacks& emit_message)
+template <safety_policy safety_level, typename auditor_type>
+void odf_ooxml_parser<safety_level, auditor_type>::parse(const data_source& data, xml_parse_mode mode, const message_callbacks& emit_message)
 {
-	log_scope(data, mode);
+	audit::scope audit_scope{auditor(), [&]{ return "data"_v = data, "mode"_v = mode; }};
 	zip_reader zipfile { data };
 	try
 	{
@@ -554,7 +562,7 @@ void odf_ooxml_parser<safety_level>::parse(const data_source& data, xml_parse_mo
 		if (!zipfile.read("xl/sharedStrings.xml", &content))
 		{
 			//file may not exist, but this is not reason to report an error.
-			log_entry();
+			audit::entry(auditor(), audit::no_context);
 		}
 		else
 		{
@@ -623,10 +631,10 @@ void odf_ooxml_parser<safety_level>::parse(const data_source& data, xml_parse_mo
 	}
 }
 
-template <safety_policy safety_level>
-attributes::metadata odf_ooxml_parser<safety_level>::metaData(zip_reader& zipfile) const
+template <safety_policy safety_level, typename auditor_type>
+attributes::metadata odf_ooxml_parser<safety_level, auditor_type>::metaData(zip_reader& zipfile) const
 {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
 	attributes::metadata meta;
 	if (zipfile.exists("meta.xml"))
 	{
@@ -715,19 +723,19 @@ attributes::metadata odf_ooxml_parser<safety_level>::metaData(zip_reader& zipfil
 	return meta;
 }
 
-template <safety_policy safety_level>
-void odf_ooxml_parser<safety_level>::parse(const data_source& data, const message_callbacks& emit_message)
+template <safety_policy safety_level, typename auditor_type>
+void odf_ooxml_parser<safety_level, auditor_type>::parse(const data_source& data, const message_callbacks& emit_message)
 {
-	log_scope(data);
+	audit::scope audit_scope{auditor(), [&]{ return "data"_v = data; }};
 	scoped_context_stack_push base_context_guard{*this, emit_message};
 	scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_message}};
 	parse(data, xml_parse_mode::PARSE_XML, emit_message);
 }
 
-template <safety_policy safety_level>
-continuation odf_ooxml_parser<safety_level>::operator()(message_ptr msg, const message_callbacks& emit_message)
+template <safety_policy safety_level, typename auditor_type>
+continuation odf_ooxml_parser<safety_level, auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	log_scope(msg);
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
 
@@ -743,7 +751,9 @@ continuation odf_ooxml_parser<safety_level>::operator()(message_ptr msg, const m
 	return continuation::proceed;
 }
 
-template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<strict>;
-template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<relaxed>;
+template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<strict, audit::null_auditor>;
+template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<relaxed, audit::null_auditor>;
+template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<strict, audit::legacy_log_audit>;
+template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<relaxed, audit::legacy_log_audit>;
 
 } // namespace docwire
