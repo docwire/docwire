@@ -520,7 +520,7 @@ int main(int argc, char* argv[])
 
 		using exporter_variant =
 			std::variant<plain_text_exporter,
-			             html_exporter,
+			             html_exporter<audit::null_auditor>,
 			             csv_exporter,
 			             metadata_exporter<audit::null_auditor>>;
 
