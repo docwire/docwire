@@ -13,7 +13,6 @@
 #define DOCWIRE_DETAIL_USTRING_CONVERSIONS_H
 
 #include <string>
-#include "log_scope.h"
 #include "wv2/src/ustring.h"
 
 namespace docwire
@@ -24,7 +23,6 @@ using wvWare::UChar;
 
 inline std::string unichar_to_utf8(unsigned int unichar)
 {
-	DOCWIRE_LOG_SCOPE(unichar);
 	char out[4];
 	if (unichar < 0x80)
 	{
@@ -65,7 +63,6 @@ inline bool utf16_unichar_has_4_bytes(unsigned int ch)
 
 inline std::string ustring_to_string(const UString& s)
 {
-	DOCWIRE_LOG_SCOPE();
 	const UChar* src = s.data();
 	int length = s.length();
 	std::string r;
@@ -83,7 +80,6 @@ inline std::string ustring_to_string(const UString& s)
 
 inline UString utf8_to_ustring(const std::string& src)
 {
-	DOCWIRE_LOG_SCOPE(src);
 	UString res;
 	const char* str = src.data();
 	size_t str_size = src.length();
