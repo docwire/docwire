@@ -16,6 +16,7 @@
 #include "../ref_or_owned.h"
 #include "../audit/auditor_ref.hpp"
 #include "../audit/scope.hpp"
+#include "../named.h"
 #include "../serialization_message.h"
 #include <functional>
 #include <memory>
