@@ -29,6 +29,8 @@
 namespace docwire::log
 {
 
+namespace audit = ::docwire::audit;
+
 /// @brief Tag for log entries that contain content redirected from `stderr`.
 struct stderr_redirect { static constexpr std::string_view string() { return "stderr_redirect"; } };
 

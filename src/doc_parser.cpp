@@ -661,7 +661,7 @@ void pimpl_impl<doc_parser>::parse(const data_source& data, const message_callba
 	}
 	storage->leaveDirectory();
 	curr_state.obj_texts_iter = curr_state.obj_texts.begin();
-	log::cerr_redirection cerr_redirection;
+	log::cerr_redirection<> cerr_redirection;
 	SharedPtr<wvWare::Parser> parser;
 	{
 		std::lock_guard<std::mutex> parser_factory_mutex_2_lock(parser_factory_mutex_2);
