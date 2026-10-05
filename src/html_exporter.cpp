@@ -30,8 +30,8 @@ struct pimpl_impl<html_exporter<auditor_type>>
 {
 	using audit::with_auditor<auditor_type>::auditor;
 
-	explicit pimpl_impl(html_exporter<auditor_type>& owner)
-		: audit::with_auditor<auditor_type>{owner.auditor()}
+	explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor}
 	{}
 
 	std::shared_ptr<std::stringstream> m_stream;
@@ -41,7 +41,8 @@ struct pimpl_impl<html_exporter<auditor_type>>
 
 template<typename auditor_type>
 html_exporter<auditor_type>::html_exporter(audit::auditor_ref<auditor_type> auditor)
-	: audit::with_auditor<auditor_type>(auditor)
+	: with_pimpl<html_exporter<auditor_type>>(auditor),
+	  audit::with_auditor<auditor_type>(auditor)
 {}
 
 template<typename auditor_type>
