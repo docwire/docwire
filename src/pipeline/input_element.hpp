@@ -51,7 +51,9 @@ public:
     : m_data{data}
   {}
 
-  continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+  template<typename auditor_type = audit::null_auditor>
+  continuation operator()(message_ptr msg, const message_callbacks& emit_message,
+                          audit::auditor_ref<auditor_type> auditor = {});
 
 private:
   ref_or_owned<data_source> m_data;
@@ -70,10 +72,6 @@ inline continuation input_element::operator()(message_ptr msg, const message_cal
   return emit_message(std::move(msg));
 }
 
-inline continuation input_element::operator()(message_ptr msg, const message_callbacks& emit_message)
-{
-  return operator()(std::move(msg), emit_message, audit::auditor_ref<audit::null_auditor>{});
-}
 
 template <typename ChainElement>
     requires transformer_or_consumer<ChainElement>
