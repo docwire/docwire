@@ -14,8 +14,9 @@
 
 #include "core_export.h"
 #include "log_cerr_redirection_globals.h"
-#include "log_core.h"
-#include "log_entry.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/scope.hpp"
 #include "serialization_base.h"
 #include "source_location.h"
 
@@ -31,14 +32,19 @@ namespace docwire::log
 /// @brief Tag for log entries that contain content redirected from `stderr`.
 struct stderr_redirect { static constexpr std::string_view string() { return "stderr_redirect"; } };
 
+template<typename auditor_type = audit::null_auditor>
 class cerr_redirection
 {
 public:
 	/**
 	 * @brief Constructs a cerr_redirection object, capturing the source location.
+	 * @param auditor The injected auditor to record redirected stderr content to.
 	 * @param location The source location where the redirection is initiated.
 	 */
-	explicit cerr_redirection(const source_location& location = source_location::current())
+	explicit cerr_redirection(
+		audit::auditor_ref<auditor_type> auditor = {},
+		const source_location& location = source_location::current())
+		: m_auditor{auditor}
 	{
 #ifndef NDEBUG
 		m_location = location;
@@ -84,16 +90,16 @@ public:
 		if (m_cerr_redirection_mutex_lock.owns_lock())
 			m_cerr_redirection_mutex_lock.unlock();
 #ifndef NDEBUG
-		if (detail::is_logging_enabled() && !redirected_cerr.empty())
-		{
-			entry(location, std::make_tuple(stderr_redirect{}, serialization::object{{{"redirected_cerr", redirected_cerr}}}));
-		}
+		audit::entry(m_auditor, [&] {
+			return std::make_tuple(stderr_redirect{}, serialization::object{{{"redirected_cerr", redirected_cerr}}});
+		});
 #endif
 	}
 
 private:
 	bool m_redirected{false};
 	std::streambuf* m_cerr_buf_backup{nullptr};
+	audit::auditor_ref<auditor_type> m_auditor;
 #ifndef NDEBUG
 	source_location m_location;
 	std::ostringstream m_string_stream;
