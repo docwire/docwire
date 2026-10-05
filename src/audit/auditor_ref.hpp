@@ -33,7 +33,10 @@ public:
     constexpr auditor_ref(auditor_type&) noexcept {}
 
     constexpr auditor_type& auditor() noexcept { return *this; }
-    constexpr auditor_type& auditor() const noexcept { return const_cast<auditor_type&>(*this); }
+    constexpr auditor_type& auditor() const noexcept
+    {
+        return const_cast<auditor_type&>(static_cast<const auditor_type&>(*this));
+    }
 };
 
 } // namespace docwire::audit
