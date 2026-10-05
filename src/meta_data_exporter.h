@@ -29,7 +29,7 @@ namespace docwire
  * @brief Exports meta data only to plain text format.
  */
 template<typename auditor_type = audit::null_auditor>
-class metadata_exporter : public pipeline::transformer_element<metadata_exporter>, private audit::with_auditor<auditor_type>
+class metadata_exporter : public pipeline::transformer_element<metadata_exporter<auditor_type>>, private audit::with_auditor<auditor_type>
 {
     using audit::with_auditor<auditor_type>::auditor;
 public:

@@ -22,7 +22,7 @@ namespace docwire
 
 template<typename auditor_type = audit::null_auditor>
 class DOCWIRE_HTML_EXPORT html_parser
-    : public pipeline::transformer_element<html_parser>,
+    : public pipeline::transformer_element<html_parser<auditor_type>>,
       public with_pimpl<html_parser<auditor_type>>,
       private audit::with_auditor<auditor_type>
 {
