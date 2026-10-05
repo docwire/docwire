@@ -18,7 +18,7 @@ protected:
         : auditor_ref<auditor_type>(auditor) {}
 
     auditor_type& auditor() noexcept { return auditor_ref<auditor_type>::auditor(); }
-    const auditor_type& auditor() const noexcept { return auditor_ref<auditor_type>::auditor(); }
+    auditor_type& auditor() const noexcept { return auditor_ref<auditor_type>::auditor(); }
 };
 
 } // namespace docwire::audit
