@@ -18,6 +18,7 @@
 #include "audit/legacy_log_audit.hpp"
 #include "audit/scope.hpp"
 #include "named.h"
+#include "serialization_message.h" // IWYU pragma: keep
 #include <math.h>
 #include "detail/ustring_conversions.h"
 #include "nested_exception.h"
