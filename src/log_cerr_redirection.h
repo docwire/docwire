@@ -94,7 +94,7 @@ public:
 		{
 			::docwire::audit::entry(m_auditor, [&] {
 				return std::make_tuple(stderr_redirect{}, serialization::object{{{"redirected_cerr", redirected_cerr}}});
-			});
+			}, m_location);
 		}
 #endif
 	}
