@@ -20,6 +20,7 @@
 #include "audit/scope.hpp"
 #include "audit/with_auditor.hpp"
 #include "make_error.h"
+#include "serialization_message.h"
 #include "nested_exception.h"
 #include "pimpl.h"
 #include "serialization_data_source.h" // IWYU pragma: keep
