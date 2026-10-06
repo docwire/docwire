@@ -22,8 +22,12 @@
 #include "scoped_stack_push.h"
 #include "zip_reader.h"
 #include <iostream>
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include "make_error.h"
 #include "detail/office_crypto.h"
 #include <map>
@@ -51,9 +55,10 @@ struct rk_number
 	bool is_int;
 };
 
-rk_number read_rk_number(binary::reader& reader)
+template<typename auditor_type>
+rk_number read_rk_number(binary::reader& reader, audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	uint32_t uvalue = reader.read_little_endian<uint32_t>();
 	bool fx100 = (uvalue & 0x00000001) > 0;
 	bool fint = (uvalue & 0x00000002) > 0;
@@ -77,11 +82,12 @@ rk_number read_rk_number(binary::reader& reader)
 	}
 }
 
-std::string read_xl_wide_string(binary::reader& reader)
+template<typename auditor_type>
+std::string read_xl_wide_string(binary::reader& reader, audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	const uint32_t num_chars = reader.read_little_endian<uint32_t>();
-	log_entry(num_chars);
+	audit::entry(auditor, [&]{ return "num_chars"_v = num_chars; });
 	if (num_chars == 0)
 		return "";
 
@@ -96,18 +102,23 @@ std::string read_xl_wide_string(binary::reader& reader)
 	return conv.convert({utf16_bytes.data(), utf16_bytes.size()});
 }
 
-std::string read_rich_str(binary::reader& reader)
+template<typename auditor_type>
+std::string read_rich_str(binary::reader& reader, audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	reader.read_little_endian<uint8_t>(); // skip flags
-	return read_xl_wide_string(reader);
+	return read_xl_wide_string(reader, auditor);
 }
 
 } // anonymous namespace
 
-template<>
-struct pimpl_impl<xlsb_parser> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<xlsb_parser<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
+	using audit::with_auditor<auditor_type>::auditor;
+
 	void parse(const data_source& data, const message_callbacks& emit_message);
 	attributes::metadata metaData(zip_reader& unzip);
 	struct xlsb_content
@@ -202,13 +213,16 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 			unsigned long m_read_total;
 			std::string m_file_name;
 			binary::reader m_stream_reader;
+			audit::auditor_ref<auditor_type> m_auditor;
 
 		public:
-			xlsb_reader(zip_reader& zipfile, const std::string& file_name)
+			xlsb_reader(zip_reader& zipfile, const std::string& file_name,
+			            audit::auditor_ref<auditor_type> auditor)
 				: m_zipfile(&zipfile),
 					m_file_name(file_name),
 					m_read_total(0),
 					m_file_size(0),
+					m_auditor(auditor),
 					m_stream_reader([this](std::span<std::byte> dest)
 					{
 						int read_now = 0;
@@ -233,7 +247,7 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 
 			void readRecord(record& record)
 			{
-				log_scope();
+				audit::scope audit_scope{m_auditor, audit::no_context};
 				record.m_type = 0;
 				record.m_size = 0;
 				for (int i = 0; i < 2; ++i)	//read record type
@@ -256,7 +270,7 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 			// and returns a new reader that operates only on that buffer.
 			binary::reader record_reader(uint32_t record_size)
 			{
-				log_scope();
+				audit::scope audit_scope{m_auditor, audit::no_context};
 				std::vector<std::byte> record_bytes(record_size);
 				m_stream_reader.read(record_bytes);
 				return binary::reader([bytes = std::move(record_bytes), pos = 0](std::span<std::byte> dest) mutable {
@@ -269,7 +283,7 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 
 	void parseRecordForSharedStrings(binary::reader& record_reader, xlsb_reader::record& record)
 	{
-		log_scope(record.m_type);
+		audit::scope audit_scope{auditor(), [&]{ return "record_type"_v = record.m_type; }};
 		switch (record.m_type)
 		{
 			case xlsb_reader::BRT_BEGIN_SST:
@@ -294,7 +308,7 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 				{
 					content().m_shared_strings.push_back(std::string());
 					std::string* new_string = &content().m_shared_strings[content().m_shared_strings.size() - 1];
-					*new_string = read_rich_str(record_reader);
+					*new_string = read_rich_str(record_reader, auditor());
 				}
 				catch (const std::exception& e)
 				{
@@ -307,7 +321,7 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 
 	void parseColumn(binary::reader& record_reader, std::string& text)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		uint32_t column = record_reader.read_little_endian<uint32_t>();
 		if (content().m_current_column > 0)
 			text += "	";
@@ -322,7 +336,7 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 
 	void parseRecordForWorksheets(binary::reader& record_reader, xlsb_reader::record& record, std::string& text)
 	{
-		log_scope(record.m_type);
+		audit::scope audit_scope{auditor(), [&]{ return "record_type"_v = record.m_type; }};
 		switch (record.m_type)
 		{
 			case xlsb_reader::BRT_CELL_BLANK:
@@ -394,7 +408,7 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 				try
 				{
 					parseColumn(record_reader, text);
-					text += read_xl_wide_string(record_reader);
+					text += read_xl_wide_string(record_reader, auditor());
 				}
 				catch (const std::exception& e)
 				{
@@ -421,9 +435,11 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 			{
 				try
 				{
-					log_scope();
+					audit::scope audit_scope{auditor(), audit::no_context};
 					uint32_t row = record_reader.read_little_endian<uint32_t>();
-					log_entry(content().m_current_row, row);
+					audit::entry(auditor(), [&]{
+						return "current_row"_v = content().m_current_row, "row"_v = row;
+					});
 					for (int i = content().m_current_row; i < row; ++i)
 						text += "\n";
 					content().m_current_row = row;
@@ -440,7 +456,7 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 				try
 				{
 					parseColumn(record_reader, text);
-					rk_number rk = read_rk_number(record_reader);
+					rk_number rk = read_rk_number(record_reader, auditor());
 					if (rk.is_int)
 						text += stringify((int)rk.value);
 					else
@@ -474,16 +490,16 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 
 	void parseSharedStrings(zip_reader& unzip)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		xlsb_reader::record record;
 		std::string file_name = "xl/sharedStrings.bin";
 		if (!unzip.exists(file_name))
 		{
 			//file may not exist, nothing wrong is with that.
-			log_entry();
+			audit::entry(auditor(), audit::no_context);
 			return;
 		}
-		xlsb_reader xlsb_reader(unzip, file_name);
+		xlsb_reader xlsb_reader(unzip, file_name, auditor());
 		while (!xlsb_reader.done())
 		{
 			try
@@ -509,13 +525,13 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 
 	void parseWorksheets(zip_reader& unzip, std::string& text)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		xlsb_reader::record record;
 		int sheet_index = 1;
 		std::string sheet_file_name = "xl/worksheets/sheet1.bin";
 		while (unzip.exists(sheet_file_name))
 		{
-			xlsb_reader xlsb_reader(unzip, sheet_file_name);
+			xlsb_reader xlsb_reader(unzip, sheet_file_name, auditor());
 			while (!xlsb_reader.done())
 			{
 				try
@@ -547,7 +563,7 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 
 	void parseXLSB(zip_reader& unzip, std::string& text)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		text.reserve(1024 * 1024);
 		throw_if (!unzip.loadDirectory(), "Error loading zip directory");
 		try
@@ -570,7 +586,7 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 
 	void readMetadata(zip_reader& unzip, attributes::metadata& metadata)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		std::string data;
 		throw_if (!unzip.read("docProps/app.xml", &data), "Error reading docProps/app.xml", errors::uninterpretable_data{});
 		if (data.find("<TitlesOfParts>") != std::string::npos && data.find("</TitlesOfParts>") != std::string::npos)
@@ -639,9 +655,14 @@ struct pimpl_impl<xlsb_parser> : pimpl_impl_base
 
 };
 
-xlsb_parser::xlsb_parser() = default;
+template<typename auditor_type>
+xlsb_parser<auditor_type>::xlsb_parser(audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<xlsb_parser<auditor_type>>(auditor),
+	  audit::with_auditor<auditor_type>(auditor)
+{}
 
-attributes::metadata pimpl_impl<xlsb_parser>::metaData(zip_reader& unzip)
+template<typename auditor_type>
+attributes::metadata pimpl_impl<xlsb_parser<auditor_type>>::metaData(zip_reader& unzip)
 {
 	attributes::metadata metadata;
 	try
@@ -655,9 +676,10 @@ attributes::metadata pimpl_impl<xlsb_parser>::metaData(zip_reader& unzip)
 	return metadata;
 }
 
-void pimpl_impl<xlsb_parser>::parse(const data_source& data, const message_callbacks& emit_message)
+template<typename auditor_type>
+void pimpl_impl<xlsb_parser<auditor_type>>::parse(const data_source& data, const message_callbacks& emit_message)
 {
-	log_scope(data);
+	audit::scope audit_scope{auditor(), [&]{ return "data"_v = data; }};
 	scoped::stack_push<pimpl_impl<xlsb_parser>::context> context_guard{m_context_stack, {emit_message}};
 	std::string text;
 	zip_reader unzip{data};
@@ -687,8 +709,10 @@ void pimpl_impl<xlsb_parser>::parse(const data_source& data, const message_callb
 	emit_message(document::close_document{});
 }
 
-continuation xlsb_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation xlsb_parser<auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
 
@@ -701,5 +725,8 @@ continuation xlsb_parser::operator()(message_ptr msg, const message_callbacks& e
 	impl().parse(data, emit_message);
 	return continuation::proceed;
 }
+
+template class DOCWIRE_XLSB_EXPORT xlsb_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_XLSB_EXPORT xlsb_parser<docwire::audit::legacy_log_audit>;
 
 } // namespace docwire

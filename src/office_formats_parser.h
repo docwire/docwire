@@ -53,7 +53,7 @@ class office_formats_parser : public pipeline::transformer_element<office_format
                 doc_parser{} |
                 pdf_parser{} |
                 xls_parser{} |
-                xlsb_parser{} |
+                xlsb_parser<>{} |
                 iwork_parser{} |
                 ppt_parser{} |
                 rtf_parser{} |
