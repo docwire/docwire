@@ -13,8 +13,11 @@
 
 #include "document_elements.h"
 #include "error_tags.h"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "named.h"
 #include <math.h>
 #include "detail/ustring_conversions.h"
 #include "nested_exception.h"
@@ -67,15 +70,24 @@ namespace
 		return (unsigned long)(*buffer) | ((unsigned long)(*(buffer +1 )) << 8L) | ((unsigned long)(*(buffer + 2)) << 16L) | ((unsigned long)(*(buffer + 3)) << 24L);
 	}
 
-	void parseRecord(int rec_type, unsigned long rec_len, thread_safe_ole_stream_reader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+	template<typename auditor_type>
+	void parseRecord(
+		int rec_type,
+		unsigned long rec_len,
+		thread_safe_ole_stream_reader& reader,
+		std::string& text,
+		const std::function<void(std::exception_ptr)>& non_fatal_error_handler,
+		audit::auditor_ref<auditor_type> auditor)
 	{
-		log_scope(rec_type, rec_len);
+		audit::scope audit_scope{auditor, [&]{
+			return "rec_type"_v = rec_type, "rec_len"_v = rec_len;
+		}};
 		switch(rec_type)
 		{
 			case RT_CSTRING:
 			case RT_TEXT_CHARS_ATOM: 
 			{ 
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				std::vector<unsigned char> buf(2);
 				unsigned long text_len = rec_len / 2;
 				if (text_len * 2 > reader.size() - reader.tell())
@@ -104,17 +116,17 @@ namespace
 			}
 			case RT_DOCUMENT:
 			{
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				break;
 			}
 			case RT_DRAWING:
 			{
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				break;
 			}
 			case RT_END_DOCUMENT_ATOM:
 			{ 
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				unsigned long len = rec_len;
 				if (reader.tell() + len > reader.size())
 				{
@@ -126,12 +138,12 @@ namespace
 			}
 			case RT_LIST:
 			{
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				break;
 			}
 			case RT_MAIN_MASTER:
 			{ 
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				// warning TODO: Make extracting text from main master slide configurable
 				unsigned long len = rec_len;
 				if (reader.tell() + len > reader.size())
@@ -144,19 +156,19 @@ namespace
 			}
 			case RT_SLIDE:
 			{
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				break;
 			}
 			case RT_SLIDE_BASE:
 				break;
 			case RT_SLIDE_LIST_WITH_TEXT:
 			{
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				break;
 			}
 			case RT_TEXT_BYTES_ATOM:
 			{ 
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				std::vector<unsigned char> buf(2);
 				unsigned long text_len = rec_len;
 				buf[0] = buf[1] = 0;
@@ -179,22 +191,22 @@ namespace
 			}
 			case OFFICE_ART_CLIENT_TEXTBOX:
 			{
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				break;
 			}
 			case OFFICE_ART_DG_CONTAINER:
 			{
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				break;
 			}
 			case OFFICE_ART_SPGR_CONTAINER:
 			{
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				break;
 			}
 			case OFFICE_ART_SP_CONTAINER:
 			{
-				log_scope();
+				audit::scope audit_scope{auditor, audit::no_context};
 				break;
 			}
 			default:
@@ -214,9 +226,15 @@ namespace
 		return reader.tell() == reader.size();
 	}
 
-	void parseOldPPT(thread_safe_ole_storage& storage, thread_safe_ole_stream_reader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+	template<typename auditor_type>
+	void parseOldPPT(
+		thread_safe_ole_storage& storage,
+		thread_safe_ole_stream_reader& reader,
+		std::string& text,
+		const std::function<void(std::exception_ptr)>& non_fatal_error_handler,
+		audit::auditor_ref<auditor_type> auditor)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor, audit::no_context};
 		std::vector<unsigned char> content(reader.size());
 		throw_if (!reader.read(&*content.begin(), reader.size()));	//this stream should only contain text
 		text = std::string(content.begin(), content.end());
@@ -236,9 +254,14 @@ namespace
 				text[i] = 13;
 	}
 
-	void parsePPT(thread_safe_ole_stream_reader& reader, std::string& text, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+	template<typename auditor_type>
+	void parsePPT(
+		thread_safe_ole_stream_reader& reader,
+		std::string& text,
+		const std::function<void(std::exception_ptr)>& non_fatal_error_handler,
+		audit::auditor_ref<auditor_type> auditor)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor, audit::no_context};
 		std::vector<unsigned char> rec(8);
 		bool read_status = true;
 		std::stack<long> container_ends;
@@ -250,17 +273,23 @@ namespace
 				break;
 			if (oleEof(reader))
 			{
-				parseRecord(RT_END_DOCUMENT_ATOM, 0, reader, text, non_fatal_error_handler);
+				parseRecord(RT_END_DOCUMENT_ATOM, 0, reader, text, non_fatal_error_handler, auditor);
 				return;
 			}
 			int rec_type = getU16LittleEndian(rec.begin() + 2);
 			U32 rec_len = getU32LittleEndian(rec.begin() + 4);
 			U32 rec_end = pos + rec_len + 8 - 1;
-			log_entry(rec_type, rec_len, pos, rec_end);
+			audit::entry(auditor, [&]{
+				return
+					"rec_type"_v = rec_type,
+					"rec_len"_v = rec_len,
+					"pos"_v = pos,
+					"rec_end"_v = rec_end;
+			});
 			container_ends.push(rec_end);
 			try
 			{
-				parseRecord(rec_type, rec_len, reader, text, non_fatal_error_handler);
+				parseRecord(rec_type, rec_len, reader, text, non_fatal_error_handler, auditor);
 			}
 			catch (const std::exception& e)
 			{
@@ -269,9 +298,12 @@ namespace
 		}
 	}
 
-	void assertFileIsNotEncrypted(thread_safe_ole_storage& storage)
+	template<typename auditor_type>
+	void assertFileIsNotEncrypted(
+		thread_safe_ole_storage& storage,
+		audit::auditor_ref<auditor_type> auditor)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor, audit::no_context};
 		std::vector<std::string> dirs;
 		if (storage.getStreamsAndStoragesList(dirs))
 		{
@@ -287,25 +319,37 @@ namespace
 		}
 	}
 
-	attributes::metadata metaData(const std::unique_ptr<thread_safe_ole_storage>& storage, const message_callbacks& emit_message);
+	template<typename auditor_type>
+	attributes::metadata metaData(
+		const std::unique_ptr<thread_safe_ole_storage>& storage,
+		const message_callbacks& emit_message,
+		audit::auditor_ref<auditor_type> auditor);
 
 };
 
-ppt_parser::ppt_parser() = default;
+template<typename auditor_type>
+ppt_parser<auditor_type>::ppt_parser(audit::auditor_ref<auditor_type> auditor)
+	: audit::with_auditor<auditor_type>(auditor)
+{
+}
 
-void parse(const data_source& data, const message_callbacks& emit_message)
+template<typename auditor_type>
+void parse(
+	const data_source& data,
+	const message_callbacks& emit_message,
+	audit::auditor_ref<auditor_type> auditor)
 {	
-	log_scope(data);
+	audit::scope audit_scope{auditor, [&]{ return "data"_v = data; }};
 	try
 	{
 		std::unique_ptr<thread_safe_ole_storage> storage = std::make_unique<thread_safe_ole_storage>(data.span());
 		throw_if (!storage->isValid(), "Error opening stream as OLE container");
-		assertFileIsNotEncrypted(*storage);
+		assertFileIsNotEncrypted(*storage, auditor);
 		emit_message(document::document
 			{
-				.metadata = [&storage, emit_message]()
+				.metadata = [&storage, emit_message, auditor]()
 				{
-						return metaData(storage, emit_message);
+						return metaData(storage, emit_message, auditor);
 				}
 			});
 		std::string text;
@@ -324,7 +368,7 @@ void parse(const data_source& data, const message_callbacks& emit_message)
 				{
 					std::unique_ptr<thread_safe_ole_stream_reader> reader { (thread_safe_ole_stream_reader*)storage->createStreamReader("Text_Content") };
 					throw_if (reader == NULL, storage->getLastError(), std::make_pair("stream_path", "Text_Content"));
-					parseOldPPT(*storage, *reader, text, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
+					parseOldPPT(*storage, *reader, text, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); }, auditor);
 					emit_message(document::text{.text = text});
 					return;
 				}
@@ -332,7 +376,7 @@ void parse(const data_source& data, const message_callbacks& emit_message)
 		}
 		std::unique_ptr<thread_safe_ole_stream_reader> reader { (thread_safe_ole_stream_reader*)storage->createStreamReader("PowerPoint Document") };
 		throw_if (reader == NULL, storage->getLastError(), std::make_pair("stream_path", "PowerPoint Document"));
-		parsePPT(*reader, text, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
+		parsePPT(*reader, text, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); }, auditor);
 		emit_message(document::text{.text = text});
 		emit_message(document::close_document{});
 		return;
@@ -346,9 +390,13 @@ void parse(const data_source& data, const message_callbacks& emit_message)
 namespace
 {
 
-attributes::metadata metaData(const std::unique_ptr<thread_safe_ole_storage>& storage, const message_callbacks& emit_message)
+template<typename auditor_type>
+attributes::metadata metaData(
+	const std::unique_ptr<thread_safe_ole_storage>& storage,
+	const message_callbacks& emit_message,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	attributes::metadata meta;
 		parse_oshared_summary_info(*storage, meta, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
 		// If page count not found use slide count as page count
@@ -380,8 +428,13 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-continuation ppt_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation ppt_parser<auditor_type>::operator()(
+	message_ptr msg,
+	const message_callbacks& emit_message)
 {
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
+
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
 
@@ -393,7 +446,7 @@ continuation ppt_parser::operator()(message_ptr msg, const message_callbacks& em
 
 	try
 	{
-		parse(data, emit_message);
+		parse(data, emit_message, audit::auditor_ref<auditor_type>(auditor()));
 	}
 	catch (const std::exception& e)
 	{
@@ -401,5 +454,8 @@ continuation ppt_parser::operator()(message_ptr msg, const message_callbacks& em
 	}
 	return continuation::proceed;
 }
+
+template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser<docwire::audit::legacy_log_audit>;
 
 } // namespace docwire

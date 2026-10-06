@@ -48,7 +48,7 @@ TEST(PartialAndTotalFailures, Zip_Partial)
 {
     int count = 0;
     bool error_received = false;
-    TestParserFailures<archives_parser>("test.zip",
+    TestParserFailures<archives_parser<>>("test.zip",
         [&](message_ptr msg) {
             if (msg->is<data_source>()) {
                 count++;
@@ -67,7 +67,7 @@ TEST(PartialAndTotalFailures, Zip_Partial)
 TEST(PartialAndTotalFailures, Zip_Total)
 {
     EXPECT_THROW({
-        TestParserFailures<archives_parser>("test.zip",
+        TestParserFailures<archives_parser<>>("test.zip",
             [](message_ptr msg) {
                 if (msg->is<data_source>()) throw std::runtime_error("Simulated failure");
             },
