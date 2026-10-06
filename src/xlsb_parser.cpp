@@ -312,7 +312,9 @@ struct pimpl_impl<xlsb_parser<auditor_type>>
 				{
 					content().m_shared_strings.push_back(std::string());
 					std::string* new_string = &content().m_shared_strings[content().m_shared_strings.size() - 1];
-					*new_string = read_rich_str(record_reader, auditor());
+					*new_string = read_rich_str(
+						record_reader,
+						audit::auditor_ref<auditor_type>(auditor()));
 				}
 				catch (const std::exception& e)
 				{
@@ -412,7 +414,9 @@ struct pimpl_impl<xlsb_parser<auditor_type>>
 				try
 				{
 					parseColumn(record_reader, text);
-					text += read_xl_wide_string(record_reader, auditor());
+					text += read_xl_wide_string(
+						record_reader,
+						audit::auditor_ref<auditor_type>(auditor()));
 				}
 				catch (const std::exception& e)
 				{
@@ -460,7 +464,9 @@ struct pimpl_impl<xlsb_parser<auditor_type>>
 				try
 				{
 					parseColumn(record_reader, text);
-					rk_number rk = read_rk_number(record_reader, auditor());
+					rk_number rk = read_rk_number(
+						record_reader,
+						audit::auditor_ref<auditor_type>(auditor()));
 					if (rk.is_int)
 						text += stringify((int)rk.value);
 					else
