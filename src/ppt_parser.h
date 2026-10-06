@@ -14,17 +14,26 @@
 
 #include "ole_office_formats_export.h"
 #include "pipeline/element_base.hpp"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 
 namespace docwire
 {
 
 class thread_safe_ole_storage;
 
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser : public pipeline::transformer_element<ppt_parser>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser
+    : public pipeline::transformer_element<ppt_parser<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
-	public:
-		ppt_parser();
-		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+public:
+	explicit ppt_parser(audit::auditor_ref<auditor_type> auditor = {});
+
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+
+private:
+	using audit::with_auditor<auditor_type>::auditor;
 };
 
 } // namespace docwire
