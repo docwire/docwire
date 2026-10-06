@@ -598,7 +598,10 @@ void execCommand(
 
 std::mutex converter_mutex;
 
-attributes::metadata extract_rtf_metadata(const data_source& data); // Forward declaration
+template<typename auditor_type>
+attributes::metadata extract_rtf_metadata(
+	const data_source& data,
+	audit::auditor_ref<auditor_type> auditor); // Forward declaration
 
 template<typename auditor_type>
 void parse_rtf_content(
