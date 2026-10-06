@@ -14,13 +14,21 @@
 
 #include "archives_export.h"
 #include "pipeline/element_base.hpp"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 
 namespace docwire
 {
 
-class DOCWIRE_ARCHIVES_EXPORT archives_parser : public pipeline::transformer_element<archives_parser>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_ARCHIVES_EXPORT archives_parser
+    : public pipeline::transformer_element<archives_parser<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
 public:
+	explicit archives_parser(audit::auditor_ref<auditor_type> auditor = {})
+		: audit::with_auditor<auditor_type>(auditor)
+	{}
 
 	/**
 	* @brief Executes transform operation for given node data.
@@ -29,6 +37,9 @@ public:
 	* @param emit_message callback to emit messages
 	*/
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+
+private:
+	using audit::with_auditor<auditor_type>::auditor;
 };
 
 } // namespace docwire
