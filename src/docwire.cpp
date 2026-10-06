@@ -43,7 +43,8 @@
 #include "language.h"
 #include "log_json_stream_sink.h"
 #include "log_core.h"
-#include "log_entry.h"
+#include "audit.hpp"
+#include "audit/legacy_log_audit.hpp"
 #include <magic_enum/magic_enum_iostream.hpp>
 #include "mail_parser.h"
 #include "meta_data_exporter.h"
@@ -300,7 +301,10 @@ int main(int argc, char* argv[])
 
 	std::string file_name = vm["input-file"].as<std::string>();
 
-	log_entry(use_stream, file_name);
+	audit::legacy_log_audit audit;
+	audit::entry(audit, [&]{
+		return "use_stream"_v = use_stream, "file_name"_v = file_name;
+	});
 
 	data_source data = [&]() -> data_source
 	{
