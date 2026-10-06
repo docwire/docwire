@@ -12,9 +12,10 @@
 #ifndef DOCWIRE_OPENAI_TEXT_TO_SPEECH_H
 #define DOCWIRE_OPENAI_TEXT_TO_SPEECH_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "openai_export.h"
 #include "message.h"
+#include "pimpl.h"
 #include <string>
 
 namespace docwire
@@ -22,7 +23,7 @@ namespace docwire
 namespace openai
 {
 
-class DOCWIRE_OPENAI_EXPORT text_to_speech : public chain_element, public with_pimpl<text_to_speech>
+class DOCWIRE_OPENAI_EXPORT text_to_speech : public pipeline::transformer_element<text_to_speech>, public with_pimpl<text_to_speech>
 {
 public:
 	enum class model
@@ -43,12 +44,7 @@ public:
 	* @param msg
 	* @param emit_message
 	**/
-	continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-
-	bool is_leaf() const override
-	{
-		return false;
-	}
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 private:
 	using with_pimpl<text_to_speech>::impl;

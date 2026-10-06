@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_META_DATA_EXPORTER_H
 #define DOCWIRE_META_DATA_EXPORTER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "core_export.h"
 #include <memory>
 #include <sstream>
@@ -28,17 +28,12 @@ namespace docwire
 /**
  * @brief Exports meta data only to plain text format.
  */
-class metadata_exporter : public chain_element
+class metadata_exporter : public pipeline::transformer_element<metadata_exporter>
 {
 public:
   metadata_exporter() = default;
 
-	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-
-	bool is_leaf() const override
-	{
-		return false;
-	}
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 private:
   std::shared_ptr<std::stringstream> m_stream;

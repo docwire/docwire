@@ -16,7 +16,10 @@
 
 namespace docwire::ai::local {
 
-class summarize : public docwire::ai::summarize {
+class summarize
+    : public docwire::pipeline::transformer_element<summarize>
+    , public docwire::ai::summarize
+{
 public:
   explicit summarize(
       std::shared_ptr<docwire::ai::ai_runner> runner,

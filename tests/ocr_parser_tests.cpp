@@ -13,8 +13,8 @@
 #include "error_tags.h"
 #include "message_matchers.h" // IWYU pragma: keep
 #include "ocr_parser.h"
-#include "input.h"
-#include "output.h"
+#include "pipeline/input_element.hpp"
+#include "pipeline/output_element.hpp"
 
 using namespace docwire;
 using namespace testing;

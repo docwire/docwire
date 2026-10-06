@@ -12,8 +12,9 @@
 #ifndef DOCWIRE_HTML_EXPORTER_H
 #define DOCWIRE_HTML_EXPORTER_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "html_export.h"
+#include "pimpl.h"
 
 namespace docwire
 {
@@ -21,18 +22,13 @@ namespace docwire
 /**
  * @brief Exports data to HTML format.
  */
-class DOCWIRE_HTML_EXPORT html_exporter: public chain_element, public with_pimpl<html_exporter>
+class DOCWIRE_HTML_EXPORT html_exporter: public pipeline::transformer_element<html_exporter>, public with_pimpl<html_exporter>
 {
 public:
 
   html_exporter();
 
-	virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-
-	bool is_leaf() const override
-	{
-		return false;
-	}
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 private:
 	using with_pimpl<html_exporter>::impl;

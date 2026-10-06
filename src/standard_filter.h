@@ -12,16 +12,155 @@
 #ifndef DOCWIRE_STANDARD_FILTER_H
 #define DOCWIRE_STANDARD_FILTER_H
 
+#include "pipeline/element_base.hpp"
 #include "core_export.h"
 #include "file_extension.h"
-#include "transformer_func.h"
 #include "mail_elements.h"
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace docwire
 {
+
+/**
+ * @brief A chain element that skips messages not belonging to one of the
+ *        specified mail folders.
+ */
+class filter_by_folder_name : public pipeline::transformer_element<filter_by_folder_name>
+{
+public:
+  explicit filter_by_folder_name(std::vector<std::string> names)
+    : m_names{std::move(names)}
+  {}
+
+  continuation operator()(message_ptr msg, const message_callbacks& emit_message) const
+  {
+    if (!msg->is<mail::folder>())
+      return emit_message(std::move(msg));
+    auto folder_name = msg->get<mail::folder>().name;
+    if (folder_name)
+    {
+      if (!std::any_of(m_names.begin(), m_names.end(),
+              [&folder_name](const std::string& name) { return (*folder_name) == name; }))
+        return continuation::skip;
+    }
+    return emit_message(std::move(msg));
+  }
+
+private:
+  std::vector<std::string> m_names;
+};
+
+/**
+ * @brief A chain element that skips attachments not matching one of the
+ *        specified file extensions.
+ */
+class filter_by_attachment_type : public pipeline::transformer_element<filter_by_attachment_type>
+{
+public:
+  explicit filter_by_attachment_type(std::vector<file_extension> types)
+    : m_types{std::move(types)}
+  {}
+
+  continuation operator()(message_ptr msg, const message_callbacks& emit_message) const
+  {
+    if (!msg->is<mail::attachment>())
+      return emit_message(std::move(msg));
+    auto attachment_type = msg->get<mail::attachment>().extension;
+    if (attachment_type)
+    {
+      if (!std::any_of(m_types.begin(), m_types.end(),
+              [&attachment_type](const file_extension& type) { return (*attachment_type) == type; }))
+        return continuation::skip;
+    }
+    return emit_message(std::move(msg));
+  }
+
+private:
+  std::vector<file_extension> m_types;
+};
+
+/**
+ * @brief A chain element that skips mail messages created before the given
+ *        minimum time.
+ */
+class filter_by_mail_min_creation_time : public pipeline::transformer_element<filter_by_mail_min_creation_time>
+{
+public:
+  explicit filter_by_mail_min_creation_time(unsigned int min_time)
+    : m_min_time{min_time}
+  {}
+
+  continuation operator()(message_ptr msg, const message_callbacks& emit_message) const
+  {
+    if (!msg->is<mail::mail>())
+      return emit_message(std::move(msg));
+    auto mail_creation_time = msg->get<mail::mail>().date;
+    if (mail_creation_time)
+    {
+      if (*mail_creation_time < m_min_time)
+        return continuation::skip;
+    }
+    return emit_message(std::move(msg));
+  }
+
+private:
+  unsigned int m_min_time;
+};
+
+/**
+ * @brief A chain element that skips mail messages created after the given
+ *        maximum time.
+ */
+class filter_by_mail_max_creation_time : public pipeline::transformer_element<filter_by_mail_max_creation_time>
+{
+public:
+  explicit filter_by_mail_max_creation_time(unsigned int max_time)
+    : m_max_time{max_time}
+  {}
+
+  continuation operator()(message_ptr msg, const message_callbacks& emit_message) const
+  {
+    if (!msg->is<mail::mail>())
+      return emit_message(std::move(msg));
+    auto mail_creation_time = msg->get<mail::mail>().date;
+    if (mail_creation_time)
+    {
+      if (*mail_creation_time > m_max_time)
+        return continuation::skip;
+    }
+    return emit_message(std::move(msg));
+  }
+
+private:
+  unsigned int m_max_time;
+};
+
+/**
+ * @brief A chain element that stops the pipeline after a given number of
+ *        messages.
+ */
+class filter_by_max_node_number : public pipeline::transformer_element<filter_by_max_node_number>
+{
+public:
+  explicit filter_by_max_node_number(unsigned int max_nodes)
+    : m_max_nodes{max_nodes}
+  {}
+
+  continuation operator()(message_ptr msg, const message_callbacks& emit_message)
+  {
+    if (m_node_no++ == m_max_nodes)
+      return continuation::stop;
+    return emit_message(std::move(msg));
+  }
+
+private:
+  unsigned int m_max_nodes;
+  unsigned int m_node_no{0};
+};
+
 /**
  * @brief Sets of standard filters to use in parsers.
  * example of use:
@@ -35,80 +174,32 @@ namespace docwire
 class standard_filter
 {
 public:
-  static message_transform_func filterByFolderName(const std::vector<std::string>& names)
+  static filter_by_folder_name filterByFolderName(std::vector<std::string> names)
   {
-    return [names](message_ptr msg, const message_callbacks& emit_message) -> continuation
-    {
-      if (!msg->is<mail::folder>())
-        return emit_message(std::move(msg));
-      auto folder_name = msg->get<mail::folder>().name;
-      if (folder_name)
-      {
-        if (!std::any_of(names.begin(), names.end(), [&folder_name](const std::string& name) { return (*folder_name) == name; }))
-          return continuation::skip;
-      }
-      return emit_message(std::move(msg));
-    };
+    return filter_by_folder_name{std::move(names)};
   }
 
-  static message_transform_func filterByAttachmentType(const std::vector<file_extension>& types)
+  static filter_by_attachment_type filterByAttachmentType(std::vector<file_extension> types)
   {
-    return [types](message_ptr msg, const message_callbacks& emit_message) -> continuation
-    {
-      if (!msg->is<mail::attachment>())
-        return emit_message(std::move(msg));
-      auto attachment_type = msg->get<mail::attachment>().extension;
-      if (attachment_type)
-      {
-        if (!std::any_of(types.begin(), types.end(), [&attachment_type](const file_extension& type) { return (*attachment_type) == type; }))
-          return continuation::skip;
-      }
-      return emit_message(std::move(msg));
-    };
+    return filter_by_attachment_type{std::move(types)};
   }
 
-  static message_transform_func filterByMailMinCreationTime(unsigned int min_time)
+  static filter_by_mail_min_creation_time filterByMailMinCreationTime(unsigned int min_time)
   {
-    return [min_time](message_ptr msg, const message_callbacks& emit_message) -> continuation
-    {
-      if (!msg->is<mail::mail>())
-        return emit_message(std::move(msg));
-      auto mail_creation_time = msg->get<mail::mail>().date;
-      if (mail_creation_time)
-      {
-        if (*mail_creation_time < min_time)
-          return continuation::skip;
-      }
-      return emit_message(std::move(msg));
-    };
+    return filter_by_mail_min_creation_time{min_time};
   }
 
-  static message_transform_func filterByMailMaxCreationTime(unsigned int max_time)
+  static filter_by_mail_max_creation_time filterByMailMaxCreationTime(unsigned int max_time)
   {
-    return [max_time](message_ptr msg, const message_callbacks& emit_message) -> continuation
-    {
-      if (!msg->is<mail::mail>())
-        return emit_message(std::move(msg));
-      auto mail_creation_time = msg->get<mail::mail>().date;
-      if (mail_creation_time)
-      {
-        if (*mail_creation_time > max_time)
-          return continuation::skip;
-      }
-      return emit_message(std::move(msg));
-    };
+    return filter_by_mail_max_creation_time{max_time};
   }
 
-  static message_transform_func filterByMaxNodeNumber(unsigned int max_nodes_arg)
+  static filter_by_max_node_number filterByMaxNodeNumber(unsigned int max_nodes)
   {
-    return [max_nodes = max_nodes_arg, node_no = 0](message_ptr msg, const message_callbacks& emit_message) mutable -> continuation
-    {
-      if (node_no++ == max_nodes)
-        return continuation::stop;
-      return emit_message(std::move(msg));
-    };
+    return filter_by_max_node_number{max_nodes};
   }
 };
+
 } // namespace docwire
 
 #endif //DOCWIRE_STANDARD_FILTER_H

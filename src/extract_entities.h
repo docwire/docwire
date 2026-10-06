@@ -19,7 +19,9 @@ namespace docwire
 namespace openai
 {
 
-class DOCWIRE_OPENAI_EXPORT extract_entities : public chat
+class DOCWIRE_OPENAI_EXPORT extract_entities
+    : public pipeline::transformer_element<extract_entities>
+    , public chat
 {
 public:
 	explicit extract_entities(const std::string& api_key, model model = model::gpt_5, float temperature = 0.0f, image_detail image_detail = image_detail::automatic);

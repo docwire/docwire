@@ -14,13 +14,13 @@
 
 #include "mail_export.h"
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "pimpl.h"
 
 namespace docwire
 {
 
-class DOCWIRE_MAIL_EXPORT eml_parser : public chain_element, public with_pimpl<eml_parser>
+class DOCWIRE_MAIL_EXPORT eml_parser : public pipeline::transformer_element<eml_parser>, public with_pimpl<eml_parser>
 {
 	private:
 		using with_pimpl<eml_parser>::impl;
@@ -28,8 +28,7 @@ class DOCWIRE_MAIL_EXPORT eml_parser : public chain_element, public with_pimpl<e
 
 	public:
 		eml_parser();
-		continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-		bool is_leaf() const override { return false; }
+		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
 
 } // namespace docwire

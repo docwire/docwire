@@ -16,11 +16,13 @@
 
 namespace docwire::ai::local {
 
-class translate : public docwire::ai::translate {
-public:
-  explicit translate(const std::string &language,
-                     std::shared_ptr<ai_runner> runner)
-      : docwire::ai::translate(language, runner){};
+class translate
+    : public docwire::pipeline::transformer_element<translate>
+    , public docwire::ai::translate
+{
+  public:
+ 	translate(const std::string& language);
+    explicit translate(const std::string& language, std::shared_ptr<ai_runner> runner);
 };
 
 } // namespace docwire::ai::local

@@ -277,6 +277,7 @@ function(license_description_from_license_id license_id out_var)
 	string(REPLACE "-only" "" license_id ${license_id})
 	string(REPLACE "-or-later" "" license_id ${license_id})
 	# license descriptions from https://choosealicense.com
+	set(license_desc_0BSD "A permissive license that imposes no conditions and permits unrestricted use, copying, modification, and/or distribution for any purpose with or without fee. It is textually derived from the ISC license, not from the BSD family.")
 	set(license_desc_BSL-1.0 "A simple permissive license only requiring preservation of copyright and license notices for source (and not binary) distribution. Licensed works, modifications, and larger works may be distributed under different terms and without source code.")
 	set(license_desc_MIT "A short and simple permissive license with conditions only requiring preservation of copyright and license notices. Licensed works, modifications, and larger works may be distributed under different terms and without source code.")
 	set(license_desc_BSD-2-Clause "A permissive license that comes in two variants, the BSD 2-Clause and BSD 3-Clause. Both have very minute differences to the MIT license.")
@@ -295,6 +296,7 @@ function(license_description_from_license_id license_id out_var)
 	set(license_desc_FTL "The FreeType License (FTL) is the most commonly used one. It is a BSD-style license with a credit clause and thus compatible with the GNU Public License (GPL) version 3, but not with the GPL version 2.")
 	# license description generated from http://www.libpng.org/pub/png/src/libpng-LICENSE.txt
 	set(license_desc_libpng-2.0 "The libpng-2.0 license is a permissive open-source license that allows the use, modification, and distribution of the libpng library in both commercial and non-commercial projects, with a disclaimer of warranty.")
+	set(license_desc_IJG "Independent JPEG Group License. You may use and distribute this software freely, provided you acknowledge its use in your documentation and do not claim authorship.")
 	# license description generated from LICENSE file
 	set(license_desc_bzip2-1.0.6 "bzip2 license is similar to the standard BSD 3-Clause License with some specific wording related to marking altered source versions.")
 	# license description from https://gitlab.com/libtiff/libtiff

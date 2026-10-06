@@ -12,8 +12,9 @@
 #ifndef DOCWIRE_OPENAI_CHAT_H
 #define DOCWIRE_OPENAI_CHAT_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "openai_export.h"
+#include "pimpl.h"
 #include <string>
 
 namespace docwire
@@ -63,7 +64,7 @@ enum class image_detail
 	low, high, automatic
 };
 
-class DOCWIRE_OPENAI_EXPORT chat : public chain_element, public with_pimpl<chat>
+class DOCWIRE_OPENAI_EXPORT chat : public pipeline::transformer_element<chat>, public with_pimpl<chat>
 {
 public:
 	chat(const std::string& system_message, const std::string& api_key, model model = model::gpt_5, float temperature = 0.7, image_detail image_detail = image_detail::automatic);
@@ -75,12 +76,7 @@ public:
 	* @param msg The input message to process.
 	* @param emit_message Callback invoked to emit produced messages.
 	*/
-	continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-
-	bool is_leaf() const override
-	{
-		return false;
-	}
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 private:
 	using with_pimpl<chat>::impl;

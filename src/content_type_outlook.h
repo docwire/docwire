@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_CONTENT_TYPE_OUTLOOK_H
 #define DOCWIRE_CONTENT_TYPE_OUTLOOK_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "content_type_export.h"
 #include "content_type_by_signature.h"
 #include "data_source.h"
@@ -37,7 +37,7 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data,
  * @see content_type::detector
  * @see content_type::outlook::detect
  */
-class detector : public chain_element
+class detector : public pipeline::transformer_element<detector>
 {
 public:
 
@@ -49,7 +49,7 @@ public:
     detector(ref_or_owned<by_signature::database> signatures_db_to_use = by_signature::database{})
         : m_signatures_db_to_use(signatures_db_to_use) {}
 
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
     {
         if (!msg->is<data_source>())
 	        return emit_message(std::move(msg));
@@ -57,11 +57,6 @@ public:
         outlook::detect(data, m_signatures_db_to_use.get());
         return emit_message(std::move(msg));
     }
-
-    bool is_leaf() const override
-	{
-		return false;
-	}
 
 private:
     ref_or_owned<by_signature::database> m_signatures_db_to_use;

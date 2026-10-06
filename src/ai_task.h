@@ -18,7 +18,9 @@
 namespace docwire::ai
 {
 
-class DOCWIRE_AI_EXPORT task : public model_chain_element
+class DOCWIRE_AI_EXPORT task
+    : public model_chain_element,
+      public pipeline::transformer_element<task>
 {
   	public:
     	explicit task(const std::string& prompt, std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);

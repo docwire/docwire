@@ -12,8 +12,9 @@
 #ifndef DOCWIRE_TRANSCRIBE_H
 #define DOCWIRE_TRANSCRIBE_H
 
-#include "chain_element.h"
+#include "pipeline/element_base.hpp"
 #include "openai_export.h"
+#include "pimpl.h"
 #include <string>
 
 namespace docwire
@@ -21,7 +22,7 @@ namespace docwire
 namespace openai
 {
 
-class DOCWIRE_OPENAI_EXPORT transcribe : public chain_element, public with_pimpl<transcribe>
+class DOCWIRE_OPENAI_EXPORT transcribe : public pipeline::transformer_element<transcribe>, public with_pimpl<transcribe>
 {
 public:
 	enum class model
@@ -37,12 +38,7 @@ public:
 	* @param msg
 	* @param emit_message
 	*/
-	continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-
-	bool is_leaf() const override
-	{
-		return false;
-	}
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 private:
 	using with_pimpl<transcribe>::impl;

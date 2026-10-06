@@ -23,7 +23,9 @@ namespace docwire::ai::local::passage
  * The appropriate prefix for the underlying model (e.g. "passage: " for multilingual-e5-small)
  * is applied automatically. No model-specific knowledge required at the call site.
  */
-class DOCWIRE_LOCAL_AI_EXPORT embedder : public docwire::ai::embed
+class DOCWIRE_LOCAL_AI_EXPORT embedder
+    : public docwire::pipeline::transformer_element<embedder>
+    , public docwire::ai::embed
 {
   public:
     embedder();
@@ -39,7 +41,9 @@ namespace docwire::ai::local::query
  * is applied automatically. No model-specific knowledge required at the call site.
 
  */
-class DOCWIRE_LOCAL_AI_EXPORT embedder : public docwire::ai::embed
+class DOCWIRE_LOCAL_AI_EXPORT embedder
+    : public docwire::pipeline::transformer_element<embedder>
+    , public docwire::ai::embed
 {
   public:
     embedder();

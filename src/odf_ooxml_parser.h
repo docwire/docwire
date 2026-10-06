@@ -25,7 +25,10 @@ namespace docwire
  * @tparam safety_level The safety policy to use.
  */
 template <safety_policy safety_level = default_safety_level>
-class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser : public common_xml_document_parser<safety_level>, public with_pimpl<odf_ooxml_parser<safety_level>>
+class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser
+    : public common_xml_document_parser<safety_level>,
+      public pipeline::transformer_element<odf_ooxml_parser<safety_level>>,
+      public with_pimpl<odf_ooxml_parser<safety_level>>
 {
     using base_type = common_xml_document_parser<safety_level>;
     using with_pimpl<odf_ooxml_parser<safety_level>>::impl;
@@ -67,8 +70,7 @@ class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser : public common_xml_document_par
      * @brief Processes a message in the parsing chain.
      * @return The continuation status.
      */
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message) override;
-    bool is_leaf() const override { return false; }
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
 
 } // namespace docwire

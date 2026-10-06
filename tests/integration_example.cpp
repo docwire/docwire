@@ -1,4 +1,5 @@
 #include "docwire/docwire.h"
+#include "docwire/http_server.h"
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -18,6 +19,15 @@ int main(int argc, char* argv[])
   }
 
   using namespace docwire;
+
+  // Verify installed public HTTP API and its link dependency.
+  {
+      http::address addr{"127.0.0.1"};
+      http::port port{0};
+      http::server server(addr, port);
+      (void)server;
+  }
+
   std::stringstream out_stream;
 
   if (argc != 2)

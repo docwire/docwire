@@ -16,7 +16,10 @@
 
 namespace docwire::ai::local {
 
-class task : public docwire::ai::task {
+class task
+    : public docwire::pipeline::transformer_element<task>
+    , public docwire::ai::task
+{
 public:
   explicit task(
       const std::string &prompt, std::shared_ptr<docwire::ai::ai_runner> runner,

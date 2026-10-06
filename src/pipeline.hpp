@@ -9,36 +9,17 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CHAIN_ELEMENT_H
-#define DOCWIRE_CHAIN_ELEMENT_H
+#ifndef DOCWIRE_PIPELINE_HPP
+#define DOCWIRE_PIPELINE_HPP
 
-#include "core_export.h"
-#include "message.h"
-#include "pimpl.h"
+// IWYU pragma: begin_exports
+#include "pipeline/element_base.hpp"
+#include "pipeline/chain_expression.hpp"
+#include "pipeline/variant_expression.hpp"
+#include "pipeline/input_element.hpp"
+#include "pipeline/output_element.hpp"
+#include "pipeline/function_transformer.hpp"
+#include "pipeline/noop_transformer.hpp"
+// IWYU pragma: end_exports
 
-namespace docwire
-{
-
-class parsing_chain;
-
-class chain_element
-{
-public:
-  chain_element() = default;
-  chain_element(chain_element&&) = default;
-  virtual ~chain_element() = default;
-  chain_element& operator=(chain_element&&) = default;
-
-  virtual continuation operator()(message_ptr msg, const message_callbacks& emit_message) = 0;
-
-  /**
-   * @brief Check if chain element is a leaf (last element which doesn't produce any messages). At this moment only exporters are leafs.
-   * @return true if leaf
-   */
-  virtual bool is_leaf() const = 0;
-
-  virtual bool is_generator() const { return false; }
-};
-
-}
-#endif //DOCWIRE_CHAIN_ELEMENT_H
+#endif // DOCWIRE_PIPELINE_HPP

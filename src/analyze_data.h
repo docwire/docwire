@@ -20,7 +20,9 @@ namespace docwire
 namespace openai
 {
 
-class DOCWIRE_OPENAI_EXPORT analyze_data : public chat
+class DOCWIRE_OPENAI_EXPORT analyze_data
+    : public pipeline::transformer_element<analyze_data>
+    , public chat
 {
 public:
 	explicit analyze_data(const std::string& api_key, model model = model::gpt_5, float temperature = 0.0f, image_detail image_detail = image_detail::automatic);
