@@ -16,6 +16,7 @@
 #include "log_cerr_redirection.h"
 #include "log_entry.h"
 #include "log_scope.h"
+#include "audit/legacy_log_audit.hpp"
 #include "detail/ustring_conversions.h"
 #include "nested_exception.h"
 #include "throw_if.h"
@@ -661,7 +662,7 @@ void pimpl_impl<doc_parser>::parse(const data_source& data, const message_callba
 	}
 	storage->leaveDirectory();
 	curr_state.obj_texts_iter = curr_state.obj_texts.begin();
-	log::cerr_redirection<> cerr_redirection;
+	log::cerr_redirection<audit::legacy_log_audit> cerr_redirection;
 	SharedPtr<wvWare::Parser> parser;
 	{
 		std::lock_guard<std::mutex> parser_factory_mutex_2_lock(parser_factory_mutex_2);

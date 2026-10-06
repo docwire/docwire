@@ -11,6 +11,7 @@
 
 #include <boost/config.hpp>
 #include <boost/json.hpp>
+#include "audit/legacy_log_audit.hpp"
 #include "log.h"
 #include "log_json_stream_sink.h"
 #include "log_state_saver.h"
@@ -163,7 +164,7 @@ TEST(Logging, CerrLogRedirection)
         std::streambuf* original_cerr_buf = std::cerr.rdbuf(captured_cerr_stream.rdbuf());
 
         {
-            log::cerr_redirection cerr_redirection;
+            log::cerr_redirection<audit::legacy_log_audit> cerr_redirection;
             std::cerr << "Cerr test log message line 1" << std::endl;
             std::cerr << "Cerr test log message line 2" << std::endl;
             // cerr_redirection's destructor will call restore()
