@@ -680,7 +680,7 @@ template<typename auditor_type>
 void pimpl_impl<xlsb_parser<auditor_type>>::parse(const data_source& data, const message_callbacks& emit_message)
 {
 	audit::scope audit_scope{auditor(), [&]{ return "data"_v = data; }};
-	scoped::stack_push<pimpl_impl<xlsb_parser>::context> context_guard{m_context_stack, {emit_message}};
+	scoped::stack_push<typename pimpl_impl<xlsb_parser<auditor_type>>::context> context_guard{m_context_stack, {emit_message}};
 	std::string text;
 	zip_reader unzip{data};
 	try
