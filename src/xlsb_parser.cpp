@@ -32,6 +32,7 @@
 #include "detail/office_crypto.h"
 #include <map>
 #include "serialization_data_source.h" // IWYU pragma: keep
+#include "serialization_message.h" // IWYU pragma: keep
 #include <sstream>
 #include <stack>
 #include <stdint.h>
