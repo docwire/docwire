@@ -17,8 +17,12 @@
 #include "data_stream.h"
 #include "data_source.h"
 #include "error_tags.h"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include <map>
 #include "detail/ustring_conversions.h"
 #include <mutex>
@@ -44,9 +48,10 @@ using namespace wvWare;
 namespace
 {
 
-long parseNumber(data_stream& data_stream)
+template<typename auditor_type>
+long parseNumber(data_stream& data_stream, audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	int ch;
 	int count = 0;
 	char buf[RTFARGSMAXLEN + 1];
@@ -63,9 +68,10 @@ long parseNumber(data_stream& data_stream)
 	return strtol(buf, (char **)NULL, 10);
 }
 
-int parseCharCode(data_stream& data_stream)
+template<typename auditor_type>
+int parseCharCode(data_stream& data_stream, audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	int ch;
 	int count = 0;
 	char buf[RTFARGSMAXLEN + 1];
@@ -205,9 +211,10 @@ struct rtf_parser_state
 	UString fldrslt_text;
 };
 
-rtf_command commandNameToEnum(char* name)
+template<typename auditor_type>
+rtf_command commandNameToEnum(char* name, audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(name);
+	audit::scope audit_scope{auditor, [&]{ return "name"_v = name; }};
 	for (int i = 0; i < sizeof(rtf_commands) / sizeof(rtf_string_command); i++)
 	{
 		if (strcmp(name, rtf_commands[i].name) == 0)
@@ -216,9 +223,11 @@ rtf_command commandNameToEnum(char* name)
 	return RTF_UNKNOWN;
 }
 
-bool parseCommand(data_stream& data_stream, rtf_command& cmd, long int& arg)
+template<typename auditor_type>
+bool parseCommand(data_stream& data_stream, rtf_command& cmd, long int& arg,
+                  audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	char name[RTFNAMEMAXLEN + 1];
 
 	int ch = data_stream.getc();
@@ -233,10 +242,10 @@ bool parseCommand(data_stream& data_stream, rtf_command& cmd, long int& arg)
 			name[name_count++] = (char)ch;
 		}
 		name[name_count] = '\0';
-		cmd = commandNameToEnum(name);
+		cmd = commandNameToEnum(name, auditor);
 		data_stream.unGetc(ch);
 		if (isdigit(ch) || ch == '-' )
-			arg = parseNumber(data_stream);
+			arg = parseNumber(data_stream, auditor);
 		else
 			arg = 0;
 		ch = data_stream.getc();
@@ -250,7 +259,7 @@ bool parseCommand(data_stream& data_stream, rtf_command& cmd, long int& arg)
 		if (ch == '\'')
 		{
 			cmd = RTF_CHAR;
-			arg = parseCharCode(data_stream);
+			arg = parseCharCode(data_stream, auditor);
 			if(data_stream.eof())
 				return false;
 		}
@@ -260,21 +269,25 @@ bool parseCommand(data_stream& data_stream, rtf_command& cmd, long int& arg)
 			arg = ch;
 		}
 	}
-	log_entry(name, arg);
+	audit::entry(auditor, [&]{
+		return "name"_v = std::string{name}, "arg"_v = arg;
+	});
 	return true;
 }
 
-std::string codepage_to_encoding(int codepage)
+template<typename auditor_type>
+std::string codepage_to_encoding(int codepage, audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(codepage);
+	audit::scope audit_scope{auditor, [&]{ return "codepage"_v = codepage; }};
 	char encoding[7];
 	snprintf(encoding, 7, "CP%i", codepage);
 	return encoding;
 }
 
-std::string win_charset_to_encoding(long int win_charset)
+template<typename auditor_type>
+std::string win_charset_to_encoding(long int win_charset, audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(win_charset);
+	audit::scope audit_scope{auditor, [&]{ return "win_charset"_v = win_charset; }};
 	long int codepage = 1250;
 	switch (win_charset)
 	{
@@ -298,12 +311,13 @@ std::string win_charset_to_encoding(long int win_charset)
 		case 238: codepage = 1250; break; // EASTEUROPE_CHARSET / 
 		case 255: codepage = 850; break; // OEM_CHARSET
 	}
-	return codepage_to_encoding(codepage);
+	return codepage_to_encoding(codepage, auditor);
 }
 
-std::chrono::sys_seconds parse_dttm_time(int dttm)
+template<typename auditor_type>
+std::chrono::sys_seconds parse_dttm_time(int dttm, audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(dttm);
+	audit::scope audit_scope{auditor, [&]{ return "dttm"_v = dttm; }};
 	int min = dttm & 0x0000003F;
 	dttm >>= 6;
 	int hour = dttm & 0x0000001F;
@@ -729,9 +743,12 @@ std::optional<int> get_rtf_date_component(std::string_view s, std::string_view t
     return convert::try_to<int>(with::partial_match{rest});
 }
 
-std::optional<std::chrono::sys_seconds> parse_rtf_time(std::string_view s)
+template<typename auditor_type>
+std::optional<std::chrono::sys_seconds> parse_rtf_time(
+	std::string_view s,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(s);
+	audit::scope audit_scope{auditor, [&]{ return "s"_v = s; }};
 	int year = get_rtf_date_component(s, "\\yr").value_or(0);
 
 	int month = get_rtf_date_component(s, "\\mo").value_or(1);

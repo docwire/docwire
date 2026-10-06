@@ -14,15 +14,24 @@
 
 #include "pipeline/element_base.hpp"
 #include "rtf_export.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 
 namespace docwire
 {
 
-class DOCWIRE_RTF_EXPORT rtf_parser : public pipeline::transformer_element<rtf_parser>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_RTF_EXPORT rtf_parser
+    : public pipeline::transformer_element<rtf_parser<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
-	public:
-		rtf_parser();
-		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+public:
+	explicit rtf_parser(audit::auditor_ref<auditor_type> auditor = {});
+
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+
+private:
+	using audit::with_auditor<auditor_type>::auditor;
 };
 
 } // namespace docwire
