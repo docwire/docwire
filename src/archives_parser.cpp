@@ -53,6 +53,8 @@ template<typename auditor_type>
 class archive_reader : private audit::with_auditor<auditor_type>
 {
 public:
+	using audit::with_auditor<auditor_type>::auditor;
+
 	class entry_streambuf : public std::streambuf
 	{
 	public:
