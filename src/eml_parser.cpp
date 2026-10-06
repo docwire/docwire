@@ -24,8 +24,12 @@
 #include "data_source.h"
 #include "document_elements.h"
 #include <iostream>
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include <mailio/message.hpp>
 #include <mailio/mime.hpp>
 #include "make_error.h"
@@ -51,9 +55,17 @@ struct context
 
 } // anonymous namespace
 
-template<>
-struct pimpl_impl<eml_parser> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<eml_parser<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
+	using audit::with_auditor<auditor_type>::auditor;
+
+	explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor}
+	{}
+
 	std::stack<context> m_context_stack;
 
 	template <typename T>
@@ -70,7 +82,7 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 
 	void convertToUtf8(const std::string& charset, std::string& text) const
 	{
-		log_scope(charset);
+		audit::scope audit_scope{auditor(), [&]{ return "charset"_v = charset; }};
 		try
 		{
 			charset_converter converter(charset, "UTF-8");
@@ -93,16 +105,16 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 			using mailio::mime::mime_type_as_str;
 	};
 
-	static const mime::content_type_t& content_type_from_mime_entity(const mime& mime_entity)
+	const mime::content_type_t& content_type_from_mime_entity(const mime& mime_entity)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		// Intentional non-polymorphic downcast hack to access 3rd-party protected member
 		return static_cast<const mime_wrapper&>(mime_entity).content_type();
 	}
 
-	static mime_type mime_type_from_mime_entity(const mime& mime_entity)
+	mime_type mime_type_from_mime_entity(const mime& mime_entity)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		const mime::content_type_t& ct = content_type_from_mime_entity(mime_entity);
 		// Intentional non-polymorphic downcast hack to access 3rd-party protected member
 		return mime_type{ static_cast<const mime_wrapper&>(mime_entity).mime_type_as_str(ct.media_type()) + "/" + ct.media_subtype() };
@@ -111,10 +123,15 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 	void extractPlainText(const mime& mime_entity)
 	{
 		const mime::content_type_t& ct = content_type_from_mime_entity(mime_entity);
-		log_scope(std::string(mime_entity.name()), ct.boundary(), mime_type_from_mime_entity(mime_entity));
+		audit::scope audit_scope{auditor(), [&]{
+			return
+				"name"_v = std::string{mime_entity.name()},
+				"boundary"_v = ct.boundary(),
+				"mime_type"_v = mime_type_from_mime_entity(mime_entity);
+		}};
 		if (ct.media_type() == mime::media_type_t::TEXT && (mime_entity.content_disposition() != mime::content_disposition_t::ATTACHMENT || std::string(mime_entity.name()).empty()))
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			std::string plain = mime_entity.content();
 
 			plain.erase(std::remove(plain.begin(), plain.end(), '\r'), plain.end());
@@ -122,13 +139,13 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 			bool skip_charset_decoding = false;
 			if (!ct.charset().empty())
 			{
-				log_scope();
+				audit::scope audit_scope{auditor(), audit::no_context};
 				convertToUtf8(ct.charset(), plain);
 				skip_charset_decoding = true;
 			}
 			if (ct.media_subtype() == "html" || ct.media_subtype() == "xhtml")
 			{
-				log_scope();
+				audit::scope audit_scope{auditor(), audit::no_context};
 				try
 				{
 					emit_message_back(data_source {
@@ -143,12 +160,12 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 			{
 				if (skip_charset_decoding)
 				{
-					log_scope();
+					audit::scope audit_scope{auditor(), audit::no_context};
 					emit_message(document::text{.text = plain});
 				}
 				else
 				{
-					log_scope();
+					audit::scope audit_scope{auditor(), audit::no_context};
 					try
 					{
 						emit_message_back(data_source {
@@ -168,7 +185,7 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 			{
 				// Fix for Degenerate multipart: the header declared a multipart Content-Type,
 				// but the body never contained any boundary-delimited parts.
-				log_scope();
+				audit::scope audit_scope{auditor(), audit::no_context};
 				try
 				{
 					emit_message_back(data_source { plain_text, mime_type{"text/plain"}, confidence::high});
@@ -181,7 +198,7 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 		}
 		else if (ct.media_type() != mime::media_type_t::MULTIPART)
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			std::string plain = mime_entity.content();
 			std::string file_name = mime_entity.name();
 			std::optional<std::string> attachment_name;
@@ -193,7 +210,7 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 				extension = file_extension{ std::filesystem::path{file_name} };
 			}
 
-			log_entry(attachment_name);
+			audit::entry(auditor(), [&]{ return "attachment_name"_v = attachment_name; });
 			auto result = emit_message(mail::attachment{.name = attachment_name, .size = plain.length(), .extension = extension});
 			if (result != continuation::skip)
 			{
@@ -211,10 +228,10 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 
 		if (ct.media_subtype() == "alternative")
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			const auto& parts = mime_entity.parts();
 
-			auto is_body_text = [](const mime& m, const std::vector<std::string>& subtypes) {
+			auto is_body_text = [this](const mime& m, const std::vector<std::string>& subtypes) {
 				const mime::content_type_t& ct = content_type_from_mime_entity(m);
 				if (ct.media_type() != mime::media_type_t::TEXT) return false;
 				if (std::find(subtypes.begin(), subtypes.end(), ct.media_subtype()) == subtypes.end()) return false;
@@ -258,23 +275,28 @@ struct pimpl_impl<eml_parser> : pimpl_impl_base
 		}
 		else
 		{
-			log_scope(mime_entity.parts().size());
+			audit::scope audit_scope{auditor(), [&]{ return "parts_count"_v = mime_entity.parts().size(); }};
 			for (const mime& m: mime_entity.parts())
 				extractPlainText(m);
 		}
 	}
 };
 
-eml_parser::eml_parser() = default;
+template<typename auditor_type>
+eml_parser<auditor_type>::eml_parser(audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<eml_parser<auditor_type>>(auditor),
+	  audit::with_auditor<auditor_type>(auditor)
+{}
 
 namespace
 {
 
 constexpr std::string_view boundary_delimiter = "--";
 
-void normalize_line(std::string& line)
+template<typename auditor_type>
+void normalize_line(std::string& line, audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(line);
+	audit::scope audit_scope{auditor, [&]{ return "line"_v = line; }};
 	if (!line.empty() && line.back() == '\r')
 		line.pop_back();
 }
@@ -291,9 +313,14 @@ public:
 	using mailio::mime::content_type;
 };
 
+template<typename auditor_type>
 class boundary_tracker
 {
 public:
+	explicit boundary_tracker(audit::auditor_ref<auditor_type> auditor)
+		: m_auditor{auditor}
+	{}
+
 	void process_line(const std::string& line, mailio::message& mime_entity)
 	{
 		if (is_boundary_line(line) && handle_boundary_line(line, mime_entity))
@@ -329,7 +356,11 @@ private:
 			if (is_closing || is_new_part)
 			{
 				if(is_closing && !boundary_state.is_open){
-					log_entry("Injecting empty MIME part before premature closing boundary",boundary);
+					audit::entry(m_auditor, [&]{
+						return
+							"message"_v = std::string{"Injecting empty MIME part before premature closing boundary"},
+							"boundary"_v = boundary;
+					});
 				    inject_empty_part(boundary, mime_entity);
 				}
 				inject_missing_closers(current_boundary_index, mime_entity);
@@ -409,7 +440,12 @@ private:
 			}
 			catch (const std::exception& e)
 			{
-				log_entry("Failed to parse header line", m_current_header_accumulator, e.what());
+				audit::entry(m_auditor, [&]{
+					return
+						"message"_v = std::string{"Failed to parse header line"},
+						"header_line"_v = m_current_header_accumulator,
+						"error"_v = std::string{e.what()};
+				});
 			}
 			m_current_header_accumulator.clear();
 		}
@@ -423,22 +459,27 @@ private:
 	header_parser m_current_header_parser;
 	std::string m_current_header_accumulator;
 	bool m_in_headers = true;
+	audit::auditor_ref<auditor_type> m_auditor;
 };
 
-mailio::message parse_message(const data_source& data, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+template<typename auditor_type>
+mailio::message parse_message(
+	const data_source& data,
+	const std::function<void(std::exception_ptr)>& non_fatal_error_handler,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(data);
+	audit::scope audit_scope{auditor, [&]{ return "data"_v = data; }};
 	std::shared_ptr<std::istream> stream = data.istream();
 	mailio::message mime_entity;
 	mime_entity.line_policy(codec::line_len_policy_t::NONE);
 	try {
 		std::string line;
-		boundary_tracker tracker;
+		boundary_tracker<auditor_type> tracker{auditor};
 
 		while (std::getline(*stream, line))
 		{
-			normalize_line(line);
-			log_entry(line);
+			normalize_line(line, auditor);
+			audit::entry(auditor, [&]{ return "line"_v = line; });
 			tracker.process_line(line, mime_entity);
 			mime_entity.parse_by_line(line);
 		}
@@ -460,13 +501,19 @@ const std::vector<mime_type> supported_mime_types =
 namespace
 {
 
-attributes::metadata metaData(const mailio::message& mime_entity);
+template<typename auditor_type>
+attributes::metadata metaData(
+	const mailio::message& mime_entity,
+	audit::auditor_ref<auditor_type> auditor);
 
 } // anonymous namespace
 
-continuation eml_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation eml_parser<auditor_type>::operator()(
+	message_ptr msg,
+	const message_callbacks& emit_message)
 {
-	log_scope(msg);
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
 
@@ -476,18 +523,21 @@ continuation eml_parser::operator()(message_ptr msg, const message_callbacks& em
 	if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
 		return emit_message(std::move(msg));
 
-	log_entry();
+	audit::entry(auditor(), audit::no_context);
 	try
 	{
 		message_counters counters;
 		auto counting_callbacks = make_counted_message_callbacks(emit_message, counters);
 		scoped::stack_push<context> context_guard{impl().m_context_stack, context{counting_callbacks}};
-		mailio::message mime_entity = parse_message(data, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
+		mailio::message mime_entity = parse_message(
+			data,
+			[emit_message](std::exception_ptr e) { emit_message(std::move(e)); },
+			audit::auditor_ref<auditor_type>(auditor()));
 		emit_message(document::document
 			{
-				.metadata = [&mime_entity]()
+				.metadata = [&mime_entity, this]()
 				{
-					return metaData(mime_entity);
+					return metaData(mime_entity, audit::auditor_ref<auditor_type>(auditor()));
 				}
 			});
 		impl().extractPlainText(mime_entity);
@@ -524,9 +574,12 @@ std::optional<std::chrono::sys_seconds> convert_impl(const mailio_time& ldt, con
 	}
 }
 
-attributes::metadata metaData(const mailio::message& mime_entity)
+template<typename auditor_type>
+attributes::metadata metaData(
+	const mailio::message& mime_entity,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	attributes::metadata metadata;
 	metadata.author = mime_entity.from_to_string();
 	metadata.creation_date = convert::try_to<std::chrono::sys_seconds>(mailio_time{mime_entity.date_time()});
@@ -555,5 +608,8 @@ attributes::metadata metaData(const mailio::message& mime_entity)
 }
 
 } // anonymous namespace
+
+template class DOCWIRE_MAIL_EXPORT eml_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_MAIL_EXPORT eml_parser<docwire::audit::legacy_log_audit>;
 
 } // namespace docwire

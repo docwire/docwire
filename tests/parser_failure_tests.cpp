@@ -81,7 +81,7 @@ TEST(PartialAndTotalFailures, EML_Partial)
     int count = 0;
     bool body_received = false;
     bool error_received = false;
-    TestParserFailures<eml_parser>("fourth.eml",
+    TestParserFailures<eml_parser<>>("fourth.eml",
         [&](message_ptr msg) {
             if (msg->is<data_source>()) {
                 count++;
@@ -102,7 +102,7 @@ TEST(PartialAndTotalFailures, EML_Partial)
 TEST(PartialAndTotalFailures, EML_Total)
 {
     EXPECT_THROW({
-        TestParserFailures<eml_parser>("fourth.eml",
+        TestParserFailures<eml_parser<>>("fourth.eml",
             [](message_ptr msg) {
                 if (msg->is<data_source>()) throw std::runtime_error("Simulated failure");
             },
