@@ -195,7 +195,7 @@ TEST(PartialAndTotalFailures, PDF_Partial)
     int count = 0;
     std::string text_output;
     bool error_received = false;
-    TestParserFailures<pdf_parser>("embedded_images.pdf",
+    TestParserFailures<pdf_parser<>>("embedded_images.pdf",
         [&](message_ptr msg) {
             if (msg->is<document::image>()) {
                 count++;
@@ -218,7 +218,7 @@ TEST(PartialAndTotalFailures, PDF_Partial)
 TEST(PartialAndTotalFailures, PDF_Total)
 {
     EXPECT_THROW({
-        TestParserFailures<pdf_parser>("embedded_images.pdf",
+        TestParserFailures<pdf_parser<>>("embedded_images.pdf",
             [](message_ptr msg) {
                 if (msg->is<document::image>()) throw std::runtime_error("Simulated image failure");
             },

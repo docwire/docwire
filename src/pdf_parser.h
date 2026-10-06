@@ -16,18 +16,26 @@
 #include "pdf_export.h"
 #include "pimpl.h"
 #include "message.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 
 namespace docwire
 {
-class DOCWIRE_PDF_EXPORT pdf_parser : public pipeline::transformer_element<pdf_parser>, public with_pimpl<pdf_parser>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_PDF_EXPORT pdf_parser
+    : public pipeline::transformer_element<pdf_parser<auditor_type>>,
+      public with_pimpl<pdf_parser<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
-	private:
-		using with_pimpl<pdf_parser>::impl;
-		friend pimpl_impl<pdf_parser>;
+private:
+	using with_pimpl<pdf_parser<auditor_type>>::impl;
+	using audit::with_auditor<auditor_type>::auditor;
+	friend pimpl_impl<pdf_parser<auditor_type>>;
 
-	public:
-		pdf_parser();
-		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+public:
+	explicit pdf_parser(audit::auditor_ref<auditor_type> auditor = {});
+
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
 
 } // namespace docwire
