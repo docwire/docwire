@@ -119,6 +119,10 @@ struct pimpl_impl<xlsb_parser<auditor_type>>
 {
 	using audit::with_auditor<auditor_type>::auditor;
 
+	explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor}
+	{}
+
 	void parse(const data_source& data, const message_callbacks& emit_message);
 	attributes::metadata metaData(zip_reader& unzip);
 	struct xlsb_content
