@@ -14,8 +14,11 @@
 #include "charsetdetect.h"
 #include "charset_converter.h"
 #include "document_elements.h"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
 #include "make_error.h"
 #include "nested_exception.h"
 #include "pimpl.h"
@@ -25,25 +28,46 @@
 namespace docwire
 {
 
-template<>
-struct pimpl_impl<txt_parser> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<txt_parser<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
-	pimpl_impl(parse_paragraphs parse_paragraphs_arg, parse_lines parse_lines_arg)
-		: m_parse_paragraphs{parse_paragraphs_arg}, m_parse_lines{parse_lines_arg} {}
+	using audit::with_auditor<auditor_type>::auditor;
+
+	pimpl_impl(parse_paragraphs parse_paragraphs_arg,
+	           parse_lines parse_lines_arg,
+	           audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor},
+		  m_parse_paragraphs{parse_paragraphs_arg},
+		  m_parse_lines{parse_lines_arg}
+	{}
+
 	parse_paragraphs m_parse_paragraphs;
 	parse_lines m_parse_lines;
     void parse(const data_source& data, const message_callbacks& emit_message);
 };
 
-txt_parser::txt_parser(parse_paragraphs parse_paragraphs_arg, parse_lines parse_lines_arg)
-	: with_pimpl<txt_parser>{parse_paragraphs_arg, parse_lines_arg} {}
+template<typename auditor_type>
+txt_parser<auditor_type>::txt_parser(
+	parse_paragraphs parse_paragraphs_arg,
+	parse_lines parse_lines_arg,
+	audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<txt_parser<auditor_type>>{parse_paragraphs_arg, parse_lines_arg, auditor},
+	  audit::with_auditor<auditor_type>{auditor}
+{}
 
 namespace
 {
 
-std::string sequences_of_printable_characters(const std::string& text, size_t min_seq_len = 4, char seq_delim = '\n')
+template<typename auditor_type = audit::null_auditor>
+std::string sequences_of_printable_characters(
+	const std::string& text,
+	size_t min_seq_len = 4,
+	char seq_delim = '\n',
+	audit::auditor_ref<auditor_type> auditor = {})
 {
-	log_scope(min_seq_len, seq_delim);
+	audit::scope audit_scope{auditor, [&]{ return "min_seq_len"_v = min_seq_len, "seq_delim"_v = seq_delim; }};
 	std::string result;
 	result.reserve(text.length());
 	std::string printable_field;
@@ -117,9 +141,10 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-void pimpl_impl<txt_parser>::parse(const data_source& data, const message_callbacks& emit_message)
+template<typename auditor_type>
+void pimpl_impl<txt_parser<auditor_type>>::parse(const data_source& data, const message_callbacks& emit_message)
 {
-	log_scope(data);
+	audit::scope parse_audit_scope{auditor(), [&]{ return "data"_v = data; }};
 	std::string text;
 	csd_t charset_detector = NULL;
 	charset_converter* converter = NULL;
@@ -142,18 +167,18 @@ void pimpl_impl<txt_parser>::parse(const data_source& data, const message_callba
 			if (res != NULL)
 			{
 				encoding = std::string(res);
-				log_entry(encoding);
+				audit::entry(auditor(), [&]{ return "encoding"_v = encoding; });
 			}
 			else
 			{
-				log_scope();
+				audit::scope fallback_audit_scope{auditor(), audit::no_context};
 				encoding = "ASCII"; // Assume ASCII as a fallback
-				content = sequences_of_printable_characters(content); // Extract printable sequences
+				content = sequences_of_printable_characters(content, 4, '\n', auditor()); // Extract printable sequences
 			}
 		}
 		if (encoding != "utf-8" && encoding != "UTF-8")
 		{
-			log_scope(encoding);
+			audit::scope converter_audit_scope{auditor(), [&]{ return "encoding"_v = encoding; }};
 			try
 			{
 				converter = new charset_converter(encoding, "UTF-8");
@@ -168,7 +193,7 @@ void pimpl_impl<txt_parser>::parse(const data_source& data, const message_callba
 		}
 		if (converter)
 		{
-			log_scope();
+			audit::scope converter_success_audit_scope{auditor(), audit::no_context};
 			text = converter->convert(content);
 			delete converter;
 			converter = NULL;
@@ -251,8 +276,11 @@ void pimpl_impl<txt_parser>::parse(const data_source& data, const message_callba
 	emit_message(document::close_document{});
 }
 
-continuation txt_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation txt_parser<auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
+  audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
+
   if (!msg->is<data_source>())
     return emit_message(std::move(msg));
 
@@ -272,5 +300,8 @@ continuation txt_parser::operator()(message_ptr msg, const message_callbacks& em
   }
   return continuation::proceed;
 }
+
+template class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser<docwire::audit::legacy_log_audit>;
 
 } // namespace docwire
