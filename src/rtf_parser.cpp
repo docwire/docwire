@@ -23,6 +23,7 @@
 #include "audit/scope.hpp"
 #include "audit/with_auditor.hpp"
 #include "named.h"
+#include "serialization_message.h" // IWYU pragma: keep
 #include <map>
 #include "detail/ustring_conversions.h"
 #include <mutex>
@@ -334,15 +335,26 @@ std::chrono::sys_seconds parse_dttm_time(int dttm, audit::auditor_ref<auditor_ty
 	return sys_days{ymd} + hours{hour} + minutes{min};
 }
 
-void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_state& state, rtf_command cmd, long int arg,
-	TextConverter*& converter, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+template<typename auditor_type>
+void execCommand(
+	data_stream& data_stream,
+	UString& text,
+	int& skip,
+	rtf_parser_state& state,
+	rtf_command cmd,
+	long int arg,
+	TextConverter*& converter,
+	const std::function<void(std::exception_ptr)>& non_fatal_error_handler,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(cmd, arg);
+	audit::scope audit_scope{auditor, [&]{
+		return "cmd"_v = cmd, "arg"_v = arg;
+	}};
 	switch (cmd)
 	{
 		case RTF_SPEC_CHAR:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			if (arg == '*' && skip == 0)
 				skip = state.groups.size() - 1;
 			else if (arg == '\r' || arg == '\n') // the same as \para command
@@ -355,67 +367,67 @@ void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_
 		}
 		case RTF_EMDASH:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString((UChar)0x2014);
 			break;
 		}
 		case RTF_ENDASH:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString((UChar)0x2013);
 			break;
 		}
 		case RTF_BULLET:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString((UChar)0x2022);
 			break;
 		}
 		case RTF_LQUOTE:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString((UChar)0x2018);
 			break;
 		}
 		case RTF_RQUOTE:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString((UChar)0x2019);
 			break;
 		}
 		case RTF_LDBLQUOTE:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString((UChar)0x201C);
 			break;
 		}
 		case RTF_RDBLQUOTE:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString((UChar)0x201D);
 			break;
 		}
 		case RTF_ZWNONJOINER:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString((UChar)0xfeff);
 			break;
 		}
 		case RTF_EMSPACE:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString(' ');
 			break;
 		}
 		case RTF_ENSPACE:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString(' ');
 			break;
 		}
 		case RTF_CHAR:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			if (skip == 0)
 			{
 				if (converter != NULL)
@@ -427,19 +439,19 @@ void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_
 		}
 		case RTF_UC:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			state.groups.top().uc = arg;
 			break;
 		}
 		case RTF_TAB:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString((UChar)0x0009);
 			break;
 		}
 		case RTF_UNICODE_CHAR:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			if (arg < 0)
 				break;
 			if (skip == 0)
@@ -451,26 +463,26 @@ void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_
 				{
 					rtf_command tmp_cmd;
 					long int tmp_arg;
-					parseCommand(data_stream, tmp_cmd, tmp_arg);
+					parseCommand(data_stream, tmp_cmd, tmp_arg, auditor);
 				}
 			}
 			break;
 		}
 		case RTF_PARA:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString("\n");
 			break;
 		}
 		case RTF_CELL:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString("\n");
 			break;
 		}
 		case RTF_FLDINST:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			state.groups.top().destination = destination_type::fldinst;
 			state.fldinst_text = "";
 			skip = 0;
@@ -478,7 +490,7 @@ void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_
 		}
 		case RTF_FLDRSLT:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			state.groups.top().destination = destination_type::fldrslt;
 			state.fldrslt_text = "";
 			skip = 0;
@@ -495,29 +507,29 @@ void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_
 		case RTF_GENERATOR:
 		case RTF_DATAFIELD:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			if (skip == 0)
 				skip = state.groups.size() - 1;
 			break;
 		}
 		case RTF_LANG:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			break;
 		}
 		case RTF_LINE:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			text += UString("\n");
 			break;
 		}
 		case RTF_CODEPAGE:
 		{
-			log_scope(arg);
-			converter = new TextConverter(codepage_to_encoding(arg));
+			audit::scope audit_scope{auditor, [&]{ return "arg"_v = arg; }};
+			converter = new TextConverter(codepage_to_encoding(arg, auditor));
 			if (converter->isOk())
 			{
-				log_entry();
+				audit::entry(auditor, audit::no_context);
 			}
 			else
 			{
@@ -529,16 +541,20 @@ void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_
 		}
 		case RTF_FONT_CHARSET:
 		{
-			log_scope(arg, state.last_font_ref_num);
-			state.font_table[state.last_font_ref_num] = win_charset_to_encoding(arg);
+			audit::scope audit_scope{auditor, [&]{
+				return "arg"_v = arg, "last_font_ref_num"_v = state.last_font_ref_num;
+			}};
+			state.font_table[state.last_font_ref_num] = win_charset_to_encoding(arg, auditor);
 			break;
 		}
 		case RTF_F:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			if (state.font_table.find(arg) != state.font_table.end())
 			{
-				log_entry(arg, state.font_table[arg]);
+				audit::entry(auditor, [&]{
+					return "arg"_v = arg, "font"_v = state.font_table[arg];
+				});
 				if (converter != NULL)
 					converter->setFromCode(state.font_table[arg]);
 			}
@@ -548,7 +564,7 @@ void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_
 		}
 		case RTF_ANNOTATION:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			state.groups.top().destination = destination_type::annotation;
 			state.annotation_text = "";
 			skip = 0;
@@ -556,19 +572,19 @@ void execCommand(data_stream& data_stream, UString& text, int& skip, rtf_parser_
 		}
 		case RTF_ATNDATE:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			char ch;
 			std::string s;
 			while (isdigit(ch = data_stream.getc()) && !data_stream.eof())
 				s += ch;
 			if (!data_stream.eof())
 				data_stream.unGetc(ch);
-			state.annotation_time = parse_dttm_time(convert::to<int>(s));
+			state.annotation_time = parse_dttm_time(convert::to<int>(s), auditor);
 			break;
 		}
 		case RTF_ATNAUTHOR:
 		{
-			log_scope();
+			audit::scope audit_scope{auditor, audit::no_context};
 			state.author_of_next_annotation = "";
 			char ch;
 			while ((ch = data_stream.getc()) != '}' && !data_stream.eof())
@@ -584,9 +600,13 @@ std::mutex converter_mutex;
 
 attributes::metadata extract_rtf_metadata(const data_source& data); // Forward declaration
 
-void parse_rtf_content(const data_source& data, const message_callbacks& emit_message)
+template<typename auditor_type>
+void parse_rtf_content(
+	const data_source& data,
+	const message_callbacks& emit_message,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(data);
+	audit::scope audit_scope{auditor, [&]{ return "data"_v = data; }};
 	UString text;
 	std::span<const std::byte> span = data.span();
 	auto stream = std::make_unique<buffer_stream>(reinterpret_cast<const char*>(span.data()), span.size());
@@ -595,7 +615,7 @@ void parse_rtf_content(const data_source& data, const message_callbacks& emit_me
 	{
 		emit_message(document::document
 			{
-				.metadata = [&data]() { return extract_rtf_metadata(data); }
+				.metadata = [&data, auditor]() { return extract_rtf_metadata(data, auditor); }
 			});
 		char ch;
 		rtf_parser_state state;
@@ -612,12 +632,15 @@ void parse_rtf_content(const data_source& data, const message_callbacks& emit_me
 				{
 					rtf_command cmd;
 					long int arg;
-					if (!parseCommand(*stream, cmd, arg))
+					if (!parseCommand(*stream, cmd, arg, auditor))
 						break;
 					UString fragment_text;
 					{
 						std::lock_guard<std::mutex> converter_mutex_lock(converter_mutex);
-						execCommand(*stream, fragment_text, skip, state, cmd, arg, converter, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
+						execCommand(
+							*stream, fragment_text, skip, state, cmd, arg, converter,
+							[emit_message](std::exception_ptr e) { emit_message(std::move(e)); },
+							auditor);
 					}
 					switch (state.groups.top().destination)
 					{
@@ -645,7 +668,11 @@ void parse_rtf_content(const data_source& data, const message_callbacks& emit_me
 					destination_type destination = state.groups.top().destination;
 					state.groups.pop();
 					if (destination == destination_type::annotation && state.groups.top().destination != destination_type::annotation)
-						emit_message(document::comment{.author = state.author_of_next_annotation, .time = convert::to<std::string>(state.annotation_time), .comment = ustring_to_string(state.annotation_text)});
+						emit_message(document::comment{
+							.author = state.author_of_next_annotation,
+							.time = convert::to<std::string>(state.annotation_time),
+							.comment = ustring_to_string(state.annotation_text)
+						});
 					else if (destination == destination_type::fldinst)
 					{
 					}
@@ -763,9 +790,12 @@ std::optional<std::chrono::sys_seconds> parse_rtf_time(
 	return sys_days{ymd} + hours{hour} + minutes{minute} + seconds{second};
 }
 
-attributes::metadata extract_rtf_metadata(const data_source& data)
-{	
-	log_scope(data);
+template<typename auditor_type>
+attributes::metadata extract_rtf_metadata(
+	const data_source& data,
+	audit::auditor_ref<auditor_type> auditor)
+{
+	audit::scope audit_scope{auditor, [&]{ return "data"_v = data; }};
 	attributes::metadata meta;
 	std::string content = data.string();
 	size_t p = content.find("\\author ");
@@ -790,7 +820,7 @@ attributes::metadata extract_rtf_metadata(const data_source& data)
 		std::string s;
 		for (int i = p + 8; content[i] != '}'; i++)
 			s += content[i];
-		meta.creation_date = parse_rtf_time(s);
+		meta.creation_date = parse_rtf_time(s, auditor);
 	}
 	p = content.find("\\revtim");
 	if (p != std::string::npos)
@@ -798,7 +828,7 @@ attributes::metadata extract_rtf_metadata(const data_source& data)
 		std::string s;
 		for (int i = p + 7; content[i] != '}'; i++)
 			s += content[i];
-		meta.last_modification_date = parse_rtf_time(s);
+		meta.last_modification_date = parse_rtf_time(s, auditor);
 	}
 	p = content.find("\\nofpages");
 	if (p != std::string::npos)
@@ -828,10 +858,19 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-rtf_parser::rtf_parser() = default;
-
-continuation rtf_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+rtf_parser<auditor_type>::rtf_parser(audit::auditor_ref<auditor_type> auditor)
+	: audit::with_auditor<auditor_type>(auditor)
 {
+}
+
+template<typename auditor_type>
+continuation rtf_parser<auditor_type>::operator()(
+	message_ptr msg,
+	const message_callbacks& emit_message)
+{
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
+
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
 
@@ -843,7 +882,7 @@ continuation rtf_parser::operator()(message_ptr msg, const message_callbacks& em
 
 	try
 	{
-		parse_rtf_content(data, emit_message);
+		parse_rtf_content(data, emit_message, audit::auditor_ref<auditor_type>(auditor()));
 	}
 	catch (const std::exception& e)
 	{
@@ -851,5 +890,8 @@ continuation rtf_parser::operator()(message_ptr msg, const message_callbacks& em
 	}
 	return continuation::proceed;
 }
+
+template class DOCWIRE_RTF_EXPORT rtf_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_RTF_EXPORT rtf_parser<docwire::audit::legacy_log_audit>;
 
 } // namespace docwire
