@@ -491,7 +491,7 @@ struct pimpl_impl<xlsb_parser<auditor_type>>
 	void parseSharedStrings(zip_reader& unzip)
 	{
 		audit::scope audit_scope{auditor(), audit::no_context};
-		xlsb_reader::record record;
+		typename xlsb_reader::record record;
 		std::string file_name = "xl/sharedStrings.bin";
 		if (!unzip.exists(file_name))
 		{
@@ -526,7 +526,7 @@ struct pimpl_impl<xlsb_parser<auditor_type>>
 	void parseWorksheets(zip_reader& unzip, std::string& text)
 	{
 		audit::scope audit_scope{auditor(), audit::no_context};
-		xlsb_reader::record record;
+		typename xlsb_reader::record record;
 		int sheet_index = 1;
 		std::string sheet_file_name = "xl/worksheets/sheet1.bin";
 		while (unzip.exists(sheet_file_name))
