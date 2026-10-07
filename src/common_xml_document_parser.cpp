@@ -374,7 +374,9 @@ struct pimpl_impl<common_xml_document_parser<safety_level, auditor_type>>
 			if (!style_code.empty())
 			{
 				typename common_xml_document_parser<safety_level, auditor_type>::ListStyleVector list_style(10, common_xml_document_parser<safety_level, auditor_type>::bullet);
-				for (auto node: children(xml_node))
+				for (auto node: children(
+					xml_node,
+					audit::auditor_ref<auditor_type>(auditor())))
 				{
 					std::string_view list_style_name = node.name();
 					unsigned int level = attribute_value<unsigned int>(node, "level").value_or(1);
@@ -406,7 +408,9 @@ struct pimpl_impl<common_xml_document_parser<safety_level, auditor_type>>
 			std::string list_type = (list_style == common_xml_document_parser<safety_level, auditor_type>::number ? "decimal" : "disc");
 			emit_message(document::list{.type = list_type});
 
-			for (auto node: children(xml_node))
+			for (auto node: children(
+				xml_node,
+				audit::auditor_ref<auditor_type>(auditor())))
 			{
 				std::string_view list_element_type = node.name();
 				if (list_element_type == "list-header")
@@ -448,7 +452,9 @@ struct pimpl_impl<common_xml_document_parser<safety_level, auditor_type>>
 			std::string creator;
 			std::string date;
 			std::string content;
-			for (auto node: children(xml_node))
+			for (auto node: children(
+				xml_node,
+				audit::auditor_ref<auditor_type>(auditor())))
 			{
 				if (node.name() == "creator")
 					creator = node.string_value();
@@ -573,7 +579,12 @@ std::string common_xml_document_parser<safety_level, auditor_type>::parseXmlChil
 {
 	audit::scope audit_scope{auditor(), audit::no_context};
 	std::string text;
-	text = parseXmlData(children(xml_node), mode, zipfile);
+	text = parseXmlData(
+		children(
+			xml_node,
+			audit::auditor_ref<auditor_type>(auditor())),
+		mode,
+		zipfile);
 	return text;
 }
 
@@ -605,12 +616,22 @@ void common_xml_document_parser<safety_level, auditor_type>::extractText(std::st
 			xml_fixer xml_fixer;
 			std::string fixed_xml = xml_fixer.fix(std::string{xml_contents});
 			xml::reader<safety_level> reader(std::move(fixed_xml), blanks());
-			text = parseXmlData(children(reader), mode, zipfile);
+			text = parseXmlData(
+				children(
+					reader,
+					audit::auditor_ref<auditor_type>(auditor())),
+				mode,
+				zipfile);
 		}
 		else
 		{
 			xml::reader<safety_level> xml_reader(xml_contents, blanks());
-			text = parseXmlData(children(xml_reader), mode, zipfile);
+			text = parseXmlData(
+				children(
+					xml_reader,
+					audit::auditor_ref<auditor_type>(auditor())),
+				mode,
+				zipfile);
 		}
 	}
 	catch (const std::exception& e)
@@ -626,11 +647,15 @@ void common_xml_document_parser<safety_level, auditor_type>::parseODFMetadata(st
 	try
 	{
 		xml::reader<safety_level> xml_reader(xml_content, xml::reader_blanks::ignore);
-		for (auto sub_node: children(root_element(xml_reader)))
+		for (auto sub_node: children(
+			root_element(xml_reader),
+			audit::auditor_ref<auditor_type>(auditor())))
 		{
 			if (sub_node.name() == "meta")
 			{
-				for (auto node: children(sub_node))
+				for (auto node: children(
+					sub_node,
+					audit::auditor_ref<auditor_type>(auditor())))
 				{
 					if (node.name() == "initial-creator")
 						metadata.author = node.string_value();
