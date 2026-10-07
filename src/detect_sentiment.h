@@ -19,12 +19,18 @@ namespace docwire
 namespace openai
 {
 
+template<typename auditor_type = audit::null_auditor>
 class DOCWIRE_OPENAI_EXPORT detect_sentiment
-    : public pipeline::transformer_element<detect_sentiment>
-    , public chat
+    : public pipeline::transformer_element<detect_sentiment<auditor_type>>,
+      public chat<auditor_type>
 {
 public:
-	detect_sentiment(const std::string& api_key, model model = model::gpt_5, float temperature = 0, image_detail image_detail = image_detail::automatic);
+	explicit detect_sentiment(
+		const std::string& api_key,
+		model model = model::gpt_5,
+		float temperature = 0,
+		image_detail image_detail = image_detail::automatic,
+		audit::auditor_ref<auditor_type> auditor = {});
 };
 
 } // namespace openai

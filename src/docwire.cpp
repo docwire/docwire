@@ -330,7 +330,7 @@ int main(int argc, char* argv[])
 			return http::post(vm["http-post"].as<std::string>());
 		})
 		| maybe(vm.count("openai-chat"), [&] {
-			return openai::chat(
+			return openai::chat<>(
 				vm["openai-chat"].as<std::string>(),
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
@@ -340,7 +340,7 @@ int main(int argc, char* argv[])
 				vm["openai-image-detail"].as<openai::image_detail>());
 		})
 		| maybe(vm.count("openai-extract-entities"), [&] {
-			return openai::extract_entities(
+			return openai::extract_entities<>(
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
@@ -349,7 +349,7 @@ int main(int argc, char* argv[])
 				vm["openai-image-detail"].as<openai::image_detail>());
 		})
 		| maybe(vm.count("openai-extract-keywords"), [&] {
-			return openai::extract_keywords(
+			return openai::extract_keywords<>(
 				vm["openai-extract-keywords"].as<unsigned int>(),
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
@@ -359,7 +359,7 @@ int main(int argc, char* argv[])
 				vm["openai-image-detail"].as<openai::image_detail>());
 		})
 		| maybe(vm.count("openai-summarize"), [&] {
-			return openai::summarize(
+			return openai::summarize<>(
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
@@ -368,7 +368,7 @@ int main(int argc, char* argv[])
 				vm["openai-image-detail"].as<openai::image_detail>());
 		})
 		| maybe(vm.count("openai-detect-sentiment"), [&] {
-			return openai::detect_sentiment(
+			return openai::detect_sentiment<>(
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
@@ -377,7 +377,7 @@ int main(int argc, char* argv[])
 				vm["openai-image-detail"].as<openai::image_detail>());
 		})
 		| maybe(vm.count("openai-analyze-data"), [&] {
-			return openai::analyze_data(
+			return openai::analyze_data<>(
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
@@ -389,7 +389,7 @@ int main(int argc, char* argv[])
 			const std::vector<std::string>& categories =
 				vm["openai-classify"].as<std::vector<std::string>>();
 			std::set<std::string> categories_set(categories.begin(), categories.end());
-			return openai::classify(
+			return openai::classify<>(
 				categories_set,
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
@@ -399,7 +399,7 @@ int main(int argc, char* argv[])
 				vm["openai-image-detail"].as<openai::image_detail>());
 		})
 		| maybe(vm.count("openai-translate-to"), [&] {
-			return openai::translate_to(
+			return openai::translate_to<>(
 				vm["openai-translate-to"].as<std::string>(),
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
@@ -439,7 +439,7 @@ int main(int argc, char* argv[])
 		})
 #endif
 		| maybe(vm.count("openai-find"), [&] {
-			return openai::find(
+			return openai::find<>(
 				vm["openai-find"].as<std::string>(),
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),

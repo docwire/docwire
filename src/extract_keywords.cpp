@@ -11,7 +11,12 @@
 
 #include "extract_keywords.h"
 
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include "serialization_enum.h" // IWYU pragma: keep
 
 namespace docwire
@@ -19,14 +24,31 @@ namespace docwire
 namespace openai
 {
 
-extract_keywords::extract_keywords(unsigned int max_keywords, const std::string& api_key, model model, float temperature, image_detail image_detail)
-	: chat("Your task is to identify and extract " +
+template<typename auditor_type>
+extract_keywords<auditor_type>::extract_keywords(
+	unsigned int max_keywords,
+	const std::string& api_key,
+	model model,
+	float temperature,
+	image_detail image_detail,
+	audit::auditor_ref<auditor_type> auditor)
+	: chat<auditor_type>(
+		"Your task is to identify and extract " +
 			std::to_string(max_keywords) +
 			" most important keywords or key phrases from every message. The goal is to capture the most relevant and significant terms within the text.",
-			api_key, model, temperature, image_detail)
+		api_key, model, temperature, image_detail, auditor)
 {
-	log_scope(max_keywords, model, temperature, image_detail);
+	audit::scope audit_scope{this->auditor(), [&]{
+		return
+			"max_keywords"_v = max_keywords,
+			"model"_v = model,
+			"temperature"_v = temperature,
+			"image_detail"_v = image_detail;
+	}};
 }
+
+template class DOCWIRE_OPENAI_EXPORT extract_keywords<docwire::audit::null_auditor>;
+template class DOCWIRE_OPENAI_EXPORT extract_keywords<docwire::audit::legacy_log_audit>;
 
 } // namespace openai
 } // namespace docwire
