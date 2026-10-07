@@ -96,7 +96,7 @@ std::string prepare_query(
 	}};
 	boost::json::object query
 	{
-		{ "model", model_to_string(model) },
+		{ "model", model_to_string<auditor_type>(model) },
 		{ "input", input }
 	};
 	return boost::json::serialize(query);
