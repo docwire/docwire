@@ -14,8 +14,12 @@
 #include "data_source.h"
 #include "document_elements.h"
 #include "error_tags.h"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include <map>
 #include <math.h>
 #include "detail/ustring_conversions.h"
@@ -103,9 +107,17 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-template<>
-struct pimpl_impl<xls_parser> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<xls_parser<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
+	using audit::with_auditor<auditor_type>::auditor;
+
+	explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor}
+	{}
+
 	std::stack<context> m_context_stack;
 	
 	template <typename T>
@@ -155,7 +167,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 
 	std::string getStandardDateFormat(int xf_index)
 	{
-		log_scope(xf_index);
+		audit::scope audit_scope{auditor(), [&]{ return "xf_index"_v = xf_index; }};
 		static standard_date_formats formats;
 		if (xf_index >= m_context_stack.top().m_xf_records.size())
 		{
@@ -174,7 +186,9 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 
 	std::string xlsDateToString(double xls_date, std::string date_fmt)
 	{
-		log_scope(xls_date, date_fmt);
+		audit::scope audit_scope{auditor(), [&]{
+			return "xls_date"_v = xls_date, "date_fmt"_v = date_fmt;
+		}};
 		time_t time = rint((xls_date - m_context_stack.top().m_date_shift) * 86400);
 		char buffer[128];
     struct tm time_buffer;
@@ -184,7 +198,9 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 
 	std::string formatXLSNumber(double number, short int xf_index)
 	{
-		log_scope(number, xf_index);
+		audit::scope audit_scope{auditor(), [&]{
+			return "number"_v = number, "xf_index"_v = xf_index;
+		}};
 		std::string date_fmt = getStandardDateFormat(xf_index);
 		if (date_fmt != "")
 			return xlsDateToString(number, date_fmt);
@@ -198,7 +214,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 
 	std::string parseXNum(std::vector<unsigned char>::const_iterator src,int xf_index)
 	{
-		log_scope(xf_index);
+		audit::scope audit_scope{auditor(), [&]{ return "xf_index"_v = xf_index; }};
 		union
 		{
 			unsigned char xls_num[8];
@@ -214,7 +230,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 
 	std::string parseRkRec(std::vector<unsigned char>::const_iterator src, short int xf_index)
 	{
-		log_scope(xf_index);
+		audit::scope audit_scope{auditor(), [&]{ return "xf_index"_v = xf_index; }};
 		double number;
 		if ((*src) & 0x02)
 			number = (double)(getS32LittleEndian(src) >> 2);
@@ -242,7 +258,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 
 	std::string parseXLUnicodeString(std::vector<unsigned char>::const_iterator* src, std::vector<unsigned char>::const_iterator src_end, const std::vector<size_t>& record_sizes, size_t& record_index, size_t& record_pos)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		if (record_pos >= record_sizes[record_index])
 		{
 			size_t diff = record_pos - record_sizes[record_index];
@@ -286,7 +302,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 		int after_text_block_len = 0;
 		if (flags & 0x08) // rich text
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			if (src_end - *src < 2)
 			{
 				emit_message(make_error_ptr("Unexpected end of buffer."));
@@ -299,7 +315,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 		}
 		if (flags & 0x04) // asian
 		{
-			log_scope();
+			audit::scope audit_scope{auditor(), audit::no_context};
 			if (src_end - *src < 4)
 			{
 				emit_message(make_error_ptr("Unexpected end of buffer."));
@@ -310,7 +326,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 			*src += 4;
 			record_pos += 4;
 		}
-		log_entry(after_text_block_len);
+		audit::entry(auditor(), [&]{ return "after_text_block_len"_v = after_text_block_len; });
 		std::string dest;
 		std::vector<unsigned char>::const_iterator s = *src;
 		int char_count = 0;
@@ -326,7 +342,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 				emit_message(make_error_ptr("Record boundary crossed.", record_pos, record_sizes[record_index]));
 			if (record_pos == record_sizes[record_index])
 			{
-				log_scope();
+				audit::scope audit_scope{auditor(), audit::no_context};
 				record_index++;
 				record_pos = 0;
 				// At the beginning of each CONTINUE record the option flags byte is repeated.
@@ -404,7 +420,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 
 	void parseSharedStringTable(const std::vector<unsigned char>& sst_buf)
 	{
-		log_scope(sst_buf.size());
+		audit::scope audit_scope{auditor(), [&]{ return "sst_size"_v = sst_buf.size(); }};
 		if (sst_buf.size() < 8)
 		{
 			emit_message(make_error_ptr("Error while parsing shared string table. Buffer must contain at least 8 bytes.", sst_buf.size()));
@@ -420,7 +436,9 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 
 	std::string cellText(int row, int col, const std::string& s)
 	{
-		log_scope(row, col, s);
+		audit::scope audit_scope{auditor(), [&]{
+			return "row"_v = row, "col"_v = col, "s"_v = s;
+		}};
 		std::string r;
 		while (row > m_context_stack.top().m_last_row)
 		{
@@ -441,7 +459,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 
 	void processRecord(int rec_type, const std::vector<unsigned char>& rec, std::string& text)
 	{
-		log_scope(rec_type);
+		audit::scope audit_scope{auditor(), [&]{ return "rec_type"_v = rec_type; }};
 		if (rec_type != XLS_CONTINUE && m_context_stack.top().m_prev_rec_type == XLS_SST)
 			parseSharedStringTable(m_context_stack.top().m_shared_string_table_buf);
 		switch (rec_type)
@@ -489,7 +507,9 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 				const auto record_size = rec.size();
 				m_context_stack.top().m_shared_string_table_record_sizes.push_back(record_size);
 				const auto record_size_index = m_context_stack.top().m_shared_string_table_record_sizes.size() - 1;
-				log_entry(record_size_index, record_size);
+				audit::entry(auditor(), [&]{
+					return "record_size_index"_v = record_size_index, "record_size"_v = record_size;
+				});
 				return;
 			}
 			case XLS_DATE_1904:
@@ -503,7 +523,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 			}
 			case XLS_FILEPASS:
 			{
-				log_scope();
+				audit::scope audit_scope{auditor(), audit::no_context};
 				if (rec.size() >= 2)
 				{
 					U16 encryption_type = getU16LittleEndian(rec.begin());
@@ -726,7 +746,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 
 	void parseXLS(thread_safe_ole_stream_reader& reader, std::string& text)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		m_context_stack.top().m_xf_records.clear();
 		m_context_stack.top().m_date_shift = 25569.0;
 		m_context_stack.top().m_shared_string_table.clear();
@@ -746,7 +766,9 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 			throw_if (oleEof(reader), "BOF record not found", errors::uninterpretable_data{});
 			U16 rec_type, rec_len;
 			throw_if (!reader.readU16(rec_type) || !reader.readU16(rec_len), reader.getLastError());
-			log_entry(rec_type, rec_len);
+			audit::entry(auditor(), [&]{
+				return "rec_type"_v = rec_type, "rec_len"_v = rec_len;
+			});
 			enum bof_record_types
 			{
 				BOF_BIFF_2 = 0x009,
@@ -766,7 +788,9 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 						{
 							U16 biff_ver, data_type;
 							throw_if (!reader.readU16(biff_ver) || !reader.readU16(data_type), reader.getLastError());
-							log_entry(biff_ver, data_type);
+							audit::entry(auditor(), [&]{
+								return "biff_ver"_v = biff_ver, "data_type"_v = data_type;
+							});
 							//On microsoft site there is documentation only for "BIFF8". Documentation from OpenOffice is better:
 							/*
 								BIFF5:
@@ -798,7 +822,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 							*/
 							if(biff_ver == 0x600)
 							{
-								log_scope();
+								audit::scope audit_scope{auditor(), audit::no_context};
 								rec.resize(8);
 								read_status = reader.read(&*rec.begin(), 8);
 								m_context_stack.top().m_biff_version = BIFF8;
@@ -806,7 +830,7 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 							}
 							else
 							{
-								log_scope();
+								audit::scope audit_scope{auditor(), audit::no_context};
 								m_context_stack.top().m_biff_version = BIFF5;
 								bof_struct_size = 8;
 							}
@@ -814,21 +838,21 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 						}
 						case BOF_BIFF_3:
 						{
-							log_scope();
+							audit::scope audit_scope{auditor(), audit::no_context};
 							m_context_stack.top().m_biff_version = BIFF3;
 							bof_struct_size = 6;
 							break;
 						}
 						case BOF_BIFF_4:
 						{
-							log_scope();
+							audit::scope audit_scope{auditor(), audit::no_context};
 							m_context_stack.top().m_biff_version = BIFF4;
 							bof_struct_size = 6;
 							break;
 						}
 						default:
 						{
-							log_scope();
+							audit::scope audit_scope{auditor(), audit::no_context};
 							m_context_stack.top().m_biff_version = BIFF2;
 							bof_struct_size = 4;
 						}
@@ -904,11 +928,14 @@ struct pimpl_impl<xls_parser> : pimpl_impl_base
 	}
 };
 
-xls_parser::xls_parser()
-{
-}
+template<typename auditor_type>
+xls_parser<auditor_type>::xls_parser(audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<xls_parser<auditor_type>>(auditor),
+	  audit::with_auditor<auditor_type>(auditor)
+{}
 
-void pimpl_impl<xls_parser>::parse(const data_source& data, const message_callbacks& emit_message)
+template<typename auditor_type>
+void pimpl_impl<xls_parser<auditor_type>>::parse(const data_source& data, const message_callbacks& emit_message)
 {
 	auto storage = std::make_unique<thread_safe_ole_storage>(data.span());
 	throw_if (!storage->isValid(), storage->getLastError());
@@ -925,9 +952,10 @@ void pimpl_impl<xls_parser>::parse(const data_source& data, const message_callba
 	emit_message(document::close_document{});
 }
 
-std::string pimpl_impl<xls_parser>::parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message)
+template<typename auditor_type>
+std::string pimpl_impl<xls_parser<auditor_type>>::parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message)
 {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
 	scoped::stack_push<context> context_guard{m_context_stack, context{.emit_message = emit_message}};
 	try
 	{
@@ -952,7 +980,8 @@ std::string pimpl_impl<xls_parser>::parse(thread_safe_ole_storage& storage, cons
 	}
 }
 
-continuation xls_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation xls_parser<auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
@@ -967,9 +996,13 @@ continuation xls_parser::operator()(message_ptr msg, const message_callbacks& em
 	return continuation::proceed;
 }
 
-std::string xls_parser::parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message) // TODO: needs to be removed finally
+template<typename auditor_type>
+std::string xls_parser<auditor_type>::parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message) // TODO: needs to be removed finally
 {
 	return impl().parse(storage, emit_message);
 }
+
+template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser<docwire::audit::legacy_log_audit>;
 
 } // namespace docwire
