@@ -933,7 +933,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 
 		void ClearTextualElements()
 		{
-			std::list<textual_element*>::iterator it = m_textual_elements.begin();
+			typename std::list<textual_element*>::iterator it = m_textual_elements.begin();
 			while (it != m_textual_elements.end())
 			{
 				delete (*it);
@@ -954,7 +954,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 		void AddTextFromTextualElements()
 		{
 			m_textual_elements.sort(CompareElements);
-			std::list<textual_element*>::iterator it = m_textual_elements.begin();
+			typename std::list<textual_element*>::iterator it = m_textual_elements.begin();
 			while (it != m_textual_elements.end())
 			{
 				m_text_body += (*it)->m_text;
@@ -1868,7 +1868,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 				}
 
 				//associate xml element with handler, its quite fast
-				std::map<std::string, XmlElementHandler>::iterator handler = m_handlers.find(m_current_element.m_name);
+				typename std::map<std::string, XmlElementHandler>::iterator handler = m_handlers.find(m_current_element.m_name);
 				if (handler != m_handlers.end())
 				{
 					m_xml_reader->ReadXmlAttributes(m_current_element);
@@ -1955,7 +1955,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 					continue;
 
 				//associate xml element with handler, its quite fast
-				std::map<std::string, XmlElementHandler>::iterator handler = m_handlers.find(m_current_element.m_name);
+				typename std::map<std::string, XmlElementHandler>::iterator handler = m_handlers.find(m_current_element.m_name);
 				if (handler != m_handlers.end())
 				{
 					m_xml_reader->ReadXmlAttributes(m_current_element);
