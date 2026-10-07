@@ -2117,7 +2117,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 	iwork_content::iwork_type getIWorkType(xml_reader& xml_reader)
 	{
 		audit::scope audit_scope{auditor(), audit::no_context};
-		xml_reader::xml_element current_element;
+		typename xml_reader::xml_element current_element;
 		// warning TODO: Check how encrypted files really look like
 		while (true)
 		{
@@ -2158,7 +2158,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 			audit::auditor_ref<auditor_type>(auditor()));
 
 		throw_if (!zipfile.loadDirectory());
-		iwork_content::iwork_type iwork_type = getIWorkType(xml_reader);
+		typename iwork_content::iwork_type iwork_type = getIWorkType(xml_reader);
 		throw_if (iwork_type == iwork_content::encrypted, errors::file_encrypted{});
 		iwork_content.setType(iwork_type);
 		text.clear();
