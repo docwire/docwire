@@ -92,10 +92,14 @@ struct pimpl_impl<ocr_parser<auditor_type>>
     : with_pimpl_owner<ocr_parser<auditor_type>>,
       private audit::with_auditor<auditor_type>
 {
+    using with_pimpl_owner<ocr_parser<auditor_type>>::owner;
     using audit::with_auditor<auditor_type>::auditor;
 
-    explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor)
-        : audit::with_auditor<auditor_type>{auditor}
+    explicit pimpl_impl(
+        ocr_parser<auditor_type>& owner,
+        audit::auditor_ref<auditor_type> auditor)
+        : with_pimpl_owner<ocr_parser<auditor_type>>{owner},
+          audit::with_auditor<auditor_type>{auditor}
     {}
     std::vector<language> m_languages;
     ocr_confidence_threshold m_ocr_confidence_threshold;
