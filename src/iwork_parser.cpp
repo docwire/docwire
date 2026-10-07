@@ -654,7 +654,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 				m_columns_count = 0;
 				m_current_column = 0;
 				m_in_pm = false;
-				m_text.reserve(20480);
+				this->m_text.reserve(20480);
 			}
 
 			void AddCell()
@@ -743,7 +743,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 					}
 				}
 				if (!m_in_pm)
-					*m_text_pointer += m_current_cell.m_value;
+					*this->m_text_pointer += m_current_cell.m_value;
 				else
 					m_pms[m_selected_pm] += m_current_cell.m_value;
 				m_current_cell.Clear();
@@ -766,12 +766,12 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 				if (new_row)
 				{
 					for (size_t i = m_current_column; i < m_columns_count; ++i)
-						*m_text_pointer += "	";
-					*m_text_pointer += "\n";
+						*this->m_text_pointer += "	";
+					*this->m_text_pointer += "\n";
 					m_current_column = 0;
 				}
 				else
-					*m_text_pointer += "	";
+					*this->m_text_pointer += "	";
 			}
 		};
 
@@ -811,7 +811,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 					{
 						if (m_series_count != -1 && i >= m_series_count)
 							break;
-						m_text += (*it) + "\n";
+						this->m_text += (*it) + "\n";
 						++it;
 						++i;
 					}
@@ -824,7 +824,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 					{
 						if (m_series_count != -1 && i >= m_series_count)
 							break;
-						m_text += (*it) + "\n";
+						this->m_text += (*it) + "\n";
 						++it;
 						++i;
 					}
