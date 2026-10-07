@@ -647,8 +647,10 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 			std::map<std::string, std::string> m_pms;
 			std::string m_selected_pm;
 			std::list<int> m_cells_per_rows;
+			audit::auditor_ref<auditor_type> m_auditor;
 
-			table()
+			explicit table(audit::auditor_ref<auditor_type> auditor)
+				: m_auditor{auditor}
 			{
 				m_rows_count = 0;
 				m_columns_count = 0;
@@ -1004,7 +1006,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 				table* table = NULL;
 				try
 				{
-					table = new iwork_content::table();
+					table = new iwork_content::table(m_auditor);
 					m_current_table = table;
 					m_current_textual = table;
 					m_in_textual_element = true;
