@@ -26,6 +26,9 @@
 #include "rtf_parser.h"
 #include "txt_parser.h"
 #include "xml_parser.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
+#include <utility>
 
 namespace docwire
 {
@@ -33,37 +36,49 @@ namespace docwire
 /**
  * @brief A composite parser handling various office document formats.
  * @tparam safety_level The safety policy to use.
+ * @tparam auditor_type The injected auditor type.
  */
-template <safety_policy safety_level = default_safety_level>
-class office_formats_parser : public pipeline::transformer_element<office_formats_parser<safety_level>>
+template <safety_policy safety_level = default_safety_level,
+          typename auditor_type = audit::null_auditor>
+class office_formats_parser
+    : public pipeline::transformer_element<office_formats_parser<safety_level, auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
-    public:
-        /**
-         * @brief Executes the composite chain of format parsers.
-         */
-        continuation operator()(message_ptr msg, const message_callbacks& emit_message)
-        {
-            return m_chain(msg, emit_message);
-        }
+public:
+    explicit office_formats_parser(audit::auditor_ref<auditor_type> auditor = {})
+        : audit::with_auditor<auditor_type>(auditor),
+          m_chain{make_chain(audit::auditor_ref<auditor_type>(auditor))}
+    {}
 
-    private:
-        static auto make_chain()
-        {
-            return html_parser{} |
-                doc_parser{} |
-                pdf_parser{} |
-                xls_parser{} |
-                xlsb_parser<>{} |
-                iwork_parser{} |
-                ppt_parser{} |
-                rtf_parser{} |
-                odf_ooxml_parser<safety_level>{} |
-                odfxml_parser<safety_level>{} |
-                xml_parser<safety_level>{} |
-                txt_parser{};
-        }
+    /**
+     * @brief Executes the composite chain of format parsers.
+     */
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
+    {
+        return m_chain(msg, emit_message);
+    }
 
-        decltype(make_chain()) m_chain{make_chain()};
+private:
+    using audit::with_auditor<auditor_type>::auditor;
+
+    static auto make_chain(audit::auditor_ref<auditor_type> auditor)
+    {
+        return html_parser<auditor_type>{auditor} |
+            doc_parser<auditor_type>{auditor} |
+            pdf_parser<auditor_type>{auditor} |
+            xls_parser<auditor_type>{auditor} |
+            xlsb_parser<auditor_type>{auditor} |
+            iwork_parser{} |
+            ppt_parser<auditor_type>{auditor} |
+            rtf_parser<auditor_type>{auditor} |
+            odf_ooxml_parser<safety_level, auditor_type>{auditor} |
+            odfxml_parser<safety_level, auditor_type>{auditor} |
+            xml_parser<safety_level, auditor_type>{auditor} |
+            txt_parser<auditor_type>{parse_paragraphs{true}, parse_lines{true}, auditor};
+    }
+
+    using chain_type = decltype(make_chain(std::declval<audit::auditor_ref<auditor_type>>()));
+    chain_type m_chain;
 };
 
 } // namespace docwire

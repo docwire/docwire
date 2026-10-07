@@ -548,9 +548,9 @@ int main(int argc, char* argv[])
 
 		auto local_prefix =
 			content_type::detector{}
-			| archives_parser{}
-			| office_formats_parser{}
-			| mail_parser{}
+			| archives_parser<>{}
+			| office_formats_parser<>{}
+			| mail_parser<>{}
 			| ocr_parser<>{
 				vm["language"].as<std::vector<language>>(),
 				threshold_arg}
