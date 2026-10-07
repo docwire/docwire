@@ -15,19 +15,28 @@
 #include "iwork_export.h"
 #include "pipeline/element_base.hpp"
 #include "pimpl.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 
 namespace docwire
 {
 
-class DOCWIRE_IWORK_EXPORT iwork_parser : public pipeline::transformer_element<iwork_parser>, public with_pimpl<iwork_parser>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_IWORK_EXPORT iwork_parser
+    : public pipeline::transformer_element<iwork_parser<auditor_type>>,
+      public with_pimpl<iwork_parser<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
-	public:
-		iwork_parser();
+public:
+	explicit iwork_parser(audit::auditor_ref<auditor_type> auditor = {});
 
-		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
-	private:
-		using with_pimpl<iwork_parser>::impl;
+private:
+	using with_pimpl<iwork_parser<auditor_type>>::impl;
+	using audit::with_auditor<auditor_type>::auditor;
+
+	friend pimpl_impl<iwork_parser<auditor_type>>;
 };
 
 } // namespace docwire

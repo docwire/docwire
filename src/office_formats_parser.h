@@ -68,7 +68,7 @@ private:
             pdf_parser<auditor_type>{auditor} |
             xls_parser<auditor_type>{auditor} |
             xlsb_parser<auditor_type>{auditor} |
-            iwork_parser{} |
+            iwork_parser<auditor_type>{auditor} |
             ppt_parser<auditor_type>{auditor} |
             rtf_parser<auditor_type>{auditor} |
             odf_ooxml_parser<safety_level, auditor_type>{auditor} |

@@ -18,7 +18,13 @@
 #include <stack>
 #include <stdlib.h>
 #include <iostream>
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
+#include "serialization_message.h" // IWYU pragma: keep
 #include "serialization_data_source.h" // IWYU pragma: keep
 #include <stdio.h>
 #include <sstream>
@@ -36,9 +42,15 @@ namespace docwire
 {
 
 //Functions for parsing date/duration. Not sure if they should be here (in this file)
-static std::string ParseDate(std::string& format, long value)
+template<typename auditor_type>
+static std::string ParseDate(
+	std::string& format,
+	long value,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(format, value);
+	audit::scope audit_scope{auditor, [&]{
+		return "format"_v = format, "value"_v = value;
+	}};
 	//by default value "0" is "1st january 2001 midnight". At least in iWorks
 	std::ostringstream os;
 	// warning TODO: mktime is not working for some reason... I will use my own function.
@@ -183,9 +195,15 @@ static std::string ParseDate(std::string& format, long value)
 	return os.str();
 }
 
-static std::string ParseDuration(std::string& format, long value)
+template<typename auditor_type>
+static std::string ParseDuration(
+	std::string& format,
+	long value,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(format, value);
+	audit::scope audit_scope{auditor, [&]{
+		return "format"_v = format, "value"_v = value;
+	}};
 	std::ostringstream os;
 	std::string element;
 	for (int i = 0; i < format.length(); ++i)
@@ -229,9 +247,12 @@ static std::string ParseDuration(std::string& format, long value)
 	return os.str();
 }
 
-static std::string find_main_xml_file(const zip_reader& unzip)
+template<typename auditor_type>
+static std::string find_main_xml_file(
+	const zip_reader& unzip,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	if (unzip.exists("index.xml"))
 		return "index.xml";
 	if (unzip.exists("index.apxl"))
@@ -262,9 +283,17 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-template<>
-struct pimpl_impl<iwork_parser> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<iwork_parser<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
+	using audit::with_auditor<auditor_type>::auditor;
+
+	explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor}
+	{}
+
 	void parse(const data_source& data, const message_callbacks& emit_message);
 	std::stack<context> m_context_stack;
 
@@ -280,19 +309,26 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 			zip_reader* m_zipfile;
 			bool m_done;
 			std::string m_xml_file;
+			audit::auditor_ref<auditor_type> m_auditor;
 
 		public:
-			data_source(zip_reader& zipfile, std::string& xml_file)
+			data_source(
+				zip_reader& zipfile,
+				std::string& xml_file,
+				audit::auditor_ref<auditor_type> auditor)
+				: m_zipfile{&zipfile},
+				  m_done{false},
+				  m_xml_file{xml_file},
+				  m_auditor{auditor}
 			{
-				m_zipfile = &zipfile;
-				m_done = false;
-				m_xml_file = xml_file;
 			}
 
 			void ReadChunk(char* chunk, int len, bool error_if_no_data, int& readed)
 			try
 			{
-				log_scope(len, error_if_no_data);
+				audit::scope audit_scope{m_auditor, [&]{
+					return "len"_v = len, "error_if_no_data"_v = error_if_no_data;
+				}};
 				chunk[0] = '\0';
 				if (m_done)
 				{
@@ -356,6 +392,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 			int m_chunk_len;
 			char m_chunk[1025];
 			int m_pointer;
+			audit::auditor_ref<auditor_type> m_auditor;
 
 		public:
 			//SkipAttributes is faster than ReadXmlAttributes. If I dont need to know attributes,
@@ -363,7 +400,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 
 			void SkipAttributes()
 			{
-				log_scope();
+				audit::scope audit_scope{m_auditor, audit::no_context};
 				if (!m_tag_opened)
 					return;
 				while (true)
@@ -384,7 +421,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 
 			void ReadXmlAttributes(xml_element& xml_element)
 			{
-				log_scope();
+				audit::scope audit_scope{m_auditor, audit::no_context};
 				if (!m_tag_opened)
 					return;
 				bool reading_attribute_name = true;
@@ -442,9 +479,12 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 				}
 			}
 
-			xml_reader(data_source& data_source)
+			xml_reader(
+				data_source& source,
+				audit::auditor_ref<auditor_type> auditor)
+				: m_data_source{&source},
+				  m_auditor{auditor}
 			{
-				m_data_source = &data_source;
 				m_tag_opened = false;
 				m_pointer = 0;
 				m_chunk_len = 0;
@@ -453,7 +493,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 
 			void GetNextElement(xml_element& xml_element)
 			{
-				log_scope();
+				audit::scope audit_scope{m_auditor, audit::no_context};
 				xml_element.Clear();
 				char c;
 				while (true)
@@ -629,7 +669,10 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 					if (cell_style != NULL && cell_style->m_duration_format.length() > 0)
 						duration_format = cell_style->m_duration_format;
 					long value = strtol(m_current_cell.m_value.c_str(), NULL, 0);
-					m_current_cell.m_value = ParseDuration(duration_format, value);
+					m_current_cell.m_value = ParseDuration(
+						duration_format,
+						value,
+						audit::auditor_ref<auditor_type>(m_auditor));
 				}
 				else if (m_current_cell.m_is_date)
 				{
@@ -637,7 +680,10 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 					if (cell_style != NULL && cell_style->m_date_format.length() > 0)
 						date_format = cell_style->m_date_format;
 					long value = strtol(m_current_cell.m_value.c_str(), NULL, 0);
-					m_current_cell.m_value = ParseDate(date_format, value);
+					m_current_cell.m_value = ParseDate(
+						date_format,
+						value,
+						audit::auditor_ref<auditor_type>(m_auditor));
 				}
 				else if (m_current_cell.m_is_number)
 				{
@@ -833,11 +879,15 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 		int m_footnote_count;
 		iwork_type m_iwork_type;
 		xml_reader* m_xml_reader;
+		audit::auditor_ref<auditor_type> m_auditor;
 		std::map<std::string, XmlElementHandler> m_handlers;
 
-		iwork_content(xml_reader& xml_reader)
+		iwork_content(
+			xml_reader& xml_reader,
+			audit::auditor_ref<auditor_type> auditor)
+			: m_xml_reader{&xml_reader},
+			  m_auditor{auditor}
 		{
-			m_xml_reader = &xml_reader;
 			m_in_annotation = false;
 			m_text_body.reserve(1024 * 1024);
 			m_notes.reserve(20480);
@@ -1836,6 +1886,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 
 		xml_reader* m_xml_reader;
 		attributes::metadata* m_metadata;
+		audit::auditor_ref<auditor_type> m_auditor;
 		bool m_in_metadata;
 		bool m_in_authors;
 		bool m_in_publication_info;
@@ -1848,10 +1899,14 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 		std::string m_creation_date;
 		std::string m_last_modify_date;
 
-		iwork_metadata_content(xml_reader& xml_reader, attributes::metadata& metadata)
+		iwork_metadata_content(
+			xml_reader& xml_reader,
+			attributes::metadata& metadata,
+			audit::auditor_ref<auditor_type> auditor)
+			: m_xml_reader{&xml_reader},
+			  m_metadata{&metadata},
+			  m_auditor{auditor}
 		{
-			m_xml_reader = &xml_reader;
-			m_metadata = &metadata;
 			m_in_metadata = false;
 			m_in_authors = false;
 			m_in_last_modify_date = false;
@@ -1863,7 +1918,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 
 		void ParseMetaData(const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			while (true)
 			{
 				m_xml_reader->GetNextElement(m_current_element);
@@ -2029,12 +2084,23 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 		}
 	};
 
-	void ReadMetadata(zip_reader& zipfile, attributes::metadata& metadata, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+	void ReadMetadata(
+		zip_reader& zipfile,
+		attributes::metadata& metadata,
+		const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
 	{
-		log_scope();
-		data_source xml_data_source(zipfile, m_context_stack.top().m_xml_file);
-		xml_reader xml_reader(xml_data_source);
-		iwork_metadata_content metadata_content(xml_reader, metadata);
+		audit::scope audit_scope{auditor(), audit::no_context};
+		data_source xml_data_source(
+			zipfile,
+			m_context_stack.top().m_xml_file,
+			audit::auditor_ref<auditor_type>(auditor()));
+		xml_reader xml_reader(
+			xml_data_source,
+			audit::auditor_ref<auditor_type>(auditor()));
+		iwork_metadata_content metadata_content(
+			xml_reader,
+			metadata,
+			audit::auditor_ref<auditor_type>(auditor()));
 
 		throw_if (!zipfile.loadDirectory());
 		throw_if (getIWorkType(xml_reader) == iwork_content::encrypted, errors::file_encrypted{});
@@ -2050,7 +2116,7 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 
 	iwork_content::iwork_type getIWorkType(xml_reader& xml_reader)
 	{
-		log_scope();
+		audit::scope audit_scope{auditor(), audit::no_context};
 		xml_reader::xml_element current_element;
 		// warning TODO: Check how encrypted files really look like
 		while (true)
@@ -2079,10 +2145,17 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 
 	void parseIWork(zip_reader& zipfile, std::string& text)
 	{
-		log_scope();
-		data_source xml_data_source(zipfile, m_context_stack.top().m_xml_file);
-		xml_reader xml_reader(xml_data_source);
-		iwork_content iwork_content(xml_reader);
+		audit::scope audit_scope{auditor(), audit::no_context};
+		data_source xml_data_source(
+			zipfile,
+			m_context_stack.top().m_xml_file,
+			audit::auditor_ref<auditor_type>(auditor()));
+		xml_reader xml_reader(
+			xml_data_source,
+			audit::auditor_ref<auditor_type>(auditor()));
+		iwork_content iwork_content(
+			xml_reader,
+			audit::auditor_ref<auditor_type>(auditor()));
 
 		throw_if (!zipfile.loadDirectory());
 		iwork_content::iwork_type iwork_type = getIWorkType(xml_reader);
@@ -2114,11 +2187,18 @@ struct pimpl_impl<iwork_parser> : pimpl_impl_base
 	}
 };
 
-iwork_parser::iwork_parser() = default;
+template<typename auditor_type>
+iwork_parser<auditor_type>::iwork_parser(audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<iwork_parser<auditor_type>>(auditor),
+	  audit::with_auditor<auditor_type>(auditor)
+{}
 
-void pimpl_impl<iwork_parser>::parse(const docwire::data_source& data, const message_callbacks& emit_message)
+template<typename auditor_type>
+void pimpl_impl<iwork_parser<auditor_type>>::parse(
+	const docwire::data_source& data,
+	const message_callbacks& emit_message)
 {
-	log_scope(data);
+	audit::scope audit_scope{auditor(), [&]{ return "data"_v = data; }};
 	scoped::stack_push<context> context_guard{m_context_stack, {.emit_message = emit_message}};
 	zip_reader unzip{data};
 	try
@@ -2131,7 +2211,9 @@ void pimpl_impl<iwork_parser>::parse(const docwire::data_source& data, const mes
 	}
 	try
 	{
-		m_context_stack.top().m_xml_file = find_main_xml_file(unzip);
+		m_context_stack.top().m_xml_file = find_main_xml_file(
+			unzip,
+			audit::auditor_ref<auditor_type>(auditor()));
 		emit_message(document::document
 			{
 				.metadata=[this, &unzip, emit_message]()
@@ -2152,8 +2234,12 @@ void pimpl_impl<iwork_parser>::parse(const docwire::data_source& data, const mes
 	}
 }
 
-continuation iwork_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation iwork_parser<auditor_type>::operator()(
+	message_ptr msg,
+	const message_callbacks& emit_message)
 {
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
 
@@ -2170,5 +2256,8 @@ continuation iwork_parser::operator()(message_ptr msg, const message_callbacks& 
 	return continuation::proceed;
 }
 
+
+template class DOCWIRE_IWORK_EXPORT iwork_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_IWORK_EXPORT iwork_parser<docwire::audit::legacy_log_audit>;
 
 } // namespace docwire
