@@ -551,7 +551,7 @@ int main(int argc, char* argv[])
 			| archives_parser{}
 			| office_formats_parser{}
 			| mail_parser{}
-			| ocr_parser{
+			| ocr_parser<>{
 				vm["language"].as<std::vector<language>>(),
 				threshold_arg}
 			| maybe(vm.count("max_nodes_number"), [&] {

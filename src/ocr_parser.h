@@ -21,6 +21,8 @@
 #include <optional>
 #include "pimpl.h"
 #include <vector>
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 
 namespace docwire
 {
@@ -36,18 +38,24 @@ struct ocr_confidence_threshold { std::optional<float> v; };
 struct ocr_data_path { std::filesystem::path v; };
 struct ocr_timeout { std::optional<int32_t> v; };
 
-class DOCWIRE_OCR_EXPORT ocr_parser : public pipeline::transformer_element<ocr_parser>, public with_pimpl<ocr_parser>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_OCR_EXPORT ocr_parser
+    : public pipeline::transformer_element<ocr_parser<auditor_type>>,
+      public with_pimpl<ocr_parser<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
 private:
-    using with_pimpl<ocr_parser>::impl;
-    friend pimpl_impl<ocr_parser>;
+    using with_pimpl<ocr_parser<auditor_type>>::impl;
+    using audit::with_auditor<auditor_type>::auditor;
+    friend pimpl_impl<ocr_parser<auditor_type>>;
 
 public:
 
-    ocr_parser(const std::vector<language>& languages = {},
+    explicit ocr_parser(const std::vector<language>& languages = {},
         ocr_confidence_threshold ocr_confidence_threshold_arg = {},
         ocr_timeout ocr_timeout_arg = {},
-        ocr_data_path ocr_data_path_arg = {});
+        ocr_data_path ocr_data_path_arg = {},
+        audit::auditor_ref<auditor_type> auditor = {});
 
     continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 

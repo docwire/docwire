@@ -26,8 +26,12 @@
 #include <filesystem>
 #include <cstdlib>
 #include <magic_enum/magic_enum_iostream.hpp>
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include "lru_memory_cache.h"
 #include <mutex>
 #include "nested_exception.h"
@@ -83,10 +87,16 @@ struct context
 
 } // anonymous namespace
 
-template<>
-struct pimpl_impl<ocr_parser> : with_pimpl_owner<ocr_parser>
+template<typename auditor_type>
+struct pimpl_impl<ocr_parser<auditor_type>>
+    : with_pimpl_owner<ocr_parser<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
-    pimpl_impl(ocr_parser& owner) : with_pimpl_owner{owner} {}
+    using audit::with_auditor<auditor_type>::auditor;
+
+    explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor)
+        : audit::with_auditor<auditor_type>{auditor}
+    {}
     std::vector<language> m_languages;
     ocr_confidence_threshold m_ocr_confidence_threshold;
     ocr_timeout m_ocr_timeout;
@@ -106,9 +116,10 @@ struct pimpl_impl<ocr_parser> : with_pimpl_owner<ocr_parser>
     }
 };  
 
-Pix* pixToGrayscale(Pix* pix)
+template<typename auditor_type>
+Pix* pixToGrayscale(Pix* pix, audit::auditor_ref<auditor_type> auditor)
 {
-    log_scope();
+    audit::scope audit_scope{auditor, audit::no_context};
     Pix* output{};
     switch(pix->d)
     {
@@ -135,18 +146,20 @@ Pix* pixToGrayscale(Pix* pix)
     return output;
 }
 
-Pix* binarizePix(Pix* pix)
+template<typename auditor_type>
+Pix* binarizePix(Pix* pix, audit::auditor_ref<auditor_type> auditor)
 {
-    log_scope();
+    audit::scope audit_scope{auditor, audit::no_context};
     Pix* temp{ NULL };
     // 200x200 - size of the binarized tiles; 0, 0 - no smoothing; 0.1 - typical scorefract
     pixOtsuAdaptiveThreshold(pix, 200, 200, 0, 0, 0.1, NULL, &temp);
     return temp;
 }
 
-Pix* scalePix(Pix* pix)
+template<typename auditor_type>
+Pix* scalePix(Pix* pix, audit::auditor_ref<auditor_type> auditor)
 {
-    log_scope();
+    audit::scope audit_scope{auditor, audit::no_context};
     Pix* scaled{ nullptr };
     if(pix->xres && pix->yres)
     {
@@ -186,9 +199,12 @@ namespace
 
     using pix_unique_ptr = std::unique_ptr<PIX, decltype([](PIX* pix) { pixDestroy(&pix); })>;
 
-std::shared_ptr<PIX> load_pix(const data_source& data)
+template<typename auditor_type>
+std::shared_ptr<PIX> load_pix(
+    const data_source& data,
+    audit::auditor_ref<auditor_type> auditor)
 {
-    log_scope(data);
+    audit::scope audit_scope{auditor, [&]{ return "data"_v = data; }};
     static thread_local lru_memory_cache<unique_identifier, std::shared_ptr<PIX>> pix_cache;
     
     return pix_cache.get_or_create(data.id(),
@@ -212,9 +228,10 @@ std::shared_ptr<PIX> load_pix(const data_source& data)
         });
 }
 
-ocr_data_path default_tessdata_path()
+template<typename auditor_type>
+ocr_data_path default_tessdata_path(audit::auditor_ref<auditor_type> auditor)
 {
-    log_scope();
+    audit::scope audit_scope{auditor, audit::no_context};
     std::filesystem::path def_tessdata_path = resource_path("tessdata-fast").string();
     throw_if (!std::filesystem::exists(def_tessdata_path),
         "Could not find tessdata in default location", def_tessdata_path, errors::program_corrupted{});
@@ -235,21 +252,39 @@ const std::vector<mime_type> supported_mime_types
 
 } // anonymous namespace
 
-ocr_parser::ocr_parser(const std::vector<language>& languages,
-                     ocr_confidence_threshold ocr_confidence_threshold_arg,
-                     ocr_timeout ocr_timeout_arg,
-                     ocr_data_path ocr_data_path_arg)
+template<typename auditor_type>
+ocr_parser<auditor_type>::ocr_parser(
+    const std::vector<language>& languages,
+    ocr_confidence_threshold ocr_confidence_threshold_arg,
+    ocr_timeout ocr_timeout_arg,
+    ocr_data_path ocr_data_path_arg,
+    audit::auditor_ref<auditor_type> auditor)
+    : with_pimpl<ocr_parser<auditor_type>>(auditor),
+      audit::with_auditor<auditor_type>(auditor)
 {
-    log_scope(languages, ocr_confidence_threshold_arg, ocr_timeout_arg, ocr_data_path_arg);
+    audit::scope audit_scope{this->auditor(), [&]{
+        return
+            "languages"_v = languages,
+            "ocr_confidence_threshold_arg"_v = ocr_confidence_threshold_arg,
+            "ocr_timeout_arg"_v = ocr_timeout_arg,
+            "ocr_data_path_arg"_v = ocr_data_path_arg;
+    }};
     impl().m_languages = languages;
     impl().m_ocr_confidence_threshold = ocr_confidence_threshold_arg;
     impl().m_ocr_timeout = ocr_timeout_arg;
-    impl().m_ocr_data_path = ocr_data_path_arg.v.empty() ? default_tessdata_path() : ocr_data_path_arg;
+    impl().m_ocr_data_path = ocr_data_path_arg.v.empty()
+        ? default_tessdata_path(audit::auditor_ref<auditor_type>(this->auditor()))
+        : ocr_data_path_arg;
 }
 
-void ocr_parser::parse(const data_source& data, const std::vector<language>& languages)
+template<typename auditor_type>
+void ocr_parser<auditor_type>::parse(
+    const data_source& data,
+    const std::vector<language>& languages)
 {
-    log_scope(data, languages);
+    audit::scope audit_scope{auditor(), [&]{
+        return "data"_v = data, "languages"_v = languages;
+    }};
 
     tessAPIWrapper api{ nullptr, tessAPIDeleter };
     try
@@ -266,7 +301,7 @@ void ocr_parser::parse(const data_source& data, const std::vector<language>& lan
       {
         return acc + (acc.empty() ? "" : "+") + boost::lexical_cast<std::string>(lang);
       });
-    log_entry(langs);
+    audit::entry(auditor(), [&]{ return "langs"_v = langs; });
 
     {
         std::lock_guard<std::mutex> tesseract_libtiff_mutex_lock{ tesseract_libtiff_mutex };
@@ -277,12 +312,16 @@ void ocr_parser::parse(const data_source& data, const std::vector<language>& lan
     // Read the image and convert to a gray-scale image
     pix_unique_ptr gray{ nullptr };
 
-    std::shared_ptr<PIX> image = load_pix(data);
+    std::shared_ptr<PIX> image = load_pix(
+        data,
+        audit::auditor_ref<auditor_type>(auditor()));
 
     pix_unique_ptr inverted{ nullptr };
     try
     {
-        gray.reset(pixToGrayscale(image.get()));
+        gray.reset(pixToGrayscale(
+            image.get(),
+            audit::auditor_ref<auditor_type>(auditor())));
         std::unique_ptr<NUMA, decltype([](NUMA* numa) { numaDestroy(&numa); })> histogram{ pixGetGrayHistogram(gray.get(), 1) };
 
         double weight_sum{ 0 };
@@ -327,7 +366,7 @@ void ocr_parser::parse(const data_source& data, const std::vector<language>& lan
 
     std::unique_ptr<tesseract::ResultIterator> rit(api->GetIterator());
     if (!rit) {
-        log_entry();
+        audit::entry(auditor(), audit::no_context);
         return;
     }
 
@@ -406,12 +445,15 @@ void ocr_parser::parse(const data_source& data, const std::vector<language>& lan
     } while (rit->Next(tesseract::RIL_BLOCK)); // Advances to next block on the page
 }
 
-continuation ocr_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation ocr_parser<auditor_type>::operator()(
+    message_ptr msg,
+    const message_callbacks& emit_message)
 {
-    log_scope(msg);
+    audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
 
     auto process = [this](const data_source& data, const message_callbacks& emit_message) {
-        log_scope(data);
+        audit::scope data_audit_scope{this->auditor(), [&]{ return "data"_v = data; }};
         scoped::stack_push<context> context_guard{impl().m_context_stack, context{emit_message}};
         emit_message(document::document{.metadata = []() { return attributes::metadata{}; }});
         parse(data, impl().m_languages.size() > 0 ? impl().m_languages : std::vector({ language::eng }));
@@ -421,7 +463,7 @@ continuation ocr_parser::operator()(message_ptr msg, const message_callbacks& em
 
     if (msg->is<data_source>())
     {
-        log_scope();
+        audit::scope data_source_audit_scope{auditor(), audit::no_context};
         const data_source& data = msg->get<data_source>();
         data.assert_not_encrypted();
         if (data.has_highest_confidence_mime_type_in(supported_mime_types))
@@ -431,17 +473,17 @@ continuation ocr_parser::operator()(message_ptr msg, const message_callbacks& em
     }
     else if (msg->is<document::image>())
     {
-        log_scope();
+        audit::scope image_audit_scope{auditor(), audit::no_context};
         document::image& image = msg->get<document::image>();
         image.source.assert_not_encrypted();
         if (!image.source.highest_confidence_mime_type().has_value())
         {
-            log_entry();
+            audit::entry(auditor(), audit::no_context);
             return emit_message(std::move(msg));
         }
         if (!image.source.has_highest_confidence_mime_type_in(supported_mime_types))
         {
-            log_entry();
+            audit::entry(auditor(), audit::no_context);
             return emit_message(std::move(msg));
         }
         image.structured_content_streamer =
@@ -462,5 +504,8 @@ continuation ocr_parser::operator()(message_ptr msg, const message_callbacks& em
     else
         return emit_message(std::move(msg));
 }
+
+template class DOCWIRE_OCR_EXPORT ocr_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_OCR_EXPORT ocr_parser<docwire::audit::legacy_log_audit>;
 
 } // namespace docwire
