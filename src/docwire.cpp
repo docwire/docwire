@@ -217,10 +217,10 @@ int main(int argc, char* argv[])
 		("openai-transcribe", "convert speech to text (transcribe) via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
 		("openai-model", po::value<openai::model>()->default_value(openai::model::gpt_5), enum_names_str<openai::model>().c_str())
-		("openai-tts-model", po::value<openai::text_to_speech::model>()->default_value(openai::text_to_speech::model::gpt_4o_mini_tts), enum_names_str<openai::text_to_speech::model>().c_str())
-		("openai-embed-model", po::value<openai::embed::model>()->default_value(openai::embed::model::text_embedding_3_small), enum_names_str<openai::embed::model>().c_str())
-		("openai-transcribe-model", po::value<openai::transcribe::model>()->default_value(openai::transcribe::model::gpt_4o_transcribe), enum_names_str<openai::transcribe::model>().c_str())
-		("openai-voice", po::value<openai::text_to_speech::voice>()->default_value(openai::text_to_speech::voice::alloy), enum_names_str<openai::text_to_speech::voice>().c_str())
+		("openai-tts-model", po::value<openai::text_to_speech<>::model>()->default_value(openai::text_to_speech<>::model::gpt_4o_mini_tts), enum_names_str<openai::text_to_speech<>::model>().c_str())
+		("openai-embed-model", po::value<openai::embed<>::model>()->default_value(openai::embed<>::model::text_embedding_3_small), enum_names_str<openai::embed<>::model>().c_str())
+		("openai-transcribe-model", po::value<openai::transcribe<>::model>()->default_value(openai::transcribe<>::model::gpt_4o_transcribe), enum_names_str<openai::transcribe<>::model>().c_str())
+		("openai-voice", po::value<openai::text_to_speech<>::voice>()->default_value(openai::text_to_speech<>::voice::alloy), enum_names_str<openai::text_to_speech<>::voice>().c_str())
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
 		("openai-image-detail", po::value<openai::image_detail>()->default_value(openai::image_detail::automatic), enum_names_str<openai::image_detail>().c_str())
 		("language", po::value<std::vector<language>>()->default_value({language::eng}, "eng"), "Set the document language(s) for OCR as ISO 639-3 identifiers like: spa, fra, deu, rus, chi_sim, chi_tra etc. More than 100 languages are supported. Multiple languages can be enabled.")
@@ -435,7 +435,7 @@ int main(int argc, char* argv[])
 			auto runner = create_local_runner(
 				vm, "multilingual-e5-small-ct2-int8");
 
-			return docwire::ai::embed{runner, prefix};
+			return docwire::ai::embed<>{runner, prefix};
 		})
 #endif
 		| maybe(vm.count("openai-find"), [&] {
@@ -455,9 +455,9 @@ int main(int argc, char* argv[])
 				vm["openai-voice"].as<openai::text_to_speech::voice>());
 		})
 		| maybe(vm.count("openai-embed"), [&] {
-			return openai::embed(
+			return openai::embed<>(
 				vm["openai-key"].as<std::string>(),
-				vm["openai-embed-model"].as<openai::embed::model>());
+				vm["openai-embed-model"].as<openai::embed<>::model>());
 		})
 		| [](message_ptr msg,
 			 const message_callbacks& emit_message) -> continuation
@@ -492,9 +492,9 @@ int main(int argc, char* argv[])
 	{
 		auto pipeline =
 			content_type::detector{}
-			| openai::transcribe(
+			| openai::transcribe<>(
 				vm["openai-key"].as<std::string>(),
-				vm["openai-transcribe-model"].as<openai::transcribe::model>())
+				vm["openai-transcribe-model"].as<openai::transcribe<>::model>())
 			| plain_text_exporter{}
 			| std::move(optional_suffix);
 

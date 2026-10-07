@@ -14,8 +14,12 @@
 #include <boost/json.hpp>
 #include "document_elements.h"
 #include "pipeline/input_element.hpp"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include "make_error.h"
 #include "pipeline/output_element.hpp"
 #include "post.h"
@@ -25,52 +29,71 @@
 namespace docwire
 {
 
-template<>
-struct pimpl_impl<openai::transcribe> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<openai::transcribe<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
-	pimpl_impl(const std::string& api_key, openai::transcribe::model model)
-		: m_api_key(api_key), m_model(model) {}
+	using audit::with_auditor<auditor_type>::auditor;
+
+	explicit pimpl_impl(
+		const std::string& api_key,
+		typename openai::transcribe<auditor_type>::model model,
+		audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor},
+		  m_api_key(api_key),
+		  m_model(model)
+	{}
+
 	std::string m_api_key;
-	openai::transcribe::model m_model;
+	typename openai::transcribe<auditor_type>::model m_model;
 };
 
 namespace openai
 {
 
-transcribe::transcribe(const std::string& api_key, model model)
-	: with_pimpl<transcribe>(api_key, model)
+template<typename auditor_type>
+transcribe<auditor_type>::transcribe(
+	const std::string& api_key,
+	model model,
+	audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<transcribe<auditor_type>>(api_key, model, auditor),
+	  audit::with_auditor<auditor_type>(auditor)
 {
-	log_scope(model);
+	audit::scope audit_scope{this->auditor(), [&]{ return "model"_v = model; }};
 }
 
 namespace
 {
 
-std::string model_to_string(transcribe::model model)
+template<typename auditor_type>
+std::string model_to_string(typename openai::transcribe<auditor_type>::model model)
 {
 	switch (model)
 	{
-		case transcribe::model::gpt_4o_transcribe: return "gpt-4o-transcribe";
-		case transcribe::model::gpt_4o_mini_transcribe: return "gpt-4o-mini-transcribe";
-		case transcribe::model::whisper_1: return "whisper-1";
+		case openai::transcribe<auditor_type>::model::gpt_4o_transcribe: return "gpt-4o-transcribe";
+		case openai::transcribe<auditor_type>::model::gpt_4o_mini_transcribe: return "gpt-4o-mini-transcribe";
+		case openai::transcribe<auditor_type>::model::whisper_1: return "whisper-1";
 		default: return "?";
 	}
 }
 
 } // anonymous namespace
 
-continuation transcribe::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation transcribe<auditor_type>::operator()(
+	message_ptr msg,
+	const message_callbacks& emit_message)
 {
-	log_scope();
+	audit::scope audit_scope{this->auditor(), [&]{ return "msg"_v = msg; }};
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
-	log_entry();
 	const data_source& data = msg->get<data_source>();
 	std::shared_ptr<std::istream> in_stream = data.istream();
 	auto response_stream = std::make_shared<std::ostringstream>();
 	try
 	{
-		in_stream | http::post("https://api.openai.com/v1/audio/transcriptions", {{"model", model_to_string(impl().m_model)}, {"response_format", "text"}}, "file", default_file_name("audio.mp3"), impl().m_api_key) | response_stream;
+		in_stream | http::post<>("https://api.openai.com/v1/audio/transcriptions", {{"model", model_to_string<auditor_type>(impl().m_model)}, {"response_format", "text"}}, "file", default_file_name("audio.mp3"), impl().m_api_key) | response_stream;
 	}
 	catch (const std::exception& e)
 	{
@@ -82,6 +105,9 @@ continuation transcribe::operator()(message_ptr msg, const message_callbacks& em
     if (cont == continuation::stop) return cont;
     return emit_message(document::close_document{});
 }
+
+template class DOCWIRE_OPENAI_EXPORT docwire::openai::transcribe<docwire::audit::null_auditor>;
+template class DOCWIRE_OPENAI_EXPORT docwire::openai::transcribe<docwire::audit::legacy_log_audit>;
 
 } // namespace openai
 } // namespace docwire

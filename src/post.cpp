@@ -14,8 +14,12 @@
 #include "content_type_by_file_extension.h"
 #include "error_tags.h"
 #include "httplib_patched.h"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include "serialization_filesystem.h" // IWYU pragma: keep
 #include "serialization_message.h" // IWYU pragma: keep
 #include "throw_if.h"
@@ -25,12 +29,30 @@
 namespace docwire
 {
 
-template<>
-struct pimpl_impl<http::post> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<http::post<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
-	pimpl_impl(const std::string& url, const std::optional<std::map<std::string, std::string>> form, const std::string& pipe_field_name, const default_file_name& default_file_name, const std::string& oauth2_bearer_token, http::ssl_verify_peer ssl_verify_peer_v = {true})
-		: m_url(url), m_form(form), m_pipe_field_name(pipe_field_name), m_default_file_name(default_file_name), m_oauth2_bearer_token(oauth2_bearer_token), m_ssl_verify_peer(ssl_verify_peer_v.v)
+	using audit::with_auditor<auditor_type>::auditor;
+
+	pimpl_impl(
+		const std::string& url,
+		const std::optional<std::map<std::string, std::string>> form,
+		const std::string& pipe_field_name,
+		const default_file_name& default_file_name,
+		const std::string& oauth2_bearer_token,
+		http::ssl_verify_peer ssl_verify_peer_v,
+		audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor},
+		  m_url(url),
+		  m_form(form),
+		  m_pipe_field_name(pipe_field_name),
+		  m_default_file_name(default_file_name),
+		  m_oauth2_bearer_token(oauth2_bearer_token),
+		  m_ssl_verify_peer(ssl_verify_peer_v.v)
 	{}
+
 	std::string m_url;
 	std::optional<std::map<std::string, std::string>> m_form;
 	std::string m_pipe_field_name;
@@ -42,25 +64,58 @@ struct pimpl_impl<http::post> : pimpl_impl_base
 namespace http
 {
 
-post::post(const std::string& url, const std::string& oauth2_bearer_token, ssl_verify_peer ssl_verify_peer_v)
-	: with_pimpl<post>(url, std::nullopt, "", default_file_name{""}, oauth2_bearer_token, ssl_verify_peer_v)
+template<typename auditor_type>
+post<auditor_type>::post(
+	const std::string& url,
+	const std::string& oauth2_bearer_token,
+	ssl_verify_peer ssl_verify_peer_v,
+	audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<post<auditor_type>>(
+		  url, std::nullopt, "", default_file_name{""}, oauth2_bearer_token,
+		  ssl_verify_peer_v, auditor),
+	  audit::with_auditor<auditor_type>(auditor)
 {
-	log_scope(url, oauth2_bearer_token, ssl_verify_peer_v);
+	audit::scope audit_scope{this->auditor(), [&]{
+		return
+			"url"_v = url,
+			"oauth2_bearer_token"_v = oauth2_bearer_token,
+			"ssl_verify_peer_v"_v = ssl_verify_peer_v;
+	}};
 }
 
-post::post(const std::string& url, const std::map<std::string, std::string>& form, const std::string& pipe_field_name, const default_file_name& default_file_name, const std::string& oauth2_bearer_token, ssl_verify_peer ssl_verify_peer_v)
-	: with_pimpl<post>(url, form, pipe_field_name, default_file_name, oauth2_bearer_token, ssl_verify_peer_v)
+template<typename auditor_type>
+post<auditor_type>::post(
+	const std::string& url,
+	const std::map<std::string, std::string>& form,
+	const std::string& pipe_field_name,
+	const default_file_name& default_file_name,
+	const std::string& oauth2_bearer_token,
+	ssl_verify_peer ssl_verify_peer_v,
+	audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<post<auditor_type>>(
+		  url, form, pipe_field_name, default_file_name, oauth2_bearer_token,
+		  ssl_verify_peer_v, auditor),
+	  audit::with_auditor<auditor_type>(auditor)
 {
-	log_scope(url, form, pipe_field_name, default_file_name, oauth2_bearer_token, ssl_verify_peer_v);
+	audit::scope audit_scope{this->auditor(), [&]{
+		return
+			"url"_v = url,
+			"pipe_field_name"_v = pipe_field_name,
+			"default_file_name"_v = default_file_name,
+			"oauth2_bearer_token"_v = oauth2_bearer_token,
+			"ssl_verify_peer_v"_v = ssl_verify_peer_v;
+	}};
 }
 
-continuation post::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation post<auditor_type>::operator()(
+	message_ptr msg,
+	const message_callbacks& emit_message)
 try
 {
-	log_scope(msg);
+	audit::scope audit_scope{this->auditor(), [&]{ return "msg"_v = msg; }};
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
-	log_entry();
 	const data_source& data = msg->get<data_source>();
 	std::shared_ptr<std::istream> in_stream = data.istream();
 
@@ -187,6 +242,9 @@ catch (const std::exception&)
 {
 	std::throw_with_nested(make_error(impl().m_url));
 }
+
+template class DOCWIRE_HTTP_EXPORT docwire::http::post<docwire::audit::null_auditor>;
+template class DOCWIRE_HTTP_EXPORT docwire::http::post<docwire::audit::legacy_log_audit>;
 
 } // namespace http
 } // namespace docwire

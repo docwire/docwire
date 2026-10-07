@@ -15,6 +15,8 @@
 #include "pipeline/element_base.hpp"
 #include "openai_export.h"
 #include "pimpl.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 #include <string>
 
 namespace docwire
@@ -22,7 +24,11 @@ namespace docwire
 namespace openai
 {
 
-class DOCWIRE_OPENAI_EXPORT transcribe : public pipeline::transformer_element<transcribe>, public with_pimpl<transcribe>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_OPENAI_EXPORT transcribe
+    : public pipeline::transformer_element<transcribe<auditor_type>>,
+      public with_pimpl<transcribe<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
 public:
 	enum class model
@@ -30,7 +36,10 @@ public:
 		gpt_4o_transcribe, gpt_4o_mini_transcribe, whisper_1
 	};
 
-	transcribe(const std::string& api_key, model model = model::gpt_4o_transcribe);
+	transcribe(
+		const std::string& api_key,
+		model model = model::gpt_4o_transcribe,
+		audit::auditor_ref<auditor_type> auditor = {});
 
 	/**
 	* @brief Executes transform operation for given node data.
@@ -40,8 +49,11 @@ public:
 	*/
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
+protected:
+	using audit::with_auditor<auditor_type>::auditor;
+
 private:
-	using with_pimpl<transcribe>::impl;
+	using with_pimpl<transcribe<auditor_type>>::impl;
 };
 
 } // namespace openai
