@@ -327,7 +327,7 @@ int main(int argc, char* argv[])
 
 	auto optional_suffix =
 		maybe(vm.count("http-post"), [&] {
-			return http::post(vm["http-post"].as<std::string>());
+			return http::post<>(vm["http-post"].as<std::string>());
 		})
 		| maybe(vm.count("openai-chat"), [&] {
 			return openai::chat<>(
@@ -449,10 +449,10 @@ int main(int argc, char* argv[])
 				vm["openai-image-detail"].as<openai::image_detail>());
 		})
 		| maybe(vm.count("openai-text-to-speech"), [&] {
-			return openai::text_to_speech(
+			return openai::text_to_speech<>(
 				vm["openai-key"].as<std::string>(),
-				vm["openai-tts-model"].as<openai::text_to_speech::model>(),
-				vm["openai-voice"].as<openai::text_to_speech::voice>());
+				vm["openai-tts-model"].as<openai::text_to_speech<>::model>(),
+				vm["openai-voice"].as<openai::text_to_speech<>::voice>());
 		})
 		| maybe(vm.count("openai-embed"), [&] {
 			return openai::embed<>(
