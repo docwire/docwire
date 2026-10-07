@@ -31,6 +31,8 @@ class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser
       private audit::with_auditor<auditor_type>
 {
 public:
+	explicit txt_parser(audit::auditor_ref<auditor_type> auditor);
+
 	explicit txt_parser(
 		parse_paragraphs parse_paragraphs_arg = parse_paragraphs{true},
 		parse_lines parse_lines_arg = parse_lines{true},

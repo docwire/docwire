@@ -50,6 +50,11 @@ struct pimpl_impl<txt_parser<auditor_type>>
 };
 
 template<typename auditor_type>
+txt_parser<auditor_type>::txt_parser(audit::auditor_ref<auditor_type> auditor)
+	: txt_parser(parse_paragraphs{true}, parse_lines{true}, auditor)
+{}
+
+template<typename auditor_type>
 txt_parser<auditor_type>::txt_parser(
 	parse_paragraphs parse_paragraphs_arg,
 	parse_lines parse_lines_arg,
