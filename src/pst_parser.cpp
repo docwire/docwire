@@ -389,7 +389,7 @@ struct pimpl_impl<pst_parser<auditor_type>>
 
   private:
     void parse_element(const char* buffer, size_t size, const std::string& extension="") const;
-    void parse_internal(const folder& root, int deep, unsigned int &mail_counter) const;
+    void parse_internal(const folder<auditor_type>& root, int deep, unsigned int &mail_counter) const;
 };
 
 template<typename auditor_type>
