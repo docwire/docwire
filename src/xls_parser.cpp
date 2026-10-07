@@ -177,7 +177,7 @@ struct pimpl_impl<xls_parser<auditor_type>>
 		int num_format_id = m_context_stack.top().m_xf_records[xf_index].num_format_id;
 		if (m_context_stack.top().m_defined_num_format_ids.count(num_format_id))
 			return "";
-		standard_date_formats::iterator i = formats.find(num_format_id);
+		typename standard_date_formats::iterator i = formats.find(num_format_id);
 		if (i == formats.end())
 			return "";
 		else
