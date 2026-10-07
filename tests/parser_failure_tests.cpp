@@ -117,7 +117,7 @@ TEST(PartialAndTotalFailures, PST_Partial)
 {
     int count = 0;
     bool error_received = false;
-    TestParserFailures<pst_parser>("1.pst",
+    TestParserFailures<pst_parser<>>("1.pst",
         [&](message_ptr msg) {
             if (msg->is<data_source>()) {
                 count++;
@@ -136,7 +136,7 @@ TEST(PartialAndTotalFailures, PST_Partial)
 TEST(PartialAndTotalFailures, PST_Total)
 {
     EXPECT_THROW({
-        TestParserFailures<pst_parser>("1.pst",
+        TestParserFailures<pst_parser<>>("1.pst",
             [](message_ptr msg) {
                 if (msg->is<data_source>()) throw std::runtime_error("Simulated failure");
             },
