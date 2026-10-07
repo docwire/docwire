@@ -21,7 +21,7 @@
 #include "xls_parser.h"
 #include "xlsb_parser.h"
 #include "odf_ooxml_parser.h"
-#include "pipeline/chain_expression.hpp"
+#include "pipeline/composition.hpp"
 #include "ppt_parser.h"
 #include "rtf_parser.h"
 #include "txt_parser.h"
@@ -40,46 +40,20 @@ namespace docwire
  */
 template <safety_policy safety_level = default_safety_level,
           typename auditor_type = audit::null_auditor>
-class office_formats_parser
-    : public pipeline::transformer_element<office_formats_parser<safety_level, auditor_type>>,
-      private audit::with_auditor<auditor_type>
-{
-public:
-    explicit office_formats_parser(audit::auditor_ref<auditor_type> auditor = {})
-        : audit::with_auditor<auditor_type>(auditor),
-          m_chain{make_chain(audit::auditor_ref<auditor_type>(auditor))}
-    {}
-
-    /**
-     * @brief Executes the composite chain of format parsers.
-     */
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
-    {
-        return m_chain(msg, emit_message);
-    }
-
-private:
-    using audit::with_auditor<auditor_type>::auditor;
-
-    static auto make_chain(audit::auditor_ref<auditor_type> auditor)
-    {
-        return html_parser<auditor_type>{auditor} |
-            doc_parser<auditor_type>{auditor} |
-            pdf_parser<auditor_type>{auditor} |
-            xls_parser<auditor_type>{auditor} |
-            xlsb_parser<auditor_type>{auditor} |
-            iwork_parser<auditor_type>{auditor} |
-            ppt_parser<auditor_type>{auditor} |
-            rtf_parser<auditor_type>{auditor} |
-            odf_ooxml_parser<safety_level, auditor_type>{auditor} |
-            odfxml_parser<safety_level, auditor_type>{auditor} |
-            xml_parser<safety_level, auditor_type>{auditor} |
-            txt_parser<auditor_type>{parse_paragraphs{true}, parse_lines{true}, auditor};
-    }
-
-    using chain_type = decltype(make_chain(std::declval<audit::auditor_ref<auditor_type>>()));
-    chain_type m_chain;
-};
+using office_formats_parser = pipeline::composition<
+    html_parser<auditor_type>,
+    doc_parser<auditor_type>,
+    pdf_parser<auditor_type>,
+    xls_parser<auditor_type>,
+    xlsb_parser<auditor_type>,
+    iwork_parser<auditor_type>,
+    ppt_parser<auditor_type>,
+    rtf_parser<auditor_type>,
+    odf_ooxml_parser<safety_level, auditor_type>,
+    odfxml_parser<safety_level, auditor_type>,
+    xml_parser<safety_level, auditor_type>,
+    txt_parser<auditor_type>
+>;
 
 } // namespace docwire
 
