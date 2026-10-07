@@ -2,6 +2,7 @@
 #define DOCWIRE_PIPELINE_COMPOSITION_HPP
 
 #include "chain_expression.hpp"
+#include "element_base.hpp"
 #include "../audit/auditor_ref.hpp"
 #include "../audit/core.hpp"
 #include <type_traits>
@@ -42,6 +43,7 @@ using chain_type_t = typename chain_type<ElementTypes...>::type;
  */
 template<typename... ElementTypes>
 class composition
+    : public pipeline::transformer_element<composition<ElementTypes...>>
 {
 public:
     /**

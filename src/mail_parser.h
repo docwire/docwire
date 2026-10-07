@@ -13,34 +13,16 @@
 #define DOCWIRE_MAIL_PARSER_H
 
 #include "eml_parser.h"
-#include "pipeline/chain_expression.hpp"
+#include "pipeline/composition.hpp"
 #include "pst_parser.h"
 #include "audit/auditor_ref.hpp"
-#include "audit/with_auditor.hpp"
 
 namespace docwire
 {
 
 template<typename auditor_type = audit::null_auditor>
-class mail_parser
-    : public pipeline::transformer_element<mail_parser<auditor_type>>,
-      private audit::with_auditor<auditor_type>
-{
-public:
-    explicit mail_parser(audit::auditor_ref<auditor_type> auditor = {})
-        : audit::with_auditor<auditor_type>(auditor),
-          m_chain{eml_parser<auditor_type>{auditor}, pst_parser<auditor_type>{auditor}}
-    {}
-
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
-    {
-        return m_chain(msg, emit_message);
-    }
-
-private:
-    using audit::with_auditor<auditor_type>::auditor;
-    pipeline::chain_expression<eml_parser<auditor_type>, pst_parser<auditor_type>> m_chain;
-};
+using mail_parser =
+    pipeline::composition<eml_parser<auditor_type>, pst_parser<auditor_type>>;
 
 } // namespace docwire
 
