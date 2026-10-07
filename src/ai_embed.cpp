@@ -13,7 +13,12 @@
 #include "ai_elements.h"
 #include "data_source.h"
 #include "error_tags.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include "serialization_message.h" // IWYU pragma: keep
 #include <string>
 #include "throw_if.h"
@@ -22,14 +27,23 @@
 namespace docwire
 {
 
-template <>
-struct pimpl_impl<ai::embed> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<ai::embed<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
+    using audit::with_auditor<auditor_type>::auditor;
+
     not_null<std::shared_ptr<ai::ai_runner>> m_model_runner;
     std::string m_prefix;
 
-    pimpl_impl(not_null<std::shared_ptr<ai::ai_runner>> model_runner, std::string prefix)
-        : m_model_runner(std::move(model_runner)), m_prefix(std::move(prefix))
+    pimpl_impl(
+        not_null<std::shared_ptr<ai::ai_runner>> model_runner,
+        std::string prefix,
+        audit::auditor_ref<auditor_type> auditor)
+        : audit::with_auditor<auditor_type>{auditor},
+          m_model_runner(std::move(model_runner)),
+          m_prefix(std::move(prefix))
     {
     }
 };
@@ -37,13 +51,22 @@ struct pimpl_impl<ai::embed> : pimpl_impl_base
 namespace ai
 {
 
-embed::embed(not_null<std::shared_ptr<ai_runner>> model_runner, std::string prefix)
-    : with_pimpl<embed>(std::move(model_runner), std::move(prefix))
+template<typename auditor_type>
+embed<auditor_type>::embed(
+    not_null<std::shared_ptr<ai_runner>> model_runner,
+    std::string prefix,
+    audit::auditor_ref<auditor_type> auditor)
+    : with_pimpl<embed<auditor_type>>(
+          std::move(model_runner), std::move(prefix), auditor),
+      audit::with_auditor<auditor_type>(auditor)
 {}
 
-continuation embed::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation embed<auditor_type>::operator()(
+    message_ptr msg,
+    const message_callbacks& emit_message)
 {
-    log_scope(msg);
+    audit::scope audit_scope{this->auditor(), [&]{ return "msg"_v = msg; }};
     if (!msg->is<data_source>())
         return emit_message(std::move(msg));
 
@@ -55,5 +78,8 @@ continuation embed::operator()(message_ptr msg, const message_callbacks& emit_me
     std::vector<double> embedding_vector = impl().m_model_runner->embed(prefixed_input);
     return emit_message(ai::embedding{std::move(embedding_vector)});
 }
+template class DOCWIRE_AI_EXPORT docwire::ai::embed<docwire::audit::null_auditor>;
+template class DOCWIRE_AI_EXPORT docwire::ai::embed<docwire::audit::legacy_log_audit>;
+
 } // namespace ai
 } // namespace docwire

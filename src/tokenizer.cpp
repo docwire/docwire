@@ -14,8 +14,12 @@
 #include <boost/json.hpp>
 #include "error_tags.h"
 #include <fstream>
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include <unordered_map>
 #include <optional>
 #include <sentencepiece_processor.h>
@@ -66,19 +70,29 @@ struct tokenizer_config
 
 } // anonymous namespace
 
-template<>
-struct pimpl_impl<ai::ct2::tokenizer> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<ai::ct2::tokenizer<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
+    using audit::with_auditor<auditor_type>::auditor;
+
     sentencepiece::SentencePieceProcessor m_processor;
     tokenizer_config m_tokenizer_config;
     std::unordered_map<std::string, int> m_token_to_id;
 
-    pimpl_impl(const std::filesystem::path& model_data_path)
-        : pimpl_impl(tokenizer_config(model_data_path))
+    pimpl_impl(
+        const std::filesystem::path& model_data_path,
+        audit::auditor_ref<auditor_type> auditor)
+        : audit::with_auditor<auditor_type>{auditor},
+          m_tokenizer_config(tokenizer_config(model_data_path))
     {}
 
-    pimpl_impl(const tokenizer_config& tokenizer_config)
-        : m_tokenizer_config(tokenizer_config)
+    pimpl_impl(
+        const tokenizer_config& tokenizer_config,
+        audit::auditor_ref<auditor_type> auditor)
+        : audit::with_auditor<auditor_type>{auditor},
+          m_tokenizer_config(tokenizer_config)
     {
         throw_if(tokenizer_config.tokenizer_class != "T5Tokenizer" &&
                      tokenizer_config.tokenizer_class != "XLMRobertaTokenizer",
@@ -119,13 +133,18 @@ struct pimpl_impl<ai::ct2::tokenizer> : pimpl_impl_base
 namespace ai::ct2
 {
 
-tokenizer::tokenizer(const std::filesystem::path& model_data_path)
-    : with_pimpl{model_data_path}
+template<typename auditor_type>
+tokenizer<auditor_type>::tokenizer(
+    const std::filesystem::path& model_data_path,
+    audit::auditor_ref<auditor_type> auditor)
+    : with_pimpl<tokenizer<auditor_type>>(model_data_path, auditor),
+      audit::with_auditor<auditor_type>(auditor)
 {}
 
-std::vector<std::string> tokenizer::tokenize(const std::string& input)
+template<typename auditor_type>
+std::vector<std::string> tokenizer<auditor_type>::tokenize(const std::string& input)
 {
-    log_scope(input);
+    audit::scope audit_scope{this->auditor(), [&]{ return "input"_v = input; }};
     std::vector<std::string> input_tokens;
     throw_if(!impl().m_processor.Encode(input, &input_tokens).ok(), errors::uninterpretable_data{});
     if (impl().m_tokenizer_config.tokenizer_class == "T5Tokenizer")
@@ -140,13 +159,14 @@ std::vector<std::string> tokenizer::tokenize(const std::string& input)
         throw_if(!impl().m_tokenizer_config.sep_token, errors::program_corrupted{});
         input_tokens.push_back(*impl().m_tokenizer_config.sep_token);
     }
-    log_entry(input_tokens);
+    audit::entry(this->auditor(), [&]{ return "input_tokens"_v = input_tokens; });
     return input_tokens;
 }
 
-std::vector<int> tokenizer::encode(const std::string& input)
+template<typename auditor_type>
+std::vector<int> tokenizer<auditor_type>::encode(const std::string& input)
 {
-    log_scope(input);
+    audit::scope audit_scope{this->auditor(), [&]{ return "input"_v = input; }};
 
     // 1. Get string tokens (this already includes special tokens from the tokenize method)
     const std::vector<std::string> tokens = this->tokenize(input);
@@ -161,17 +181,21 @@ std::vector<int> tokenizer::encode(const std::string& input)
         input_ids.push_back(it->second);
     }
 
-    log_entry(input_ids);
+    audit::entry(this->auditor(), [&]{ return "input_ids"_v = input_ids; });
     return input_ids;
 }
 
-std::string tokenizer::detokenize(const std::vector<std::string>& output_tokens)
+template<typename auditor_type>
+std::string tokenizer<auditor_type>::detokenize(const std::vector<std::string>& output_tokens)
 {
-    log_scope(output_tokens);
+    audit::scope audit_scope{this->auditor(), [&]{ return "output_tokens"_v = output_tokens; }};
     std::string output;
     throw_if(!impl().m_processor.Decode(output_tokens, &output).ok(), errors::uninterpretable_data{});
     return output;
 }
+
+template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::tokenizer<docwire::audit::null_auditor>;
+template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::tokenizer<docwire::audit::legacy_log_audit>;
 
 } // namespace ai::ct2
 } // namespace docwire

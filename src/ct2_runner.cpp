@@ -17,8 +17,12 @@
 #include <ctranslate2/ops/mean.h>
 #include <ctranslate2/translator.h>
 #include "error_tags.h"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include "serialization_exception.h" // IWYU pragma: keep
 #include "serialization_filesystem.h" // IWYU pragma: keep
 #include "throw_if.h"
@@ -31,19 +35,24 @@ namespace docwire
 namespace
 {
 
+template<typename auditor_type>
 std::variant<std::monostate, std::shared_ptr<ctranslate2::Translator>,
              std::shared_ptr<ctranslate2::Encoder>>
-load_model(const std::filesystem::path& model_data_path)
+load_model(
+    const std::filesystem::path& model_data_path,
+    audit::auditor_ref<auditor_type> auditor)
 {
-    log_scope(model_data_path);
+    audit::scope audit_scope{auditor, [&]{ return "model_data_path"_v = model_data_path; }};
     try {
-        log_scope();
+        audit::scope translator_audit_scope{auditor, audit::no_context};
         return std::make_shared<ctranslate2::Translator>(
             ctranslate2::models::ModelLoader{model_data_path.string()});
     } catch (const std::exception& translator_error) {
-        log_scope(translator_error);
+        audit::scope translator_error_audit_scope{auditor, [&]{
+            return "translator_error"_v = std::string{translator_error.what()};
+        }};
         try {
-            log_scope();
+            audit::scope encoder_audit_scope{auditor, audit::no_context};
             return std::make_shared<ctranslate2::Encoder>(
                 ctranslate2::models::ModelLoader{model_data_path.string()});
         } catch (const std::exception& encoder_error) {
@@ -56,30 +65,39 @@ load_model(const std::filesystem::path& model_data_path)
 
 } // anonymous namespace
 
-template <> struct pimpl_impl<ai::ct2::ct2_runner> : pimpl_impl_base
+template <typename auditor_type>
+struct pimpl_impl<ai::ct2::ct2_runner<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
-	std::mutex model_mutex;
+    using audit::with_auditor<auditor_type>::auditor;
+
+    std::mutex model_mutex;
     std::variant<std::monostate, std::shared_ptr<ctranslate2::Translator>,
                  std::shared_ptr<ctranslate2::Encoder>>
         m_model;
-    ai::ct2::tokenizer m_tokenizer;
+    ai::ct2::tokenizer<auditor_type> m_tokenizer;
     std::filesystem::path m_model_path;
 
-    pimpl_impl(const std::filesystem::path& model_data_path)
-        : m_model_path(model_data_path), m_model(load_model(model_data_path)),
-          m_tokenizer(model_data_path)
+    pimpl_impl(
+        const std::filesystem::path& model_data_path,
+        audit::auditor_ref<auditor_type> auditor)
+        : audit::with_auditor<auditor_type>{auditor},
+          m_model(load_model(model_data_path, auditor)),
+          m_tokenizer(model_data_path, auditor),
+          m_model_path(model_data_path)
     {
     }
 
     std::vector<std::string> process(const std::vector<std::string>& input_tokens)
     {
-        log_scope();
+        audit::scope audit_scope{auditor(), audit::no_context};
         std::shared_ptr<ctranslate2::Translator> translator_ptr;
 
         {
             std::lock_guard lock(model_mutex);
             if (std::holds_alternative<std::monostate>(m_model))
-                m_model = load_model(m_model_path);
+                m_model = load_model(m_model_path, auditor());
 
             throw_if(!std::holds_alternative<std::shared_ptr<ctranslate2::Translator>>(m_model),
                          "Model is not a Translator, cannot process.", errors::program_logic{});
@@ -91,8 +109,8 @@ template <> struct pimpl_impl<ai::ct2::ct2_runner> : pimpl_impl_base
         options.sampling_temperature = 0.0;
         options.beam_size = 1;
         options.disable_unk = true;
-        options.callback = [](ctranslate2::GenerationStepResult step_result) -> bool {
-            log_entry(step_result.token);
+        options.callback = [this](ctranslate2::GenerationStepResult step_result) -> bool {
+            audit::entry(auditor(), [&]{ return "token"_v = step_result.token; });
             return false;
         };
         auto results = translator.translate_batch_async({input_tokens}, options);
@@ -107,7 +125,7 @@ template <> struct pimpl_impl<ai::ct2::ct2_runner> : pimpl_impl_base
 
     std::vector<double> embed(const std::string& input)
     {
-        log_scope(input);
+        audit::scope audit_scope{auditor(), [&]{ return "input"_v = input; }};
         std::shared_ptr<ctranslate2::Encoder> encoder_ptr;
 
         {
@@ -183,30 +201,41 @@ template <> struct pimpl_impl<ai::ct2::ct2_runner> : pimpl_impl_base
 namespace ai::ct2
 {
 
-ct2_runner::ct2_runner(const std::filesystem::path& model_data_path) : with_pimpl(model_data_path)
+template<typename auditor_type>
+ct2_runner<auditor_type>::ct2_runner(
+    const std::filesystem::path& model_data_path,
+    audit::auditor_ref<auditor_type> auditor)
+    : with_pimpl<ct2_runner<auditor_type>>(model_data_path, auditor),
+      audit::with_auditor<auditor_type>(auditor)
 {
 }
 
-std::string ct2_runner::process(const std::string& input)
+template<typename auditor_type>
+std::string ct2_runner<auditor_type>::process(const std::string& input)
 {
-    log_scope(input);
+    audit::scope audit_scope{this->auditor(), [&]{ return "input"_v = input; }};
     std::vector<std::string> input_tokens = impl().m_tokenizer.tokenize(input);
     std::vector<std::string> output_tokens = impl().process(input_tokens);
     return impl().m_tokenizer.detokenize(output_tokens);
 }
 
-std::vector<double> ct2_runner::embed(const std::string& input)
+template<typename auditor_type>
+std::vector<double> ct2_runner<auditor_type>::embed(const std::string& input)
 {
-    log_scope(input);
+    audit::scope audit_scope{this->auditor(), [&]{ return "input"_v = input; }};
     return impl().embed(input);
 }
 
-void ct2_runner::unload()
+template<typename auditor_type>
+void ct2_runner<auditor_type>::unload()
 {
-	log_scope();
+    audit::scope audit_scope{this->auditor(), audit::no_context};
     std::lock_guard lock(impl().model_mutex);
     impl().m_model.emplace<std::monostate>();
 }
+
+template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::ct2_runner<docwire::audit::null_auditor>;
+template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::ct2_runner<docwire::audit::legacy_log_audit>;
 
 } // namespace ai::ct2
 } // namespace docwire

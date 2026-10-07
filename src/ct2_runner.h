@@ -14,6 +14,8 @@
 
 #include "ai_ct2_export.h"
 #include "pimpl.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 #include <filesystem>
 #include <vector>
 #include <string>
