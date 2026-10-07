@@ -31,14 +31,21 @@ namespace docwire::ai::ct2
  * Destructor frees memory used by model.
  * It is important not to duplicate the object because memory consumption can be high.
  */
-class DOCWIRE_AI_CT2_EXPORT ct2_runner :  public ai_runner, public with_pimpl<ct2_runner>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_AI_CT2_EXPORT ct2_runner
+    : public ai_runner,
+      public with_pimpl<ct2_runner<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
 public:
     /**
      * @brief Constructor. Loads model to memory.
      * @param model_data_path Path to the folder containing model files.
+     * @param auditor Optional injected auditor for observability.
      */
-    ct2_runner(const std::filesystem::path& model_data_path);
+    explicit ct2_runner(
+        const std::filesystem::path& model_data_path,
+        audit::auditor_ref<auditor_type> auditor = {});
 
     /**
      * @brief Process input text using the model.
@@ -59,6 +66,10 @@ public:
      * --!Must be thread-safe!-- and safe to call concurrently with process()/embed().
      */
     virtual void unload() override;
+
+private:
+    using with_pimpl<ct2_runner<auditor_type>>::impl;
+    using audit::with_auditor<auditor_type>::auditor;
 };
 
 } // namespace docwire::ai::ct2
