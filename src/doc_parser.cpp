@@ -14,9 +14,13 @@
 #include "document_elements.h"
 #include "error_tags.h"
 #include "log_cerr_redirection.h"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
 #include "audit/legacy_log_audit.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
+#include "serialization_message.h" // IWYU pragma: keep
 #include "detail/ustring_conversions.h"
 #include "nested_exception.h"
 #include "throw_if.h"
@@ -59,9 +63,17 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-template<>
-struct pimpl_impl<doc_parser> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<doc_parser<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
+    using audit::with_auditor<auditor_type>::auditor;
+
+    explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor)
+        : audit::with_auditor<auditor_type>{auditor}
+    {}
+
     void parse(const data_source& data, const message_callbacks& emit_message);
 };
 
@@ -115,9 +127,15 @@ struct comment
 	std::string author;
 };
 
-static void cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& stream_offset, bool* unicode_detected = NULL)
+template<typename auditor_type>
+void cp_to_stream_offset(
+	const wvWare::Parser* parser,
+	U32 cp,
+	U32& stream_offset,
+	audit::auditor_ref<auditor_type> auditor,
+	bool* unicode_detected = NULL)
 {
-	log_scope(cp);
+	audit::scope audit_scope{auditor, [&]{ return "cp"_v = cp; }};
 	const Parser9x* parser9 = dynamic_cast<const Parser9x*>(parser);
 	throw_if (parser9 == NULL, "This is not a 9x parser.", errors::program_logic{});
 	U32 piece = 0;
@@ -130,35 +148,40 @@ static void cp_to_stream_offset(const wvWare::Parser* parser, U32 cp, U32& strea
 			break;
 		offset -= it.currentRun();
 	}
-	log_entry(piece, offset);
+	audit::entry(auditor, [&]{ return "piece"_v = piece, "offset"_v = offset; });
 	PLCFIterator<Word97::PCD> it2(parser9->pieceTable()->at( piece ) );
 	throw_if (!it2.current(), "Specified piece not found.", errors::uninterpretable_data{});
 	U32 piece_fc = it2.current()->fc;
-	log_entry(piece_fc);
+	audit::entry(auditor, [&]{ return "piece_fc"_v = piece_fc; });
 	bool unicode;
 	U32 real_fc = piece_fc;
 	parser9->calculateRealFC(real_fc, unicode);
-	log_entry(real_fc, unicode);
+	audit::entry(auditor, [&]{ return "real_fc"_v = real_fc, "unicode"_v = unicode; });
 	U32 final_stream_offset = real_fc + (unicode ? offset * 2 : offset);
-	log_entry(final_stream_offset);
+	audit::entry(auditor, [&]{ return "final_stream_offset"_v = final_stream_offset; });
 	stream_offset = final_stream_offset;
 	if (unicode_detected != NULL)
 		*unicode_detected = unicode;
 }
 
-static void parse_comments(const wvWare::Parser* parser, std::vector<comment>& comments, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+template<typename auditor_type>
+void parse_comments(
+	const wvWare::Parser* parser,
+	std::vector<comment>& comments,
+	const std::function<void(std::exception_ptr)>& non_fatal_error_handler,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	try
 	{
 		if (parser->fib().lcbPlcfandTxt == 0)
 		{
-			log_entry();
+			audit::entry(auditor, audit::no_context);
 			return;
 		}
 
 		U32 atn_part_cp = parser->fib().ccpText + parser->fib().ccpFtn + parser->fib().ccpHdd + parser->fib().ccpMcr;
-		log_entry(atn_part_cp);
+		audit::entry(auditor, [&]{ return "atn_part_cp"_v = atn_part_cp; });
 		std::unique_ptr<OLEStreamReader> reader { parser->storage()->createStreamReader("WordDocument") };
 		throw_if (!reader, "Error opening WordDocument stream.", errors::uninterpretable_data{});
 		const Parser9x* parser9 = dynamic_cast<const Parser9x*>(parser);
@@ -166,19 +189,22 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<comment>& c
 		throw_if (!table_reader, "Error opening table stream.", errors::uninterpretable_data{});
 
 		U32 annotation_txts_offset = parser->fib().fcPlcfandTxt;
-		log_entry(annotation_txts_offset);
+		audit::entry(auditor, [&]{ return "annotation_txts_offset"_v = annotation_txts_offset; });
 		table_reader->seek(annotation_txts_offset);
 		U32 annotation_begin_cp = table_reader->readU32();
 		std::vector<std::string> annotations;
 		for (;;)
 		{
 			U32 annotation_end_cp = table_reader->readU32();
-			log_scope(annotation_begin_cp, annotation_end_cp);
+			audit::scope audit_scope{auditor, [&]{
+				return "annotation_begin_cp"_v = annotation_begin_cp,
+				       "annotation_end_cp"_v = annotation_end_cp;
+			}};
 			U32 stream_begin_offset;
 			bool unicode;
 			try
 			{
-				cp_to_stream_offset(parser, atn_part_cp + annotation_begin_cp, stream_begin_offset, &unicode);
+				cp_to_stream_offset(parser, atn_part_cp + annotation_begin_cp, stream_begin_offset, auditor, &unicode);
 			}
 			catch (const std::exception&)
 			{
@@ -187,20 +213,23 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<comment>& c
 			U32 stream_end_offset;
 			try
 			{
-				cp_to_stream_offset(parser, atn_part_cp + annotation_end_cp, stream_end_offset);
+				cp_to_stream_offset(parser, atn_part_cp + annotation_end_cp, stream_end_offset, auditor);
 			}
 			catch (const std::exception&)
 			{
 				std::throw_with_nested(make_error("Converting annotation end position to stream offset failed.", errors::uninterpretable_data{}));
 			}
-			log_entry(stream_begin_offset, stream_end_offset);
+			audit::entry(auditor, [&]{
+				return "stream_begin_offset"_v = stream_begin_offset,
+				       "stream_end_offset"_v = stream_end_offset;
+			});
 			reader->seek(stream_begin_offset);
 			U8 annotation_mark = reader->readU8();
 			throw_if (annotation_mark != 0x05, "Incorrect annotation mark.", errors::uninterpretable_data{});
 			std::string annotation;
 			while (reader->tell() < stream_end_offset - 1)
 			{
-				log_scope(reader->tell());
+				audit::scope audit_scope{auditor, [&]{ return "reader_tell"_v = reader->tell(); }};
 				// warning TODO: Unicode support in comments
 				if (unicode)
 					reader->seek(1, SEEK_CUR); // skip unicode byte
@@ -213,7 +242,7 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<comment>& c
 						annotation += ch;
 				}
 			}
-			log_entry(annotation);
+			audit::entry(auditor, [&]{ return "annotation"_v = annotation; });
 			annotations.push_back(annotation);
 			if (annotation_end_cp >= parser->fib().ccpAtn - 1)
 				break;
@@ -222,7 +251,10 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<comment>& c
 
 		U32 annotation_owners_offset = parser->fib().fcGrpXstAtnOwners;
 		U32 annotation_owners_len = parser->fib().lcbGrpXstAtnOwners;
-		log_entry(annotation_owners_offset, annotation_owners_len);
+		audit::entry(auditor, [&]{
+			return "annotation_owners_offset"_v = annotation_owners_offset,
+			       "annotation_owners_len"_v = annotation_owners_len;
+		});
 		table_reader->seek(annotation_owners_offset);
 		std::vector<std::string> owners;
 		for (int total_len = 0; total_len < annotation_owners_len;)
@@ -242,24 +274,24 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<comment>& c
 				owner += (char)ch;
 				total_len += 2;
 			}
-			log_entry(owner);
+			audit::entry(auditor, [&]{ return "owner"_v = owner; });
 			owners.push_back(owner);
 		}
 
 		U32 annotation_refs_offset = parser->fib().fcPlcfandRef;
-		log_entry(annotation_refs_offset);
+		audit::entry(auditor, [&]{ return "annotation_refs_offset"_v = annotation_refs_offset; });
 		table_reader->seek(annotation_refs_offset);
 		for (int i = 0;; i++)
 		{
-			log_scope(i);
+			audit::scope audit_scope{auditor, [&]{ return "i"_v = i; }};
 			U32 annotation_ref_cp = table_reader->readU32();
 			if (annotation_ref_cp >= parser->fib().ccpText)
 				break;
-			log_entry(i, annotation_ref_cp);
+			audit::entry(auditor, [&]{ return "i"_v = i, "annotation_ref_cp"_v = annotation_ref_cp; });
 			U32 stream_offset;
 			try
 			{
-				cp_to_stream_offset(parser, annotation_ref_cp, stream_offset);
+				cp_to_stream_offset(parser, annotation_ref_cp, stream_offset, auditor);
 			}
 			catch (const std::exception&)
 			{
@@ -267,7 +299,7 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<comment>& c
 			}
 			if (i < annotations.size())
 			{
-				log_scope(i, stream_offset);
+				audit::scope audit_scope{auditor, [&]{ return "i"_v = i, "stream_offset"_v = stream_offset; }};
 				comment c;
 				c.fc = stream_offset;
 				c.text = annotations[i];
@@ -280,7 +312,9 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<comment>& c
 			Word97::ATRD atrd(table_reader.get());
 			if (atrd.ibst < owners.size())
 			{
-				log_scope(owners[atrd.ibst], atrd.ibst);
+				audit::scope audit_scope{auditor, [&]{
+					return "owner"_v = owners[atrd.ibst], "ibst"_v = atrd.ibst;
+				}};
 				comments[i].author = owners[atrd.ibst];
 			}
 		}
@@ -291,6 +325,7 @@ static void parse_comments(const wvWare::Parser* parser, std::vector<comment>& c
 	}
 }
 
+template<typename auditor_type>
 class text_handler : public wvWare::TextHandler
 {
 	private:
@@ -300,17 +335,26 @@ class text_handler : public wvWare::TextHandler
 		bool m_comments_parsed;
 		std::vector<comment> m_comments;
 		U32 m_prev_par_fc;
+		audit::auditor_ref<auditor_type> m_auditor;
 
 	public:
-		text_handler(const message_callbacks& emit_message, const wvWare::Parser* parser, current_state* curr_state)
-			: m_emit_message(emit_message), m_parser(parser), m_curr_state(curr_state), m_comments_parsed(false), m_prev_par_fc(0)
+		text_handler(
+			const message_callbacks& emit_message,
+			const wvWare::Parser* parser,
+			current_state* curr_state,
+			audit::auditor_ref<auditor_type> auditor)
+			: m_emit_message(emit_message),
+			  m_parser(parser),
+			  m_curr_state(curr_state),
+			  m_comments_parsed(false),
+			  m_prev_par_fc(0),
+			  m_auditor(auditor)
 		{
-			m_curr_state = curr_state;
 		}
 
 		void sectionStart(SharedPtr<const Word97::SEP> sep)
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 		}
 
 		void sectionEnd()
@@ -319,13 +363,13 @@ class text_handler : public wvWare::TextHandler
 
 		void pageBreak()
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 		}
 
 		void paragraphStart(SharedPtr<const ParagraphProperties>
 			paragraphProperties)
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			if (!m_curr_state->table_state.empty())
 			{
 				if (m_curr_state->table_state.top() == table_state::in_table)
@@ -356,7 +400,11 @@ class text_handler : public wvWare::TextHandler
 				{
 					try
 					{
-						parse_comments(m_parser, m_comments, [&](std::exception_ptr e) { m_emit_message(std::move(e)); }); // ?
+						parse_comments(
+							m_parser,
+							m_comments,
+							[&](std::exception_ptr e) { m_emit_message(std::move(e)); },
+							m_auditor);
 					}
 					catch (std::exception&)
 					{
@@ -370,7 +418,7 @@ class text_handler : public wvWare::TextHandler
 
 		void paragraphEnd()
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			m_emit_message(document::close_paragraph{});
 			if (!((Parser9x*)m_parser)->currentParagraph()->empty())
 			{
@@ -380,7 +428,7 @@ class text_handler : public wvWare::TextHandler
 
 		void runOfText (const UString &text, SharedPtr< const Word97::CHP > chp)
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			if (m_curr_state->field_part == FIELD_PART_PARAMS)
 				m_curr_state->field_params += text;
 			else if (m_curr_state->field_part == FIELD_PART_VALUE)
@@ -396,7 +444,7 @@ class text_handler : public wvWare::TextHandler
 		void specialCharacter(SpecialCharacter character,
 			SharedPtr<const Word97::CHP> chp)
 		{
-			log_scope(character);
+			audit::scope audit_scope{m_auditor, [&]{ return "character"_v = character; }};
 		}
 
 		void footnoteFound (FootnoteData::Type type, UChar character,
@@ -407,20 +455,20 @@ class text_handler : public wvWare::TextHandler
 
 		void footnoteAutoNumber(SharedPtr<const Word97::CHP> chp)
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 		}
 
 		void fieldStart(const FLD *fld,
 			SharedPtr<const Word97::CHP> chp)
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			m_curr_state->field_type = (field_type)fld->flt;
 			m_curr_state->field_part = FIELD_PART_PARAMS;
 			switch (fld->flt)
 			{
 				case FLT_EMBED:
 				{
-					log_scope();
+					audit::scope audit_scope{m_auditor, audit::no_context};
 					if (m_curr_state->obj_texts_iter == m_curr_state->obj_texts.end())
 						m_emit_message(make_error_ptr("Unexpected OLE object reference."));
 					else
@@ -441,14 +489,14 @@ class text_handler : public wvWare::TextHandler
 		void fieldSeparator(const FLD* fld,
 			SharedPtr<const Word97::CHP> chp)
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			m_curr_state->field_part = FIELD_PART_VALUE;
 		}
 
 		void fieldEnd(const FLD* fld,
 			SharedPtr<const Word97::CHP> chp)
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			UString params = m_curr_state->field_params;
 			int i = 0;
 			while (i < params.length() && params[i] == ' ') i++;
@@ -493,7 +541,7 @@ class text_handler : public wvWare::TextHandler
 
 		void endOfDocument()
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			if (m_comments_parsed)
 				for (int i = 0; i < m_comments.size(); i++)
 					if (m_comments[i].fc >= m_prev_par_fc)
@@ -505,21 +553,28 @@ class text_handler : public wvWare::TextHandler
 		}
 };
 
+template<typename auditor_type>
 class table_handler : public wvWare::TableHandler
 {
 	private:
 		const message_callbacks& m_emit_message;
 		current_state& m_current_state;
+		audit::auditor_ref<auditor_type> m_auditor;
 
 	public:
-		table_handler(const message_callbacks& emit_message, current_state& current_state)
-			: m_emit_message(emit_message), m_current_state(current_state)
+		table_handler(
+			const message_callbacks& emit_message,
+			current_state& current_state,
+			audit::auditor_ref<auditor_type> auditor)
+			: m_emit_message(emit_message),
+			  m_current_state(current_state),
+			  m_auditor(auditor)
 		{
 		}
 
 		void tableRowStart(SharedPtr<const Word97::TAP> tap)
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			if (m_current_state.table_state.empty() || m_current_state.table_state.top() == table_state::in_cell)
 			{
 				m_emit_message(document::table{});
@@ -532,7 +587,7 @@ class table_handler : public wvWare::TableHandler
 
 		void tableRowEnd()
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			throw_if (m_current_state.table_state.empty(), errors::uninterpretable_data{});
 			if (m_current_state.table_state.top() == table_state::in_cell)
 			{
@@ -546,7 +601,7 @@ class table_handler : public wvWare::TableHandler
 
 		void tableCellStart()
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			throw_if (m_current_state.table_state.empty() || m_current_state.table_state.top() != table_state::in_row, errors::uninterpretable_data{});
 			m_emit_message(document::table_cell{});
 			m_current_state.table_state.push(table_state::in_cell);
@@ -554,7 +609,7 @@ class table_handler : public wvWare::TableHandler
 
 		void tableCellEnd()
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			if (!m_current_state.table_state.empty() && m_current_state.table_state.top() == table_state::in_table)
 			{
 				m_emit_message(document::close_table{});
@@ -566,21 +621,28 @@ class table_handler : public wvWare::TableHandler
 		}
 };
 
+template<typename auditor_type>
 class subdocument_handler : public wvWare::SubDocumentHandler
 {
 	private:
 		const message_callbacks& m_emit_message;
 		current_header_footer* m_curr_header_footer;
-	
+		audit::auditor_ref<auditor_type> m_auditor;
+
 	public:
-		subdocument_handler(const message_callbacks& emit_message, current_header_footer* curr_header_footer)
-			: m_emit_message(emit_message), m_curr_header_footer(curr_header_footer)
+		subdocument_handler(
+			const message_callbacks& emit_message,
+			current_header_footer* curr_header_footer,
+			audit::auditor_ref<auditor_type> auditor)
+			: m_emit_message(emit_message),
+			  m_curr_header_footer(curr_header_footer),
+			  m_auditor(auditor)
 		{
 		}
 
 		virtual void headerStart(HeaderData::Type type)
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			switch (type)
 			{
 				case HeaderData::HeaderOdd:
@@ -600,7 +662,7 @@ class subdocument_handler : public wvWare::SubDocumentHandler
 
 		virtual void headerEnd()
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			if (m_curr_header_footer->in_header)
 				m_emit_message(document::close_header{});
 			if (m_curr_header_footer->in_footer)
@@ -610,11 +672,18 @@ class subdocument_handler : public wvWare::SubDocumentHandler
 		}
 };
 
-doc_parser::doc_parser() = default;
+template<typename auditor_type>
+doc_parser<auditor_type>::doc_parser(audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<doc_parser<auditor_type>>(auditor),
+	  audit::with_auditor<auditor_type>(auditor)
+{}
 
-void pimpl_impl<doc_parser>::parse(const data_source& data, const message_callbacks& emit_message)
+template<typename auditor_type>
+void pimpl_impl<doc_parser<auditor_type>>::parse(
+	const data_source& data,
+	const message_callbacks& emit_message)
 {
-	log_scope(data);
+	audit::scope parse_audit_scope{auditor(), [&]{ return "data"_v = data; }};
 
 	current_state curr_state;
 	auto storage = std::make_unique<thread_safe_ole_storage>(data.span());
@@ -630,12 +699,14 @@ void pimpl_impl<doc_parser>::parse(const data_source& data, const message_callba
 		});
 	if (storage->enterDirectory("ObjectPool"))
 	{
-		log_scope();
+		audit::scope object_pool_audit_scope{auditor(), audit::no_context};
 		std::vector<std::string> obj_list;
 		throw_if (!storage->getStreamsAndStoragesList(obj_list), storage->getLastError(), errors::uninterpretable_data{});
 		for (size_t i = 0; i < obj_list.size(); ++i)
 		{
-			log_scope(i, obj_list[i]);
+			audit::scope obj_audit_scope{auditor(), [&]{
+				return "obj_index"_v = i, "obj_name"_v = obj_list[i];
+			}};
 			std::string obj_text;
 			std::string current_dir = obj_list[i];
 			if (storage->enterDirectory(obj_list[i]))
@@ -644,10 +715,10 @@ void pimpl_impl<doc_parser>::parse(const data_source& data, const message_callba
 				throw_if (!storage->getStreamsAndStoragesList(obj_list), storage->getLastError(), current_dir, errors::uninterpretable_data{});
 				if (find(obj_list.begin(), obj_list.end(), "Workbook") != obj_list.end())
 				{
-					log_scope();
+					audit::scope workbook_audit_scope{auditor(), audit::no_context};
 					try
 					{
-						xls_parser xls{};
+						xls_parser<> xls{};
 						obj_text = xls.parse(*storage, emit_message);
 					}
 					catch (const std::exception&)
@@ -662,7 +733,9 @@ void pimpl_impl<doc_parser>::parse(const data_source& data, const message_callba
 	}
 	storage->leaveDirectory();
 	curr_state.obj_texts_iter = curr_state.obj_texts.begin();
-	log::cerr_redirection<audit::legacy_log_audit> cerr_redirection;
+	log::cerr_redirection<auditor_type> cerr_redirection{
+		audit::auditor_ref<auditor_type>(auditor())
+	};
 	SharedPtr<wvWare::Parser> parser;
 	{
 		std::lock_guard<std::mutex> parser_factory_mutex_2_lock(parser_factory_mutex_2);
@@ -672,11 +745,23 @@ void pimpl_impl<doc_parser>::parse(const data_source& data, const message_callba
 	throw_if (!parser, "Error while creating parser");
 	throw_if (!parser->isOk() && parser->fib().fEncrypted, errors::file_encrypted{});
 	throw_if (!parser->isOk(), "Error while creating parser", errors::uninterpretable_data{});
-	text_handler text_handler(emit_message, parser, &curr_state);
+	text_handler<auditor_type> text_handler(
+		emit_message,
+		parser,
+		&curr_state,
+		audit::auditor_ref<auditor_type>(auditor()));
 	parser->setTextHandler(&text_handler);
-	table_handler table_handler(emit_message, curr_state);
+
+	table_handler<auditor_type> table_handler(
+		emit_message,
+		curr_state,
+		audit::auditor_ref<auditor_type>(auditor()));
 	parser->setTableHandler(&table_handler);
-	subdocument_handler subdocument_handler(emit_message, &curr_state.header_footer);
+
+	subdocument_handler<auditor_type> subdocument_handler(
+		emit_message,
+		&curr_state.header_footer,
+		audit::auditor_ref<auditor_type>(auditor()));
 	parser->setSubDocumentHandler(&subdocument_handler);
 	cerr_redirection.redirect();
 	bool res = parser->parse();
@@ -686,8 +771,13 @@ void pimpl_impl<doc_parser>::parse(const data_source& data, const message_callba
 	emit_message(document::close_document{});
 }
 
-continuation doc_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation doc_parser<auditor_type>::operator()(
+	message_ptr msg,
+	const message_callbacks& emit_message)
 {
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
+
     if (!msg->is<data_source>())
         return emit_message(std::move(msg));
 
@@ -707,5 +797,8 @@ continuation doc_parser::operator()(message_ptr msg, const message_callbacks& em
     }
     return continuation::proceed;
 }
+
+template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT doc_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT doc_parser<docwire::audit::legacy_log_audit>;
 
 } // namespace docwire
