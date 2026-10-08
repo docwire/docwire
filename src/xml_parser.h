@@ -26,7 +26,7 @@ namespace docwire
  */
 template <safety_policy safety_level = default_safety_level,
           typename auditor_type = audit::null_auditor>
-class DOCWIRE_XML_EXPORT xml_parser : public pipeline::transformer_element<xml_parser<safety_level>>, private audit::with_auditor<auditor_type>
+class DOCWIRE_XML_EXPORT xml_parser : public pipeline::transformer_element<xml_parser<safety_level, auditor_type>>, private audit::with_auditor<auditor_type>
 {
     using audit::with_auditor<auditor_type>::auditor;
 public:

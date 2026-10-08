@@ -718,7 +718,9 @@ void pimpl_impl<doc_parser<auditor_type>>::parse(
 					audit::scope workbook_audit_scope{auditor(), audit::no_context};
 					try
 					{
-						xls_parser<> xls{};
+						xls_parser<auditor_type> xls{
+							audit::auditor_ref<auditor_type>(auditor())
+						};
 						obj_text = xls.parse(*storage, emit_message);
 					}
 					catch (const std::exception&)
