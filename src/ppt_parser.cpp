@@ -241,7 +241,9 @@ namespace
 		text = std::string(content.begin(), content.end());
 		try
 		{
-			std::string codepage = get_codepage_from_document_summary_info(storage);
+			std::string codepage = get_codepage_from_document_summary_info(
+				storage,
+				audit::auditor_ref<auditor_type>(auditor));
 			TextConverter tc(codepage);
 			text = ustring_to_string(tc.convert(text));
 		}
@@ -399,14 +401,21 @@ attributes::metadata metaData(
 {
 	audit::scope audit_scope{auditor, audit::no_context};
 	attributes::metadata meta;
-		parse_oshared_summary_info(*storage, meta, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
+		parse_oshared_summary_info(
+			*storage,
+			meta,
+			[emit_message](std::exception_ptr e) { emit_message(std::move(e)); },
+			audit::auditor_ref<auditor_type>(auditor));
 		// If page count not found use slide count as page count
 		if (!meta.page_count)
 		{
 			int slide_count = 150;
 			try
 			{
-				parse_oshared_document_summary_info(*storage, slide_count);
+				parse_oshared_document_summary_info(
+					*storage,
+					slide_count,
+					audit::auditor_ref<auditor_type>(auditor));
 				if(slide_count!=-1){
 					meta.page_count = slide_count;
 				}

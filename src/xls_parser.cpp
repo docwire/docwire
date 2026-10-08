@@ -944,7 +944,11 @@ void pimpl_impl<xls_parser<auditor_type>>::parse(const data_source& data, const 
 			.metadata = [this, emit_message, &storage]()
 			{
 				attributes::metadata meta;
-				parse_oshared_summary_info(*storage, meta, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
+				parse_oshared_summary_info(
+					*storage,
+					meta,
+					[emit_message](std::exception_ptr e) { emit_message(std::move(e)); },
+					audit::auditor_ref<auditor_type>(auditor()));
 				return meta;
 			}
 		});

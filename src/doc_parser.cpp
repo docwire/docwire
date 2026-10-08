@@ -693,7 +693,11 @@ void pimpl_impl<doc_parser<auditor_type>>::parse(
 			.metadata = [this, &storage, emit_message]()
 			{
 				attributes::metadata meta;
-				parse_oshared_summary_info(*storage, meta, [emit_message](std::exception_ptr e) { emit_message(std::move(e)); }); // ?
+				parse_oshared_summary_info(
+					*storage,
+					meta,
+					[emit_message](std::exception_ptr e) { emit_message(std::move(e)); },
+					audit::auditor_ref<auditor_type>(auditor()));
 				return meta;
 			}
 		});
