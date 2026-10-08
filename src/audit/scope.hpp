@@ -2,7 +2,7 @@
 #define DOCWIRE_AUDIT_SCOPE_H
 
 #include "audit/auditor_ref.hpp"
-#include "log_tags.h"
+#include "scope_tags.hpp"
 #include "source_location.h"
 
 #include <type_traits>
@@ -23,12 +23,12 @@ public:
           m_context_fn(std::forward<context_fn_type>(context_fn)),
           m_location(location)
     {
-        m_auditor.auditor().record(m_location, docwire::log::scope_enter{}, m_context_fn);
+        m_auditor.auditor().record(m_location, docwire::audit::scope_enter{}, m_context_fn);
     }
 
     ~scope()
     {
-        m_auditor.auditor().record(m_location, docwire::log::scope_exit{}, m_context_fn);
+        m_auditor.auditor().record(m_location, docwire::audit::scope_exit{}, m_context_fn);
     }
 
     scope(const scope&) = delete;
