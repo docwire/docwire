@@ -127,7 +127,7 @@ class common_xml_document_parser
 		 * @param zipfile Pointer to the zip_reader if the XML is part of a zipped archive (e.g., DOCX, ODT).
 		 * @return The extracted text content.
 		 */
-		std::string parseXmlData(xml::children_view<safety_level> xml_nodes, xml_parse_mode mode, zip_reader* zipfile);
+		std::string parseXmlData(xml::children_view<safety_level, auditor_type> xml_nodes, xml_parse_mode mode, zip_reader* zipfile);
 
 		/**
 		 * @brief Parses the children of a given XML node.

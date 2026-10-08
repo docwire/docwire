@@ -540,7 +540,7 @@ void common_xml_document_parser<safety_level, auditor_type>::registerODFOOXMLCom
 }
 
 template <safety_policy safety_level, typename auditor_type>
-std::string common_xml_document_parser<safety_level, auditor_type>::parseXmlData(xml::children_view<safety_level> xml_nodes, xml_parse_mode mode, zip_reader* zipfile)
+std::string common_xml_document_parser<safety_level, auditor_type>::parseXmlData(xml::children_view<safety_level, auditor_type> xml_nodes, xml_parse_mode mode, zip_reader* zipfile)
 {
 	audit::scope audit_scope{auditor(), audit::no_context};
 	std::string text;
