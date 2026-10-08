@@ -332,7 +332,9 @@ struct pimpl_impl<odf_ooxml_parser<safety_level, auditor_type>>
 		try
 		{
 			xml::reader<safety_level> xml_reader(xml, owner().blanks());
-			for (auto node: children(root_element(xml_reader)))
+			for (auto node: children(
+				root_element(xml_reader),
+				audit::auditor_ref<auditor_type>(auditor())))
 			{
 				if (node.name() == "comment")
 				{
@@ -371,7 +373,9 @@ struct pimpl_impl<odf_ooxml_parser<safety_level, auditor_type>>
 		try
 		{
 			xml::reader xml_reader(xml, owner().blanks());
-			for (auto node: children(root_element(xml_reader)))
+			for (auto node: children(
+				root_element(xml_reader),
+				audit::auditor_ref<auditor_type>(auditor())))
 			{
 				if (node.name() == "Relationship")
 				{
@@ -409,7 +413,12 @@ struct pimpl_impl<odf_ooxml_parser<safety_level, auditor_type>>
 		try
 		{
 			xml::reader<safety_level> xml_reader(xml, owner().blanks());
-			owner().parseXmlData(children(xml_reader), mode, &zipfile);
+			owner().parseXmlData(
+				children(
+					xml_reader,
+					audit::auditor_ref<auditor_type>(auditor())),
+				mode,
+				&zipfile);
 		}
 		catch (const std::exception& e)
 		{
@@ -579,7 +588,9 @@ void odf_ooxml_parser<safety_level, auditor_type>::parse(const data_source& data
 			try
 			{
 				xml::reader<safety_level> xml_reader(xml, blanks());
-				for (auto node: children(root_element(xml_reader)))
+				for (auto node: children(
+					root_element(xml_reader),
+					audit::auditor_ref<auditor_type>(auditor())))
 				{
 					if (node.name() == "si")
 					{
@@ -657,7 +668,9 @@ attributes::metadata odf_ooxml_parser<safety_level, auditor_type>::metaData(zip_
 		try
 		{
 			xml::reader xml_reader(core_xml, blanks());
-			for (auto node: children(root_element(xml_reader)))
+			for (auto node: children(
+				root_element(xml_reader),
+				audit::auditor_ref<auditor_type>(auditor())))
 			{
 				if (node.name() == "creator")
 					meta.author = std::string(node.string_value());
@@ -679,7 +692,9 @@ attributes::metadata odf_ooxml_parser<safety_level, auditor_type>::metaData(zip_
 		try
 		{
 			xml::reader app_stream(app_xml, blanks());
-			for (auto node: children(root_element(app_stream)))
+			for (auto node: children(
+				root_element(app_stream),
+				audit::auditor_ref<auditor_type>(auditor())))
 			{
 				if (node.name() == "Pages")
 					meta.page_count = convert::try_to<int>(node.string_value());
