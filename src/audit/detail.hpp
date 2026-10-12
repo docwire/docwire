@@ -3,6 +3,7 @@
 
 #include "audit/core.hpp"
 #include "audit/audit_tag.hpp"
+#include "audit/detail/tuple_traits.hpp"
 
 #include <concepts>
 #include <tuple>
@@ -16,15 +17,6 @@ template <typename... Args>
 concept record_args_valid =
     (1 == (std::invocable<std::decay_t<Args>> + ... + 0)) &&
     ((std::invocable<std::decay_t<Args>> || audit_tag<std::decay_t<Args>>) && ...);
-
-template <typename T>
-struct is_std_tuple : std::false_type {};
-
-template <typename... Args>
-struct is_std_tuple<std::tuple<Args...>> : std::true_type {};
-
-template <typename T>
-inline constexpr bool is_std_tuple_v = is_std_tuple<T>::value;
 
 template <typename Auditor, typename Result>
 void record_context(Auditor& auditor, source_location location, Result&& result)

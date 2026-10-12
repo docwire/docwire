@@ -9,6 +9,15 @@
 #include "stringification.h"
 #include "xml_parser.h"
 
+#include "gmock/gmock.h"
+#include "audit/chain.hpp"
+#include "audit/detail/filter_rules.hpp"
+#include "audit/filter.hpp"
+#include "audit/scope_tags.hpp"
+#include "audit/serialize/json.hpp"
+#include "audit/sink/ostream.hpp"
+#include "named.h"
+
 #include <gtest/gtest.h>
 #include <memory>
 #include <sstream>
@@ -178,4 +187,68 @@ TEST(LegacyLogAudit, SerializesSharedPtr)
     std::string output = log_stream.str();
     EXPECT_FALSE(output.empty());
     EXPECT_NE(output.find("42"), std::string::npos);
+}
+
+TEST(AuditComposition, FilterSpecParsing)
+{
+    auto wildcard_spec = audit::detail::parse_filter("*");
+    EXPECT_TRUE(wildcard_spec.rules.empty());
+    EXPECT_TRUE(wildcard_spec.wildcard_enabled);
+
+    auto empty_spec = audit::detail::parse_filter("");
+    EXPECT_TRUE(empty_spec.rules.empty());
+    EXPECT_FALSE(empty_spec.wildcard_enabled);
+
+    auto negative_spec = audit::detail::parse_filter("-@file:a.cpp");
+    ASSERT_EQ(negative_spec.rules.size(), 1);
+    EXPECT_TRUE(negative_spec.rules[0].is_negative);
+    EXPECT_EQ(negative_spec.rules[0].type, audit::detail::filter_rule::FILE);
+    EXPECT_EQ(negative_spec.rules[0].value, "a.cpp");
+
+    auto tag_spec = audit::detail::parse_filter("audit_test_tag");
+    ASSERT_EQ(tag_spec.rules.size(), 1);
+    EXPECT_FALSE(tag_spec.rules[0].is_negative);
+    EXPECT_EQ(tag_spec.rules[0].type, audit::detail::filter_rule::TAG);
+    EXPECT_EQ(tag_spec.rules[0].value, "audit_test_tag");
+}
+
+TEST(AuditComposition, ComposedJsonStreamAuditor)
+{
+    std::stringstream log_stream;
+    {
+        auto auditor =
+            audit::serialize::json{}
+            | audit::sink::ostream{log_stream};
+
+        auditor.record(source_location::current(), "test message"_v = 42);
+    }
+
+    std::string output = log_stream.str();
+    EXPECT_NE(output.find("test message"), std::string::npos);
+    EXPECT_NE(output.find("42"), std::string::npos);
+}
+
+TEST(AuditComposition, FilteredComposedJsonStreamAuditor)
+{
+    std::stringstream included_stream;
+    std::stringstream excluded_stream;
+    {
+        auto included_auditor =
+            audit::filter::by_spec{"*"}
+            | audit::serialize::json{}
+            | audit::sink::ostream{included_stream};
+
+        included_auditor.record(source_location::current(), "included message"_v = 42);
+    }
+    {
+        auto excluded_auditor =
+            audit::filter::by_spec{"nonexistent_tag"}
+            | audit::serialize::json{}
+            | audit::sink::ostream{excluded_stream};
+
+        excluded_auditor.record(source_location::current(), "excluded message"_v = 99);
+    }
+
+    EXPECT_NE(included_stream.str().find("included message"), std::string::npos);
+    EXPECT_EQ(excluded_stream.str().find("excluded message"), std::string::npos);
 }

@@ -2,6 +2,7 @@
 #define DOCWIRE_AUDIT_DETAIL_VALUE_CONVERSION_HPP
 
 #include "audit/audit_tag.hpp"
+#include "audit/detail/tuple_traits.hpp"
 #include "boost_datetime_wrapper.h"
 #include "concepts_string.h"
 #include "named.h"
@@ -81,15 +82,6 @@ constexpr auto collect_tags()
 
     return tags;
 }
-
-template <typename T>
-struct is_std_tuple : std::false_type {};
-
-template <typename... Args>
-struct is_std_tuple<std::tuple<Args...>> : std::true_type {};
-
-template <typename T>
-inline constexpr bool is_std_tuple_v = is_std_tuple<T>::value;
 
 template <typename... Args>
 serialization::array build_context(Args&&... args)
