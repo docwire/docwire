@@ -10,7 +10,6 @@
 #include "xml_parser.h"
 
 #include "gmock/gmock.h"
-#include "audit/chain.hpp"
 #include "audit/detail/filter_rules.hpp"
 #include "audit/filter.hpp"
 #include "audit/scope_tags.hpp"

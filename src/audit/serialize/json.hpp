@@ -17,6 +17,13 @@ class json
 {
     template<typename> friend class json;
 
+    template<typename L, typename R>
+        requires requires(L l, R r) { std::move(l).with_next(std::move(r)); }
+    friend auto operator|(L&& left, R&& right)
+    {
+        return std::forward<L>(left).with_next(std::forward<R>(right));
+    }
+
 public:
     json() requires std::is_void_v<Next> = default;
 

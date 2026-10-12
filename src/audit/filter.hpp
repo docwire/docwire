@@ -20,6 +20,13 @@ class by_spec
 {
     template<typename> friend class by_spec;
 
+    template<typename L, typename R>
+        requires requires(L l, R r) { std::move(l).with_next(std::move(r)); }
+    friend auto operator|(L&& left, R&& right)
+    {
+        return std::forward<L>(left).with_next(std::forward<R>(right));
+    }
+
 public:
     explicit by_spec(std::string filter_spec)
         : m_filter_spec(detail::parse_filter(std::move(filter_spec)))
