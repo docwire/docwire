@@ -1,10 +1,10 @@
 #ifndef DOCWIRE_AUDIT_SERIALIZE_JSON_HPP
 #define DOCWIRE_AUDIT_SERIALIZE_JSON_HPP
 
-#include "audit/detail/chaining.hpp"
-#include "audit/detail/value_conversion.hpp"
-#include "serialization_base.h"
-#include "source_location.h"
+#include "../detail/chaining.hpp"
+#include "../detail/value_conversion.hpp"
+#include "../../serialization_base.h"
+#include "../../source_location.h"
 
 #include <type_traits>
 #include <utility>

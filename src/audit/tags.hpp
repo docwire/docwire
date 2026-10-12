@@ -1,7 +1,7 @@
 #ifndef DOCWIRE_AUDIT_TAGS_H
 #define DOCWIRE_AUDIT_TAGS_H
 
-#include "audit/audit_tag.hpp"
+#include "audit_tag.hpp"
 
 #include <tuple>
 

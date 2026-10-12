@@ -1,7 +1,7 @@
 #ifndef DOCWIRE_AUDIT_AUDIT_TAG_H
 #define DOCWIRE_AUDIT_AUDIT_TAG_H
 
-#include "diagnostic_context.h"
+#include "../diagnostic_context.h"
 
 #include <tuple>
 

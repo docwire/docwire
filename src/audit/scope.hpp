@@ -1,9 +1,9 @@
 #ifndef DOCWIRE_AUDIT_SCOPE_H
 #define DOCWIRE_AUDIT_SCOPE_H
 
-#include "audit/auditor_ref.hpp"
+#include "auditor_ref.hpp"
 #include "scope_tags.hpp"
-#include "source_location.h"
+#include "../source_location.h"
 
 #include <type_traits>
 #include <utility>

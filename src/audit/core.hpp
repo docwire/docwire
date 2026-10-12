@@ -1,7 +1,7 @@
 #ifndef DOCWIRE_AUDIT_CORE_H
 #define DOCWIRE_AUDIT_CORE_H
 
-#include "source_location.h"
+#include "../source_location.h"
 
 #include <concepts>
 #include <tuple>

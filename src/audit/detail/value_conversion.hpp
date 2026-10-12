@@ -1,16 +1,16 @@
 #ifndef DOCWIRE_AUDIT_DETAIL_VALUE_CONVERSION_HPP
 #define DOCWIRE_AUDIT_DETAIL_VALUE_CONVERSION_HPP
 
-#include "audit/audit_tag.hpp"
-#include "audit/detail/tuple_traits.hpp"
-#include "boost_datetime_wrapper.h"
-#include "concepts_string.h"
-#include "named.h"
-#include "serialization_base.h"
-#include "serialization_filesystem.h"
-#include "serialization_thread_id.h"
-#include "source_location.h"
-#include "type_name_base.h"
+#include "../audit_tag.hpp"
+#include "tuple_traits.hpp"
+#include "../../boost_datetime_wrapper.h"
+#include "../../concepts_string.h"
+#include "../../named.h"
+#include "../../serialization_base.h"
+#include "../../serialization_filesystem.h"
+#include "../../serialization_thread_id.h"
+#include "../../source_location.h"
+#include "../../type_name_base.h"
 
 #include <array>
 #include <cstdint>

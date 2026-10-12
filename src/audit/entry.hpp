@@ -1,9 +1,9 @@
 #ifndef DOCWIRE_AUDIT_ENTRY_H
 #define DOCWIRE_AUDIT_ENTRY_H
 
-#include "audit/auditor_ref.hpp"
-#include "audit/tags.hpp"
-#include "source_location.h"
+#include "auditor_ref.hpp"
+#include "tags.hpp"
+#include "../source_location.h"
 
 #include <concepts>
 #include <tuple>

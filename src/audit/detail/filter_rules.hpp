@@ -1,8 +1,8 @@
 #ifndef DOCWIRE_AUDIT_DETAIL_FILTER_RULES_HPP
 #define DOCWIRE_AUDIT_DETAIL_FILTER_RULES_HPP
 
-#include "source_location.h"
-#include "type_name_base.h"
+#include "../../source_location.h"
+#include "../../type_name_base.h"
 
 #include <algorithm>
 #include <filesystem>

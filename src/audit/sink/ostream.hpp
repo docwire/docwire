@@ -1,10 +1,10 @@
 #ifndef DOCWIRE_AUDIT_SINK_OSTREAM_HPP
 #define DOCWIRE_AUDIT_SINK_OSTREAM_HPP
 
-#include "json_serialization.h"
-#include "ref_or_owned.h"
-#include "serialization_base.h"
-#include "source_location.h"
+#include "../../json_serialization.h"
+#include "../../ref_or_owned.h"
+#include "../../serialization_base.h"
+#include "../../source_location.h"
 
 #include <iostream>
 #include <memory>

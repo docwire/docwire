@@ -1,10 +1,10 @@
 #ifndef DOCWIRE_AUDIT_FILTER_HPP
 #define DOCWIRE_AUDIT_FILTER_HPP
 
-#include "audit/detail/chaining.hpp"
-#include "audit/detail/filter_rules.hpp"
-#include "audit/detail/value_conversion.hpp"
-#include "source_location.h"
+#include "detail/chaining.hpp"
+#include "detail/filter_rules.hpp"
+#include "detail/value_conversion.hpp"
+#include "../source_location.h"
 
 #include <span>
 #include <string>
