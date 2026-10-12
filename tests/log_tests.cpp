@@ -11,6 +11,17 @@
 
 #include <boost/config.hpp>
 #include <boost/json.hpp>
+#include "audit/chain.hpp"
+#include "audit/detail/filter_rules.hpp"
+#include "audit/filter.hpp"
+#include "audit/scope_tags.hpp"
+#include "audit/serialize/json.hpp"
+#include "audit/sink/ostream.hpp"
+#include "named.h"
+
+#include <sstream>
+#include <string_view>
+
 #include "audit/legacy_log_audit.hpp"
 #include "log.h"
 #include "log_json_stream_sink.h"
