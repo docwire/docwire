@@ -41,10 +41,11 @@
 #include "find.h"
 #include "html_exporter.h"
 #include "language.h"
-#include "log_json_stream_sink.h"
-#include "log_core.h"
+#include "audit/filter.hpp"
+#include "audit/serialize/json.hpp"
+#include "audit/sink/ostream.hpp"
 #include "audit.hpp"
-#include "audit/legacy_log_audit.hpp"
+#include "ref_or_owned.h"
 #include <magic_enum/magic_enum_iostream.hpp>
 #include "mail_parser.h"
 #include "meta_data_exporter.h"
@@ -186,9 +187,6 @@ void run_pipeline(data_source&& data, Pipeline&& pipeline)
 
 int main(int argc, char* argv[])
 {
-	// Set the default sink to std::clog.
-	log::set_sink(log::json_stream_sink(std::clog));
-
 	bool local_processing;
 	bool use_stream;
 
@@ -279,29 +277,36 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	if (vm.count("verbose"))
-	{
-		log::set_filter("*");
-	}
-	if (vm.count("log-filter"))
-	{
-		log::set_filter(vm["log-filter"].as<std::string>());
-	}
+	docwire::ref_or_owned<std::ostream> audit_stream{std::clog};
+	std::unique_ptr<std::ofstream> log_file;
 
 	if (vm.count("log_file"))
 	{
-		std::ofstream log_file(vm["log_file"].as<std::string>());
-		if (!log_file.is_open())
+		log_file = std::make_unique<std::ofstream>(vm["log_file"].as<std::string>());
+		if (!log_file->is_open())
 		{
 			std::cerr << "Error: Unable to open log file: " << vm["log_file"].as<std::string>() << std::endl;
 			return 1;
 		}
-		log::set_sink(log::json_stream_sink(std::move(log_file)));
+		audit_stream = docwire::ref_or_owned<std::ostream>{std::move(*log_file)};
 	}
+
+	const std::string filter_spec =
+		vm.count("log-filter")
+			? vm["log-filter"].as<std::string>()
+			: vm.count("verbose")
+				? "*"
+				: "";
+
+	auto audit =
+		docwire::audit::filter::by_spec{filter_spec}
+		| docwire::audit::serialize::json{}
+		| docwire::audit::sink::ostream{std::move(audit_stream)};
+
+	using configured_auditor = std::decay_t<decltype(audit)>;
 
 	std::string file_name = vm["input-file"].as<std::string>();
 
-	audit::legacy_log_audit audit;
 	audit::entry(audit, [&]{
 		return "use_stream"_v = use_stream, "file_name"_v = file_name;
 	});
@@ -524,9 +529,9 @@ int main(int argc, char* argv[])
 
 		using exporter_variant =
 			std::variant<plain_text_exporter,
-			             html_exporter<audit::null_auditor>,
+			             html_exporter<configured_auditor>,
 			             csv_exporter,
-			             metadata_exporter<audit::null_auditor>>;
+			             metadata_exporter<configured_auditor>>;
 
 		exporter_variant formatter = plain_text_exporter{};
 
@@ -536,24 +541,34 @@ int main(int argc, char* argv[])
 				formatter = plain_text_exporter{};
 				break;
 			case output_type::html:
-				formatter = html_exporter{};
+				formatter = html_exporter<configured_auditor>{
+					docwire::audit::auditor_ref<configured_auditor>{audit}
+				};
 				break;
 			case output_type::csv:
 				formatter = csv_exporter{};
 				break;
 			case output_type::metadata:
-				formatter = metadata_exporter{};
+				formatter = metadata_exporter<configured_auditor>{
+					docwire::audit::auditor_ref<configured_auditor>{audit}
+				};
 				break;
 		}
 
 		auto local_prefix =
 			content_type::detector{}
-			| archives_parser<>{}
-			| office_formats_parser<>{}
-			| mail_parser<>{}
-			| ocr_parser<>{
+			| archives_parser<configured_auditor>{
+				docwire::audit::auditor_ref<configured_auditor>{audit}}
+			| office_formats_parser<docwire::safety_policy::strict, configured_auditor>{
+				docwire::audit::auditor_ref<configured_auditor>{audit}}
+			| mail_parser<configured_auditor>{
+				docwire::audit::auditor_ref<configured_auditor>{audit}}
+			| ocr_parser<configured_auditor>{
 				vm["language"].as<std::vector<language>>(),
-				threshold_arg}
+				threshold_arg,
+				{},
+				{},
+				docwire::audit::auditor_ref<configured_auditor>{audit}}
 			| maybe(vm.count("max_nodes_number"), [&] {
 				  return standard_filter::filterByMaxNodeNumber(
 					  vm["max_nodes_number"].as<unsigned int>());
