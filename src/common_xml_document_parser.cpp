@@ -17,6 +17,7 @@
 #include <stack>
 #include "audit/entry.hpp"
 #include "audit/legacy_log_audit.hpp"
+#include "audit/json_stream_auditor.hpp"
 #include "audit/scope.hpp"
 #include "make_error.h"
 #include "text_formatting.h"
@@ -780,5 +781,8 @@ template class pimpl_impl<common_xml_document_parser<strict, audit::null_auditor
 template class pimpl_impl<common_xml_document_parser<relaxed, audit::null_auditor>>;
 template class pimpl_impl<common_xml_document_parser<strict, audit::legacy_log_audit>>;
 template class pimpl_impl<common_xml_document_parser<relaxed, audit::legacy_log_audit>>;
+
+template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<strict, docwire::audit::json_stream_auditor>;
+template class pimpl_impl<common_xml_document_parser<strict, docwire::audit::json_stream_auditor>>;
 
 } // namespace docwire

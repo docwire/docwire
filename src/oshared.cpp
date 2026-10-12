@@ -17,6 +17,7 @@
 #include "audit/auditor_ref.hpp"
 #include "audit/entry.hpp"
 #include "audit/legacy_log_audit.hpp"
+#include "audit/json_stream_auditor.hpp"
 #include "audit/scope.hpp"
 #include "named.h"
 #include "throw_if.h"
@@ -473,5 +474,20 @@ template std::string get_codepage_from_document_summary_info<audit::null_auditor
 template std::string get_codepage_from_document_summary_info<audit::legacy_log_audit>(
     thread_safe_ole_storage&,
     audit::auditor_ref<audit::legacy_log_audit>);
+
+template void parse_oshared_summary_info<docwire::audit::json_stream_auditor>(
+    thread_safe_ole_storage&,
+    attributes::metadata&,
+    const std::function<void(std::exception_ptr)>&,
+    audit::auditor_ref<docwire::audit::json_stream_auditor>);
+
+template void parse_oshared_document_summary_info<docwire::audit::json_stream_auditor>(
+    thread_safe_ole_storage&,
+    int&,
+    audit::auditor_ref<docwire::audit::json_stream_auditor>);
+
+template std::string get_codepage_from_document_summary_info<docwire::audit::json_stream_auditor>(
+    thread_safe_ole_storage&,
+    audit::auditor_ref<docwire::audit::json_stream_auditor>);
 
 } // namespace docwire
