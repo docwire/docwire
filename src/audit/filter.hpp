@@ -18,6 +18,8 @@ namespace docwire::audit::filter
 template<typename Next = void>
 class by_spec
 {
+    template<typename> friend class by_spec;
+
 public:
     explicit by_spec(std::string filter_spec)
         : m_filter_spec(detail::parse_filter(std::move(filter_spec)))

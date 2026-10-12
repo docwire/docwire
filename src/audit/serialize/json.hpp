@@ -15,6 +15,8 @@ namespace docwire::audit::serialize
 template<typename Next = void>
 class json
 {
+    template<typename> friend class json;
+
 public:
     json() requires std::is_void_v<Next> = default;
 
