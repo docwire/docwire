@@ -9,20 +9,22 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#include "ct2_runner.h"
-#include "resource_path.h"
-#include "local_ai_summarize.h"
+#ifndef DOCWIRE_LOCAL_AI_CT2_SUMMARIZE_H
+#define DOCWIRE_LOCAL_AI_CT2_SUMMARIZE_H
 
-namespace docwire::ai::local
-{
+#include "ai_summarize.h"
+#include "local_ai_ct2_runner_factory.h"
 
-summarize::summarize(model_lifetime_policy lifetime)
-    : docwire::ai::summarize(
-        std::make_shared<docwire::ai::ct2::ct2_runner>(resource_path("flan-t5-large-ct2-int8")), lifetime)
-{}
+namespace docwire::ai::local::ct2 {
 
-summarize::summarize(std::shared_ptr<docwire::ai::ai_runner> runner, model_lifetime_policy lifetime)
-    : docwire::ai::summarize(runner, lifetime)
-{}
+class summarize :
+	public docwire::pipeline::transformer_element<summarize>,
+	public docwire::ai::summarize {
+public:
+  summarize(model_lifetime_policy lifetime = model_lifetime_policy::persistent)
+      : docwire::ai::summarize(make_default_runner(), lifetime){};
+};
 
-}
+} // namespace docwire::ai::local::ct2
+
+#endif // DOCWIRE_LOCAL_AI_CT2_SUMMARIZE_H
