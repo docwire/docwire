@@ -13,6 +13,7 @@
 
 #include "audit.hpp"
 #include "audit/legacy_log_audit.hpp"
+#include "audit/json_stream_auditor.hpp"
 #include "data_source.h"
 #include "document_elements.h"
 #include "make_error.h"
@@ -95,5 +96,6 @@ template class DOCWIRE_XML_EXPORT xml_parser<strict, audit::null_auditor>;
 template class DOCWIRE_XML_EXPORT xml_parser<relaxed, audit::null_auditor>;
 template class DOCWIRE_XML_EXPORT xml_parser<strict, audit::legacy_log_audit>;
 template class DOCWIRE_XML_EXPORT xml_parser<relaxed, audit::legacy_log_audit>;
+template class DOCWIRE_XML_EXPORT xml_parser<docwire::safety_policy::strict, docwire::audit::json_stream_auditor>;
 
 } // namespace docwire

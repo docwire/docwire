@@ -20,6 +20,7 @@
 #include "audit/auditor_ref.hpp"
 #include "audit/entry.hpp"
 #include "audit/legacy_log_audit.hpp"
+#include "audit/json_stream_auditor.hpp"
 #include "audit/scope.hpp"
 #include "audit/with_auditor.hpp"
 #include "named.h"
@@ -896,5 +897,6 @@ continuation rtf_parser<auditor_type>::operator()(
 
 template class DOCWIRE_RTF_EXPORT rtf_parser<docwire::audit::null_auditor>;
 template class DOCWIRE_RTF_EXPORT rtf_parser<docwire::audit::legacy_log_audit>;
+template class DOCWIRE_RTF_EXPORT rtf_parser<docwire::audit::json_stream_auditor>;
 
 } // namespace docwire

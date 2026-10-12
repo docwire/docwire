@@ -19,6 +19,7 @@
 #include "audit/auditor_ref.hpp"
 #include "audit/entry.hpp"
 #include "audit/legacy_log_audit.hpp"
+#include "audit/json_stream_auditor.hpp"
 #include "audit/scope.hpp"
 #include "audit/with_auditor.hpp"
 #include "named.h"
@@ -735,5 +736,6 @@ continuation pdf_parser<auditor_type>::operator()(message_ptr msg, const message
 
 template class DOCWIRE_PDF_EXPORT pdf_parser<docwire::audit::null_auditor>;
 template class DOCWIRE_PDF_EXPORT pdf_parser<docwire::audit::legacy_log_audit>;
+template class DOCWIRE_PDF_EXPORT pdf_parser<docwire::audit::json_stream_auditor>;
 
 } // namespace docwire

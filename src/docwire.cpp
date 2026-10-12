@@ -41,10 +41,8 @@
 #include "find.h"
 #include "html_exporter.h"
 #include "language.h"
-#include "audit/filter.hpp"
-#include "audit/serialize/json.hpp"
-#include "audit/sink/ostream.hpp"
 #include "audit.hpp"
+#include "audit/json_stream_auditor.hpp"
 #include "ref_or_owned.h"
 #include <magic_enum/magic_enum_iostream.hpp>
 #include "mail_parser.h"
@@ -298,12 +296,12 @@ int main(int argc, char* argv[])
 				? "*"
 				: "";
 
-	auto audit =
-		docwire::audit::filter::by_spec{filter_spec}
-		| docwire::audit::serialize::json{}
-		| docwire::audit::sink::ostream{std::move(audit_stream)};
+	docwire::audit::json_stream_auditor audit{
+		filter_spec,
+		std::move(audit_stream)
+	};
 
-	using configured_auditor = std::decay_t<decltype(audit)>;
+	using configured_auditor = docwire::audit::json_stream_auditor;
 
 	std::string file_name = vm["input-file"].as<std::string>();
 
