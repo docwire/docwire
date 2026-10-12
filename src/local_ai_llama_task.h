@@ -18,7 +18,9 @@
 #include <filesystem>
 
 namespace docwire::ai::local::llama {
-class task : public docwire::ai::task {
+class task :
+	public docwire::pipeline::transformer_element<task>,
+	public docwire::ai::task {
 public:
 #ifdef DOCWIRE_GRANITE
   // Constructor with Default Granite model

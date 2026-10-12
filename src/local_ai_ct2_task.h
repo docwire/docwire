@@ -16,7 +16,9 @@
 #include "local_ai_ct2_runner_factory.h"
 
 namespace docwire::ai::local::ct2 {
-class task : public docwire::ai::task {
+class task :
+	public docwire::pipeline::transformer_element<task>,
+	public docwire::ai::task {
 
 public:
   explicit task(

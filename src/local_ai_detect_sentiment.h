@@ -16,7 +16,9 @@
 
 namespace docwire::ai::local {
 
-class detect_sentiment : public docwire::ai::detect_sentiment {
+class detect_sentiment :
+	public docwire::pipeline::transformer_element<detect_sentiment>,
+	public docwire::ai::detect_sentiment {
 public:
   explicit detect_sentiment(
       std::shared_ptr<docwire::ai::ai_runner> runner,

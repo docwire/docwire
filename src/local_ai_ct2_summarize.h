@@ -17,7 +17,9 @@
 
 namespace docwire::ai::local::ct2 {
 
-class summarize : public docwire::ai::summarize {
+class summarize :
+	public docwire::pipeline::transformer_element<summarize>,
+	public docwire::ai::summarize {
 public:
   summarize(model_lifetime_policy lifetime = model_lifetime_policy::persistent)
       : docwire::ai::summarize(make_default_runner(), lifetime){};

@@ -19,7 +19,9 @@
 
 namespace docwire::ai::local::llama {
 
-class summarize : public docwire::ai::summarize {
+class summarize :
+	public docwire::pipeline::transformer_element<summarize>,
+	public docwire::ai::summarize {
 public:
 #ifdef DOCWIRE_GRANITE
   // Constructor with Default Granite model

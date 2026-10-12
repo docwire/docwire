@@ -17,7 +17,9 @@
 
 namespace docwire::ai::local::ct2 {
 
-class detect_sentiment : public docwire::ai::detect_sentiment {
+class detect_sentiment :
+	public docwire::pipeline::transformer_element<detect_sentiment>,
+	public docwire::ai::detect_sentiment {
 public:
   detect_sentiment(model_lifetime_policy lifetime = model_lifetime_policy::persistent)
       : docwire::ai::detect_sentiment(make_default_runner(), lifetime){};

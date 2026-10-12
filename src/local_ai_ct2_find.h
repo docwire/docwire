@@ -18,7 +18,9 @@
 
 namespace docwire::ai::local::ct2 {
 
-class find : public docwire::ai::find {
+class find :
+	public docwire::pipeline::transformer_element<find>,
+	public docwire::ai::find {
 public:
   find(const std::string &what,
             model_lifetime_policy lifetime = model_lifetime_policy::persistent)

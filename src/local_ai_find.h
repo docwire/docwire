@@ -16,7 +16,9 @@
 
 namespace docwire::ai::local {
 
-class find : public docwire::ai::find {
+class find :
+	public docwire::pipeline::transformer_element<find>,
+	public docwire::ai::find {
 public:
   explicit find(const std::string &what,
                      std::shared_ptr<ai_runner> runner)

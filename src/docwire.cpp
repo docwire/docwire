@@ -411,32 +411,21 @@ int main(int argc, char* argv[])
 					: 0.0f,
 				vm["openai-image-detail"].as<openai::image_detail>());
 		})
-#ifdef DOCWIRE_CT2
+#ifdef DOCWIRE_LOCAL_AI
 		| maybe(vm.count("local-ai-prompt"), [&] {
 			auto runner = create_local_runner(vm);
 			return ai::local::task(
 				vm["local-ai-prompt"].as<std::string>(), runner);
 		})
-		| maybe(vm.count("local-ai-embed"), [&] {
-			const auto embed_type = vm["local-ai-embed"].as<embed_prefix_type>();
-			std::string prefix;
-
-			switch (embed_type)
-			{
-				case embed_prefix_type::none:
-					prefix = "passage: ";
-					break;
-				case embed_prefix_type::query:
-					prefix = "query: ";
-					break;
-				case embed_prefix_type::passage:
-					prefix = "passage: ";
-					break;
-			}
-
-			auto runner = create_local_runner(vm);
-
-			return docwire::ai::embed{runner, prefix};
+#endif
+#ifdef DOCWIRE_CT2
+		| maybe(vm.count("local-ai-ct2-embed") && vm["local-ai-ct2-embed"].as<embed_prefix_type>()
+			== embed_prefix_type::query, [] {
+			return ai::local::ct2::query::embedder();
+		})
+		| maybe(vm.count("local-ai-ct2-embed") &&
+					   vm["local-ai-ct2-embed"].as<embed_prefix_type>() != embed_prefix_type::query, [] {
+			return ai::local::ct2::passage::embedder();
 		})
 #endif
 		| maybe(vm.count("openai-find"), [&] {

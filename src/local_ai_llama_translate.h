@@ -19,7 +19,9 @@
 
 namespace docwire::ai::local::llama {
 
-class translate : public docwire::ai::translate {
+class translate :
+	public docwire::pipeline::transformer_element<translate>,
+	public docwire::ai::translate {
 public:
 #ifdef DOCWIRE_GRANITE
   // Constructor with Default Granite model

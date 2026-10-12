@@ -18,7 +18,9 @@
 
 namespace docwire::ai::local::ct2 {
 
-class translate : public docwire::ai::translate {
+class translate :
+	public docwire::pipeline::transformer_element<translate>,
+	public docwire::ai::translate {
 public:
   translate(const std::string &language,
             model_lifetime_policy lifetime = model_lifetime_policy::persistent)

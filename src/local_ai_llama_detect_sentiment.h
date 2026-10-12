@@ -19,7 +19,9 @@
 
 namespace docwire::ai::local::llama {
 
-class detect_sentiment : public docwire::ai::detect_sentiment {
+class detect_sentiment :
+	public docwire::pipeline::transformer_element<detect_sentiment>,
+	public docwire::ai::detect_sentiment {
 public:
 #ifdef DOCWIRE_GRANITE
   // Constructor with Default Granite model

@@ -19,7 +19,9 @@
 
 namespace docwire::ai::local::llama {
 
-class find : public docwire::ai::find {
+class find :
+	public docwire::pipeline::transformer_element<find>,
+	public docwire::ai::find {
 public:
 #ifdef DOCWIRE_GRANITE
   // Constructor with Default Granite model

@@ -29,7 +29,9 @@ namespace docwire::ai::local::ct2::passage {
  * "passage: " for multilingual-e5-small) is applied automatically. No
  * model-specific knowledge required at the call site.
  */
-class embedder : public docwire::ai::embed {
+class embedder :
+	public docwire::pipeline::transformer_element<embedder>,
+	public docwire::ai::embed {
 public:
   embedder()
       : docwire::ai::embed(make_embedding_runner(),
@@ -48,7 +50,9 @@ namespace docwire::ai::local::ct2::query {
  site.
 
  */
-class embedder : public docwire::ai::embed {
+class embedder :
+	public docwire::pipeline::transformer_element<embedder>,
+	public docwire::ai::embed {
 public:
   embedder()
       : docwire::ai::embed(make_embedding_runner(),
