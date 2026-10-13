@@ -1,7 +1,7 @@
 #ifndef DOCWIRE_AUDIT_AUDITOR_REF_H
 #define DOCWIRE_AUDIT_AUDITOR_REF_H
 
-#include "audit/core.hpp"
+#include "core.hpp"
 
 #include <type_traits>
 #include <utility>
