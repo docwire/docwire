@@ -1,7 +1,7 @@
 #ifndef DOCWIRE_AUDIT_H
 #define DOCWIRE_AUDIT_H
 
-#include "audit/core.hpp"
+#include "core.hpp"
 #include "audit/detail.hpp"
 #include "audit/entry.hpp"
 #include "audit/scope.hpp"
