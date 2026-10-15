@@ -438,7 +438,11 @@ int main(int argc, char* argv[])
 			auto runner = create_local_runner(
 				vm, "multilingual-e5-small-ct2-int8");
 
-			return docwire::ai::embed<>{runner, prefix};
+			return docwire::ai::embed<configured_auditor>{
+				runner,
+				prefix,
+				docwire::audit::auditor_ref<configured_auditor>{audit}
+			};
 		})
 #endif
 		| maybe(vm.count("openai-find"), [&] {
