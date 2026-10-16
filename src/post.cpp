@@ -17,6 +17,7 @@
 #include "audit/auditor_ref.hpp"
 #include "audit/entry.hpp"
 #include "audit/legacy_log_audit.hpp"
+#include "audit/json_stream_auditor.hpp"
 #include "audit/scope.hpp"
 #include "audit/with_auditor.hpp"
 #include "named.h"
@@ -245,6 +246,7 @@ catch (const std::exception&)
 
 template class DOCWIRE_HTTP_EXPORT docwire::http::post<docwire::audit::null_auditor>;
 template class DOCWIRE_HTTP_EXPORT docwire::http::post<docwire::audit::legacy_log_audit>;
+template class DOCWIRE_HTTP_EXPORT docwire::http::post<docwire::audit::json_stream_auditor>;
 
 } // namespace http
 } // namespace docwire
