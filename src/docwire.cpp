@@ -333,7 +333,7 @@ int main(int argc, char* argv[])
 			return http::post<configured_auditor>(
 				vm["http-post"].as<std::string>(),
 				"",
-				ssl_verify_peer{true},
+				http::ssl_verify_peer{true},
 				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-chat"), [&] {
