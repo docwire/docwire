@@ -181,21 +181,6 @@ void run_pipeline(data_source&& data, Pipeline&& pipeline)
         | pipeline::output_element{std::cout};
 }
 
-using cli_speech_model_t = openai::text_to_speech<audit::null_auditor>::model;
-using cli_speech_voice_t = openai::text_to_speech<audit::null_auditor>::voice;
-using cli_embed_model_t = openai::embed<audit::null_auditor>::model;
-using cli_transcribe_model_t = openai::transcribe<audit::null_auditor>::model;
-
-template<typename ToEnum, typename FromEnum>
-ToEnum convert_enum(FromEnum from)
-{
-    auto name = magic_enum::enum_name(from);
-    auto converted = magic_enum::enum_cast<ToEnum>(name);
-    if (!converted)
-        throw std::runtime_error("Invalid enum conversion");
-    return *converted;
-}
-
 } // namespace
 
 template<typename auditor_type>
@@ -234,10 +219,10 @@ int main(int argc, char* argv[])
 		("openai-transcribe", "convert speech to text (transcribe) via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
 		("openai-model", po::value<openai::model>()->default_value(openai::model::gpt_5), enum_names_str<openai::model>().c_str())
-		("openai-tts-model", po::value<cli_speech_model_t>()->default_value(cli_speech_model_t::gpt_4o_mini_tts), enum_names_str<cli_speech_model_t>().c_str())
-		("openai-embed-model", po::value<cli_embed_model_t>()->default_value(cli_embed_model_t::text_embedding_3_small), enum_names_str<cli_embed_model_t>().c_str())
-		("openai-transcribe-model", po::value<cli_transcribe_model_t>()->default_value(cli_transcribe_model_t::gpt_4o_transcribe), enum_names_str<cli_transcribe_model_t>().c_str())
-		("openai-voice", po::value<cli_speech_voice_t>()->default_value(cli_speech_voice_t::alloy), enum_names_str<cli_speech_voice_t>().c_str())
+		("openai-tts-model", po::value<openai::text_to_speech_model>()->default_value(openai::text_to_speech_model::gpt_4o_mini_tts), enum_names_str<openai::text_to_speech_model>().c_str())
+		("openai-embed-model", po::value<openai::embed_model>()->default_value(openai::embed_model::text_embedding_3_small), enum_names_str<openai::embed_model>().c_str())
+		("openai-transcribe-model", po::value<openai::transcribe_model>()->default_value(openai::transcribe_model::gpt_4o_transcribe), enum_names_str<openai::transcribe_model>().c_str())
+		("openai-voice", po::value<openai::text_to_speech_voice>()->default_value(openai::text_to_speech_voice::alloy), enum_names_str<openai::text_to_speech_voice>().c_str())
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
 		("openai-image-detail", po::value<openai::image_detail>()->default_value(openai::image_detail::automatic), enum_names_str<openai::image_detail>().c_str())
 		("language", po::value<std::vector<language>>()->default_value({language::eng}, "eng"), "Set the document language(s) for OCR as ISO 639-3 identifiers like: spa, fra, deu, rus, chi_sim, chi_tra etc. More than 100 languages are supported. Multiple languages can be enabled.")
@@ -513,22 +498,16 @@ int run_with_auditor(
 				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-text-to-speech"), [&] {
-			auto tts_model = convert_enum<openai::text_to_speech<configured_auditor>::model>(
-				vm["openai-tts-model"].as<cli_speech_model_t>());
-			auto tts_voice = convert_enum<openai::text_to_speech<configured_auditor>::voice>(
-				vm["openai-voice"].as<cli_speech_voice_t>());
 			return openai::text_to_speech<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
-				tts_model,
-				tts_voice,
+				vm["openai-tts-model"].as<openai::text_to_speech_model>(),
+				vm["openai-voice"].as<openai::text_to_speech_voice>(),
 				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-embed"), [&] {
-			auto embed_model = convert_enum<openai::embed<configured_auditor>::model>(
-				vm["openai-embed-model"].as<cli_embed_model_t>());
 			return openai::embed<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
-				embed_model,
+				vm["openai-embed-model"].as<openai::embed_model>(),
 				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| [](message_ptr msg,
@@ -566,8 +545,7 @@ int run_with_auditor(
 			content_type::detector{}
 			| openai::transcribe<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
-				convert_enum<openai::transcribe<configured_auditor>::model>(
-					vm["openai-transcribe-model"].as<cli_transcribe_model_t>()),
+				vm["openai-transcribe-model"].as<openai::transcribe_model>(),
 				docwire::audit::auditor_ref<configured_auditor>{audit})
 			| plain_text_exporter{}
 			| std::move(optional_suffix);

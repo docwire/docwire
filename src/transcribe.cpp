@@ -39,7 +39,7 @@ struct pimpl_impl<openai::transcribe<auditor_type>>
 
 	explicit pimpl_impl(
 		const std::string& api_key,
-		typename openai::transcribe<auditor_type>::model model,
+		openai::transcribe_model model,
 		audit::auditor_ref<auditor_type> auditor)
 		: audit::with_auditor<auditor_type>{auditor},
 		  m_api_key(api_key),
@@ -47,7 +47,7 @@ struct pimpl_impl<openai::transcribe<auditor_type>>
 	{}
 
 	std::string m_api_key;
-	typename openai::transcribe<auditor_type>::model m_model;
+	openai::transcribe_model m_model;
 };
 
 namespace openai
@@ -56,7 +56,7 @@ namespace openai
 template<typename auditor_type>
 transcribe<auditor_type>::transcribe(
 	const std::string& api_key,
-	model model,
+	transcribe_model model,
 	audit::auditor_ref<auditor_type> auditor)
 	: with_pimpl<transcribe<auditor_type>>(api_key, model, auditor),
 	  audit::with_auditor<auditor_type>(auditor)
@@ -67,14 +67,13 @@ transcribe<auditor_type>::transcribe(
 namespace
 {
 
-template<typename auditor_type>
-std::string model_to_string(typename openai::transcribe<auditor_type>::model model)
+std::string model_to_string(openai::transcribe_model model)
 {
 	switch (model)
 	{
-		case openai::transcribe<auditor_type>::model::gpt_4o_transcribe: return "gpt-4o-transcribe";
-		case openai::transcribe<auditor_type>::model::gpt_4o_mini_transcribe: return "gpt-4o-mini-transcribe";
-		case openai::transcribe<auditor_type>::model::whisper_1: return "whisper-1";
+		case openai::transcribe_model::gpt_4o_transcribe: return "gpt-4o-transcribe";
+		case openai::transcribe_model::gpt_4o_mini_transcribe: return "gpt-4o-mini-transcribe";
+		case openai::transcribe_model::whisper_1: return "whisper-1";
 		default: return "?";
 	}
 }
@@ -94,7 +93,7 @@ continuation transcribe<auditor_type>::operator()(
 	auto response_stream = std::make_shared<std::ostringstream>();
 	try
 	{
-		in_stream | http::post<>("https://api.openai.com/v1/audio/transcriptions", {{"model", model_to_string<auditor_type>(impl().m_model)}, {"response_format", "text"}}, "file", default_file_name("audio.mp3"), impl().m_api_key) | response_stream;
+		in_stream | http::post<>("https://api.openai.com/v1/audio/transcriptions", {{"model", model_to_string(impl().m_model)}, {"response_format", "text"}}, "file", default_file_name("audio.mp3"), impl().m_api_key) | response_stream;
 	}
 	catch (const std::exception& e)
 	{

@@ -40,8 +40,8 @@ struct pimpl_impl<openai::text_to_speech<auditor_type>>
 
 	explicit pimpl_impl(
 		const std::string& api_key,
-		typename openai::text_to_speech<auditor_type>::model model,
-		typename openai::text_to_speech<auditor_type>::voice voice,
+		openai::text_to_speech_model model,
+		openai::text_to_speech_voice voice,
 		audit::auditor_ref<auditor_type> auditor)
 		: audit::with_auditor<auditor_type>{auditor},
 		  m_api_key(api_key),
@@ -50,8 +50,8 @@ struct pimpl_impl<openai::text_to_speech<auditor_type>>
 	{}
 
 	std::string m_api_key;
-	typename openai::text_to_speech<auditor_type>::model m_model;
-	typename openai::text_to_speech<auditor_type>::voice m_voice;
+	openai::text_to_speech_model m_model;
+	openai::text_to_speech_voice m_voice;
 };
 
 namespace openai
@@ -60,8 +60,8 @@ namespace openai
 template<typename auditor_type>
 text_to_speech<auditor_type>::text_to_speech(
 	const std::string& api_key,
-	model model,
-	voice voice,
+	text_to_speech_model model,
+	text_to_speech_voice voice,
 	audit::auditor_ref<auditor_type> auditor)
 	: with_pimpl<text_to_speech<auditor_type>>(api_key, model, voice, auditor),
 	  audit::with_auditor<auditor_type>(auditor)
@@ -74,29 +74,27 @@ text_to_speech<auditor_type>::text_to_speech(
 namespace
 {
 
-template<typename auditor_type>
-std::string model_to_string(typename openai::text_to_speech<auditor_type>::model model)
+std::string model_to_string(openai::text_to_speech_model model)
 {
 	switch (model)
 	{
-		case openai::text_to_speech<auditor_type>::model::gpt_4o_mini_tts: return "gpt-4o-mini-tts";
-		case openai::text_to_speech<auditor_type>::model::tts_1: return "tts-1";
-		case openai::text_to_speech<auditor_type>::model::tts_1_hd: return "tts-1-hd";
+		case openai::text_to_speech_model::gpt_4o_mini_tts: return "gpt-4o-mini-tts";
+		case openai::text_to_speech_model::tts_1: return "tts-1";
+		case openai::text_to_speech_model::tts_1_hd: return "tts-1-hd";
 		default: return "?";
 	}
 }
 
-template<typename auditor_type>
-std::string voice_to_string(typename openai::text_to_speech<auditor_type>::voice voice)
+std::string voice_to_string(openai::text_to_speech_voice voice)
 {
 	switch (voice)
 	{
-		case openai::text_to_speech<auditor_type>::voice::alloy: return "alloy";
-		case openai::text_to_speech<auditor_type>::voice::echo: return "echo";
-		case openai::text_to_speech<auditor_type>::voice::fable: return "fable";
-		case openai::text_to_speech<auditor_type>::voice::onyx: return "onyx";
-		case openai::text_to_speech<auditor_type>::voice::nova: return "nova";
-		case openai::text_to_speech<auditor_type>::voice::shimmer: return "shimmer";
+		case openai::text_to_speech_voice::alloy: return "alloy";
+		case openai::text_to_speech_voice::echo: return "echo";
+		case openai::text_to_speech_voice::fable: return "fable";
+		case openai::text_to_speech_voice::onyx: return "onyx";
+		case openai::text_to_speech_voice::nova: return "nova";
+		case openai::text_to_speech_voice::shimmer: return "shimmer";
 		default: return "?";
 	}
 }
@@ -104,8 +102,8 @@ std::string voice_to_string(typename openai::text_to_speech<auditor_type>::voice
 template<typename auditor_type>
 std::string prepare_query(
 	const std::string& input,
-	typename openai::text_to_speech<auditor_type>::model model,
-	typename openai::text_to_speech<auditor_type>::voice voice,
+	openai::text_to_speech_model model,
+	openai::text_to_speech_voice voice,
 	audit::auditor_ref<auditor_type> auditor)
 {
 	audit::scope audit_scope{auditor, [&]{
@@ -113,9 +111,9 @@ std::string prepare_query(
 	}};
 	boost::json::object query
 	{
-		{ "model", model_to_string<auditor_type>(model) },
+		{ "model", model_to_string(model) },
 		{ "input", input },
-		{ "voice", voice_to_string<auditor_type>(voice) }
+		{ "voice", voice_to_string(voice) }
 	};
 	return boost::json::serialize(query);
 }

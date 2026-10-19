@@ -24,6 +24,11 @@ namespace docwire
 namespace openai
 {
 
+enum class transcribe_model
+{
+	gpt_4o_transcribe, gpt_4o_mini_transcribe, whisper_1
+};
+
 template<typename auditor_type = audit::null_auditor>
 class DOCWIRE_OPENAI_EXPORT transcribe
     : public pipeline::transformer_element<transcribe<auditor_type>>,
@@ -31,14 +36,9 @@ class DOCWIRE_OPENAI_EXPORT transcribe
       private audit::with_auditor<auditor_type>
 {
 public:
-	enum class model
-	{
-		gpt_4o_transcribe, gpt_4o_mini_transcribe, whisper_1
-	};
-
 	transcribe(
 		const std::string& api_key,
-		model model = model::gpt_4o_transcribe,
+		transcribe_model model = transcribe_model::gpt_4o_transcribe,
 		audit::auditor_ref<auditor_type> auditor = {});
 
 	/**

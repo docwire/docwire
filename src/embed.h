@@ -25,6 +25,16 @@ namespace docwire
 namespace openai
 {
 
+enum class embed_model
+{
+	/// text-embedding-3-small: A new third generation embedding model, is OpenAI recommended default for most use cases.
+	text_embedding_3_small,
+	/// text-embedding-3-large: A larger and more powerful third generation embedding model, is OpenAI best performing embedding model.
+	text_embedding_3_large,
+	/// text-embedding-ada-002: Older generation of OpenAI's embedding model.
+	text_embedding_ada_002,
+};
+
 template<typename auditor_type = audit::null_auditor>
 class DOCWIRE_OPENAI_EXPORT embed
     : public pipeline::transformer_element<embed<auditor_type>>,
@@ -32,19 +42,9 @@ class DOCWIRE_OPENAI_EXPORT embed
       private audit::with_auditor<auditor_type>
 {
 public:
-	enum class model
-	{
-		/// text-embedding-3-small: A new third generation embedding model, is OpenAI recommended default for most use cases.
-		text_embedding_3_small,
-		/// text-embedding-3-large: A larger and more powerful third generation embedding model, is OpenAI best performing embedding model.
-		text_embedding_3_large,
-		/// text-embedding-ada-002: Older generation of OpenAI's embedding model.
-		text_embedding_ada_002,
-	};
-
 	explicit embed(
 		const std::string& api_key,
-		model model = model::text_embedding_3_small,
+		embed_model model = embed_model::text_embedding_3_small,
 		audit::auditor_ref<auditor_type> auditor = {});
 
 	/**

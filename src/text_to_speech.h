@@ -25,6 +25,16 @@ namespace docwire
 namespace openai
 {
 
+enum class text_to_speech_model
+{
+	gpt_4o_mini_tts, tts_1, tts_1_hd
+};
+
+enum class text_to_speech_voice
+{
+	alloy, echo, fable, onyx, nova, shimmer
+};
+
 template<typename auditor_type = audit::null_auditor>
 class DOCWIRE_OPENAI_EXPORT text_to_speech
     : public pipeline::transformer_element<text_to_speech<auditor_type>>,
@@ -32,20 +42,10 @@ class DOCWIRE_OPENAI_EXPORT text_to_speech
       private audit::with_auditor<auditor_type>
 {
 public:
-	enum class model
-	{
-		gpt_4o_mini_tts, tts_1, tts_1_hd
-	};
-
-	enum class voice
-	{
-		alloy, echo, fable, onyx, nova, shimmer
-	};
-
 	text_to_speech(
 		const std::string& api_key,
-		model model = model::gpt_4o_mini_tts,
-		voice voice = voice::alloy,
+		text_to_speech_model model = text_to_speech_model::gpt_4o_mini_tts,
+		text_to_speech_voice voice = text_to_speech_voice::alloy,
 		audit::auditor_ref<auditor_type> auditor = {});
 
 	/**

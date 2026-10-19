@@ -44,7 +44,7 @@ struct pimpl_impl<openai::embed<auditor_type>>
 
 	explicit pimpl_impl(
 		const std::string& api_key,
-		typename openai::embed<auditor_type>::model model,
+		openai::embed_model model,
 		audit::auditor_ref<auditor_type> auditor)
 		: audit::with_auditor<auditor_type>{auditor},
 		  m_api_key(api_key),
@@ -52,7 +52,7 @@ struct pimpl_impl<openai::embed<auditor_type>>
 	{}
 
 	std::string m_api_key;
-	typename openai::embed<auditor_type>::model m_model;
+	openai::embed_model m_model;
 };
 
 }
@@ -65,7 +65,7 @@ namespace openai
 template<typename auditor_type>
 embed<auditor_type>::embed(
 	const std::string& api_key,
-	model model,
+	embed_model model,
 	audit::auditor_ref<auditor_type> auditor)
 	: with_pimpl<embed<auditor_type>>(api_key, model, auditor),
 	  audit::with_auditor<auditor_type>(auditor)
@@ -74,14 +74,13 @@ embed<auditor_type>::embed(
 namespace
 {
 
-template<typename auditor_type>
-std::string model_to_string(typename openai::embed<auditor_type>::model model)
+std::string model_to_string(openai::embed_model model)
 {
 	switch (model)
 	{
-		case openai::embed<auditor_type>::model::text_embedding_3_small: return "text-embedding-3-small";
-		case openai::embed<auditor_type>::model::text_embedding_3_large: return "text-embedding-3-large";
-		case openai::embed<auditor_type>::model::text_embedding_ada_002: return "text-embedding-ada-002";
+		case openai::embed_model::text_embedding_3_small: return "text-embedding-3-small";
+		case openai::embed_model::text_embedding_3_large: return "text-embedding-3-large";
+		case openai::embed_model::text_embedding_ada_002: return "text-embedding-ada-002";
 		default: throw make_error("Unknown model", model, errors::program_logic{});
 	}
 }
@@ -89,7 +88,7 @@ std::string model_to_string(typename openai::embed<auditor_type>::model model)
 template<typename auditor_type>
 std::string prepare_query(
 	const std::string& input,
-	typename openai::embed<auditor_type>::model model,
+	openai::embed_model model,
 	audit::auditor_ref<auditor_type> auditor)
 {
 	audit::scope audit_scope{auditor, [&]{
@@ -97,7 +96,7 @@ std::string prepare_query(
 	}};
 	boost::json::object query
 	{
-		{ "model", model_to_string<auditor_type>(model) },
+		{ "model", model_to_string(model) },
 		{ "input", input }
 	};
 	return boost::json::serialize(query);
