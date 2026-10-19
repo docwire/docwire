@@ -147,19 +147,45 @@ inline bool matches(
     source_location location,
     std::span<const std::string_view> entry_tags)
 {
-    std::string filename = std::filesystem::path(location.file_name()).filename().string();
-    std::string funcname = docwire::type_name::pretty_function(location.function_name());
+    const char* file_name_ptr = location.file_name();
+    const char* function_name_ptr = location.function_name();
+
+    std::string filename = file_name_ptr
+        ? std::filesystem::path(file_name_ptr).filename().string()
+        : std::string{};
+
+    std::string funcname = function_name_ptr
+        ? docwire::type_name::pretty_function(function_name_ptr)
+        : std::string{};
+
+    auto matches_file = [&](std::string_view pattern)
+    {
+        return wildcard_match(pattern, filename);
+    };
+
+    auto matches_func = [&](std::string_view pattern)
+    {
+        return wildcard_match(pattern, funcname);
+    };
+
+    auto matches_tag = [&](std::string_view pattern)
+    {
+        for (std::size_t i = 0; i < entry_tags.size(); ++i)
+        {
+            if (wildcard_match(pattern, entry_tags[i]))
+                return true;
+        }
+        return false;
+    };
 
     auto matches_one = [&](const filter_rule& rule)
     {
         if (rule.type == filter_rule::FILE)
-            return wildcard_match(rule.value, filename);
+            return matches_file(rule.value);
         if (rule.type == filter_rule::FUNC)
-            return wildcard_match(rule.value, funcname);
+            return matches_func(rule.value);
         if (rule.type == filter_rule::TAG)
-            return std::any_of(
-                entry_tags.begin(), entry_tags.end(),
-                [&](std::string_view tag) { return wildcard_match(rule.value, tag); });
+            return matches_tag(rule.value);
         return false;
     };
 
