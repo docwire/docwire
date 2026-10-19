@@ -181,14 +181,33 @@ void run_pipeline(data_source&& data, Pipeline&& pipeline)
         | pipeline::output_element{std::cout};
 }
 
+using cli_speech_model_t = openai::text_to_speech<audit::null_auditor>::model;
+using cli_speech_voice_t = openai::text_to_speech<audit::null_auditor>::voice;
+using cli_embed_model_t = openai::embed<audit::null_auditor>::model;
+using cli_transcribe_model_t = openai::transcribe<audit::null_auditor>::model;
+
+template<typename ToEnum, typename FromEnum>
+ToEnum convert_enum(FromEnum from)
+{
+    auto name = magic_enum::enum_name(from);
+    auto converted = magic_enum::enum_cast<ToEnum>(name);
+    if (!converted)
+        throw std::runtime_error("Invalid enum conversion");
+    return *converted;
+}
+
 } // namespace
+
+template<typename auditor_type>
+int run_with_auditor(
+	const boost::program_options::variables_map& vm,
+	data_source data,
+	auditor_type& audit);
 
 int main(int argc, char* argv[])
 {
 	bool local_processing;
 	bool use_stream;
-
-	using configured_auditor = docwire::audit::json_stream_auditor;
 
 	namespace po = boost::program_options;
 	po::options_description desc("Allowed options");
@@ -215,10 +234,10 @@ int main(int argc, char* argv[])
 		("openai-transcribe", "convert speech to text (transcribe) via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
 		("openai-model", po::value<openai::model>()->default_value(openai::model::gpt_5), enum_names_str<openai::model>().c_str())
-		("openai-tts-model", po::value<openai::text_to_speech<configured_auditor>::model>()->default_value(openai::text_to_speech<configured_auditor>::model::gpt_4o_mini_tts), enum_names_str<openai::text_to_speech<configured_auditor>::model>().c_str())
-		("openai-embed-model", po::value<openai::embed<configured_auditor>::model>()->default_value(openai::embed<configured_auditor>::model::text_embedding_3_small), enum_names_str<openai::embed<configured_auditor>::model>().c_str())
-		("openai-transcribe-model", po::value<openai::transcribe<configured_auditor>::model>()->default_value(openai::transcribe<configured_auditor>::model::gpt_4o_transcribe), enum_names_str<openai::transcribe<configured_auditor>::model>().c_str())
-		("openai-voice", po::value<openai::text_to_speech<configured_auditor>::voice>()->default_value(openai::text_to_speech<configured_auditor>::voice::alloy), enum_names_str<openai::text_to_speech<configured_auditor>::voice>().c_str())
+		("openai-tts-model", po::value<cli_speech_model_t>()->default_value(cli_speech_model_t::gpt_4o_mini_tts), enum_names_str<cli_speech_model_t>().c_str())
+		("openai-embed-model", po::value<cli_embed_model_t>()->default_value(cli_embed_model_t::text_embedding_3_small), enum_names_str<cli_embed_model_t>().c_str())
+		("openai-transcribe-model", po::value<cli_transcribe_model_t>()->default_value(cli_transcribe_model_t::gpt_4o_transcribe), enum_names_str<cli_transcribe_model_t>().c_str())
+		("openai-voice", po::value<cli_speech_voice_t>()->default_value(cli_speech_voice_t::alloy), enum_names_str<cli_speech_voice_t>().c_str())
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
 		("openai-image-detail", po::value<openai::image_detail>()->default_value(openai::image_detail::automatic), enum_names_str<openai::image_detail>().c_str())
 		("language", po::value<std::vector<language>>()->default_value({language::eng}, "eng"), "Set the document language(s) for OCR as ISO 639-3 identifiers like: spa, fra, deu, rus, chi_sim, chi_tra etc. More than 100 languages are supported. Multiple languages can be enabled.")
@@ -277,37 +296,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	docwire::ref_or_owned<std::ostream> audit_stream{std::clog};
-	std::unique_ptr<std::ofstream> log_file;
-
-	if (vm.count("log_file"))
-	{
-		log_file = std::make_unique<std::ofstream>(vm["log_file"].as<std::string>());
-		if (!log_file->is_open())
-		{
-			std::cerr << "Error: Unable to open log file: " << vm["log_file"].as<std::string>() << std::endl;
-			return 1;
-		}
-		audit_stream = docwire::ref_or_owned<std::ostream>{std::move(*log_file)};
-	}
-
-	const std::string filter_spec =
-		vm.count("log-filter")
-			? vm["log-filter"].as<std::string>()
-			: vm.count("verbose")
-				? "*"
-				: "";
-
-	docwire::audit::json_stream_auditor audit{
-		filter_spec,
-		std::move(audit_stream)
-	};
-
 	std::string file_name = vm["input-file"].as<std::string>();
-
-	audit::entry(audit, [&]{
-		return "use_stream"_v = use_stream, "file_name"_v = file_name;
-	});
 
 	data_source data = [&]() -> data_source
 	{
@@ -327,6 +316,61 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 #endif
+
+	const bool audit_enabled =
+		vm.count("log_file") ||
+		vm.count("log-filter") ||
+		vm.count("verbose");
+
+	if (audit_enabled)
+	{
+		docwire::ref_or_owned<std::ostream> audit_stream{std::clog};
+		std::unique_ptr<std::ofstream> log_file;
+
+		if (vm.count("log_file"))
+		{
+			log_file = std::make_unique<std::ofstream>(vm["log_file"].as<std::string>());
+			if (!log_file->is_open())
+			{
+				std::cerr << "Error: Unable to open log file: " << vm["log_file"].as<std::string>() << std::endl;
+				return 1;
+			}
+			audit_stream = docwire::ref_or_owned<std::ostream>{std::move(*log_file)};
+		}
+
+		const std::string filter_spec =
+			vm.count("log-filter")
+				? vm["log-filter"].as<std::string>()
+				: vm.count("verbose")
+					? "*"
+					: "";
+
+		docwire::audit::json_stream_auditor audit{
+			filter_spec,
+			std::move(audit_stream)
+		};
+
+		return run_with_auditor(vm, std::move(data), audit);
+	}
+
+	docwire::audit::null_auditor audit;
+	return run_with_auditor(vm, std::move(data), audit);
+}
+
+template<typename auditor_type>
+int run_with_auditor(
+	const boost::program_options::variables_map& vm,
+	data_source data,
+	auditor_type& audit)
+{
+	using configured_auditor = auditor_type;
+
+	std::string file_name = vm["input-file"].as<std::string>();
+	bool local_processing = vm["local-processing"].as<bool>();
+
+	audit::entry(audit, [&]{
+		return "use_stream"_v = vm["use-stream"].as<bool>(), "file_name"_v = file_name;
+	});
 
 	auto optional_suffix =
 		maybe(vm.count("http-post"), [&] {
@@ -469,16 +513,22 @@ int main(int argc, char* argv[])
 				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-text-to-speech"), [&] {
+			auto tts_model = convert_enum<openai::text_to_speech<configured_auditor>::model>(
+				vm["openai-tts-model"].as<cli_speech_model_t>());
+			auto tts_voice = convert_enum<openai::text_to_speech<configured_auditor>::voice>(
+				vm["openai-voice"].as<cli_speech_voice_t>());
 			return openai::text_to_speech<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
-				vm["openai-tts-model"].as<openai::text_to_speech<configured_auditor>::model>(),
-				vm["openai-voice"].as<openai::text_to_speech<configured_auditor>::voice>(),
+				tts_model,
+				tts_voice,
 				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-embed"), [&] {
+			auto embed_model = convert_enum<openai::embed<configured_auditor>::model>(
+				vm["openai-embed-model"].as<cli_embed_model_t>());
 			return openai::embed<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
-				vm["openai-embed-model"].as<openai::embed<configured_auditor>::model>(),
+				embed_model,
 				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| [](message_ptr msg,
@@ -516,7 +566,8 @@ int main(int argc, char* argv[])
 			content_type::detector{}
 			| openai::transcribe<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
-				vm["openai-transcribe-model"].as<openai::transcribe<configured_auditor>::model>(),
+				convert_enum<openai::transcribe<configured_auditor>::model>(
+					vm["openai-transcribe-model"].as<cli_transcribe_model_t>()),
 				docwire::audit::auditor_ref<configured_auditor>{audit})
 			| plain_text_exporter{}
 			| std::move(optional_suffix);
