@@ -39,8 +39,8 @@ public:
     json_stream_auditor(const json_stream_auditor&) = delete;
     json_stream_auditor& operator=(const json_stream_auditor&) = delete;
 
-    json_stream_auditor(json_stream_auditor&&) = delete;
-    json_stream_auditor& operator=(json_stream_auditor&&) = delete;
+    json_stream_auditor(json_stream_auditor&&) noexcept = default;
+    json_stream_auditor& operator=(json_stream_auditor&&) noexcept = default;
 
     template<typename... Args>
     void record(source_location location, Args&&... args)
