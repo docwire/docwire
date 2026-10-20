@@ -93,18 +93,18 @@ const std::vector<mime_type> supported_mime_types =
 
 template <safety_policy safety_level, typename auditor_type>
 struct pimpl_impl<odf_ooxml_parser<safety_level, auditor_type>>
-    : with_pimpl_owner<odf_ooxml_parser<safety_level, auditor_type>>,
-      private audit::with_auditor<auditor_type>
+    : with_pimpl_owner<odf_ooxml_parser<safety_level, auditor_type>>
 {
 	using owner_type = odf_ooxml_parser<safety_level, auditor_type>;
 	using comment = owner_type::comment;
 	using relationship = owner_type::relationship;
-	using with_pimpl_owner<odf_ooxml_parser<safety_level, auditor_type>>::owner;
-	using audit::with_auditor<auditor_type>::auditor;
+	using with_pimpl_owner<owner_type>::owner;
 
-	pimpl_impl(odf_ooxml_parser<safety_level, auditor_type>& owner)
-		: with_pimpl_owner<odf_ooxml_parser<safety_level, auditor_type>>{owner},
-		  audit::with_auditor<auditor_type>{owner.auditor()}
+	auditor_type& auditor() { return owner().auditor(); }
+	auditor_type& auditor() const { return owner().auditor(); }
+
+	pimpl_impl(owner_type& owner)
+		: with_pimpl_owner<owner_type>{owner}
 	{}
 
 	std::stack<context> m_context_stack;

@@ -58,12 +58,14 @@ struct context
 
 template <safety_policy safety_level, typename auditor_type>
 struct pimpl_impl<common_xml_document_parser<safety_level, auditor_type>>
-    : with_pimpl_owner<common_xml_document_parser<safety_level, auditor_type>>,
-      private audit::with_auditor<auditor_type>
+    : with_pimpl_owner<common_xml_document_parser<safety_level, auditor_type>>
 {
-	using command_handler = common_xml_document_parser<safety_level, auditor_type>::CommandHandler;
-	using with_pimpl_owner<common_xml_document_parser<safety_level, auditor_type>>::owner;
-	using audit::with_auditor<auditor_type>::auditor;
+	using owner_type = common_xml_document_parser<safety_level, auditor_type>;
+	using command_handler = owner_type::CommandHandler;
+	using with_pimpl_owner<owner_type>::owner;
+
+	auditor_type& auditor() { return owner().auditor(); }
+	auditor_type& auditor() const { return owner().auditor(); }
 
   template<typename T>
   command_handler add_command_handler(T member_function)
@@ -76,9 +78,8 @@ struct pimpl_impl<common_xml_document_parser<safety_level, auditor_type>>
     };
   }
 
-  pimpl_impl(common_xml_document_parser<safety_level, auditor_type>& owner)
-  : with_pimpl_owner<common_xml_document_parser<safety_level, auditor_type>>{owner},
-    audit::with_auditor<auditor_type>{owner.auditor()}
+  pimpl_impl(owner_type& owner)
+  : with_pimpl_owner<owner_type>{owner}
   {
     m_command_handlers["#text"] = add_command_handler<>(&pimpl_impl::onODFOOXMLText);
     m_command_handlers["b"] = add_command_handler<>(&pimpl_impl::onODFOOXMLBold);

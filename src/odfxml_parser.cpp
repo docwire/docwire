@@ -39,17 +39,18 @@ const std::vector<mime_type> supported_mime_types =
 	
 template <safety_policy safety_level, typename auditor_type>
 struct pimpl_impl<odfxml_parser<safety_level, auditor_type>>
-    : with_pimpl_owner<odfxml_parser<safety_level, auditor_type>>,
-      private audit::with_auditor<auditor_type>
+    : with_pimpl_owner<odfxml_parser<safety_level, auditor_type>>
 {
-	using with_pimpl_owner<odfxml_parser<safety_level, auditor_type>>::owner;
-	using audit::with_auditor<auditor_type>::auditor;
+	using owner_type = odfxml_parser<safety_level, auditor_type>;
+	using with_pimpl_owner<owner_type>::owner;
+
+	auditor_type& auditor() { return owner().auditor(); }
+	auditor_type& auditor() const { return owner().auditor(); }
 
 	void parse(const data_source& data, xml_parse_mode mode, const message_callbacks& emit_message);
 	attributes::metadata extract_metadata(std::string_view xml_content) const;
-	pimpl_impl(odfxml_parser<safety_level, auditor_type>& owner)
-		: with_pimpl_owner<odfxml_parser<safety_level, auditor_type>>{owner},
-		  audit::with_auditor<auditor_type>{owner.auditor()}
+	pimpl_impl(owner_type& owner)
+		: with_pimpl_owner<owner_type>{owner}
 	{}
 
 		void onODFBody(xml::node_ref<safety_level>& xml_node, xml_parse_mode mode,
