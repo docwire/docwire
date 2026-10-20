@@ -1,11 +1,11 @@
 #ifndef DOCWIRE_AUDIT_JSON_STREAM_AUDITOR_HPP
 #define DOCWIRE_AUDIT_JSON_STREAM_AUDITOR_HPP
 
-#include "audit/filter.hpp"
-#include "audit/serialize/json.hpp"
-#include "audit/sink/ostream.hpp"
-#include "ref_or_owned.h"
-#include "source_location.h"
+#include "filter.hpp"
+#include "serialize/json.hpp"
+#include "sink/ostream.hpp"
+#include "../ref_or_owned.h"
+#include "../source_location.h"
 
 #include <ostream>
 #include <string>
