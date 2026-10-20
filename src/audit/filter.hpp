@@ -6,7 +6,6 @@
 #include "detail/value_conversion.hpp"
 #include "../source_location.h"
 
-#include <cstdio>
 #include <span>
 #include <string>
 #include <string_view>
@@ -39,9 +38,6 @@ public:
     {
         const auto tags = detail::collect_tags<Args...>();
         std::span<const std::string_view> tags_span{tags};
-
-        std::fprintf(stderr, "[filter::record] this=%p\n",
-                     reinterpret_cast<void*>(this));
 
         if (detail::matches(m_filter_spec, location, tags_span))
         {

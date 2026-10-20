@@ -7,7 +7,6 @@
 #include "ref_or_owned.h"
 #include "source_location.h"
 
-#include <cstdio>
 #include <ostream>
 #include <string>
 #include <type_traits>
@@ -46,8 +45,6 @@ public:
     template<typename... Args>
     void record(source_location location, Args&&... args)
     {
-        std::fprintf(stderr, "[json_stream_auditor::record] this=%p\n",
-                     reinterpret_cast<void*>(this));
         m_impl.record(location, std::forward<Args>(args)...);
     }
 

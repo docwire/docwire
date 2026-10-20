@@ -13,7 +13,6 @@ template<typename auditor_type>
 class with_auditor : private auditor_ref<auditor_type>
 {
 protected:
-    with_auditor() = default;
     explicit with_auditor(auditor_ref<auditor_type> auditor)
         : auditor_ref<auditor_type>(auditor) {}
 
