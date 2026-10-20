@@ -90,17 +90,16 @@ struct context
 
 template<typename auditor_type>
 struct pimpl_impl<ocr_parser<auditor_type>>
-    : with_pimpl_owner<ocr_parser<auditor_type>>,
-      private audit::with_auditor<auditor_type>
+    : with_pimpl_owner<ocr_parser<auditor_type>>
 {
-    using with_pimpl_owner<ocr_parser<auditor_type>>::owner;
-    using audit::with_auditor<auditor_type>::auditor;
+    using owner_type = ocr_parser<auditor_type>;
+    using with_pimpl_owner<owner_type>::owner;
 
-    explicit pimpl_impl(
-        ocr_parser<auditor_type>& owner,
-        audit::auditor_ref<auditor_type> auditor)
-        : with_pimpl_owner<ocr_parser<auditor_type>>{owner},
-          audit::with_auditor<auditor_type>{auditor}
+    auditor_type& auditor() { return owner().auditor(); }
+    auditor_type& auditor() const { return owner().auditor(); }
+
+    explicit pimpl_impl(owner_type& owner)
+        : with_pimpl_owner<owner_type>{owner}
     {}
     std::vector<language> m_languages;
     ocr_confidence_threshold m_ocr_confidence_threshold;
@@ -264,8 +263,7 @@ ocr_parser<auditor_type>::ocr_parser(
     ocr_timeout ocr_timeout_arg,
     ocr_data_path ocr_data_path_arg,
     audit::auditor_ref<auditor_type> auditor)
-    : with_pimpl<ocr_parser<auditor_type>>(auditor),
-      audit::with_auditor<auditor_type>(auditor)
+    : audit::with_auditor<auditor_type>(auditor)
 {
     audit::scope audit_scope{this->auditor(), [&]{
         return
