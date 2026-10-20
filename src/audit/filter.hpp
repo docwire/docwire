@@ -6,7 +6,7 @@
 #include "detail/value_conversion.hpp"
 #include "../source_location.h"
 
-#include <iostream>
+#include <cstdio>
 #include <span>
 #include <string>
 #include <string_view>
@@ -25,12 +25,6 @@ public:
     explicit by_spec(std::string filter_spec)
         : m_filter_spec(detail::parse_filter(std::move(filter_spec)))
     {
-        std::cerr << "[DEBUG filter ctor] this=" << this
-                  << " &m_filter_spec=" << (const void*)&m_filter_spec
-                  << " rules_size=" << m_filter_spec.rules.size()
-                  << " rules_cap=" << m_filter_spec.rules.capacity()
-                  << " wildcard=" << m_filter_spec.wildcard_enabled
-                  << std::endl;
     }
 
     template<typename R>
@@ -46,13 +40,8 @@ public:
         const auto tags = detail::collect_tags<Args...>();
         std::span<const std::string_view> tags_span{tags};
 
-        std::cerr << "[DEBUG filter record] this=" << this
-                  << " &m_filter_spec=" << (const void*)&m_filter_spec
-                  << " rules_size=" << m_filter_spec.rules.size()
-                  << " rules_cap=" << m_filter_spec.rules.capacity()
-                  << " wildcard=" << m_filter_spec.wildcard_enabled
-                  << " file=" << (location.file_name() ? location.file_name() : "(null)")
-                  << std::endl;
+        std::fprintf(stderr, "[filter::record] this=%p\n",
+                     reinterpret_cast<void*>(this));
 
         if (detail::matches(m_filter_spec, location, tags_span))
         {

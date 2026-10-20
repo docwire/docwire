@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <filesystem>
-#include <iostream>
 #include <span>
 #include <string>
 #include <string_view>
@@ -148,13 +147,6 @@ inline bool matches(
     source_location location,
     std::span<const std::string_view> entry_tags)
 {
-    std::cerr << "[DEBUG matches] &spec=" << (const void*)&spec
-              << " rules_size=" << spec.rules.size()
-              << " rules_cap=" << spec.rules.capacity()
-              << " wildcard=" << spec.wildcard_enabled
-              << " rules_data=" << (const void*)spec.rules.data()
-              << std::endl;
-
     const char* file_name_ptr = location.file_name();
     const char* function_name_ptr = location.function_name();
 
