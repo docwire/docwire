@@ -201,6 +201,8 @@ while (TRUE)
 endwhile()
 
 set(common_examples
+    audit_composition
+    audit_pipeline_injection
     handling_errors_and_warnings
     file_type_determination
     path_to_text_stream

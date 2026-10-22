@@ -863,6 +863,7 @@ auto audit =
     | docwire::audit::serialize::json{}
     | docwire::audit::sink::ostream{std::clog};
 ```
+[Full example](https://docwire.readthedocs.io/en/latest/audit_composition_8cpp-example.html)
 
 The resulting auditor can be injected into a pipeline:
 
@@ -872,13 +873,17 @@ docwire::audit::json_stream_auditor audit{
     docwire::ref_or_owned<std::ostream>{std::clog}
 };
 
-std::filesystem::path{"document.docx"}
+std::filesystem::path{"data_processing_definition.doc"}
     | content_type::detector{}
-    | office_formats_parser<docwire::audit::json_stream_auditor>{
-        docwire::audit::auditor_ref<docwire::audit::json_stream_auditor>{audit}}
+    | office_formats_parser<
+          docwire::safety_policy::strict,
+          docwire::audit::json_stream_auditor>{
+          docwire::audit::auditor_ref<
+              docwire::audit::json_stream_auditor>{audit}}
     | plain_text_exporter{}
     | std::cout;
 ```
+[Full example](https://docwire.readthedocs.io/en/latest/audit_pipeline_injection_8cpp-example.html)
 
 Audit records are emitted as structured JSON objects containing source location, timestamp, thread ID, and typed C++ context values.
 
