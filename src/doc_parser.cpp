@@ -13,7 +13,7 @@
 
 #include "document_elements.h"
 #include "error_tags.h"
-#include "log_cerr_redirection.h"
+#include "audit/stderr_redirection.hpp"
 #include "audit/auditor_ref.hpp"
 #include "audit/entry.hpp"
 #include "audit/legacy_log_audit.hpp"
@@ -740,7 +740,7 @@ void pimpl_impl<doc_parser<auditor_type>>::parse(
 	}
 	storage->leaveDirectory();
 	curr_state.obj_texts_iter = curr_state.obj_texts.begin();
-	log::cerr_redirection<auditor_type> cerr_redirection{
+	audit::stderr_redirection<auditor_type> cerr_redirection{
 		audit::auditor_ref<auditor_type>(auditor())
 	};
 	SharedPtr<wvWare::Parser> parser;
