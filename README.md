@@ -890,8 +890,6 @@ The console application injects `audit::null_auditor` by default, so normal docu
 - `--log-filter <filter>` — select entries by tag, file, or function
 - `--log_file <path>` — write JSON audit output to a file instead of stderr
 
-The old global `docwire::log` framework and its convenience macros have been removed.
-
 <a name="api-documentation"></a>
 ## API Documentation
 The API documentation for the DocWire SDK/library is readily available in various formats to assist you in seamlessly integrating it into your projects. Whether you prefer reading detailed doxygen-style documentation, accessing it through binary packages, or installing it via package managers like Vcpkg, we've got you covered.
