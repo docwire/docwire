@@ -251,3 +251,36 @@ TEST(AuditComposition, FilteredComposedJsonStreamAuditor)
     EXPECT_NE(included_stream.str().find("included message"), std::string::npos);
     EXPECT_EQ(excluded_stream.str().find("excluded message"), std::string::npos);
 }
+
+TEST(AuditComposition, EntryTagIsVisibleToFilter)
+{
+    std::stringstream matching_stream;
+    std::stringstream non_matching_stream;
+
+    {
+        auto matching_auditor =
+            audit::filter::by_spec{"audit_test_tag"}
+            | audit::serialize::json{}
+            | audit::sink::ostream{matching_stream};
+
+        audit::entry(
+            matching_auditor,
+            [] { return "tagged value"_v = 7; },
+            audit_test_tag{});
+    }
+
+    {
+        auto non_matching_auditor =
+            audit::filter::by_spec{"some_other_tag"}
+            | audit::serialize::json{}
+            | audit::sink::ostream{non_matching_stream};
+
+        audit::entry(
+            non_matching_auditor,
+            [] { return "tagged value"_v = 8; },
+            audit_test_tag{});
+    }
+
+    EXPECT_NE(matching_stream.str().find("tagged value"), std::string::npos);
+    EXPECT_EQ(non_matching_stream.str().find("tagged value"), std::string::npos);
+}

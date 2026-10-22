@@ -64,7 +64,8 @@ serialization::value to_log_value(const T& value)
 }
 
 template <typename... Ts>
-constexpr std::size_t count_tags = (audit_tag<Ts> + ... + 0);
+constexpr std::size_t count_tags =
+    (audit_tag<std::remove_cvref_t<Ts>> + ... + 0);
 
 template <typename... Args>
 constexpr auto collect_tags()
@@ -74,9 +75,9 @@ constexpr auto collect_tags()
 
     ([&]<typename T>(std::type_identity<T>)
     {
-        if constexpr (audit_tag<T>)
+        if constexpr (audit_tag<std::remove_cvref_t<T>>)
         {
-            tags[index++] = T::string();
+            tags[index++] = std::remove_cvref_t<T>::string();
         }
     }(std::type_identity<Args>{}), ...);
 
