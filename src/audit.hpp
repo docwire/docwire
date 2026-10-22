@@ -10,5 +10,6 @@
 #include "audit/audit_tag.hpp"
 #include "audit/tags.hpp"
 #include "audit/json_stream_auditor.hpp"
+#include "audit/stderr_redirection.hpp"
 
 #endif

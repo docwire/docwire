@@ -1,8 +1,4 @@
 #include "audit.hpp"
-#include "audit/legacy_log_audit.hpp"
-#include "log_core.h"
-#include "log_json_stream_sink.h"
-#include "log_state_saver.h"
 #include "meta_data_exporter.h"
 #include "named.h"
 #include "source_location.h"
@@ -18,7 +14,10 @@
 #include "named.h"
 
 #include <gtest/gtest.h>
+#include <iostream>
+#include <list>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -82,6 +81,11 @@ struct non_empty_auditor
 struct audit_test_tag
 {
     static constexpr std::string_view string() { return "audit_test_tag"; }
+};
+
+struct excluded_tag
+{
+    static constexpr std::string_view string() { return "excluded_tag"; }
 };
 
 } // namespace
@@ -163,24 +167,21 @@ TEST(AuditScope, RecordsEnterAndExit)
 TEST(AuditConstructor, DefaultConstructionConstraints)
 {
     static_assert(std::is_default_constructible_v<xml_parser<strict, audit::null_auditor>>);
-    static_assert(std::is_default_constructible_v<xml_parser<strict, audit::legacy_log_audit>>);
     static_assert(!std::is_default_constructible_v<xml_parser<strict, non_empty_auditor>>);
 
     static_assert(std::is_default_constructible_v<metadata_exporter<audit::null_auditor>>);
-    static_assert(std::is_default_constructible_v<metadata_exporter<audit::legacy_log_audit>>);
     static_assert(!std::is_default_constructible_v<metadata_exporter<non_empty_auditor>>);
 }
 
-TEST(LegacyLogAudit, SerializesSharedPtr)
+TEST(AuditComposition, SerializesSharedPtr)
 {
     std::stringstream log_stream;
     {
-        log::state_saver saver;
-        log::set_sink(log::json_stream_sink(log_stream));
-        log::set_filter("*");
+        auto auditor =
+            audit::serialize::json{}
+            | audit::sink::ostream{log_stream};
 
-        audit::legacy_log_audit legacy;
-        legacy.record(source_location::current(), []{ return std::make_shared<int>(42); });
+        auditor.record(source_location::current(), []{ return std::make_shared<int>(42); });
     }
 
     std::string output = log_stream.str();
@@ -283,4 +284,134 @@ TEST(AuditComposition, EntryTagIsVisibleToFilter)
 
     EXPECT_NE(matching_stream.str().find("tagged value"), std::string::npos);
     EXPECT_EQ(non_matching_stream.str().find("tagged value"), std::string::npos);
+}
+
+TEST(AuditSerialization, Dereferenceable)
+{
+    std::stringstream log_stream;
+    {
+        auto auditor =
+            audit::serialize::json{}
+            | audit::sink::ostream{log_stream};
+
+        auditor.record(source_location::current(), std::optional<int>(1));
+        auditor.record(source_location::current(), std::optional<int>());
+        auditor.record(source_location::current(), std::make_unique<int>(1));
+        auditor.record(source_location::current(), std::unique_ptr<int>());
+        auditor.record(source_location::current(), std::make_shared<int>(1));
+        auditor.record(source_location::current(), std::shared_ptr<int>());
+    }
+
+    std::string output = log_stream.str();
+    EXPECT_FALSE(output.empty());
+    EXPECT_NE(output.find("\"value\":1"), std::string::npos);
+    EXPECT_NE(output.find("null"), std::string::npos);
+}
+
+TEST(AuditSerialization, Iterable)
+{
+    std::stringstream log_stream;
+    {
+        auto auditor =
+            audit::serialize::json{}
+            | audit::sink::ostream{log_stream};
+
+        auditor.record(source_location::current(), std::vector<int>{1, 2, 3});
+        auditor.record(source_location::current(), std::list<std::string>{"a", "b", "c"});
+        std::vector<std::pair<std::string, int>> vec_of_pairs = {{"one", 1}, {"two", 2}};
+        auditor.record(source_location::current(), vec_of_pairs);
+    }
+
+    std::string output = log_stream.str();
+    EXPECT_FALSE(output.empty());
+    EXPECT_NE(output.find("\"value\":\"a\""), std::string::npos);
+    EXPECT_NE(output.find("\"value\":\"one\""), std::string::npos);
+}
+
+TEST(AuditSerialization, MemberVariable)
+{
+    struct point { int x; int y; };
+    struct rect { point top_left; point bottom_right; };
+
+    rect r1 = {{1001, 2}, {3, 4}};
+    rect r2 = {{5005, 6}, {7, 8}};
+
+    std::stringstream log_stream;
+    {
+        auto auditor =
+            audit::serialize::json{}
+            | audit::sink::ostream{log_stream};
+
+        auditor.record(source_location::current(), r1.top_left.x);
+        auditor.record(source_location::current(), r2.top_left.x);
+    }
+
+    std::string output = log_stream.str();
+    EXPECT_NE(output.find("1001"), std::string::npos);
+    EXPECT_NE(output.find("5005"), std::string::npos);
+}
+
+TEST(AuditStderrRedirection, RedirectsCerr)
+{
+    std::stringstream log_stream;
+    std::stringstream captured_cerr_stream;
+    std::streambuf* original_cerr_buf = std::cerr.rdbuf(captured_cerr_stream.rdbuf());
+
+    {
+        auto auditor =
+            audit::serialize::json{}
+            | audit::sink::ostream{log_stream};
+        using auditor_t = decltype(auditor);
+
+        {
+            audit::stderr_redirection<auditor_t> redir{audit::auditor_ref<auditor_t>{auditor}};
+            std::cerr << "Cerr test log message" << std::endl;
+        }
+    }
+
+    std::cerr.rdbuf(original_cerr_buf);
+
+    EXPECT_TRUE(captured_cerr_stream.str().empty())
+        << "stderr output should be redirected while stderr_redirection is active.";
+}
+
+TEST(AuditComposition, FileAndFunctionFilters)
+{
+    std::stringstream included_stream;
+    {
+        auto auditor =
+            audit::filter::by_spec{"@file:audit_tests.cpp, @func:*TestBody*"}
+            | audit::serialize::json{}
+            | audit::sink::ostream{included_stream};
+
+        audit::entry(auditor, [] { return "file_and_func_match"_v = 1; });
+    }
+    EXPECT_NE(included_stream.str().find("file_and_func_match"), std::string::npos);
+
+    std::stringstream excluded_stream;
+    {
+        auto auditor =
+            audit::filter::by_spec{"-@file:audit_tests.cpp"}
+            | audit::serialize::json{}
+            | audit::sink::ostream{excluded_stream};
+
+        audit::entry(auditor, [] { return "should_be_excluded"_v = 2; });
+    }
+    EXPECT_EQ(excluded_stream.str().find("should_be_excluded"), std::string::npos);
+}
+
+TEST(AuditComposition, TagFiltering)
+{
+    std::stringstream included_stream;
+    {
+        auto auditor =
+            audit::filter::by_spec{"audit_test_tag, -excluded_tag"}
+            | audit::serialize::json{}
+            | audit::sink::ostream{included_stream};
+
+        audit::entry(auditor, [] { return "included message"_v = 1; }, audit_test_tag{});
+        audit::entry(auditor, [] { return "excluded message"_v = 2; }, excluded_tag{});
+    }
+    EXPECT_NE(included_stream.str().find("included message"), std::string::npos);
+    EXPECT_EQ(included_stream.str().find("excluded message"), std::string::npos);
 }

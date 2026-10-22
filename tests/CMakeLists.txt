@@ -4,7 +4,7 @@ find_package(Boost REQUIRED COMPONENTS json)
 # --- ALL TESTS IN ONE EXECUTABLE ---
 add_executable(docwire_tests
 	main.cpp
-	core_tests.cpp error_tests.cpp audit_tests.cpp log_tests.cpp serialization_tests.cpp
+	core_tests.cpp error_tests.cpp audit_tests.cpp serialization_tests.cpp
 	exporter_tests.cpp
 	txt_parser_tests.cpp html_parser_tests.cpp ocr_parser_tests.cpp parser_failure_tests.cpp
 	utility_tests.cpp
@@ -19,7 +19,6 @@ add_executable(docwire_tests
 	static_flat_map_tests.cpp
 	json_serialization_tests.cpp
 	type_name_tests.cpp
-	log_filter_tests.cpp
 	iconv_wrapper_tests.cpp
 	minizip_wrapper_tests.cpp
 	odr_smoke_test.cpp
