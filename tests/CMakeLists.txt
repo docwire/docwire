@@ -28,6 +28,7 @@ add_executable(docwire_tests
 )
 
 target_link_libraries(docwire_tests PRIVATE
+	docwire_audit
 	docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_archives
 	docwire_fuzzy_match docwire_base64 docwire_content_type docwire_http
 	docwire_openai docwire_xml
