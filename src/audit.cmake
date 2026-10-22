@@ -21,9 +21,3 @@ target_include_directories(docwire_audit PUBLIC $<BUILD_INTERFACE:${CMAKE_CURREN
 # Install audit_export.h alongside the other audit headers so that
 # `#include "audit_export.h"` resolves for both in-tree and installed consumers.
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/audit_export.h DESTINATION include/docwire/audit)
-
-# Link modules that consume the compiled audit support (e.g. doc_parser's stderr redirection).
-# This is intentionally PRIVATE because the dependency does not leak through public headers.
-if(TARGET docwire_ole_office_formats)
-    target_link_libraries(docwire_ole_office_formats PRIVATE docwire_audit)
-endif()
