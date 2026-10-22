@@ -12,7 +12,6 @@
 #include "odfxml_parser.h"
 
 #include "audit/entry.hpp"
-#include "audit/legacy_log_audit.hpp"
 #include "audit/json_stream_auditor.hpp"
 #include "audit/scope.hpp"
 #include "data_source.h"
@@ -192,8 +191,6 @@ continuation odfxml_parser<safety_level, auditor_type>::operator()(message_ptr m
 
 template class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser<strict, audit::null_auditor>;
 template class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser<relaxed, audit::null_auditor>;
-template class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser<strict, audit::legacy_log_audit>;
-template class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser<relaxed, audit::legacy_log_audit>;
 template class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser<docwire::safety_policy::strict, docwire::audit::json_stream_auditor>;
 
 } // namespace docwire

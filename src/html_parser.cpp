@@ -28,7 +28,6 @@
 #include "convert_chrono.h" // IWYU pragma: keep
 #include "data_source.h"
 #include "audit.hpp"
-#include "audit/legacy_log_audit.hpp"
 #include "audit/json_stream_auditor.hpp"
 #include "make_error.h"
 #include <mutex>
@@ -942,7 +941,6 @@ void html_parser<auditor_type>::skipCharsetDecoding()
 }
 
 template class DOCWIRE_HTML_EXPORT html_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_HTML_EXPORT html_parser<docwire::audit::legacy_log_audit>;
 template class DOCWIRE_HTML_EXPORT html_parser<docwire::audit::json_stream_auditor>;
 
 } // namespace docwire

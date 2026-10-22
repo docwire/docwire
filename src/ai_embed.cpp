@@ -15,7 +15,6 @@
 #include "error_tags.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/entry.hpp"
-#include "audit/legacy_log_audit.hpp"
 #include "audit/json_stream_auditor.hpp"
 #include "audit/scope.hpp"
 #include "audit/with_auditor.hpp"
@@ -80,7 +79,6 @@ continuation embed<auditor_type>::operator()(
     return emit_message(ai::embedding{std::move(embedding_vector)});
 }
 template class DOCWIRE_AI_EXPORT docwire::ai::embed<docwire::audit::null_auditor>;
-template class DOCWIRE_AI_EXPORT docwire::ai::embed<docwire::audit::legacy_log_audit>;
 template class DOCWIRE_AI_EXPORT docwire::ai::embed<docwire::audit::json_stream_auditor>;
 
 } // namespace ai

@@ -13,7 +13,6 @@
 
 #include "audit/auditor_ref.hpp"
 #include "audit/entry.hpp"
-#include "audit/legacy_log_audit.hpp"
 #include "audit/json_stream_auditor.hpp"
 #include "audit/scope.hpp"
 #include "audit/with_auditor.hpp"
@@ -50,7 +49,6 @@ find<auditor_type>::find(
 }
 
 template class DOCWIRE_OPENAI_EXPORT find<docwire::audit::null_auditor>;
-template class DOCWIRE_OPENAI_EXPORT find<docwire::audit::legacy_log_audit>;
 template class DOCWIRE_OPENAI_EXPORT find<docwire::audit::json_stream_auditor>;
 
 } // namespace openai

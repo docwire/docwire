@@ -9,7 +9,6 @@
 #include "audit/with_auditor.hpp"
 #include "audit/audit_tag.hpp"
 #include "audit/tags.hpp"
-#include "audit/legacy_log_audit.hpp"
 #include "audit/json_stream_auditor.hpp"
 
 #endif

@@ -15,7 +15,6 @@
 #include "error_tags.h"
 #include "html_writer.h"
 #include "audit.hpp"
-#include "audit/legacy_log_audit.hpp"
 #include "audit/json_stream_auditor.hpp"
 #include "serialization_message.h" // IWYU pragma: keep
 #include "throw_if.h"
@@ -73,7 +72,6 @@ continuation html_exporter<auditor_type>::operator()(message_ptr msg, const mess
 }
 
 template class DOCWIRE_HTML_EXPORT html_exporter<docwire::audit::null_auditor>;
-template class DOCWIRE_HTML_EXPORT html_exporter<docwire::audit::legacy_log_audit>;
 template class DOCWIRE_HTML_EXPORT html_exporter<docwire::audit::json_stream_auditor>;
 
 } // namespace docwire

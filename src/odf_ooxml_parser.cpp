@@ -19,7 +19,6 @@
 #include "zip_reader.h"
 #include "error_tags.h"
 #include "audit/entry.hpp"
-#include "audit/legacy_log_audit.hpp"
 #include "audit/json_stream_auditor.hpp"
 #include "audit/scope.hpp"
 #include "make_error.h"
@@ -769,8 +768,6 @@ continuation odf_ooxml_parser<safety_level, auditor_type>::operator()(message_pt
 
 template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<strict, audit::null_auditor>;
 template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<relaxed, audit::null_auditor>;
-template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<strict, audit::legacy_log_audit>;
-template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<relaxed, audit::legacy_log_audit>;
 template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<docwire::safety_policy::strict, docwire::audit::json_stream_auditor>;
 
 } // namespace docwire
