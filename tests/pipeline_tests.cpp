@@ -11,6 +11,7 @@
 
 #include "pipeline/element_base.hpp"
 #include "pipeline/chain_expression.hpp"
+#include "pipeline/composition.hpp"
 #include "pipeline/function_transformer.hpp"
 #include "message.h"
 
@@ -214,4 +215,15 @@ TEST(pipeline, back_routing_from_right_to_left)
         | string_capture{&result};
 
     EXPECT_EQ(result, "from_back_echo_left");
+}
+
+TEST(pipeline, compose_builds_chain_from_instances)
+{
+    int result = 0;
+
+    int_source{}
+        | pipeline::compose(plus_one{}, plus_one{})
+        | int_capture{&result};
+
+    EXPECT_EQ(result, 44);
 }

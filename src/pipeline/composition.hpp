@@ -58,6 +58,25 @@ public:
         : m_chain{make_chain(std::forward<Args>(args)...)}
     {}
 
+    /**
+     * @brief Tag used to construct a composition from existing element instances.
+     *
+     * Unlike the universal constructor above, this constructor consumes already
+     * constructed elements and wires them together with `operator|` internally.
+     */
+    struct from_elements_t {};
+
+    /**
+     * @brief Constructs the composition from pre-built element instances.
+     *
+     * The chain is built using a left-associative fold of `operator|`, matching
+     * the static `chain_type_t` layout used internally.
+     */
+    template<typename... Es>
+    explicit composition(from_elements_t, Es&&... elements)
+        : m_chain{(... | std::forward<Es>(elements))}
+    {}
+
     template<typename auditor_type = audit::null_auditor>
     continuation operator()(
         message_ptr msg,
@@ -95,7 +114,11 @@ private:
 template<typename... ElementTypes>
 auto compose(ElementTypes&&... elements)
 {
-    return composition<std::remove_cvref_t<ElementTypes>...>{
+    using composition_type =
+        composition<std::remove_cvref_t<ElementTypes>...>;
+
+    return composition_type{
+        typename composition_type::from_elements_t{},
         std::forward<ElementTypes>(elements)...
     };
 }
