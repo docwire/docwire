@@ -224,11 +224,11 @@ TEST(SourceLocation, CustomImplementation)
 
 TEST(DiagnosticContext, Concepts)
 {
-    static_assert(audit_tag<audit::scope_enter>);
-    static_assert(audit_tag<audit::stderr_redirect>);
-    static_assert(audit_tag<errors::program_logic>);
-    static_assert(!audit_tag<std::filesystem::path>);
-    static_assert(!audit_tag<int>);
+    static_assert(audit::audit_tag<audit::scope_enter>);
+    static_assert(audit::audit_tag<audit::stderr_redirect>);
+    static_assert(audit::audit_tag<errors::program_logic>);
+    static_assert(!audit::audit_tag<std::filesystem::path>);
+    static_assert(!audit::audit_tag<int>);
     struct empty_struct {};
-    static_assert(!audit_tag<empty_struct>);
+    static_assert(!audit::audit_tag<empty_struct>);
 }
