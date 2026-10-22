@@ -129,7 +129,11 @@ std::string post_request(
 	try
 	{
 		data_source{query, mime_type{"application/json"}, confidence::highest} |
-			http::post<>("https://api.openai.com/v1/audio/speech", api_key) |
+			http::post<auditor_type>(
+				"https://api.openai.com/v1/audio/speech",
+				api_key,
+				http::ssl_verify_peer{true},
+				auditor) |
 			response_stream;
 	}
 	catch (const std::exception& e)

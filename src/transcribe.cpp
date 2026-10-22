@@ -25,6 +25,7 @@
 #include "pipeline/output_element.hpp"
 #include "post.h"
 #include "serialization_enum.h" // IWYU pragma: keep
+#include <map>
 #include <sstream>
 
 namespace docwire
@@ -93,7 +94,20 @@ continuation transcribe<auditor_type>::operator()(
 	auto response_stream = std::make_shared<std::ostringstream>();
 	try
 	{
-		in_stream | http::post<>("https://api.openai.com/v1/audio/transcriptions", {{"model", model_to_string(impl().m_model)}, {"response_format", "text"}}, "file", default_file_name("audio.mp3"), impl().m_api_key) | response_stream;
+		auto auditor_ref = audit::auditor_ref<auditor_type>(this->auditor());
+
+		in_stream | http::post<auditor_type>(
+			"https://api.openai.com/v1/audio/transcriptions",
+			std::map<std::string, std::string>{
+				{"model", model_to_string(impl().m_model)},
+				{"response_format", "text"}
+			},
+			"file",
+			default_file_name("audio.mp3"),
+			impl().m_api_key,
+			http::ssl_verify_peer{true},
+			auditor_ref
+		) | response_stream;
 	}
 	catch (const std::exception& e)
 	{
