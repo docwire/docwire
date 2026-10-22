@@ -40,7 +40,7 @@ DocWire is production-tested today and is continuously extending its architectur
 - [Examples](#examples)
 - [Installation](#installation)
 - [Versioning](#versioning)
-- [Logging](#logging)
+- [Audit and Diagnostics](#audit-and-diagnostics)
 - [Error handling: robust and secure](#error-handling-robust-and-secure)
 - [API documentation](#api-documentation)
 - [Console application](#console-application)
@@ -81,7 +81,7 @@ DocWire rejects hidden allocations, background work, and implicit global state. 
 
 ### Auditability
 
-DocWire gives developers control over diagnostics and audit output. The SDK avoids hidden global state and provides structured logging and configurable sinks. A dependency-injected `Audit` interface is under active development.
+DocWire gives developers control over diagnostics and audit output through a dependency-injected auditor. There is no hidden global logger and no mutable static sink. Components accept an `auditor_type`; the default `audit::null_auditor` is a zero-overhead no-op, while stateful output is created explicitly by composing filter, serializer, and sink objects.
 
 ### Edge Optimization
 
@@ -100,7 +100,7 @@ Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is 
 
 **Enhanced AI/NLP Integration:** DocWire supports structured document element extraction. Semantic partitioning and context-aware chunking are under active development. Extracted elements can be used to generate embeddings for semantic search, retrieval augmented generation (RAG), document clustering, and similarity analysis.
 
-**The layer your AI pipeline is missing:** Raw documents are rarely LLM-ready. Dirty PDFs, malformed email archives, legacy Office files, OCR scans, and mixed-format datasets must be normalized before they can be embedded, chunked, or summarized. DocWire ingests and structures that unstructured input into clean, typed document elements—on-premise by default, with structured logging today and an injected audit interface under active development—and optional cloud AI steps.
+**The layer your AI pipeline is missing:** Raw documents are rarely LLM-ready. Dirty PDFs, malformed email archives, legacy Office files, OCR scans, and mixed-format datasets must be normalized before they can be embedded, chunked, or summarized. DocWire ingests and structures that unstructured input into clean, typed document elements—on-premise by default, with an injected audit mechanism for deterministic observability—and optional cloud AI steps.
 
 **For Businesses:** DocWire processes unstructured, semi-structured, and structured data from diverse sources including PDF, Office documents, email boxes, web services, JSON, XML, CSV, and more. It integrates cloud and local AI models as explicit processing steps. Direct database, ERP, message-queue, and industrial-stream connectors are planned extensions.
 
@@ -848,64 +848,49 @@ An LTS agreement signifies an ongoing collaboration between DocWire SDK and the 
 
 To explore the possibilities of an LTS agreement or to discuss specific requirements, please reach out to our dedicated support team. We are committed to working closely with our users to create customized LTS agreements that cater to the unique demands of their projects, providing a solid foundation for long-term success.
 
-<a name="logging"></a>
-## Logging
+<a name="audit-and-diagnostics"></a>
+## Audit and Diagnostics
 
-DocWire SDK provides a structured logging framework designed for developer diagnostics and production audit trails. It is built around typed log records, configurable sinks, and runtime expression-based filters. Most debug log records are compiled out in release builds, while persistent audit records remain.
+DocWire uses a dependency-injected audit mechanism. There is no process-global logger, static sink, or logging macro.
 
-### Structured log records
+Parsers, exporters, and pipeline elements accept an `auditor_type` template parameter. The default is `docwire::audit::null_auditor`, a stateless no-op that adds no runtime cost.
 
-Every log record contains:
+For structured output, audit components are composed with `operator|`:
 
-- source location (file, line, function),
-- thread ID,
-- precise timestamp,
-- optional typed C++ context values.
-
-Records are generated as structured JSON objects, making them easy to consume with common log analysis platforms.
-
-Example log record:
-
-```json
-{
-    "file": "log_tests.cpp",
-    "function": "void MyTest::TestBody()",
-    "line": 123,
-    "log": [
-        "Processing user",
-        {"user_id": {"typeid": "int", "value": 42}}
-    ],
-    "thread_id": "0x7f...",
-    "timestamp": "2024-05-21T15:30:00.123456+0200"
-}
+```cpp
+auto audit =
+    docwire::audit::filter::by_spec{"*"}
+    | docwire::audit::serialize::json{}
+    | docwire::audit::sink::ostream{std::clog};
 ```
 
-### Sinks and filters
+The resulting auditor can be injected into a pipeline:
 
-The logging framework is silent by default. Output is controlled by two independent mechanisms:
+```cpp
+docwire::audit::json_stream_auditor audit{
+    "*",
+    docwire::ref_or_owned<std::ostream>{std::clog}
+};
 
-- **Sink** – a callback that receives each enabled `docwire::log::record`.
-- **Filter** – a string expression that selects which records are enabled, based on source file, function name, or custom tags.
+std::filesystem::path{"document.docx"}
+    | content_type::detector{}
+    | office_formats_parser<docwire::audit::json_stream_auditor>{
+        docwire::audit::auditor_ref<docwire::audit::json_stream_auditor>{audit}}
+    | plain_text_exporter{}
+    | std::cout;
+```
 
-This separation allows developers to route logs to files, stdout, custom collectors, or completely disable them for zero overhead.
+Audit records are emitted as structured JSON objects containing source location, timestamp, thread ID, and typed C++ context values.
 
-### Release-build zero cost
+### CLI audit options
 
-Most logging records are completely compiled out in release builds when `NDEBUG` is defined. Only records explicitly marked as persistent audit records are retained. This gives production applications the ability to keep audit-worthy logs while eliminating normal debug logging.
+The console application injects `audit::null_auditor` by default, so normal document processing is silent. Audit output is enabled with:
 
-### Convenience macros
+- `--verbose` / `-v` — enable all audit entries, equivalent to `--log-filter='*'`
+- `--log-filter <filter>` — select entries by tag, file, or function
+- `--log_file <path>` — write JSON audit output to a file instead of stderr
 
-The framework includes convenience macros such as:
-
-- `log_entry(...)` – emits a single log record,
-- `log_scope(...)` – emits a record at scope entry and exit,
-- `log_forward(...)` – logs a value and returns it, useful for logging intermediate values in expression chains.
-
-These macros wrap the structured logging system and are intended for developer-facing diagnostics. The underlying record, sink, and filter infrastructure remains the stable public interface.
-
-### Audit interface (architectural direction)
-
-DocWire’s longer-term design includes a dependency-injected `Audit` interface that receives raw C++ values without premature string serialization. This interface is planned to provide zero-cost, compile-time-optional audit output for semantic events, while keeping the current structured logging framework suitable for general developer logs. The existing persistent audit tag is an early step in that direction.
+The old global `docwire::log` framework and its convenience macros have been removed.
 
 <a name="api-documentation"></a>
 ## API Documentation
@@ -1070,7 +1055,7 @@ docwire [options] file_name
 ### Basic options
 - **&ndash;&ndash;help**: Display the help message.
 - **&ndash;&ndash;version**: Display the DocWire version.
-- **&ndash;&ndash;verbose**: Enable verbose logging.
+- **&ndash;&ndash;verbose**: Enable verbose audit output, equivalent to `--log-filter='*'`.
 - **&ndash;&ndash;input-file <file_path>**: Specify the path to the file to process (or you can provide filename without --input-file).
 - **&ndash;&ndash;output_type <type>** (default: plain_text): Set the output type. Available types include plain_text, html (preserving document structure), csv (structured data), and metadata (document information).
 
@@ -1129,9 +1114,9 @@ Unlock the power of OpenAI with the following options:
 
 - **&ndash;&ndash;attachment_extension <type>**: Filter by attachment type.
 
-- **&ndash;&ndash;log_file <file_path>**: Set the path to the log file.
+- **&ndash;&ndash;log_file <file_path>**: Set the path for JSON audit output.
 
-- **&ndash;&ndash;log-filter <filter>**: Set a custom log filter. Filters are comma-separated and can include tags such as `audit`, function names such as `@func:my_func`, and file names such as `@file:*_parser.cpp`. Prepend `-` to exclude entries.
+- **&ndash;&ndash;log-filter <filter>**: Set a custom audit filter. Filters are comma-separated and can include tags, function names such as `@func:my_func`, and file names such as `@file:*_parser.cpp`. Prepend `-` to exclude entries.
 
 Note: The "min_creation_time" and "max_creation_time" options currently work only for emails within PST/OST files.
 
