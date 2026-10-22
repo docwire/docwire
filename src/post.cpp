@@ -79,7 +79,7 @@ post<auditor_type>::post(
 	audit::scope audit_scope{this->auditor(), [&]{
 		return
 			"url"_v = url,
-			"oauth2_bearer_token"_v = oauth2_bearer_token,
+			"has_oauth2_bearer_token"_v = !oauth2_bearer_token.empty(),
 			"ssl_verify_peer_v"_v = ssl_verify_peer_v;
 	}};
 }
@@ -103,7 +103,7 @@ post<auditor_type>::post(
 			"url"_v = url,
 			"pipe_field_name"_v = pipe_field_name,
 			"default_file_name"_v = default_file_name,
-			"oauth2_bearer_token"_v = oauth2_bearer_token,
+			"has_oauth2_bearer_token"_v = !oauth2_bearer_token.empty(),
 			"ssl_verify_peer_v"_v = ssl_verify_peer_v;
 	}};
 }
