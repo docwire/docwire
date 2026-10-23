@@ -84,8 +84,7 @@ struct pimpl_impl<ai::ct2::tokenizer<auditor_type>>
     pimpl_impl(
         const std::filesystem::path& model_data_path,
         audit::auditor_ref<auditor_type> auditor)
-        : audit::with_auditor<auditor_type>{auditor},
-          m_tokenizer_config(tokenizer_config(model_data_path))
+        : pimpl_impl(tokenizer_config(model_data_path), auditor)
     {}
 
     pimpl_impl(
