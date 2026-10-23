@@ -1,6 +1,5 @@
 #include "type_name.h"
 #include "resource_path.h"
-#include "log.h"
 #include "static_flat_map.h"
 #include "gtest/gtest.h"
 
