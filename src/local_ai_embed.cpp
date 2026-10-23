@@ -14,6 +14,7 @@
 #include "resource_path.h"
 #include <string>
 #include "audit/auditor_ref.hpp"
+#include "audit/json_stream_auditor.hpp"
 
 namespace
 {
@@ -21,25 +22,41 @@ namespace
 constexpr std::string_view default_passage_prefix = "passage: ";
 constexpr std::string_view default_query_prefix = "query: ";
 
-std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
+template<typename auditor_type>
+std::shared_ptr<docwire::ai::ai_runner> make_default_runner(
+    docwire::audit::auditor_ref<auditor_type> auditor)
 {
-    return std::make_shared<docwire::ai::ct2::ct2_runner<docwire::audit::null_auditor>>(
+    return std::make_shared<docwire::ai::ct2::ct2_runner<auditor_type>>(
         docwire::resource_path("multilingual-e5-small-ct2-int8"),
-        docwire::audit::auditor_ref<docwire::audit::null_auditor>{});
+        auditor);
 }
 
 } // anonymous namespace
 
 namespace docwire::ai::local::passage
 {
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_passage_prefix})
+template<typename auditor_type>
+embedder<auditor_type>::embedder(docwire::audit::auditor_ref<auditor_type> auditor)
+    : docwire::ai::embed<auditor_type>(
+          make_default_runner(auditor),
+          std::string{default_passage_prefix},
+          auditor)
 {}
 } // namespace docwire::ai::local::passage
 
 namespace docwire::ai::local::query
 {
-embedder::embedder()
-    : docwire::ai::embed(make_default_runner(), std::string{default_query_prefix})
+template<typename auditor_type>
+embedder<auditor_type>::embedder(docwire::audit::auditor_ref<auditor_type> auditor)
+    : docwire::ai::embed<auditor_type>(
+          make_default_runner(auditor),
+          std::string{default_query_prefix},
+          auditor)
 {}
 } // namespace docwire::ai::local::query
+
+template class DOCWIRE_LOCAL_AI_EXPORT docwire::ai::local::passage::embedder<docwire::audit::null_auditor>;
+template class DOCWIRE_LOCAL_AI_EXPORT docwire::ai::local::passage::embedder<docwire::audit::json_stream_auditor>;
+
+template class DOCWIRE_LOCAL_AI_EXPORT docwire::ai::local::query::embedder<docwire::audit::null_auditor>;
+template class DOCWIRE_LOCAL_AI_EXPORT docwire::ai::local::query::embedder<docwire::audit::json_stream_auditor>;
