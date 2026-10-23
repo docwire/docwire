@@ -11,13 +11,16 @@
 #include "local_ai_translate.h"
 #include "ct2_runner.h"
 #include "resource_path.h"
+#include "audit/auditor_ref.hpp"
 
 namespace docwire::ai::local
 {
 
 translate::translate(const std::string& language)
 	: docwire::ai::translate(language,
-		std::make_shared<docwire::ai::ct2::ct2_runner>(resource_path("flan-t5-large-ct2-int8")))
+		std::make_shared<docwire::ai::ct2::ct2_runner<docwire::audit::null_auditor>>(
+			resource_path("flan-t5-large-ct2-int8"),
+			docwire::audit::auditor_ref<docwire::audit::null_auditor>{}))
 {}
 
 translate::translate(const std::string& language, std::shared_ptr<ai_runner> runner)

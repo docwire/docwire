@@ -13,6 +13,7 @@
 #include "ct2_runner.h"
 #include "resource_path.h"
 #include <string>
+#include "audit/auditor_ref.hpp"
 
 namespace
 {
@@ -22,8 +23,9 @@ constexpr std::string_view default_query_prefix = "query: ";
 
 std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
 {
-    return std::make_shared<docwire::ai::ct2::ct2_runner>(
-        docwire::resource_path("multilingual-e5-small-ct2-int8"));
+    return std::make_shared<docwire::ai::ct2::ct2_runner<docwire::audit::null_auditor>>(
+        docwire::resource_path("multilingual-e5-small-ct2-int8"),
+        docwire::audit::auditor_ref<docwire::audit::null_auditor>{});
 }
 
 } // anonymous namespace

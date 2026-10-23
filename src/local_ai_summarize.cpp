@@ -12,13 +12,17 @@
 #include "ct2_runner.h"
 #include "resource_path.h"
 #include "local_ai_summarize.h"
+#include "audit/auditor_ref.hpp"
 
 namespace docwire::ai::local
 {
 
 summarize::summarize(model_lifetime_policy lifetime)
     : docwire::ai::summarize(
-        std::make_shared<docwire::ai::ct2::ct2_runner>(resource_path("flan-t5-large-ct2-int8")), lifetime)
+        std::make_shared<docwire::ai::ct2::ct2_runner<docwire::audit::null_auditor>>(
+            resource_path("flan-t5-large-ct2-int8"),
+            docwire::audit::auditor_ref<docwire::audit::null_auditor>{}),
+        lifetime)
 {}
 
 summarize::summarize(std::shared_ptr<docwire::ai::ai_runner> runner, model_lifetime_policy lifetime)
