@@ -231,7 +231,7 @@ void ct2_runner<auditor_type>::unload()
 {
     audit::scope audit_scope{this->auditor(), audit::no_context};
     std::lock_guard lock(impl().model_mutex);
-    impl().m_model.emplace<std::monostate>();
+    impl().m_model.template emplace<std::monostate>();
 }
 
 template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::ct2_runner<docwire::audit::null_auditor>;
