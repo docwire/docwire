@@ -19,7 +19,7 @@
 #include "error_tags.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/entry.hpp"
-#include "audit/legacy_log_audit.hpp"
+#include "audit/json_stream_auditor.hpp"
 #include "audit/scope.hpp"
 #include "audit/with_auditor.hpp"
 #include "named.h"
@@ -131,7 +131,7 @@ struct pimpl_impl<ai::ct2::ct2_runner<auditor_type>>
         {
             std::lock_guard lock(model_mutex);
             if (std::holds_alternative<std::monostate>(m_model))
-                m_model = load_model(m_model_path);
+                m_model = load_model(m_model_path, auditor());
             throw_if(!std::holds_alternative<std::shared_ptr<ctranslate2::Encoder>>(m_model),
                  "Model is not an Encoder, cannot embed.", errors::program_logic{});
 
@@ -235,7 +235,7 @@ void ct2_runner<auditor_type>::unload()
 }
 
 template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::ct2_runner<docwire::audit::null_auditor>;
-template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::ct2_runner<docwire::audit::legacy_log_audit>;
+template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::ct2_runner<docwire::audit::json_stream_auditor>;
 
 } // namespace ai::ct2
 } // namespace docwire

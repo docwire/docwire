@@ -16,7 +16,7 @@
 #include <fstream>
 #include "audit/auditor_ref.hpp"
 #include "audit/entry.hpp"
-#include "audit/legacy_log_audit.hpp"
+#include "audit/json_stream_auditor.hpp"
 #include "audit/scope.hpp"
 #include "audit/with_auditor.hpp"
 #include "named.h"
@@ -195,7 +195,7 @@ std::string tokenizer<auditor_type>::detokenize(const std::vector<std::string>& 
 }
 
 template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::tokenizer<docwire::audit::null_auditor>;
-template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::tokenizer<docwire::audit::legacy_log_audit>;
+template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::tokenizer<docwire::audit::json_stream_auditor>;
 
 } // namespace ai::ct2
 } // namespace docwire
