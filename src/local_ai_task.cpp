@@ -10,21 +10,38 @@
 /*********************************************************************************************************************************************/
 
 #include "local_ai_task.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/json_stream_auditor.hpp"
 #include "ct2_runner.h"
 #include "resource_path.h"
 
 namespace docwire::ai::local
 {
 
-task::task(const std::string& prompt, model_lifetime_policy lifetime)
-    : docwire::ai::task(prompt, std::make_shared<docwire::ai::ct2::ct2_runner>(
-                                    resource_path("flan-t5-large-ct2-int8")), lifetime)
+template<typename auditor_type>
+task<auditor_type>::task(
+    const std::string& prompt,
+    model_lifetime_policy lifetime,
+    docwire::audit::auditor_ref<auditor_type> auditor)
+    : docwire::ai::task(
+          prompt,
+          std::make_shared<docwire::ai::ct2::ct2_runner<auditor_type>>(
+              resource_path("flan-t5-large-ct2-int8"),
+              auditor),
+          lifetime)
 {
 }
 
-task::task(const std::string& prompt, std::shared_ptr<docwire::ai::ai_runner> runner, model_lifetime_policy lifetime)
-    : docwire::ai::task(prompt, runner, lifetime)
+template<typename auditor_type>
+task<auditor_type>::task(
+    const std::string& prompt,
+    std::shared_ptr<docwire::ai::ai_runner> runner,
+    model_lifetime_policy lifetime)
+    : docwire::ai::task(prompt, std::move(runner), lifetime)
 {
 }
+
+template class DOCWIRE_LOCAL_AI_EXPORT docwire::ai::local::task<docwire::audit::null_auditor>;
+template class DOCWIRE_LOCAL_AI_EXPORT docwire::ai::local::task<docwire::audit::json_stream_auditor>;
 
 } // namespace docwire::ai::local

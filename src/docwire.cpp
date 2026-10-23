@@ -113,9 +113,12 @@ std::string enum_names_str()
 	return names_str;
 }
 #ifdef DOCWIRE_LOCAL_AI
+template<typename auditor_type>
 static std::shared_ptr<ai::ai_runner>
-create_local_runner(const boost::program_options::variables_map& vm,
-                    const std::string& default_model)
+create_local_runner(
+    const boost::program_options::variables_map& vm,
+    const std::string& default_model,
+    [[maybe_unused]] audit::auditor_ref<auditor_type> auditor)
 {
     if (vm.count("local-ai-model"))
     {
@@ -139,8 +142,9 @@ create_local_runner(const boost::program_options::variables_map& vm,
         #endif
     }
     #ifdef DOCWIRE_CT2
-    return std::make_shared<ai::ct2::ct2_runner<>>(
-        resource_path(default_model)
+    return std::make_shared<ai::ct2::ct2_runner<auditor_type>>(
+        resource_path(default_model),
+        audit::auditor_ref<auditor_type>(auditor)
     );
     #else
     	throw std::runtime_error("Default local AI model requires the local-ai-ct2 feature");
@@ -455,8 +459,10 @@ int run_with_auditor(
 #ifdef DOCWIRE_CT2
 		| maybe(vm.count("local-ai-prompt"), [&] {
 			auto runner = create_local_runner(
-				vm, "flan-t5-large-ct2-int8");
-			return ai::local::task(
+				vm,
+				"flan-t5-large-ct2-int8",
+				docwire::audit::auditor_ref<configured_auditor>{audit});
+			return ai::local::task<configured_auditor>(
 				vm["local-ai-prompt"].as<std::string>(), runner);
 		})
 		| maybe(vm.count("local-ai-embed"), [&] {
@@ -477,7 +483,9 @@ int run_with_auditor(
 			}
 
 			auto runner = create_local_runner(
-				vm, "multilingual-e5-small-ct2-int8");
+				vm,
+				"multilingual-e5-small-ct2-int8",
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 
 			return docwire::ai::embed<configured_auditor>{
 				runner,
