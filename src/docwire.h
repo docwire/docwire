@@ -53,7 +53,6 @@
 #include "find.h"
 #include "fuzzy_match.h"
 #include "pipeline.hpp"
-#include "log.h"
 #include "mail_elements.h"
 #include "mail_parser.h"
 #include "ocr_parser.h"
