@@ -93,21 +93,25 @@ public:
 	{
 		std::cerr.rdbuf(m_cerr_buf_backup);
 		m_cerr_buf_backup = nullptr;
-#ifndef NDEBUG
-		std::string redirected_cerr = m_string_stream.str();
-		source_location location = m_location;
-#endif
 		m_redirected = false;
 		if (m_cerr_redirection_mutex_lock.owns_lock())
 			m_cerr_redirection_mutex_lock.unlock();
 #ifndef NDEBUG
+		std::string redirected_cerr = m_string_stream.str();
+		m_string_stream.str(std::string{});
+		m_string_stream.clear();
+
 		if (!redirected_cerr.empty())
 		{
-			::docwire::audit::entry(m_auditor, [&] {
-				return std::make_tuple(
-					stderr_redirect{},
-					serialization::object{{{"redirected_cerr", redirected_cerr}}});
-			}, m_location);
+			::docwire::audit::entry(
+				m_auditor,
+				[&] {
+					return serialization::object{
+						{{"redirected_cerr", redirected_cerr}}
+					};
+				},
+				stderr_redirect{},
+				m_location);
 		}
 #endif
 	}
