@@ -136,7 +136,9 @@ create_local_runner(
 	        #endif
         }
         #ifdef DOCWIRE_CT2
-        	return std::make_shared<ai::ct2::ct2_runner<>>(model_path);
+        	return std::make_shared<ai::ct2::ct2_runner<auditor_type>>(
+        		model_path,
+        		audit::auditor_ref<auditor_type>(auditor));
         #else
         	throw std::runtime_error("CT2 model support requires the local-ai-ct2 feature");
         #endif
