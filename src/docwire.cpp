@@ -130,7 +130,9 @@ create_local_runner(
 	            config.model_path = model_path;
 	            config.n_ctx = ai::context_size{4096};
 	            config.n_threads = ai::thread_count{4};
-	            return std::make_shared<ai::llama::llama_runner>(config);
+	            return std::make_shared<ai::llama::llama_runner<auditor_type>>(
+	                config,
+	                audit::auditor_ref<auditor_type>(auditor));
 	        #else
 	            throw std::runtime_error("GGUF model support requires the local-ai-llama feature");
 	        #endif

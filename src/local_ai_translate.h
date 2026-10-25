@@ -14,18 +14,30 @@
 
 #include "ai_translate.h"
 #include "local_ai_export.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/core.hpp"
 
 namespace docwire::ai::local
 {
 
+template<typename auditor_type = docwire::audit::null_auditor>
 class DOCWIRE_LOCAL_AI_EXPORT translate
-    : public docwire::pipeline::transformer_element<translate>
+    : public docwire::pipeline::transformer_element<translate<auditor_type>>
     , public docwire::ai::translate
 {
-  public:
- 	translate(const std::string& language);
-    explicit translate(const std::string& language, std::shared_ptr<ai_runner> runner);
+public:
+    explicit translate(
+        const std::string& language,
+        docwire::audit::auditor_ref<auditor_type> auditor = {});
+
+    explicit translate(
+        const std::string& language,
+        std::shared_ptr<docwire::ai::ai_runner> runner);
 };
+
+translate(const std::string&) -> translate<docwire::audit::null_auditor>;
+translate(const std::string&, std::shared_ptr<docwire::ai::ai_runner>)
+    -> translate<docwire::audit::null_auditor>;
 
 } // namespace docwire::ai::local
 

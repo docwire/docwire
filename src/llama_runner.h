@@ -16,6 +16,9 @@
 #include "ai_llama_export.h"
 #include "model_inference_config.h"
 #include "pimpl.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/core.hpp"
+#include "audit/with_auditor.hpp"
 
 namespace docwire::ai::llama
 {
@@ -24,17 +27,27 @@ namespace docwire::ai::llama
  * respective configuration and run inference on the prompt supplied along with
  * the model configuration.
  */
-class DOCWIRE_AI_LLAMA_EXPORT llama_runner : public ai_runner, public with_pimpl<llama_runner>
+template<typename auditor_type = docwire::audit::null_auditor>
+class DOCWIRE_AI_LLAMA_EXPORT llama_runner
+    : public ai_runner,
+      public with_pimpl<llama_runner<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
 
   public:
-    explicit llama_runner(const model_inference_config& config);
+    explicit llama_runner(
+        const model_inference_config& config,
+        docwire::audit::auditor_ref<auditor_type> auditor = {});
 
     std::string process(const std::string& input) override;
 
     std::vector<double> embed(const std::string& input) override;
 
-    virtual void unload() override;
+    void unload() override;
+
+  private:
+    using with_pimpl<llama_runner<auditor_type>>::impl;
+    using audit::with_auditor<auditor_type>::auditor;
 };
 
 } // namespace docwire::ai::llama

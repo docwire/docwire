@@ -12,18 +12,32 @@
 #include "ct2_runner.h"
 #include "resource_path.h"
 #include "audit/auditor_ref.hpp"
+#include "audit/json_stream_auditor.hpp"
 
 namespace docwire::ai::local
 {
 
-translate::translate(const std::string& language)
-	: docwire::ai::translate(language,
-		std::make_shared<docwire::ai::ct2::ct2_runner<docwire::audit::null_auditor>>(
-			resource_path("flan-t5-large-ct2-int8"),
-			docwire::audit::auditor_ref<docwire::audit::null_auditor>{}))
-{}
+template<typename auditor_type>
+translate<auditor_type>::translate(
+    const std::string& language,
+    docwire::audit::auditor_ref<auditor_type> auditor)
+    : docwire::ai::translate(
+          language,
+          std::make_shared<docwire::ai::ct2::ct2_runner<auditor_type>>(
+              resource_path("flan-t5-large-ct2-int8"),
+              auditor))
+{
+}
 
-translate::translate(const std::string& language, std::shared_ptr<ai_runner> runner)
-    : docwire::ai::translate(language, runner)
-{}
+template<typename auditor_type>
+translate<auditor_type>::translate(
+    const std::string& language,
+    std::shared_ptr<docwire::ai::ai_runner> runner)
+    : docwire::ai::translate(language, std::move(runner))
+{
+}
+
+template class DOCWIRE_LOCAL_AI_EXPORT translate<docwire::audit::null_auditor>;
+template class DOCWIRE_LOCAL_AI_EXPORT translate<docwire::audit::json_stream_auditor>;
+
 } // namespace docwire::ai::local

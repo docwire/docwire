@@ -13,20 +13,32 @@
 #include "resource_path.h"
 #include "local_ai_summarize.h"
 #include "audit/auditor_ref.hpp"
+#include "audit/json_stream_auditor.hpp"
 
 namespace docwire::ai::local
 {
 
-summarize::summarize(model_lifetime_policy lifetime)
+template<typename auditor_type>
+summarize<auditor_type>::summarize(
+    model_lifetime_policy lifetime,
+    docwire::audit::auditor_ref<auditor_type> auditor)
     : docwire::ai::summarize(
-        std::make_shared<docwire::ai::ct2::ct2_runner<docwire::audit::null_auditor>>(
+        std::make_shared<docwire::ai::ct2::ct2_runner<auditor_type>>(
             resource_path("flan-t5-large-ct2-int8"),
-            docwire::audit::auditor_ref<docwire::audit::null_auditor>{}),
+            auditor),
         lifetime)
-{}
-
-summarize::summarize(std::shared_ptr<docwire::ai::ai_runner> runner, model_lifetime_policy lifetime)
-    : docwire::ai::summarize(runner, lifetime)
-{}
-
+{
 }
+
+template<typename auditor_type>
+summarize<auditor_type>::summarize(
+    std::shared_ptr<docwire::ai::ai_runner> runner,
+    model_lifetime_policy lifetime)
+    : docwire::ai::summarize(std::move(runner), lifetime)
+{
+}
+
+template class DOCWIRE_LOCAL_AI_EXPORT summarize<docwire::audit::null_auditor>;
+template class DOCWIRE_LOCAL_AI_EXPORT summarize<docwire::audit::json_stream_auditor>;
+
+} // namespace docwire::ai::local

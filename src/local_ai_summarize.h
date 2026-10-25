@@ -14,18 +14,31 @@
 
 #include "local_ai_export.h"
 #include "ai_summarize.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/core.hpp"
 
 namespace docwire::ai::local
 {
 
+template<typename auditor_type = docwire::audit::null_auditor>
 class DOCWIRE_LOCAL_AI_EXPORT summarize
-    : public docwire::pipeline::transformer_element<summarize>
+    : public docwire::pipeline::transformer_element<summarize<auditor_type>>
     , public docwire::ai::summarize
 {
 public:
-    summarize(model_lifetime_policy lifetime = model_lifetime_policy::persistent);
-    explicit summarize(std::shared_ptr<docwire::ai::ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
+    explicit summarize(
+        model_lifetime_policy lifetime = model_lifetime_policy::persistent,
+        docwire::audit::auditor_ref<auditor_type> auditor = {});
+
+    explicit summarize(
+        std::shared_ptr<docwire::ai::ai_runner> runner,
+        model_lifetime_policy lifetime = model_lifetime_policy::persistent);
 };
+
+summarize() -> summarize<docwire::audit::null_auditor>;
+summarize(model_lifetime_policy) -> summarize<docwire::audit::null_auditor>;
+summarize(std::shared_ptr<docwire::ai::ai_runner>, model_lifetime_policy)
+    -> summarize<docwire::audit::null_auditor>;
 
 } // namespace docwire::ai::local
 
