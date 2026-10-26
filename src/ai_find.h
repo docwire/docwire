@@ -6,25 +6,24 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#include "local_ai_task.h"
-#include "ct2_runner.h"
-#include "resource_path.h"
+#ifndef DOCWIRE_AI_FIND_H
+#define DOCWIRE_AI_FIND_H
 
-namespace docwire::ai::local
+#include "ai_export.h"
+#include "model_chain_element.h"
+
+namespace docwire::ai
 {
 
-task::task(const std::string& prompt, model_lifetime_policy lifetime)
-    : docwire::ai::task(prompt, std::make_shared<docwire::ai::ct2::ct2_runner>(
-                                    resource_path("flan-t5-large-ct2-int8")), lifetime)
+class DOCWIRE_AI_EXPORT find : public model_chain_element
 {
-}
+  	public:
+    	explicit find(const std::string& what, std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
+};
 
-task::task(const std::string& prompt, std::shared_ptr<docwire::ai::ai_runner> runner, model_lifetime_policy lifetime)
-    : docwire::ai::task(prompt, runner, lifetime)
-{
-}
+} // namespace docwire::ai
 
-} // namespace docwire::ai::local
+#endif // DOCWIRE_AI_FIND_H
