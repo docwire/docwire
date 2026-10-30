@@ -198,7 +198,7 @@ void parse_oshared_summary_info(
 					{
 						meta.last_modified_by = read_vt_string(
 							reader,
-							audit::auditor_ref<auditor_type>(auditor));
+							auditor);
 					}
 					catch (const std::exception&)
 					{
@@ -213,7 +213,7 @@ void parse_oshared_summary_info(
 					{
 						meta.creation_date = read_vt_filetime(
 							reader,
-							audit::auditor_ref<auditor_type>(auditor));
+							auditor);
 					}
 					catch (const std::exception&)
 					{
@@ -228,7 +228,7 @@ void parse_oshared_summary_info(
 					{
 						meta.last_modification_date = read_vt_filetime(
 							reader,
-							audit::auditor_ref<auditor_type>(auditor));
+							auditor);
 					}
 					catch (const std::exception&)
 					{
@@ -243,7 +243,7 @@ void parse_oshared_summary_info(
 					{
 						meta.page_count = read_vt_i4(
 							reader,
-							audit::auditor_ref<auditor_type>(auditor));
+							auditor);
 					}
 					catch (const std::exception&)
 					{
@@ -258,7 +258,7 @@ void parse_oshared_summary_info(
 					{
 						meta.word_count = read_vt_i4(
 							reader,
-							audit::auditor_ref<auditor_type>(auditor));
+							auditor);
 					}
 					catch (const std::exception&)
 					{
@@ -338,7 +338,7 @@ std::string get_codepage_from_document_summary_info(
 			open_oshared_document_summary_info(
 				storage,
 				field_set_stream_start,
-				audit::auditor_ref<auditor_type>(auditor))
+				auditor)
 		};
 		U32 offset;
 		reader->readU32(offset);
@@ -362,7 +362,7 @@ std::string get_codepage_from_document_summary_info(
 					{
 						icodepage = read_vt_i2(
 							reader.get(),
-							audit::auditor_ref<auditor_type>(auditor));
+							auditor);
 					}
 					catch (const std::exception& e)
 					{
@@ -396,7 +396,7 @@ void parse_oshared_document_summary_info(
 		reader = open_oshared_document_summary_info(
 			storage,
 			field_set_stream_start,
-			audit::auditor_ref<auditor_type>(auditor));
+			auditor);
 		U32 offset;
 		reader->readU32(offset);
 		int property_set_pos = field_set_stream_start + offset;
@@ -419,7 +419,7 @@ void parse_oshared_document_summary_info(
 					{
 						slide_count = read_vt_i4(
 							reader,
-							audit::auditor_ref<auditor_type>(auditor));
+							auditor);
 						slide_count_found = true;
 					}
 					catch (const std::exception& e)

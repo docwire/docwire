@@ -2098,11 +2098,11 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 			auditor());
 		xml_reader xml_reader(
 			xml_data_source,
-			audit::auditor_ref<auditor_type>(auditor()));
+			auditor());
 		iwork_metadata_content metadata_content(
 			xml_reader,
 			metadata,
-			audit::auditor_ref<auditor_type>(auditor()));
+			auditor());
 
 		throw_if (!zipfile.loadDirectory());
 		throw_if (getIWorkType(xml_reader) == iwork_content::encrypted, errors::file_encrypted{});
@@ -2151,13 +2151,13 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 		data_source xml_data_source(
 			zipfile,
 			m_context_stack.top().m_xml_file,
-			audit::auditor_ref<auditor_type>(auditor()));
+			auditor());
 		xml_reader xml_reader(
 			xml_data_source,
-			audit::auditor_ref<auditor_type>(auditor()));
+			auditor());
 		iwork_content iwork_content(
 			xml_reader,
-			audit::auditor_ref<auditor_type>(auditor()));
+			auditor());
 
 		throw_if (!zipfile.loadDirectory());
 		typename iwork_content::iwork_type iwork_type = getIWorkType(xml_reader);
@@ -2215,7 +2215,7 @@ void pimpl_impl<iwork_parser<auditor_type>>::parse(
 	{
 		m_context_stack.top().m_xml_file = find_main_xml_file(
 			unzip,
-			audit::auditor_ref<auditor_type>(auditor()));
+			auditor());
 		emit_message(document::document
 			{
 				.metadata=[this, &unzip, emit_message]()

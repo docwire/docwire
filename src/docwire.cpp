@@ -133,7 +133,7 @@ create_local_runner(
                 config.n_threads = ai::thread_count{4};
                 return std::make_shared<ai::llama::llama_runner<auditor_type>>(
                     config,
-                    audit::auditor_ref<auditor_type>(auditor));
+                    auditor);
             #else
                 throw std::runtime_error("GGUF model support requires the local-ai-llama feature");
             #endif
@@ -141,7 +141,7 @@ create_local_runner(
         #ifdef DOCWIRE_CT2
             return std::make_shared<ai::ct2::ct2_runner<auditor_type>>(
                 model_path,
-                audit::auditor_ref<auditor_type>(auditor));
+                auditor);
         #else
             throw std::runtime_error("CT2 model support requires the local-ai-ct2 feature");
         #endif

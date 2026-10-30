@@ -271,8 +271,7 @@ class pst_message
 				audit::entry(m_auditor, audit::no_context);
 				continue;
 			}
-      std::string attachment_name = getAttachmentName(
-          item, audit::auditor_ref<auditor_type>(m_auditor));
+      std::string attachment_name = getAttachmentName(item, m_auditor);
       attachments.push_back(raw_attachment(size, datablob, attachment_name));
 		}
 		return attachments;
@@ -314,20 +313,14 @@ class folder
 	{
 		libpff_item_t* sub_folder = NULL;
 		libpff_folder_get_sub_folder(_folderHandle, index, &sub_folder, nullptr);
-		return folder<auditor_type>{
-			std::move(sub_folder),
-			audit::auditor_ref<auditor_type>(m_auditor)
-		};
+		return folder<auditor_type>{std::move(sub_folder), m_auditor};
 	}
 
 	pst_message<auditor_type> getMessage(int index) const
 	{
 		libpff_item_t* mail = NULL;
 		libpff_folder_get_sub_message(_folderHandle, index, &mail, nullptr);
-		return pst_message<auditor_type>{
-			std::move(mail),
-			audit::auditor_ref<auditor_type>(m_auditor)
-		};
+		return pst_message<auditor_type>{std::move(mail), m_auditor};
 	}
 
 	std::string getName() const
@@ -545,10 +538,7 @@ void pimpl_impl<pst_parser<auditor_type>>::parse(std::shared_ptr<std::istream> s
 
 	pff_item root = nullptr;
 	throw_if (libpff_file_get_root_folder(file, &root, &error) != 1, "libpff_file_get_root_folder failed");
-	folder<auditor_type> root_folder{
-		std::move(root),
-		audit::auditor_ref<auditor_type>(auditor())
-	};
+	folder<auditor_type> root_folder{std::move(root), auditor()};
   unsigned int mail_counter = 0;
 	emit_message(document::document{.metadata = []() { return attributes::metadata{}; }});
   parse_internal(root_folder, 0, mail_counter);

@@ -417,7 +417,7 @@ struct pimpl_impl<xlsb_parser<auditor_type>>
 					parseColumn(record_reader, text);
 					text += read_xl_wide_string(
 						record_reader,
-						audit::auditor_ref<auditor_type>(auditor()));
+						auditor());
 				}
 				catch (const std::exception& e)
 				{
@@ -467,7 +467,7 @@ struct pimpl_impl<xlsb_parser<auditor_type>>
 					parseColumn(record_reader, text);
 					rk_number rk = read_rk_number(
 						record_reader,
-						audit::auditor_ref<auditor_type>(auditor()));
+						auditor());
 					if (rk.is_int)
 						text += stringify((int)rk.value);
 					else
