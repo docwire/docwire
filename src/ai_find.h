@@ -6,42 +6,24 @@
 /*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
 /*  Project homepage: https://github.com/docwire/docwire                                                                                     */
 /*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#include "local_ai_task.h"
-#include "audit/auditor_ref.hpp"
-#include "audit/json_stream_auditor.hpp"
-#include "ct2_runner.h"
-#include "resource_path.h"
+#ifndef DOCWIRE_AI_FIND_H
+#define DOCWIRE_AI_FIND_H
 
-namespace docwire::ai::local
+#include "ai_export.h"
+#include "model_chain_element.h"
+
+namespace docwire::ai
 {
 
-template<typename auditor_type>
-task<auditor_type>::task(
-    const std::string& prompt,
-    model_lifetime_policy lifetime,
-    docwire::audit::auditor_ref<auditor_type> auditor)
-    : docwire::ai::task(
-          prompt,
-          std::make_shared<docwire::ai::ct2::ct2_runner<auditor_type>>(
-              resource_path("flan-t5-large-ct2-int8"),
-              auditor),
-          lifetime)
+class DOCWIRE_AI_EXPORT find : public model_chain_element
 {
-}
+  	public:
+    	explicit find(const std::string& what, std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
+};
 
-template<typename auditor_type>
-task<auditor_type>::task(
-    const std::string& prompt,
-    std::shared_ptr<docwire::ai::ai_runner> runner,
-    model_lifetime_policy lifetime)
-    : docwire::ai::task(prompt, std::move(runner), lifetime)
-{
-}
+} // namespace docwire::ai
 
-template class DOCWIRE_LOCAL_AI_EXPORT docwire::ai::local::task<docwire::audit::null_auditor>;
-template class DOCWIRE_LOCAL_AI_EXPORT docwire::ai::local::task<docwire::audit::json_stream_auditor>;
-
-} // namespace docwire::ai::local
+#endif // DOCWIRE_AI_FIND_H

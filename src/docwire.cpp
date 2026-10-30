@@ -14,12 +14,14 @@
 #include "model_inference_config.h"
 #ifdef DOCWIRE_CT2
 #include "ct2_runner.h"
+#include "local_ai_ct2_embed.h"
+#include "local_ai_ct2_runner_factory.h"
 #endif
 #ifdef DOCWIRE_LLAMA
 #include "llama_runner.h"
+#include "local_ai_llama_runner_factory.h"
 #endif
 #ifdef DOCWIRE_LOCAL_AI
-#include "local_ai_embed.h"
 #include "local_ai_task.h"
 #endif
 #include "ai_elements.h"
@@ -117,7 +119,6 @@ template<typename auditor_type>
 static std::shared_ptr<ai::ai_runner>
 create_local_runner(
     const boost::program_options::variables_map& vm,
-    const std::string& default_model,
     [[maybe_unused]] audit::auditor_ref<auditor_type> auditor)
 {
     if (vm.count("local-ai-model"))
@@ -145,16 +146,21 @@ create_local_runner(
         	throw std::runtime_error("CT2 model support requires the local-ai-ct2 feature");
         #endif
     }
+
     #ifdef DOCWIRE_CT2
-    return std::make_shared<ai::ct2::ct2_runner<auditor_type>>(
-        resource_path(default_model),
-        audit::auditor_ref<auditor_type>(auditor)
-    );
+        return ai::local::ct2::make_default_runner();
+    #elif defined(DOCWIRE_LLAMA) && defined(DOCWIRE_GRANITE)
+        return ai::local::llama::make_default_runner();
+    #elif defined(DOCWIRE_LLAMA)
+        throw std::runtime_error(
+            "No default local AI model available for this build. "
+            "Specify --local-ai-model, or rebuild with the local-ai-model-granite "
+            "feature to get a built-in default.");
     #else
-    	throw std::runtime_error("Default local AI model requires the local-ai-ct2 feature");
+        throw std::runtime_error("Default local AI model requires the local-ai-ct2 feature or local-ai-llama feature, which can be coupled with local-ai-model-granite feature.");
     #endif
 }
-#endif
+#endif // DOCWIRE_LOCAL_AI
 
 namespace
 {
@@ -211,7 +217,7 @@ int main(int argc, char* argv[])
 		("output_type", po::value<output_type>()->default_value(output_type::plain_text), enum_names_str<output_type>().c_str())
 		("http-post", po::value<std::string>(), "url to process data via http post")
 		("local-ai-prompt", po::value<std::string>(), "prompt to process text via local AI model")
-		("local-ai-embed", po::value<embed_prefix_type>()->implicit_value(embed_prefix_type::none), "generate embedding of text via local AI model. Optional argument selects the prefix type: (e.g. \"passage: \" or \"query: \" or \"none: \").")
+		("local-ai-ct2-embed", po::value<embed_prefix_type>()->implicit_value(embed_prefix_type::none), "generate embedding of text via local AI model. Optional argument selects the prefix type: (e.g. \"passage: \" or \"query: \" or \"none: \").")
 		("local-ai-model", po::value<std::string>(), "path to local AI model data (build-in default model is used if not specified)")
 		("openai-chat", po::value<std::string>(), "prompt to process text and images via OpenAI")
 		("openai-extract-entities", "extract entities from text and images via OpenAI")
@@ -460,42 +466,21 @@ int run_with_auditor(
 				vm["openai-image-detail"].as<openai::image_detail>(),
 				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
-#ifdef DOCWIRE_CT2
+#ifdef DOCWIRE_LOCAL_AI
 		| maybe(vm.count("local-ai-prompt"), [&] {
-			auto runner = create_local_runner(
-				vm,
-				"flan-t5-large-ct2-int8",
-				docwire::audit::auditor_ref<configured_auditor>{audit});
-			return ai::local::task<configured_auditor>(
+			auto runner = create_local_runner(vm);
+			return ai::local::task(
 				vm["local-ai-prompt"].as<std::string>(), runner);
 		})
-		| maybe(vm.count("local-ai-embed"), [&] {
-			const auto embed_type = vm["local-ai-embed"].as<embed_prefix_type>();
-			std::string prefix;
-
-			switch (embed_type)
-			{
-				case embed_prefix_type::none:
-					prefix = "passage: ";
-					break;
-				case embed_prefix_type::query:
-					prefix = "query: ";
-					break;
-				case embed_prefix_type::passage:
-					prefix = "passage: ";
-					break;
-			}
-
-			auto runner = create_local_runner(
-				vm,
-				"multilingual-e5-small-ct2-int8",
-				docwire::audit::auditor_ref<configured_auditor>{audit});
-
-			return docwire::ai::embed<configured_auditor>{
-				runner,
-				prefix,
-				docwire::audit::auditor_ref<configured_auditor>{audit}
-			};
+#endif
+#ifdef DOCWIRE_CT2
+		| maybe(vm.count("local-ai-ct2-embed") && vm["local-ai-ct2-embed"].as<embed_prefix_type>()
+			== embed_prefix_type::query, [] {
+			return ai::local::ct2::query::embedder();
+		})
+		| maybe(vm.count("local-ai-ct2-embed") &&
+					   vm["local-ai-ct2-embed"].as<embed_prefix_type>() != embed_prefix_type::query, [] {
+			return ai::local::ct2::passage::embedder();
 		})
 #endif
 		| maybe(vm.count("openai-find"), [&] {
