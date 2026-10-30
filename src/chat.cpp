@@ -259,7 +259,7 @@ continuation chat<auditor_type>::operator()(
 			errors::program_logic{});
 	}
 
-	auto auditor_ref = audit::auditor_ref<auditor_type>(this->auditor());
+	auto auditor_ref = this->auditor();
 	std::string content =
 		parse_response(
 			post_request(

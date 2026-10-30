@@ -183,7 +183,7 @@ void parse_oshared_summary_info(
 					{
 						meta.author = read_vt_string(
 							reader,
-							audit::auditor_ref<auditor_type>(auditor));
+							auditor);
 					}
 					catch (const std::exception&)
 					{

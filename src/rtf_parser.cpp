@@ -885,7 +885,7 @@ continuation rtf_parser<auditor_type>::operator()(
 
 	try
 	{
-		parse_rtf_content(data, emit_message, audit::auditor_ref<auditor_type>(auditor()));
+		parse_rtf_content(data, emit_message, auditor());
 	}
 	catch (const std::exception& e)
 	{

@@ -485,7 +485,7 @@ template<typename auditor_type>
 void pimpl_impl<html_parser<auditor_type>>::parse_document(const std::string& html_content_arg, const message_callbacks& emit_message)
 {
 	audit::scope audit_scope{auditor(), audit::no_context};
-	auto auditor_holder = audit::auditor_ref<auditor_type>{auditor()};
+	auto auditor_holder = auditor();
 	std::string html_content = html_content_arg;
 	if (!m_skip_decoding)
 	{

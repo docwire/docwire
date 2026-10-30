@@ -154,7 +154,7 @@ continuation text_to_speech<auditor_type>::operator()(
 		return emit_message(std::move(msg));
 	const data_source& data = msg->get<data_source>();
 	std::string data_str = data.string();
-	auto auditor_ref = audit::auditor_ref<auditor_type>(this->auditor());
+	auto auditor_ref = this->auditor();
 	std::string content =
 		post_request<auditor_type>(
 			prepare_query<auditor_type>(data_str, impl().m_model, impl().m_voice, auditor_ref),

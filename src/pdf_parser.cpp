@@ -384,7 +384,7 @@ struct pimpl_impl<pdf_parser<auditor_type>>
 
             				pix_unique_ptr pix = create_pix_from_fpdf_bitmap(
             					width, height, stride, format, pixels, h_res, v_res,
-            					audit::auditor_ref<auditor_type>(auditor()));
+            					auditor());
 			                l_uint8* png_data_raw = nullptr;
             			    size_t png_size = 0;
                 			leptonica_data_ptr png_data(nullptr, lept_free);

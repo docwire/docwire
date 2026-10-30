@@ -163,7 +163,7 @@ continuation embed<auditor_type>::operator()(
 	const data_source& data = msg->get<data_source>();
 	throw_if (!data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}), errors::program_logic{});
 	std::string data_str = data.string();
-	auto auditor_ref = audit::auditor_ref<auditor_type>(this->auditor());
+	auto auditor_ref = this->auditor();
 	std::vector<double> embedding_vector =
 		parse_response(
 			post_request(

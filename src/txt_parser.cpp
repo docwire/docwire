@@ -180,7 +180,7 @@ void pimpl_impl<txt_parser<auditor_type>>::parse(const data_source& data, const 
 				audit::scope fallback_audit_scope{auditor(), audit::no_context};
 				encoding = "ASCII"; // Assume ASCII as a fallback
 				content = sequences_of_printable_characters(
-					content, 4, '\n', audit::auditor_ref<auditor_type>(auditor())); // Extract printable sequences
+					content, 4, '\n', auditor()); // Extract printable sequences
 			}
 		}
 		if (encoding != "utf-8" && encoding != "UTF-8")

@@ -81,7 +81,7 @@ continuation xml_parser<safety_level, auditor_type>::operator()(message_ptr msg,
 	{
 		emit_message(document::document{});
 		xml::reader<safety_level> reader(data.string_view()); // Correctly uses the non-owning constructor
-		parseXmlData(audit::auditor_ref<auditor_type>(auditor()), emit_message, children(reader, audit::auditor_ref<auditor_type>(auditor())));
+		parseXmlData(auditor(), emit_message, children(reader, auditor()));
 		emit_message(document::close_document{});
 	}
 	catch (const std::exception& e)

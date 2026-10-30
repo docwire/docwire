@@ -697,7 +697,7 @@ void pimpl_impl<doc_parser<auditor_type>>::parse(
 					*storage,
 					meta,
 					[emit_message](std::exception_ptr e) { emit_message(std::move(e)); },
-					audit::auditor_ref<auditor_type>(auditor()));
+					auditor());
 				return meta;
 			}
 		});
@@ -722,9 +722,7 @@ void pimpl_impl<doc_parser<auditor_type>>::parse(
 					audit::scope workbook_audit_scope{auditor(), audit::no_context};
 					try
 					{
-						xls_parser<auditor_type> xls{
-							audit::auditor_ref<auditor_type>(auditor())
-						};
+						xls_parser<auditor_type> xls{auditor()};
 						obj_text = xls.parse(*storage, emit_message);
 					}
 					catch (const std::exception&)
@@ -739,9 +737,7 @@ void pimpl_impl<doc_parser<auditor_type>>::parse(
 	}
 	storage->leaveDirectory();
 	curr_state.obj_texts_iter = curr_state.obj_texts.begin();
-	audit::stderr_redirection<auditor_type> cerr_redirection{
-		audit::auditor_ref<auditor_type>(auditor())
-	};
+	audit::stderr_redirection<auditor_type> cerr_redirection{auditor()};
 	SharedPtr<wvWare::Parser> parser;
 	{
 		std::lock_guard<std::mutex> parser_factory_mutex_2_lock(parser_factory_mutex_2);
@@ -755,19 +751,19 @@ void pimpl_impl<doc_parser<auditor_type>>::parse(
 		emit_message,
 		parser,
 		&curr_state,
-		audit::auditor_ref<auditor_type>(auditor()));
+		auditor());
 	parser->setTextHandler(&text_handler);
 
 	table_handler<auditor_type> table_handler(
 		emit_message,
 		curr_state,
-		audit::auditor_ref<auditor_type>(auditor()));
+		auditor());
 	parser->setTableHandler(&table_handler);
 
 	subdocument_handler<auditor_type> subdocument_handler(
 		emit_message,
 		&curr_state.header_footer,
-		audit::auditor_ref<auditor_type>(auditor()));
+		auditor());
 	parser->setSubDocumentHandler(&subdocument_handler);
 	cerr_redirection.redirect();
 	bool res = parser->parse();

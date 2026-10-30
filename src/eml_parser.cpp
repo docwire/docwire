@@ -532,12 +532,12 @@ continuation eml_parser<auditor_type>::operator()(
 		mailio::message mime_entity = parse_message(
 			data,
 			[emit_message](std::exception_ptr e) { emit_message(std::move(e)); },
-			audit::auditor_ref<auditor_type>(auditor()));
+			auditor());
 		emit_message(document::document
 			{
 				.metadata = [&mime_entity, this]()
 				{
-					return metaData(mime_entity, audit::auditor_ref<auditor_type>(auditor()));
+					return metaData(mime_entity, auditor());
 				}
 			});
 		impl().extractPlainText(mime_entity);

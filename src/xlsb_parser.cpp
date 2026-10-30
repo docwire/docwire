@@ -315,7 +315,7 @@ struct pimpl_impl<xlsb_parser<auditor_type>>
 					std::string* new_string = &content().m_shared_strings[content().m_shared_strings.size() - 1];
 					*new_string = read_rich_str(
 						record_reader,
-						audit::auditor_ref<auditor_type>(auditor()));
+						auditor());
 				}
 				catch (const std::exception& e)
 				{

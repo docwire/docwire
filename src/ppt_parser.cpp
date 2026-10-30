@@ -405,7 +405,7 @@ attributes::metadata metaData(
 			*storage,
 			meta,
 			[emit_message](std::exception_ptr e) { emit_message(std::move(e)); },
-			audit::auditor_ref<auditor_type>(auditor));
+			auditor);
 		// If page count not found use slide count as page count
 		if (!meta.page_count)
 		{
@@ -415,7 +415,7 @@ attributes::metadata metaData(
 				parse_oshared_document_summary_info(
 					*storage,
 					slide_count,
-					audit::auditor_ref<auditor_type>(auditor));
+					auditor);
 				if(slide_count!=-1){
 					meta.page_count = slide_count;
 				}
@@ -456,7 +456,7 @@ continuation ppt_parser<auditor_type>::operator()(
 
 	try
 	{
-		parse(data, emit_message, audit::auditor_ref<auditor_type>(auditor()));
+		parse(data, emit_message, auditor());
 	}
 	catch (const std::exception& e)
 	{

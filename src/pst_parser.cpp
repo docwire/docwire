@@ -535,7 +535,7 @@ void pimpl_impl<pst_parser<auditor_type>>::parse(std::shared_ptr<std::istream> s
 	libbfio_stream_initialize(
 		&handle,
 		stream,
-		audit::auditor_ref<auditor_type>(auditor()));
+		auditor());
 	throw_if(libbfio_handle_open(handle, LIBBFIO_OPEN_READ, &bfio_err) != 1, "libbfio_handle_open failed");
 
 	pff_file file;

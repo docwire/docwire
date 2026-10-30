@@ -97,9 +97,7 @@ struct pimpl_impl<ai::ct2::ct2_runner<auditor_type>>
         {
             std::lock_guard lock(model_mutex);
             if (std::holds_alternative<std::monostate>(m_model))
-                m_model = load_model(
-                    m_model_path,
-                    audit::auditor_ref<auditor_type>(auditor()));
+                m_model = load_model(m_model_path, auditor());
 
             throw_if(!std::holds_alternative<std::shared_ptr<ctranslate2::Translator>>(m_model),
                          "Model is not a Translator, cannot process.", errors::program_logic{});
@@ -133,9 +131,7 @@ struct pimpl_impl<ai::ct2::ct2_runner<auditor_type>>
         {
             std::lock_guard lock(model_mutex);
             if (std::holds_alternative<std::monostate>(m_model))
-                m_model = load_model(
-                    m_model_path,
-                    audit::auditor_ref<auditor_type>(auditor()));
+                m_model = load_model(m_model_path, auditor());
             throw_if(!std::holds_alternative<std::shared_ptr<ctranslate2::Encoder>>(m_model),
                  "Model is not an Encoder, cannot embed.", errors::program_logic{});
 

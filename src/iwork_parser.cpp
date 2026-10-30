@@ -674,7 +674,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 					m_current_cell.m_value = ParseDuration(
 						duration_format,
 						value,
-						audit::auditor_ref<auditor_type>(m_auditor));
+						m_auditor);
 				}
 				else if (m_current_cell.m_is_date)
 				{
@@ -685,7 +685,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 					m_current_cell.m_value = ParseDate(
 						date_format,
 						value,
-						audit::auditor_ref<auditor_type>(m_auditor));
+						m_auditor);
 				}
 				else if (m_current_cell.m_is_number)
 				{
@@ -2095,7 +2095,7 @@ struct pimpl_impl<iwork_parser<auditor_type>>
 		data_source xml_data_source(
 			zipfile,
 			m_context_stack.top().m_xml_file,
-			audit::auditor_ref<auditor_type>(auditor()));
+			auditor());
 		xml_reader xml_reader(
 			xml_data_source,
 			audit::auditor_ref<auditor_type>(auditor()));

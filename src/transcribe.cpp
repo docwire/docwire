@@ -93,7 +93,7 @@ continuation transcribe<auditor_type>::operator()(
 	auto response_stream = std::make_shared<std::ostringstream>();
 	try
 	{
-		auto auditor_ref = audit::auditor_ref<auditor_type>(this->auditor());
+		auto auditor_ref = this->auditor();
 
 		in_stream | http::post<auditor_type>(
 			"https://api.openai.com/v1/audio/transcriptions",
