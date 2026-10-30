@@ -99,8 +99,8 @@ struct pimpl_impl<odf_ooxml_parser<safety_level, auditor_type>>
 	using relationship = owner_type::relationship;
 	using with_pimpl_owner<owner_type>::owner;
 
-	auditor_type& auditor() { return owner().auditor(); }
-	auditor_type& auditor() const { return owner().auditor(); }
+	audit::auditor_ref<auditor_type> auditor() { return owner().auditor(); }
+	audit::auditor_ref<auditor_type> auditor() const { return owner().auditor(); }
 
 	pimpl_impl(owner_type& owner)
 		: with_pimpl_owner<owner_type>{owner}
@@ -334,7 +334,7 @@ struct pimpl_impl<odf_ooxml_parser<safety_level, auditor_type>>
 			xml::reader<safety_level> xml_reader(xml, owner().blanks());
 			for (auto node: children(
 				root_element(xml_reader),
-				audit::auditor_ref<auditor_type>(auditor())))
+				auditor()))
 			{
 				if (node.name() == "comment")
 				{
@@ -375,7 +375,7 @@ struct pimpl_impl<odf_ooxml_parser<safety_level, auditor_type>>
 			xml::reader xml_reader(xml, owner().blanks());
 			for (auto node: children(
 				root_element(xml_reader),
-				audit::auditor_ref<auditor_type>(auditor())))
+				auditor()))
 			{
 				if (node.name() == "Relationship")
 				{
@@ -416,7 +416,7 @@ struct pimpl_impl<odf_ooxml_parser<safety_level, auditor_type>>
 			owner().parseXmlData(
 				children(
 					xml_reader,
-					audit::auditor_ref<auditor_type>(auditor())),
+					auditor()),
 				mode,
 				&zipfile);
 		}
@@ -590,7 +590,7 @@ void odf_ooxml_parser<safety_level, auditor_type>::parse(const data_source& data
 				xml::reader<safety_level> xml_reader(xml, blanks());
 				for (auto node: children(
 					root_element(xml_reader),
-					audit::auditor_ref<auditor_type>(auditor())))
+					auditor()))
 				{
 					if (node.name() == "si")
 					{
@@ -670,7 +670,7 @@ attributes::metadata odf_ooxml_parser<safety_level, auditor_type>::metaData(zip_
 			xml::reader xml_reader(core_xml, blanks());
 			for (auto node: children(
 				root_element(xml_reader),
-				audit::auditor_ref<auditor_type>(auditor())))
+				auditor()))
 			{
 				if (node.name() == "creator")
 					meta.author = std::string(node.string_value());
@@ -694,7 +694,7 @@ attributes::metadata odf_ooxml_parser<safety_level, auditor_type>::metaData(zip_
 			xml::reader app_stream(app_xml, blanks());
 			for (auto node: children(
 				root_element(app_stream),
-				audit::auditor_ref<auditor_type>(auditor())))
+				auditor()))
 			{
 				if (node.name() == "Pages")
 					meta.page_count = convert::try_to<int>(node.string_value());

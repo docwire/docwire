@@ -94,8 +94,8 @@ struct pimpl_impl<ocr_parser<auditor_type>>
     using owner_type = ocr_parser<auditor_type>;
     using with_pimpl_owner<owner_type>::owner;
 
-    auditor_type& auditor() { return owner().auditor(); }
-    auditor_type& auditor() const { return owner().auditor(); }
+    audit::auditor_ref<auditor_type> auditor() { return owner().auditor(); }
+    audit::auditor_ref<auditor_type> auditor() const { return owner().auditor(); }
 
     explicit pimpl_impl(owner_type& owner)
         : with_pimpl_owner<owner_type>{owner}
@@ -275,7 +275,7 @@ ocr_parser<auditor_type>::ocr_parser(
     impl().m_ocr_confidence_threshold = ocr_confidence_threshold_arg;
     impl().m_ocr_timeout = ocr_timeout_arg;
     impl().m_ocr_data_path = ocr_data_path_arg.v.empty()
-        ? default_tessdata_path(audit::auditor_ref<auditor_type>(this->auditor()))
+        ? default_tessdata_path(this->auditor())
         : ocr_data_path_arg;
 }
 
@@ -316,14 +316,14 @@ void ocr_parser<auditor_type>::parse(
 
     std::shared_ptr<PIX> image = load_pix(
         data,
-        audit::auditor_ref<auditor_type>(auditor()));
+        auditor());
 
     pix_unique_ptr inverted{ nullptr };
     try
     {
         gray.reset(pixToGrayscale(
             image.get(),
-            audit::auditor_ref<auditor_type>(auditor())));
+            auditor()));
         std::unique_ptr<NUMA, decltype([](NUMA* numa) { numaDestroy(&numa); })> histogram{ pixGetGrayHistogram(gray.get(), 1) };
 
         double weight_sum{ 0 };

@@ -16,8 +16,15 @@ protected:
     explicit with_auditor(auditor_ref<auditor_type> auditor)
         : auditor_ref<auditor_type>(auditor) {}
 
-    auditor_type& auditor() noexcept { return auditor_ref<auditor_type>::auditor(); }
-    auditor_type& auditor() const noexcept { return auditor_ref<auditor_type>::auditor(); }
+    auditor_ref<auditor_type> auditor() noexcept
+    {
+        return static_cast<auditor_ref<auditor_type>&>(*this);
+    }
+
+    auditor_ref<auditor_type> auditor() const noexcept
+    {
+        return static_cast<const auditor_ref<auditor_type>&>(*this);
+    }
 };
 
 } // namespace docwire::audit

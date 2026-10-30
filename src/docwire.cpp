@@ -486,7 +486,9 @@ int run_with_auditor(
 		})
 		| maybe(vm.count("local-ai-ct2-embed") &&
 					   vm["local-ai-ct2-embed"].as<embed_prefix_type>() != embed_prefix_type::query, [&] {
-			return ai::local::ct2::passage::embedder{};
+			return ai::local::ct2::passage::embedder<configured_auditor>{
+				docwire::audit::auditor_ref<configured_auditor>{audit}
+			};
 		})
 #endif
 		| maybe(vm.count("openai-find"), [&] {
