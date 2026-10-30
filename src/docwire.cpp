@@ -126,38 +126,40 @@ create_local_runner(
         std::string model_path = vm["local-ai-model"].as<std::string>();
         if (model_path.ends_with(".gguf"))
         {
-	        #ifdef DOCWIRE_LLAMA
-	            ai::model_inference_config config;
-	            config.model_path = model_path;
-	            config.n_ctx = ai::context_size{4096};
-	            config.n_threads = ai::thread_count{4};
-	            return std::make_shared<ai::llama::llama_runner<auditor_type>>(
-	                config,
-	                audit::auditor_ref<auditor_type>(auditor));
-	        #else
-	            throw std::runtime_error("GGUF model support requires the local-ai-llama feature");
-	        #endif
+            #ifdef DOCWIRE_LLAMA
+                ai::model_inference_config config;
+                config.model_path = model_path;
+                config.n_ctx = ai::context_size{4096};
+                config.n_threads = ai::thread_count{4};
+                return std::make_shared<ai::llama::llama_runner<auditor_type>>(
+                    config,
+                    audit::auditor_ref<auditor_type>(auditor));
+            #else
+                throw std::runtime_error("GGUF model support requires the local-ai-llama feature");
+            #endif
         }
         #ifdef DOCWIRE_CT2
-        	return std::make_shared<ai::ct2::ct2_runner<auditor_type>>(
-        		model_path,
-        		audit::auditor_ref<auditor_type>(auditor));
+            return std::make_shared<ai::ct2::ct2_runner<auditor_type>>(
+                model_path,
+                audit::auditor_ref<auditor_type>(auditor));
         #else
-        	throw std::runtime_error("CT2 model support requires the local-ai-ct2 feature");
+            throw std::runtime_error("CT2 model support requires the local-ai-ct2 feature");
         #endif
     }
 
     #ifdef DOCWIRE_CT2
-        return ai::local::ct2::make_default_runner();
+        return ai::local::ct2::make_default_runner(auditor);
     #elif defined(DOCWIRE_LLAMA) && defined(DOCWIRE_GRANITE)
-        return ai::local::llama::make_default_runner();
+        return ai::local::llama::make_default_runner(auditor);
     #elif defined(DOCWIRE_LLAMA)
         throw std::runtime_error(
             "No default local AI model available for this build. "
             "Specify --local-ai-model, or rebuild with the local-ai-model-granite "
             "feature to get a built-in default.");
     #else
-        throw std::runtime_error("Default local AI model requires the local-ai-ct2 feature or local-ai-llama feature, which can be coupled with local-ai-model-granite feature.");
+        throw std::runtime_error(
+            "Default local AI model requires the local-ai-ct2 feature or local-ai-llama feature, "
+            "which can be coupled with local-ai-model-granite feature.");
     #endif
 }
 #endif // DOCWIRE_LOCAL_AI
@@ -253,9 +255,9 @@ int main(int argc, char* argv[])
 		("max_nodes_number", po::value<unsigned int>(), "filter by max number of nodes")
 		("folder_name", po::value<std::string>(), "filter emails by folder name")
 		("attachment_extension", po::value<std::string>(), "filter by attachment type")
-		("log_file", po::value<std::string>(), "set path to log file")
-		("log-filter", po::value<std::string>(), "Set a custom log filter. Filters are comma-separated and can include tags (e.g., 'audit'), function names (e.g., '@func:my_func'), and file names (e.g., '@file:*_parser.cpp'). Prepend '-' to exclude.")
-		("verbose,v", "Enable verbose logging (equivalent to --log-filter='*').")
+		("log_file", po::value<std::string>(), "set path for JSON audit output")
+		("log-filter", po::value<std::string>(), "Set a custom audit filter. Filters are comma-separated and can include tags, function names such as @func:my_func, and file names such as @file:*_parser.cpp. Prepend '-' to exclude.")
+		("verbose,v", "Enable verbose audit output (equivalent to --log-filter='*').")
 	;
 
 	po::positional_options_description pos_desc;
@@ -305,16 +307,16 @@ int main(int argc, char* argv[])
 		return data_source{std::filesystem::path{file_name}};
 	}();
 
-#ifndef DOCWIRE_CT2
-	if (vm.count("local-ai-prompt") || vm.count("local-ai-embed"))
+	#ifndef DOCWIRE_CT2
+	if (vm.count("local-ai-prompt") || vm.count("local-ai-ct2-embed"))
 	{
 		std::cerr << "Error: Local AI features requested, but this build does not include "
 		             "DOCWIRE_CT2 support.\n"
 		             "Rebuild with DOCWIRE_CT2 enabled to use --local-ai-prompt or "
-		             "--local-ai-embed." << std::endl;
+		             "--local-ai-ct2-embed." << std::endl;
 		return 1;
 	}
-#endif
+	#endif
 
 	const bool audit_enabled =
 		vm.count("log_file") ||
@@ -468,19 +470,23 @@ int run_with_auditor(
 		})
 #ifdef DOCWIRE_LOCAL_AI
 		| maybe(vm.count("local-ai-prompt"), [&] {
-			auto runner = create_local_runner(vm);
+			auto runner = create_local_runner(
+				vm,
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 			return ai::local::task(
 				vm["local-ai-prompt"].as<std::string>(), runner);
 		})
 #endif
 #ifdef DOCWIRE_CT2
-		| maybe(vm.count("local-ai-ct2-embed") && vm["local-ai-ct2-embed"].as<embed_prefix_type>()
-			== embed_prefix_type::query, [] {
-			return ai::local::ct2::query::embedder();
+		| maybe(vm.count("local-ai-ct2-embed") &&
+			vm["local-ai-ct2-embed"].as<embed_prefix_type>() == embed_prefix_type::query, [&] {
+			return ai::local::ct2::query::embedder<configured_auditor>{
+				docwire::audit::auditor_ref<configured_auditor>{audit}
+			};
 		})
 		| maybe(vm.count("local-ai-ct2-embed") &&
-					   vm["local-ai-ct2-embed"].as<embed_prefix_type>() != embed_prefix_type::query, [] {
-			return ai::local::ct2::passage::embedder();
+					   vm["local-ai-ct2-embed"].as<embed_prefix_type>() != embed_prefix_type::query, [&] {
+			return ai::local::ct2::passage::embedder{};
 		})
 #endif
 		| maybe(vm.count("openai-find"), [&] {
