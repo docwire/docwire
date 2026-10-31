@@ -48,7 +48,7 @@ TEST(PartialAndTotalFailures, Zip_Partial)
 {
     int count = 0;
     bool error_received = false;
-    TestParserFailures<archives_parser>("test.zip",
+    TestParserFailures<archives_parser<>>("test.zip",
         [&](message_ptr msg) {
             if (msg->is<data_source>()) {
                 count++;
@@ -67,7 +67,7 @@ TEST(PartialAndTotalFailures, Zip_Partial)
 TEST(PartialAndTotalFailures, Zip_Total)
 {
     EXPECT_THROW({
-        TestParserFailures<archives_parser>("test.zip",
+        TestParserFailures<archives_parser<>>("test.zip",
             [](message_ptr msg) {
                 if (msg->is<data_source>()) throw std::runtime_error("Simulated failure");
             },
@@ -81,7 +81,7 @@ TEST(PartialAndTotalFailures, EML_Partial)
     int count = 0;
     bool body_received = false;
     bool error_received = false;
-    TestParserFailures<eml_parser>("fourth.eml",
+    TestParserFailures<eml_parser<>>("fourth.eml",
         [&](message_ptr msg) {
             if (msg->is<data_source>()) {
                 count++;
@@ -102,7 +102,7 @@ TEST(PartialAndTotalFailures, EML_Partial)
 TEST(PartialAndTotalFailures, EML_Total)
 {
     EXPECT_THROW({
-        TestParserFailures<eml_parser>("fourth.eml",
+        TestParserFailures<eml_parser<>>("fourth.eml",
             [](message_ptr msg) {
                 if (msg->is<data_source>()) throw std::runtime_error("Simulated failure");
             },
@@ -117,7 +117,7 @@ TEST(PartialAndTotalFailures, PST_Partial)
 {
     int count = 0;
     bool error_received = false;
-    TestParserFailures<pst_parser>("1.pst",
+    TestParserFailures<pst_parser<>>("1.pst",
         [&](message_ptr msg) {
             if (msg->is<data_source>()) {
                 count++;
@@ -136,7 +136,7 @@ TEST(PartialAndTotalFailures, PST_Partial)
 TEST(PartialAndTotalFailures, PST_Total)
 {
     EXPECT_THROW({
-        TestParserFailures<pst_parser>("1.pst",
+        TestParserFailures<pst_parser<>>("1.pst",
             [](message_ptr msg) {
                 if (msg->is<data_source>()) throw std::runtime_error("Simulated failure");
             },
@@ -153,7 +153,7 @@ TEST(PartialAndTotalFailures, HTML_Partial)
     int count = 0;
     std::string text_output;
     bool error_received = false;
-    TestParserFailures<html_parser>("embedded_images.html",
+    TestParserFailures<html_parser<>>("embedded_images.html",
         // back inspector
         [&](message_ptr msg) {
             if (msg->is<document::image>()) {
@@ -178,7 +178,7 @@ TEST(PartialAndTotalFailures, HTML_Partial)
 TEST(PartialAndTotalFailures, HTML_Total)
 {
     EXPECT_THROW({
-        TestParserFailures<html_parser>("embedded_images.html",
+        TestParserFailures<html_parser<>>("embedded_images.html",
             [](message_ptr msg) {
                 throw std::runtime_error("Simulated image failure");
             },
@@ -195,7 +195,7 @@ TEST(PartialAndTotalFailures, PDF_Partial)
     int count = 0;
     std::string text_output;
     bool error_received = false;
-    TestParserFailures<pdf_parser>("embedded_images.pdf",
+    TestParserFailures<pdf_parser<>>("embedded_images.pdf",
         [&](message_ptr msg) {
             if (msg->is<document::image>()) {
                 count++;
@@ -218,7 +218,7 @@ TEST(PartialAndTotalFailures, PDF_Partial)
 TEST(PartialAndTotalFailures, PDF_Total)
 {
     EXPECT_THROW({
-        TestParserFailures<pdf_parser>("embedded_images.pdf",
+        TestParserFailures<pdf_parser<>>("embedded_images.pdf",
             [](message_ptr msg) {
                 if (msg->is<document::image>()) throw std::runtime_error("Simulated image failure");
             },

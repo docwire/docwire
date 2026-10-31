@@ -14,8 +14,11 @@
 #include <chrono>
 #include "error_tags.h"
 #include "nested_exception.h"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/json_stream_auditor.hpp"
+#include "audit/scope.hpp"
+#include "named.h"
 #include "throw_if.h"
 #include "wv2/src/utilities.h"
 #include "detail/thread_safe_ole_stream_reader.h"
@@ -26,9 +29,12 @@ namespace docwire
 
 using namespace wvWare;
 
-static std::string read_vt_string(thread_safe_ole_stream_reader* reader)
+template<typename auditor_type>
+std::string read_vt_string(
+    thread_safe_ole_stream_reader* reader,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	U16 string_type;
 	throw_if (!reader->readU16(string_type), reader->getLastError());
 	throw_if (string_type != 0x1E, "Incorrect string type.", errors::uninterpretable_data{});
@@ -48,9 +54,12 @@ static std::string read_vt_string(thread_safe_ole_stream_reader* reader)
 	return s;
 }
 
-static S32 read_vt_i4(thread_safe_ole_stream_reader* reader)
+template<typename auditor_type>
+S32 read_vt_i4(
+    thread_safe_ole_stream_reader* reader,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	U16 string_type;
 	throw_if (!reader->readU16(string_type), reader->getLastError());
 	throw_if (string_type != 0x0003, "Incorrect value type.", errors::uninterpretable_data{});
@@ -61,9 +70,12 @@ static S32 read_vt_i4(thread_safe_ole_stream_reader* reader)
 	return i;
 }
 
-static S16 read_vt_i2(thread_safe_ole_stream_reader* reader)
+template<typename auditor_type>
+S16 read_vt_i2(
+    thread_safe_ole_stream_reader* reader,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	U16 string_type;
 	throw_if (!reader->readU16(string_type));
 	throw_if (string_type != 0x0002, "Incorrect value type.", errors::uninterpretable_data{});
@@ -74,9 +86,12 @@ static S16 read_vt_i2(thread_safe_ole_stream_reader* reader)
 	return i;
 }
 
-static std::chrono::sys_seconds read_vt_filetime(thread_safe_ole_stream_reader* reader)
+template<typename auditor_type>
+std::chrono::sys_seconds read_vt_filetime(
+    thread_safe_ole_stream_reader* reader,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	U16 type;
 	throw_if (!reader->readU16(type), reader->getLastError());
 	throw_if (type != 0x0040, "Incorrect variable type.", errors::uninterpretable_data{});
@@ -93,7 +108,12 @@ static std::chrono::sys_seconds read_vt_filetime(thread_safe_ole_stream_reader* 
 	// Sometimes field exists, date is zero (1601-01-01) but time is not.
 	// Last modification time saved by LibreOffice 3.5 when document is created is an example.
 	throw_if (file_time < 864000000000LL, "Incorrect filetime value (1601-01-01).", errors::uninterpretable_data{});
-	log_entry(file_time, file_time_low, file_time_high);
+	audit::entry(auditor, [&]{
+		return
+			"file_time"_v = file_time,
+			"file_time_low"_v = file_time_low,
+			"file_time_high"_v = file_time_high;
+	});
 
     // file_time is in 100-nanosecond intervals since 1601-01-01 (Windows FILETIME epoch)
     // The C++ system_clock epoch is typically the Unix epoch (1970-01-01).
@@ -108,9 +128,14 @@ static std::chrono::sys_seconds read_vt_filetime(thread_safe_ole_stream_reader* 
 	return std::chrono::sys_seconds{std::chrono::duration_cast<std::chrono::seconds>(time_since_unix_epoch)};
 }
 
-void parse_oshared_summary_info(thread_safe_ole_storage& storage, attributes::metadata& meta, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
+template<typename auditor_type>
+void parse_oshared_summary_info(
+    thread_safe_ole_storage& storage,
+    attributes::metadata& meta,
+    const std::function<void(std::exception_ptr)>& non_fatal_error_handler,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	throw_if (!storage.isValid(), storage.getLastError(), storage.name());
 	thread_safe_ole_stream_reader* reader = NULL;
 	reader = (thread_safe_ole_stream_reader*)storage.createStreamReader("\005SummaryInformation");
@@ -156,7 +181,9 @@ void parse_oshared_summary_info(thread_safe_ole_storage& storage, attributes::me
 					reader->seek(property_set_pos + offset, SEEK_SET);
 					try
 					{
-						meta.author = read_vt_string(reader);
+						meta.author = read_vt_string(
+							reader,
+							auditor);
 					}
 					catch (const std::exception&)
 					{
@@ -169,7 +196,9 @@ void parse_oshared_summary_info(thread_safe_ole_storage& storage, attributes::me
 					reader->seek(property_set_pos + offset, SEEK_SET);
 					try
 					{
-						meta.last_modified_by = read_vt_string(reader);
+						meta.last_modified_by = read_vt_string(
+							reader,
+							auditor);
 					}
 					catch (const std::exception&)
 					{
@@ -182,7 +211,9 @@ void parse_oshared_summary_info(thread_safe_ole_storage& storage, attributes::me
 					reader->seek(property_set_pos + offset, SEEK_SET);
 					try
 					{
-						meta.creation_date = read_vt_filetime(reader);
+						meta.creation_date = read_vt_filetime(
+							reader,
+							auditor);
 					}
 					catch (const std::exception&)
 					{
@@ -195,7 +226,9 @@ void parse_oshared_summary_info(thread_safe_ole_storage& storage, attributes::me
 					reader->seek(property_set_pos + offset, SEEK_SET);
 					try
 					{
-						meta.last_modification_date = read_vt_filetime(reader);
+						meta.last_modification_date = read_vt_filetime(
+							reader,
+							auditor);
 					}
 					catch (const std::exception&)
 					{
@@ -208,7 +241,9 @@ void parse_oshared_summary_info(thread_safe_ole_storage& storage, attributes::me
 					reader->seek(property_set_pos + offset, SEEK_SET);
 					try
 					{
-						meta.page_count = read_vt_i4(reader);
+						meta.page_count = read_vt_i4(
+							reader,
+							auditor);
 					}
 					catch (const std::exception&)
 					{
@@ -221,7 +256,9 @@ void parse_oshared_summary_info(thread_safe_ole_storage& storage, attributes::me
 					reader->seek(property_set_pos + offset, SEEK_SET);
 					try
 					{
-						meta.word_count = read_vt_i4(reader);
+						meta.word_count = read_vt_i4(
+							reader,
+							auditor);
 					}
 					catch (const std::exception&)
 					{
@@ -245,9 +282,13 @@ void parse_oshared_summary_info(thread_safe_ole_storage& storage, attributes::me
 	}
 }
 
-static thread_safe_ole_stream_reader* open_oshared_document_summary_info(thread_safe_ole_storage& storage, size_t& field_set_stream_start)
+template<typename auditor_type>
+thread_safe_ole_stream_reader* open_oshared_document_summary_info(
+    thread_safe_ole_storage& storage,
+    size_t& field_set_stream_start,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	thread_safe_ole_stream_reader* reader = NULL;
 	try
 	{
@@ -283,14 +324,22 @@ static thread_safe_ole_stream_reader* open_oshared_document_summary_info(thread_
 	}
 }
 
-std::string get_codepage_from_document_summary_info(thread_safe_ole_storage& storage)
+template<typename auditor_type>
+std::string get_codepage_from_document_summary_info(
+    thread_safe_ole_storage& storage,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	size_t field_set_stream_start;
 	throw_if (!storage.isValid(), "Error opening storage as OLE file.", storage.name());
 	try
 	{
-		std::unique_ptr<thread_safe_ole_stream_reader> reader { open_oshared_document_summary_info(storage, field_set_stream_start) };
+		std::unique_ptr<thread_safe_ole_stream_reader> reader {
+			open_oshared_document_summary_info(
+				storage,
+				field_set_stream_start,
+				auditor)
+		};
 		U32 offset;
 		reader->readU32(offset);
 		int property_set_pos = field_set_stream_start + offset;
@@ -311,7 +360,9 @@ std::string get_codepage_from_document_summary_info(thread_safe_ole_storage& sto
 					S16 icodepage;
 					try
 					{
-						icodepage = read_vt_i2(reader.get());
+						icodepage = read_vt_i2(
+							reader.get(),
+							auditor);
 					}
 					catch (const std::exception& e)
 					{
@@ -331,14 +382,21 @@ std::string get_codepage_from_document_summary_info(thread_safe_ole_storage& sto
 	throw make_error("Information about codepage is missing.");
 }
 
-void parse_oshared_document_summary_info(thread_safe_ole_storage& storage, int& slide_count)
+template<typename auditor_type>
+void parse_oshared_document_summary_info(
+    thread_safe_ole_storage& storage,
+    int& slide_count,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	size_t field_set_stream_start;
 	thread_safe_ole_stream_reader* reader = NULL;
 	try
 	{
-		reader = open_oshared_document_summary_info(storage, field_set_stream_start);
+		reader = open_oshared_document_summary_info(
+			storage,
+			field_set_stream_start,
+			auditor);
 		U32 offset;
 		reader->readU32(offset);
 		int property_set_pos = field_set_stream_start + offset;
@@ -359,7 +417,9 @@ void parse_oshared_document_summary_info(thread_safe_ole_storage& storage, int& 
 					reader->seek(property_set_pos + offset, SEEK_SET);
 					try
 					{
-						slide_count = read_vt_i4(reader);
+						slide_count = read_vt_i4(
+							reader,
+							auditor);
 						slide_count_found = true;
 					}
 					catch (const std::exception& e)
@@ -383,5 +443,35 @@ void parse_oshared_document_summary_info(thread_safe_ole_storage& storage, int& 
 		std::throw_with_nested(make_error("Error while parsing document summary info"));
 	}
 }
+
+template void parse_oshared_summary_info<audit::null_auditor>(
+    thread_safe_ole_storage&,
+    attributes::metadata&,
+    const std::function<void(std::exception_ptr)>&,
+    audit::auditor_ref<audit::null_auditor>);
+
+template void parse_oshared_document_summary_info<audit::null_auditor>(
+    thread_safe_ole_storage&,
+    int&,
+    audit::auditor_ref<audit::null_auditor>);
+
+template std::string get_codepage_from_document_summary_info<audit::null_auditor>(
+    thread_safe_ole_storage&,
+    audit::auditor_ref<audit::null_auditor>);
+
+template void parse_oshared_summary_info<docwire::audit::json_stream_auditor>(
+    thread_safe_ole_storage&,
+    attributes::metadata&,
+    const std::function<void(std::exception_ptr)>&,
+    audit::auditor_ref<docwire::audit::json_stream_auditor>);
+
+template void parse_oshared_document_summary_info<docwire::audit::json_stream_auditor>(
+    thread_safe_ole_storage&,
+    int&,
+    audit::auditor_ref<docwire::audit::json_stream_auditor>);
+
+template std::string get_codepage_from_document_summary_info<docwire::audit::json_stream_auditor>(
+    thread_safe_ole_storage&,
+    audit::auditor_ref<docwire::audit::json_stream_auditor>);
 
 } // namespace docwire

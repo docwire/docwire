@@ -15,6 +15,8 @@
 #include "ole_office_formats_export.h"
 #include "pipeline/element_base.hpp"
 #include "pimpl.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 #include <string>
 
 namespace docwire
@@ -22,16 +24,22 @@ namespace docwire
 
 class thread_safe_ole_storage;
 
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser : public pipeline::transformer_element<xls_parser>, public with_pimpl<xls_parser>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser
+    : public pipeline::transformer_element<xls_parser<auditor_type>>,
+      public with_pimpl<xls_parser<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
-	private:
-		friend pimpl_impl<xls_parser>;
-		using with_pimpl<xls_parser>::impl;
+private:
+    friend pimpl_impl<xls_parser<auditor_type>>;
+    using with_pimpl<xls_parser<auditor_type>>::impl;
+    using audit::with_auditor<auditor_type>::auditor;
 
-	public:
-		xls_parser();
-		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
-		std::string parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message);
+public:
+    explicit xls_parser(audit::auditor_ref<auditor_type> auditor = {});
+
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+    std::string parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message);
 };
 
 } // namespace docwire

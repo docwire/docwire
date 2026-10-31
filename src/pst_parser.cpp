@@ -29,8 +29,12 @@ extern "C"
 }
 
 #include "error_tags.h"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/json_stream_auditor.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include "time_utils.h"
 #include "make_error.h"
 #include "nested_exception.h"
@@ -48,9 +52,12 @@ inline std::string toString(const uint8_t* text)
 	return {(const char*)text};
 }
 
-inline std::string getAttachmentName(libpff_item_t* item)
+template<typename auditor_type>
+inline std::string getAttachmentName(
+	libpff_item_t* item,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	size_t size;
 	if (libpff_attachment_get_utf8_short_filename_size(item, &size, nullptr) != 1)
 	{
@@ -126,16 +133,20 @@ struct raw_attachment
   std::unique_ptr<uint8_t[]> m_raw_data;
 };
 
+template<typename auditor_type>
 class pst_message
 {
   static constexpr uint64_t WINDOWS_TICK = 10000000;
   static constexpr uint64_t SHIFT = 11644473600;
 
   public:
-	explicit pst_message(pff_item in)
-		: _messageHandle{std::move(in)}
+	explicit pst_message(
+		pff_item in,
+		audit::auditor_ref<auditor_type> auditor)
+		: _messageHandle{std::move(in)},
+		  m_auditor{auditor}
 	{
-		log_scope();
+		audit::scope audit_scope{m_auditor, audit::no_context};
 	}
 
 	std::string getName() const
@@ -232,7 +243,7 @@ class pst_message
 	std::vector<raw_attachment>
 	getAttachments()
 	{
-		log_scope();
+		audit::scope audit_scope{m_auditor, audit::no_context};
 		int items;
 		pff_error err;
     std::vector<raw_attachment> attachments;
@@ -245,22 +256,22 @@ class pst_message
 			pff_item item;
 			if (libpff_message_get_attachment(_messageHandle, i, &item, &err) != 1)
 			{
-				log_entry();
+				audit::entry(m_auditor, audit::no_context);
 				continue;
 			}
 			size64_t size;
 			if (libpff_attachment_get_data_size(item, &size, &err) == -1)
 			{
-				log_entry();
+				audit::entry(m_auditor, audit::no_context);
 				continue;
 			}
 			std::unique_ptr<uint8_t[]> datablob(new uint8_t[size + 1]);
 			if (libpff_attachment_data_read_buffer(item, datablob.get(), size, &err) == -1)
 			{
-				log_entry();
+				audit::entry(m_auditor, audit::no_context);
 				continue;
 			}
-      std::string attachment_name = getAttachmentName(item);
+      std::string attachment_name = getAttachmentName(item, m_auditor);
       attachments.push_back(raw_attachment(size, datablob, attachment_name));
 		}
 		return attachments;
@@ -268,15 +279,20 @@ class pst_message
 
   private:
 	pff_item _messageHandle;
+	audit::auditor_ref<auditor_type> m_auditor;
 };
 
+template<typename auditor_type>
 class folder
 {
   public:
-	explicit folder(pff_item&& folderHandle)
-		: _folderHandle(std::move(folderHandle))
+	explicit folder(
+		pff_item&& folderHandle,
+		audit::auditor_ref<auditor_type> auditor)
+		: _folderHandle(std::move(folderHandle)),
+		  m_auditor{auditor}
 	{
-		log_scope();
+		audit::scope audit_scope{m_auditor, audit::no_context};
 	}
 
 	int getSubFolderNumber() const
@@ -293,20 +309,18 @@ class folder
 		return messages_no;
 	}
 
-	folder getSubFolder(int index) const
+	folder<auditor_type> getSubFolder(int index) const
 	{
 		libpff_item_t* sub_folder = NULL;
 		libpff_folder_get_sub_folder(_folderHandle, index, &sub_folder, nullptr);
-		folder folder(sub_folder);
-		return folder;
+		return folder<auditor_type>{std::move(sub_folder), m_auditor};
 	}
 
-	pst_message getMessage(int index) const
+	pst_message<auditor_type> getMessage(int index) const
 	{
 		libpff_item_t* mail = NULL;
 		libpff_folder_get_sub_message(_folderHandle, index, &mail, nullptr);
-		pst_message msg(mail);
-		return msg;
+		return pst_message<auditor_type>{std::move(mail), m_auditor};
 	}
 
 	std::string getName() const
@@ -320,6 +334,7 @@ class folder
 
   private:
 	pff_item _folderHandle;
+	audit::auditor_ref<auditor_type> m_auditor;
 };
 
 namespace
@@ -338,9 +353,17 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-template<>
-struct pimpl_impl<pst_parser> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<pst_parser<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
+	using audit::with_auditor<auditor_type>::auditor;
+
+	explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor}
+	{}
+
 	std::stack<context> m_context_stack;
 
 	template <typename T>
@@ -359,12 +382,18 @@ struct pimpl_impl<pst_parser> : pimpl_impl_base
 
   private:
     void parse_element(const char* buffer, size_t size, const std::string& extension="") const;
-    void parse_internal(const folder& root, int deep, unsigned int &mail_counter) const;
+    void parse_internal(const folder<auditor_type>& root, int deep, unsigned int &mail_counter) const;
 };
 
-void pimpl_impl<pst_parser>::parse_internal(const folder& root, int deep, unsigned int &mail_counter) const
+template<typename auditor_type>
+void pimpl_impl<pst_parser<auditor_type>>::parse_internal(
+	const folder<auditor_type>& root,
+	int deep,
+	unsigned int& mail_counter) const
 {
-	log_scope(deep, mail_counter);
+	audit::scope audit_scope{auditor(), [&]{
+		return "deep"_v = deep, "mail_counter"_v = mail_counter;
+	}};
 	for (int i = 0; i < root.getSubFolderNumber(); ++i)
 	{
 		auto sub_folder = root.getSubFolder(i);
@@ -428,9 +457,13 @@ void pimpl_impl<pst_parser>::parse_internal(const folder& root, int deep, unsign
 namespace
 {
 
-void libbfio_stream_initialize(libbfio_handle_t** handle, std::shared_ptr<std::istream> stream)
+template<typename auditor_type>
+void libbfio_stream_initialize(
+	libbfio_handle_t** handle,
+	std::shared_ptr<std::istream> stream,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	throw_if (handle == NULL, "Invalid handle", errors::program_logic{});
 	throw_if (*handle != NULL, "Handle already initialized", errors::program_logic{});
 	auto libbfio_handle_initialize_result = libbfio_handle_initialize(
@@ -485,13 +518,17 @@ void libbfio_stream_initialize(libbfio_handle_t** handle, std::shared_ptr<std::i
 
 } // anonymous namespace
 
-void pimpl_impl<pst_parser>::parse(std::shared_ptr<std::istream> stream) const
+template<typename auditor_type>
+void pimpl_impl<pst_parser<auditor_type>>::parse(std::shared_ptr<std::istream> stream) const
 {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
 	bfio_handle handle;
 	bfio_error bfio_err;
 
-	libbfio_stream_initialize(&handle, stream);
+	libbfio_stream_initialize(
+		&handle,
+		stream,
+		auditor());
 	throw_if(libbfio_handle_open(handle, LIBBFIO_OPEN_READ, &bfio_err) != 1, "libbfio_handle_open failed");
 
 	pff_file file;
@@ -501,18 +538,25 @@ void pimpl_impl<pst_parser>::parse(std::shared_ptr<std::istream> stream) const
 
 	pff_item root = nullptr;
 	throw_if (libpff_file_get_root_folder(file, &root, &error) != 1, "libpff_file_get_root_folder failed");
-	folder root_folder(std::move(root));
+	folder<auditor_type> root_folder{std::move(root), auditor()};
   unsigned int mail_counter = 0;
 	emit_message(document::document{.metadata = []() { return attributes::metadata{}; }});
   parse_internal(root_folder, 0, mail_counter);
 	emit_message(document::close_document{});
 }
 
-pst_parser::pst_parser() = default;
+template<typename auditor_type>
+pst_parser<auditor_type>::pst_parser(audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<pst_parser<auditor_type>>(auditor),
+	  audit::with_auditor<auditor_type>(auditor)
+{}
 
-continuation pst_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation pst_parser<auditor_type>::operator()(
+	message_ptr msg,
+	const message_callbacks& emit_message)
 {
-	log_scope(msg);
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
 
     if (!msg->is<data_source>())
         return emit_message(std::move(msg));
@@ -523,7 +567,7 @@ continuation pst_parser::operator()(message_ptr msg, const message_callbacks& em
     if (!data.has_highest_confidence_mime_type_in(supported_mime_types))
         return emit_message(std::move(msg));
 
-    log_entry();
+    audit::entry(auditor(), audit::no_context);
     try
     {
         std::shared_ptr<std::istream> stream = data.istream();
@@ -540,5 +584,8 @@ continuation pst_parser::operator()(message_ptr msg, const message_callbacks& em
     }
     return continuation::proceed;
 }
+
+template class DOCWIRE_MAIL_EXPORT pst_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_MAIL_EXPORT pst_parser<docwire::audit::json_stream_auditor>;
 
 } // namespace docwire

@@ -1,3 +1,0 @@
-[
-{"file":"log_tests.cpp","function":"void Logging_LogForward_Test::TestBody()","line":"<line>","log":[{"c * 2":{"typeid":"int","value":60}},"audit"],"thread_id":"<thread_id>","timestamp":"<timestamp>"}
-]

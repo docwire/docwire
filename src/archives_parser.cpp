@@ -16,8 +16,10 @@
 #include "data_source.h"
 #include "error_tags.h"
 #include <filesystem>
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/entry.hpp"
+#include "audit/json_stream_auditor.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
 #include "make_error.h"
 #include "nested_exception.h"
 #include "serialization_message.h" // IWYU pragma: keep
@@ -47,22 +49,25 @@ const std::vector<mime_type> supported_mime_types =
 
 } // anonymous namespace
 
-class archive_reader
+template<typename auditor_type>
+class archive_reader : private audit::with_auditor<auditor_type>
 {
 public:
+	using audit::with_auditor<auditor_type>::auditor;
+
 	class entry_streambuf : public std::streambuf
 	{
 	public:
-		entry_streambuf(archive* archive)
-			: m_archive(archive)
+		entry_streambuf(archive* archive, audit::auditor_ref<auditor_type> auditor)
+			: m_archive(archive), m_auditor(auditor)
 		{
 		}
 
 		int_type underflow()
 		{
-			log_scope();
+			audit::scope audit_scope{m_auditor, audit::no_context};
 			la_ssize_t bytes_read = archive_read_data(m_archive, m_buffer, m_buf_size);
-			log_entry(bytes_read);
+			audit::entry(m_auditor, [&]{ return "bytes_read"_v = bytes_read; });
 			throw_if (bytes_read < 0, "archive_read_data() failed", archive_error_string(m_archive));
 			if (bytes_read == 0)
 				return traits_type::eof();
@@ -72,6 +77,7 @@ public:
 
 	private:
 		archive* m_archive;
+		audit::auditor_ref<auditor_type> m_auditor;
 		static constexpr size_t m_buf_size = 16384;
 		char m_buffer[m_buf_size];
 	};
@@ -79,8 +85,8 @@ public:
 	class entry_istream : public std::istream
 	{
 	public:
-		entry_istream(archive* archive)
-			: std::istream(new entry_streambuf(archive)) {}
+		entry_istream(archive* archive, audit::auditor_ref<auditor_type> auditor)
+			: std::istream(new entry_streambuf(archive, auditor)) {}
 
 		~entry_istream() { delete rdbuf(); }
 	};
@@ -88,14 +94,14 @@ public:
 	class entry
 	{
 	public:
-		entry(archive* archive, archive_entry* entry)
-			: m_archive(archive), m_entry(entry) {}
+		entry(archive* archive, archive_entry* entry, audit::auditor_ref<auditor_type> auditor)
+			: m_archive(archive), m_entry(entry), m_auditor(auditor) {}
 
 		std::string get_name() { return archive_entry_pathname(m_entry); }
 
 		bool is_dir() { return (archive_entry_mode(m_entry) & AE_IFDIR); }
 
-		std::unique_ptr<entry_istream> create_stream() { return std::make_unique<entry_istream>(m_archive); }
+		std::unique_ptr<entry_istream> create_stream() { return std::make_unique<entry_istream>(m_archive, m_auditor); }
 
 		operator bool() { return m_entry != nullptr; }
 
@@ -104,6 +110,7 @@ public:
 	private:
 		archive* m_archive;
 		archive_entry* m_entry;
+		audit::auditor_ref<auditor_type> m_auditor;
 	};
 
 	struct iterator
@@ -120,8 +127,11 @@ public:
 		const entry& operator*() const { return m_entry; }
 	};
 
-	archive_reader(std::istream& stream, const std::function<void(std::exception_ptr)>& non_fatal_error_handler)
-		: data(stream), m_non_fatal_error_handler(non_fatal_error_handler)
+	archive_reader(std::istream& stream, const std::function<void(std::exception_ptr)>& non_fatal_error_handler,
+	               audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor},
+		  data(stream, auditor),
+		  m_non_fatal_error_handler(non_fatal_error_handler)
 	{
 		m_archive = archive_read_new();
 		archive_read_support_filter_all(m_archive);
@@ -148,11 +158,11 @@ public:
 		int r = archive_read_next_header(m_archive, &entry);
 		if (r == ARCHIVE_EOF)
 		{
-			log_entry("End of archive");
-			return archive_reader::entry(m_archive, nullptr);
+			audit::entry(auditor(), [&]{ return "message"_v = std::string{"End of archive"}; });
+			return archive_reader::entry(m_archive, nullptr, auditor());
 		}
 		throw_if (r != ARCHIVE_OK, "archive_read_next_header() failed", archive_error_string(m_archive));
-		return archive_reader::entry(m_archive, entry);
+		return archive_reader::entry(m_archive, entry, auditor());
 	}
 
 	iterator begin()
@@ -162,17 +172,18 @@ public:
 
 	iterator end()
 	{
-		return iterator(this, entry(m_archive, nullptr));
+		return iterator(this, entry(m_archive, nullptr, auditor()));
 	}
 
 private:
 	struct callback_client_data
 	{
-		callback_client_data(std::istream& stream)
-			: m_stream(stream)
+		callback_client_data(std::istream& stream, audit::auditor_ref<auditor_type> auditor)
+			: m_stream(stream), m_auditor(auditor)
 		{
 		}
 		std::istream& m_stream;
+		audit::auditor_ref<auditor_type> m_auditor;
 		static constexpr size_t m_buf_size = 16384;
 		char m_buffer[m_buf_size];
 	};
@@ -183,8 +194,8 @@ private:
 
 	static la_ssize_t archive_read_callback(archive* archive, void* client_data, const void** buf)
 	{
-		log_scope();
 		callback_client_data* data = (callback_client_data*)client_data;
+		audit::scope audit_scope{data->m_auditor, audit::no_context};
 		*buf = data->m_buffer;
 		if (data->m_stream.read(data->m_buffer, data->m_buf_size))
 			return data->m_buf_size;
@@ -205,9 +216,10 @@ private:
 	}
 };
 
-continuation archives_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation archives_parser<auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	log_scope(msg);
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
 
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
@@ -222,19 +234,22 @@ continuation archives_parser::operator()(message_ptr msg, const message_callback
 
 	try
 	{
-		log_scope();
-		archive_reader reader(*in_stream, [&emit_message](std::exception_ptr e) { emit_message(std::move(e)); });
+		archive_reader<auditor_type> reader{
+			*in_stream,
+			[&emit_message](std::exception_ptr e) { emit_message(std::move(e)); },
+			auditor()
+		};
 
 		message_counters counters;
 		auto counting_callbacks = make_counted_message_callbacks(emit_message, counters);
-		for (archive_reader::entry entry: reader)
+		for (auto entry: reader)
 		{
 			std::string entry_name = entry.get_name();
-			log_scope(entry_name);
+			audit::scope entry_audit_scope{auditor(), [&]{ return "entry_name"_v = entry_name; }};
 
 			if (entry.is_dir())
 			{
-				log_entry();
+				audit::entry(auditor(), audit::no_context);
 				continue;
 			}
 
@@ -261,5 +276,8 @@ continuation archives_parser::operator()(message_ptr msg, const message_callback
 	}
 	return continuation::proceed;
 }
+
+template class DOCWIRE_ARCHIVES_EXPORT archives_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_ARCHIVES_EXPORT archives_parser<docwire::audit::json_stream_auditor>;
 
 } // namespace docwire

@@ -15,16 +15,18 @@
 #include <cstdio>
 #include <string>
 #include <vector>
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/scope.hpp"
 
 namespace docwire
 {
 
 using svector = std::vector<std::string>;
 
-inline int prepareTable(std::vector<svector>& p_table)
+template<typename auditor_type = audit::null_auditor>
+inline int prepareTable(std::vector<svector>& p_table, audit::auditor_ref<auditor_type> auditor = {})
 {
-	DOCWIRE_LOG_SCOPE();
+	audit::scope audit_scope{auditor, audit::no_context};
 	if (p_table.empty())
 		return 0;
 	for (int i = 0; i < p_table.size(); ++i)
@@ -43,9 +45,10 @@ inline int prepareTable(std::vector<svector>& p_table)
 	return 1;
 }
 
-inline int prepareList(std::vector<std::string>& p_list)
+template<typename auditor_type = audit::null_auditor>
+inline int prepareList(std::vector<std::string>& p_list, audit::auditor_ref<auditor_type> auditor = {})
 {
-	DOCWIRE_LOG_SCOPE();
+	audit::scope audit_scope{auditor, audit::no_context};
 	if (p_list.empty())
 		return 0;
 	for (int i = 0; i < p_list.size(); ++i)
@@ -61,12 +64,13 @@ inline int prepareList(std::vector<std::string>& p_list)
 	return 1;
 }
 
-inline std::string formatTable(std::vector<svector>& mcols)
+template<typename auditor_type = audit::null_auditor>
+inline std::string formatTable(std::vector<svector>& mcols, audit::auditor_ref<auditor_type> auditor = {})
 {
-	DOCWIRE_LOG_SCOPE();
+	audit::scope audit_scope{auditor, audit::no_context};
 	std::string table_out;
 
-	prepareTable(mcols);
+	prepareTable(mcols, auditor);
 
 	for (int i = 0; i < mcols.size(); ++i)
 	{
@@ -84,9 +88,10 @@ inline std::string formatTable(std::vector<svector>& mcols)
 	return table_out;
 }
 
-inline std::string formatUrl(const std::string& mlink_url, const std::string& mlink_text)
+template<typename auditor_type = audit::null_auditor>
+inline std::string formatUrl(const std::string& mlink_url, const std::string& mlink_text, audit::auditor_ref<auditor_type> auditor = {})
 {
-	DOCWIRE_LOG_SCOPE(mlink_url, mlink_text);
+	audit::scope audit_scope{auditor, audit::no_context};
 	std::string u_url;
 	if (mlink_url.length() > 0)
 	{
@@ -96,11 +101,12 @@ inline std::string formatUrl(const std::string& mlink_url, const std::string& ml
 	return u_url;
 }
 
-inline std::string formatList(std::vector<std::string>& mlist)
+template<typename auditor_type = audit::null_auditor>
+inline std::string formatList(std::vector<std::string>& mlist, audit::auditor_ref<auditor_type> auditor = {})
 {
-	DOCWIRE_LOG_SCOPE();
+	audit::scope audit_scope{auditor, audit::no_context};
 	std::string list_out;
-	prepareList(mlist);
+	prepareList(mlist, auditor);
 
 	for (int i = 0; i < mlist.size(); ++i)
 	{
@@ -109,11 +115,12 @@ inline std::string formatList(std::vector<std::string>& mlist)
 	return list_out;
 }
 
-inline std::string formatNumberedList(std::vector<std::string>& mlist)
+template<typename auditor_type = audit::null_auditor>
+inline std::string formatNumberedList(std::vector<std::string>& mlist, audit::auditor_ref<auditor_type> auditor = {})
 {
-	DOCWIRE_LOG_SCOPE();
+	audit::scope audit_scope{auditor, audit::no_context};
 	std::string list_out;
-	prepareList(mlist);
+	prepareList(mlist, auditor);
 	char count[100];
 	for (int i = 0; i < mlist.size(); ++i)
 	{

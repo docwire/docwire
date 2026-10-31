@@ -13,21 +13,29 @@
 #define DOCWIRE_HTML_PARSER_H
 
 #include "html_export.h"
+#include "audit.hpp"
 #include "pipeline/element_base.hpp"
 #include "pimpl.h"
 
 namespace docwire
 {
-class DOCWIRE_HTML_EXPORT html_parser : public pipeline::transformer_element<html_parser>, public with_pimpl<html_parser>
+
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_HTML_EXPORT html_parser
+    : public pipeline::transformer_element<html_parser<auditor_type>>,
+      public with_pimpl<html_parser<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
 	private:
-		using with_pimpl<html_parser>::impl;
+		using with_pimpl<html_parser<auditor_type>>::impl;
+		using audit::with_auditor<auditor_type>::auditor;
 		friend pimpl_impl<html_parser>;
 
 	public:
 
-		html_parser();
+		explicit html_parser(audit::auditor_ref<auditor_type> auditor = {});
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).
 		void skipCharsetDecoding();
 };

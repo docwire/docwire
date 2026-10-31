@@ -14,7 +14,8 @@
 #include "document_elements.h"
 #include "error_tags.h"
 #include "html_writer.h"
-#include "log_scope.h"
+#include "audit.hpp"
+#include "audit/json_stream_auditor.hpp"
 #include "serialization_message.h" // IWYU pragma: keep
 #include "throw_if.h"
 #include <sstream>
@@ -22,20 +23,32 @@
 namespace docwire
 {
 
-template<>
-struct pimpl_impl<html_exporter> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<html_exporter<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
+	using audit::with_auditor<auditor_type>::auditor;
+
+	explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor}
+	{}
+
 	std::shared_ptr<std::stringstream> m_stream;
 	html_writer m_writer;
 	int m_nested_docs_level { 0 };
 };
 
-html_exporter::html_exporter()
+template<typename auditor_type>
+html_exporter<auditor_type>::html_exporter(audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<html_exporter<auditor_type>>(auditor),
+	  audit::with_auditor<auditor_type>(auditor)
 {}
 
-continuation html_exporter::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation html_exporter<auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	log_scope(msg);
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
 	if (msg->is<std::exception_ptr>())
 		return emit_message(std::move(msg));
 	if (msg->is<document::document>() || !impl().m_stream)
@@ -57,5 +70,8 @@ continuation html_exporter::operator()(message_ptr msg, const message_callbacks&
 	}
 	return continuation::proceed;
 }
+
+template class DOCWIRE_HTML_EXPORT html_exporter<docwire::audit::null_auditor>;
+template class DOCWIRE_HTML_EXPORT html_exporter<docwire::audit::json_stream_auditor>;
 
 } // namespace docwire

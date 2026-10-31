@@ -13,8 +13,12 @@
 
 #include <boost/json.hpp>
 #include "pipeline/input_element.hpp"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/json_stream_auditor.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include "make_error.h"
 #include "pipeline/output_element.hpp"
 #include "post.h"
@@ -26,56 +30,84 @@ namespace docwire
 
 using namespace openai;
 
-template<>
-struct pimpl_impl<openai::text_to_speech> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<openai::text_to_speech<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
-	pimpl_impl(const std::string& api_key, text_to_speech::model model, text_to_speech::voice voice)
-		: m_api_key(api_key), m_model(model), m_voice(voice) {}
+	using audit::with_auditor<auditor_type>::auditor;
+
+	explicit pimpl_impl(
+		const std::string& api_key,
+		openai::text_to_speech_model model,
+		openai::text_to_speech_voice voice,
+		audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor},
+		  m_api_key(api_key),
+		  m_model(model),
+		  m_voice(voice)
+	{}
+
 	std::string m_api_key;
-	text_to_speech::model m_model;
-	text_to_speech::voice m_voice;
+	openai::text_to_speech_model m_model;
+	openai::text_to_speech_voice m_voice;
 };
 
 namespace openai
 {
 
-text_to_speech::text_to_speech(const std::string& api_key, model model, voice voice)
-	: with_pimpl<text_to_speech>(api_key, model, voice)
+template<typename auditor_type>
+text_to_speech<auditor_type>::text_to_speech(
+	const std::string& api_key,
+	text_to_speech_model model,
+	text_to_speech_voice voice,
+	audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<text_to_speech<auditor_type>>(api_key, model, voice, auditor),
+	  audit::with_auditor<auditor_type>(auditor)
 {
-	log_scope(model, voice);
+	audit::scope audit_scope{this->auditor(), [&]{
+		return "model"_v = model, "voice"_v = voice;
+	}};
 }
 
 namespace
 {
 
-std::string model_to_string(text_to_speech::model model)
+std::string model_to_string(openai::text_to_speech_model model)
 {
 	switch (model)
 	{
-		case text_to_speech::model::gpt_4o_mini_tts: return "gpt-4o-mini-tts";
-		case text_to_speech::model::tts_1: return "tts-1";
-		case text_to_speech::model::tts_1_hd: return "tts-1-hd";
+		case openai::text_to_speech_model::gpt_4o_mini_tts: return "gpt-4o-mini-tts";
+		case openai::text_to_speech_model::tts_1: return "tts-1";
+		case openai::text_to_speech_model::tts_1_hd: return "tts-1-hd";
 		default: return "?";
 	}
 }
 
-std::string voice_to_string(text_to_speech::voice voice)
+std::string voice_to_string(openai::text_to_speech_voice voice)
 {
 	switch (voice)
 	{
-		case text_to_speech::voice::alloy: return "alloy";
-		case text_to_speech::voice::echo: return "echo";
-		case text_to_speech::voice::fable: return "fable";
-		case text_to_speech::voice::onyx: return "onyx";
-		case text_to_speech::voice::nova: return "nova";
-		case text_to_speech::voice::shimmer: return "shimmer";
+		case openai::text_to_speech_voice::alloy: return "alloy";
+		case openai::text_to_speech_voice::echo: return "echo";
+		case openai::text_to_speech_voice::fable: return "fable";
+		case openai::text_to_speech_voice::onyx: return "onyx";
+		case openai::text_to_speech_voice::nova: return "nova";
+		case openai::text_to_speech_voice::shimmer: return "shimmer";
 		default: return "?";
 	}
 }
 
-std::string prepare_query(const std::string& input, text_to_speech::model model, text_to_speech::voice voice)
+template<typename auditor_type>
+std::string prepare_query(
+	const std::string& input,
+	openai::text_to_speech_model model,
+	openai::text_to_speech_voice voice,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(input, model, voice);
+	audit::scope audit_scope{auditor, [&]{
+		return "input"_v = input, "model"_v = model, "voice"_v = voice;
+	}};
 	boost::json::object query
 	{
 		{ "model", model_to_string(model) },
@@ -85,14 +117,22 @@ std::string prepare_query(const std::string& input, text_to_speech::model model,
 	return boost::json::serialize(query);
 }
 
-std::string post_request(const std::string& query, const std::string& api_key)
+template<typename auditor_type>
+std::string post_request(
+	const std::string& query,
+	const std::string& api_key,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(query);
+	audit::scope audit_scope{auditor, [&]{ return "query"_v = query; }};
 	std::ostringstream response_stream{};
 	try
 	{
 		data_source{query, mime_type{"application/json"}, confidence::highest} |
-			http::post("https://api.openai.com/v1/audio/speech", api_key) |
+			http::post<auditor_type>(
+				"https://api.openai.com/v1/audio/speech",
+				api_key,
+				http::ssl_verify_peer{true},
+				auditor) |
 			response_stream;
 	}
 	catch (const std::exception& e)
@@ -104,17 +144,27 @@ std::string post_request(const std::string& query, const std::string& api_key)
 
 } // anonymous namespace
 
-continuation text_to_speech::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation text_to_speech<auditor_type>::operator()(
+	message_ptr msg,
+	const message_callbacks& emit_message)
 {
-	log_scope();
+	audit::scope audit_scope{this->auditor(), [&]{ return "msg"_v = msg; }};
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
-	log_entry();
 	const data_source& data = msg->get<data_source>();
 	std::string data_str = data.string();
-	std::string content = post_request(prepare_query(data_str, impl().m_model, impl().m_voice), impl().m_api_key);
+	auto auditor_ref = this->auditor();
+	std::string content =
+		post_request<auditor_type>(
+			prepare_query<auditor_type>(data_str, impl().m_model, impl().m_voice, auditor_ref),
+			impl().m_api_key,
+			auditor_ref);
 	return emit_message(data_source{content});
 }
+
+template class DOCWIRE_OPENAI_EXPORT docwire::openai::text_to_speech<docwire::audit::null_auditor>;
+template class DOCWIRE_OPENAI_EXPORT docwire::openai::text_to_speech<docwire::audit::json_stream_auditor>;
 
 } // namespace openai
 } // namespace docwire

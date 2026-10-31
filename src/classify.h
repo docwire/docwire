@@ -21,12 +21,19 @@ namespace docwire
 namespace openai
 {
 
+template<typename auditor_type = audit::null_auditor>
 class DOCWIRE_OPENAI_EXPORT classify
-    : public pipeline::transformer_element<classify>
-    , public chat
+    : public pipeline::transformer_element<classify<auditor_type>>,
+      public chat<auditor_type>
 {
 public:
-	classify(const std::set<std::string>& categories, const std::string& api_key, model model = model::gpt_5, float temperature = 0, image_detail image_detail = image_detail::automatic);
+	explicit classify(
+		const std::set<std::string>& categories,
+		const std::string& api_key,
+		model model = model::gpt_5,
+		float temperature = 0,
+		image_detail image_detail = image_detail::automatic,
+		audit::auditor_ref<auditor_type> auditor = {});
 };
 
 } // namespace openai

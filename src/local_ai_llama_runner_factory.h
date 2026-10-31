@@ -16,39 +16,57 @@
 #include "llama_runner.h"
 #include "llama_models.h" // IWYU pragma: export
 #include "model_inference_config.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/core.hpp"
+
 #include <filesystem>
 #include <memory>
 #include <utility>
 
-namespace docwire::ai::local::llama {
+namespace docwire::ai::local::llama
+{
 
-inline model_inference_config default_config(std::filesystem::path model_path) {
-  model_inference_config config;
-  config.model_path = std::move(model_path);
-  config.max_tokens = docwire::ai::token_limit{256};
-  config.n_ctx = docwire::ai::context_size{4096};
-  config.n_threads = docwire::ai::thread_count{4};
-  config.temp = docwire::ai::temperature{0.2f};
-  config.min_probability = docwire::ai::min_p{0.05f};
-  return config;
+inline model_inference_config default_config(std::filesystem::path model_path)
+{
+    model_inference_config config;
+    config.model_path = std::move(model_path);
+    config.max_tokens = docwire::ai::token_limit{256};
+    config.n_ctx = docwire::ai::context_size{4096};
+    config.n_threads = docwire::ai::thread_count{4};
+    config.temp = docwire::ai::temperature{0.2f};
+    config.min_probability = docwire::ai::min_p{0.05f};
+    return config;
 }
 
 #ifdef DOCWIRE_GRANITE
-inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner() {
-  return std::make_shared<docwire::ai::llama::llama_runner>(
-      default_config(docwire::ai::llama::granite_model_path()));
+template<typename auditor_type = docwire::audit::null_auditor>
+inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner(
+    docwire::audit::auditor_ref<auditor_type> auditor = {})
+{
+    return std::make_shared<docwire::ai::llama::llama_runner<auditor_type>>(
+        default_config(docwire::ai::llama::granite_model_path()),
+        auditor);
 }
 #endif
 
-inline std::shared_ptr<docwire::ai::ai_runner>
-make_runner(const std::filesystem::path &model_path) {
-  return std::make_shared<docwire::ai::llama::llama_runner>(
-      default_config(model_path));
+template<typename auditor_type = docwire::audit::null_auditor>
+inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
+    const std::filesystem::path& model_path,
+    docwire::audit::auditor_ref<auditor_type> auditor = {})
+{
+    return std::make_shared<docwire::ai::llama::llama_runner<auditor_type>>(
+        default_config(std::filesystem::path{model_path}),
+        auditor);
 }
 
-inline std::shared_ptr<docwire::ai::ai_runner>
-make_runner(model_inference_config config) {
-  return std::make_shared<docwire::ai::llama::llama_runner>(std::move(config));
+template<typename auditor_type = docwire::audit::null_auditor>
+inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
+    model_inference_config config,
+    docwire::audit::auditor_ref<auditor_type> auditor = {})
+{
+    return std::make_shared<docwire::ai::llama::llama_runner<auditor_type>>(
+        std::move(config),
+        auditor);
 }
 
 } // namespace docwire::ai::local::llama

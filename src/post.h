@@ -15,6 +15,8 @@
 #include "pipeline/element_base.hpp"
 #include "http_export.h"
 #include "pimpl.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 #include <filesystem>
 #include <map>
 
@@ -33,11 +35,27 @@ namespace http
 
 struct ssl_verify_peer { bool v; };
 
-class DOCWIRE_HTTP_EXPORT post : public pipeline::transformer_element<post>, public with_pimpl<post>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_HTTP_EXPORT post
+    : public pipeline::transformer_element<post<auditor_type>>,
+      public with_pimpl<post<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
 public:
-	post(const std::string& url, const std::string& oauth2_bearer_token = "", ssl_verify_peer ssl_verify_peer_v = {true});
-	post(const std::string& url, const std::map<std::string, std::string>& form, const std::string& pipe_field_name, const default_file_name& default_file_name, const std::string& oauth2_bearer_token = "", ssl_verify_peer ssl_verify_peer_v = {true});
+	post(
+		const std::string& url,
+		const std::string& oauth2_bearer_token = "",
+		ssl_verify_peer ssl_verify_peer_v = {true},
+		audit::auditor_ref<auditor_type> auditor = {});
+
+	post(
+		const std::string& url,
+		const std::map<std::string, std::string>& form,
+		const std::string& pipe_field_name,
+		const default_file_name& default_file_name,
+		const std::string& oauth2_bearer_token = "",
+		ssl_verify_peer ssl_verify_peer_v = {true},
+		audit::auditor_ref<auditor_type> auditor = {});
 
 	/**
 	 * @brief Executes transform for the given message; consumes msg.
@@ -48,8 +66,11 @@ public:
 	 */
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
+protected:
+	using audit::with_auditor<auditor_type>::auditor;
+
 private:
-	using with_pimpl<post>::impl;
+	using with_pimpl<post<auditor_type>>::impl;
 };
 
 } // namespace http

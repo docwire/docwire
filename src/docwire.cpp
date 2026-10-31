@@ -43,9 +43,9 @@
 #include "find.h"
 #include "html_exporter.h"
 #include "language.h"
-#include "log_json_stream_sink.h"
-#include "log_core.h"
-#include "log_entry.h"
+#include "audit.hpp"
+#include "audit/json_stream_auditor.hpp"
+#include "ref_or_owned.h"
 #include <magic_enum/magic_enum_iostream.hpp>
 #include "mail_parser.h"
 #include "meta_data_exporter.h"
@@ -115,42 +115,51 @@ std::string enum_names_str()
 	return names_str;
 }
 #ifdef DOCWIRE_LOCAL_AI
+template<typename auditor_type>
 static std::shared_ptr<ai::ai_runner>
-create_local_runner(const boost::program_options::variables_map& vm)
+create_local_runner(
+    const boost::program_options::variables_map& vm,
+    [[maybe_unused]] audit::auditor_ref<auditor_type> auditor)
 {
     if (vm.count("local-ai-model"))
     {
         std::string model_path = vm["local-ai-model"].as<std::string>();
         if (model_path.ends_with(".gguf"))
         {
-	        #ifdef DOCWIRE_LLAMA
-	            ai::model_inference_config config;
-	            config.model_path = model_path;
-	            config.n_ctx = ai::context_size{4096};
-	            config.n_threads = ai::thread_count{4};
-	            return std::make_shared<ai::llama::llama_runner>(config);
-	        #else
-	            throw std::runtime_error("GGUF model support requires the local-ai-llama feature");
-	        #endif
+            #ifdef DOCWIRE_LLAMA
+                ai::model_inference_config config;
+                config.model_path = model_path;
+                config.n_ctx = ai::context_size{4096};
+                config.n_threads = ai::thread_count{4};
+                return std::make_shared<ai::llama::llama_runner<auditor_type>>(
+                    config,
+                    auditor);
+            #else
+                throw std::runtime_error("GGUF model support requires the local-ai-llama feature");
+            #endif
         }
         #ifdef DOCWIRE_CT2
-        	return std::make_shared<ai::ct2::ct2_runner>(model_path);
+            return std::make_shared<ai::ct2::ct2_runner<auditor_type>>(
+                model_path,
+                auditor);
         #else
-        	throw std::runtime_error("CT2 model support requires the local-ai-ct2 feature");
+            throw std::runtime_error("CT2 model support requires the local-ai-ct2 feature");
         #endif
     }
 
     #ifdef DOCWIRE_CT2
-        return ai::local::ct2::make_default_runner();
+        return ai::local::ct2::make_default_runner(auditor);
     #elif defined(DOCWIRE_LLAMA) && defined(DOCWIRE_GRANITE)
-        return ai::local::llama::make_default_runner();
+        return ai::local::llama::make_default_runner(auditor);
     #elif defined(DOCWIRE_LLAMA)
         throw std::runtime_error(
             "No default local AI model available for this build. "
             "Specify --local-ai-model, or rebuild with the local-ai-model-granite "
             "feature to get a built-in default.");
     #else
-        throw std::runtime_error("Default local AI model requires the local-ai-ct2 feature or local-ai-llama feature, which can be coupled with local-ai-model-granite feature.");
+        throw std::runtime_error(
+            "Default local AI model requires the local-ai-ct2 feature or local-ai-llama feature, "
+            "which can be coupled with local-ai-model-granite feature.");
     #endif
 }
 #endif // DOCWIRE_LOCAL_AI
@@ -190,11 +199,14 @@ void run_pipeline(data_source&& data, Pipeline&& pipeline)
 
 } // namespace
 
+template<typename auditor_type>
+int run_with_auditor(
+	const boost::program_options::variables_map& vm,
+	data_source data,
+	auditor_type& audit);
+
 int main(int argc, char* argv[])
 {
-	// Set the default sink to std::clog.
-	log::set_sink(log::json_stream_sink(std::clog));
-
 	bool local_processing;
 	bool use_stream;
 
@@ -223,10 +235,10 @@ int main(int argc, char* argv[])
 		("openai-transcribe", "convert speech to text (transcribe) via OpenAI")
 		("openai-key", po::value<std::string>()->default_value(""), "OpenAI API key")
 		("openai-model", po::value<openai::model>()->default_value(openai::model::gpt_5), enum_names_str<openai::model>().c_str())
-		("openai-tts-model", po::value<openai::text_to_speech::model>()->default_value(openai::text_to_speech::model::gpt_4o_mini_tts), enum_names_str<openai::text_to_speech::model>().c_str())
-		("openai-embed-model", po::value<openai::embed::model>()->default_value(openai::embed::model::text_embedding_3_small), enum_names_str<openai::embed::model>().c_str())
-		("openai-transcribe-model", po::value<openai::transcribe::model>()->default_value(openai::transcribe::model::gpt_4o_transcribe), enum_names_str<openai::transcribe::model>().c_str())
-		("openai-voice", po::value<openai::text_to_speech::voice>()->default_value(openai::text_to_speech::voice::alloy), enum_names_str<openai::text_to_speech::voice>().c_str())
+		("openai-tts-model", po::value<openai::text_to_speech_model>()->default_value(openai::text_to_speech_model::gpt_4o_mini_tts), enum_names_str<openai::text_to_speech_model>().c_str())
+		("openai-embed-model", po::value<openai::embed_model>()->default_value(openai::embed_model::text_embedding_3_small), enum_names_str<openai::embed_model>().c_str())
+		("openai-transcribe-model", po::value<openai::transcribe_model>()->default_value(openai::transcribe_model::gpt_4o_transcribe), enum_names_str<openai::transcribe_model>().c_str())
+		("openai-voice", po::value<openai::text_to_speech_voice>()->default_value(openai::text_to_speech_voice::alloy), enum_names_str<openai::text_to_speech_voice>().c_str())
 		("openai-temperature", po::value<float>(), "force specified temperature for OpenAI prompts")
 		("openai-image-detail", po::value<openai::image_detail>()->default_value(openai::image_detail::automatic), enum_names_str<openai::image_detail>().c_str())
 		("language", po::value<std::vector<language>>()->default_value({language::eng}, "eng"), "Set the document language(s) for OCR as ISO 639-3 identifiers like: spa, fra, deu, rus, chi_sim, chi_tra etc. More than 100 languages are supported. Multiple languages can be enabled.")
@@ -243,9 +255,9 @@ int main(int argc, char* argv[])
 		("max_nodes_number", po::value<unsigned int>(), "filter by max number of nodes")
 		("folder_name", po::value<std::string>(), "filter emails by folder name")
 		("attachment_extension", po::value<std::string>(), "filter by attachment type")
-		("log_file", po::value<std::string>(), "set path to log file")
-		("log-filter", po::value<std::string>(), "Set a custom log filter. Filters are comma-separated and can include tags (e.g., 'audit'), function names (e.g., '@func:my_func'), and file names (e.g., '@file:*_parser.cpp'). Prepend '-' to exclude.")
-		("verbose,v", "Enable verbose logging (equivalent to --log-filter='*').")
+		("log_file", po::value<std::string>(), "set path for JSON audit output")
+		("log-filter", po::value<std::string>(), "Set a custom audit filter. Filters are comma-separated and can include tags, function names such as @func:my_func, and file names such as @file:*_parser.cpp. Prepend '-' to exclude.")
+		("verbose,v", "Enable verbose audit output (equivalent to --log-filter='*').")
 	;
 
 	po::positional_options_description pos_desc;
@@ -285,29 +297,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	if (vm.count("verbose"))
-	{
-		log::set_filter("*");
-	}
-	if (vm.count("log-filter"))
-	{
-		log::set_filter(vm["log-filter"].as<std::string>());
-	}
-
-	if (vm.count("log_file"))
-	{
-		std::ofstream log_file(vm["log_file"].as<std::string>());
-		if (!log_file.is_open())
-		{
-			std::cerr << "Error: Unable to open log file: " << vm["log_file"].as<std::string>() << std::endl;
-			return 1;
-		}
-		log::set_sink(log::json_stream_sink(std::move(log_file)));
-	}
-
 	std::string file_name = vm["input-file"].as<std::string>();
-
-	log_entry(use_stream, file_name);
 
 	data_source data = [&]() -> data_source
 	{
@@ -317,137 +307,213 @@ int main(int argc, char* argv[])
 		return data_source{std::filesystem::path{file_name}};
 	}();
 
-#ifndef DOCWIRE_CT2
-	if (vm.count("local-ai-prompt") || vm.count("local-ai-embed"))
+	#ifndef DOCWIRE_CT2
+	if (vm.count("local-ai-prompt") || vm.count("local-ai-ct2-embed"))
 	{
 		std::cerr << "Error: Local AI features requested, but this build does not include "
 		             "DOCWIRE_CT2 support.\n"
 		             "Rebuild with DOCWIRE_CT2 enabled to use --local-ai-prompt or "
-		             "--local-ai-embed." << std::endl;
+		             "--local-ai-ct2-embed." << std::endl;
 		return 1;
 	}
-#endif
+	#endif
+
+	const bool audit_enabled =
+		vm.count("log_file") ||
+		vm.count("log-filter") ||
+		vm.count("verbose");
+
+	if (audit_enabled)
+	{
+		docwire::ref_or_owned<std::ostream> audit_stream{std::clog};
+		std::unique_ptr<std::ofstream> log_file;
+
+		if (vm.count("log_file"))
+		{
+			log_file = std::make_unique<std::ofstream>(vm["log_file"].as<std::string>());
+			if (!log_file->is_open())
+			{
+				std::cerr << "Error: Unable to open log file: " << vm["log_file"].as<std::string>() << std::endl;
+				return 1;
+			}
+			audit_stream = docwire::ref_or_owned<std::ostream>{std::move(*log_file)};
+		}
+
+		const std::string filter_spec =
+			vm.count("log-filter")
+				? vm["log-filter"].as<std::string>()
+				: vm.count("verbose")
+					? "*"
+					: "";
+
+		docwire::audit::json_stream_auditor audit{
+			filter_spec,
+			std::move(audit_stream)
+		};
+
+		return run_with_auditor(vm, std::move(data), audit);
+	}
+
+	docwire::audit::null_auditor audit;
+	return run_with_auditor(vm, std::move(data), audit);
+}
+
+template<typename auditor_type>
+int run_with_auditor(
+	const boost::program_options::variables_map& vm,
+	data_source data,
+	auditor_type& audit)
+{
+	using configured_auditor = auditor_type;
+
+	std::string file_name = vm["input-file"].as<std::string>();
+	bool local_processing = vm["local-processing"].as<bool>();
+
+	audit::entry(audit, [&]{
+		return "use_stream"_v = vm["use-stream"].as<bool>(), "file_name"_v = file_name;
+	});
 
 	auto optional_suffix =
 		maybe(vm.count("http-post"), [&] {
-			return http::post(vm["http-post"].as<std::string>());
+			return http::post<configured_auditor>(
+				vm["http-post"].as<std::string>(),
+				"",
+				http::ssl_verify_peer{true},
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-chat"), [&] {
-			return openai::chat(
+			return openai::chat<configured_auditor>(
 				vm["openai-chat"].as<std::string>(),
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
-				vm["openai-image-detail"].as<openai::image_detail>());
+				vm["openai-image-detail"].as<openai::image_detail>(),
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-extract-entities"), [&] {
-			return openai::extract_entities(
+			return openai::extract_entities<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
-				vm["openai-image-detail"].as<openai::image_detail>());
+				vm["openai-image-detail"].as<openai::image_detail>(),
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-extract-keywords"), [&] {
-			return openai::extract_keywords(
+			return openai::extract_keywords<configured_auditor>(
 				vm["openai-extract-keywords"].as<unsigned int>(),
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
-				vm["openai-image-detail"].as<openai::image_detail>());
+				vm["openai-image-detail"].as<openai::image_detail>(),
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-summarize"), [&] {
-			return openai::summarize(
+			return openai::summarize<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
-				vm["openai-image-detail"].as<openai::image_detail>());
+				vm["openai-image-detail"].as<openai::image_detail>(),
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-detect-sentiment"), [&] {
-			return openai::detect_sentiment(
+			return openai::detect_sentiment<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
-				vm["openai-image-detail"].as<openai::image_detail>());
+				vm["openai-image-detail"].as<openai::image_detail>(),
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-analyze-data"), [&] {
-			return openai::analyze_data(
+			return openai::analyze_data<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
-				vm["openai-image-detail"].as<openai::image_detail>());
+				vm["openai-image-detail"].as<openai::image_detail>(),
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-classify"), [&] {
 			const std::vector<std::string>& categories =
 				vm["openai-classify"].as<std::vector<std::string>>();
 			std::set<std::string> categories_set(categories.begin(), categories.end());
-			return openai::classify(
+			return openai::classify<configured_auditor>(
 				categories_set,
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
-				vm["openai-image-detail"].as<openai::image_detail>());
+				vm["openai-image-detail"].as<openai::image_detail>(),
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-translate-to"), [&] {
-			return openai::translate_to(
+			return openai::translate_to<configured_auditor>(
 				vm["openai-translate-to"].as<std::string>(),
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
-				vm["openai-image-detail"].as<openai::image_detail>());
+				vm["openai-image-detail"].as<openai::image_detail>(),
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 #ifdef DOCWIRE_LOCAL_AI
 		| maybe(vm.count("local-ai-prompt"), [&] {
-			auto runner = create_local_runner(vm);
+			auto runner = create_local_runner(
+				vm,
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 			return ai::local::task(
 				vm["local-ai-prompt"].as<std::string>(), runner);
 		})
 #endif
 #ifdef DOCWIRE_CT2
-		| maybe(vm.count("local-ai-ct2-embed") && vm["local-ai-ct2-embed"].as<embed_prefix_type>()
-			== embed_prefix_type::query, [] {
-			return ai::local::ct2::query::embedder();
+		| maybe(vm.count("local-ai-ct2-embed") &&
+			vm["local-ai-ct2-embed"].as<embed_prefix_type>() == embed_prefix_type::query, [&] {
+			return ai::local::ct2::query::embedder<configured_auditor>{
+				docwire::audit::auditor_ref<configured_auditor>{audit}
+			};
 		})
 		| maybe(vm.count("local-ai-ct2-embed") &&
-					   vm["local-ai-ct2-embed"].as<embed_prefix_type>() != embed_prefix_type::query, [] {
-			return ai::local::ct2::passage::embedder();
+					   vm["local-ai-ct2-embed"].as<embed_prefix_type>() != embed_prefix_type::query, [&] {
+			return ai::local::ct2::passage::embedder<configured_auditor>{
+				docwire::audit::auditor_ref<configured_auditor>{audit}
+			};
 		})
 #endif
 		| maybe(vm.count("openai-find"), [&] {
-			return openai::find(
+			return openai::find<configured_auditor>(
 				vm["openai-find"].as<std::string>(),
 				vm["openai-key"].as<std::string>(),
 				vm["openai-model"].as<openai::model>(),
 				vm.count("openai-temperature")
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
-				vm["openai-image-detail"].as<openai::image_detail>());
+				vm["openai-image-detail"].as<openai::image_detail>(),
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-text-to-speech"), [&] {
-			return openai::text_to_speech(
+			return openai::text_to_speech<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
-				vm["openai-tts-model"].as<openai::text_to_speech::model>(),
-				vm["openai-voice"].as<openai::text_to_speech::voice>());
+				vm["openai-tts-model"].as<openai::text_to_speech_model>(),
+				vm["openai-voice"].as<openai::text_to_speech_voice>(),
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| maybe(vm.count("openai-embed"), [&] {
-			return openai::embed(
+			return openai::embed<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
-				vm["openai-embed-model"].as<openai::embed::model>());
+				vm["openai-embed-model"].as<openai::embed_model>(),
+				docwire::audit::auditor_ref<configured_auditor>{audit});
 		})
 		| [](message_ptr msg,
 			 const message_callbacks& emit_message) -> continuation
@@ -482,9 +548,10 @@ int main(int argc, char* argv[])
 	{
 		auto pipeline =
 			content_type::detector{}
-			| openai::transcribe(
+			| openai::transcribe<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
-				vm["openai-transcribe-model"].as<openai::transcribe::model>())
+				vm["openai-transcribe-model"].as<openai::transcribe_model>(),
+				docwire::audit::auditor_ref<configured_auditor>{audit})
 			| plain_text_exporter{}
 			| std::move(optional_suffix);
 
@@ -514,9 +581,9 @@ int main(int argc, char* argv[])
 
 		using exporter_variant =
 			std::variant<plain_text_exporter,
-			             html_exporter,
+			             html_exporter<configured_auditor>,
 			             csv_exporter,
-			             metadata_exporter>;
+			             metadata_exporter<configured_auditor>>;
 
 		exporter_variant formatter = plain_text_exporter{};
 
@@ -526,24 +593,34 @@ int main(int argc, char* argv[])
 				formatter = plain_text_exporter{};
 				break;
 			case output_type::html:
-				formatter = html_exporter{};
+				formatter = html_exporter<configured_auditor>{
+					docwire::audit::auditor_ref<configured_auditor>{audit}
+				};
 				break;
 			case output_type::csv:
 				formatter = csv_exporter{};
 				break;
 			case output_type::metadata:
-				formatter = metadata_exporter{};
+				formatter = metadata_exporter<configured_auditor>{
+					docwire::audit::auditor_ref<configured_auditor>{audit}
+				};
 				break;
 		}
 
 		auto local_prefix =
 			content_type::detector{}
-			| archives_parser{}
-			| office_formats_parser{}
-			| mail_parser{}
-			| ocr_parser{
+			| archives_parser<configured_auditor>{
+				docwire::audit::auditor_ref<configured_auditor>{audit}}
+			| office_formats_parser<docwire::safety_policy::strict, configured_auditor>{
+				docwire::audit::auditor_ref<configured_auditor>{audit}}
+			| mail_parser<configured_auditor>{
+				docwire::audit::auditor_ref<configured_auditor>{audit}}
+			| ocr_parser<configured_auditor>{
 				vm["language"].as<std::vector<language>>(),
-				threshold_arg}
+				threshold_arg,
+				{},
+				{},
+				docwire::audit::auditor_ref<configured_auditor>{audit}}
 			| maybe(vm.count("max_nodes_number"), [&] {
 				  return standard_filter::filterByMaxNodeNumber(
 					  vm["max_nodes_number"].as<unsigned int>());

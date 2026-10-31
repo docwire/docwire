@@ -6,7 +6,8 @@ add_library(docwire_ole_office_formats SHARED
 target_link_libraries(docwire_ole_office_formats PRIVATE
     docwire_wv2
     docwire_core
-    docwire_ole_utils)
+    docwire_ole_utils
+    docwire_audit)
 
 install(TARGETS docwire_ole_office_formats EXPORT docwire_targets)
 if(MSVC)

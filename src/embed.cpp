@@ -14,7 +14,12 @@
 #include <boost/json.hpp>
 #include "error_tags.h"
 #include "pipeline/input_element.hpp"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/json_stream_auditor.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include "make_error.h"
 #include "pipeline/output_element.hpp"
 #include "post.h"
@@ -29,13 +34,24 @@ namespace docwire
 
 using namespace openai;
 
-template<>
-struct pimpl_impl<openai::embed> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<openai::embed<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
-	pimpl_impl(const std::string& api_key, openai::embed::model model)
-		: m_api_key(api_key), m_model(model) {}
+	using audit::with_auditor<auditor_type>::auditor;
+
+	explicit pimpl_impl(
+		const std::string& api_key,
+		openai::embed_model model,
+		audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor},
+		  m_api_key(api_key),
+		  m_model(model)
+	{}
+
 	std::string m_api_key;
-	openai::embed::model m_model;
+	openai::embed_model m_model;
 };
 
 }
@@ -45,28 +61,38 @@ namespace docwire
 namespace openai
 {
 
-embed::embed(const std::string& api_key, model model)
-	: with_pimpl<embed>(api_key, model)
-{
-}
+template<typename auditor_type>
+embed<auditor_type>::embed(
+	const std::string& api_key,
+	embed_model model,
+	audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<embed<auditor_type>>(api_key, model, auditor),
+	  audit::with_auditor<auditor_type>(auditor)
+{}
 
 namespace
 {
 
-std::string model_to_string(embed::model model)
+std::string model_to_string(openai::embed_model model)
 {
 	switch (model)
 	{
-		case embed::model::text_embedding_3_small: return "text-embedding-3-small";
-		case embed::model::text_embedding_3_large: return "text-embedding-3-large";
-		case embed::model::text_embedding_ada_002: return "text-embedding-ada-002";
+		case openai::embed_model::text_embedding_3_small: return "text-embedding-3-small";
+		case openai::embed_model::text_embedding_3_large: return "text-embedding-3-large";
+		case openai::embed_model::text_embedding_ada_002: return "text-embedding-ada-002";
 		default: throw make_error("Unknown model", model, errors::program_logic{});
 	}
 }
 
-std::string prepare_query(const std::string& input, embed::model model)
+template<typename auditor_type>
+std::string prepare_query(
+	const std::string& input,
+	openai::embed_model model,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(input, model);
+	audit::scope audit_scope{auditor, [&]{
+		return "input"_v = input, "model"_v = model;
+	}};
 	boost::json::object query
 	{
 		{ "model", model_to_string(model) },
@@ -75,14 +101,22 @@ std::string prepare_query(const std::string& input, embed::model model)
 	return boost::json::serialize(query);
 }
 
-std::string post_request(const std::string& query, const std::string& api_key)
+template<typename auditor_type>
+std::string post_request(
+	const std::string& query,
+	const std::string& api_key,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(query);
+	audit::scope audit_scope{auditor, [&]{ return "query"_v = query; }};
 	std::ostringstream response_stream{};
 	try
 	{
 		data_source{query, mime_type{"application/json"}, confidence::highest} |
-			http::post("https://api.openai.com/v1/embeddings", api_key) |
+			http::post<auditor_type>(
+				"https://api.openai.com/v1/embeddings",
+				api_key,
+				http::ssl_verify_peer{true},
+				auditor) |
 			response_stream;
 	}
 	catch (const std::exception& e)
@@ -92,9 +126,12 @@ std::string post_request(const std::string& query, const std::string& api_key)
 	return response_stream.str();
 }
 
-std::vector<double> parse_response(const std::string& response)
+template<typename auditor_type>
+std::vector<double> parse_response(
+	const std::string& response,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(response);
+	audit::scope audit_scope{auditor, [&]{ return "response"_v = response; }};
 	try
 	{
 		boost::json::value response_val = boost::json::parse(response);
@@ -115,17 +152,30 @@ std::vector<double> parse_response(const std::string& response)
 
 } // anonymous namespace
 
-continuation embed::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation embed<auditor_type>::operator()(
+	message_ptr msg,
+	const message_callbacks& emit_message)
 {
-	log_scope(msg);
+	audit::scope audit_scope{this->auditor(), [&]{ return "msg"_v = msg; }};
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
 	const data_source& data = msg->get<data_source>();
 	throw_if (!data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}), errors::program_logic{});
 	std::string data_str = data.string();
-	std::vector<double> embedding_vector = parse_response(post_request(prepare_query(data_str, impl().m_model), impl().m_api_key));
+	auto auditor_ref = this->auditor();
+	std::vector<double> embedding_vector =
+		parse_response(
+			post_request(
+				prepare_query(data_str, impl().m_model, auditor_ref),
+				impl().m_api_key,
+				auditor_ref),
+			auditor_ref);
 	return emit_message(ai::embedding{std::move(embedding_vector)});
 }
+
+template class DOCWIRE_OPENAI_EXPORT docwire::openai::embed<docwire::audit::null_auditor>;
+template class DOCWIRE_OPENAI_EXPORT docwire::openai::embed<docwire::audit::json_stream_auditor>;
 
 } // namespace openai
 } // namespace docwire

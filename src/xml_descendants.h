@@ -14,7 +14,9 @@
 
 #include "xml_nodes.h"
 #include "xml_iterator_state.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/core.hpp"
+#include "audit/scope.hpp"
 #include "xml_node_ref.h"
 #include "not_null.h"
 #include <memory>
@@ -30,14 +32,15 @@ namespace docwire::xml
  * @warning This class relies on a single-pass XML reader. Advancing the reader invalidates this view and any iterators derived from it.
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
-template <safety_policy safety_level = default_safety_level>
+template <safety_policy safety_level = default_safety_level,
+          typename auditor_type = audit::null_auditor>
 class descendants_view : public std::ranges::view_base
 {
 public:
 	class iterator;
 	iterator begin() const
 	{
-		return iterator{m_state, m_start_depth};
+		return iterator{m_state, m_start_depth, m_auditor};
 	}
 	sentinel end() const { return {}; }
 
@@ -45,23 +48,28 @@ public:
 	 * @brief Constructs a view from an iterator state and start depth.
 	 * @param state The shared iterator state.
 	 * @param depth The depth of the root node of this view.
+	 * @param auditor The injected auditor for this view.
 	 */
-	explicit descendants_view(not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> state, int depth)
-		: m_state(std::move(state)), m_start_depth(depth)
+	explicit descendants_view(
+		not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> state,
+		int depth,
+		audit::auditor_ref<auditor_type> auditor)
+		: m_state(std::move(state)), m_start_depth(depth), m_auditor(auditor)
 	{}
 
 private:
 	not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> m_state;
 	int m_start_depth;
+	audit::auditor_ref<auditor_type> m_auditor;
 };
 
 /**
  * @brief Iterator for recursively traversing descendant nodes.
  */
-template <safety_policy safety_level>
-class descendants_view<safety_level>::iterator final
+template <safety_policy safety_level, typename auditor_type>
+class descendants_view<safety_level, auditor_type>::iterator final
 {
-	friend class descendants_view;
+	friend class descendants_view<safety_level, auditor_type>;
 
 public:
 	using iterator_concept = std::input_iterator_tag;
@@ -75,7 +83,7 @@ public:
 	pointer operator->() const { return m_nodes_iter.operator->(); }
 	iterator& operator++()
 	{
-		log::scope _{ "start_depth"_v = m_start_depth };
+		audit::scope audit_scope{m_auditor, [&]{ return "start_depth"_v = m_start_depth; }};
 
 		if (m_state->m_node_ahead_flag)
 		{
@@ -104,9 +112,13 @@ private:
 		}
 	}
 
-	explicit iterator(not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> state, int start_depth)
+	explicit iterator(
+		not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> state,
+		int start_depth,
+		audit::auditor_ref<auditor_type> auditor)
 		: m_state(std::move(state)), m_start_depth(start_depth),
-		  m_nodes_iter(nodes_view<safety_level>{m_state}.begin())
+		  m_nodes_iter(nodes_view<safety_level>{m_state}.begin()),
+		  m_auditor(auditor)
 	{
 		// If the first node is already out of scope, this iterator is invalid from the start.
 		invalidate_if_out_of_scope();
@@ -115,6 +127,7 @@ private:
 	not_null<std::shared_ptr<iterator_state<safety_level>>, safety_level> m_state;
 	int m_start_depth;
 	typename nodes_view<safety_level>::iterator m_nodes_iter;
+	audit::auditor_ref<auditor_type> m_auditor;
 };
 
 /**
@@ -124,10 +137,12 @@ private:
  * @warning This function relies on a single-pass XML reader.
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
-template <safety_policy safety_level>
-descendants_view<safety_level> descendants(const node_ref<safety_level>& node)
+template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
+descendants_view<safety_level, auditor_type> descendants(
+	const node_ref<safety_level>& node,
+	audit::auditor_ref<auditor_type> auditor = {})
 {
-	return descendants_view<safety_level>{node.state(), node.depth()};
+	return descendants_view<safety_level, auditor_type>{node.state(), node.depth(), auditor};
 }
 
 /**
@@ -137,10 +152,13 @@ descendants_view<safety_level> descendants(const node_ref<safety_level>& node)
  * @warning This function relies on a single-pass XML reader.
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
-template <safety_policy safety_level>
-descendants_view<safety_level> descendants(reader<safety_level>& reader)
+template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
+descendants_view<safety_level, auditor_type> descendants(
+	reader<safety_level>& reader,
+	audit::auditor_ref<auditor_type> auditor = {})
 {
-	return descendants_view<safety_level>{assume_not_null(std::make_shared<iterator_state<safety_level>>(reader)), -1};
+	return descendants_view<safety_level, auditor_type>{
+		assume_not_null(std::make_shared<iterator_state<safety_level>>(reader)), -1, auditor};
 }
 
 }

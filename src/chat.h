@@ -15,6 +15,8 @@
 #include "pipeline/element_base.hpp"
 #include "openai_export.h"
 #include "pimpl.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 #include <string>
 
 namespace docwire
@@ -64,10 +66,20 @@ enum class image_detail
 	low, high, automatic
 };
 
-class DOCWIRE_OPENAI_EXPORT chat : public pipeline::transformer_element<chat>, public with_pimpl<chat>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_OPENAI_EXPORT chat
+    : public pipeline::transformer_element<chat<auditor_type>>,
+      public with_pimpl<chat<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
 public:
-	chat(const std::string& system_message, const std::string& api_key, model model = model::gpt_5, float temperature = 0.7, image_detail image_detail = image_detail::automatic);
+	explicit chat(
+		const std::string& system_message,
+		const std::string& api_key,
+		model model = model::gpt_5,
+		float temperature = 0.7,
+		image_detail image_detail = image_detail::automatic,
+		audit::auditor_ref<auditor_type> auditor = {});
 
 	/**
 	* @brief Executes transform operation for given node data.
@@ -78,8 +90,11 @@ public:
 	*/
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
+protected:
+	using audit::with_auditor<auditor_type>::auditor;
+
 private:
-	using with_pimpl<chat>::impl;
+	using with_pimpl<chat<auditor_type>>::impl;
 };
 
 } // namespace openai

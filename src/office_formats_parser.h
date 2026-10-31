@@ -21,11 +21,14 @@
 #include "xls_parser.h"
 #include "xlsb_parser.h"
 #include "odf_ooxml_parser.h"
-#include "pipeline/chain_expression.hpp"
+#include "pipeline/composition.hpp"
 #include "ppt_parser.h"
 #include "rtf_parser.h"
 #include "txt_parser.h"
 #include "xml_parser.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
+#include <utility>
 
 namespace docwire
 {
@@ -33,38 +36,24 @@ namespace docwire
 /**
  * @brief A composite parser handling various office document formats.
  * @tparam safety_level The safety policy to use.
+ * @tparam auditor_type The injected auditor type.
  */
-template <safety_policy safety_level = default_safety_level>
-class office_formats_parser : public pipeline::transformer_element<office_formats_parser<safety_level>>
-{
-    public:
-        /**
-         * @brief Executes the composite chain of format parsers.
-         */
-        continuation operator()(message_ptr msg, const message_callbacks& emit_message)
-        {
-            return m_chain(msg, emit_message);
-        }
-
-    private:
-        static auto make_chain()
-        {
-            return html_parser{} |
-                doc_parser{} |
-                pdf_parser{} |
-                xls_parser{} |
-                xlsb_parser{} |
-                iwork_parser{} |
-                ppt_parser{} |
-                rtf_parser{} |
-                odf_ooxml_parser<safety_level>{} |
-                odfxml_parser<safety_level>{} |
-                xml_parser<safety_level>{} |
-                txt_parser{};
-        }
-
-        decltype(make_chain()) m_chain{make_chain()};
-};
+template <safety_policy safety_level = default_safety_level,
+          typename auditor_type = audit::null_auditor>
+using office_formats_parser = pipeline::composition<
+    html_parser<auditor_type>,
+    doc_parser<auditor_type>,
+    pdf_parser<auditor_type>,
+    xls_parser<auditor_type>,
+    xlsb_parser<auditor_type>,
+    iwork_parser<auditor_type>,
+    ppt_parser<auditor_type>,
+    rtf_parser<auditor_type>,
+    odf_ooxml_parser<safety_level, auditor_type>,
+    odfxml_parser<safety_level, auditor_type>,
+    xml_parser<safety_level, auditor_type>,
+    txt_parser<auditor_type>
+>;
 
 } // namespace docwire
 

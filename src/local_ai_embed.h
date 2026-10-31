@@ -14,6 +14,8 @@
 
 #include "ai_embed.h"
 #include "local_ai_export.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/core.hpp"
 
 namespace docwire::ai::local::passage
 {
@@ -23,12 +25,13 @@ namespace docwire::ai::local::passage
  * The appropriate prefix for the underlying model (e.g. "passage: " for multilingual-e5-small)
  * is applied automatically. No model-specific knowledge required at the call site.
  */
-class embedder
-    : public docwire::pipeline::transformer_element<embedder>
-    , public docwire::ai::embed
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_LOCAL_AI_EXPORT embedder
+    : public docwire::pipeline::transformer_element<embedder<auditor_type>>
+    , public docwire::ai::embed<auditor_type>
 {
   public:
-    embedder();
+    explicit embedder(audit::auditor_ref<auditor_type> auditor = {});
 };
 } // namespace docwire::ai::local::passage
 
@@ -41,12 +44,13 @@ namespace docwire::ai::local::query
  * is applied automatically. No model-specific knowledge required at the call site.
 
  */
+template<typename auditor_type = audit::null_auditor>
 class DOCWIRE_LOCAL_AI_EXPORT embedder
-    : public docwire::pipeline::transformer_element<embedder>
-    , public docwire::ai::embed
+    : public docwire::pipeline::transformer_element<embedder<auditor_type>>
+    , public docwire::ai::embed<auditor_type>
 {
   public:
-    embedder();
+    explicit embedder(audit::auditor_ref<auditor_type> auditor = {});
 };
 
 } // namespace docwire::ai::local::query

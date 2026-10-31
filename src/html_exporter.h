@@ -15,6 +15,8 @@
 #include "pipeline/element_base.hpp"
 #include "html_export.h"
 #include "pimpl.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 
 namespace docwire
 {
@@ -22,16 +24,22 @@ namespace docwire
 /**
  * @brief Exports data to HTML format.
  */
-class DOCWIRE_HTML_EXPORT html_exporter: public pipeline::transformer_element<html_exporter>, public with_pimpl<html_exporter>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_HTML_EXPORT html_exporter
+    : public pipeline::transformer_element<html_exporter<auditor_type>>,
+      public with_pimpl<html_exporter<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
 public:
+  explicit html_exporter(audit::auditor_ref<auditor_type> auditor = {});
 
-  html_exporter();
-
-	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+  continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 private:
-	using with_pimpl<html_exporter>::impl;
+  using with_pimpl<html_exporter<auditor_type>>::impl;
+  using audit::with_auditor<auditor_type>::auditor;
+
+  friend pimpl_impl<html_exporter<auditor_type>>;
 };
 
 } // namespace docwire

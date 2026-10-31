@@ -18,8 +18,9 @@
 #include "element_base.hpp"
 #include "../data_source.h"
 #include "../serialization_data_source.h" // IWYU pragma: keep
-#include "../log_entry.h"
-#include "../log_scope.h"
+#include "../audit/auditor_ref.hpp"
+#include "../audit/scope.hpp"
+#include "../audit/entry.hpp"
 #include "chain_expression.hpp"
 
 namespace docwire::pipeline
@@ -50,22 +51,27 @@ public:
     : m_data{data}
   {}
 
-  continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+  template<typename auditor_type = audit::null_auditor>
+  continuation operator()(message_ptr msg, const message_callbacks& emit_message,
+                          audit::auditor_ref<auditor_type> auditor = {});
 
 private:
   ref_or_owned<data_source> m_data;
 };
 
-inline continuation input_element::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+inline continuation input_element::operator()(message_ptr msg, const message_callbacks& emit_message,
+                                              audit::auditor_ref<auditor_type> auditor)
 {
-  DOCWIRE_LOG_SCOPE();
+  audit::scope audit_scope{auditor, audit::no_context};
   if (msg->is<pipeline::start_processing>())
   {
-    DOCWIRE_LOG_ENTRY(m_data.get());
+    audit::entry(auditor, [&]{ return "data"_v = m_data.get(); });
     return emit_message(std::move(m_data.get()));
   }
   return emit_message(std::move(msg));
 }
+
 
 template <typename ChainElement>
     requires transformer_or_consumer<ChainElement>

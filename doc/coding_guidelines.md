@@ -110,6 +110,70 @@
 
 **The Why:** We do not know the host application's hardware constraints. An embedded edge device may require a single, statically allocated global memory pool, while a high-throughput cloud backend may demand isolated, thread-local allocators for every parsed document. Forcing a specific lifecycle policy locks out enterprise integrations.
 
+### [DESIGN-CONTEXT-TIERED]
+
+**The Rule:** Contextual dependencies (allocators, auditors, error handlers,
+diagnostic sinks) must be injected using a three-tier lifecycle model:
+
+1. **Global Default:** A stateless fallback policy (e.g., null auditor,
+   system allocator) is used only when no more-specific context exists.
+
+2. **Object Context:** A component may accept a context bundle at
+   construction and store it for the lifetime of that object. The
+   destructor and all methods that do not receive a transient context must
+   use this stored object context. The stored context must be stored using
+   EBCO or `[[no_unique_address]]`; a bundle containing only stateless
+   dependencies must occupy zero bytes.
+
+3. **Method Context:** A method may accept a transient context through a
+   constrained template parameter (e.g., `auto&& ctx`). When supplied, it
+   overrides the object context for that call only and is never stored.
+
+**The Why:** Destructors cannot receive arguments. Storing tier 2 at
+construction guarantees that resource allocation and teardown use the same
+policies. Tier 3 allows transient scratch allocators, tracing, or
+host-specific overrides without contaminating the object's long-lived state.
+
+### [DESIGN-CONTEXT-BUNDLE]
+
+**The Rule:** Components needing more than one contextual dependency must
+accept a single lightweight context bundle rather than an ever-growing list
+of individual policy parameters.
+
+A context bundle must:
+
+1. Be a stateless, value-semantic aggregate of policy objects.
+2. Avoid owning external resources itself; it only provides access to them.
+3. Remain empty when all contained policies are empty.
+
+Provider requirements must be expressed through concepts rather than through
+a concrete monolithic context type. A function that needs only one facility
+may accept that facility directly; a function that needs two or more
+facilities, or is a public component whose facility needs may evolve, must
+accept the context bundle.
+
+**The Why:** Passing every policy individually causes combinatorial template
+explosion. Passing one monolithic context into every leaf function creates
+hidden coupling and makes a function appear to depend on more than it uses.
+Provider concepts give both: narrow leaf functions remain reusable, while
+larger components keep a single stable injection point with zero overhead.
+
+### [DESIGN-CONTEXT-INIT]
+
+**The Rule:** Constructors must not perform fallible work. If a component
+needs fallible setup or needs a transient initialization context that differs
+from its lifetime object context, it must expose a factory method accepting
+two strongly typed wrappers: an initialization context and an object context.
+
+The object context is the one stored by the component. The initialization
+context is consumed only during factory setup and must not be retained.
+
+**The Why:** Strong wrapper types prevent accidental argument-order bugs
+between two contexts that may otherwise have identical shapes. Keeping
+failure-prone work inside a factory preserves an exception-free path returning
+`docwire::expected`. Detailed failure propagation remains governed by
+`[ERR-ROUTING-VALUE_BASED]`.
+
 ### [DESIGN-AUDIT-UNIFIED]
 
 **The Rule:** The SDK must use a single, dependency-injected `Audit` mechanism (passed strictly via the execution context) for recording telemetry and diagnostic history. The `Audit` interface must accept structured, raw C++ values and avoid premature string serialization. **Crucially, the `Audit` object must never be responsible for control-flow, panics, or system termination. Furthermore, static or global stateless `Audit` logging is strictly banned.**

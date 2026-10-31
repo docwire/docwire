@@ -17,7 +17,8 @@
 #include "ssl_certificate.h"
 #include "http_export.h"
 #include "pipeline/input_element.hpp"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/scope.hpp"
 #include "make_error.h"
 #include "message.h"
 #include "pipeline/output_element.hpp"
@@ -134,9 +135,10 @@ public:
      * This method starts the underlying network event loop and will not return
      * until stop() is called from another thread or a signal handler.
      */
-    void operator()()
+    template<typename auditor_type = audit::null_auditor>
+    void operator()(audit::auditor_ref<auditor_type> auditor = {})
     {
-        DOCWIRE_LOG_SCOPE();
+        audit::scope audit_scope{auditor, audit::no_context};
         try
         {
             m_listener.listen_after_bind();
@@ -150,9 +152,10 @@ public:
     /**
      * @brief Blocks until the server is ready to accept connections.
      */
-    void wait_until_ready()
+    template<typename auditor_type = audit::null_auditor>
+    void wait_until_ready(audit::auditor_ref<auditor_type> auditor = {})
     {
-        DOCWIRE_LOG_SCOPE();
+        audit::scope audit_scope{auditor, audit::no_context};
         m_listener.wait_until_ready();
     }
 
@@ -162,9 +165,10 @@ public:
      * This is a thread-safe method that signals the event loop to stop,
      * allowing the operator()() call to unblock and return.
      */
-    void stop()
+    template<typename auditor_type = audit::null_auditor>
+    void stop(audit::auditor_ref<auditor_type> auditor = {})
     {
-        DOCWIRE_LOG_SCOPE();
+        audit::scope audit_scope{auditor, audit::no_context};
         m_listener.stop();
     }
 
@@ -291,15 +295,37 @@ private:
     ::docwire::detail::http_listener m_listener;
 };
 
+namespace detail
+{
+DOCWIRE_HTTP_EXPORT certificate_info generate_self_signed_cert_impl(
+    const std::string& common_name,
+    const std::string& country,
+    const std::string& organization);
+}
+
 /**
  * @brief Generates a self-signed certificate and private key.
  *
  * @param common_name The common name for the certificate (e.g., "localhost" or an IP address).
  * @param country The country name for the certificate.
  * @param organization The organization name for the certificate.
+ * @param auditor Optional injected auditor for observability.
  * @return A certificate_info struct containing the private key and certificate in PEM format.
  */
-DOCWIRE_HTTP_EXPORT certificate_info generate_self_signed_cert(const std::string& common_name, const std::string& country, const std::string& organization);
+template<typename auditor_type = audit::null_auditor>
+certificate_info generate_self_signed_cert(
+    const std::string& common_name,
+    const std::string& country,
+    const std::string& organization,
+    audit::auditor_ref<auditor_type> auditor = {})
+{
+    audit::scope audit_scope{auditor, [&]{
+        return "common_name"_v = common_name,
+               "country"_v = country,
+               "organization"_v = organization;
+    }};
+    return detail::generate_self_signed_cert_impl(common_name, country, organization);
+}
 
 } // namespace docwire::http
 

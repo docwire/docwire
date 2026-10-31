@@ -18,7 +18,6 @@
 #include <string>
 #include "with_date_format.h"
 #include "convert_numeric.h"
-#include "log_scope.h"
 
 namespace docwire::convert
 {
@@ -102,7 +101,6 @@ inline std::optional<std::chrono::sys_seconds> parse_asn1(std::string_view s) no
  */
 inline std::optional<std::chrono::sys_seconds> convert_impl(with::date_format::iso8601 s, dest_type_tag<std::chrono::sys_seconds>) noexcept
 {
-    DOCWIRE_LOG_SCOPE(s);
     return detail::parse_iso8601(s.v);
 }
 /**
@@ -110,7 +108,6 @@ inline std::optional<std::chrono::sys_seconds> convert_impl(with::date_format::i
  */
 inline std::optional<std::chrono::sys_seconds> convert_impl(with::date_format::openoffice_legacy s, dest_type_tag<std::chrono::sys_seconds>) noexcept
 {
-    DOCWIRE_LOG_SCOPE(s);
     return detail::parse_openoffice_legacy(s.v);
 }
 /**
@@ -118,7 +115,6 @@ inline std::optional<std::chrono::sys_seconds> convert_impl(with::date_format::o
  */
 inline std::optional<std::chrono::sys_seconds> convert_impl(with::date_format::asn1 s, dest_type_tag<std::chrono::sys_seconds>) noexcept
 {
-    DOCWIRE_LOG_SCOPE(s);
     return detail::parse_asn1(s.v);
 }
 

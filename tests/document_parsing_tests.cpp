@@ -40,7 +40,6 @@
 #include "plain_text_exporter.h"
 #include "pipeline/function_transformer.hpp"
 #include "pipeline/input_element.hpp"
-#include "log.h"
 
 using namespace docwire;
 
@@ -410,7 +409,6 @@ TEST_P(multithreaded_test, ReadFromFileTests)
     for (auto& thread : threads)
     {
         thread.get();
-        log_entry(log::audit{}, "Thread finished successfully.");
     }
 }
 

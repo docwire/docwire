@@ -16,18 +16,26 @@
 
 #include "pipeline/element_base.hpp"
 #include "pimpl.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
 
 namespace docwire
 {
 
-class DOCWIRE_MAIL_EXPORT eml_parser : public pipeline::transformer_element<eml_parser>, public with_pimpl<eml_parser>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_MAIL_EXPORT eml_parser
+    : public pipeline::transformer_element<eml_parser<auditor_type>>,
+      public with_pimpl<eml_parser<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
 	private:
-		using with_pimpl<eml_parser>::impl;
-		friend pimpl_impl<eml_parser>;
+		using with_pimpl<eml_parser<auditor_type>>::impl;
+		using audit::with_auditor<auditor_type>::auditor;
+		friend pimpl_impl<eml_parser<auditor_type>>;
 
 	public:
-		eml_parser();
+		explicit eml_parser(audit::auditor_ref<auditor_type> auditor = {});
+
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
 
