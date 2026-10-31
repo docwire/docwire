@@ -20,6 +20,12 @@
 
 **The Why:** Implementations, helper macros, and developer tooling naturally churn over a project's lifecycle. If architectural rules are tied to specific syntax or temporary tools, the document becomes brittle, requires constant maintenance, and quickly loses authority. Abstract, physics-based rules remain timeless.
 
+### [RULES-SCOPE-ARCHITECTURAL]
+
+**The Rule:** A rule belongs in this document only if it defines project-wide architectural policy that remains valid when implementation details, syntax, or temporary migration constraints change. Rules must not describe a specific bug, a compiler workaround, or a short-term refactoring note.
+
+**The Why:** Architecture guidelines are the stable, long-lived contract. Bug lists and portability notes become stale, duplicate ordinary coding standards, and obscure the physical and structural policies the document exists to define.
+
 ### [RULES-SNIPPETS-DISTINCTION]
 
 **The Rule:** Code snippets within these guidelines contain two distinct categories of code: **Core Infrastructure** and **Domain Examples**.
@@ -178,7 +184,15 @@ failure-prone work inside a factory preserves an exception-free path returning
 
 **The Rule:** The SDK must use a single, dependency-injected `Audit` mechanism (passed strictly via the execution context) for recording telemetry and diagnostic history. The `Audit` interface must accept structured, raw C++ values and avoid premature string serialization. **Crucially, the `Audit` object must never be responsible for control-flow, panics, or system termination. Furthermore, static or global stateless `Audit` logging is strictly banned.**
 
-**The Why:** The SDK dictates the *mechanism* (emitting type-safe events); the user's host application dictates the *policy*. By receiving raw C++ objects, the user can use zero-cost compile-time templates to route data to an Arena-backed container, serialize it to a JSON logger, or completely optimize it out of existence in Release builds via Dead Code Elimination. Restricting `Audit` from handling crashes ensures it remains decoupled from the low-level `SafetyPolicy`. Banning static logging ensures that all telemetry remains thread-local and lock-free, honoring the core dependency injection architecture.
+**Secrets:** Audit telemetry must never emit raw secrets, credentials, tokens, passwords, API keys, or similar sensitive values.
+
+When flow visibility is useful, emit only a non-sensitive indicator:
+
+```cpp
+"has_oauth2_bearer_token"_v = !oauth2_bearer_token.empty()
+```
+
+**The Why:** The SDK dictates the *mechanism* (emitting type-safe events); the user's host application dictates the *policy*. By receiving raw C++ objects, the user can use zero-cost compile-time templates to route data to an Arena-backed container, serialize it to a JSON logger, or completely optimize it out of existence in Release builds via Dead Code Elimination. Restricting `Audit` from handling crashes ensures it remains decoupled from the low-level `SafetyPolicy`. Banning static logging ensures that all telemetry remains thread-local and lock-free, honoring the core dependency injection architecture. Audit sinks may write to local logs, files, or remote endpoints; raw secrets in audit context are a security and privacy risk independent of storage location.
 
 ### [DESIGN-SAFETY-POLICY_BASED]
 
@@ -413,6 +427,19 @@ auto err2 = memory_pipe();
 **The Rule:** Internal implementations must be highly granular (one class, template, or functor per header file). However, the public API must hide this granular tree by providing Boost-style aggregate "umbrella" headers at the root of each domain (e.g., `src/content_type.hpp` simply includes all necessary internal content type detection headers).
 
 **The Why:** Granular internal headers guarantee fast, highly parallelized compile times and clean git commits. Umbrella headers provide excellent developer ergonomics, allowing end-users to consume entire modules with a single, clean `#include` statement without needing to understand our internal file tree.
+
+### [BUILD-HEADERS-RELATIVE_INCLUDES]
+
+**The Rule:** Public headers in nested directories must include sibling and parent headers using paths relative to the including file.
+
+Example from a header in `src/audit/`:
+
+```cpp
+#include "core.hpp"
+#include "../source_location.h"
+```
+
+**The Why:** File-relative includes resolve identically in the source tree and the installed SDK, without requiring consumers to add internal source-root-like include directories such as `include/docwire`.
 
 ### [BUILD-LINK-AGNOSTIC]
 

@@ -9,6 +9,16 @@
 namespace docwire::audit
 {
 
+/**
+ * @brief Lightweight non-owning reference to an injected auditor.
+ *
+ * In the general case this stores only a pointer to the auditor. The
+ * empty-auditor specialization is stateless and usually consumes no storage.
+ *
+ * Intended to be accepted and returned by value. Callers should not wrap it
+ * again with `auditor_ref<auditor_type>(...)` after obtaining it from an
+ * owning component.
+ */
 template<typename auditor_type>
 class auditor_ref
 {
@@ -24,6 +34,13 @@ private:
     auditor_type* m_ptr;
 };
 
+/**
+ * @brief Empty-auditor specialization of auditor_ref.
+ *
+ * This specialization has zero data members when the auditor is empty and
+ * provides a default constructor only for default-constructible empty
+ * auditors.
+ */
 template<typename auditor_type>
 requires std::is_empty_v<auditor_type>
 class auditor_ref<auditor_type> : public auditor_type

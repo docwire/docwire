@@ -16,6 +16,12 @@ protected:
     explicit with_auditor(auditor_ref<auditor_type> auditor)
         : auditor_ref<auditor_type>(auditor) {}
 
+    /**
+     * @brief Returns a lightweight auditor_ref by value.
+     *
+     * This handle should be passed directly to child components and audit helpers;
+     * there is no need to construct another auditor_ref around the result.
+     */
     auditor_ref<auditor_type> auditor() noexcept
     {
         return static_cast<auditor_ref<auditor_type>&>(*this);

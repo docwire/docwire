@@ -48,15 +48,15 @@ class composition
 {
 public:
     /**
-     * @brief Constructs every composed element with the same arguments.
+     * @brief Constructs every composed element with the same shared arguments.
      *
-     * The most common case for SDK parsers is:
-     * `composition<ElementTypes...>{audit::auditor_ref<auditor_type>{auditor}}`.
+     * The most common use is dependency injection with lightweight handles such
+     * as `audit::auditor_ref`.
      *
-     * @note Constructor arguments are copied into each composed element.
-     *       This is intended for shared dependencies such as auditor
-     *       or allocator wrappers. To move already-created processing
-     *       elements, use from_elements_t or pipeline::compose(...).
+     * @note Shared constructor arguments are copied into each composed element.
+     *       Do not use this constructor to forward a single expiring rvalue that
+     *       should be consumed only once. To move already-created processing
+     *       elements into a composition, use from_elements_t or pipeline::compose(...).
      */
     template<typename... Args>
         requires (std::constructible_from<ElementTypes, Args...> && ...)
@@ -73,10 +73,10 @@ public:
     struct from_elements_t {};
 
     /**
-     * @brief Constructs the composition from pre-built element instances.
+     * @brief Constructs a composition from already-created element instances.
      *
-     * The chain is built using a left-associative fold of `operator|`, matching
-     * the static `chain_type_t` layout used internally.
+     * This is the correct overload for moving stateful pipeline elements; the
+     * elements are consumed by value and wired together with operator|.
      */
     template<typename... Es>
     explicit composition(from_elements_t, Es&&... elements)
