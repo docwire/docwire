@@ -16,6 +16,7 @@
 #include "rtf_export.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 
 namespace docwire
 {
@@ -26,7 +27,12 @@ class DOCWIRE_RTF_EXPORT rtf_parser
       private audit::with_auditor<auditor_type>
 {
 public:
-	explicit rtf_parser(audit::auditor_ref<auditor_type> auditor = {});
+	rtf_parser()
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
+		: rtf_parser(audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit rtf_parser(audit::auditor_ref<auditor_type> auditor);
 
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 

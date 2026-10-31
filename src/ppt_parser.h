@@ -16,6 +16,7 @@
 #include "pipeline/element_base.hpp"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 
 namespace docwire
 {
@@ -28,7 +29,12 @@ class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser
       private audit::with_auditor<auditor_type>
 {
 public:
-	explicit ppt_parser(audit::auditor_ref<auditor_type> auditor = {});
+	ppt_parser()
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
+		: ppt_parser(audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit ppt_parser(audit::auditor_ref<auditor_type> auditor);
 
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 

@@ -52,8 +52,19 @@ public:
   {}
 
   template<typename auditor_type = audit::null_auditor>
-  continuation operator()(message_ptr msg, const message_callbacks& emit_message,
-                          audit::auditor_ref<auditor_type> auditor = {});
+      requires std::default_initializable<audit::auditor_ref<auditor_type>>
+  continuation operator()(message_ptr msg, const message_callbacks& emit_message)
+  {
+      return operator()<auditor_type>(
+          std::move(msg),
+          emit_message,
+          audit::auditor_ref<auditor_type>{});
+  }
+
+  template<typename auditor_type>
+  continuation operator()(message_ptr msg,
+                          const message_callbacks& emit_message,
+                          audit::auditor_ref<auditor_type> auditor);
 
 private:
   ref_or_owned<data_source> m_data;

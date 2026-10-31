@@ -18,6 +18,7 @@
 #include "xlsb_export.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 
 namespace docwire
 {
@@ -36,7 +37,12 @@ private:
 	using audit::with_auditor<auditor_type>::auditor;
 
 public:
-	explicit xlsb_parser(audit::auditor_ref<auditor_type> auditor = {});
+	xlsb_parser()
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
+		: xlsb_parser(audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit xlsb_parser(audit::auditor_ref<auditor_type> auditor);
 
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };

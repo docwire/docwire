@@ -17,6 +17,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 #include <string>
 
 namespace docwire
@@ -36,7 +37,12 @@ private:
     using audit::with_auditor<auditor_type>::auditor;
 
 public:
-    explicit xls_parser(audit::auditor_ref<auditor_type> auditor = {});
+    xls_parser()
+        requires std::default_initializable<audit::auditor_ref<auditor_type>>
+        : xls_parser(audit::auditor_ref<auditor_type>{})
+    {}
+
+    explicit xls_parser(audit::auditor_ref<auditor_type> auditor);
 
     continuation operator()(message_ptr msg, const message_callbacks& emit_message);
     std::string parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message);

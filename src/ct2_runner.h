@@ -16,6 +16,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 #include <filesystem>
 #include <vector>
 #include <string>
@@ -43,9 +44,14 @@ public:
      * @param model_data_path Path to the folder containing model files.
      * @param auditor Optional injected auditor for observability.
      */
+    ct2_runner(const std::filesystem::path& model_data_path)
+        requires std::default_initializable<audit::auditor_ref<auditor_type>>
+        : ct2_runner(model_data_path, audit::auditor_ref<auditor_type>{})
+    {}
+
     explicit ct2_runner(
         const std::filesystem::path& model_data_path,
-        audit::auditor_ref<auditor_type> auditor = {});
+        audit::auditor_ref<auditor_type> auditor);
 
     /**
      * @brief Process input text using the model.

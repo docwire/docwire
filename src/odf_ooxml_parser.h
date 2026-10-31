@@ -17,6 +17,7 @@
 #include "data_source.h"
 #include "odf_ooxml_export.h"
 #include "safety_policy.h"
+#include <concepts>
 
 namespace docwire
 {
@@ -69,7 +70,12 @@ class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser
     /**
      * @brief Constructs the parser with an injected auditor.
      */
-    explicit odf_ooxml_parser(audit::auditor_ref<auditor_type> auditor = {});
+    odf_ooxml_parser()
+        requires std::default_initializable<audit::auditor_ref<auditor_type>>
+        : odf_ooxml_parser(audit::auditor_ref<auditor_type>{})
+    {}
+
+    explicit odf_ooxml_parser(audit::auditor_ref<auditor_type> auditor);
     /**
      * @brief Processes a message in the parsing chain.
      * @return The continuation status.

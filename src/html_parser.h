@@ -16,6 +16,7 @@
 #include "audit.hpp"
 #include "pipeline/element_base.hpp"
 #include "pimpl.h"
+#include <concepts>
 
 namespace docwire
 {
@@ -33,7 +34,12 @@ class DOCWIRE_HTML_EXPORT html_parser
 
 	public:
 
-		explicit html_parser(audit::auditor_ref<auditor_type> auditor = {});
+		html_parser()
+			requires std::default_initializable<audit::auditor_ref<auditor_type>>
+			: html_parser(audit::auditor_ref<auditor_type>{})
+		{}
+
+		explicit html_parser(audit::auditor_ref<auditor_type> auditor);
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 		///turns off charset decoding. It may be useful, if we want to decode data ourself (EML parser is an example).

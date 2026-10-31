@@ -18,6 +18,7 @@
 #include "message.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 
 namespace docwire
 {
@@ -33,7 +34,12 @@ private:
 	friend pimpl_impl<pdf_parser<auditor_type>>;
 
 public:
-	explicit pdf_parser(audit::auditor_ref<auditor_type> auditor = {});
+	pdf_parser()
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
+		: pdf_parser(audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit pdf_parser(audit::auditor_ref<auditor_type> auditor);
 
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };

@@ -334,11 +334,25 @@ DOCWIRE_HTTP_EXPORT certificate_info generate_self_signed_cert_impl(
  * @return A certificate_info struct containing the private key and certificate in PEM format.
  */
 template<typename auditor_type = audit::null_auditor>
+    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+certificate_info generate_self_signed_cert(
+    const std::string& common_name,
+    const std::string& country,
+    const std::string& organization)
+{
+    return generate_self_signed_cert<auditor_type>(
+        common_name,
+        country,
+        organization,
+        audit::auditor_ref<auditor_type>{});
+}
+
+template<typename auditor_type>
 certificate_info generate_self_signed_cert(
     const std::string& common_name,
     const std::string& country,
     const std::string& organization,
-    audit::auditor_ref<auditor_type> auditor = {})
+    audit::auditor_ref<auditor_type> auditor)
 {
     audit::scope audit_scope{auditor, [&]{
         return "common_name"_v = common_name,

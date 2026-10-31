@@ -16,6 +16,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -29,9 +30,14 @@ class DOCWIRE_AI_CT2_EXPORT tokenizer
       private audit::with_auditor<auditor_type>
 {
 public:
+    tokenizer(const std::filesystem::path& model_data_path)
+        requires std::default_initializable<audit::auditor_ref<auditor_type>>
+        : tokenizer(model_data_path, audit::auditor_ref<auditor_type>{})
+    {}
+
     explicit tokenizer(
         const std::filesystem::path& model_data_path,
-        audit::auditor_ref<auditor_type> auditor = {});
+        audit::auditor_ref<auditor_type> auditor);
 
     std::vector<std::string> tokenize(const std::string& input);
 

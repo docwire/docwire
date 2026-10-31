@@ -17,6 +17,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 
 namespace docwire
 {
@@ -33,10 +34,18 @@ class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser
 public:
 	explicit txt_parser(audit::auditor_ref<auditor_type> auditor);
 
+	txt_parser(parse_paragraphs parse_paragraphs_arg = parse_paragraphs{true},
+	           parse_lines parse_lines_arg = parse_lines{true})
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
+		: txt_parser(parse_paragraphs_arg,
+		             parse_lines_arg,
+		             audit::auditor_ref<auditor_type>{})
+	{}
+
 	explicit txt_parser(
-		parse_paragraphs parse_paragraphs_arg = parse_paragraphs{true},
-		parse_lines parse_lines_arg = parse_lines{true},
-		audit::auditor_ref<auditor_type> auditor = {});
+		parse_paragraphs parse_paragraphs_arg,
+		parse_lines parse_lines_arg,
+		audit::auditor_ref<auditor_type> auditor);
 
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 

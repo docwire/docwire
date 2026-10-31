@@ -18,6 +18,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 
 namespace docwire
 {
@@ -34,7 +35,12 @@ class DOCWIRE_MAIL_EXPORT eml_parser
 		friend pimpl_impl<eml_parser<auditor_type>>;
 
 	public:
-		explicit eml_parser(audit::auditor_ref<auditor_type> auditor = {});
+		eml_parser()
+			requires std::default_initializable<audit::auditor_ref<auditor_type>>
+			: eml_parser(audit::auditor_ref<auditor_type>{})
+		{}
+
+		explicit eml_parser(audit::auditor_ref<auditor_type> auditor);
 
 		continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
