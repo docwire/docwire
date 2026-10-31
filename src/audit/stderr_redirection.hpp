@@ -53,7 +53,7 @@ class stderr_redirection
 {
 public:
 	stderr_redirection(const ::docwire::source_location& location = ::docwire::source_location::current())
-		requires std::default_initializable<auditor_type>
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: stderr_redirection(
 			::docwire::audit::auditor_ref<auditor_type>{},
 			location)
