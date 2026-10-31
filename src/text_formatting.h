@@ -12,6 +12,8 @@
 #ifndef DOCWIRE_TEXT_FORMATTING_H
 #define DOCWIRE_TEXT_FORMATTING_H
 
+#include <concepts>
+
 #include <cstdio>
 #include <string>
 #include <vector>

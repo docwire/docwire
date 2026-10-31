@@ -12,6 +12,8 @@
 #ifndef DOCWIRE_HTTP_SERVER_H
 #define DOCWIRE_HTTP_SERVER_H
 
+#include <concepts>
+
 #include "data_source.h"
 #include "http_listener.h"
 #include "ssl_certificate.h"
@@ -153,7 +155,13 @@ public:
      * @brief Blocks until the server is ready to accept connections.
      */
     template<typename auditor_type = audit::null_auditor>
-    void wait_until_ready(audit::auditor_ref<auditor_type> auditor = {})
+    void wait_until_ready()
+    	requires std::default_initializable<auditor_type>
+    {
+    	wait_until_ready(audit::auditor_ref<auditor_type>{});
+    }
+
+    void wait_until_ready(audit::auditor_ref<auditor_type> auditor)
     {
         audit::scope audit_scope{auditor, audit::no_context};
         m_listener.wait_until_ready();
@@ -166,7 +174,13 @@ public:
      * allowing the operator()() call to unblock and return.
      */
     template<typename auditor_type = audit::null_auditor>
-    void stop(audit::auditor_ref<auditor_type> auditor = {})
+    void stop()
+    	requires std::default_initializable<auditor_type>
+    {
+    	stop(audit::auditor_ref<auditor_type>{});
+    }
+
+    void stop(audit::auditor_ref<auditor_type> auditor)
     {
         audit::scope audit_scope{auditor, audit::no_context};
         m_listener.stop();
