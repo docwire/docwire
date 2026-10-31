@@ -243,7 +243,7 @@ namespace
 		{
 			std::string codepage = get_codepage_from_document_summary_info(
 				storage,
-				audit::auditor_ref<auditor_type>(auditor));
+				auditor);
 			TextConverter tc(codepage);
 			text = ustring_to_string(tc.convert(text));
 		}
