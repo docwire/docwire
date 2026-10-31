@@ -335,20 +335,6 @@ DOCWIRE_HTTP_EXPORT certificate_info generate_self_signed_cert_impl(
  * @param auditor Optional injected auditor for observability.
  * @return A certificate_info struct containing the private key and certificate in PEM format.
  */
-template<typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
-certificate_info generate_self_signed_cert(
-    const std::string& common_name,
-    const std::string& country,
-    const std::string& organization)
-{
-    return generate_self_signed_cert<auditor_type>(
-        common_name,
-        country,
-        organization,
-        audit::auditor_ref<auditor_type>{});
-}
-
 template<typename auditor_type>
 certificate_info generate_self_signed_cert(
     const std::string& common_name,
@@ -362,6 +348,20 @@ certificate_info generate_self_signed_cert(
                "organization"_v = organization;
     }};
     return detail::generate_self_signed_cert_impl(common_name, country, organization);
+}
+
+template<typename auditor_type = audit::null_auditor>
+    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+certificate_info generate_self_signed_cert(
+    const std::string& common_name,
+    const std::string& country,
+    const std::string& organization)
+{
+    return generate_self_signed_cert<auditor_type>(
+        common_name,
+        country,
+        organization,
+        audit::auditor_ref<auditor_type>{});
 }
 
 } // namespace docwire::http
