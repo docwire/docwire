@@ -138,20 +138,22 @@ private:
  * @warning This function relies on a single-pass XML reader.
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
-template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
-descendants_view<safety_level, auditor_type> descendants(
-	const node_ref<safety_level>& node)
-{
-	return descendants<safety_level, auditor_type>(node, audit::auditor_ref<auditor_type>{});
-}
-
 template <safety_policy safety_level, typename auditor_type>
 descendants_view<safety_level, auditor_type> descendants(
 	const node_ref<safety_level>& node,
 	audit::auditor_ref<auditor_type> auditor)
 {
 	return descendants_view<safety_level, auditor_type>{node.state(), node.depth(), auditor};
+}
+
+template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
+    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+descendants_view<safety_level, auditor_type> descendants(
+	const node_ref<safety_level>& node)
+{
+	return descendants<safety_level, auditor_type>(
+		node,
+		audit::auditor_ref<auditor_type>{});
 }
 
 /**
@@ -161,14 +163,6 @@ descendants_view<safety_level, auditor_type> descendants(
  * @warning This function relies on a single-pass XML reader.
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
-template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
-descendants_view<safety_level, auditor_type> descendants(
-	reader<safety_level>& reader)
-{
-	return descendants<safety_level, auditor_type>(reader, audit::auditor_ref<auditor_type>{});
-}
-
 template <safety_policy safety_level, typename auditor_type>
 descendants_view<safety_level, auditor_type> descendants(
 	reader<safety_level>& reader,
@@ -176,6 +170,16 @@ descendants_view<safety_level, auditor_type> descendants(
 {
 	return descendants_view<safety_level, auditor_type>{
 		assume_not_null(std::make_shared<iterator_state<safety_level>>(reader)), -1, auditor};
+}
+
+template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
+    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+descendants_view<safety_level, auditor_type> descendants(
+	reader<safety_level>& reader)
+{
+	return descendants<safety_level, auditor_type>(
+		reader,
+		audit::auditor_ref<auditor_type>{});
 }
 
 }
