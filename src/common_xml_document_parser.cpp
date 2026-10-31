@@ -781,4 +781,7 @@ template class pimpl_impl<common_xml_document_parser<relaxed, audit::null_audito
 template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<strict, docwire::audit::json_stream_auditor>;
 template class pimpl_impl<common_xml_document_parser<strict, docwire::audit::json_stream_auditor>>;
 
+template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, docwire::audit::json_stream_auditor>;
+template class pimpl_impl<common_xml_document_parser<relaxed, docwire::audit::json_stream_auditor>>;
+
 } // namespace docwire
