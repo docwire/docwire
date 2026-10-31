@@ -26,7 +26,14 @@ namespace docwire
 using svector = std::vector<std::string>;
 
 template<typename auditor_type = audit::null_auditor>
-inline int prepareTable(std::vector<svector>& p_table, audit::auditor_ref<auditor_type> auditor = {})
+    requires std::default_initializable<auditor_type>
+inline int prepareTable(std::vector<svector>& p_table)
+{
+	return prepareTable<auditor_type>(p_table, audit::auditor_ref<auditor_type>{});
+}
+
+template<typename auditor_type>
+inline int prepareTable(std::vector<svector>& p_table, audit::auditor_ref<auditor_type> auditor)
 {
 	audit::scope audit_scope{auditor, audit::no_context};
 	if (p_table.empty())
@@ -48,7 +55,14 @@ inline int prepareTable(std::vector<svector>& p_table, audit::auditor_ref<audito
 }
 
 template<typename auditor_type = audit::null_auditor>
-inline int prepareList(std::vector<std::string>& p_list, audit::auditor_ref<auditor_type> auditor = {})
+    requires std::default_initializable<auditor_type>
+inline int prepareList(std::vector<std::string>& p_list)
+{
+	return prepareList<auditor_type>(p_list, audit::auditor_ref<auditor_type>{});
+}
+
+template<typename auditor_type>
+inline int prepareList(std::vector<std::string>& p_list, audit::auditor_ref<auditor_type> auditor)
 {
 	audit::scope audit_scope{auditor, audit::no_context};
 	if (p_list.empty())
@@ -67,7 +81,14 @@ inline int prepareList(std::vector<std::string>& p_list, audit::auditor_ref<audi
 }
 
 template<typename auditor_type = audit::null_auditor>
-inline std::string formatTable(std::vector<svector>& mcols, audit::auditor_ref<auditor_type> auditor = {})
+    requires std::default_initializable<auditor_type>
+inline std::string formatTable(std::vector<svector>& mcols)
+{
+	return formatTable<auditor_type>(mcols, audit::auditor_ref<auditor_type>{});
+}
+
+template<typename auditor_type>
+inline std::string formatTable(std::vector<svector>& mcols, audit::auditor_ref<auditor_type> auditor)
 {
 	audit::scope audit_scope{auditor, audit::no_context};
 	std::string table_out;
@@ -91,7 +112,14 @@ inline std::string formatTable(std::vector<svector>& mcols, audit::auditor_ref<a
 }
 
 template<typename auditor_type = audit::null_auditor>
-inline std::string formatUrl(const std::string& mlink_url, const std::string& mlink_text, audit::auditor_ref<auditor_type> auditor = {})
+    requires std::default_initializable<auditor_type>
+inline std::string formatUrl(const std::string& mlink_url, const std::string& mlink_text)
+{
+	return formatUrl<auditor_type>(mlink_url, mlink_text, audit::auditor_ref<auditor_type>{});
+}
+
+template<typename auditor_type>
+inline std::string formatUrl(const std::string& mlink_url, const std::string& mlink_text, audit::auditor_ref<auditor_type> auditor)
 {
 	audit::scope audit_scope{auditor, audit::no_context};
 	std::string u_url;
@@ -104,7 +132,14 @@ inline std::string formatUrl(const std::string& mlink_url, const std::string& ml
 }
 
 template<typename auditor_type = audit::null_auditor>
-inline std::string formatList(std::vector<std::string>& mlist, audit::auditor_ref<auditor_type> auditor = {})
+    requires std::default_initializable<auditor_type>
+inline std::string formatList(std::vector<std::string>& mlist)
+{
+	return formatList<auditor_type>(mlist, audit::auditor_ref<auditor_type>{});
+}
+
+template<typename auditor_type>
+inline std::string formatList(std::vector<std::string>& mlist, audit::auditor_ref<auditor_type> auditor)
 {
 	audit::scope audit_scope{auditor, audit::no_context};
 	std::string list_out;
@@ -118,7 +153,14 @@ inline std::string formatList(std::vector<std::string>& mlist, audit::auditor_re
 }
 
 template<typename auditor_type = audit::null_auditor>
-inline std::string formatNumberedList(std::vector<std::string>& mlist, audit::auditor_ref<auditor_type> auditor = {})
+    requires std::default_initializable<auditor_type>
+inline std::string formatNumberedList(std::vector<std::string>& mlist)
+{
+	return formatNumberedList<auditor_type>(mlist, audit::auditor_ref<auditor_type>{});
+}
+
+template<typename auditor_type>
+inline std::string formatNumberedList(std::vector<std::string>& mlist, audit::auditor_ref<auditor_type> auditor)
 {
 	audit::scope audit_scope{auditor, audit::no_context};
 	std::string list_out;

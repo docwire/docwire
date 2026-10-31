@@ -7,6 +7,7 @@
 #include "../serialization_base.h"
 #include "../source_location.h"
 
+#include <concepts>
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -51,8 +52,15 @@ template<typename auditor_type = ::docwire::audit::null_auditor>
 class stderr_redirection
 {
 public:
+	stderr_redirection(const ::docwire::source_location& location = ::docwire::source_location::current())
+		requires std::default_initializable<auditor_type>
+		: stderr_redirection(
+			::docwire::audit::auditor_ref<auditor_type>{},
+			location)
+	{}
+
 	explicit stderr_redirection(
-		::docwire::audit::auditor_ref<auditor_type> auditor = {},
+		::docwire::audit::auditor_ref<auditor_type> auditor,
 		const ::docwire::source_location& location = ::docwire::source_location::current())
 		: m_auditor{auditor}
 	{

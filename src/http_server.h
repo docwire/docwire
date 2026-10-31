@@ -138,7 +138,14 @@ public:
      * until stop() is called from another thread or a signal handler.
      */
     template<typename auditor_type = audit::null_auditor>
-    void operator()(audit::auditor_ref<auditor_type> auditor = {})
+    void operator()()
+        requires std::default_initializable<auditor_type>
+    {
+        operator()(audit::auditor_ref<auditor_type>{});
+    }
+
+    template<typename auditor_type>
+    void operator()(audit::auditor_ref<auditor_type> auditor)
     {
         audit::scope audit_scope{auditor, audit::no_context};
         try
