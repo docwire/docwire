@@ -18,6 +18,7 @@
 #include <filesystem>
 #include "language.h"
 #include "ocr_export.h"
+#include <concepts>
 #include <optional>
 #include "pimpl.h"
 #include <vector>
@@ -51,11 +52,23 @@ private:
 
 public:
 
-    explicit ocr_parser(const std::vector<language>& languages = {},
+    ocr_parser(const std::vector<language>& languages = {},
         ocr_confidence_threshold ocr_confidence_threshold_arg = {},
         ocr_timeout ocr_timeout_arg = {},
-        ocr_data_path ocr_data_path_arg = {},
-        audit::auditor_ref<auditor_type> auditor = {});
+        ocr_data_path ocr_data_path_arg = {})
+        requires std::default_initializable<auditor_type>
+        : ocr_parser(languages,
+              ocr_confidence_threshold_arg,
+              ocr_timeout_arg,
+              ocr_data_path_arg,
+              audit::auditor_ref<auditor_type>{})
+    {}
+
+    explicit ocr_parser(const std::vector<language>& languages,
+        ocr_confidence_threshold ocr_confidence_threshold_arg,
+        ocr_timeout ocr_timeout_arg,
+        ocr_data_path ocr_data_path_arg,
+        audit::auditor_ref<auditor_type> auditor);
 
     continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 

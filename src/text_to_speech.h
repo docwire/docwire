@@ -18,6 +18,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 #include <string>
 
 namespace docwire
@@ -45,8 +46,17 @@ public:
 	text_to_speech(
 		const std::string& api_key,
 		text_to_speech_model model = text_to_speech_model::gpt_4o_mini_tts,
-		text_to_speech_voice voice = text_to_speech_voice::alloy,
-		audit::auditor_ref<auditor_type> auditor = {});
+		text_to_speech_voice voice = text_to_speech_voice::alloy)
+		requires std::default_initializable<auditor_type>
+		: text_to_speech(api_key, model, voice,
+		                 audit::auditor_ref<auditor_type>{})
+	{}
+
+	text_to_speech(
+		const std::string& api_key,
+		text_to_speech_model model,
+		text_to_speech_voice voice,
+		audit::auditor_ref<auditor_type> auditor);
 
 	/**
 	* @brief Executes transform operation for given node data.

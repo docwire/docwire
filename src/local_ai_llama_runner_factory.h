@@ -19,6 +19,7 @@
 #include "audit/auditor_ref.hpp"
 #include "audit/core.hpp"
 
+#include <concepts>
 #include <filesystem>
 #include <memory>
 #include <utility>
@@ -40,8 +41,16 @@ inline model_inference_config default_config(std::filesystem::path model_path)
 
 #ifdef DOCWIRE_GRANITE
 template<typename auditor_type = docwire::audit::null_auditor>
+    requires std::default_initializable<auditor_type>
+inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
+{
+    return make_default_runner<auditor_type>(
+        docwire::audit::auditor_ref<auditor_type>{});
+}
+
+template<typename auditor_type>
 inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner(
-    docwire::audit::auditor_ref<auditor_type> auditor = {})
+    docwire::audit::auditor_ref<auditor_type> auditor)
 {
     return std::make_shared<docwire::ai::llama::llama_runner<auditor_type>>(
         default_config(docwire::ai::llama::granite_model_path()),
@@ -50,9 +59,18 @@ inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner(
 #endif
 
 template<typename auditor_type = docwire::audit::null_auditor>
+    requires std::default_initializable<auditor_type>
+inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
+    const std::filesystem::path& model_path)
+{
+    return make_runner<auditor_type>(
+        model_path, docwire::audit::auditor_ref<auditor_type>{});
+}
+
+template<typename auditor_type>
 inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
     const std::filesystem::path& model_path,
-    docwire::audit::auditor_ref<auditor_type> auditor = {})
+    docwire::audit::auditor_ref<auditor_type> auditor)
 {
     return std::make_shared<docwire::ai::llama::llama_runner<auditor_type>>(
         default_config(std::filesystem::path{model_path}),
@@ -60,9 +78,18 @@ inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
 }
 
 template<typename auditor_type = docwire::audit::null_auditor>
+    requires std::default_initializable<auditor_type>
+inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
+    model_inference_config config)
+{
+    return make_runner<auditor_type>(
+        std::move(config), docwire::audit::auditor_ref<auditor_type>{});
+}
+
+template<typename auditor_type>
 inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
     model_inference_config config,
-    docwire::audit::auditor_ref<auditor_type> auditor = {})
+    docwire::audit::auditor_ref<auditor_type> auditor)
 {
     return std::make_shared<docwire::ai::llama::llama_runner<auditor_type>>(
         std::move(config),

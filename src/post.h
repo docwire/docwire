@@ -17,6 +17,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 #include <filesystem>
 #include <map>
 
@@ -45,8 +46,19 @@ public:
 	post(
 		const std::string& url,
 		const std::string& oauth2_bearer_token = "",
-		ssl_verify_peer ssl_verify_peer_v = {true},
-		audit::auditor_ref<auditor_type> auditor = {});
+		ssl_verify_peer ssl_verify_peer_v = {true})
+		requires std::default_initializable<auditor_type>
+		: post(url,
+		       oauth2_bearer_token,
+		       ssl_verify_peer_v,
+		       audit::auditor_ref<auditor_type>{})
+	{}
+
+	post(
+		const std::string& url,
+		const std::string& oauth2_bearer_token,
+		ssl_verify_peer ssl_verify_peer_v,
+		audit::auditor_ref<auditor_type> auditor);
 
 	post(
 		const std::string& url,
@@ -54,8 +66,25 @@ public:
 		const std::string& pipe_field_name,
 		const default_file_name& default_file_name,
 		const std::string& oauth2_bearer_token = "",
-		ssl_verify_peer ssl_verify_peer_v = {true},
-		audit::auditor_ref<auditor_type> auditor = {});
+		ssl_verify_peer ssl_verify_peer_v = {true})
+		requires std::default_initializable<auditor_type>
+		: post(url,
+		       form,
+		       pipe_field_name,
+		       default_file_name,
+		       oauth2_bearer_token,
+		       ssl_verify_peer_v,
+		       audit::auditor_ref<auditor_type>{})
+	{}
+
+	post(
+		const std::string& url,
+		const std::map<std::string, std::string>& form,
+		const std::string& pipe_field_name,
+		const default_file_name& default_file_name,
+		const std::string& oauth2_bearer_token,
+		ssl_verify_peer ssl_verify_peer_v,
+		audit::auditor_ref<auditor_type> auditor);
 
 	/**
 	 * @brief Executes transform for the given message; consumes msg.

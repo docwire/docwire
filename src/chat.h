@@ -17,6 +17,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 #include <string>
 
 namespace docwire
@@ -73,13 +74,24 @@ class DOCWIRE_OPENAI_EXPORT chat
       private audit::with_auditor<auditor_type>
 {
 public:
-	explicit chat(
+	chat(
 		const std::string& system_message,
 		const std::string& api_key,
 		model model = model::gpt_5,
 		float temperature = 0.7,
-		image_detail image_detail = image_detail::automatic,
-		audit::auditor_ref<auditor_type> auditor = {});
+		image_detail image_detail = image_detail::automatic)
+		requires std::default_initializable<auditor_type>
+		: chat(system_message, api_key, model, temperature, image_detail,
+		       audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit chat(
+		const std::string& system_message,
+		const std::string& api_key,
+		model model,
+		float temperature,
+		image_detail image_detail,
+		audit::auditor_ref<auditor_type> auditor);
 
 	/**
 	* @brief Executes transform operation for given node data.

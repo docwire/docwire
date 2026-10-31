@@ -13,6 +13,7 @@
 #define DOCWIRE_OPENAI_EXTRACT_KEYWORDS_H
 
 #include "chat.h"
+#include <concepts>
 
 namespace docwire
 {
@@ -25,13 +26,24 @@ class DOCWIRE_OPENAI_EXPORT extract_keywords
       public chat<auditor_type>
 {
 public:
-	explicit extract_keywords(
+	extract_keywords(
 		unsigned int max_keywords,
 		const std::string& api_key,
 		model model = model::gpt_5,
 		float temperature = 0.0f,
-		image_detail image_detail = image_detail::automatic,
-		audit::auditor_ref<auditor_type> auditor = {});
+		image_detail image_detail = image_detail::automatic)
+		requires std::default_initializable<auditor_type>
+		: extract_keywords(max_keywords, api_key, model, temperature, image_detail,
+		                   audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit extract_keywords(
+		unsigned int max_keywords,
+		const std::string& api_key,
+		model model,
+		float temperature,
+		image_detail image_detail,
+		audit::auditor_ref<auditor_type> auditor);
 };
 
 } // namespace openai

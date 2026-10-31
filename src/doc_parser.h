@@ -17,6 +17,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 
 namespace docwire
 {
@@ -28,7 +29,12 @@ class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT doc_parser
       private audit::with_auditor<auditor_type>
 {
 public:
-    explicit doc_parser(audit::auditor_ref<auditor_type> auditor = {});
+    doc_parser()
+        requires std::default_initializable<auditor_type>
+        : doc_parser(audit::auditor_ref<auditor_type>{})
+    {}
+
+    explicit doc_parser(audit::auditor_ref<auditor_type> auditor);
 
     continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 

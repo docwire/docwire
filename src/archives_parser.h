@@ -16,6 +16,7 @@
 #include "pipeline/element_base.hpp"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 
 namespace docwire
 {
@@ -26,7 +27,12 @@ class DOCWIRE_ARCHIVES_EXPORT archives_parser
       private audit::with_auditor<auditor_type>
 {
 public:
-	explicit archives_parser(audit::auditor_ref<auditor_type> auditor = {})
+	archives_parser()
+		requires std::default_initializable<auditor_type>
+		: archives_parser(audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit archives_parser(audit::auditor_ref<auditor_type> auditor)
 		: audit::with_auditor<auditor_type>(auditor)
 	{}
 

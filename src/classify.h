@@ -13,6 +13,7 @@
 #define DOCWIRE_OPENAI_CLASSIFY_H
 
 #include "chat.h"
+#include <concepts>
 #include <set>
 #include <string>
 
@@ -27,13 +28,24 @@ class DOCWIRE_OPENAI_EXPORT classify
       public chat<auditor_type>
 {
 public:
-	explicit classify(
+	classify(
 		const std::set<std::string>& categories,
 		const std::string& api_key,
 		model model = model::gpt_5,
 		float temperature = 0,
-		image_detail image_detail = image_detail::automatic,
-		audit::auditor_ref<auditor_type> auditor = {});
+		image_detail image_detail = image_detail::automatic)
+		requires std::default_initializable<auditor_type>
+		: classify(categories, api_key, model, temperature, image_detail,
+		           audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit classify(
+		const std::set<std::string>& categories,
+		const std::string& api_key,
+		model model,
+		float temperature,
+		image_detail image_detail,
+		audit::auditor_ref<auditor_type> auditor);
 };
 
 } // namespace openai

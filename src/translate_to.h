@@ -13,6 +13,7 @@
 #define DOCWIRE_OPENAI_TRANSLATE_TO_H
 
 #include "chat.h"
+#include <concepts>
 
 namespace docwire
 {
@@ -25,13 +26,24 @@ class DOCWIRE_OPENAI_EXPORT translate_to
       public chat<auditor_type>
 {
 public:
-	explicit translate_to(
+	translate_to(
 		const std::string& language,
 		const std::string& api_key,
 		model model = model::gpt_5,
 		float temperature = 0.0f,
-		image_detail image_detail = image_detail::automatic,
-		audit::auditor_ref<auditor_type> auditor = {});
+		image_detail image_detail = image_detail::automatic)
+		requires std::default_initializable<auditor_type>
+		: translate_to(language, api_key, model, temperature, image_detail,
+		               audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit translate_to(
+		const std::string& language,
+		const std::string& api_key,
+		model model,
+		float temperature,
+		image_detail image_detail,
+		audit::auditor_ref<auditor_type> auditor);
 };
 
 } // namespace openai

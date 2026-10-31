@@ -18,6 +18,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 #include <string>
 
 namespace docwire
@@ -42,10 +43,17 @@ class DOCWIRE_OPENAI_EXPORT embed
       private audit::with_auditor<auditor_type>
 {
 public:
+	embed(
+		const std::string& api_key,
+		embed_model model = embed_model::text_embedding_3_small)
+		requires std::default_initializable<auditor_type>
+		: embed(api_key, model, audit::auditor_ref<auditor_type>{})
+	{}
+
 	explicit embed(
 		const std::string& api_key,
-		embed_model model = embed_model::text_embedding_3_small,
-		audit::auditor_ref<auditor_type> auditor = {});
+		embed_model model,
+		audit::auditor_ref<auditor_type> auditor);
 
 	/**
 	* @brief Executes transform operation for given node data.

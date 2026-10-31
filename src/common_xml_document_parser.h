@@ -17,6 +17,7 @@
 #include "pipeline/element_base.hpp"
 #include "pimpl.h"
 #include "xml_children.h"
+#include <concepts>
 #include <string>
 #include <vector>
 #include <map>
@@ -202,7 +203,12 @@ class common_xml_document_parser
 		/**
 		 * @brief Default constructor.
 		 */
-		common_xml_document_parser(audit::auditor_ref<auditor_type> auditor = {});
+		common_xml_document_parser()
+			requires std::default_initializable<auditor_type>
+			: common_xml_document_parser(audit::auditor_ref<auditor_type>{})
+		{}
+
+		explicit common_xml_document_parser(audit::auditor_ref<auditor_type> auditor);
 
 	protected:
 		/**

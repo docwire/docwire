@@ -18,6 +18,7 @@
 #include "../audit/scope.hpp"
 #include "../named.h"
 #include "../serialization_message.h"
+#include <concepts>
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -111,7 +112,14 @@ class chain_expression : public chain_base_t<L, R>
      *       See `message_callbacks::back`.
      */
     template<typename auditor_type = audit::null_auditor>
-    continuation operator()(message_ptr msg, audit::auditor_ref<auditor_type> auditor = {})
+        requires std::default_initializable<auditor_type>
+    continuation operator()(message_ptr msg)
+    {
+      return operator()(std::move(msg), audit::auditor_ref<auditor_type>{});
+    }
+
+    template<typename auditor_type>
+    continuation operator()(message_ptr msg, audit::auditor_ref<auditor_type> auditor)
     {
       audit::scope audit_scope{auditor, [&]{ return "msg"_v = msg; }};
       return operator()(std::move(msg),
@@ -125,8 +133,16 @@ class chain_expression : public chain_base_t<L, R>
     }
 
     template<typename auditor_type = audit::null_auditor>
+        requires std::default_initializable<auditor_type>
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message)
+    {
+      return operator()(std::move(msg), emit_message,
+                        audit::auditor_ref<auditor_type>{});
+    }
+
+    template<typename auditor_type>
     continuation operator()(message_ptr msg, const message_callbacks& emit_message,
-                            audit::auditor_ref<auditor_type> auditor = {})
+                            audit::auditor_ref<auditor_type> auditor)
     {
       audit::scope audit_scope{auditor, [&]{ return "msg"_v = msg; }};
 

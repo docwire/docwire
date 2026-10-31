@@ -17,6 +17,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 
 namespace docwire
 {
@@ -31,7 +32,12 @@ class DOCWIRE_HTML_EXPORT html_exporter
       private audit::with_auditor<auditor_type>
 {
 public:
-  explicit html_exporter(audit::auditor_ref<auditor_type> auditor = {});
+  html_exporter()
+    requires std::default_initializable<auditor_type>
+    : html_exporter(audit::auditor_ref<auditor_type>{})
+  {}
+
+  explicit html_exporter(audit::auditor_ref<auditor_type> auditor);
 
   continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 

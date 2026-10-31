@@ -19,6 +19,7 @@
 #include "audit/scope.hpp"
 #include "xml_node_ref.h"
 #include "not_null.h"
+#include <concepts>
 #include <memory>
 #include <ranges>
 
@@ -138,9 +139,17 @@ private:
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
 template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
+    requires std::default_initializable<auditor_type>
+descendants_view<safety_level, auditor_type> descendants(
+	const node_ref<safety_level>& node)
+{
+	return descendants<safety_level, auditor_type>(node, audit::auditor_ref<auditor_type>{});
+}
+
+template <safety_policy safety_level, typename auditor_type>
 descendants_view<safety_level, auditor_type> descendants(
 	const node_ref<safety_level>& node,
-	audit::auditor_ref<auditor_type> auditor = {})
+	audit::auditor_ref<auditor_type> auditor)
 {
 	return descendants_view<safety_level, auditor_type>{node.state(), node.depth(), auditor};
 }
@@ -153,9 +162,17 @@ descendants_view<safety_level, auditor_type> descendants(
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
 template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
+    requires std::default_initializable<auditor_type>
+descendants_view<safety_level, auditor_type> descendants(
+	reader<safety_level>& reader)
+{
+	return descendants<safety_level, auditor_type>(reader, audit::auditor_ref<auditor_type>{});
+}
+
+template <safety_policy safety_level, typename auditor_type>
 descendants_view<safety_level, auditor_type> descendants(
 	reader<safety_level>& reader,
-	audit::auditor_ref<auditor_type> auditor = {})
+	audit::auditor_ref<auditor_type> auditor)
 {
 	return descendants_view<safety_level, auditor_type>{
 		assume_not_null(std::make_shared<iterator_state<safety_level>>(reader)), -1, auditor};

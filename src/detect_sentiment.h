@@ -13,6 +13,7 @@
 #define DOCWIRE_OPENAI_DETECT_SENTIMENT_H
 
 #include "chat.h"
+#include <concepts>
 
 namespace docwire
 {
@@ -25,12 +26,22 @@ class DOCWIRE_OPENAI_EXPORT detect_sentiment
       public chat<auditor_type>
 {
 public:
-	explicit detect_sentiment(
+	detect_sentiment(
 		const std::string& api_key,
 		model model = model::gpt_5,
 		float temperature = 0,
-		image_detail image_detail = image_detail::automatic,
-		audit::auditor_ref<auditor_type> auditor = {});
+		image_detail image_detail = image_detail::automatic)
+		requires std::default_initializable<auditor_type>
+		: detect_sentiment(api_key, model, temperature, image_detail,
+		                   audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit detect_sentiment(
+		const std::string& api_key,
+		model model,
+		float temperature,
+		image_detail image_detail,
+		audit::auditor_ref<auditor_type> auditor);
 };
 
 } // namespace openai

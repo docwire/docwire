@@ -19,6 +19,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 
 namespace docwire::ai
 {
@@ -37,10 +38,18 @@ public:
      * @param prefix The string to prepend to the input text. Use an empty string for no prefix.
      * @param auditor Optional injected auditor for observability.
      */
+    embed(
+        not_null<std::shared_ptr<ai_runner>> model_runner,
+        std::string prefix)
+        requires std::default_initializable<auditor_type>
+        : embed(std::move(model_runner), std::move(prefix),
+                audit::auditor_ref<auditor_type>{})
+    {}
+
     explicit embed(
         not_null<std::shared_ptr<ai_runner>> model_runner,
         std::string prefix,
-        audit::auditor_ref<auditor_type> auditor = {});
+        audit::auditor_ref<auditor_type> auditor);
 
     continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 

@@ -17,6 +17,7 @@
 #include "local_ai_ct2_runner_factory.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/core.hpp"
+#include <concepts>
 
 namespace {
 
@@ -41,8 +42,13 @@ class DOCWIRE_AI_CT2_EXPORT embedder
     , public docwire::ai::embed<auditor_type>
 {
 public:
+    embedder()
+        requires std::default_initializable<auditor_type>
+        : embedder(docwire::audit::auditor_ref<auditor_type>{})
+    {}
+
     explicit embedder(
-        docwire::audit::auditor_ref<auditor_type> auditor = {})
+        docwire::audit::auditor_ref<auditor_type> auditor)
         : docwire::ai::embed<auditor_type>(
               make_embedding_runner(auditor),
               std::string{default_passage_prefix},
@@ -68,8 +74,13 @@ class DOCWIRE_AI_CT2_EXPORT embedder
     , public docwire::ai::embed<auditor_type>
 {
 public:
+    embedder()
+        requires std::default_initializable<auditor_type>
+        : embedder(docwire::audit::auditor_ref<auditor_type>{})
+    {}
+
     explicit embedder(
-        docwire::audit::auditor_ref<auditor_type> auditor = {})
+        docwire::audit::auditor_ref<auditor_type> auditor)
         : docwire::ai::embed<auditor_type>(
               make_embedding_runner(auditor),
               std::string{default_query_prefix},

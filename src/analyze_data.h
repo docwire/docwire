@@ -13,6 +13,7 @@
 #define DOCWIRE_OPENAI_ANALYZE_DATA_H
 
 #include "chat.h"
+#include <concepts>
 #include <string>
 
 namespace docwire
@@ -26,12 +27,22 @@ class DOCWIRE_OPENAI_EXPORT analyze_data
       public chat<auditor_type>
 {
 public:
-	explicit analyze_data(
+	analyze_data(
 		const std::string& api_key,
 		model model = model::gpt_5,
 		float temperature = 0.0f,
-		image_detail image_detail = image_detail::automatic,
-		audit::auditor_ref<auditor_type> auditor = {});
+		image_detail image_detail = image_detail::automatic)
+		requires std::default_initializable<auditor_type>
+		: analyze_data(api_key, model, temperature, image_detail,
+		               audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit analyze_data(
+		const std::string& api_key,
+		model model,
+		float temperature,
+		image_detail image_detail,
+		audit::auditor_ref<auditor_type> auditor);
 };
 
 } // namespace openai

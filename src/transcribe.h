@@ -17,6 +17,7 @@
 #include "pimpl.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 #include <string>
 
 namespace docwire
@@ -38,8 +39,15 @@ class DOCWIRE_OPENAI_EXPORT transcribe
 public:
 	transcribe(
 		const std::string& api_key,
-		transcribe_model model = transcribe_model::gpt_4o_transcribe,
-		audit::auditor_ref<auditor_type> auditor = {});
+		transcribe_model model = transcribe_model::gpt_4o_transcribe)
+		requires std::default_initializable<auditor_type>
+		: transcribe(api_key, model, audit::auditor_ref<auditor_type>{})
+	{}
+
+	transcribe(
+		const std::string& api_key,
+		transcribe_model model,
+		audit::auditor_ref<auditor_type> auditor);
 
 	/**
 	* @brief Executes transform operation for given node data.

@@ -16,6 +16,7 @@
 #include "audit.hpp"
 #include "pipeline/element_base.hpp"
 #include "xml_export.h"
+#include <concepts>
 
 namespace docwire
 {
@@ -30,7 +31,12 @@ class DOCWIRE_XML_EXPORT xml_parser : public pipeline::transformer_element<xml_p
 {
     using audit::with_auditor<auditor_type>::auditor;
 public:
-	explicit xml_parser(audit::auditor_ref<auditor_type> auditor = {})
+	xml_parser()
+		requires std::default_initializable<auditor_type>
+		: xml_parser(audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit xml_parser(audit::auditor_ref<auditor_type> auditor)
 		: audit::with_auditor<auditor_type>(auditor)
 	{}
 

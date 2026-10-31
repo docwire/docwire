@@ -13,6 +13,7 @@
 #define DOCWIRE_OPENAI_SUMMARIZE_H
 
 #include "chat.h"
+#include <concepts>
 
 namespace docwire
 {
@@ -25,12 +26,22 @@ class DOCWIRE_OPENAI_EXPORT summarize
       public chat<auditor_type>
 {
 public:
-	explicit summarize(
+	summarize(
 		const std::string& api_key,
 		model model = model::gpt_5,
 		float temperature = 0.0f,
-		image_detail image_detail = image_detail::automatic,
-		audit::auditor_ref<auditor_type> auditor = {});
+		image_detail image_detail = image_detail::automatic)
+		requires std::default_initializable<auditor_type>
+		: summarize(api_key, model, temperature, image_detail,
+		            audit::auditor_ref<auditor_type>{})
+	{}
+
+	explicit summarize(
+		const std::string& api_key,
+		model model,
+		float temperature,
+		image_detail image_detail,
+		audit::auditor_ref<auditor_type> auditor);
 };
 
 } // namespace openai

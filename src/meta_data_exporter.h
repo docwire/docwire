@@ -14,6 +14,7 @@
 
 #include "pipeline/element_base.hpp"
 #include "core_export.h"
+#include <concepts>
 #include <memory>
 #include <sstream>
 #include "document_elements.h"
@@ -33,7 +34,12 @@ class metadata_exporter : public pipeline::transformer_element<metadata_exporter
 {
     using audit::with_auditor<auditor_type>::auditor;
 public:
-  explicit metadata_exporter(audit::auditor_ref<auditor_type> auditor = {})
+  metadata_exporter()
+    requires std::default_initializable<auditor_type>
+    : metadata_exporter(audit::auditor_ref<auditor_type>{})
+  {}
+
+  explicit metadata_exporter(audit::auditor_ref<auditor_type> auditor)
     : audit::with_auditor<auditor_type>(auditor)
   {}
 

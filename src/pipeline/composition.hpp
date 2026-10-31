@@ -84,18 +84,35 @@ public:
     {}
 
     template<typename auditor_type = audit::null_auditor>
+        requires std::default_initializable<auditor_type>
+    continuation operator()(message_ptr msg)
+    {
+        return m_chain(std::move(msg), audit::auditor_ref<auditor_type>{});
+    }
+
+    template<typename auditor_type>
     continuation operator()(
         message_ptr msg,
-        audit::auditor_ref<auditor_type> auditor = {})
+        audit::auditor_ref<auditor_type> auditor)
     {
         return m_chain(std::move(msg), auditor);
     }
 
     template<typename auditor_type = audit::null_auditor>
+        requires std::default_initializable<auditor_type>
+    continuation operator()(
+        message_ptr msg,
+        const message_callbacks& emit_message)
+    {
+        return m_chain(std::move(msg), emit_message,
+                       audit::auditor_ref<auditor_type>{});
+    }
+
+    template<typename auditor_type>
     continuation operator()(
         message_ptr msg,
         const message_callbacks& emit_message,
-        audit::auditor_ref<auditor_type> auditor = {})
+        audit::auditor_ref<auditor_type> auditor)
     {
         return m_chain(std::move(msg), emit_message, auditor);
     }

@@ -16,6 +16,7 @@
 #include "local_ai_export.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/core.hpp"
+#include <concepts>
 
 namespace docwire::ai::local::passage
 {
@@ -31,7 +32,12 @@ class DOCWIRE_LOCAL_AI_EXPORT embedder
     , public docwire::ai::embed<auditor_type>
 {
   public:
-    explicit embedder(audit::auditor_ref<auditor_type> auditor = {});
+    embedder()
+        requires std::default_initializable<auditor_type>
+        : embedder(audit::auditor_ref<auditor_type>{})
+    {}
+
+    explicit embedder(audit::auditor_ref<auditor_type> auditor);
 };
 } // namespace docwire::ai::local::passage
 
@@ -50,7 +56,12 @@ class DOCWIRE_LOCAL_AI_EXPORT embedder
     , public docwire::ai::embed<auditor_type>
 {
   public:
-    explicit embedder(audit::auditor_ref<auditor_type> auditor = {});
+    embedder()
+        requires std::default_initializable<auditor_type>
+        : embedder(audit::auditor_ref<auditor_type>{})
+    {}
+
+    explicit embedder(audit::auditor_ref<auditor_type> auditor);
 };
 
 } // namespace docwire::ai::local::query
