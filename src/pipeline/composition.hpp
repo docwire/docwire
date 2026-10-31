@@ -5,6 +5,7 @@
 #include "element_base.hpp"
 #include "../audit/auditor_ref.hpp"
 #include "../audit/core.hpp"
+#include <concepts>
 #include <type_traits>
 #include <utility>
 
@@ -51,6 +52,11 @@ public:
      *
      * The most common case for SDK parsers is:
      * `composition<ElementTypes...>{audit::auditor_ref<auditor_type>{auditor}}`.
+     *
+     * @note Constructor arguments are copied into each composed element.
+     *       This is intended for shared dependencies such as auditor
+     *       or allocator wrappers. To move already-created processing
+     *       elements, use from_elements_t or pipeline::compose(...).
      */
     template<typename... Args>
         requires (std::constructible_from<ElementTypes, Args...> && ...)
@@ -98,7 +104,7 @@ private:
     template<typename... Args>
     static auto make_chain(Args&&... args)
     {
-        return (... | ElementTypes{std::forward<Args>(args)...});
+        return (... | ElementTypes{args...});
     }
 
     using chain_type = detail::chain_type_t<ElementTypes...>;
