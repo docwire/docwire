@@ -25,7 +25,7 @@ namespace docwire::ai::local::ct2
 {
 
 template<typename auditor_type = docwire::audit::null_auditor>
-    requires std::default_initializable<auditor_type>
+    requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
 inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
 {
     return make_default_runner<auditor_type>(
@@ -42,7 +42,7 @@ inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner(
 }
 
 template<typename auditor_type = docwire::audit::null_auditor>
-    requires std::default_initializable<auditor_type>
+    requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
 inline std::shared_ptr<docwire::ai::ai_runner> make_embedding_runner()
 {
     return make_embedding_runner<auditor_type>(

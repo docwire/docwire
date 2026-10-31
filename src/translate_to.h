@@ -32,7 +32,7 @@ public:
 		model model = model::gpt_5,
 		float temperature = 0.0f,
 		image_detail image_detail = image_detail::automatic)
-		requires std::default_initializable<auditor_type>
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: translate_to(language, api_key, model, temperature, image_detail,
 		               audit::auditor_ref<auditor_type>{})
 	{}

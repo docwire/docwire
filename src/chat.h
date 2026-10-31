@@ -80,7 +80,7 @@ public:
 		model model = model::gpt_5,
 		float temperature = 0.7,
 		image_detail image_detail = image_detail::automatic)
-		requires std::default_initializable<auditor_type>
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: chat(system_message, api_key, model, temperature, image_detail,
 		       audit::auditor_ref<auditor_type>{})
 	{}

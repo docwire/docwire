@@ -41,7 +41,7 @@ inline model_inference_config default_config(std::filesystem::path model_path)
 
 #ifdef DOCWIRE_GRANITE
 template<typename auditor_type = docwire::audit::null_auditor>
-    requires std::default_initializable<auditor_type>
+    requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
 inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
 {
     return make_default_runner<auditor_type>(
@@ -59,7 +59,7 @@ inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner(
 #endif
 
 template<typename auditor_type = docwire::audit::null_auditor>
-    requires std::default_initializable<auditor_type>
+    requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
 inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
     const std::filesystem::path& model_path)
 {
@@ -78,7 +78,7 @@ inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
 }
 
 template<typename auditor_type = docwire::audit::null_auditor>
-    requires std::default_initializable<auditor_type>
+    requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
 inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
     model_inference_config config)
 {

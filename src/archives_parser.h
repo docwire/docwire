@@ -28,7 +28,7 @@ class DOCWIRE_ARCHIVES_EXPORT archives_parser
 {
 public:
 	archives_parser()
-		requires std::default_initializable<auditor_type>
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: archives_parser(audit::auditor_ref<auditor_type>{})
 	{}
 

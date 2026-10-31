@@ -35,7 +35,7 @@ class metadata_exporter : public pipeline::transformer_element<metadata_exporter
     using audit::with_auditor<auditor_type>::auditor;
 public:
   metadata_exporter()
-    requires std::default_initializable<auditor_type>
+    requires std::default_initializable<audit::auditor_ref<auditor_type>>
     : metadata_exporter(audit::auditor_ref<auditor_type>{})
   {}
 

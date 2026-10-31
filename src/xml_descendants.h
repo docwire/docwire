@@ -139,7 +139,7 @@ private:
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
 template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<auditor_type>
+    requires std::default_initializable<audit::auditor_ref<auditor_type>>
 descendants_view<safety_level, auditor_type> descendants(
 	const node_ref<safety_level>& node)
 {
@@ -162,7 +162,7 @@ descendants_view<safety_level, auditor_type> descendants(
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
 template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<auditor_type>
+    requires std::default_initializable<audit::auditor_ref<auditor_type>>
 descendants_view<safety_level, auditor_type> descendants(
 	reader<safety_level>& reader)
 {

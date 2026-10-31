@@ -47,7 +47,7 @@ public:
 		const std::string& api_key,
 		text_to_speech_model model = text_to_speech_model::gpt_4o_mini_tts,
 		text_to_speech_voice voice = text_to_speech_voice::alloy)
-		requires std::default_initializable<auditor_type>
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: text_to_speech(api_key, model, voice,
 		                 audit::auditor_ref<auditor_type>{})
 	{}

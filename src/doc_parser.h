@@ -30,7 +30,7 @@ class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT doc_parser
 {
 public:
     doc_parser()
-        requires std::default_initializable<auditor_type>
+        requires std::default_initializable<audit::auditor_ref<auditor_type>>
         : doc_parser(audit::auditor_ref<auditor_type>{})
     {}
 

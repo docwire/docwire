@@ -40,7 +40,7 @@ public:
 	transcribe(
 		const std::string& api_key,
 		transcribe_model model = transcribe_model::gpt_4o_transcribe)
-		requires std::default_initializable<auditor_type>
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: transcribe(api_key, model, audit::auditor_ref<auditor_type>{})
 	{}
 

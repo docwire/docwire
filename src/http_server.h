@@ -139,7 +139,7 @@ public:
      */
     template<typename auditor_type = audit::null_auditor>
     void operator()()
-        requires std::default_initializable<auditor_type>
+        requires std::default_initializable<audit::auditor_ref<auditor_type>>
     {
         operator()(audit::auditor_ref<auditor_type>{});
     }
@@ -163,7 +163,7 @@ public:
      */
     template<typename auditor_type = audit::null_auditor>
     void wait_until_ready()
-    	requires std::default_initializable<auditor_type>
+    	requires std::default_initializable<audit::auditor_ref<auditor_type>>
     {
     	wait_until_ready(audit::auditor_ref<auditor_type>{});
     }
@@ -182,7 +182,7 @@ public:
      */
     template<typename auditor_type = audit::null_auditor>
     void stop()
-    	requires std::default_initializable<auditor_type>
+    	requires std::default_initializable<audit::auditor_ref<auditor_type>>
     {
     	stop(audit::auditor_ref<auditor_type>{});
     }

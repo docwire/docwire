@@ -43,7 +43,7 @@ class DOCWIRE_AI_CT2_EXPORT embedder
 {
 public:
     embedder()
-        requires std::default_initializable<auditor_type>
+        requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
         : embedder(docwire::audit::auditor_ref<auditor_type>{})
     {}
 
@@ -75,7 +75,7 @@ class DOCWIRE_AI_CT2_EXPORT embedder
 {
 public:
     embedder()
-        requires std::default_initializable<auditor_type>
+        requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
         : embedder(docwire::audit::auditor_ref<auditor_type>{})
     {}
 

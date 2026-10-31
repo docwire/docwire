@@ -112,7 +112,7 @@ class chain_expression : public chain_base_t<L, R>
      *       See `message_callbacks::back`.
      */
     template<typename auditor_type = audit::null_auditor>
-        requires std::default_initializable<auditor_type>
+        requires std::default_initializable<audit::auditor_ref<auditor_type>>
     continuation operator()(message_ptr msg)
     {
       return operator()(std::move(msg), audit::auditor_ref<auditor_type>{});
@@ -133,7 +133,7 @@ class chain_expression : public chain_base_t<L, R>
     }
 
     template<typename auditor_type = audit::null_auditor>
-        requires std::default_initializable<auditor_type>
+        requires std::default_initializable<audit::auditor_ref<auditor_type>>
     continuation operator()(message_ptr msg, const message_callbacks& emit_message)
     {
       return operator()(std::move(msg), emit_message,

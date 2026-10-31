@@ -41,7 +41,7 @@ public:
     embed(
         not_null<std::shared_ptr<ai_runner>> model_runner,
         std::string prefix)
-        requires std::default_initializable<auditor_type>
+        requires std::default_initializable<audit::auditor_ref<auditor_type>>
         : embed(std::move(model_runner), std::move(prefix),
                 audit::auditor_ref<auditor_type>{})
     {}

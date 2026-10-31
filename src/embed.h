@@ -46,7 +46,7 @@ public:
 	embed(
 		const std::string& api_key,
 		embed_model model = embed_model::text_embedding_3_small)
-		requires std::default_initializable<auditor_type>
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: embed(api_key, model, audit::auditor_ref<auditor_type>{})
 	{}
 

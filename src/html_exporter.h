@@ -33,7 +33,7 @@ class DOCWIRE_HTML_EXPORT html_exporter
 {
 public:
   html_exporter()
-    requires std::default_initializable<auditor_type>
+    requires std::default_initializable<audit::auditor_ref<auditor_type>>
     : html_exporter(audit::auditor_ref<auditor_type>{})
   {}
 
