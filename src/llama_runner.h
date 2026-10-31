@@ -19,6 +19,7 @@
 #include "audit/auditor_ref.hpp"
 #include "audit/core.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 
 namespace docwire::ai::llama
 {
@@ -35,9 +36,17 @@ class DOCWIRE_AI_LLAMA_EXPORT llama_runner
 {
 
   public:
+    llama_runner(
+        const model_inference_config& config)
+        requires std::default_initializable<auditor_type>
+        : llama_runner(
+              config,
+              docwire::audit::auditor_ref<auditor_type>{})
+    {}
+
     explicit llama_runner(
         const model_inference_config& config,
-        docwire::audit::auditor_ref<auditor_type> auditor = {});
+        docwire::audit::auditor_ref<auditor_type> auditor);
 
     std::string process(const std::string& input) override;
 
