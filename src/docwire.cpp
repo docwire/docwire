@@ -485,9 +485,18 @@ int run_with_auditor(
 			};
 		})
 		| maybe(vm.count("local-ai-ct2-embed") &&
-					   vm["local-ai-ct2-embed"].as<embed_prefix_type>() != embed_prefix_type::query, [&] {
+					   vm["local-ai-ct2-embed"].as<embed_prefix_type>() == embed_prefix_type::passage, [&] {
 			return ai::local::ct2::passage::embedder<configured_auditor>{
 				docwire::audit::auditor_ref<configured_auditor>{audit}
+			};
+		})
+		| maybe(vm.count("local-ai-ct2-embed") &&
+					   vm["local-ai-ct2-embed"].as<embed_prefix_type>() == embed_prefix_type::none, [&] {
+			docwire::audit::auditor_ref<configured_auditor> embedding_auditor{audit};
+			return ai::embed<configured_auditor>{
+				ai::local::ct2::make_embedding_runner(embedding_auditor),
+				std::string{},
+				embedding_auditor
 			};
 		})
 #endif
