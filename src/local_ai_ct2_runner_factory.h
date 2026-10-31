@@ -24,14 +24,6 @@
 namespace docwire::ai::local::ct2
 {
 
-template<typename auditor_type = docwire::audit::null_auditor>
-    requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
-inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
-{
-    return make_default_runner<auditor_type>(
-        docwire::audit::auditor_ref<auditor_type>{});
-}
-
 template<typename auditor_type>
 inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner(
     docwire::audit::auditor_ref<auditor_type> auditor)
@@ -43,9 +35,9 @@ inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner(
 
 template<typename auditor_type = docwire::audit::null_auditor>
     requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
-inline std::shared_ptr<docwire::ai::ai_runner> make_embedding_runner()
+inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
 {
-    return make_embedding_runner<auditor_type>(
+    return make_default_runner<auditor_type>(
         docwire::audit::auditor_ref<auditor_type>{});
 }
 
@@ -56,6 +48,14 @@ inline std::shared_ptr<docwire::ai::ai_runner> make_embedding_runner(
     return std::make_shared<docwire::ai::ct2::ct2_runner<auditor_type>>(
         resource_path("multilingual-e5-small-ct2-int8"),
         auditor);
+}
+
+template<typename auditor_type = docwire::audit::null_auditor>
+    requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
+inline std::shared_ptr<docwire::ai::ai_runner> make_embedding_runner()
+{
+    return make_embedding_runner<auditor_type>(
+        docwire::audit::auditor_ref<auditor_type>{});
 }
 
 } // namespace docwire::ai::local::ct2
