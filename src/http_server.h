@@ -165,9 +165,10 @@ public:
     void wait_until_ready()
     	requires std::default_initializable<audit::auditor_ref<auditor_type>>
     {
-    	wait_until_ready(audit::auditor_ref<auditor_type>{});
+    	wait_until_ready<auditor_type>(audit::auditor_ref<auditor_type>{});
     }
 
+    template<typename auditor_type>
     void wait_until_ready(audit::auditor_ref<auditor_type> auditor)
     {
         audit::scope audit_scope{auditor, audit::no_context};
@@ -184,9 +185,10 @@ public:
     void stop()
     	requires std::default_initializable<audit::auditor_ref<auditor_type>>
     {
-    	stop(audit::auditor_ref<auditor_type>{});
+    	stop<auditor_type>(audit::auditor_ref<auditor_type>{});
     }
 
+    template<typename auditor_type>
     void stop(audit::auditor_ref<auditor_type> auditor)
     {
         audit::scope audit_scope{auditor, audit::no_context};
