@@ -203,7 +203,7 @@ template<typename auditor_type>
 int run_with_auditor(
 	const boost::program_options::variables_map& vm,
 	data_source data,
-	auditor_type& audit);
+	audit::auditor_ref<auditor_type> auditor);
 
 int main(int argc, char* argv[])
 {
@@ -346,30 +346,36 @@ int main(int argc, char* argv[])
 					? "*"
 					: "";
 
-		docwire::audit::json_stream_auditor audit{
+		docwire::audit::json_stream_auditor auditor{
 			filter_spec,
 			std::move(audit_stream)
 		};
 
-		return run_with_auditor(vm, std::move(data), audit);
+		return run_with_auditor(
+			vm,
+			std::move(data),
+			docwire::audit::auditor_ref<docwire::audit::json_stream_auditor>{auditor});
 	}
 
-	docwire::audit::null_auditor audit;
-	return run_with_auditor(vm, std::move(data), audit);
+	docwire::audit::null_auditor auditor;
+	return run_with_auditor(
+		vm,
+		std::move(data),
+		docwire::audit::auditor_ref<docwire::audit::null_auditor>{auditor});
 }
 
 template<typename auditor_type>
 int run_with_auditor(
 	const boost::program_options::variables_map& vm,
 	data_source data,
-	auditor_type& audit)
+	audit::auditor_ref<auditor_type> auditor)
 {
 	using configured_auditor = auditor_type;
 
 	std::string file_name = vm["input-file"].as<std::string>();
 	bool local_processing = vm["local-processing"].as<bool>();
 
-	audit::entry(audit, [&]{
+	audit::entry(auditor, [&]{
 		return "use_stream"_v = vm["use-stream"].as<bool>(), "file_name"_v = file_name;
 	});
 
@@ -379,7 +385,7 @@ int run_with_auditor(
 				vm["http-post"].as<std::string>(),
 				"",
 				http::ssl_verify_peer{true},
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 		})
 		| maybe(vm.count("openai-chat"), [&] {
 			return openai::chat<configured_auditor>(
@@ -390,7 +396,7 @@ int run_with_auditor(
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
 				vm["openai-image-detail"].as<openai::image_detail>(),
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 		})
 		| maybe(vm.count("openai-extract-entities"), [&] {
 			return openai::extract_entities<configured_auditor>(
@@ -400,7 +406,7 @@ int run_with_auditor(
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
 				vm["openai-image-detail"].as<openai::image_detail>(),
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 		})
 		| maybe(vm.count("openai-extract-keywords"), [&] {
 			return openai::extract_keywords<configured_auditor>(
@@ -411,7 +417,7 @@ int run_with_auditor(
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
 				vm["openai-image-detail"].as<openai::image_detail>(),
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 		})
 		| maybe(vm.count("openai-summarize"), [&] {
 			return openai::summarize<configured_auditor>(
@@ -421,7 +427,7 @@ int run_with_auditor(
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
 				vm["openai-image-detail"].as<openai::image_detail>(),
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 		})
 		| maybe(vm.count("openai-detect-sentiment"), [&] {
 			return openai::detect_sentiment<configured_auditor>(
@@ -431,7 +437,7 @@ int run_with_auditor(
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
 				vm["openai-image-detail"].as<openai::image_detail>(),
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 		})
 		| maybe(vm.count("openai-analyze-data"), [&] {
 			return openai::analyze_data<configured_auditor>(
@@ -441,7 +447,7 @@ int run_with_auditor(
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
 				vm["openai-image-detail"].as<openai::image_detail>(),
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 		})
 		| maybe(vm.count("openai-classify"), [&] {
 			const std::vector<std::string>& categories =
@@ -455,7 +461,7 @@ int run_with_auditor(
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
 				vm["openai-image-detail"].as<openai::image_detail>(),
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 		})
 		| maybe(vm.count("openai-translate-to"), [&] {
 			return openai::translate_to<configured_auditor>(
@@ -466,13 +472,13 @@ int run_with_auditor(
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
 				vm["openai-image-detail"].as<openai::image_detail>(),
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 		})
 #ifdef DOCWIRE_LOCAL_AI
 		| maybe(vm.count("local-ai-prompt"), [&] {
 			auto runner = create_local_runner(
 				vm,
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 			return ai::local::task(
 				vm["local-ai-prompt"].as<std::string>(), runner);
 		})
@@ -481,22 +487,21 @@ int run_with_auditor(
 		| maybe(vm.count("local-ai-ct2-embed") &&
 			vm["local-ai-ct2-embed"].as<embed_prefix_type>() == embed_prefix_type::query, [&] {
 			return ai::local::ct2::query::embedder<configured_auditor>{
-				docwire::audit::auditor_ref<configured_auditor>{audit}
+				auditor
 			};
 		})
 		| maybe(vm.count("local-ai-ct2-embed") &&
 					   vm["local-ai-ct2-embed"].as<embed_prefix_type>() == embed_prefix_type::passage, [&] {
 			return ai::local::ct2::passage::embedder<configured_auditor>{
-				docwire::audit::auditor_ref<configured_auditor>{audit}
+				auditor
 			};
 		})
 		| maybe(vm.count("local-ai-ct2-embed") &&
 					   vm["local-ai-ct2-embed"].as<embed_prefix_type>() == embed_prefix_type::none, [&] {
-			docwire::audit::auditor_ref<configured_auditor> embedding_auditor{audit};
 			return ai::embed<configured_auditor>{
-				ai::local::ct2::make_embedding_runner(embedding_auditor),
+				ai::local::ct2::make_embedding_runner(auditor),
 				std::string{},
-				embedding_auditor
+				auditor
 			};
 		})
 #endif
@@ -509,20 +514,20 @@ int run_with_auditor(
 					? vm["openai-temperature"].as<float>()
 					: 0.0f,
 				vm["openai-image-detail"].as<openai::image_detail>(),
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 		})
 		| maybe(vm.count("openai-text-to-speech"), [&] {
 			return openai::text_to_speech<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
 				vm["openai-tts-model"].as<openai::text_to_speech_model>(),
 				vm["openai-voice"].as<openai::text_to_speech_voice>(),
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 		})
 		| maybe(vm.count("openai-embed"), [&] {
 			return openai::embed<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
 				vm["openai-embed-model"].as<openai::embed_model>(),
-				docwire::audit::auditor_ref<configured_auditor>{audit});
+				auditor);
 		})
 		| [](message_ptr msg,
 			 const message_callbacks& emit_message) -> continuation
@@ -560,7 +565,7 @@ int run_with_auditor(
 			| openai::transcribe<configured_auditor>(
 				vm["openai-key"].as<std::string>(),
 				vm["openai-transcribe-model"].as<openai::transcribe_model>(),
-				docwire::audit::auditor_ref<configured_auditor>{audit})
+				auditor)
 			| plain_text_exporter{}
 			| std::move(optional_suffix);
 
@@ -603,7 +608,7 @@ int run_with_auditor(
 				break;
 			case output_type::html:
 				formatter = html_exporter<configured_auditor>{
-					docwire::audit::auditor_ref<configured_auditor>{audit}
+					auditor
 				};
 				break;
 			case output_type::csv:
@@ -611,7 +616,7 @@ int run_with_auditor(
 				break;
 			case output_type::metadata:
 				formatter = metadata_exporter<configured_auditor>{
-					docwire::audit::auditor_ref<configured_auditor>{audit}
+					auditor
 				};
 				break;
 		}
@@ -619,17 +624,17 @@ int run_with_auditor(
 		auto local_prefix =
 			content_type::detector{}
 			| archives_parser<configured_auditor>{
-				docwire::audit::auditor_ref<configured_auditor>{audit}}
+				auditor}
 			| office_formats_parser<docwire::safety_policy::strict, configured_auditor>{
-				docwire::audit::auditor_ref<configured_auditor>{audit}}
+				auditor}
 			| mail_parser<configured_auditor>{
-				docwire::audit::auditor_ref<configured_auditor>{audit}}
+				auditor}
 			| ocr_parser<configured_auditor>{
 				vm["language"].as<std::vector<language>>(),
 				threshold_arg,
 				{},
 				{},
-				docwire::audit::auditor_ref<configured_auditor>{audit}}
+				auditor}
 			| maybe(vm.count("max_nodes_number"), [&] {
 				  return standard_filter::filterByMaxNodeNumber(
 					  vm["max_nodes_number"].as<unsigned int>());
