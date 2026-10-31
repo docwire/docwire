@@ -25,155 +25,203 @@ namespace docwire
 
 using svector = std::vector<std::string>;
 
+template<typename auditor_type>
+inline int prepareTable(
+    std::vector<svector>& p_table,
+    audit::auditor_ref<auditor_type> auditor)
+{
+    audit::scope audit_scope{auditor, audit::no_context};
+
+    if (p_table.empty())
+        return 0;
+
+    for (int i = 0; i < p_table.size(); ++i)
+    {
+        if (p_table.at(i).empty())
+            continue;
+
+        for (int j = 0; j < p_table.at(i).size(); ++j)
+        {
+            if (p_table.at(i).at(j).length() < 2)
+                continue;
+
+            int k = p_table.at(i).at(j).find('\n', p_table.at(i).at(j).length() - 2);
+            if (k >= 0)
+                p_table.at(i).at(j).replace(k, 1, "");
+        }
+    }
+
+    return 1;
+}
+
 template<typename auditor_type = audit::null_auditor>
     requires std::default_initializable<audit::auditor_ref<auditor_type>>
 inline int prepareTable(std::vector<svector>& p_table)
 {
-	return prepareTable<auditor_type>(p_table, audit::auditor_ref<auditor_type>{});
+    return prepareTable<auditor_type>(
+        p_table,
+        audit::auditor_ref<auditor_type>{});
 }
 
 template<typename auditor_type>
-inline int prepareTable(std::vector<svector>& p_table, audit::auditor_ref<auditor_type> auditor)
+inline int prepareList(
+    std::vector<std::string>& p_list,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	audit::scope audit_scope{auditor, audit::no_context};
-	if (p_table.empty())
-		return 0;
-	for (int i = 0; i < p_table.size(); ++i)
-	{
-		if (p_table.at(i).empty())
-			continue;
-		for (int j = 0; j < p_table.at(i).size(); ++j)
-		{
-			if (p_table.at(i).at(j).length() < 2)
-				continue;
-			int k = p_table.at(i).at(j).find('\n', p_table.at(i).at(j).length() - 2);
-			if (k >= 0)
-				p_table.at(i).at(j).replace(k, 1, "");
-		}
-	}
-	return 1;
+    audit::scope audit_scope{auditor, audit::no_context};
+
+    if (p_list.empty())
+        return 0;
+
+    for (int i = 0; i < p_list.size(); ++i)
+    {
+        if (p_list.at(i).empty())
+            continue;
+
+        if (p_list.at(i).length() < 2)
+            continue;
+
+        int k = p_list.at(i).find('\n', p_list.at(i).length() - 2);
+        if (k >= 0)
+            p_list.at(i).replace(k, 1, "");
+    }
+
+    return 1;
 }
 
 template<typename auditor_type = audit::null_auditor>
     requires std::default_initializable<audit::auditor_ref<auditor_type>>
 inline int prepareList(std::vector<std::string>& p_list)
 {
-	return prepareList<auditor_type>(p_list, audit::auditor_ref<auditor_type>{});
+    return prepareList<auditor_type>(
+        p_list,
+        audit::auditor_ref<auditor_type>{});
 }
 
 template<typename auditor_type>
-inline int prepareList(std::vector<std::string>& p_list, audit::auditor_ref<auditor_type> auditor)
+inline std::string formatTable(
+    std::vector<svector>& mcols,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	audit::scope audit_scope{auditor, audit::no_context};
-	if (p_list.empty())
-		return 0;
-	for (int i = 0; i < p_list.size(); ++i)
-	{
-		if (p_list.at(i).empty())
-			continue;
-		if (p_list.at(i).length() < 2)
-			continue;
-		int k = p_list.at(i).find('\n', p_list.at(i).length() - 2);
-		if (k >= 0)
-			p_list.at(i).replace(k, 1, "");
-	}
-	return 1;
+    audit::scope audit_scope{auditor, audit::no_context};
+    std::string table_out;
+
+    prepareTable(mcols, auditor);
+
+    for (int i = 0; i < mcols.size(); ++i)
+    {
+        for (int j = 0; j < mcols.at(i).size(); ++j)
+        {
+            table_out += mcols.at(i).at(j);
+
+            if (j + 1 == mcols.at(i).size())
+            {
+                table_out += "\n";
+                break;
+            }
+
+            table_out += "\t";
+        }
+    }
+
+    return table_out;
 }
 
 template<typename auditor_type = audit::null_auditor>
     requires std::default_initializable<audit::auditor_ref<auditor_type>>
 inline std::string formatTable(std::vector<svector>& mcols)
 {
-	return formatTable<auditor_type>(mcols, audit::auditor_ref<auditor_type>{});
+    return formatTable<auditor_type>(
+        mcols,
+        audit::auditor_ref<auditor_type>{});
 }
 
 template<typename auditor_type>
-inline std::string formatTable(std::vector<svector>& mcols, audit::auditor_ref<auditor_type> auditor)
+inline std::string formatUrl(
+    const std::string& mlink_url,
+    const std::string& mlink_text,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	audit::scope audit_scope{auditor, audit::no_context};
-	std::string table_out;
+    audit::scope audit_scope{auditor, audit::no_context};
+    std::string u_url;
 
-	prepareTable(mcols, auditor);
+    if (mlink_url.length() > 0)
+    {
+        u_url += "<" + mlink_url + ">";
+    }
 
-	for (int i = 0; i < mcols.size(); ++i)
-	{
-		for (int j = 0; j < mcols.at(i).size(); ++j)
-		{
-			table_out += mcols.at(i).at(j);
-			if (j + 1 == mcols.at(i).size())
-			{
-				table_out += "\n";
-				break;
-			}
-			table_out += "\t";
-		}
-	}
-	return table_out;
+    u_url += mlink_text;
+    return u_url;
 }
 
 template<typename auditor_type = audit::null_auditor>
     requires std::default_initializable<audit::auditor_ref<auditor_type>>
-inline std::string formatUrl(const std::string& mlink_url, const std::string& mlink_text)
+inline std::string formatUrl(
+    const std::string& mlink_url,
+    const std::string& mlink_text)
 {
-	return formatUrl<auditor_type>(mlink_url, mlink_text, audit::auditor_ref<auditor_type>{});
+    return formatUrl<auditor_type>(
+        mlink_url,
+        mlink_text,
+        audit::auditor_ref<auditor_type>{});
 }
 
 template<typename auditor_type>
-inline std::string formatUrl(const std::string& mlink_url, const std::string& mlink_text, audit::auditor_ref<auditor_type> auditor)
+inline std::string formatList(
+    std::vector<std::string>& mlist,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	audit::scope audit_scope{auditor, audit::no_context};
-	std::string u_url;
-	if (mlink_url.length() > 0)
-	{
-		u_url += "<" + mlink_url + ">";
-	}
-	u_url += mlink_text;
-	return u_url;
+    audit::scope audit_scope{auditor, audit::no_context};
+    std::string list_out;
+
+    prepareList(mlist, auditor);
+
+    for (int i = 0; i < mlist.size(); ++i)
+    {
+        list_out = list_out + "- " + mlist.at(i) + "\n";
+    }
+
+    return list_out;
 }
 
 template<typename auditor_type = audit::null_auditor>
     requires std::default_initializable<audit::auditor_ref<auditor_type>>
 inline std::string formatList(std::vector<std::string>& mlist)
 {
-	return formatList<auditor_type>(mlist, audit::auditor_ref<auditor_type>{});
+    return formatList<auditor_type>(
+        mlist,
+        audit::auditor_ref<auditor_type>{});
 }
 
 template<typename auditor_type>
-inline std::string formatList(std::vector<std::string>& mlist, audit::auditor_ref<auditor_type> auditor)
+inline std::string formatNumberedList(
+    std::vector<std::string>& mlist,
+    audit::auditor_ref<auditor_type> auditor)
 {
-	audit::scope audit_scope{auditor, audit::no_context};
-	std::string list_out;
-	prepareList(mlist, auditor);
+    audit::scope audit_scope{auditor, audit::no_context};
+    std::string list_out;
 
-	for (int i = 0; i < mlist.size(); ++i)
-	{
-		list_out = list_out + "- " + mlist.at(i) + "\n";
-	}
-	return list_out;
+    prepareList(mlist, auditor);
+
+    char count[100];
+    for (int i = 0; i < mlist.size(); ++i)
+    {
+        sprintf(count, "%d. ", i + 1);
+        list_out = list_out + count;
+        list_out = list_out + mlist.at(i);
+        list_out = list_out + "\n";
+    }
+
+    return list_out;
 }
 
 template<typename auditor_type = audit::null_auditor>
     requires std::default_initializable<audit::auditor_ref<auditor_type>>
 inline std::string formatNumberedList(std::vector<std::string>& mlist)
 {
-	return formatNumberedList<auditor_type>(mlist, audit::auditor_ref<auditor_type>{});
-}
-
-template<typename auditor_type>
-inline std::string formatNumberedList(std::vector<std::string>& mlist, audit::auditor_ref<auditor_type> auditor)
-{
-	audit::scope audit_scope{auditor, audit::no_context};
-	std::string list_out;
-	prepareList(mlist, auditor);
-	char count[100];
-	for (int i = 0; i < mlist.size(); ++i)
-	{
-		sprintf(count, "%d. ", i + 1);
-		list_out = list_out + count;
-		list_out = list_out + mlist.at(i);
-		list_out = list_out + "\n";
-	}
-	return list_out;
+    return formatNumberedList<auditor_type>(
+        mlist,
+        audit::auditor_ref<auditor_type>{});
 }
 
 } // namespace docwire
