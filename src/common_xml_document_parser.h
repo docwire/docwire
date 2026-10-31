@@ -204,7 +204,7 @@ class common_xml_document_parser
 		 * @brief Default constructor.
 		 */
 		common_xml_document_parser()
-			requires std::default_initializable<auditor_type>
+			requires std::default_initializable<audit::auditor_ref<auditor_type>>
 			: common_xml_document_parser(audit::auditor_ref<auditor_type>{})
 		{}
 

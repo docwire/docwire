@@ -47,7 +47,7 @@ public:
 		const std::string& url,
 		const std::string& oauth2_bearer_token = "",
 		ssl_verify_peer ssl_verify_peer_v = {true})
-		requires std::default_initializable<auditor_type>
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: post(url,
 		       oauth2_bearer_token,
 		       ssl_verify_peer_v,
@@ -67,7 +67,7 @@ public:
 		const default_file_name& default_file_name,
 		const std::string& oauth2_bearer_token = "",
 		ssl_verify_peer ssl_verify_peer_v = {true})
-		requires std::default_initializable<auditor_type>
+		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: post(url,
 		       form,
 		       pipe_field_name,
