@@ -83,11 +83,10 @@ public:
         : m_chain{(... | std::forward<Es>(elements))}
     {}
 
-    template<typename auditor_type = audit::null_auditor>
-        requires audit::stateless_auditor<auditor_type>
+    template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
     continuation operator()(message_ptr msg)
     {
-        return m_chain(std::move(msg), audit::auditor_ref<auditor_type>{});
+        return m_chain(std::move(msg), audit::auditor_ref<stateless_auditor_type>{});
     }
 
     template<typename auditor_type>
@@ -98,14 +97,13 @@ public:
         return m_chain(std::move(msg), auditor);
     }
 
-    template<typename auditor_type = audit::null_auditor>
-        requires audit::stateless_auditor<auditor_type>
+    template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
     continuation operator()(
         message_ptr msg,
         const message_callbacks& emit_message)
     {
         return m_chain(std::move(msg), emit_message,
-                       audit::auditor_ref<auditor_type>{});
+                       audit::auditor_ref<stateless_auditor_type>{});
     }
 
     template<typename auditor_type>

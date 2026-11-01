@@ -111,11 +111,10 @@ class chain_expression : public chain_base_t<L, R>
      * @note A back-emitted message must not be `pipeline::start_processing`.
      *       See `message_callbacks::back`.
      */
-    template<typename auditor_type = audit::null_auditor>
-        requires audit::stateless_auditor<auditor_type>
+    template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
     continuation operator()(message_ptr msg)
     {
-      return operator()(std::move(msg), audit::auditor_ref<auditor_type>{});
+      return operator()(std::move(msg), audit::auditor_ref<stateless_auditor_type>{});
     }
 
     template<typename auditor_type>
@@ -132,12 +131,11 @@ class chain_expression : public chain_base_t<L, R>
         });
     }
 
-    template<typename auditor_type = audit::null_auditor>
-        requires audit::stateless_auditor<auditor_type>
+    template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
     continuation operator()(message_ptr msg, const message_callbacks& emit_message)
     {
       return operator()(std::move(msg), emit_message,
-                        audit::auditor_ref<auditor_type>{});
+                        audit::auditor_ref<stateless_auditor_type>{});
     }
 
     template<typename auditor_type>

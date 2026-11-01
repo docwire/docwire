@@ -54,13 +54,12 @@ inline int prepareTable(
     return 1;
 }
 
-template<typename auditor_type = audit::null_auditor>
-    requires audit::stateless_auditor<auditor_type>
+template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
 inline int prepareTable(std::vector<svector>& p_table)
 {
-    return prepareTable<auditor_type>(
+    return prepareTable<stateless_auditor_type>(
         p_table,
-        audit::auditor_ref<auditor_type>{});
+        audit::auditor_ref<stateless_auditor_type>{});
 }
 
 template<typename auditor_type>
@@ -89,13 +88,12 @@ inline int prepareList(
     return 1;
 }
 
-template<typename auditor_type = audit::null_auditor>
-    requires audit::stateless_auditor<auditor_type>
+template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
 inline int prepareList(std::vector<std::string>& p_list)
 {
-    return prepareList<auditor_type>(
+    return prepareList<stateless_auditor_type>(
         p_list,
-        audit::auditor_ref<auditor_type>{});
+        audit::auditor_ref<stateless_auditor_type>{});
 }
 
 template<typename auditor_type>
@@ -127,13 +125,12 @@ inline std::string formatTable(
     return table_out;
 }
 
-template<typename auditor_type = audit::null_auditor>
-    requires audit::stateless_auditor<auditor_type>
+template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
 inline std::string formatTable(std::vector<svector>& mcols)
 {
-    return formatTable<auditor_type>(
+    return formatTable<stateless_auditor_type>(
         mcols,
-        audit::auditor_ref<auditor_type>{});
+        audit::auditor_ref<stateless_auditor_type>{});
 }
 
 template<typename auditor_type>
@@ -154,16 +151,15 @@ inline std::string formatUrl(
     return u_url;
 }
 
-template<typename auditor_type = audit::null_auditor>
-    requires audit::stateless_auditor<auditor_type>
+template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
 inline std::string formatUrl(
     const std::string& mlink_url,
     const std::string& mlink_text)
 {
-    return formatUrl<auditor_type>(
+    return formatUrl<stateless_auditor_type>(
         mlink_url,
         mlink_text,
-        audit::auditor_ref<auditor_type>{});
+        audit::auditor_ref<stateless_auditor_type>{});
 }
 
 template<typename auditor_type>
@@ -184,13 +180,12 @@ inline std::string formatList(
     return list_out;
 }
 
-template<typename auditor_type = audit::null_auditor>
-    requires audit::stateless_auditor<auditor_type>
+template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
 inline std::string formatList(std::vector<std::string>& mlist)
 {
-    return formatList<auditor_type>(
+    return formatList<stateless_auditor_type>(
         mlist,
-        audit::auditor_ref<auditor_type>{});
+        audit::auditor_ref<stateless_auditor_type>{});
 }
 
 template<typename auditor_type>
@@ -215,13 +210,12 @@ inline std::string formatNumberedList(
     return list_out;
 }
 
-template<typename auditor_type = audit::null_auditor>
-    requires audit::stateless_auditor<auditor_type>
+template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
 inline std::string formatNumberedList(std::vector<std::string>& mlist)
 {
-    return formatNumberedList<auditor_type>(
+    return formatNumberedList<stateless_auditor_type>(
         mlist,
-        audit::auditor_ref<auditor_type>{});
+        audit::auditor_ref<stateless_auditor_type>{});
 }
 
 } // namespace docwire

@@ -146,14 +146,14 @@ descendants_view<safety_level, auditor_type> descendants(
 	return descendants_view<safety_level, auditor_type>{node.state(), node.depth(), auditor};
 }
 
-template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
-    requires audit::stateless_auditor<auditor_type>
-descendants_view<safety_level, auditor_type> descendants(
+template <safety_policy safety_level,
+          audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
+descendants_view<safety_level, stateless_auditor_type> descendants(
 	const node_ref<safety_level>& node)
 {
-	return descendants<safety_level, auditor_type>(
+	return descendants<safety_level, stateless_auditor_type>(
 		node,
-		audit::auditor_ref<auditor_type>{});
+		audit::auditor_ref<stateless_auditor_type>{});
 }
 
 /**
@@ -172,14 +172,14 @@ descendants_view<safety_level, auditor_type> descendants(
 		assume_not_null(std::make_shared<iterator_state<safety_level>>(reader)), -1, auditor};
 }
 
-template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
-    requires audit::stateless_auditor<auditor_type>
-descendants_view<safety_level, auditor_type> descendants(
+template <safety_policy safety_level,
+          audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
+descendants_view<safety_level, stateless_auditor_type> descendants(
 	reader<safety_level>& reader)
 {
-	return descendants<safety_level, auditor_type>(
+	return descendants<safety_level, stateless_auditor_type>(
 		reader,
-		audit::auditor_ref<auditor_type>{});
+		audit::auditor_ref<stateless_auditor_type>{});
 }
 
 }

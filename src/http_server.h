@@ -137,11 +137,10 @@ public:
      * This method starts the underlying network event loop and will not return
      * until stop() is called from another thread or a signal handler.
      */
-    template<typename auditor_type = audit::null_auditor>
+    template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
     void operator()()
-        requires audit::stateless_auditor<auditor_type>
     {
-        operator()(audit::auditor_ref<auditor_type>{});
+        operator()(audit::auditor_ref<stateless_auditor_type>{});
     }
 
     template<typename auditor_type>
@@ -161,11 +160,10 @@ public:
     /**
      * @brief Blocks until the server is ready to accept connections.
      */
-    template<typename auditor_type = audit::null_auditor>
+    template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
     void wait_until_ready()
-    	requires audit::stateless_auditor<auditor_type>
     {
-    	wait_until_ready<auditor_type>(audit::auditor_ref<auditor_type>{});
+    	wait_until_ready<stateless_auditor_type>(audit::auditor_ref<stateless_auditor_type>{});
     }
 
     template<typename auditor_type>
@@ -181,11 +179,10 @@ public:
      * This is a thread-safe method that signals the event loop to stop,
      * allowing the operator()() call to unblock and return.
      */
-    template<typename auditor_type = audit::null_auditor>
+    template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
     void stop()
-    	requires audit::stateless_auditor<auditor_type>
     {
-    	stop<auditor_type>(audit::auditor_ref<auditor_type>{});
+    	stop<stateless_auditor_type>(audit::auditor_ref<stateless_auditor_type>{});
     }
 
     template<typename auditor_type>
@@ -350,18 +347,17 @@ certificate_info generate_self_signed_cert(
     return detail::generate_self_signed_cert_impl(common_name, country, organization);
 }
 
-template<typename auditor_type = audit::null_auditor>
-    requires audit::stateless_auditor<auditor_type>
+template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
 certificate_info generate_self_signed_cert(
     const std::string& common_name,
     const std::string& country,
     const std::string& organization)
 {
-    return generate_self_signed_cert<auditor_type>(
+    return generate_self_signed_cert<stateless_auditor_type>(
         common_name,
         country,
         organization,
-        audit::auditor_ref<auditor_type>{});
+        audit::auditor_ref<stateless_auditor_type>{});
 }
 
 } // namespace docwire::http

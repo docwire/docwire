@@ -51,14 +51,13 @@ public:
     : m_data{data}
   {}
 
-  template<typename auditor_type = audit::null_auditor>
-      requires audit::stateless_auditor<auditor_type>
+  template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
   continuation operator()(message_ptr msg, const message_callbacks& emit_message)
   {
-      return operator()<auditor_type>(
+      return operator()<stateless_auditor_type>(
           std::move(msg),
           emit_message,
-          audit::auditor_ref<auditor_type>{});
+          audit::auditor_ref<stateless_auditor_type>{});
   }
 
   template<typename auditor_type>
