@@ -81,6 +81,9 @@ public:
 
 	void redirect()
 	{
+		if (m_redirected)
+			return;
+
 		m_cerr_redirection_mutex_lock =
 			std::unique_lock<std::mutex>(detail::cerr_redirection_mutex());
 #ifndef NDEBUG
@@ -99,6 +102,9 @@ public:
 
 	void restore()
 	{
+		if (!m_redirected)
+			return;
+
 		std::cerr.rdbuf(m_cerr_buf_backup);
 		m_cerr_buf_backup = nullptr;
 		m_redirected = false;
