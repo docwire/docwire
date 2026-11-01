@@ -75,8 +75,15 @@ public:
     /**
      * @brief Constructs a composition from already-created element instances.
      *
-     * This is the correct overload for moving stateful pipeline elements; the
-     * elements are consumed by value and wired together with operator|.
+     * The elements are forwarded according to the standard pipeline ownership
+     * rules:
+     * - rvalue elements are moved into the composition and owned by it;
+     * - lvalue elements are stored by reference and must outlive the
+     *   composition.
+     *
+     * To transfer ownership of a named local element, pass it with std::move:
+     *
+     *     pipeline::compose(std::move(parser1), std::move(parser2));
      */
     template<typename... Es>
     explicit composition(from_elements_t, Es&&... elements)
@@ -131,6 +138,10 @@ private:
  *
  * This allows developers to use `pipeline::compose(parser1{}, parser2{})`
  * without spelling out the full `composition` type.
+ *
+ * Ownership follows `operator|` semantics:
+ * - temporaries/rvalues are moved into and owned by the returned composition;
+ * - lvalues are referenced and must outlive the returned composition.
  */
 template<typename... ElementTypes>
 auto compose(ElementTypes&&... elements)

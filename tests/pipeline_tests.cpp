@@ -227,3 +227,17 @@ TEST(pipeline, compose_builds_chain_from_instances)
 
     EXPECT_EQ(result, 44);
 }
+
+TEST(pipeline, compose_owns_moved_named_elements)
+{
+    auto make_composition = []
+    {
+        plus_one first;
+        plus_one second;
+        return pipeline::compose(std::move(first), std::move(second));
+    };
+
+    int result = 0;
+    int_source{} | make_composition() | int_capture{&result};
+    EXPECT_EQ(result, 44);
+}
