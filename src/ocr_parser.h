@@ -70,6 +70,24 @@ public:
               audit::auditor_ref<stateless_auditor_type>{})
     {}
 
+    /**
+     * @brief Constructs the component with only an OCR language list.
+     *
+     * Other OCR options use their defaults, and the default stateless audit policy
+     * is selected automatically.
+     *
+     * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+     */
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+    ocr_parser(const std::vector<language>& languages)
+        : ocr_parser(
+              languages,
+              {},
+              {},
+              {},
+              audit::auditor_ref<stateless_auditor_type>{})
+    {}
+
     template<audit::stateless_auditor stateless_auditor_type = auditor_type>
     ocr_parser(
         const std::vector<language>& languages,
@@ -98,6 +116,7 @@ private:
 
 // Deduction guides for CTAD
 ocr_parser() -> ocr_parser<audit::null_auditor>;
+ocr_parser(const std::vector<language>&) -> ocr_parser<audit::null_auditor>;
 ocr_parser(
     const std::vector<language>&,
     ocr_confidence_threshold,
