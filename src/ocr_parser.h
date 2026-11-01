@@ -61,11 +61,23 @@ public:
      * @tparam stateless_auditor_type Injected auditor type selected by this overload.
      */
     template<audit::stateless_auditor stateless_auditor_type = auditor_type>
-    ocr_parser(const std::vector<language>& languages = {},
-        ocr_confidence_threshold ocr_confidence_threshold_arg = {},
-        ocr_timeout ocr_timeout_arg = {},
-        ocr_data_path ocr_data_path_arg = {})
-        : ocr_parser(languages,
+    ocr_parser()
+        : ocr_parser(
+              {},
+              {},
+              {},
+              {},
+              audit::auditor_ref<stateless_auditor_type>{})
+    {}
+
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+    ocr_parser(
+        const std::vector<language>& languages,
+        ocr_confidence_threshold ocr_confidence_threshold_arg,
+        ocr_timeout ocr_timeout_arg,
+        ocr_data_path ocr_data_path_arg)
+        : ocr_parser(
+              languages,
               ocr_confidence_threshold_arg,
               ocr_timeout_arg,
               ocr_data_path_arg,
@@ -83,6 +95,14 @@ public:
 private:
     void parse(const data_source& data, const std::vector<language>& languages);
 };
+
+// Deduction guides for CTAD
+ocr_parser() -> ocr_parser<audit::null_auditor>;
+ocr_parser(
+    const std::vector<language>&,
+    ocr_confidence_threshold,
+    ocr_timeout,
+    ocr_data_path) -> ocr_parser<audit::null_auditor>;
 
 } // namespace docwire
 
