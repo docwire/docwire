@@ -51,6 +51,14 @@ public:
 	{}
 
 	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+	txt_parser(parse_paragraphs parse_paragraphs_arg)
+		: txt_parser(
+		      parse_paragraphs_arg,
+		      parse_lines{true},
+		      audit::auditor_ref<stateless_auditor_type>{})
+	{}
+
+	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
 	txt_parser(
 		parse_paragraphs parse_paragraphs_arg,
 		parse_lines parse_lines_arg)
@@ -74,6 +82,7 @@ private:
 
 // Deduction guides for CTAD
 txt_parser() -> txt_parser<audit::null_auditor>;
+txt_parser(parse_paragraphs) -> txt_parser<audit::null_auditor>;
 txt_parser(parse_paragraphs, parse_lines) -> txt_parser<audit::null_auditor>;
 
 } // namespace docwire
