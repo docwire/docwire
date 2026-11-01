@@ -47,6 +47,10 @@ class DOCWIRE_LOCAL_AI_EXPORT embedder
 
     explicit embedder(audit::auditor_ref<auditor_type> auditor);
 };
+
+// Deduction guide for CTAD
+embedder() -> embedder<audit::null_auditor>;
+
 } // namespace docwire::ai::local::passage
 
 namespace docwire::ai::local::query
@@ -80,10 +84,9 @@ class DOCWIRE_LOCAL_AI_EXPORT embedder
     explicit embedder(audit::auditor_ref<auditor_type> auditor);
 };
 
-} // namespace docwire::ai::local::query
+// Deduction guide for CTAD
+embedder() -> embedder<audit::null_auditor>;
 
-// Deduction guides for CTAD
-docwire::ai::local::passage::embedder() -> docwire::ai::local::passage::embedder<audit::null_auditor>;
-docwire::ai::local::query::embedder() -> docwire::ai::local::query::embedder<audit::null_auditor>;
+} // namespace docwire::ai::local::query
 
 #endif // DOCWIRE_LOCAL_AI_EMBED_H
