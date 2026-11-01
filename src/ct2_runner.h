@@ -38,15 +38,19 @@ class DOCWIRE_AI_CT2_EXPORT ct2_runner
       public with_pimpl<ct2_runner<auditor_type>>,
       private audit::with_auditor<auditor_type>
 {
-public:
+
+  public:
     /**
-     * @brief Constructor. Loads model to memory.
-     * @param model_data_path Path to the folder containing model files.
-     * @param auditor Optional injected auditor for observability.
+     * @brief Constructs the component with the default stateless auditing policy.
+     *
+     * This overload is available only when the configured auditor is stateless
+     * and therefore default-constructible.
+     *
+     * @tparam stateless_auditor_type Injected auditor type selected by this overload.
      */
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
     ct2_runner(const std::filesystem::path& model_data_path)
-        requires std::default_initializable<audit::auditor_ref<auditor_type>>
-        : ct2_runner(model_data_path, audit::auditor_ref<auditor_type>{})
+        : ct2_runner(model_data_path, audit::auditor_ref<stateless_auditor_type>{})
     {}
 
     explicit ct2_runner(

@@ -43,15 +43,23 @@ class DOCWIRE_HTTP_EXPORT post
       private audit::with_auditor<auditor_type>
 {
 public:
+	/**
+	 * @brief Constructs the component with the default stateless auditing policy.
+	 *
+	 * This overload is available only when the configured auditor is stateless
+	 * and therefore default-constructible.
+	 *
+	 * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+	 */
+	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
 	post(
 		const std::string& url,
 		const std::string& oauth2_bearer_token = "",
 		ssl_verify_peer ssl_verify_peer_v = {true})
-		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: post(url,
 		       oauth2_bearer_token,
 		       ssl_verify_peer_v,
-		       audit::auditor_ref<auditor_type>{})
+		       audit::auditor_ref<stateless_auditor_type>{})
 	{}
 
 	post(
@@ -60,6 +68,15 @@ public:
 		ssl_verify_peer ssl_verify_peer_v,
 		audit::auditor_ref<auditor_type> auditor);
 
+	/**
+	 * @brief Constructs the component with the default stateless auditing policy.
+	 *
+	 * This overload is available only when the configured auditor is stateless
+	 * and therefore default-constructible.
+	 *
+	 * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+	 */
+	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
 	post(
 		const std::string& url,
 		const std::map<std::string, std::string>& form,
@@ -67,14 +84,13 @@ public:
 		const default_file_name& default_file_name,
 		const std::string& oauth2_bearer_token = "",
 		ssl_verify_peer ssl_verify_peer_v = {true})
-		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: post(url,
 		       form,
 		       pipe_field_name,
 		       default_file_name,
 		       oauth2_bearer_token,
 		       ssl_verify_peer_v,
-		       audit::auditor_ref<auditor_type>{})
+		       audit::auditor_ref<stateless_auditor_type>{})
 	{}
 
 	post(

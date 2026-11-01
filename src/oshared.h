@@ -32,7 +32,7 @@ void parse_oshared_summary_info(
     audit::auditor_ref<auditor_type> auditor);
 
 template<typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    requires audit::stateless_auditor<auditor_type>
 void parse_oshared_summary_info(
     thread_safe_ole_storage& storage,
     attributes::metadata& meta,
@@ -52,7 +52,7 @@ void parse_oshared_document_summary_info(
     audit::auditor_ref<auditor_type> auditor);
 
 template<typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    requires audit::stateless_auditor<auditor_type>
 void parse_oshared_document_summary_info(
     thread_safe_ole_storage& storage,
     int& slide_count)
@@ -69,7 +69,7 @@ std::string get_codepage_from_document_summary_info(
     audit::auditor_ref<auditor_type> auditor);
 
 template<typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    requires audit::stateless_auditor<auditor_type>
 std::string get_codepage_from_document_summary_info(
     thread_safe_ole_storage& storage)
 {

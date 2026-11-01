@@ -84,7 +84,7 @@ public:
     {}
 
     template<typename auditor_type = audit::null_auditor>
-        requires std::default_initializable<audit::auditor_ref<auditor_type>>
+        requires audit::stateless_auditor<auditor_type>
     continuation operator()(message_ptr msg)
     {
         return m_chain(std::move(msg), audit::auditor_ref<auditor_type>{});
@@ -99,7 +99,7 @@ public:
     }
 
     template<typename auditor_type = audit::null_auditor>
-        requires std::default_initializable<audit::auditor_ref<auditor_type>>
+        requires audit::stateless_auditor<auditor_type>
     continuation operator()(
         message_ptr msg,
         const message_callbacks& emit_message)

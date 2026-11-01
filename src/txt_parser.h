@@ -34,12 +34,20 @@ class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser
 public:
 	explicit txt_parser(audit::auditor_ref<auditor_type> auditor);
 
+	/**
+	 * @brief Constructs the component with the default stateless auditing policy.
+	 *
+	 * This overload is available only when the configured auditor is stateless
+	 * and therefore default-constructible.
+	 *
+	 * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+	 */
+	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
 	txt_parser(parse_paragraphs parse_paragraphs_arg = parse_paragraphs{true},
 	           parse_lines parse_lines_arg = parse_lines{true})
-		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: txt_parser(parse_paragraphs_arg,
 		             parse_lines_arg,
-		             audit::auditor_ref<auditor_type>{})
+		             audit::auditor_ref<stateless_auditor_type>{})
 	{}
 
 	explicit txt_parser(

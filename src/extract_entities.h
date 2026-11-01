@@ -26,14 +26,22 @@ class DOCWIRE_OPENAI_EXPORT extract_entities
       public chat<auditor_type>
 {
 public:
+	/**
+	 * @brief Constructs the component with the default stateless auditing policy.
+	 *
+	 * This overload is available only when the configured auditor is stateless
+	 * and therefore default-constructible.
+	 *
+	 * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+	 */
+	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
 	extract_entities(
 		const std::string& api_key,
 		model model = model::gpt_5,
 		float temperature = 0.0f,
 		image_detail image_detail = image_detail::automatic)
-		requires std::default_initializable<audit::auditor_ref<auditor_type>>
 		: extract_entities(api_key, model, temperature, image_detail,
-		                   audit::auditor_ref<auditor_type>{})
+		                   audit::auditor_ref<stateless_auditor_type>{})
 	{}
 
 	explicit extract_entities(

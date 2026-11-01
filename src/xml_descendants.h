@@ -147,7 +147,7 @@ descendants_view<safety_level, auditor_type> descendants(
 }
 
 template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    requires audit::stateless_auditor<auditor_type>
 descendants_view<safety_level, auditor_type> descendants(
 	const node_ref<safety_level>& node)
 {
@@ -173,7 +173,7 @@ descendants_view<safety_level, auditor_type> descendants(
 }
 
 template <safety_policy safety_level, typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    requires audit::stateless_auditor<auditor_type>
 descendants_view<safety_level, auditor_type> descendants(
 	reader<safety_level>& reader)
 {

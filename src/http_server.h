@@ -139,7 +139,7 @@ public:
      */
     template<typename auditor_type = audit::null_auditor>
     void operator()()
-        requires std::default_initializable<audit::auditor_ref<auditor_type>>
+        requires audit::stateless_auditor<auditor_type>
     {
         operator()(audit::auditor_ref<auditor_type>{});
     }
@@ -163,7 +163,7 @@ public:
      */
     template<typename auditor_type = audit::null_auditor>
     void wait_until_ready()
-    	requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    	requires audit::stateless_auditor<auditor_type>
     {
     	wait_until_ready<auditor_type>(audit::auditor_ref<auditor_type>{});
     }
@@ -183,7 +183,7 @@ public:
      */
     template<typename auditor_type = audit::null_auditor>
     void stop()
-    	requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    	requires audit::stateless_auditor<auditor_type>
     {
     	stop<auditor_type>(audit::auditor_ref<auditor_type>{});
     }
@@ -351,7 +351,7 @@ certificate_info generate_self_signed_cert(
 }
 
 template<typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    requires audit::stateless_auditor<auditor_type>
 certificate_info generate_self_signed_cert(
     const std::string& common_name,
     const std::string& country,

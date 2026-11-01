@@ -32,9 +32,17 @@ class DOCWIRE_LOCAL_AI_EXPORT embedder
     , public docwire::ai::embed<auditor_type>
 {
   public:
+    /**
+     * @brief Constructs the component with the default stateless auditing policy.
+     *
+     * This overload is available only when the configured auditor is stateless
+     * and therefore default-constructible.
+     *
+     * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+     */
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
     embedder()
-        requires std::default_initializable<audit::auditor_ref<auditor_type>>
-        : embedder(audit::auditor_ref<auditor_type>{})
+        : embedder(audit::auditor_ref<stateless_auditor_type>{})
     {}
 
     explicit embedder(audit::auditor_ref<auditor_type> auditor);
@@ -56,9 +64,17 @@ class DOCWIRE_LOCAL_AI_EXPORT embedder
     , public docwire::ai::embed<auditor_type>
 {
   public:
+    /**
+     * @brief Constructs the component with the default stateless auditing policy.
+     *
+     * This overload is available only when the configured auditor is stateless
+     * and therefore default-constructible.
+     *
+     * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+     */
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
     embedder()
-        requires std::default_initializable<audit::auditor_ref<auditor_type>>
-        : embedder(audit::auditor_ref<auditor_type>{})
+        : embedder(audit::auditor_ref<stateless_auditor_type>{})
     {}
 
     explicit embedder(audit::auditor_ref<auditor_type> auditor);

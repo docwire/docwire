@@ -52,16 +52,24 @@ private:
 
 public:
 
+    /**
+     * @brief Constructs the component with the default stateless auditing policy.
+     *
+     * This overload is available only when the configured auditor is stateless
+     * and therefore default-constructible.
+     *
+     * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+     */
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
     ocr_parser(const std::vector<language>& languages = {},
         ocr_confidence_threshold ocr_confidence_threshold_arg = {},
         ocr_timeout ocr_timeout_arg = {},
         ocr_data_path ocr_data_path_arg = {})
-        requires std::default_initializable<audit::auditor_ref<auditor_type>>
         : ocr_parser(languages,
               ocr_confidence_threshold_arg,
               ocr_timeout_arg,
               ocr_data_path_arg,
-              audit::auditor_ref<auditor_type>{})
+              audit::auditor_ref<stateless_auditor_type>{})
     {}
 
     explicit ocr_parser(const std::vector<language>& languages,

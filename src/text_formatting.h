@@ -55,7 +55,7 @@ inline int prepareTable(
 }
 
 template<typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    requires audit::stateless_auditor<auditor_type>
 inline int prepareTable(std::vector<svector>& p_table)
 {
     return prepareTable<auditor_type>(
@@ -90,7 +90,7 @@ inline int prepareList(
 }
 
 template<typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    requires audit::stateless_auditor<auditor_type>
 inline int prepareList(std::vector<std::string>& p_list)
 {
     return prepareList<auditor_type>(
@@ -128,7 +128,7 @@ inline std::string formatTable(
 }
 
 template<typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    requires audit::stateless_auditor<auditor_type>
 inline std::string formatTable(std::vector<svector>& mcols)
 {
     return formatTable<auditor_type>(
@@ -155,7 +155,7 @@ inline std::string formatUrl(
 }
 
 template<typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    requires audit::stateless_auditor<auditor_type>
 inline std::string formatUrl(
     const std::string& mlink_url,
     const std::string& mlink_text)
@@ -185,7 +185,7 @@ inline std::string formatList(
 }
 
 template<typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    requires audit::stateless_auditor<auditor_type>
 inline std::string formatList(std::vector<std::string>& mlist)
 {
     return formatList<auditor_type>(
@@ -216,7 +216,7 @@ inline std::string formatNumberedList(
 }
 
 template<typename auditor_type = audit::null_auditor>
-    requires std::default_initializable<audit::auditor_ref<auditor_type>>
+    requires audit::stateless_auditor<auditor_type>
 inline std::string formatNumberedList(std::vector<std::string>& mlist)
 {
     return formatNumberedList<auditor_type>(

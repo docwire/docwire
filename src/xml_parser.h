@@ -31,9 +31,17 @@ class DOCWIRE_XML_EXPORT xml_parser : public pipeline::transformer_element<xml_p
 {
     using audit::with_auditor<auditor_type>::auditor;
 public:
+	/**
+	 * @brief Constructs the component with the default stateless auditing policy.
+	 *
+	 * This overload is available only when the configured auditor is stateless
+	 * and therefore default-constructible.
+	 *
+	 * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+	 */
+	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
 	xml_parser()
-		requires std::default_initializable<audit::auditor_ref<auditor_type>>
-		: xml_parser(audit::auditor_ref<auditor_type>{})
+		: xml_parser(audit::auditor_ref<stateless_auditor_type>{})
 	{}
 
 	explicit xml_parser(audit::auditor_ref<auditor_type> auditor)

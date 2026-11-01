@@ -38,12 +38,20 @@ public:
      * @param prefix The string to prepend to the input text. Use an empty string for no prefix.
      * @param auditor Optional injected auditor for observability.
      */
+    /**
+     * @brief Constructs the component with the default stateless auditing policy.
+     *
+     * This overload is available only when the configured auditor is stateless
+     * and therefore default-constructible.
+     *
+     * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+     */
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
     embed(
         not_null<std::shared_ptr<ai_runner>> model_runner,
         std::string prefix)
-        requires std::default_initializable<audit::auditor_ref<auditor_type>>
         : embed(std::move(model_runner), std::move(prefix),
-                audit::auditor_ref<auditor_type>{})
+                audit::auditor_ref<stateless_auditor_type>{})
     {}
 
     explicit embed(

@@ -29,9 +29,17 @@ class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT doc_parser
       private audit::with_auditor<auditor_type>
 {
 public:
+    /**
+     * @brief Constructs the component with the default stateless auditing policy.
+     *
+     * This overload is available only when the configured auditor is stateless
+     * and therefore default-constructible.
+     *
+     * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+     */
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
     doc_parser()
-        requires std::default_initializable<audit::auditor_ref<auditor_type>>
-        : doc_parser(audit::auditor_ref<auditor_type>{})
+        : doc_parser(audit::auditor_ref<stateless_auditor_type>{})
     {}
 
     explicit doc_parser(audit::auditor_ref<auditor_type> auditor);
