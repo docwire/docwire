@@ -78,6 +78,9 @@ private:
 	using with_pimpl<embed<auditor_type>>::impl;
 };
 
+// Deduction guide for CTAD
+embed(const std::string&, embed_model) -> embed<audit::null_auditor>;
+
 } // namespace openai
 } // namespace docwire
 

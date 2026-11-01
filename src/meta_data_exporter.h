@@ -75,6 +75,9 @@ inline continuation metadata_exporter<auditor_type>::operator()(message_ptr msg,
 	return continuation::proceed;
 }
 
+// Deduction guide for CTAD
+metadata_exporter() -> metadata_exporter<audit::null_auditor>;
+
 } // namespace docwire
 
 #endif //DOCWIRE_META_DATA_EXPORTER_H

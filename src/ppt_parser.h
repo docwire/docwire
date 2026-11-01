@@ -50,6 +50,9 @@ private:
 	using audit::with_auditor<auditor_type>::auditor;
 };
 
+// Deduction guide for CTAD
+ppt_parser() -> ppt_parser<audit::null_auditor>;
+
 } // namespace docwire
 
 #endif

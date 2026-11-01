@@ -56,6 +56,9 @@ private:
 	using audit::with_auditor<auditor_type>::auditor;
 };
 
+// Deduction guide for CTAD
+archives_parser() -> archives_parser<audit::null_auditor>;
+
 } // namespace docwire
 
 #endif // DOCWIRE_ARCHIVES_PARSER_H

@@ -55,6 +55,9 @@ public:
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
 
+// Deduction guide for CTAD
+xlsb_parser() -> xlsb_parser<audit::null_auditor>;
+
 } // namespace docwire
 
 #endif

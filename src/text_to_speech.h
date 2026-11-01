@@ -81,6 +81,9 @@ private:
 	using with_pimpl<text_to_speech<auditor_type>>::impl;
 };
 
+// Deduction guide for CTAD
+text_to_speech(const std::string&, text_to_speech_model, text_to_speech_voice) -> text_to_speech<audit::null_auditor>;
+
 } // namespace openai
 } // namespace docwire
 

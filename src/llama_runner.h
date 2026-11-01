@@ -59,6 +59,9 @@ class DOCWIRE_AI_LLAMA_EXPORT llama_runner
     using audit::with_auditor<auditor_type>::auditor;
 };
 
+// Deduction guide for CTAD
+llama_runner(const model_inference_config&) -> llama_runner<docwire::audit::null_auditor>;
+
 } // namespace docwire::ai::llama
 
 #endif

@@ -56,6 +56,9 @@ private:
   friend pimpl_impl<html_exporter<auditor_type>>;
 };
 
+// Deduction guide for CTAD
+html_exporter() -> html_exporter<audit::null_auditor>;
+
 } // namespace docwire
 
 #endif //DOCWIRE_HTML_EXPORTER_H

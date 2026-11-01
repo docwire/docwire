@@ -88,6 +88,9 @@ class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser
     continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
 
+// Deduction guide for CTAD
+odf_ooxml_parser() -> odf_ooxml_parser<default_safety_level, audit::null_auditor>;
+
 } // namespace docwire
 
 #endif

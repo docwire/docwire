@@ -54,6 +54,9 @@ public:
 		audit::auditor_ref<auditor_type> auditor);
 };
 
+// Deduction guide for CTAD
+find(const std::string&, const std::string&, model, float, image_detail) -> find<audit::null_auditor>;
+
 } // namespace openai
 } // namespace docwire
 

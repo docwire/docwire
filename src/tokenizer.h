@@ -58,6 +58,9 @@ private:
     using audit::with_auditor<auditor_type>::auditor;
 };
 
+// Deduction guide for CTAD
+tokenizer(const std::filesystem::path&) -> tokenizer<audit::null_auditor>;
+
 } // namespace docwire::ai::ct2
 
 #endif // DOCWIRE_AI_TOKENIZER_H

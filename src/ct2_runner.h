@@ -82,6 +82,9 @@ private:
     using audit::with_auditor<auditor_type>::auditor;
 };
 
+// Deduction guide for CTAD
+ct2_runner(const std::filesystem::path&) -> ct2_runner<audit::null_auditor>;
+
 } // namespace docwire::ai::ct2
 
 #endif // DOCWIRE_AI_CT2_RUNNER_H

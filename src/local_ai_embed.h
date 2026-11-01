@@ -82,4 +82,8 @@ class DOCWIRE_LOCAL_AI_EXPORT embedder
 
 } // namespace docwire::ai::local::query
 
+// Deduction guides for CTAD
+docwire::ai::local::passage::embedder() -> docwire::ai::local::passage::embedder<audit::null_auditor>;
+docwire::ai::local::query::embedder() -> docwire::ai::local::query::embedder<audit::null_auditor>;
+
 #endif // DOCWIRE_LOCAL_AI_EMBED_H

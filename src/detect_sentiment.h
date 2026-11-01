@@ -52,6 +52,9 @@ public:
 		audit::auditor_ref<auditor_type> auditor);
 };
 
+// Deduction guide for CTAD
+detect_sentiment(const std::string&, model, float, image_detail) -> detect_sentiment<audit::null_auditor>;
+
 } // namespace openai
 } // namespace docwire
 

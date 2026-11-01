@@ -117,6 +117,9 @@ private:
 	using with_pimpl<chat<auditor_type>>::impl;
 };
 
+// Deduction guide for CTAD
+chat(const std::string&, const std::string&, model, float, image_detail) -> chat<audit::null_auditor>;
+
 } // namespace openai
 } // namespace docwire
 

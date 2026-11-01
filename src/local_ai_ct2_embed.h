@@ -64,6 +64,9 @@ public:
     {}
 };
 
+// Deduction guide for CTAD
+embedder() -> embedder<docwire::audit::null_auditor>;
+
 } // namespace docwire::ai::local::ct2::passage
 
 namespace docwire::ai::local::ct2::query
@@ -103,6 +106,9 @@ public:
               auditor)
     {}
 };
+
+// Deduction guide for CTAD
+embedder() -> embedder<docwire::audit::null_auditor>;
 
 } // namespace docwire::ai::local::ct2::query
 

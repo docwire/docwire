@@ -72,6 +72,9 @@ private:
 	using with_pimpl<transcribe<auditor_type>>::impl;
 };
 
+// Deduction guide for CTAD
+transcribe(const std::string&, transcribe_model) -> transcribe<audit::null_auditor>;
+
 } // namespace openai
 } // namespace docwire
 

@@ -56,6 +56,9 @@ public:
     std::string parse(thread_safe_ole_storage& storage, const message_callbacks& emit_message);
 };
 
+// Deduction guide for CTAD
+xls_parser() -> xls_parser<audit::null_auditor>;
+
 } // namespace docwire
 
 #endif

@@ -53,6 +53,9 @@ private:
 	friend pimpl_impl<iwork_parser<auditor_type>>;
 };
 
+// Deduction guide for CTAD
+iwork_parser() -> iwork_parser<audit::null_auditor>;
+
 } // namespace docwire
 
 #endif

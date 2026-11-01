@@ -54,6 +54,9 @@ public:
   continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
 
+// Deduction guide for CTAD
+pst_parser() -> pst_parser<audit::null_auditor>;
+
 } // namespace docwire
 
 #endif //DOCWIRE_PST_PARSER_H

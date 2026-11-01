@@ -54,6 +54,9 @@ class DOCWIRE_HTML_EXPORT html_parser
 		void skipCharsetDecoding();
 };
 
+// Deduction guide for CTAD
+html_parser() -> html_parser<audit::null_auditor>;
+
 } // namespace docwire
 
 #endif
