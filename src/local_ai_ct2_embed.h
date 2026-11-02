@@ -37,7 +37,7 @@ namespace docwire::ai::local::ct2::passage
  * knowledge is required at the call site.
  */
 template<typename auditor_type = docwire::audit::null_auditor>
-class DOCWIRE_AI_CT2_EXPORT embedder
+class embedder
     : public docwire::pipeline::transformer_element<embedder<auditor_type>>
     , public docwire::ai::embed<auditor_type>
 {
@@ -80,7 +80,7 @@ namespace docwire::ai::local::ct2::query
  * knowledge is required at the call site.
  */
 template<typename auditor_type = docwire::audit::null_auditor>
-class DOCWIRE_AI_CT2_EXPORT embedder
+class embedder
     : public docwire::pipeline::transformer_element<embedder<auditor_type>>
     , public docwire::ai::embed<auditor_type>
 {
