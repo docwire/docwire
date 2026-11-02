@@ -49,12 +49,11 @@ inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner(
         auditor);
 }
 
-template<typename auditor_type = docwire::audit::null_auditor>
-    requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
+template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
 inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
 {
-    return make_default_runner<auditor_type>(
-        docwire::audit::auditor_ref<auditor_type>{});
+    return make_default_runner<stateless_auditor_type>(
+        docwire::audit::auditor_ref<stateless_auditor_type>{});
 }
 #endif
 
@@ -68,13 +67,12 @@ inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
         auditor);
 }
 
-template<typename auditor_type = docwire::audit::null_auditor>
-    requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
+template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
 inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
     const std::filesystem::path& model_path)
 {
-    return make_runner<auditor_type>(
-        model_path, docwire::audit::auditor_ref<auditor_type>{});
+    return make_runner<stateless_auditor_type>(
+        model_path, docwire::audit::auditor_ref<stateless_auditor_type>{});
 }
 
 template<typename auditor_type>
@@ -87,15 +85,14 @@ inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
         auditor);
 }
 
-template<typename auditor_type = docwire::audit::null_auditor>
-    requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
+template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
 inline std::shared_ptr<docwire::ai::ai_runner> make_runner(
     model_inference_config config)
 {
-    return make_runner<auditor_type>(
-        std::move(config), docwire::audit::auditor_ref<auditor_type>{});
+    return make_runner<stateless_auditor_type>(
+        std::move(config), docwire::audit::auditor_ref<stateless_auditor_type>{});
 }
 
 } // namespace docwire::ai::local::llama
 
-#endif // DOCWIRE_LOCAL_AI_LLAMA_RUNNER_FACTORY_H
+#endif

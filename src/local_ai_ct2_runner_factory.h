@@ -33,12 +33,11 @@ inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner(
         auditor);
 }
 
-template<typename auditor_type = docwire::audit::null_auditor>
-    requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
+template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
 inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
 {
-    return make_default_runner<auditor_type>(
-        docwire::audit::auditor_ref<auditor_type>{});
+    return make_default_runner<stateless_auditor_type>(
+        docwire::audit::auditor_ref<stateless_auditor_type>{});
 }
 
 template<typename auditor_type>
@@ -50,12 +49,11 @@ inline std::shared_ptr<docwire::ai::ai_runner> make_embedding_runner(
         auditor);
 }
 
-template<typename auditor_type = docwire::audit::null_auditor>
-    requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
+template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
 inline std::shared_ptr<docwire::ai::ai_runner> make_embedding_runner()
 {
-    return make_embedding_runner<auditor_type>(
-        docwire::audit::auditor_ref<auditor_type>{});
+    return make_embedding_runner<stateless_auditor_type>(
+        docwire::audit::auditor_ref<stateless_auditor_type>{});
 }
 
 } // namespace docwire::ai::local::ct2

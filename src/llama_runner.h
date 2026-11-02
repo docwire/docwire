@@ -36,12 +36,12 @@ class DOCWIRE_AI_LLAMA_EXPORT llama_runner
 {
 
   public:
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
     llama_runner(
         const model_inference_config& config)
-        requires std::default_initializable<docwire::audit::auditor_ref<auditor_type>>
         : llama_runner(
               config,
-              docwire::audit::auditor_ref<auditor_type>{})
+              docwire::audit::auditor_ref<stateless_auditor_type>{})
     {}
 
     explicit llama_runner(
