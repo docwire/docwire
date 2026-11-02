@@ -24,6 +24,21 @@
 namespace docwire
 {
 
+// Forward declaration so the detail alias can reference the class.
+template<typename auditor_type>
+class mail_parser;
+
+namespace detail
+{
+
+template<typename auditor_type>
+using mail_parser_base = pipeline::composition_wrapper<
+    mail_parser<auditor_type>,
+    eml_parser<auditor_type>,
+    pst_parser<auditor_type>>;
+
+} // namespace detail
+
 /**
  * @brief Composite parser for email formats.
  *
@@ -37,16 +52,10 @@ namespace docwire
  */
 template<typename auditor_type = audit::null_auditor>
 class mail_parser
-    : public pipeline::composition_wrapper<
-          mail_parser<auditor_type>,
-          eml_parser<auditor_type>,
-          pst_parser<auditor_type>>
+    : public detail::mail_parser_base<auditor_type>
 {
 public:
-    using base_type = pipeline::composition_wrapper<
-        mail_parser<auditor_type>,
-        eml_parser<auditor_type>,
-        pst_parser<auditor_type>>;
+    using base_type = detail::mail_parser_base<auditor_type>;
 
     /**
      * @brief Constructs the composite parser with the default stateless audit policy.

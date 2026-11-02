@@ -34,6 +34,31 @@
 namespace docwire
 {
 
+// Forward declaration so the detail alias can reference the class.
+template <safety_policy safety_level, typename auditor_type>
+class office_formats_parser;
+
+namespace detail
+{
+
+template <safety_policy safety_level, typename auditor_type>
+using office_formats_parser_base = pipeline::composition_wrapper<
+    office_formats_parser<safety_level, auditor_type>,
+    html_parser<auditor_type>,
+    doc_parser<auditor_type>,
+    pdf_parser<auditor_type>,
+    xls_parser<auditor_type>,
+    xlsb_parser<auditor_type>,
+    iwork_parser<auditor_type>,
+    ppt_parser<auditor_type>,
+    rtf_parser<auditor_type>,
+    odf_ooxml_parser<safety_level, auditor_type>,
+    odfxml_parser<safety_level, auditor_type>,
+    xml_parser<safety_level, auditor_type>,
+    txt_parser<auditor_type>>;
+
+} // namespace detail
+
 /**
  * @brief Composite parser for common office document formats.
  *
@@ -49,36 +74,10 @@ namespace docwire
 template <safety_policy safety_level = default_safety_level,
           typename auditor_type = audit::null_auditor>
 class office_formats_parser
-    : public pipeline::composition_wrapper<
-          office_formats_parser<safety_level, auditor_type>,
-          html_parser<auditor_type>,
-          doc_parser<auditor_type>,
-          pdf_parser<auditor_type>,
-          xls_parser<auditor_type>,
-          xlsb_parser<auditor_type>,
-          iwork_parser<auditor_type>,
-          ppt_parser<auditor_type>,
-          rtf_parser<auditor_type>,
-          odf_ooxml_parser<safety_level, auditor_type>,
-          odfxml_parser<safety_level, auditor_type>,
-          xml_parser<safety_level, auditor_type>,
-          txt_parser<auditor_type>>
+    : public detail::office_formats_parser_base<safety_level, auditor_type>
 {
 public:
-    using base_type = pipeline::composition_wrapper<
-        office_formats_parser<safety_level, auditor_type>,
-        html_parser<auditor_type>,
-        doc_parser<auditor_type>,
-        pdf_parser<auditor_type>,
-        xls_parser<auditor_type>,
-        xlsb_parser<auditor_type>,
-        iwork_parser<auditor_type>,
-        ppt_parser<auditor_type>,
-        rtf_parser<auditor_type>,
-        odf_ooxml_parser<safety_level, auditor_type>,
-        odfxml_parser<safety_level, auditor_type>,
-        xml_parser<safety_level, auditor_type>,
-        txt_parser<auditor_type>>;
+    using base_type = detail::office_formats_parser_base<safety_level, auditor_type>;
 
     /**
      * @brief Constructs the composite parser with the default stateless audit policy.
