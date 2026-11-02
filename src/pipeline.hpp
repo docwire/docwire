@@ -15,6 +15,7 @@
 // IWYU pragma: begin_exports
 #include "pipeline/element_base.hpp"
 #include "pipeline/chain_expression.hpp"
+#include "pipeline/composition.hpp"
 #include "pipeline/variant_expression.hpp"
 #include "pipeline/input_element.hpp"
 #include "pipeline/output_element.hpp"

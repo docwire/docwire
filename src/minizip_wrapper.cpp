@@ -11,7 +11,6 @@
 
 #include "minizip_wrapper.h"
 
-#include "log_scope.h"
 #include "throw_if.h"
 #include "unzip.h"
 

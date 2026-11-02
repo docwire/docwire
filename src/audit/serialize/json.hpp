@@ -9,57 +9,61 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOG_RECORD_H
-#define DOCWIRE_LOG_RECORD_H
+#ifndef DOCWIRE_AUDIT_SERIALIZE_JSON_HPP
+#define DOCWIRE_AUDIT_SERIALIZE_JSON_HPP
 
-#include "core_export.h"
-#include "serialization_base.h"
-#include "source_location.h"
+#include "../detail/chaining.hpp"
+#include "../detail/value_conversion.hpp"
+#include "../../serialization_base.h"
+#include "../../source_location.h"
 
-#include <atomic>
-#include <functional>
-#include <mutex>
+#include <type_traits>
+#include <utility>
 
-namespace docwire::log
+namespace docwire::audit::serialize
 {
 
-/**
- * @brief Immutable log record containing the source location and structured context.
- */
-struct record;
-
-namespace detail
+template<typename Next = void>
+class json
 {
-DOCWIRE_CORE_EXPORT extern std::recursive_mutex g_log_callback_mutex;
-DOCWIRE_CORE_EXPORT extern std::function<void(const record&)> g_log_callback;
-DOCWIRE_CORE_EXPORT extern std::atomic<bool> g_logging_enabled;
-}
+    template<typename> friend class json;
 
-struct record
-{
-    source_location m_location;
-    serialization::array m_context;
+public:
+    json() requires std::is_void_v<Next> = default;
 
-    record(source_location location, serialization::array&& context)
-        : m_location(location), m_context(std::move(context))
+    template<typename R>
+    auto operator|(R&& next) &&
+    {
+        return std::move(*this).with_next(std::forward<R>(next));
+    }
+
+    template<typename R>
+    auto with_next(R&& next) &&
+    {
+        return json<std::decay_t<R>>(std::forward<R>(next));
+    }
+
+    template<typename... Args>
+        requires (!std::is_void_v<Next>)
+    void record(source_location location, Args&&... args)
+    {
+        auto context = detail::build_context(std::forward<Args>(args)...);
+        auto record_object = detail::create_record_object(location, std::move(context));
+        m_next.record(location, std::move(record_object));
+    }
+
+private:
+    template<typename NextParam>
+    explicit json(NextParam&& next)
+        requires (!std::is_void_v<Next> &&
+                  std::constructible_from<detail::next_storage_t<Next>, NextParam&&>)
+        : m_next(std::forward<NextParam>(next))
     {
     }
 
-    ~record()
-    {
-        try
-        {
-            std::lock_guard lock(detail::g_log_callback_mutex);
-            if (detail::g_logging_enabled.load(std::memory_order_acquire) && detail::g_log_callback)
-                detail::g_log_callback(*this);
-        }
-        catch (...)
-        {
-            // Destructors must never throw.
-        }
-    }
+    detail::next_storage_t<Next> m_next;
 };
 
-} // namespace docwire::log
+} // namespace docwire::audit::serialize
 
-#endif // DOCWIRE_LOG_RECORD_H
+#endif

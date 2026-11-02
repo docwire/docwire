@@ -12,10 +12,12 @@
 #ifndef DOCWIRE_ODFOOXML_PARSER_H
 #define DOCWIRE_ODFOOXML_PARSER_H
 
+#include "audit.hpp"
 #include "common_xml_document_parser.h"
 #include "data_source.h"
 #include "odf_ooxml_export.h"
 #include "safety_policy.h"
+#include <concepts>
 
 namespace docwire
 {
@@ -23,16 +25,18 @@ namespace docwire
 /**
  * @brief A parser for ODF and OOXML document formats.
  * @tparam safety_level The safety policy to use.
+ * @tparam auditor_type The injected auditor type.
  */
-template <safety_policy safety_level = default_safety_level>
+template <safety_policy safety_level = default_safety_level,
+          typename auditor_type = audit::null_auditor>
 class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser
-    : public common_xml_document_parser<safety_level>,
-      public pipeline::transformer_element<odf_ooxml_parser<safety_level>>,
-      public with_pimpl<odf_ooxml_parser<safety_level>>
+    : public common_xml_document_parser<safety_level, auditor_type>,
+      public pipeline::transformer_element<odf_ooxml_parser<safety_level, auditor_type>>,
+      public with_pimpl<odf_ooxml_parser<safety_level, auditor_type>>
 {
-    using base_type = common_xml_document_parser<safety_level>;
-    using with_pimpl<odf_ooxml_parser<safety_level>>::impl;
-    friend pimpl_impl<odf_ooxml_parser<safety_level>>;
+    using base_type = common_xml_document_parser<safety_level, auditor_type>;
+    using with_pimpl<odf_ooxml_parser<safety_level, auditor_type>>::impl;
+    friend pimpl_impl<odf_ooxml_parser<safety_level, auditor_type>>;
 
     using base_type::registerODFOOXMLCommandHandler;
     using base_type::blanks;
@@ -42,6 +46,7 @@ class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser
     using base_type::parseXmlChildren;
     using base_type::getSharedStrings;
     using base_type::activeEmittingSignals;
+    using base_type::auditor;
     using shared_string = base_type::shared_string;
     using scoped_context_stack_push = base_type::scoped_context_stack_push;
 
@@ -63,15 +68,28 @@ class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser
     void parse(const data_source& data, const message_callbacks& emit_message);
 
     /**
-     * @brief Default constructor.
+     * @brief Constructs the component with the default stateless auditing policy.
+     *
+     * This overload is available only when the configured auditor is stateless
+     * and therefore default-constructible.
+     *
+     * @tparam stateless_auditor_type Injected auditor type selected by this overload.
      */
-    odf_ooxml_parser();
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+    odf_ooxml_parser()
+        : odf_ooxml_parser(audit::auditor_ref<stateless_auditor_type>{})
+    {}
+
+    explicit odf_ooxml_parser(audit::auditor_ref<auditor_type> auditor);
     /**
      * @brief Processes a message in the parsing chain.
      * @return The continuation status.
      */
     continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
+
+// Deduction guide for CTAD
+odf_ooxml_parser() -> odf_ooxml_parser<default_safety_level, audit::null_auditor>;
 
 } // namespace docwire
 

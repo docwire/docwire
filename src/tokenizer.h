@@ -14,6 +14,9 @@
 
 #include "ai_ct2_export.h"
 #include "pimpl.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
+#include <concepts>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -21,17 +24,42 @@
 namespace docwire::ai::ct2
 {
 
-class DOCWIRE_AI_CT2_EXPORT tokenizer : public with_pimpl<tokenizer>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_AI_CT2_EXPORT tokenizer
+    : public with_pimpl<tokenizer<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
 public:
-    tokenizer(const std::filesystem::path& model_data_path);
+    /**
+     * @brief Constructs the component with the default stateless auditing policy.
+     *
+     * This overload is available only when the configured auditor is stateless
+     * and therefore default-constructible.
+     *
+     * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+     */
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+    tokenizer(const std::filesystem::path& model_data_path)
+        : tokenizer(model_data_path, audit::auditor_ref<stateless_auditor_type>{})
+    {}
+
+    explicit tokenizer(
+        const std::filesystem::path& model_data_path,
+        audit::auditor_ref<auditor_type> auditor);
 
     std::vector<std::string> tokenize(const std::string& input);
 
     std::vector<int> encode(const std::string& input);
 
     std::string detokenize(const std::vector<std::string>& output_tokens);
+
+private:
+    using with_pimpl<tokenizer<auditor_type>>::impl;
+    using audit::with_auditor<auditor_type>::auditor;
 };
+
+// Deduction guide for CTAD
+tokenizer(const std::filesystem::path&) -> tokenizer<audit::null_auditor>;
 
 } // namespace docwire::ai::ct2
 

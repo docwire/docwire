@@ -9,32 +9,59 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOG_JSON_STREAM_SINK_H
-#define DOCWIRE_LOG_JSON_STREAM_SINK_H
+#ifndef DOCWIRE_AUDIT_SINK_OSTREAM_HPP
+#define DOCWIRE_AUDIT_SINK_OSTREAM_HPP
 
-#include "core_export.h"
-#include <functional>
-#include "log_core.h"
-#include <ostream>
-#include "ref_or_owned.h"
-#include "json_serialization.h"
+#include "../../json_serialization.h"
+#include "../../ref_or_owned.h"
+#include "../../serialization_base.h"
+#include "../../source_location.h"
+
+#include <iostream>
 #include <memory>
 #include <mutex>
+#include <ostream>
+#include <string>
 #include <utility>
 
-namespace docwire::log
+namespace docwire::audit::sink
 {
 
-inline std::function<void(const record&)> json_stream_sink(ref_or_owned<std::ostream> stream)
+class ostream
 {
-    struct stream_state
+public:
+    explicit ostream(ref_or_owned<std::ostream> stream)
+        : m_state(std::make_shared<state>(std::move(stream)))
     {
-        ref_or_owned<std::ostream> m_stream;
-        bool m_first_log = true;
-        std::mutex m_mutex;
+    }
 
-        explicit stream_state(ref_or_owned<std::ostream> s) : m_stream(std::move(s)) {}
-        ~stream_state()
+    void record(source_location, const serialization::object& record_object)
+    {
+        std::string json_output = serialization::to_json(record_object);
+
+        std::lock_guard lock(m_state->m_mutex);
+        if (m_state->m_first_log)
+        {
+            m_state->m_stream.get() << "[" << std::endl;
+            m_state->m_first_log = false;
+        }
+        else
+        {
+            m_state->m_stream.get() << "," << std::endl;
+        }
+
+        m_state->m_stream.get() << json_output;
+    }
+
+private:
+    struct state
+    {
+        explicit state(ref_or_owned<std::ostream> stream)
+            : m_stream(std::move(stream))
+        {
+        }
+
+        ~state()
         {
             if (!m_first_log)
             {
@@ -42,30 +69,15 @@ inline std::function<void(const record&)> json_stream_sink(ref_or_owned<std::ost
                 m_stream.get() << std::endl << "]" << std::endl;
             }
         }
+
+        ref_or_owned<std::ostream> m_stream;
+        bool m_first_log{true};
+        std::mutex m_mutex;
     };
 
-    auto state = std::make_shared<stream_state>(std::move(stream));
+    std::shared_ptr<state> m_state;
+};
 
-    return [state](const record& rec)
-    {
-        serialization::object log_record_object = create_base_metadata(rec.m_location);
-        log_record_object.v["log"] = rec.m_context;
-        std::string json_output = serialization::to_json(log_record_object);
+} // namespace docwire::audit::sink
 
-        std::lock_guard lock(state->m_mutex);
-        if (state->m_first_log)
-        {
-            state->m_stream.get() << "[" << std::endl;
-            state->m_first_log = false;
-        }
-        else
-        {
-            state->m_stream.get() << "," << std::endl;
-        }
-        state->m_stream.get() << json_output;
-    };
-}
-
-} // namespace docwire::log
-
-#endif // DOCWIRE_LOG_JSON_STREAM_SINK_H
+#endif

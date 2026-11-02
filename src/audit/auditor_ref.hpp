@@ -9,23 +9,52 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOG_SINK_GLOBALS_H
-#define DOCWIRE_LOG_SINK_GLOBALS_H
+#ifndef DOCWIRE_AUDIT_AUDITOR_REF_H
+#define DOCWIRE_AUDIT_AUDITOR_REF_H
 
-#include "core_export.h"
-#include "log_record.h"
+#include "core.hpp"
 
-#include <atomic>
-#include <functional>
-#include <mutex>
+#include <concepts>
+#include <type_traits>
+#include <utility>
 
-namespace docwire::log::detail
+namespace docwire::audit
 {
 
-DOCWIRE_CORE_EXPORT extern std::recursive_mutex g_log_callback_mutex;
-DOCWIRE_CORE_EXPORT extern std::function<void(const record&)> g_log_callback;
-DOCWIRE_CORE_EXPORT extern std::atomic<bool> g_logging_enabled;
+template<typename auditor_type>
+class auditor_ref
+{
+public:
+    constexpr auditor_ref(auditor_type& auditor) noexcept
+        : m_ptr(&auditor)
+    {}
 
-} // namespace docwire::log::detail
+    constexpr auditor_type& auditor() noexcept { return *m_ptr; }
+    constexpr auditor_type& auditor() const noexcept { return *m_ptr; }
 
-#endif // DOCWIRE_LOG_SINK_GLOBALS_H
+private:
+    auditor_type* m_ptr;
+};
+
+template<typename auditor_type>
+requires std::is_empty_v<auditor_type>
+class auditor_ref<auditor_type> : public auditor_type
+{
+public:
+    constexpr auditor_ref() requires std::default_initializable<auditor_type> = default;
+    constexpr auditor_ref(auditor_type&) noexcept {}
+
+    constexpr auditor_type& auditor() noexcept { return *this; }
+    constexpr auditor_type& auditor() const noexcept
+    {
+        return const_cast<auditor_type&>(static_cast<const auditor_type&>(*this));
+    }
+};
+
+template<typename T>
+concept stateless_auditor =
+    std::default_initializable<auditor_ref<T>>;
+
+} // namespace docwire::audit
+
+#endif

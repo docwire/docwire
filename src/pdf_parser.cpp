@@ -16,8 +16,12 @@
 #include "data_source.h"
 #include "document_elements.h"
 #include "error_tags.h"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/json_stream_auditor.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include "make_error.h"
 #include <leptonica/allheaders.h>
 #include <mutex>
@@ -52,9 +56,26 @@ namespace
 using pix_unique_ptr = std::unique_ptr<PIX, decltype([](PIX* pix) { pixDestroy(&pix); })>;
 using leptonica_data_ptr = std::unique_ptr<l_uint8, decltype(&lept_free)>;
 
-pix_unique_ptr create_pix_from_fpdf_bitmap(int width, int height, int stride, int format, const unsigned char* pixels, l_int32 horizontal_dpi, l_int32 vertical_dpi)
+template<typename auditor_type = audit::null_auditor>
+pix_unique_ptr create_pix_from_fpdf_bitmap(
+	int width,
+	int height,
+	int stride,
+	int format,
+	const unsigned char* pixels,
+	l_int32 horizontal_dpi,
+	l_int32 vertical_dpi,
+	audit::auditor_ref<auditor_type> auditor = {})
 {
-	log_scope(width, height, stride, format, horizontal_dpi, vertical_dpi);
+	audit::scope audit_scope{auditor, [&]{
+		return
+			"width"_v = width,
+			"height"_v = height,
+			"stride"_v = stride,
+			"format"_v = format,
+			"horizontal_dpi"_v = horizontal_dpi,
+			"vertical_dpi"_v = vertical_dpi;
+	}};
 	pix_unique_ptr pix;
 
 	if (format == FPDFBitmap_Gray)
@@ -228,9 +249,17 @@ bool begins_with_whitespace(const std::string& s) {
 
 } // anonymous namespace
 	
-template<>
-struct pimpl_impl<pdf_parser> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<pdf_parser<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
+	using audit::with_auditor<auditor_type>::auditor;
+
+	explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor}
+	{}
+
 	std::stack<context> m_context_stack;
 
 	template <typename T>
@@ -252,13 +281,13 @@ struct pimpl_impl<pdf_parser> : pimpl_impl_base
 
 	void parseText()
 	{
-		log_scope();
+		audit::scope parse_text_audit_scope{auditor(), audit::no_context};
 		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
 		int page_count = FPDF_GetPageCount(pdf_document());
-		log_entry(page_count);
+		audit::entry(auditor(), [&]{ return "page_count"_v = page_count; });
 		for (size_t page_num = 0; page_num < page_count; page_num++)
 		{
-			log_scope(page_num);
+			audit::scope page_audit_scope{auditor(), [&]{ return "page_num"_v = page_num; }};
 			auto response = emit_message(document::page{});
 			if (response == continuation::skip)
 			{
@@ -316,9 +345,9 @@ struct pimpl_impl<pdf_parser> : pimpl_impl_base
 							FPDF_FONT font = FPDFTextObj_GetFont(object);
 							if (font)
 							{
-								log_scope();
+								audit::scope font_audit_scope{auditor(), audit::no_context};
 								if (!FPDFTextObj_GetFontSize(object, &font_size_val) || font_size_val <= 0) {
-            						log_entry();
+									audit::entry(auditor(), audit::no_context);
 									font_size_val = 10.0f; // Default if not found
 								}
     						}
@@ -353,7 +382,9 @@ struct pimpl_impl<pdf_parser> : pimpl_impl_base
 									v_res = static_cast<l_int32>(image_metadata.vertical_dpi);
 							}
 
-            				pix_unique_ptr pix = create_pix_from_fpdf_bitmap(width, height, stride, format, pixels, h_res, v_res);
+            				pix_unique_ptr pix = create_pix_from_fpdf_bitmap(
+            					width, height, stride, format, pixels, h_res, v_res,
+            					auditor());
 			                l_uint8* png_data_raw = nullptr;
             			    size_t png_size = 0;
                 			leptonica_data_ptr png_data(nullptr, lept_free);
@@ -563,7 +594,7 @@ struct pimpl_impl<pdf_parser> : pimpl_impl_base
 
 	void parseMetadata(attributes::metadata& metadata)
 	{
-		log_scope();
+		audit::scope metadata_audit_scope{auditor(), audit::no_context};
 		std::string author_str = get_meta_text("Author");
 		if (!author_str.empty())
 			metadata.author = author_str;
@@ -616,7 +647,7 @@ struct pimpl_impl<pdf_parser> : pimpl_impl_base
 
 	void loadDocument(const data_source& data)
 	{
-		log_scope();
+		audit::scope load_document_audit_scope{auditor(), audit::no_context};
 		std::span<const std::byte> span = data.span();
 		init_pdfium_once();
 		std::lock_guard<std::mutex> pdfium_mutex_lock(pdfium_mutex);
@@ -642,18 +673,25 @@ struct pimpl_impl<pdf_parser> : pimpl_impl_base
 	void parse(const data_source& data, const message_callbacks& emit_message);
 };
 
-pdf_parser::pdf_parser() = default;
+template<typename auditor_type>
+pdf_parser<auditor_type>::pdf_parser(audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<pdf_parser<auditor_type>>(auditor),
+	  audit::with_auditor<auditor_type>(auditor)
+{
+}
 
-attributes::metadata pimpl_impl<pdf_parser>::metaData(const data_source& data)
+template<typename auditor_type>
+attributes::metadata pimpl_impl<pdf_parser<auditor_type>>::metaData(const data_source& data)
 {
 	attributes::metadata metadata;
 	parseMetadata(metadata);
 	return metadata;
 }
 
-void pimpl_impl<pdf_parser>::parse(const data_source& data, const message_callbacks& emit_message)
+template<typename auditor_type>
+void pimpl_impl<pdf_parser<auditor_type>>::parse(const data_source& data, const message_callbacks& emit_message)
 {
-	log_scope(data);
+	audit::scope parse_audit_scope{auditor(), [&]{ return "data"_v = data; }};
 	message_counters counters;
 	auto counting_callbacks = make_counted_message_callbacks(emit_message, counters);
 	scoped::stack_push<context> context_guard{m_context_stack, {.emit_message = counting_callbacks}};
@@ -672,7 +710,8 @@ void pimpl_impl<pdf_parser>::parse(const data_source& data, const message_callba
 	emit_message(document::close_document{});
 }
 
-continuation pdf_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation pdf_parser<auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
@@ -693,5 +732,8 @@ continuation pdf_parser::operator()(message_ptr msg, const message_callbacks& em
 	}
 	return continuation::proceed;
 }
+
+template class DOCWIRE_PDF_EXPORT pdf_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_PDF_EXPORT pdf_parser<docwire::audit::json_stream_auditor>;
 
 } // namespace docwire

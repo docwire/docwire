@@ -9,41 +9,24 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOG_STATE_SAVER_H
-#define DOCWIRE_LOG_STATE_SAVER_H
+#ifndef DOCWIRE_AUDIT_SCOPE_TAGS_H
+#define DOCWIRE_AUDIT_SCOPE_TAGS_H
 
-#include "log_core.h"
+#include <string_view>
 
-namespace docwire::log
+namespace docwire::audit
 {
 
-/**
- * @brief RAII class to save and restore logging state (sink and filter).
- */
-class state_saver
+struct scope_enter
 {
-public:
-	state_saver()
-		: m_old_sink(get_sink()), m_old_filter(get_filter())
-	{}
-
-	// Prevent copying and moving to ensure single ownership of restoration responsibility
-	state_saver(const state_saver&) = delete;
-	state_saver& operator=(const state_saver&) = delete;
-	state_saver(state_saver&&) = delete;
-	state_saver& operator=(state_saver&&) = delete;
-
-	~state_saver()
-	{
-		set_sink(m_old_sink);
-		set_filter(m_old_filter);
-	}
-
-private:
-	std::function<void(const record&)> m_old_sink;
-	std::string m_old_filter;
+    static constexpr std::string_view string() { return "scope_enter"; }
 };
 
-} // namespace docwire::log
+struct scope_exit
+{
+    static constexpr std::string_view string() { return "scope_exit"; }
+};
 
-#endif // DOCWIRE_LOG_STATE_SAVER_H
+} // namespace docwire::audit
+
+#endif

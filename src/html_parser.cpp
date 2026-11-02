@@ -27,8 +27,8 @@
 #include "charset_converter.h"
 #include "convert_chrono.h" // IWYU pragma: keep
 #include "data_source.h"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit.hpp"
+#include "audit/json_stream_auditor.hpp"
 #include "make_error.h"
 #include <mutex>
 #include "nested_exception.h"
@@ -71,18 +71,20 @@ attributes::styling html_node_styling(const lxb_dom_node_t* node)
     return styling;
 }
 
-void convert_to_utf8(std::string& text, const std::string& charset)
+template<typename auditor_type>
+void convert_to_utf8(audit::auditor_ref<auditor_type> auditor, std::string& text, const std::string& charset)
 {
-	log_scope(charset);
+	audit::scope audit_scope{auditor, [&]{ return "charset"_v = charset; }};
 	if (boost::iequals(charset, "utf-8"))
 		return;
 	charset_converter converter(charset, "UTF-8");
 	text = converter.convert(text);
 }
 
-std::optional<std::string> get_encoding_from_meta_tags(const std::string& html_content)
+template<typename auditor_type>
+std::optional<std::string> get_encoding_from_meta_tags(audit::auditor_ref<auditor_type> auditor, const std::string& html_content)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	std::unique_ptr<lxb_html_encoding_t, decltype([](lxb_html_encoding_t* h)
 		{
 			lxb_html_encoding_destroy(h, true);
@@ -101,9 +103,10 @@ std::optional<std::string> get_encoding_from_meta_tags(const std::string& html_c
 	return detected_encoding;
 }
 
-std::optional<std::string> get_encoding_from_xml_declaration(const std::string& html_content)
+template<typename auditor_type>
+std::optional<std::string> get_encoding_from_xml_declaration(audit::auditor_ref<auditor_type> auditor, const std::string& html_content)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	// if this is xhtml document, information about encoding may be stored between <?xml and ?>.
 	// lexbor seems not to parse this fragment, so we should do this manually
 	std::string charset;
@@ -132,9 +135,10 @@ std::optional<std::string> get_encoding_from_xml_declaration(const std::string& 
 	return std::nullopt;
 }
 
-std::optional<std::string> guess_encoding(const std::string& text)
+template<typename auditor_type>
+std::optional<std::string> guess_encoding(audit::auditor_ref<auditor_type> auditor, const std::string& text)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	std::unique_ptr<void, decltype([](csd_t h)
 		{
 			if (h != (csd_t)-1) csd_close(h);
@@ -149,13 +153,14 @@ std::optional<std::string> guess_encoding(const std::string& text)
 	return res != nullptr ? std::optional<std::string>{res} : std::nullopt;
 }
 
-std::optional<std::string> determine_encoding(const std::string& html_content)
+template<typename auditor_type>
+std::optional<std::string> determine_encoding(audit::auditor_ref<auditor_type> auditor, const std::string& html_content)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	std::optional<std::string> charset;
 	try
 	{
-		charset = get_encoding_from_meta_tags(html_content);
+		charset = get_encoding_from_meta_tags(auditor, html_content);
 	}
 	catch (std::exception&)
 	{
@@ -163,12 +168,12 @@ std::optional<std::string> determine_encoding(const std::string& html_content)
 	}
 	if (charset)
 		return charset;
-	charset = get_encoding_from_xml_declaration(html_content);
+	charset = get_encoding_from_xml_declaration(auditor, html_content);
 	if (charset)
 		return charset;
 	try
 	{
-		charset = guess_encoding(html_content);
+		charset = guess_encoding(auditor, html_content);
 	}
 	catch (std::exception& e)
 	{
@@ -177,13 +182,14 @@ std::optional<std::string> determine_encoding(const std::string& html_content)
 	return charset;
 }
 
-void ensure_html_utf8_encoding(std::string& html_content)
+template<typename auditor_type>
+void ensure_html_utf8_encoding(audit::auditor_ref<auditor_type> auditor, std::string& html_content)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	std::optional<std::string> charset;
 	try
 	{
-		charset = determine_encoding(html_content);
+		charset = determine_encoding(auditor, html_content);
 	}
 	catch (std::exception&)
 	{
@@ -191,30 +197,32 @@ void ensure_html_utf8_encoding(std::string& html_content)
 	}
 	if (!charset)
 	{
-		log_scope();
+		audit::scope inner_audit_scope{auditor, audit::no_context};
 		charset = "UTF-8";
 	}
 	try
 	{
-		convert_to_utf8(html_content, *charset);
+		convert_to_utf8(auditor, html_content, *charset);
 	}
 	catch (std::exception&)
 	{
 		std::throw_with_nested(make_error("Cannot convert charset", *charset));
 	}
-	log_entry(html_content);
+	audit::entry(auditor, [&]{ return "html_content"_v = html_content; });
 }
 
-void move_child_node_to_parent(lxb_dom_node_t* node, lxb_dom_node_t* child_node)
+template<typename auditor_type>
+void move_child_node_to_parent(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	lxb_dom_node_remove_wo_events(child_node);
 	lxb_dom_node_insert_before_wo_events(node, child_node);
 }
 
-void fix_dom_in_table_insertion_mode(lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
+template<typename auditor_type>
+void fix_dom_in_table_insertion_mode(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
 {
-	log_scope(child_tag_id);
+	audit::scope audit_scope{auditor, [&]{ return "child_tag_id"_v = child_tag_id; }};
 	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intable
 	if (child_tag_id == LXB_TAG_CAPTION)
 	{
@@ -239,20 +247,21 @@ void fix_dom_in_table_insertion_mode(lxb_dom_node_t* node, lxb_dom_node_t* child
 		// "A start tag whose tag name is one of: "style", "script", "template""
 		// "Process the token using the rules for the "in head" insertion mode."
 		// Move node to parent as a simple fix
-		move_child_node_to_parent(node, child_node);
+		move_child_node_to_parent(auditor, node, child_node);
 	}
 	else
 	{
 		// "Anything else"
 		// "Parse error. Enable foster parenting, process the token using the rules for the "in body" insertion mode, and then disable foster parenting."
 		// Move node to parent as a simple fix
-		move_child_node_to_parent(node, child_node);
+		move_child_node_to_parent(auditor, node, child_node);
 	}
 }
 
-void fix_dom_in_table_body_insertion_mode(lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
+template<typename auditor_type>
+void fix_dom_in_table_body_insertion_mode(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
 {
-	log_scope(child_tag_id);
+	audit::scope audit_scope{auditor, [&]{ return "child_tag_id"_v = child_tag_id; }};
 	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intbody
 	if (child_tag_id == LXB_TAG_TR)
 	{
@@ -270,13 +279,14 @@ void fix_dom_in_table_body_insertion_mode(lxb_dom_node_t* node, lxb_dom_node_t* 
 	{
 		// "Anything else"
 		// "Process the token using the rules for the "in table" insertion mode."
-		fix_dom_in_table_insertion_mode(node, child_node, child_tag_id);
+		fix_dom_in_table_insertion_mode(auditor, node, child_node, child_tag_id);
 	}
 }
 
-void fix_dom_in_table_row_insertion_mode(lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
+template<typename auditor_type>
+void fix_dom_in_table_row_insertion_mode(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node, lxb_dom_node_t* child_node, lxb_tag_id_t child_tag_id)
 {
-	log_scope(child_tag_id);
+	audit::scope audit_scope{auditor, [&]{ return "child_tag_id"_v = child_tag_id; }};
 	// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intr
 	if (child_tag_id == LXB_TAG_TH || child_tag_id == LXB_TAG_TD)
 	{
@@ -288,18 +298,19 @@ void fix_dom_in_table_row_insertion_mode(lxb_dom_node_t* node, lxb_dom_node_t* c
 	{
 		// "Anything else"
 		// "Process the token using the rules for the "in table" insertion mode."
-		fix_dom_in_table_insertion_mode(node, child_node, child_tag_id);
+		fix_dom_in_table_insertion_mode(auditor, node, child_node, child_tag_id);
 	}
 }
 
-void fix_dom(lxb_dom_node_t* node)
+template<typename auditor_type>
+void fix_dom(audit::auditor_ref<auditor_type> auditor, lxb_dom_node_t* node)
 {
-	log_scope();
+	audit::scope audit_scope{auditor, audit::no_context};
 	// First of all fix all child nodes as it may cause moving some nodes to the parent (this node)
 	lxb_dom_node_t* child_node = lxb_dom_node_first_child(const_cast<lxb_dom_node_t*>(node));
     while (child_node != nullptr)
 	{
-        fix_dom(child_node);
+        fix_dom(auditor, child_node);
         child_node = lxb_dom_node_next(child_node);
     }
 	// Now all child nodes are correct but it does not mean that this node is correct
@@ -316,11 +327,11 @@ void fix_dom(lxb_dom_node_t* node)
 				const lxb_dom_element_t* child_element = lxb_dom_interface_element(child_node);
 				lxb_tag_id_t child_tag_id = lxb_dom_element_tag_id(const_cast<lxb_dom_element_t*>(child_element));
 				if (tag_id == LXB_TAG_TABLE)
-					fix_dom_in_table_insertion_mode(node, child_node, child_tag_id);
+					fix_dom_in_table_insertion_mode(auditor, node, child_node, child_tag_id);
 				else if (tag_id == LXB_TAG_TBODY || tag_id == LXB_TAG_TFOOT || tag_id == LXB_TAG_THEAD)
-					fix_dom_in_table_body_insertion_mode(node, child_node, child_tag_id);
+					fix_dom_in_table_body_insertion_mode(auditor, node, child_node, child_tag_id);
 				else if (tag_id == LXB_TAG_TR)
-					fix_dom_in_table_row_insertion_mode(node, child_node, child_tag_id);
+					fix_dom_in_table_row_insertion_mode(auditor, node, child_node, child_tag_id);
 			}
 			child_node = next_child_node;
 		}
@@ -378,9 +389,15 @@ data_source create_image_source(const std::string& src)
 
 } // unnamed namespace
 
-template<>
-struct pimpl_impl<html_parser> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<html_parser<auditor_type>> : pimpl_impl_base, private audit::with_auditor<auditor_type>
 {
+	using auditor_type_t = auditor_type;
+	using audit::with_auditor<auditor_type>::auditor;
+
+	pimpl_impl() = default;
+	explicit pimpl_impl(audit::auditor_ref<auditor_type> auditor) : audit::with_auditor<auditor_type>(auditor) {}
+
 	template <typename T>
 	continuation emit_message(T&& object) const
 	{
@@ -403,9 +420,10 @@ struct pimpl_impl<html_parser> : pimpl_impl_base
 	std::stack<context> m_context_stack;
 };
 
-void pimpl_impl<html_parser>::parse_css(const std::string & m_style_text)
+template<typename auditor_type>
+void pimpl_impl<html_parser<auditor_type>>::parse_css(const std::string & m_style_text)
 {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
 	// warning TODO: For now, we only need to know
 	// about one attribute (list-style). This function only fixes the problem with automatic HTML files
 	// produced by LibreOffice/OpenOffice. Those programs use <ol> and <ul>, but usually turn off
@@ -463,15 +481,17 @@ void pimpl_impl<html_parser>::parse_css(const std::string & m_style_text)
 	}
 }
 
-void pimpl_impl<html_parser>::parse_document(const std::string& html_content_arg, const message_callbacks& emit_message)
+template<typename auditor_type>
+void pimpl_impl<html_parser<auditor_type>>::parse_document(const std::string& html_content_arg, const message_callbacks& emit_message)
 {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
+	auto auditor_holder = auditor();
 	std::string html_content = html_content_arg;
 	if (!m_skip_decoding)
 	{
 		try
 		{
-			ensure_html_utf8_encoding(html_content);
+			ensure_html_utf8_encoding(auditor_holder, html_content);
 		}
 		catch (std::exception&)
 		{
@@ -489,7 +509,7 @@ void pimpl_impl<html_parser>::parse_document(const std::string& html_content_arg
 	throw_if(lxb_html_document_parse(document.get(), (const lxb_char_t *)html_content.data(), html_content.size()) != LXB_STATUS_OK,
 		"Failed to parse HTML document");
 
-	fix_dom(lxb_dom_interface_node(document.get()));
+	fix_dom(auditor_holder, lxb_dom_interface_node(document.get()));
 
 	lxb_dom_node_t* head = lxb_dom_interface_node(lxb_html_document_head_element(document.get()));
 	const lxb_char_t* head_text;
@@ -500,7 +520,7 @@ void pimpl_impl<html_parser>::parse_document(const std::string& html_content_arg
 		{
 			.metadata = [this, head]()
 			{
-				log_entry("Extracting metadata.");
+				audit::entry(auditor(), []{ return "Extracting metadata."; });
 				if (!m_context_stack.top().head_parsed)
 				{
 					m_context_stack.top().in_metadata = true;
@@ -525,9 +545,10 @@ void pimpl_impl<html_parser>::parse_document(const std::string& html_content_arg
 		throw make_error("No elements were successfully processed", errors::uninterpretable_data{});
 }
 
-void pimpl_impl<html_parser>::process_node(const lxb_dom_node_t* node)
+template<typename auditor_type>
+void pimpl_impl<html_parser<auditor_type>>::process_node(const lxb_dom_node_t* node)
 {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
     if (node == nullptr)
         return;
 
@@ -559,60 +580,62 @@ void pimpl_impl<html_parser>::process_node(const lxb_dom_node_t* node)
         process_tag(node, true);
 }
 
-void pimpl_impl<html_parser>::process_text(const lxb_dom_node_t* node)
+template<typename auditor_type>
+void pimpl_impl<html_parser<auditor_type>>::process_text(const lxb_dom_node_t* node)
 {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
 	if (m_context_stack.top().in_head && !m_context_stack.top().in_style)
 	{
-		log_entry();
+		audit::entry(auditor(), audit::no_context);
 		return;
 	}
     const lxb_char_t* data = lxb_dom_node_text_content(const_cast<lxb_dom_node_t*>(node), nullptr);
     if (data == nullptr)
 	{
-		log_entry();
+		audit::entry(auditor(), audit::no_context);
 		return;
 	}
     std::string text((const char*)data);
 	if (m_context_stack.top().in_style)
 	{
-		log_scope();
+		docwire::audit::scope style_audit_scope{auditor(), audit::no_context};
 		m_context_stack.top().style_text += text;
-		log_entry();
+		docwire::audit::entry(auditor(), audit::no_context);
 		return;
 	}
 	// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace#what_is_whitespace
 	// Convert all whitespaces into spaces and reduce all adjacent spaces into a single space
 	{
-		log_scope();
+		docwire::audit::scope regex_audit_scope{auditor(), audit::no_context};
 		static std::mutex whitespaces_regex_mutex;
 		std::lock_guard<std::mutex> whitespaces_regex_mutex_lock(whitespaces_regex_mutex);
 		static const std::regex whitespaces_regex(R"(\s+)");
 		text = std::regex_replace(text, whitespaces_regex, " ");
 	}
-	log_entry(text);
+	docwire::audit::entry(auditor(), [&]{ return "text"_v = text; });
 	bool last_char_was_space = isspace((unsigned char)m_context_stack.top().last_char_in_inline_formatting_context);
-	log_entry(last_char_was_space);
+	docwire::audit::entry(auditor(), [&]{ return "last_char_was_space"_v = last_char_was_space; });
 	// Reduce whitespaces between text nodes (end of previous and beginning of current.
 	// Remove whitespaces from beginning of inline formatting context.
 	if (last_char_was_space || m_context_stack.top().last_char_in_inline_formatting_context == '\0')
 	{
-		log_scope();
+		docwire::audit::scope trim_audit_scope{auditor(), audit::no_context};
 		boost::trim_left(text);
-		log_entry(text);
+		docwire::audit::entry(auditor(), [&]{ return "text"_v = text; });
 	}
 	if (!text.empty())
 	{
-		log_scope();
+		docwire::audit::scope buffer_audit_scope{auditor(), audit::no_context};
 		m_context_stack.top().last_char_in_inline_formatting_context = text.back();
 		// buffer text because whitespaces from end of inline formatting context should be removed.
 		m_context_stack.top().buffered_text += text;
 	}
 }
 
-void pimpl_impl<html_parser>::process_tag(const lxb_dom_node_t* node, bool is_closing)
+template<typename auditor_type>
+void pimpl_impl<html_parser<auditor_type>>::process_tag(const lxb_dom_node_t* node, bool is_closing)
 {
-	log_scope(is_closing);
+	audit::scope audit_scope{auditor(), [&]{ return "is_closing"_v = is_closing; }};
     const lxb_dom_element_t* element = lxb_dom_interface_element(node);
     lxb_tag_id_t tag_id = lxb_dom_element_tag_id(const_cast<lxb_dom_element_t*>(element));
 	if (!m_context_stack.top().buffered_text.empty())
@@ -870,21 +893,26 @@ void pimpl_impl<html_parser>::process_tag(const lxb_dom_node_t* node, bool is_cl
     }
 }
 
-html_parser::html_parser()
+template<typename auditor_type>
+html_parser<auditor_type>::html_parser(audit::auditor_ref<auditor_type> auditor)
+    : with_pimpl<html_parser<auditor_type>>(auditor),
+      audit::with_auditor<auditor_type>(auditor)
 {
 }
 
-void pimpl_impl<html_parser>::parse(const data_source& data, const message_callbacks& emit_message)
+template<typename auditor_type>
+void pimpl_impl<html_parser<auditor_type>>::parse(const data_source& data, const message_callbacks& emit_message)
 {
-	log_scope(data);
+	audit::scope audit_scope{auditor(), [&]{ return "data"_v = data; }};
 	std::string content = data.string();
 	parse_document(content, emit_message);
 	emit_message(document::close_document{});
 }
 
-continuation html_parser::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation html_parser<auditor_type>::operator()(message_ptr msg, const message_callbacks& emit_message)
 {
-	log_scope(msg);
+	audit::scope audit_scope{auditor(), [&]{ return "msg"_v = msg; }};
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
 
@@ -905,10 +933,14 @@ continuation html_parser::operator()(message_ptr msg, const message_callbacks& e
 	return continuation::proceed;
 }
 
-void html_parser::skipCharsetDecoding()
+template<typename auditor_type>
+void html_parser<auditor_type>::skipCharsetDecoding()
 {
-	log_scope();
+	audit::scope audit_scope{auditor(), audit::no_context};
 	impl().m_skip_decoding = true;
 }
+
+template class DOCWIRE_HTML_EXPORT html_parser<docwire::audit::null_auditor>;
+template class DOCWIRE_HTML_EXPORT html_parser<docwire::audit::json_stream_auditor>;
 
 } // namespace docwire

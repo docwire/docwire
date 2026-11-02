@@ -13,6 +13,11 @@
 #include "error_tags.h"
 #include "llama_handler.h"
 #include "throw_if.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/json_stream_auditor.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
 #include <cmath>
 #include <condition_variable>
 #include <iostream>
@@ -107,8 +112,13 @@ struct llama_call_guard
 
 } // anonymous namespace
 
-template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
+template <typename auditor_type>
+struct pimpl_impl<ai::llama::llama_runner<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
+    using audit::with_auditor<auditor_type>::auditor;
+
     std::recursive_mutex model_mutex;
     llama_backend_guard llama_backend;
     ai::model_inference_config config;
@@ -123,7 +133,11 @@ template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
             std::cerr << text;
         }
     }
-    pimpl_impl(const ai::model_inference_config& cfg) : config(cfg)
+    pimpl_impl(
+        const ai::model_inference_config& cfg,
+        audit::auditor_ref<auditor_type> auditor)
+        : audit::with_auditor<auditor_type>{auditor},
+          config(cfg)
     {
         g_verbose = config.verbose;
         //  Redirect llama.cpp's logs through our callback
@@ -320,6 +334,7 @@ template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
      */
     std::string process(const std::string& user_input)
     {
+        audit::scope audit_scope{auditor(), audit::no_context};
     	std::lock_guard<std::recursive_mutex> lock(model_mutex);
         ensure_model_loaded();
         reset();
@@ -334,14 +349,23 @@ template <> struct pimpl_impl<ai::llama::llama_runner> : pimpl_impl_base
 
 namespace ai::llama
 {
-llama_runner::llama_runner(const model_inference_config& config) : with_pimpl(config) {}
+template<typename auditor_type>
+llama_runner<auditor_type>::llama_runner(
+    const model_inference_config& config,
+    audit::auditor_ref<auditor_type> auditor)
+    : with_pimpl<llama_runner<auditor_type>>(config, auditor),
+      audit::with_auditor<auditor_type>(auditor)
+{
+}
 
-void llama_runner::unload() { impl().llama_unload(); }
+template<typename auditor_type>
+void llama_runner<auditor_type>::unload() { impl().llama_unload(); }
 
 /*
  * This function runs inference on the given model provided to Llama
  */
-std::string llama_runner::process(const std::string& input)
+template<typename auditor_type>
+std::string llama_runner<auditor_type>::process(const std::string& input)
 {
     llama_call_guard guard;
     return impl().process(input);
@@ -350,8 +374,10 @@ std::string llama_runner::process(const std::string& input)
 /**
  * @brief Generates an embedding vector for the given input string.
  */
-std::vector<double> llama_runner::embed(const std::string& input)
+template<typename auditor_type>
+std::vector<double> llama_runner<auditor_type>::embed(const std::string& input)
 {
+    audit::scope audit_scope{auditor(), audit::no_context};
     llama_call_guard guard;
     auto& impl = this->impl();
 
@@ -415,6 +441,9 @@ std::vector<double> llama_runner::embed(const std::string& input)
 
     return result;
 }
+
+template class DOCWIRE_AI_LLAMA_EXPORT docwire::ai::llama::llama_runner<docwire::audit::null_auditor>;
+template class DOCWIRE_AI_LLAMA_EXPORT docwire::ai::llama::llama_runner<docwire::audit::json_stream_auditor>;
 
 } // namespace ai::llama
 

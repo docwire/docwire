@@ -15,8 +15,12 @@
 #include <boost/json.hpp>
 #include "error_tags.h"
 #include "pipeline/input_element.hpp"
-#include "log_entry.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/entry.hpp"
+#include "audit/json_stream_auditor.hpp"
+#include "audit/scope.hpp"
+#include "audit/with_auditor.hpp"
+#include "named.h"
 #include <magic_enum/magic_enum_iostream.hpp>
 #include "make_error.h"
 #include "pipeline/output_element.hpp"
@@ -30,11 +34,28 @@ namespace docwire
 
 using namespace openai;
 
-template<>
-struct pimpl_impl<openai::chat> : pimpl_impl_base
+template<typename auditor_type>
+struct pimpl_impl<openai::chat<auditor_type>>
+    : pimpl_impl_base,
+      private audit::with_auditor<auditor_type>
 {
-	pimpl_impl(const std::string& system_message, const std::string& api_key, model model, float temperature, image_detail image_detail)
-		: m_system_message(system_message), m_api_key(api_key), m_model(model), m_temperature(temperature), m_image_detail(image_detail) {}
+	using audit::with_auditor<auditor_type>::auditor;
+
+	explicit pimpl_impl(
+		const std::string& system_message,
+		const std::string& api_key,
+		model model,
+		float temperature,
+		image_detail image_detail,
+		audit::auditor_ref<auditor_type> auditor)
+		: audit::with_auditor<auditor_type>{auditor},
+		  m_system_message(system_message),
+		  m_api_key(api_key),
+		  m_model(model),
+		  m_temperature(temperature),
+		  m_image_detail(image_detail)
+	{}
+
 	std::string m_system_message;
 	std::string m_api_key;
 	model m_model;
@@ -49,10 +70,25 @@ namespace docwire
 namespace openai
 {
 
-chat::chat(const std::string& system_message, const std::string& api_key, model model, float temperature, image_detail image_detail)
-	: with_pimpl<chat>(system_message, api_key, model, temperature, image_detail)
+template<typename auditor_type>
+chat<auditor_type>::chat(
+	const std::string& system_message,
+	const std::string& api_key,
+	model model,
+	float temperature,
+	image_detail image_detail,
+	audit::auditor_ref<auditor_type> auditor)
+	: with_pimpl<chat<auditor_type>>(
+		system_message, api_key, model, temperature, image_detail, auditor),
+	  audit::with_auditor<auditor_type>(auditor)
 {
-	log_scope(system_message, model, temperature, image_detail);
+	audit::scope audit_scope{this->auditor(), [&]{
+		return
+			"system_message"_v = system_message,
+			"model"_v = model,
+			"temperature"_v = temperature,
+			"image_detail"_v = image_detail;
+	}};
 }
 
 namespace
@@ -94,9 +130,24 @@ std::string image_detail_to_string(openai::image_detail image_detail)
 
 enum class user_msg_type { text, image_url };
 
-std::string prepare_query(const std::string& system_msg, openai::user_msg_type user_msg_type, const std::string& user_msg, openai::model model, float temperature, image_detail image_detail)
+template<typename auditor_type>
+std::string prepare_query(
+	const std::string& system_msg,
+	openai::user_msg_type user_msg_type,
+	const std::string& user_msg,
+	openai::model model,
+	float temperature,
+	image_detail image_detail,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(system_msg, user_msg, model, temperature, image_detail);
+	audit::scope audit_scope{auditor, [&]{
+		return
+			"system_msg"_v = system_msg,
+			"user_msg"_v = user_msg,
+			"model"_v = model,
+			"temperature"_v = temperature,
+			"image_detail"_v = image_detail;
+	}};
 	boost::json::object query
 	{
 		{ "model", model_to_string(model) },
@@ -123,14 +174,22 @@ std::string prepare_query(const std::string& system_msg, openai::user_msg_type u
 	return boost::json::serialize(query);
 }
 
-std::string post_request(const std::string& query, const std::string& api_key)
+template<typename auditor_type>
+std::string post_request(
+	const std::string& query,
+	const std::string& api_key,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(query);
+	audit::scope audit_scope{auditor, [&]{ return "query"_v = query; }};
 	std::ostringstream response_stream{};
 	try
 	{
 		data_source{query, mime_type{"application/json"}, confidence::highest} |
-			http::post("https://api.openai.com/v1/chat/completions", api_key) |
+			http::post<auditor_type>(
+				"https://api.openai.com/v1/chat/completions",
+				api_key,
+				http::ssl_verify_peer{true},
+				auditor) |
 			response_stream;
 		// TODO: some models require Responses API instead
 	}
@@ -141,9 +200,12 @@ std::string post_request(const std::string& query, const std::string& api_key)
 	return response_stream.str();
 }
 
-std::string parse_response(const std::string& response)
+template<typename auditor_type>
+std::string parse_response(
+	const std::string& response,
+	audit::auditor_ref<auditor_type> auditor)
 {
-	log_scope(response);
+	audit::scope audit_scope{auditor, [&]{ return "response"_v = response; }};
 	try
 	{
 		boost::json::value response_val = boost::json::parse(response);
@@ -157,38 +219,67 @@ std::string parse_response(const std::string& response)
 
 } // anonymous namespace
 
-continuation chat::operator()(message_ptr msg, const message_callbacks& emit_message)
+template<typename auditor_type>
+continuation chat<auditor_type>::operator()(
+	message_ptr msg,
+	const message_callbacks& emit_message)
 {
-	log_scope(msg);
+	audit::scope chat_audit_scope{this->auditor(), [&]{ return "msg"_v = msg; }};
+
 	if (!msg->is<data_source>())
 		return emit_message(std::move(msg));
-	log_entry();
+
+	audit::entry(this->auditor(), audit::no_context);
 	const data_source& data = msg->get<data_source>();
 	openai::user_msg_type user_msg_type;
 	std::string data_str;
+
 	if (data.has_highest_confidence_mime_type_in({mime_type{"text/plain"}}))
 	{
-		log_scope();
+		audit::scope text_audit_scope{this->auditor(), audit::no_context};
 		user_msg_type = openai::user_msg_type::text;
 		data_str = data.string();
 	}
-	else if (data.has_highest_confidence_mime_type_in({mime_type{"image/jpeg"}, mime_type{"image/png"}, mime_type{"image/gif"}, mime_type{"image/webp"}}))
+	else if (data.has_highest_confidence_mime_type_in(
+		{mime_type{"image/jpeg"}, mime_type{"image/png"},
+		 mime_type{"image/gif"}, mime_type{"image/webp"}}))
 	{
-		log_scope();
+		audit::scope image_audit_scope{this->auditor(), audit::no_context};
 		user_msg_type = openai::user_msg_type::image_url;
 		std::span<const std::byte> input_data = data.span();
 		std::string base64Encoded = base64::encode(input_data);
-		log_entry(base64Encoded);
+		audit::entry(this->auditor(), [&]{ return "base64Encoded"_v = base64Encoded; });
 		data_str = std::string{"data:image/*;base64,"} + base64Encoded;
 	}
 	else
 	{
-		throw make_error("Unsupported MIME type for OpenAI Chat", data.highest_confidence_mime_type()->v, errors::program_logic{});
+		throw make_error(
+			"Unsupported MIME type for OpenAI Chat",
+			data.highest_confidence_mime_type()->v,
+			errors::program_logic{});
 	}
 
-	std::string content = parse_response(post_request(prepare_query(impl().m_system_message, user_msg_type, data_str, impl().m_model, impl().m_temperature, impl().m_image_detail), impl().m_api_key)) + '\n';
+	auto auditor_ref = this->auditor();
+	std::string content =
+		parse_response(
+			post_request(
+				prepare_query(
+					impl().m_system_message,
+					user_msg_type,
+					data_str,
+					impl().m_model,
+					impl().m_temperature,
+					impl().m_image_detail,
+					auditor_ref),
+				impl().m_api_key,
+				auditor_ref),
+			auditor_ref) + '\n';
+
 	return emit_message(data_source{content});
 }
+
+template class DOCWIRE_OPENAI_EXPORT chat<docwire::audit::null_auditor>;
+template class DOCWIRE_OPENAI_EXPORT chat<docwire::audit::json_stream_auditor>;
 
 } // namespace openai
 } // namespace docwire

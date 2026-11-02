@@ -14,6 +14,9 @@
 
 #include "ai_ct2_export.h"
 #include "pimpl.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
+#include <concepts>
 #include <filesystem>
 #include <vector>
 #include <string>
@@ -29,14 +32,30 @@ namespace docwire::ai::ct2
  * Destructor frees memory used by model.
  * It is important not to duplicate the object because memory consumption can be high.
  */
-class DOCWIRE_AI_CT2_EXPORT ct2_runner :  public ai_runner, public with_pimpl<ct2_runner>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_AI_CT2_EXPORT ct2_runner
+    : public ai_runner,
+      public with_pimpl<ct2_runner<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
-public:
+
+  public:
     /**
-     * @brief Constructor. Loads model to memory.
-     * @param model_data_path Path to the folder containing model files.
+     * @brief Constructs the component with the default stateless auditing policy.
+     *
+     * This overload is available only when the configured auditor is stateless
+     * and therefore default-constructible.
+     *
+     * @tparam stateless_auditor_type Injected auditor type selected by this overload.
      */
-    ct2_runner(const std::filesystem::path& model_data_path);
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+    ct2_runner(const std::filesystem::path& model_data_path)
+        : ct2_runner(model_data_path, audit::auditor_ref<stateless_auditor_type>{})
+    {}
+
+    explicit ct2_runner(
+        const std::filesystem::path& model_data_path,
+        audit::auditor_ref<auditor_type> auditor);
 
     /**
      * @brief Process input text using the model.
@@ -57,7 +76,14 @@ public:
      * --!Must be thread-safe!-- and safe to call concurrently with process()/embed().
      */
     virtual void unload() override;
+
+private:
+    using with_pimpl<ct2_runner<auditor_type>>::impl;
+    using audit::with_auditor<auditor_type>::auditor;
 };
+
+// Deduction guide for CTAD
+ct2_runner(const std::filesystem::path&) -> ct2_runner<audit::null_auditor>;
 
 } // namespace docwire::ai::ct2
 

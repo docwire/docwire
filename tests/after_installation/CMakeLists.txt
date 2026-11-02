@@ -138,3 +138,42 @@ foreach(file IN ITEMS 1.doc 1.pdf basic_ocr-eng.png)
         COMMAND ${DOCWIRE_CLI} ${EXAMPLE_SRC_DIR}/${file}
     )
 endforeach()
+
+# Run representative formats with the stateful audit pipeline enabled.
+# This verifies that injected auditing is composable with the CLI and
+# does not alter normal document processing.
+set(CLI_AUDIT_TEST_FILES
+    1.docx
+    1.odt
+    1.xlsx
+    1.doc
+    1.pdf
+    first.eml
+)
+
+foreach(file IN LISTS CLI_AUDIT_TEST_FILES)
+    add_test(
+        NAME cli_verbose_${file}
+        COMMAND ${DOCWIRE_CLI} --verbose ${EXAMPLE_SRC_DIR}/${file}
+    )
+endforeach()
+
+# Exercise the file-based audit sink through the CLI.
+add_test(
+    NAME cli_verbose_with_log_file_1.docx
+    COMMAND ${DOCWIRE_CLI}
+        --verbose
+        --log_file ${CMAKE_BINARY_DIR}/audit_cli_1.docx.json
+        ${EXAMPLE_SRC_DIR}/1.docx
+)
+
+# Verify basic alternate exporter paths through the installed CLI.
+add_test(
+    NAME cli_html_output_1.doc
+    COMMAND ${DOCWIRE_CLI} --output_type html ${EXAMPLE_SRC_DIR}/1.doc
+)
+
+add_test(
+    NAME cli_metadata_output_1.doc
+    COMMAND ${DOCWIRE_CLI} --output_type metadata ${EXAMPLE_SRC_DIR}/1.doc
+)

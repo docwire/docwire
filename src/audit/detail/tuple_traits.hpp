@@ -9,13 +9,24 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#include "log_sink_globals.h"
+#ifndef DOCWIRE_AUDIT_DETAIL_TUPLE_TRAITS_HPP
+#define DOCWIRE_AUDIT_DETAIL_TUPLE_TRAITS_HPP
 
-namespace docwire::log::detail
+#include <tuple>
+#include <type_traits>
+
+namespace docwire::audit::detail
 {
 
-std::recursive_mutex g_log_callback_mutex;
-std::function<void(const record&)> g_log_callback;
-std::atomic<bool> g_logging_enabled{false};
+template <typename T>
+struct is_std_tuple : std::false_type {};
 
-} // namespace docwire::log::detail
+template <typename... Args>
+struct is_std_tuple<std::tuple<Args...>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool is_std_tuple_v = is_std_tuple<T>::value;
+
+} // namespace docwire::audit::detail
+
+#endif

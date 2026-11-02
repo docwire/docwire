@@ -9,15 +9,15 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOG_H
-#define DOCWIRE_LOG_H
+#include "stderr_redirection.hpp"
 
-// IWYU pragma: begin_exports
-#include "log_cerr_redirection.h"
-#include "log_entry.h"
-#include "log_forward.h"
-#include "log_json_stream_sink.h"
-#include "log_scope.h"
-// IWYU pragma: end_exports
+namespace docwire::audit::detail
+{
 
-#endif
+std::mutex& cerr_redirection_mutex()
+{
+    static std::mutex mutex;
+    return mutex;
+}
+
+} // namespace docwire::audit::detail

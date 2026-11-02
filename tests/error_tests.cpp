@@ -15,7 +15,8 @@
 #include "nested_exception.h"
 #include "throw_if.h"
 #include "source_location.h"
-#include "log.h"
+#include "audit.hpp"
+#include "audit/stderr_redirection.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <boost/config.hpp>
@@ -223,11 +224,11 @@ TEST(SourceLocation, CustomImplementation)
 
 TEST(DiagnosticContext, Concepts)
 {
-    static_assert(context_tag<log::audit>);
-    static_assert(context_tag<log::stderr_redirect>);
-    static_assert(context_tag<errors::program_logic>);
-    static_assert(!context_tag<std::filesystem::path>);
-    static_assert(!context_tag<int>);
+    static_assert(audit::audit_tag<audit::scope_enter>);
+    static_assert(audit::audit_tag<audit::stderr_redirect>);
+    static_assert(audit::audit_tag<errors::program_logic>);
+    static_assert(!audit::audit_tag<std::filesystem::path>);
+    static_assert(!audit::audit_tag<int>);
     struct empty_struct {};
-    static_assert(!context_tag<empty_struct>);
+    static_assert(!audit::audit_tag<empty_struct>);
 }

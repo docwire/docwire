@@ -12,6 +12,7 @@ include(ole_utils.cmake)
 include(base64.cmake)
 include(odf_ooxml.cmake)
 include(ole_office_formats.cmake)
+include(audit.cmake)
 include(html.cmake)
 include(xml.cmake)
 include(plain_text.cmake)
@@ -52,6 +53,18 @@ install(FILES ${PIPELINE_HEADERS} DESTINATION include/docwire/pipeline)
 
 file(GLOB PLAIN_TEXT_HEADERS "plain_text/*.h" "plain_text/*.hpp")
 install(FILES ${PLAIN_TEXT_HEADERS} DESTINATION include/docwire/plain_text)
+
+file(GLOB AUDIT_HEADERS "audit/*.hpp")
+install(FILES ${AUDIT_HEADERS} DESTINATION include/docwire/audit)
+
+file(GLOB AUDIT_DETAIL_HEADERS "audit/detail/*.hpp")
+install(FILES ${AUDIT_DETAIL_HEADERS} DESTINATION include/docwire/audit/detail)
+
+file(GLOB AUDIT_SERIALIZE_HEADERS "audit/serialize/*.hpp")
+install(FILES ${AUDIT_SERIALIZE_HEADERS} DESTINATION include/docwire/audit/serialize)
+
+file(GLOB AUDIT_SINK_HEADERS "audit/sink/*.hpp")
+install(FILES ${AUDIT_SINK_HEADERS} DESTINATION include/docwire/audit/sink)
 
 include(GNUInstallDirs)
 

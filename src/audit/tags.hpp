@@ -9,13 +9,26 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#include "log_filter_globals.h"
+#ifndef DOCWIRE_AUDIT_TAGS_H
+#define DOCWIRE_AUDIT_TAGS_H
 
-namespace docwire::log::detail
+#include "audit_tag.hpp"
+
+#include <tuple>
+
+namespace docwire::audit
 {
 
-std::mutex g_log_filter_mutex;
-filter_spec g_log_filter;
-std::string g_log_filter_str;
+template<audit_tag... TagTypes>
+struct tags
+{
+    explicit constexpr tags(TagTypes...) noexcept {}
+    static constexpr std::tuple<TagTypes...> as_tuple() noexcept { return {}; }
+};
 
-} // namespace docwire::log::detail
+template<audit_tag... TagTypes>
+tags(TagTypes...) -> tags<TagTypes...>;
+
+} // namespace docwire::audit
+
+#endif

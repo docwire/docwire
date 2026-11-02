@@ -9,19 +9,25 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOG_FILTER_RULES_H
-#define DOCWIRE_LOG_FILTER_RULES_H
+#ifndef DOCWIRE_AUDIT_DETAIL_FILTER_RULES_HPP
+#define DOCWIRE_AUDIT_DETAIL_FILTER_RULES_HPP
 
+#include "../../source_location.h"
+#include "../../type_name_base.h"
+
+#include <algorithm>
+#include <filesystem>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
 
-namespace docwire::log::detail
+namespace docwire::audit::detail
 {
 
 struct filter_rule
 {
-    enum
+    enum type_enum
     {
         FILE,
         FUNC,
@@ -77,7 +83,7 @@ inline bool wildcard_match(std::string_view pattern, std::string_view text)
     return p == pattern.size();
 }
 
-inline filter_spec parse_log_filter(const std::string& filter_spec_text)
+inline filter_spec parse_filter(const std::string& filter_spec_text)
 {
     filter_spec spec;
 
@@ -105,7 +111,8 @@ inline filter_spec parse_log_filter(const std::string& filter_spec_text)
     while (start <= spec_copy.size())
     {
         size_t comma = spec_copy.find(',', start);
-        std::string raw = trim(spec_copy.substr(start, comma == std::string::npos ? std::string::npos : comma - start));
+        std::string raw = trim(spec_copy.substr(
+            start, comma == std::string::npos ? std::string::npos : comma - start));
 
         if (!raw.empty())
         {
@@ -146,6 +153,71 @@ inline filter_spec parse_log_filter(const std::string& filter_spec_text)
     return spec;
 }
 
-} // namespace docwire::log::detail
+inline bool matches(
+    const filter_spec& spec,
+    source_location location,
+    std::span<const std::string_view> entry_tags)
+{
+    const char* file_name_ptr = location.file_name();
+    const char* function_name_ptr = location.function_name();
 
-#endif // DOCWIRE_LOG_FILTER_RULES_H
+    std::string filename = file_name_ptr
+        ? std::filesystem::path(file_name_ptr).filename().string()
+        : std::string{};
+
+    std::string funcname = function_name_ptr
+        ? docwire::type_name::pretty_function(function_name_ptr)
+        : std::string{};
+
+    auto matches_file = [&](std::string_view pattern)
+    {
+        return wildcard_match(pattern, filename);
+    };
+
+    auto matches_func = [&](std::string_view pattern)
+    {
+        return wildcard_match(pattern, funcname);
+    };
+
+    auto matches_tag = [&](std::string_view pattern)
+    {
+        for (std::size_t i = 0; i < entry_tags.size(); ++i)
+        {
+            if (wildcard_match(pattern, entry_tags[i]))
+                return true;
+        }
+        return false;
+    };
+
+    auto matches_one = [&](const filter_rule& rule)
+    {
+        if (rule.type == filter_rule::FILE)
+            return matches_file(rule.value);
+        if (rule.type == filter_rule::FUNC)
+            return matches_func(rule.value);
+        if (rule.type == filter_rule::TAG)
+            return matches_tag(rule.value);
+        return false;
+    };
+
+    for (const auto& rule : spec.rules)
+    {
+        if (rule.is_negative && matches_one(rule))
+            return false;
+    }
+
+    if (spec.wildcard_enabled)
+        return true;
+
+    for (const auto& rule : spec.rules)
+    {
+        if (!rule.is_negative && matches_one(rule))
+            return true;
+    }
+
+    return false;
+}
+
+} // namespace docwire::audit::detail
+
+#endif

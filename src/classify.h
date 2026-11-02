@@ -13,6 +13,7 @@
 #define DOCWIRE_OPENAI_CLASSIFY_H
 
 #include "chat.h"
+#include <concepts>
 #include <set>
 #include <string>
 
@@ -21,13 +22,42 @@ namespace docwire
 namespace openai
 {
 
+template<typename auditor_type = audit::null_auditor>
 class DOCWIRE_OPENAI_EXPORT classify
-    : public pipeline::transformer_element<classify>
-    , public chat
+    : public pipeline::transformer_element<classify<auditor_type>>,
+      public chat<auditor_type>
 {
 public:
-	classify(const std::set<std::string>& categories, const std::string& api_key, model model = model::gpt_5, float temperature = 0, image_detail image_detail = image_detail::automatic);
+	/**
+	 * @brief Constructs the component with the default stateless auditing policy.
+	 *
+	 * This overload is available only when the configured auditor is stateless
+	 * and therefore default-constructible.
+	 *
+	 * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+	 */
+	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+	classify(
+		const std::set<std::string>& categories,
+		const std::string& api_key,
+		model model = model::gpt_5,
+		float temperature = 0,
+		image_detail image_detail = image_detail::automatic)
+		: classify(categories, api_key, model, temperature, image_detail,
+		           audit::auditor_ref<stateless_auditor_type>{})
+	{}
+
+	explicit classify(
+		const std::set<std::string>& categories,
+		const std::string& api_key,
+		model model,
+		float temperature,
+		image_detail image_detail,
+		audit::auditor_ref<auditor_type> auditor);
 };
+
+// Deduction guide for CTAD
+classify(const std::set<std::string>&, const std::string&, model, float, image_detail) -> classify<audit::null_auditor>;
 
 } // namespace openai
 } // namespace docwire

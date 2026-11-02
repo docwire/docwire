@@ -13,23 +13,68 @@
 #define DOCWIRE_MAIL_PARSER_H
 
 #include "eml_parser.h"
-#include "pipeline/chain_expression.hpp"
+#include "pipeline/composition.hpp"
 #include "pst_parser.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
+
+#include <concepts>
+#include <utility>
 
 namespace docwire
 {
 
-class mail_parser : public pipeline::transformer_element<mail_parser>
-{
-    public:
-        continuation operator()(message_ptr msg, const message_callbacks& emit_message)
-        {
-            return m_chain(msg, emit_message);
-        }
+// Forward declaration so the detail alias can reference the class.
+template<typename auditor_type>
+class mail_parser;
 
-    private:
-        pipeline::chain_expression<eml_parser, pst_parser> m_chain{eml_parser{}, pst_parser{}};
+namespace detail
+{
+
+template<typename auditor_type>
+using mail_parser_base = pipeline::composition_wrapper<
+    mail_parser<auditor_type>,
+    eml_parser<auditor_type>,
+    pst_parser<auditor_type>>;
+
+} // namespace detail
+
+/**
+ * @brief Composite parser for email formats.
+ *
+ * This is a named composition of the individual email parsers. It can be
+ * constructed with either:
+ *
+ * - `mail_parser{}` for the default no-op auditor, or
+ * - `mail_parser<auditor_type>{auditor}` for an explicit auditor.
+ *
+ * @tparam auditor_type Injected auditor type.
+ */
+template<typename auditor_type = audit::null_auditor>
+class mail_parser
+    : public detail::mail_parser_base<auditor_type>
+{
+public:
+    using base_type = detail::mail_parser_base<auditor_type>;
+
+    /**
+     * @brief Constructs the composite parser with the default stateless audit policy.
+     */
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+    mail_parser()
+        : mail_parser(audit::auditor_ref<stateless_auditor_type>{})
+    {}
+
+    /**
+     * @brief Constructs the composite parser with an explicit injected auditor.
+     */
+    explicit mail_parser(audit::auditor_ref<auditor_type> auditor)
+        : base_type(auditor)
+    {}
 };
+
+// Default deduction guide enabling `mail_parser{}`.
+mail_parser() -> mail_parser<audit::null_auditor>;
 
 } // namespace docwire
 

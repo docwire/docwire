@@ -9,41 +9,53 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOG_TAGS_H
-#define DOCWIRE_LOG_TAGS_H
+#ifndef DOCWIRE_AUDIT_WITH_AUDITOR_H
+#define DOCWIRE_AUDIT_WITH_AUDITOR_H
 
-#include "core_export.h"
-#include <string_view>
+#include "auditor_ref.hpp"
 
-namespace docwire::log
+#include <type_traits>
+#include <utility>
+
+namespace docwire::audit
 {
 
 /**
- * @brief Tag for high-level, production-worthy operational events.
+ * @brief Base for components that store an injected auditor.
  *
- * This tag is intended for use by the final application, not within the SDK itself.
- * The SDK cannot know the application's business context, so it cannot decide what
- * constitutes an "audit" event. Use this tag in your application code to create a
- * clean log channel for production monitoring, separate from the SDK's internal
- * debug logs.
+ * @note When a component class template modeled on this base needs a
+ * default-policy convenience constructor, that constructor must be a
+ * constrained **member template**, not a non-template constrained member.
  *
- * Example: `log_entry(log_tags::audit{}, "User logged in", user_id);`
+ *       @code
+ *       template<stateless_auditor stateless_auditor_type = auditor_type>
+ *       component()
+ *           : component(audit::auditor_ref<stateless_auditor_type>{})
+ *       {}
+ *       @endcode
+ *
+ * Non-template constrained members are not reliably SFINAE-friendly across
+ * conforming C++20 implementations during explicit class-template
+ * instantiation or type-trait evaluation.
  */
-struct audit { static constexpr std::string_view string() { return "audit"; } };
+template<typename auditor_type>
+class with_auditor : private auditor_ref<auditor_type>
+{
+protected:
+    explicit with_auditor(auditor_ref<auditor_type> auditor)
+        : auditor_ref<auditor_type>(auditor) {}
 
-/// @brief Tag automatically added to a log entry when a `log_scope` is entered.
-struct scope_enter { static constexpr std::string_view string() { return "scope_enter"; } };
+    auditor_ref<auditor_type> auditor() noexcept
+    {
+        return static_cast<auditor_ref<auditor_type>&>(*this);
+    }
 
-/// @brief Tag automatically added to a log entry when a `log_scope` is exited.
-struct scope_exit { static constexpr std::string_view string() { return "scope_exit"; } };
+    auditor_ref<auditor_type> auditor() const noexcept
+    {
+        return static_cast<const auditor_ref<auditor_type>&>(*this);
+    }
+};
 
-/**
- * @brief Tag automatically added to a log entry created by `log_return`.
- *
- * This allows for easy filtering of all return value logs.
- */
-struct return_value { static constexpr std::string_view string() { return "return"; } };
+} // namespace docwire::audit
 
-} // namespace docwire::log
-
-#endif // DOCWIRE_LOG_TAGS_H
+#endif

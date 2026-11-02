@@ -13,9 +13,12 @@
 #define DOCWIRE_PIPELINE_CHAIN_EXPRESSION_H
 
 #include "element_base.hpp"
-#include "../log_scope.h"
 #include "../ref_or_owned.h"
+#include "../audit/auditor_ref.hpp"
+#include "../audit/scope.hpp"
+#include "../named.h"
 #include "../serialization_message.h"
+#include <concepts>
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -108,31 +111,66 @@ class chain_expression : public chain_base_t<L, R>
      * @note A back-emitted message must not be `pipeline::start_processing`.
      *       See `message_callbacks::back`.
      */
+    template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
     continuation operator()(message_ptr msg)
     {
-      DOCWIRE_LOG_SCOPE(msg);
+      return operator()(std::move(msg), audit::auditor_ref<stateless_auditor_type>{});
+    }
+
+    template<typename auditor_type>
+    continuation operator()(message_ptr msg, audit::auditor_ref<auditor_type> auditor)
+    {
+      audit::scope audit_scope{auditor, [&]{ return "msg"_v = msg; }};
       return operator()(std::move(msg),
         {
           [](message_ptr) { return continuation::proceed; },
-          [this](message_ptr back_msg)
+          [this, auditor](message_ptr back_msg)
           {
-            return operator()(std::move(back_msg));
+            return operator()(std::move(back_msg), auditor);
           }
         });
     }
 
+    template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
     continuation operator()(message_ptr msg, const message_callbacks& emit_message)
     {
-      DOCWIRE_LOG_SCOPE(msg);
+      return operator()(std::move(msg), emit_message,
+                        audit::auditor_ref<stateless_auditor_type>{});
+    }
 
-      auto lhs_callback = [this, &emit_message](message_ptr msg)
+    template<typename auditor_type>
+    continuation operator()(message_ptr msg, const message_callbacks& emit_message,
+                            audit::auditor_ref<auditor_type> auditor)
+    {
+      audit::scope audit_scope{auditor, [&]{ return "msg"_v = msg; }};
+
+      auto lhs_callback = [this, &emit_message, auditor](message_ptr msg)
       {
-        DOCWIRE_LOG_SCOPE(msg);
-        return m_rhs_element.get()(std::move(msg), emit_message);
+        audit::scope inner_audit_scope{auditor, [&]{ return "msg"_v = msg; }};
+        if constexpr (requires {
+            m_rhs_element.get()(std::move(msg), emit_message, auditor);
+        })
+        {
+          return m_rhs_element.get()(std::move(msg), emit_message, auditor);
+        }
+        else
+        {
+          return m_rhs_element.get()(std::move(msg), emit_message);
+        }
       };
 
-      return m_lhs_element.get()(std::move(msg),
-          message_callbacks{lhs_callback, emit_message.m_back});
+      message_callbacks callbacks{lhs_callback, emit_message.m_back};
+
+      if constexpr (requires {
+          m_lhs_element.get()(std::move(msg), callbacks, auditor);
+      })
+      {
+        return m_lhs_element.get()(std::move(msg), callbacks, auditor);
+      }
+      else
+      {
+        return m_lhs_element.get()(std::move(msg), callbacks);
+      }
     }
 
   private:

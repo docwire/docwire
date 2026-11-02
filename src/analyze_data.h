@@ -13,6 +13,7 @@
 #define DOCWIRE_OPENAI_ANALYZE_DATA_H
 
 #include "chat.h"
+#include <concepts>
 #include <string>
 
 namespace docwire
@@ -20,13 +21,40 @@ namespace docwire
 namespace openai
 {
 
+template<typename auditor_type = audit::null_auditor>
 class DOCWIRE_OPENAI_EXPORT analyze_data
-    : public pipeline::transformer_element<analyze_data>
-    , public chat
+    : public pipeline::transformer_element<analyze_data<auditor_type>>,
+      public chat<auditor_type>
 {
 public:
-	explicit analyze_data(const std::string& api_key, model model = model::gpt_5, float temperature = 0.0f, image_detail image_detail = image_detail::automatic);
+	/**
+	 * @brief Constructs the component with the default stateless auditing policy.
+	 *
+	 * This overload is available only when the configured auditor is stateless
+	 * and therefore default-constructible.
+	 *
+	 * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+	 */
+	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+	analyze_data(
+		const std::string& api_key,
+		model model = model::gpt_5,
+		float temperature = 0.0f,
+		image_detail image_detail = image_detail::automatic)
+		: analyze_data(api_key, model, temperature, image_detail,
+		               audit::auditor_ref<stateless_auditor_type>{})
+	{}
+
+	explicit analyze_data(
+		const std::string& api_key,
+		model model,
+		float temperature,
+		image_detail image_detail,
+		audit::auditor_ref<auditor_type> auditor);
 };
+
+// Deduction guide for CTAD
+analyze_data(const std::string&, model, float, image_detail) -> analyze_data<audit::null_auditor>;
 
 } // namespace openai
 } // namespace docwire

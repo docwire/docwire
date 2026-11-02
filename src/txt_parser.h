@@ -15,6 +15,9 @@
 #include "pipeline/element_base.hpp"
 #include "plain_text_export.h"
 #include "pimpl.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/with_auditor.hpp"
+#include <concepts>
 
 namespace docwire
 {
@@ -22,19 +25,65 @@ namespace docwire
 struct parse_paragraphs { bool v; };
 struct parse_lines { bool v; };
 
-class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser : public pipeline::transformer_element<txt_parser>, public with_pimpl<txt_parser>
+template<typename auditor_type = audit::null_auditor>
+class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser
+    : public pipeline::transformer_element<txt_parser<auditor_type>>,
+      public with_pimpl<txt_parser<auditor_type>>,
+      private audit::with_auditor<auditor_type>
 {
-	public:
+public:
+	explicit txt_parser(audit::auditor_ref<auditor_type> auditor);
 
+	/**
+	 * @brief Constructs the component with the default stateless auditing policy.
+	 *
+	 * This overload is available only when the configured auditor is stateless
+	 * and therefore default-constructible.
+	 *
+	 * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+	 */
+	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+	txt_parser()
+		: txt_parser(
+		      parse_paragraphs{true},
+		      parse_lines{true},
+		      audit::auditor_ref<stateless_auditor_type>{})
+	{}
+
+	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+	txt_parser(parse_paragraphs parse_paragraphs_arg)
+		: txt_parser(
+		      parse_paragraphs_arg,
+		      parse_lines{true},
+		      audit::auditor_ref<stateless_auditor_type>{})
+	{}
+
+	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
 	txt_parser(
-		parse_paragraphs parse_paragraphs_arg = parse_paragraphs{true},
-		parse_lines parse_lines_arg = parse_lines{true});
-    
-    continuation operator()(message_ptr msg, const message_callbacks& emit_message);
+		parse_paragraphs parse_paragraphs_arg,
+		parse_lines parse_lines_arg)
+		: txt_parser(
+		      parse_paragraphs_arg,
+		      parse_lines_arg,
+		      audit::auditor_ref<stateless_auditor_type>{})
+	{}
+
+	explicit txt_parser(
+		parse_paragraphs parse_paragraphs_arg,
+		parse_lines parse_lines_arg,
+		audit::auditor_ref<auditor_type> auditor);
+
+	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 
 private:
-	using with_pimpl<txt_parser>::impl;
+	using with_pimpl<txt_parser<auditor_type>>::impl;
+	using audit::with_auditor<auditor_type>::auditor;
 };
+
+// Deduction guides for CTAD
+txt_parser() -> txt_parser<audit::null_auditor>;
+txt_parser(parse_paragraphs) -> txt_parser<audit::null_auditor>;
+txt_parser(parse_paragraphs, parse_lines) -> txt_parser<audit::null_auditor>;
 
 } // namespace docwire
 

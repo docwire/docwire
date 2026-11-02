@@ -10,21 +10,25 @@
 /*********************************************************************************************************************************************/
 
 #include "gtest/gtest.h"
-#include "environment.h"
-#include "log.h"
-#include "log_json_stream_sink.h"
-#include <iostream>
 
-using namespace docwire;
+// Legacy global DOCWIRE_TESTS_CONSOLE_LOGGING support was removed with
+// docwire::log. The injected-auditor architecture intentionally has no
+// process-global sink or filter, so this test main must not re-introduce
+// global logging state.
+//
+// TODO(tests): Add a stateful-auditor test variant to the parser/export
+// suites. The current practical stateful type is audit::json_stream_auditor,
+// because exported component specializations already exist for it.
+// A lightweight recording_auditor will become preferable once those
+// templates are moved to public header-only definitions.
+//
+// When the test matrix is available, control the second variant with an
+// explicit test helper rather than a global environment variable; the
+// helper may read DOCWIRE_TESTS_CONSOLE_LOGGING to choose
+// json_stream_auditor over null_auditor/recording_auditor.
 
 int main(int argc, char* argv[])
 {
-    if (environment::get("DOCWIRE_TESTS_CONSOLE_LOGGING").value_or("0") == "1")
-    {
-        log::set_sink(log::json_stream_sink(std::clog));
-        log::set_filter("*");
-    }
-
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

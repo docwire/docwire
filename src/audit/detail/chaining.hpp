@@ -9,18 +9,19 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOG_CERR_REDIRECTION_GLOBALS_H
-#define DOCWIRE_LOG_CERR_REDIRECTION_GLOBALS_H
+#ifndef DOCWIRE_AUDIT_DETAIL_CHAINING_HPP
+#define DOCWIRE_AUDIT_DETAIL_CHAINING_HPP
 
-#include "core_export.h"
+#include <type_traits>
 
-#include <mutex>
-
-namespace docwire::log::detail
+namespace docwire::audit::detail
 {
 
-DOCWIRE_CORE_EXPORT extern std::mutex cerr_redirection_mutex;
+struct empty {};
 
-} // namespace docwire::log::detail
+template<typename Next>
+using next_storage_t = std::conditional_t<std::is_void_v<Next>, empty, Next>;
+
+} // namespace docwire::audit::detail
 
 #endif

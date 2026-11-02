@@ -13,19 +13,47 @@
 #define DOCWIRE_OPENAI_DETECT_SENTIMENT_H
 
 #include "chat.h"
+#include <concepts>
 
 namespace docwire
 {
 namespace openai
 {
 
+template<typename auditor_type = audit::null_auditor>
 class DOCWIRE_OPENAI_EXPORT detect_sentiment
-    : public pipeline::transformer_element<detect_sentiment>
-    , public chat
+    : public pipeline::transformer_element<detect_sentiment<auditor_type>>,
+      public chat<auditor_type>
 {
 public:
-	detect_sentiment(const std::string& api_key, model model = model::gpt_5, float temperature = 0, image_detail image_detail = image_detail::automatic);
+	/**
+	 * @brief Constructs the component with the default stateless auditing policy.
+	 *
+	 * This overload is available only when the configured auditor is stateless
+	 * and therefore default-constructible.
+	 *
+	 * @tparam stateless_auditor_type Injected auditor type selected by this overload.
+	 */
+	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+	detect_sentiment(
+		const std::string& api_key,
+		model model = model::gpt_5,
+		float temperature = 0,
+		image_detail image_detail = image_detail::automatic)
+		: detect_sentiment(api_key, model, temperature, image_detail,
+		                   audit::auditor_ref<stateless_auditor_type>{})
+	{}
+
+	explicit detect_sentiment(
+		const std::string& api_key,
+		model model,
+		float temperature,
+		image_detail image_detail,
+		audit::auditor_ref<auditor_type> auditor);
 };
+
+// Deduction guide for CTAD
+detect_sentiment(const std::string&, model, float, image_detail) -> detect_sentiment<audit::null_auditor>;
 
 } // namespace openai
 } // namespace docwire

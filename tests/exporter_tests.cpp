@@ -156,7 +156,7 @@ void test_table_exporting(const std::string& expected)
 
 TEST(html_exporter, table)
 {
-    test_table_exporting<html_exporter>(
+    test_table_exporting<html_exporter<>>(
         "<!DOCTYPE html>\n"
         "<html>\n"
         "<head>\n"

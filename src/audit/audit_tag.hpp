@@ -9,22 +9,27 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOG_FILTER_GLOBALS_H
-#define DOCWIRE_LOG_FILTER_GLOBALS_H
+#ifndef DOCWIRE_AUDIT_AUDIT_TAG_H
+#define DOCWIRE_AUDIT_AUDIT_TAG_H
 
-#include "core_export.h"
-#include "log_filter_rules.h"
+#include <concepts>
+#include <string_view>
 
-#include <mutex>
-#include <string>
-
-namespace docwire::log::detail
+namespace docwire::audit
 {
 
-DOCWIRE_CORE_EXPORT extern std::mutex g_log_filter_mutex;
-DOCWIRE_CORE_EXPORT extern filter_spec g_log_filter;
-DOCWIRE_CORE_EXPORT extern std::string g_log_filter_str;
+/**
+ * @brief Concept for types that behave as audit tags.
+ *
+ * Audit tags identify the semantic category of an audit event in a
+ * structured, type-safe way.
+ */
+template<typename T>
+concept audit_tag = requires
+{
+    { T::string() } -> std::convertible_to<std::string_view>;
+};
 
-} // namespace docwire::log::detail
+} // namespace docwire::audit
 
-#endif // DOCWIRE_LOG_FILTER_GLOBALS_H
+#endif

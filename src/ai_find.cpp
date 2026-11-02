@@ -10,7 +10,6 @@
 /*********************************************************************************************************************************************/
 
 #include "ai_find.h"
-#include "model_chain_element.h"
 
 namespace docwire::ai
 {
@@ -20,4 +19,5 @@ find::find(const std::string& what, std::shared_ptr<ai_runner> runner, model_lif
           "Find exact sentence present about " + what + " in the following text:\n\n", runner, lifetime)
 {
 }
+
 } // namespace docwire::ai

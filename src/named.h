@@ -32,6 +32,38 @@ namespace docwire::named
         T value;
     };
 
+    /**
+     * @brief Combines two named values into a tuple using the comma operator.
+     *
+     * This enables audit/convenience syntax such as:
+     *   return "a"_v = a, "b"_v = b;
+     */
+    template <typename T, typename U>
+    constexpr auto operator,(value<T> lhs, value<U> rhs)
+    {
+        return std::make_tuple(std::move(lhs), std::move(rhs));
+    }
+
+    /**
+     * @brief Appends a named value to an existing tuple of named values.
+     */
+    template <typename... Ts, typename U>
+    constexpr auto operator,(std::tuple<Ts...> lhs, value<U> rhs)
+    {
+        return std::tuple_cat(std::move(lhs), std::make_tuple(std::move(rhs)));
+    }
+
+    /**
+     * @brief Prepends a named value to an existing tuple of named values.
+     *
+     * This keeps the comma operator robust for grouping expressions.
+     */
+    template <typename T, typename... Us>
+    constexpr auto operator,(value<T> lhs, std::tuple<Us...> rhs)
+    {
+        return std::tuple_cat(std::make_tuple(std::move(lhs)), std::move(rhs));
+    }
+
     template <size_t I, typename T>
     [[nodiscard]] constexpr decltype(auto) get(value<T>& v) noexcept
     {

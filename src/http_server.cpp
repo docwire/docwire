@@ -12,17 +12,25 @@
 #include "http_server.h"
 
 #include "ssl_certificate.h"
-#include "log_scope.h"
+#include "audit/auditor_ref.hpp"
+#include "audit/scope.hpp"
 #include <utility>
 
 namespace docwire::http
 {
 
-certificate_info generate_self_signed_cert(const std::string& common_name, const std::string& country, const std::string& organization)
+namespace detail
 {
-    log_scope(common_name, country, organization);
+
+certificate_info generate_self_signed_cert_impl(
+    const std::string& common_name,
+    const std::string& country,
+    const std::string& organization)
+{
     auto material = ::docwire::detail::ssl_certificate::generate_self_signed_pem(common_name, country, organization);
     return certificate_info{std::move(material.key), std::move(material.cert)};
 }
+
+} // namespace detail
 
 } // namespace docwire::http

@@ -4,7 +4,7 @@ find_package(Boost REQUIRED COMPONENTS json)
 # --- ALL TESTS IN ONE EXECUTABLE ---
 add_executable(docwire_tests
 	main.cpp
-	core_tests.cpp error_tests.cpp log_tests.cpp serialization_tests.cpp
+	core_tests.cpp error_tests.cpp audit_tests.cpp serialization_tests.cpp
 	exporter_tests.cpp
 	txt_parser_tests.cpp html_parser_tests.cpp ocr_parser_tests.cpp parser_failure_tests.cpp
 	utility_tests.cpp
@@ -19,7 +19,6 @@ add_executable(docwire_tests
 	static_flat_map_tests.cpp
 	json_serialization_tests.cpp
 	type_name_tests.cpp
-	log_filter_tests.cpp
 	iconv_wrapper_tests.cpp
 	minizip_wrapper_tests.cpp
 	odr_smoke_test.cpp
@@ -29,6 +28,7 @@ add_executable(docwire_tests
 )
 
 target_link_libraries(docwire_tests PRIVATE
+	docwire_audit
 	docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_archives
 	docwire_fuzzy_match docwire_base64 docwire_content_type docwire_http
 	docwire_openai docwire_xml
@@ -201,6 +201,8 @@ while (TRUE)
 endwhile()
 
 set(common_examples
+    audit_composition
+    audit_pipeline_injection
     handling_errors_and_warnings
     file_type_determination
     path_to_text_stream
