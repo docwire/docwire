@@ -147,11 +147,30 @@ class chain_expression : public chain_base_t<L, R>
       auto lhs_callback = [this, &emit_message, auditor](message_ptr msg)
       {
         audit::scope inner_audit_scope{auditor, [&]{ return "msg"_v = msg; }};
-        return m_rhs_element.get()(std::move(msg), emit_message);
+        if constexpr (requires {
+            m_rhs_element.get()(std::move(msg), emit_message, auditor);
+        })
+        {
+          return m_rhs_element.get()(std::move(msg), emit_message, auditor);
+        }
+        else
+        {
+          return m_rhs_element.get()(std::move(msg), emit_message);
+        }
       };
 
-      return m_lhs_element.get()(std::move(msg),
-          message_callbacks{lhs_callback, emit_message.m_back});
+      message_callbacks callbacks{lhs_callback, emit_message.m_back};
+
+      if constexpr (requires {
+          m_lhs_element.get()(std::move(msg), callbacks, auditor);
+      })
+      {
+        return m_lhs_element.get()(std::move(msg), callbacks, auditor);
+      }
+      else
+      {
+        return m_lhs_element.get()(std::move(msg), callbacks);
+      }
     }
 
   private:
