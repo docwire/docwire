@@ -145,6 +145,99 @@ private:
 };
 
 /**
+ * @brief CRTP adapter that exposes a concrete composition as a pipeline element.
+ *
+ * This is used to create named composite pipeline elements, such as
+ * `office_formats_parser` and `mail_parser`, while keeping the ergonomic
+ * braced construction syntax:
+ *
+ *     office_formats_parser{}
+ *     mail_parser{}
+ *
+ * @tparam Derived Concrete wrapper type, used for CRTP pipeline-role detection.
+ * @tparam ElementTypes The concrete pipeline elements composing this chain.
+ */
+template<typename Derived, typename... ElementTypes>
+class composition_wrapper
+    : public pipeline::transformer_element<Derived>
+{
+public:
+    using composition_type = composition<ElementTypes...>;
+
+    /**
+     * @brief Tests whether @p Args can construct every composed element.
+     */
+    template<typename... Args>
+    static constexpr bool constructible_from_args =
+        (std::constructible_from<ElementTypes, Args...> && ...);
+
+    /**
+     * @brief Constructs the wrapper from the same shared arguments as `composition`.
+     *
+     * All arguments are copied into each composed element. This is intended
+     * for lightweight dependency handles such as `audit::auditor_ref`.
+     */
+    template<typename... Args>
+        requires constructible_from_args<Args...>
+    explicit composition_wrapper(Args&&... args)
+        : m_composition(std::forward<Args>(args)...)
+    {}
+
+    struct from_elements_t {};
+
+    /**
+     * @brief Constructs the wrapper from already-created element instances.
+     */
+    template<typename... Es>
+    explicit composition_wrapper(from_elements_t, Es&&... elements)
+        : m_composition(
+              typename composition_type::from_elements_t{},
+              std::forward<Es>(elements)...)
+    {}
+
+    // Audit-aware execution forwarding.
+
+    template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
+    continuation operator()(message_ptr msg)
+    {
+        return m_composition(
+            std::move(msg),
+            audit::auditor_ref<stateless_auditor_type>{});
+    }
+
+    template<typename auditor_type>
+    continuation operator()(
+        message_ptr msg,
+        audit::auditor_ref<auditor_type> auditor)
+    {
+        return m_composition(std::move(msg), auditor);
+    }
+
+    template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
+    continuation operator()(
+        message_ptr msg,
+        const message_callbacks& emit_message)
+    {
+        return m_composition(
+            std::move(msg),
+            emit_message,
+            audit::auditor_ref<stateless_auditor_type>{});
+    }
+
+    template<typename auditor_type>
+    continuation operator()(
+        message_ptr msg,
+        const message_callbacks& emit_message,
+        audit::auditor_ref<auditor_type> auditor)
+    {
+        return m_composition(std::move(msg), emit_message, auditor);
+    }
+
+private:
+    composition_type m_composition;
+};
+
+/**
  * @brief Value-level factory for `composition`.
  *
  * This allows developers to use `pipeline::compose(parser1{}, parser2{})`

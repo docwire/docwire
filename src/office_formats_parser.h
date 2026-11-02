@@ -28,32 +28,79 @@
 #include "xml_parser.h"
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
+#include <concepts>
 #include <utility>
 
 namespace docwire
 {
 
 /**
- * @brief A composite parser handling various office document formats.
- * @tparam safety_level The safety policy to use.
- * @tparam auditor_type The injected auditor type.
+ * @brief Composite parser for common office document formats.
+ *
+ * This is a named composition of the individual format parsers. It can be
+ * constructed with either:
+ *
+ * - `office_formats_parser{}` for the default no-op auditor, or
+ * - `office_formats_parser<auditor_type>{auditor}` for an explicit auditor.
+ *
+ * @tparam safety_level XML safety policy for ODF/OOXML parsers.
+ * @tparam auditor_type Injected auditor type.
  */
 template <safety_policy safety_level = default_safety_level,
           typename auditor_type = audit::null_auditor>
-using office_formats_parser = pipeline::composition<
-    html_parser<auditor_type>,
-    doc_parser<auditor_type>,
-    pdf_parser<auditor_type>,
-    xls_parser<auditor_type>,
-    xlsb_parser<auditor_type>,
-    iwork_parser<auditor_type>,
-    ppt_parser<auditor_type>,
-    rtf_parser<auditor_type>,
-    odf_ooxml_parser<safety_level, auditor_type>,
-    odfxml_parser<safety_level, auditor_type>,
-    xml_parser<safety_level, auditor_type>,
-    txt_parser<auditor_type>
->;
+class office_formats_parser
+    : public pipeline::composition_wrapper<
+          office_formats_parser<safety_level, auditor_type>,
+          html_parser<auditor_type>,
+          doc_parser<auditor_type>,
+          pdf_parser<auditor_type>,
+          xls_parser<auditor_type>,
+          xlsb_parser<auditor_type>,
+          iwork_parser<auditor_type>,
+          ppt_parser<auditor_type>,
+          rtf_parser<auditor_type>,
+          odf_ooxml_parser<safety_level, auditor_type>,
+          odfxml_parser<safety_level, auditor_type>,
+          xml_parser<safety_level, auditor_type>,
+          txt_parser<auditor_type>>
+{
+public:
+    using base_type = pipeline::composition_wrapper<
+        office_formats_parser<safety_level, auditor_type>,
+        html_parser<auditor_type>,
+        doc_parser<auditor_type>,
+        pdf_parser<auditor_type>,
+        xls_parser<auditor_type>,
+        xlsb_parser<auditor_type>,
+        iwork_parser<auditor_type>,
+        ppt_parser<auditor_type>,
+        rtf_parser<auditor_type>,
+        odf_ooxml_parser<safety_level, auditor_type>,
+        odfxml_parser<safety_level, auditor_type>,
+        xml_parser<safety_level, auditor_type>,
+        txt_parser<auditor_type>>;
+
+    /**
+     * @brief Constructs the composite parser with the default stateless audit policy.
+     */
+    template<audit::stateless_auditor stateless_auditor_type = auditor_type>
+    office_formats_parser()
+        : office_formats_parser(
+              audit::auditor_ref<stateless_auditor_type>{})
+    {}
+
+    /**
+     * @brief Constructs the composite parser with an explicit injected auditor.
+     */
+    explicit office_formats_parser(
+        audit::auditor_ref<auditor_type> auditor)
+        : base_type(auditor)
+    {}
+};
+
+// Default deduction guide enabling `office_formats_parser{}`.
+office_formats_parser() ->
+    office_formats_parser<default_safety_level, audit::null_auditor>;
 
 } // namespace docwire
 
