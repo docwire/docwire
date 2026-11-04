@@ -23,7 +23,7 @@ namespace df0::detail
  *
  * @return A monotonically increasing size_t value.
  *
- * @note This function is implemented in docwire_core and exported from it.
+ * @note This function is implemented in df0_core and exported from it.
  *       Keeping the counter here ensures identifiers remain unique across
  *       DLL boundaries.
  */

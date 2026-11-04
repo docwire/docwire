@@ -43,7 +43,7 @@ namespace detail
 /**
  * @brief Returns the process-wide mutex protecting `std::cerr` redirection.
  *
- * The mutex lives in `docwire_audit` so it can be shared across DSO boundaries
+ * The mutex lives in `df0_audit` so it can be shared across DSO boundaries
  * without exposing global mutable state in the header.
  */
 DF0_AUDIT_EXPORT std::mutex& cerr_redirection_mutex();

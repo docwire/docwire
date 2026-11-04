@@ -3,7 +3,7 @@
 set_and_check(DF0_DATADIR "@PACKAGE_CMAKE_INSTALL_DATADIR@")
 
 include("${CMAKE_CURRENT_LIST_DIR}/docwire-targets.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/docwire_resources.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/df0_resources.cmake")
 
 check_required_components(docwire)
 

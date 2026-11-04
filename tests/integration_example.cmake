@@ -10,19 +10,19 @@ find_package(docwire CONFIG REQUIRED)
 
 # DocWire SDK is designed to be used as a shared library (DLL/SO/DYLIB).
 # Static linking is not supported due to the complexity of dependencies and resource management.
-# This check verifies that the found 'docwire_core' target is a shared library.
-get_target_property(DF0_CORE_TYPE docwire_core TYPE)
+# This check verifies that the found 'df0_core' target is a shared library.
+get_target_property(DF0_CORE_TYPE df0_core TYPE)
 if(NOT DF0_CORE_TYPE STREQUAL "SHARED_LIBRARY")
-    message(FATAL_ERROR "DocWire SDK requires dynamic linking, but the found 'docwire_core' target is not a shared library. Please ensure you are using a dynamic build configuration.")
+    message(FATAL_ERROR "DocWire SDK requires dynamic linking, but the found 'df0_core' target is not a shared library. Please ensure you are using a dynamic build configuration.")
 endif()
 
 # Link against the specific DocWire libraries your application needs.
-# docwire_core is always required. Other modules are optional based on usage.
+# df0_core is always required. Other modules are optional based on usage.
 target_link_libraries(integration_example PRIVATE
-    docwire_core
-    docwire_content_type
-    docwire_office_formats
-    docwire_http
+    df0_core
+    df0_content_type
+    df0_office_formats
+    df0_http
 )
 
 include(GNUInstallDirs)
@@ -41,7 +41,7 @@ endif()
 # This function ensures that DocWire resources (like OCR models, dictionaries, etc.)
 # are accessible to your application when running directly from the build directory.
 # It creates .path files that point to the actual location of resources in the vcpkg installed tree.
-docwire_deploy_resources(TARGETS integration_example)
+df0_deploy_resources(TARGETS integration_example)
 
 # --- Installation Configuration ---
 # The following section configures 'cmake --install' to create a standalone distribution
@@ -78,4 +78,4 @@ install(TARGETS integration_example
 # 3. Install DocWire data resources.
 # This function installs the necessary data files (e.g., tessdata for OCR, magic database)
 # into the appropriate 'share' directory in your installation prefix.
-docwire_install_resources(TARGETS integration_example)
+df0_install_resources(TARGETS integration_example)

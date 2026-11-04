@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(docwire_after_installation_tests LANGUAGES CXX)
+project(df0_after_installation_tests LANGUAGES CXX)
 
 # This project is designed to be built and run AFTER the DocWire SDK has been installed.
 # It simulates how a downstream user would find and use the SDK, verifying the installation.

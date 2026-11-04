@@ -1,4 +1,4 @@
-add_library(docwire_content_type SHARED
+add_library(df0_content_type SHARED
     content_type.cpp
     content_type_asp.cpp
     content_type_html.cpp
@@ -12,16 +12,16 @@ add_library(docwire_content_type SHARED
     content_type_by_signature.cpp)
 
 find_package(unofficial-libmagic REQUIRED)
-target_link_libraries(docwire_content_type PRIVATE unofficial::libmagic::libmagic docwire_core)
+target_link_libraries(df0_content_type PRIVATE unofficial::libmagic::libmagic df0_core)
 
-install(TARGETS docwire_content_type EXPORT docwire_targets)
+install(TARGETS df0_content_type EXPORT df0_targets)
 if(MSVC)
-	install(FILES $<TARGET_PDB_FILE:docwire_content_type> DESTINATION bin CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:df0_content_type> DESTINATION bin CONFIGURATIONS Debug)
 endif()
 
 include(GenerateExportHeader)
-generate_export_header(docwire_content_type EXPORT_FILE_NAME content_type_export.h)
+generate_export_header(df0_content_type EXPORT_FILE_NAME content_type_export.h)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/content_type_export.h DESTINATION include/docwire)
 
-docwire_find_resource(MAGIC_MGC_FULL_PATH REL_PATH "libmagic/misc/magic.mgc" REQUIRED)
-docwire_target_resources(docwire_content_type "libmagic/misc/magic.mgc" SOURCE "${MAGIC_MGC_FULL_PATH}")
+df0_find_resource(MAGIC_MGC_FULL_PATH REL_PATH "libmagic/misc/magic.mgc" REQUIRED)
+df0_target_resources(df0_content_type "libmagic/misc/magic.mgc" SOURCE "${MAGIC_MGC_FULL_PATH}")

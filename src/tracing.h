@@ -12,6 +12,6 @@
 #ifndef DF0_TRACING_H
 #define DF0_TRACING_H
 
-void docwire_init_tracing(const char* filename);
+void df0_init_tracing(const char* filename);
 
 #endif

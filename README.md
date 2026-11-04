@@ -142,7 +142,7 @@ Features marked **(planned)** are on the public roadmap and may not be fully ava
     - CSV: Export data to Comma-Separated Values format.
     - XLSX and more are coming: Additional export formats for diverse use cases.
 
-- **Fast and accurate file format detection**: Leveraging file signatures, file name extensions, content analysis, and MIME type recognition, the DocWire SDK automatically detects the format of any file. This ensures that the appropriate parser is selected for processing. With its ability to identify various formats, DocWire SDK serves as a versatile tool for numerous file processing tasks. For more information, see the following functions and classes: [content_type::detector](https://docwire.readthedocs.io/en/latest/classdocwire_1_1content__type_1_1detector.html) and [content_type::detect](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1content__type.html#ab8fcce329158e74aed1c402df93fa4e4). [You can find example how to perform file type detection (with or without document processing) here](https://docwire.readthedocs.io/en/latest/file_type_determination_8cpp-example.html).
+- **Fast and accurate file format detection**: Leveraging file signatures, file name extensions, content analysis, and MIME type recognition, the DocWire SDK automatically detects the format of any file. This ensures that the appropriate parser is selected for processing. With its ability to identify various formats, DocWire SDK serves as a versatile tool for numerous file processing tasks. For more information, see the following functions and classes: [content_type::detector](https://docwire.readthedocs.io/en/latest/classdf0_1_1content__type_1_1detector.html) and [content_type::detect](https://docwire.readthedocs.io/en/latest/namespacedf0_1_1content__type.html#ab8fcce329158e74aed1c402df93fa4e4). [You can find example how to perform file type detection (with or without document processing) here](https://docwire.readthedocs.io/en/latest/file_type_determination_8cpp-example.html).
 Additionally, the SDK provides functionality to convert a MIME type back to a file extension via `content_type::by_file_extension::to_extension`, which can be useful in scenarios where a file name is needed.
 
 - **Modern C++20 XML Parsing**: A new, expressive, and safe API for parsing XML documents. It features a single-pass, forward-only reader and utilizes C++20 ranges and views for efficient and elegant node filtering and manipulation. [You can find example how to parse XML documents here](https://docwire.readthedocs.io/en/latest/xml_parsing_example_8cpp-example.html).
@@ -192,7 +192,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Semantic Chunking (planned)**: Group related content using the SDK's chunking feature to create contextually rich embeddings that capture the nuances of the document's structure.
 
-- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1openai_1_1embed.html), the local embedding steps `ai::local::ct2::passage::embedder` and `ai::local::ct2::query::embedder`, or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT. Generated embeddings can be used in various NLP tasks.
+- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docwire.readthedocs.io/en/latest/classdf0_1_1openai_1_1embed.html), the local embedding steps `ai::local::ct2::passage::embedder` and `ai::local::ct2::query::embedder`, or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT. Generated embeddings can be used in various NLP tasks.
 
 - **Enhancing AI/NLP Pipelines**: Embeddings obtained from DocWire SDK can be used to enhance AI/NLP pipelines, enabling more accurate and context-aware applications such as document classification, sentiment analysis, and information retrieval.
 
@@ -944,17 +944,17 @@ DocWire SDK provides a comprehensive error handling framework with typed context
 
 The framework supports building an exception chain, allowing the creation of a longer error context across different layers of the backtrace. This enables tracking of the sequence of events leading up to an error, making it easier to identify the root cause.
 
-In addition to `std::nested_exception`, `std::exception_ptr`, and `std::throw_with_nested`, the framework includes the [errors::make_nested](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#afde521434d8ac75136d13bc9d42c17a2) and [errors::make_nested_ptr](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#a7380b5b4f036f549a9c284261d9f31ac) function templates and the [errors::nested](https://docwire.readthedocs.io/en/latest/classdocwire_1_1errors_1_1nested.html) class template for easy error chaining like:  
+In addition to `std::nested_exception`, `std::exception_ptr`, and `std::throw_with_nested`, the framework includes the [errors::make_nested](https://docwire.readthedocs.io/en/latest/namespacedf0_1_1errors.html#afde521434d8ac75136d13bc9d42c17a2) and [errors::make_nested_ptr](https://docwire.readthedocs.io/en/latest/namespacedf0_1_1errors.html#a7380b5b4f036f549a9c284261d9f31ac) function templates and the [errors::nested](https://docwire.readthedocs.io/en/latest/classdf0_1_1errors_1_1nested.html) class template for easy error chaining like:  
 `df0::errors::make_nested_ptr(error_object_1, error_object_2)`.
 
 #### Type-safe context values
 
 Context values are type-safe, meaning any type, including custom types, can be used in the context value. The context is built from original C++ types, and context objects can be accessed during the error handling process.
 
-The [errors::impl](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1impl.html) structure template provides an implementation of the context value mechanism, including support for custom types. It is recommended to use the `make_error` macro for construction:  
+The [errors::impl](https://docwire.readthedocs.io/en/latest/structdf0_1_1errors_1_1impl.html) structure template provides an implementation of the context value mechanism, including support for custom types. It is recommended to use the `make_error` macro for construction:  
 `throw make_error(custom_type_value);`.
 
-The [errors::base](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1base.html) structure provides a base class for all error types for easy error handling:  
+The [errors::base](https://docwire.readthedocs.io/en/latest/structdf0_1_1errors_1_1base.html) structure provides a base class for all error types for easy error handling:  
 `catch (const df0::errors::base& e) { ... }`.
 
 #### Embedded context variable names and triggering expressions
@@ -966,7 +966,7 @@ For example:
 
 #### Categorized and tagged errors
 
-Errors can be tagged with a custom type or multiple types like [errors::network_failure](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1network__failure.html) or [errors::file_encrypted](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1file__encrypted.html), providing fine-grained control over error handling. Decisions, such as retrying an operation or asking for a password, can be made based on the presence of a specific tag type in the error chain:
+Errors can be tagged with a custom type or multiple types like [errors::network_failure](https://docwire.readthedocs.io/en/latest/structdf0_1_1errors_1_1network__failure.html) or [errors::file_encrypted](https://docwire.readthedocs.io/en/latest/structdf0_1_1errors_1_1file__encrypted.html), providing fine-grained control over error handling. Decisions, such as retrying an operation or asking for a password, can be made based on the presence of a specific tag type in the error chain:
 
 ```cpp
 catch (const df0::errors::base& e)
@@ -1006,7 +1006,7 @@ if (auto* impl_ptr = dynamic_cast<df0::errors::impl<std::filesystem::path>*>(&e)
 
 #### Easy context data retrieval
 
-Functions like [errors::diagnostic_message](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#a2446f6c81b6a5b338dea00cb29c40263) and [errors::contains_type](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#aa2af5b81a3e66772f19506d8e8a93184) allow access to context data in a controlled manner, facilitating effective error handling.
+Functions like [errors::diagnostic_message](https://docwire.readthedocs.io/en/latest/namespacedf0_1_1errors.html#a2446f6c81b6a5b338dea00cb29c40263) and [errors::contains_type](https://docwire.readthedocs.io/en/latest/namespacedf0_1_1errors.html#aa2af5b81a3e66772f19506d8e8a93184) allow access to context data in a controlled manner, facilitating effective error handling.
 
 For example, `std::cerr << df0::errors::diagnostic_message(e) << std::endl;` can give the following result:
 

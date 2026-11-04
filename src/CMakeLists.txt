@@ -5,7 +5,7 @@ add_compile_definitions(DF0_ENABLE_SHORT_MACRO_NAMES)
 
 add_subdirectory(wv2)
 
-include(docwire_resources.cmake)
+include(df0_resources.cmake)
 
 include(core.cmake)
 include(ole_utils.cmake)
@@ -76,5 +76,5 @@ configure_package_config_file(
 	PATH_VARS CMAKE_INSTALL_DATADIR
 )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/docwire-config.cmake DESTINATION lib/cmake/docwire)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/docwire_resources.cmake DESTINATION lib/cmake/docwire)
-install(EXPORT docwire_targets FILE docwire-targets.cmake DESTINATION lib/cmake/docwire)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/df0_resources.cmake DESTINATION lib/cmake/docwire)
+install(EXPORT df0_targets FILE docwire-targets.cmake DESTINATION lib/cmake/docwire)
