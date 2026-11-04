@@ -159,7 +159,7 @@ TEST(html_exporter, table)
         "<html>\n"
         "<head>\n"
         "<meta charset=\"utf-8\">\n"
-        "<title>DocWire</title>\n"
+        "<title>DF-0</title>\n"
         "</head>\n"
         "<body>\n"
         "<table>"

@@ -145,7 +145,7 @@ protected:
                 return http::server(
                     addr,
                     port,
-                    http::generate_self_signed_cert(addr.v, "US", "DocWire Test"),
+                    http::generate_self_signed_cert(addr.v, "US", "DF-0 Test"),
                     route);
 
             return http::server(addr, port, route);

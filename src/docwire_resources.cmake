@@ -171,7 +171,7 @@ endfunction()
 function(_df0_decode_resource entry out_source_var out_dest_var)
     string(FIND "${entry}" "|" separator_pos REVERSE)
     if(separator_pos EQUAL -1)
-        message(FATAL_ERROR "DocWire: Invalid resource entry format: ${entry}")
+        message(FATAL_ERROR "DF-0: Invalid resource entry format: ${entry}")
     endif()
     string(SUBSTRING "${entry}" 0 ${separator_pos} _abs_path)
     math(EXPR separator_pos_plus_1 "${separator_pos} + 1")
@@ -195,7 +195,7 @@ function(_df0_collect_resources_for_target app_target out_var)
                 list(LENGTH interface_res count_dst)
                 list(LENGTH build_sources count_src)
                 if(NOT count_dst EQUAL count_src)
-                    message(FATAL_ERROR "DocWire: Resource property mismatch for target ${current_target}. DF0_RESOURCES and _DF0_RESOURCE_SOURCES have different lengths.")
+                    message(FATAL_ERROR "DF-0: Resource property mismatch for target ${current_target}. DF0_RESOURCES and _DF0_RESOURCE_SOURCES have different lengths.")
                 endif()
                 math(EXPR loop_max "${count_dst} - 1")
                 foreach(i RANGE ${loop_max})
@@ -283,12 +283,12 @@ include(GNUInstallDirs)
 #[=======================================================================[.rst:
 df0_install_resources
 -------------------------
-Installs DocWire resources (data files) for the given targets.
+Installs DF-0 resources (data files) for the given targets.
 
   df0_install_resources(TARGETS <target> ...)
 
 This function should be used alongside standard CMake install commands to ensure
-that data files required by DocWire libraries (like models or dictionaries)
+that data files required by DF-0 libraries (like models or dictionaries)
 are included in the final installation.
 #]=======================================================================]
 function(df0_install_resources)

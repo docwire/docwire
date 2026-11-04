@@ -16,7 +16,7 @@ if(NOT DF0_CORE_TYPE STREQUAL "SHARED_LIBRARY")
     message(FATAL_ERROR "DF-0 requires dynamic linking, but the found 'df0_core' target is not a shared library. Please ensure you are using a dynamic build configuration.")
 endif()
 
-# Link against the specific DocWire libraries your application needs.
+# Link against the specific DF-0 libraries your application needs.
 # df0_core is always required. Other modules are optional based on usage.
 target_link_libraries(integration_example PRIVATE
     df0_core
@@ -38,14 +38,14 @@ elseif(APPLE)
 endif()
 
 # --- Build Tree Configuration ---
-# This function ensures that DocWire resources (like OCR models, dictionaries, etc.)
+# This function ensures that DF-0 resources (like OCR models, dictionaries, etc.)
 # are accessible to your application when running directly from the build directory.
 # It creates .path files that point to the actual location of resources in the vcpkg installed tree.
 df0_deploy_resources(TARGETS integration_example)
 
 # --- Installation Configuration ---
 # The following section configures 'cmake --install' to create a standalone distribution
-# of your application, including all necessary DocWire runtime dependencies.
+# of your application, including all necessary DF-0 runtime dependencies.
 
 # 1. Install the application executable and its runtime dependencies.
 install(TARGETS integration_example
@@ -75,7 +75,7 @@ install(TARGETS integration_example
     FRAMEWORK DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )
 
-# 3. Install DocWire data resources.
+# 3. Install DF-0 data resources.
 # This function installs the necessary data files (e.g., tessdata for OCR, magic database)
 # into the appropriate 'share' directory in your installation prefix.
 df0_install_resources(TARGETS integration_example)

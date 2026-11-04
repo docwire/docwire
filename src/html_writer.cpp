@@ -150,7 +150,7 @@ struct pimpl_impl<html_writer> : pimpl_impl_base
            "<html>\n"
            "<head>\n"
            "<meta charset=\"utf-8\">\n"
-           "<title>DocWire</title>\n"};
+           "<title>DF-0</title>\n"};
     std::ostringstream meta_str;
     write_metadata(document.metadata())->write_to(meta_str);
     header += meta_str.str();

@@ -9,9 +9,9 @@
 
 DF-0 is an embeddable software development kit (SDK): a set of reusable C++ building blocks for building data-processing pipelines and infrastructure. It is not a single parser, ETL service, or cloud tool. You compile it into your own application and control how data flows through it.
 
-DocWire treats data processing in the broad sense used by modern data-protection frameworks: collection, organisation, structuring, storage, adaptation, alteration, retrieval, consultation, use, disclosure by transmission, combination, restriction, erasure, and destruction. The goal is for DocWire components to cover the complete data-processing life cycle. Parts of that life cycle are available today; the rest are defined in the roadmap.
+DF-0 treats data processing in the broad sense used by modern data-protection frameworks: collection, organisation, structuring, storage, adaptation, alteration, retrieval, consultation, use, disclosure by transmission, combination, restriction, erasure, and destruction. The goal is for DF-0 components to cover the complete data-processing life cycle. Parts of that life cycle are available today; the rest are defined in the roadmap.
 
-### What you can do with DocWire today
+### What you can do with DF-0 today
 
 - **Ingest** files, email boxes, archives, HTTP request payloads, JSON, XML, CSV, and more.
 - **Normalize and structure** raw input using format detection, parsers, OCR, document element extraction, and structured-data handling.
@@ -24,16 +24,16 @@ DocWire treats data processing in the broad sense used by modern data-protection
 
 1. **It is an SDK.** Reusable, embeddable components—not a closed black-box product.
 2. **It is data infrastructure.** The same pipeline model is intended to cover documents, structured records, streams, sensors, and hardware effects.
-3. **It is mechanically sympathetic.** The design follows DocWire’s engineering principles of predictability, auditability, edge optimization, and graceful degradation.
+3. **It is mechanically sympathetic.** The design follows DF-0’s engineering principles of predictability, auditability, edge optimization, and graceful degradation.
 
-DocWire is production-tested today and is continuously extending its architectural core.
+DF-0 is production-tested today and is continuously extending its architectural core.
 
 ## Table of Contents
 
 - [What is DF-0?](#what-is-docwire-sdk)
 - [Manifesto](#manifesto)
 - [Engineering Principles](#engineering-principles)
-- [Why DocWire and Key Benefits](#why-docwire-and-key-benefits)
+- [Why DF-0 and Key Benefits](#why-docwire-and-key-benefits)
 - [Features](#features)
 - [Roadmap](#roadmap)
 - [API Concept](#api-concept)
@@ -49,7 +49,7 @@ DocWire is production-tested today and is continuously extending its architectur
 <a name="manifesto"></a>
 ## Manifesto
 
-DocWire exists because modern data processing often trades predictable execution, memory ownership, and auditability for framework convenience.
+DF-0 exists because modern data processing often trades predictable execution, memory ownership, and auditability for framework convenience.
 
 Most data processing stacks are built for the easy case: clean inputs, unlimited cloud resources, and a human in the loop when something breaks. The real world looks different:
 
@@ -75,11 +75,11 @@ We are building a toolkit with **mechanical sympathy** for the hardware it runs 
 
 ### Predictability
 
-DocWire rejects hidden allocations, background work, and implicit global state. Pipelines are built around `operator|` and are designed for deterministic execution. Today, core pipeline flows use this model, and we are migrating all existing format handlers to the same rules.
+DF-0 rejects hidden allocations, background work, and implicit global state. Pipelines are built around `operator|` and are designed for deterministic execution. Today, core pipeline flows use this model, and we are migrating all existing format handlers to the same rules.
 
 ### Auditability
 
-DocWire gives developers control over diagnostics and audit output through a dependency-injected auditor. There is no hidden global logger and no mutable static sink. Components accept an `auditor_type`; the default `audit::null_auditor` is a zero-overhead no-op, while stateful output is created explicitly by composing filter, serializer, and sink objects.
+DF-0 gives developers control over diagnostics and audit output through a dependency-injected auditor. There is no hidden global logger and no mutable static sink. Components accept an `auditor_type`; the default `audit::null_auditor` is a zero-overhead no-op, while stateful output is created explicitly by composing filter, serializer, and sink objects.
 
 ### Edge Optimization
 
@@ -90,19 +90,19 @@ Non-owning views already avoid copies across many pipeline boundaries. The archi
 Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is reported as an error without crashing the host process. Structural validation of incoming data is always required; it can never be disabled by optimized build modes.
 
 <a name="why-docwire-and-key-benefits"></a>
-## Why DocWire and Key Benefits
+## Why DF-0 and Key Benefits
 
-**For Developers:** DocWire provides a flexible C++ API to build data processing pipelines. It supports custom chain elements and integrates with existing codebases.
+**For Developers:** DF-0 provides a flexible C++ API to build data processing pipelines. It supports custom chain elements and integrates with existing codebases.
 
-**Optimized for NLP and AI Projects:** DocWire includes structured document element extraction, content filtering, and pluggable message transformations. Planned enhancements include tokenization/detokenization, output sanitization, and customizable data cleaning pipelines. It can prepare datasets for AI training, inference, and embedding workflows.
+**Optimized for NLP and AI Projects:** DF-0 includes structured document element extraction, content filtering, and pluggable message transformations. Planned enhancements include tokenization/detokenization, output sanitization, and customizable data cleaning pipelines. It can prepare datasets for AI training, inference, and embedding workflows.
 
-**Enhanced AI/NLP Integration:** DocWire supports structured document element extraction. Semantic partitioning and context-aware chunking are under active development. Extracted elements can be used to generate embeddings for semantic search, retrieval augmented generation (RAG), document clustering, and similarity analysis.
+**Enhanced AI/NLP Integration:** DF-0 supports structured document element extraction. Semantic partitioning and context-aware chunking are under active development. Extracted elements can be used to generate embeddings for semantic search, retrieval augmented generation (RAG), document clustering, and similarity analysis.
 
-**The layer your AI pipeline is missing:** Raw documents are rarely LLM-ready. Dirty PDFs, malformed email archives, legacy Office files, OCR scans, and mixed-format datasets must be normalized before they can be embedded, chunked, or summarized. DocWire ingests and structures that unstructured input into clean, typed document elements—on-premise by default, with an injected audit mechanism for deterministic observability—and optional cloud AI steps.
+**The layer your AI pipeline is missing:** Raw documents are rarely LLM-ready. Dirty PDFs, malformed email archives, legacy Office files, OCR scans, and mixed-format datasets must be normalized before they can be embedded, chunked, or summarized. DF-0 ingests and structures that unstructured input into clean, typed document elements—on-premise by default, with an injected audit mechanism for deterministic observability—and optional cloud AI steps.
 
-**For Businesses:** DocWire processes unstructured, semi-structured, and structured data from diverse sources including PDF, Office documents, email boxes, web services, JSON, XML, CSV, and more. It integrates cloud and local AI models as explicit processing steps. Direct database, ERP, message-queue, and industrial-stream connectors are planned extensions.
+**For Businesses:** DF-0 processes unstructured, semi-structured, and structured data from diverse sources including PDF, Office documents, email boxes, web services, JSON, XML, CSV, and more. It integrates cloud and local AI models as explicit processing steps. Direct database, ERP, message-queue, and industrial-stream connectors are planned extensions.
 
-**Input and Output Sources:** Email boxes, local filesystem, structured files such as JSON, XML, and CSV, and HTTP/web services can be connected to DocWire pipelines today. Cloud drives, ERP systems, relational databases, message queues, and industrial data streams are planned extensions. A pipeline can end in an exporter or in an effect, such as posting data, publishing a message, sending an email, or commanding hardware. Cloud AI providers are supported through explicit pipeline integrations, not hidden background calls.
+**Input and Output Sources:** Email boxes, local filesystem, structured files such as JSON, XML, and CSV, and HTTP/web services can be connected to DF-0 pipelines today. Cloud drives, ERP systems, relational databases, message queues, and industrial data streams are planned extensions. A pipeline can end in an exporter or in an effect, such as posting data, publishing a message, sending an email, or commanding hardware. Cloud AI providers are supported through explicit pipeline integrations, not hidden background calls.
 
 
 <a name="features"></a>
@@ -184,7 +184,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Structured Content Extraction**: DF-0 excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
 
-- **Preprocessing for Embeddings (planned)**: DocWire will provide built-in cleaning and preprocessing utilities to ensure high-quality input for embedding models. Current extraction already yields structured text; advanced tokenization/detokenization and output sanitization are under development.
+- **Preprocessing for Embeddings (planned)**: DF-0 will provide built-in cleaning and preprocessing utilities to ensure high-quality input for embedding models. Current extraction already yields structured text; advanced tokenization/detokenization and output sanitization are under development.
 
 - **Document Element Extraction**: Extract specific document elements such as paragraphs, headings, and lists, which can then be used to generate embeddings for each element.
 
@@ -218,7 +218,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 <a name="roadmap"></a>
 ## Roadmap
 
-DocWire is actively evolving to meet future data processing demands.
+DF-0 is actively evolving to meet future data processing demands.
 
 ### Future Capabilities
 
@@ -280,11 +280,11 @@ DocWire is actively evolving to meet future data processing demands.
 <a name="api-concept"></a>
 ## API Concept
 
-DocWire is infrastructure, not a wrapper. You control the parsing chain, memory ownership, and data flow instead of depending on an opaque third-party service. The SDK processes data as a typed, lazy pipeline. You connect sources, parsers, transformers, and destinations using `operator|`. Building the pipeline does not execute it. Execution happens only when the pipeline is invoked.
+DF-0 is infrastructure, not a wrapper. You control the parsing chain, memory ownership, and data flow instead of depending on an opaque third-party service. The SDK processes data as a typed, lazy pipeline. You connect sources, parsers, transformers, and destinations using `operator|`. Building the pipeline does not execute it. Execution happens only when the pipeline is invoked.
 
 ### PipeChain and DataTree
 
-DocWire combines two views of data processing:
+DF-0 combines two views of data processing:
 
 - **PipeChain** is the pipeline assembly line. Parsers, transformers, and exporters are connected by `operator|` into a reusable, ordered processing path.
 - **DataTree** is the structured information flow inside that pipeline. Messages represent data elements such as files, folders, emails, attachments, documents, pages, paragraphs, tables, links, images, structured records, and metadata.
@@ -305,7 +305,7 @@ Callables can be attached directly as transformers. They are automatically wrapp
 
 ### Message-driven information flow
 
-Instead of copying whole data payloads between stages, DocWire emits lightweight message nodes that represent the structured data flow. These nodes provide typed access to the underlying data and can be filtered, transformed, or forwarded by later pipeline elements.
+Instead of copying whole data payloads between stages, DF-0 emits lightweight message nodes that represent the structured data flow. These nodes provide typed access to the underlying data and can be filtered, transformed, or forwarded by later pipeline elements.
 
 For nested formats, the messages form a tree-like flow:
 
@@ -358,13 +358,13 @@ Because these are pipeline steps, they can be combined with parsing, OCR, filter
 
 ### Memory and policy-based execution
 
-DocWire is designed around explicit, injectable execution policies. The SDK exposes pipeline components as objects, so they can be composed with allocator, audit, and error-policy selection as the architecture evolves.
+DF-0 is designed around explicit, injectable execution policies. The SDK exposes pipeline components as objects, so they can be composed with allocator, audit, and error-policy selection as the architecture evolves.
 
 This allows host applications to choose deterministic memory and error behavior without changing the parsing or export logic.
 
 ### Beyond Documents: A General Data-Processing Foundation
 
-DocWire’s pipeline model is intentionally generic. A source can be a file, socket, sensor stream, camera, audio stream, database cursor, message queue, or API. A destination can export data or perform an effect: publish a message, send an email, write a record, call a webhook, raise an alert, or command hardware.
+DF-0’s pipeline model is intentionally generic. A source can be a file, socket, sensor stream, camera, audio stream, database cursor, message queue, or API. A destination can export data or perform an effect: publish a message, send an email, write a record, call a webhook, raise an alert, or command hardware.
 
 The SDK is organized around a small number of long-lived component families:
 
@@ -381,7 +381,7 @@ A pipeline may end in a destination that exports data, or in an effect that acts
 <a name="examples"></a>
 ## Examples
 
-The examples below reflect the current public API. DocWire is introducing injectable error policies, allocator policies, and audit policies. Existing parsers, transformers, and exporters remain supported during this transition.
+The examples below reflect the current public API. DF-0 is introducing injectable error policies, allocator policies, and audit policies. Existing parsers, transformers, and exporters remain supported during this transition.
 
 Parse file in any format (Office, PDF, mail, etc) having its path, export to plain text and write to string stream:
 
@@ -608,13 +608,13 @@ for (auto product_node : products)
 ## Installation
 
 ### Why Choose vcpkg for DF-0 Installation?
-DocWire has embraced vcpkg as the preferred installation method for several compelling reasons:
+DF-0 has embraced vcpkg as the preferred installation method for several compelling reasons:
 - **Microsoft's Trusted Solution:** vcpkg is a package manager developed and backed by Microsoft, ensuring reliability, ongoing support, and compatibility.
-- **Cross-Platform Simplicity:** With vcpkg, DocWire installation becomes a breeze on Windows, Linux, and macOS, providing a unified and hassle-free experience.
+- **Cross-Platform Simplicity:** With vcpkg, DF-0 installation becomes a breeze on Windows, Linux, and macOS, providing a unified and hassle-free experience.
 - **Effortless Dependency Management:** vcpkg takes care of resolving and installing dependencies automatically, reducing manual configuration efforts for developers.
 - **Swift Binary Package Deployment:** The availability of pre-built binary packages in vcpkg accelerates installation, minimizing the need for time-consuming manual compilation.
-- **Seamless CMake Integration:** vcpkg seamlessly integrates with the CMake build system, simplifying the incorporation of DocWire into CMake-based projects.
-By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, user-friendly, and well-supported solution that guarantees a smooth installation experience.
+- **Seamless CMake Integration:** vcpkg seamlessly integrates with the CMake build system, simplifying the incorporation of DF-0 into CMake-based projects.
+By selecting vcpkg, DF-0 ensures that programmers benefit from a trusted, user-friendly, and well-supported solution that guarantees a smooth installation experience.
 
 ### Supported Platforms
 
@@ -651,8 +651,8 @@ In addition to vcpkg requirements, DF-0 requires the following tools:
 ### Installation via build.sh or build.ps1 scripts
 The current preferred installation method is via build.sh or build.ps1 scripts. The script will automatically install vcpkg, select correct triplet, add required overlays and install DF-0 with all dependencies from sources.
 
-1. **Clone the DocWire Repository:**
-Clone the DocWire repository from GitHub if you haven't already:
+1. **Clone the DF-0 Repository:**
+Clone the DF-0 repository from GitHub if you haven't already:
 ```
 git clone https://github.com/docwire/docwire.git
 ```
@@ -748,7 +748,7 @@ $env:FEATURES = "[local-ai-ct2,tests]"
 
 #### Enabling features with vcpkg manifest
 
-When DocWire is a dependency in another project, specify features in your `vcpkg.json` manifest:
+When DF-0 is a dependency in another project, specify features in your `vcpkg.json` manifest:
 
 ```json
 {
@@ -763,7 +763,7 @@ When DocWire is a dependency in another project, specify features in your `vcpkg
 
 #### Enabling features with CMake directly
 
-If you build DocWire with CMake directly, using a vcpkg toolchain, you can set the corresponding CMake options:
+If you build DF-0 with CMake directly, using a vcpkg toolchain, you can set the corresponding CMake options:
 
 ```bash
 cmake -DDF0_CT2=ON -DDF0_LLAMA=ON ..
@@ -784,7 +784,7 @@ Please refer ["What is binary caching?" on Microsoft Learn](https://learn.micros
 We used to provide pre-built binaries but we realized that they are not reliable as they are tightly coupled with specific versions of compiler, operating system and other dependencies. To solve this issue, our continuous integration scripts use vcpkg binary caching with GitHub packages and we are working to offer this to other users. This will allow everyone to use the latest version of DF-0 without having to worry about compatibility.
 
 ### Conclusion
-You're all set! You've successfully installed the DocWire library using vcpkg. You can now use the DocWire library in your code to perform text extraction and other data processing tasks. 
+You're all set! You've successfully installed the DF-0 library using vcpkg. You can now use the DF-0 library in your code to perform text extraction and other data processing tasks. 
 
 <a name="versioning"></a>
 ## Versioning
@@ -854,7 +854,7 @@ To explore the possibilities of an LTS agreement or to discuss specific requirem
 <a name="audit-and-diagnostics"></a>
 ## Audit and Diagnostics
 
-DocWire uses a dependency-injected audit mechanism. There is no process-global logger, static sink, or logging macro.
+DF-0 uses a dependency-injected audit mechanism. There is no process-global logger, static sink, or logging macro.
 
 Parsers, exporters, and pipeline elements accept an `auditor_type` template parameter. The default is `df0::audit::null_auditor`, a stateless no-op that adds no runtime cost.
 
@@ -903,7 +903,7 @@ The console application injects `audit::null_auditor` by default, so normal docu
 The API documentation for the DF-0/library is readily available in various formats to assist you in seamlessly integrating it into your projects. Whether you prefer reading detailed doxygen-style documentation, accessing it through binary packages, or installing it via package managers like Vcpkg, we've got you covered.
 
 ### ReadTheDocs - Doxygen Format
-Our API documentation is hosted on [ReadTheDocs](https://df0.readthedocs.io/), presented in the widely recognized and developer-friendly Doxygen format. This comprehensive documentation provides insights into the functionality, usage, and features of the DocWire library. You can explore it at your own pace to better understand how to harness the power of DocWire within your applications.
+Our API documentation is hosted on [ReadTheDocs](https://df0.readthedocs.io/), presented in the widely recognized and developer-friendly Doxygen format. This comprehensive documentation provides insights into the functionality, usage, and features of the DF-0 library. You can explore it at your own pace to better understand how to harness the power of DF-0 within your applications.
 
 ### GitHub Releases
 
@@ -911,11 +911,11 @@ If you're looking for a more direct way to access the documentation, you can fin
 
 ### Vcpkg Package Manager
 
-For users who prefer to manage their dependencies using Vcpkg, we've made sure that our API documentation is included with the packages you install. This means you can access the same doxygen-style documentation seamlessly as you manage and integrate DocWire into your C++ projects.
+For users who prefer to manage their dependencies using Vcpkg, we've made sure that our API documentation is included with the packages you install. This means you can access the same doxygen-style documentation seamlessly as you manage and integrate DF-0 into your C++ projects.
 
 ### Consistency Across Platforms
 
-It's worth noting that no matter where you choose to access our API documentation—whether through ReadTheDocs, GitHub Releases, or Vcpkg—you will find the same comprehensive doxygen-style documentation. This ensures a consistent and reliable resource for understanding and utilizing the DocWire library.
+It's worth noting that no matter where you choose to access our API documentation—whether through ReadTheDocs, GitHub Releases, or Vcpkg—you will find the same comprehensive doxygen-style documentation. This ensures a consistent and reliable resource for understanding and utilizing the DF-0 library.
 
 ### Why ReadTheDocs?
 
@@ -927,9 +927,9 @@ You might wonder why we chose ReadTheDocs to host our documentation. While some 
 
 3. **Automation**: ReadTheDocs allows us to automate the documentation publishing process, ensuring that you have the latest documentation whenever you need it without delay.
 
-We believe in making the integration of DocWire as smooth as possible, and providing our documentation through ReadTheDocs is just one way we're committed to simplifying your experience.
+We believe in making the integration of DF-0 as smooth as possible, and providing our documentation through ReadTheDocs is just one way we're committed to simplifying your experience.
 
-Explore the documentation, experiment with the library, and feel free to reach out if you have any questions or feedback. We're here to support you on your journey with DocWire.
+Explore the documentation, experiment with the library, and feel free to reach out if you have any questions or feedback. We're here to support you on your journey with DF-0.
 
 <a name="error-handling"></a>
 ## Error handling: robust and secure
@@ -1029,7 +1029,7 @@ This gives them similar security and debugging capabilities to fatal errors and 
 
 ### Policy-based error handling (in progress)
 
-DocWire is evolving its error handling from a single exception-based model to an **injectable error-policy abstraction**. This will allow the same parsing/processing algorithm to be compiled with different error propagation strategies:
+DF-0 is evolving its error handling from a single exception-based model to an **injectable error-policy abstraction**. This will allow the same parsing/processing algorithm to be compiled with different error propagation strategies:
 
 - **Deterministic mode (`df0::expected`)** – fallible operations return a value or a coarse-grained error category. Control flow is explicit and predictable, with no stack unwinding. This mode is suitable for real-time, embedded, and safety-critical workloads.
 
@@ -1048,7 +1048,7 @@ The current framework is designed to take advantage of modern C++ features, such
 <a name="console-application"></a>
 ## Console Application (CLI)
 
-Welcome to the DocWire Console Application (DocWire CLI). This versatile command-line tool empowers users to extract content from documents, including text, document structure, and metadata. Whether you're processing documents for analysis, summarization, sentiment detection, or translation, DocWire CLI has you covered.
+Welcome to the DF-0 Console Application (DF-0 CLI). This versatile command-line tool empowers users to extract content from documents, including text, document structure, and metadata. Whether you're processing documents for analysis, summarization, sentiment detection, or translation, DF-0 CLI has you covered.
 
 ### Usage
 
@@ -1060,7 +1060,7 @@ docwire [options] file_name
 
 ### Basic options
 - **&ndash;&ndash;help**: Display the help message.
-- **&ndash;&ndash;version**: Display the DocWire version.
+- **&ndash;&ndash;version**: Display the DF-0 version.
 - **&ndash;&ndash;verbose**: Enable verbose audit output, equivalent to `--log-filter='*'`.
 - **&ndash;&ndash;input-file <file_path>**: Specify the path to the file to process (or you can provide filename without --input-file).
 - **&ndash;&ndash;output_type <type>** (default: plain_text): Set the output type. Available types include plain_text, html (preserving document structure), csv (structured data), and metadata (document information).
@@ -1104,7 +1104,7 @@ Unlock the power of OpenAI with the following options:
 
 - **&ndash;&ndash;ocr-confidence-threshold <value>**: Set the OCR confidence threshold (0-100). Words with confidence below this will be excluded. The CLI passes this value to the OCR parser when provided; if omitted, the parser’s own default behavior applies.
 
-- **&ndash;&ndash;local-processing <yes|no> (default: yes)**: Process documents locally, including local OCR. When set to `no`, local parsers are skipped; this is useful when combining DocWire with OpenAI processing for image/PDF data.
+- **&ndash;&ndash;local-processing <yes|no> (default: yes)**: Process documents locally, including local OCR. When set to `no`, local parsers are skipped; this is useful when combining DF-0 with OpenAI processing for image/PDF data.
 
 - **&ndash;&ndash;use-stream <yes|no> (default: no)**: Pass the file stream to the SDK instead of the filename.
 
@@ -1198,7 +1198,7 @@ Generate embedding of document using OpenAI service for advanced AI applications
 docwire --openai-embed data_processing_definition.doc
 ```
 
-Happy Document Processing with DocWire CLI!
+Happy Document Processing with DF-0 CLI!
 
 <a name="license"></a>
 ## License
@@ -1210,7 +1210,7 @@ Product is double licensed:
 
 Please contact SILVERCODERS (http://silvercoders.com) for a commercial license for DF-0.
 
-In addition DF-0 incorporates code that falls under licenses separate from the GNU Affero General Public License or the DocWire Commercial License;
+In addition DF-0 incorporates code that falls under licenses separate from the GNU Affero General Public License or the DF-0 Commercial License;
 instead, it operates under specific opensource licenses granted by the original authors.
 Details are described in "3rdparty components used" documentation chapter.
 

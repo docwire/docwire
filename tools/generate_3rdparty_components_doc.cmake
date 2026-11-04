@@ -364,7 +364,7 @@ function(write_port_info file_name port_name)
 		"Version: ${version}\n\n"
 		"Homepage: ${homepage}\n\n"
 		"Required by: ${required_by}\n\n"
-		"DocWire modules: ${modules}\n\n")
+		"DF-0 modules: ${modules}\n\n")
 	file(APPEND ${file_name} "### Short license summary\n\n")
 	file(APPEND ${file_name} "Full SPDX-License-Identifier: ${license_expr}\n\n")
 	simplify_spdx_license_expression(${license_expr} license_expr)
@@ -402,7 +402,7 @@ endfunction()
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
 	"# 3rdparty components used\n\n"
-	"The DF-0 incorporates code that falls under licenses separate from the GNU General Public License or the DocWire Commercial License;\n"
+	"The DF-0 incorporates code that falls under licenses separate from the GNU General Public License or the DF-0 Commercial License;\n"
 	"instead, it operates under specific licenses granted by the original authors.\n\n"
 	"We express our gratitude for all contributions to the DF-0 and encourage users to acknowledge these contributions.\n"
 	"It is recommended that programs using the SDK include these acknowledgments, along with relevant license statements and disclaimers,\n"

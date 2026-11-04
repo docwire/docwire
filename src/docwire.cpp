@@ -213,7 +213,7 @@ int main(int argc, char* argv[])
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("help", "display help message")
-		("version", "display DocWire version")
+		("version", "display DF-0 version")
 		("input-file", po::value<std::string>()->required(), "path to file to process")
 		("output_type", po::value<output_type>()->default_value(output_type::plain_text), enum_names_str<output_type>().c_str())
 		("http-post", po::value<std::string>(), "url to process data via http post")

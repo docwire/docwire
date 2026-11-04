@@ -1,4 +1,4 @@
-# DocWire Coding Guidelines
+# DF-0 Coding Guidelines
 
 ## RULES (Meta & Governance)
 
@@ -44,13 +44,13 @@
 
 ### [RULES-ITERATIVE-LIFECYCLE]
 
-**The Rule:** We prioritize business velocity over Day-1 architectural purity. New features and 3rd-party integrations are permitted to temporarily violate strict performance rules (e.g., hidden heap allocations, caught exceptions) provided they are strictly quarantined behind a compliant DocWire API boundary. Optimization and refactoring are driven strictly by profiling data, not theoretical perfection.
+**The Rule:** We prioritize business velocity over Day-1 architectural purity. New features and 3rd-party integrations are permitted to temporarily violate strict performance rules (e.g., hidden heap allocations, caught exceptions) provided they are strictly quarantined behind a compliant DF-0 API boundary. Optimization and refactoring are driven strictly by profiling data, not theoretical perfection.
 
 **The Why:** Demanding 100% compliance before merging a new feature stalls product delivery. By isolating the messy code early, we ship the feature to users today, and we rely on real-world profiling to tell us if the architectural violation is actually causing a bottleneck worth fixing tomorrow.
 
 ### [RULES-DEFAULTS-CPP_CORE]
 
-**The Rule:** For general C++ practices not covered here, the codebase defaults to the C++ Core Guidelines. This document purely defines DocWire-specific overrides.
+**The Rule:** For general C++ practices not covered here, the codebase defaults to the C++ Core Guidelines. This document purely defines DF-0-specific overrides.
 
 **The Why:** Prevents this document from bloating into a 100-page generic C++ manual, keeping the focus entirely on high-performance edge architecture.
 
@@ -60,7 +60,7 @@
 
 **The Rule:** Architectural conflicts must be resolved using this strict hierarchy of values: 1. Safety → 2. Predictability → 3. Peak Throughput → 4. Binary Size → 5. Build Performance → 6. ABI/API Stability → 7. Developer Convenience.
 
-**The Why:** DocWire is a mission-critical edge toolkit. We will gladly write boilerplate (#7) or break ABI (#6) to achieve peak throughput (#3). We will sacrifice compile times (#5) to keep binaries small (#4). Above all, we never sacrifice determinism (#2) or safety (#1) for speed.
+**The Why:** DF-0 is a mission-critical edge toolkit. We will gladly write boilerplate (#7) or break ABI (#6) to achieve peak throughput (#3). We will sacrifice compile times (#5) to keep binaries small (#4). Above all, we never sacrifice determinism (#2) or safety (#1) for speed.
 
 ### [DESIGN-LANG-CPP]
 
@@ -449,13 +449,13 @@ Example from a header in `src/audit/`:
 
 ## MEMORY (Allocation & Teardown)
 
-*Context: DocWire operates a "Zero-Heap Pipeline." During active parsing, standard OS heap allocations (`new`, `malloc`, `std::vector`) are mathematically too slow and cause fragmentation. We achieve deterministic, O(1) performance by routing all memory through a custom bump-allocator (the arena) and strictly managing the OS stack.*
+*Context: DF-0 operates a "Zero-Heap Pipeline." During active parsing, standard OS heap allocations (`new`, `malloc`, `std::vector`) are mathematically too slow and cause fragmentation. We achieve deterministic, O(1) performance by routing all memory through a custom bump-allocator (the arena) and strictly managing the OS stack.*
 
 ### [MEM-HOST-OWNERSHIP]
 
 **The Rule:** The Host Application (the top-level execution scope calling the SDK) is the exclusive owner of the OS boundary. It is strictly and solely responsible for allocating massive Input Payloads (via `mmap` or heap `std::vector`) and instantiating the Memory Allocators/arenas. These resources must be passed into the pipeline strictly via Dependency Injection (the execution context).
 
-**The Why:** Domain structs (e.g., the `pdf::document` returned by a parser) are lightweight, transient, and immutable; they must never manage OS resources or their own memory pools. Centralizing OS-level allocations at the host boundary guarantees that the DocWire pipeline remains a pure, zero-allocation, zero-copy state machine and honors the `[API-STATE-INJECTION]` rule.
+**The Why:** Domain structs (e.g., the `pdf::document` returned by a parser) are lightweight, transient, and immutable; they must never manage OS resources or their own memory pools. Centralizing OS-level allocations at the host boundary guarantees that the DF-0 pipeline remains a pure, zero-allocation, zero-copy state machine and honors the `[API-STATE-INJECTION]` rule.
 
 ### [MEM-DATA-COMPOSITION]
 
@@ -633,7 +633,7 @@ SDK business logic must not directly use `throw`, `try`, or `catch`. It must pus
 
 * **Profile & Patch:** If profiling proves the library is a bottleneck, fork it and apply minimal compiler flags or allocator overrides (e.g., hooking into its internal memory callbacks).
 
-* **Reimplement:** Only rewrite the logic from scratch if profiling proves the library's internal architecture fundamentally blocks DocWire's peak throughput goals and users are actively utilizing the feature.
+* **Reimplement:** Only rewrite the logic from scratch if profiling proves the library's internal architecture fundamentally blocks DF-0's peak throughput goals and users are actively utilizing the feature.
 
 **The Why:** Reimplementing complex formats (like image decoding or compression) from scratch delays deliverables by months. This lifecycle guarantees we only spend engineering hours rewriting the exact components that actually limit system scale.
 

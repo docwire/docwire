@@ -19,7 +19,7 @@
  * @brief Provides a multi-stage pipeline for content type detection.
  * 
  * ### Architecture
- * The content type detection in DocWire uses a multi-stage pipeline to ensure accuracy and performance:
+ * The content type detection in DF-0 uses a multi-stage pipeline to ensure accuracy and performance:
  * 1. **By File Extension:** Fast lookup using a comprehensive dictionary. Note that we intentionally 
  *    keep multiple MIME type aliases for a single extension (e.g., `.xml` maps to both `text/xml` 
  *    and `application/xml`) so users can query any valid historical variant.
