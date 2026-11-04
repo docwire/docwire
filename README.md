@@ -45,8 +45,6 @@ DocWire is production-tested today and is continuously extending its architectur
 - [API documentation](#api-documentation)
 - [Console application](#console-application)
 - [License](#license)
-- [Authors](#authors)
-- [External links](#external-links)
 
 <a name="manifesto"></a>
 ## Manifesto
@@ -1220,17 +1218,3 @@ Please keep in mind that any attempt to circumvent the terms of the GNU Affero G
 client/server protocols, etc. is illegal. You must purchase a commercial license if your program, which is distributed under a license
 other than the GNU Affero General Public License version 3, directly or indirectly calls any portion of this code.
 Simply stop using the product if you disagree with this viewpoint.
-
-<a name="authors"></a>
-## Authors
-
-- [Silvercoders Ltd](https://silvercoders.com)
-- [DocWire LLC](https://docwire.io)
-
-<a name="external-links"></a>
-## External links
-
-- [Project homepage - DocWire](https://docwire.io)
-- [SourceForge project page](https://sourceforge.net/projects/doctotext)
-- [LinkedIn page](https://www.linkedin.com/company/docwire-it-services-consulting)
-- [Project homepage - Silvercoders](https://silvercoders.com/en/products/doctotext)
