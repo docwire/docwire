@@ -77,14 +77,14 @@ enable_testing ()
 
 file(WRITE ${CMAKE_SOURCE_DIR}/version.h "#define VERSION \"${DF0_VERSION}\"")
 file(WRITE ${CMAKE_BINARY_DIR}/VERSION "${DF0_VERSION}")
-install(FILES ${CMAKE_BINARY_DIR}/VERSION DESTINATION share/docwire)
+install(FILES ${CMAKE_BINARY_DIR}/VERSION DESTINATION share/df0)
 
 string(TOLOWER ${CMAKE_CXX_COMPILER_ID} compiler_id)
 if(compiler_id STREQUAL "gnu")
     set(compiler_id "gcc")
 endif()
 file(WRITE ${CMAKE_BINARY_DIR}/abi-id.txt "${compiler_id}-${CMAKE_CXX_COMPILER_VERSION}")
-install(FILES ${CMAKE_BINARY_DIR}/abi-id.txt DESTINATION share/docwire)
+install(FILES ${CMAKE_BINARY_DIR}/abi-id.txt DESTINATION share/df0)
 
 add_subdirectory(src)
 

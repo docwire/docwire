@@ -76,6 +76,6 @@ configure_file(index.html ${CMAKE_BINARY_DIR}/doc/index.html COPYONLY)
 # Generate 'install' target
 # -----------------------------------------------------
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/docwire/doc)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/index.html DESTINATION share/docwire/doc)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ChangeLog.md DESTINATION share/docwire/doc)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/df0/doc)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/index.html DESTINATION share/df0/doc)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ChangeLog.md DESTINATION share/df0/doc)
