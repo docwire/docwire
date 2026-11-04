@@ -94,16 +94,16 @@ else()
 endif()
 
 vcpkg_copy_tools(
-	TOOL_NAMES docwire
+	TOOL_NAMES df0
 	SEARCH_DIR ${CURRENT_PACKAGES_DIR}/bin
 	DESTINATION ${CURRENT_PACKAGES_DIR}/tools
 )
 vcpkg_copy_tools(
-	TOOL_NAMES docwire
+	TOOL_NAMES df0
 	SEARCH_DIR ${CURRENT_PACKAGES_DIR}/debug/bin
 	DESTINATION ${CURRENT_PACKAGES_DIR}/debug/tools
 )
-vcpkg_clean_executables_in_bin(FILE_NAMES docwire)
+vcpkg_clean_executables_in_bin(FILE_NAMES df0)
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/df0)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")

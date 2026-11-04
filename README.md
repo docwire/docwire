@@ -1055,7 +1055,7 @@ Welcome to the DF-0 Console Application (DF-0 CLI). This versatile command-line 
 To run the program and process a document, use the following command:
 
 ```bash
-docwire [options] file_name
+df0 [options] file_name
 ```
 
 ### Basic options
@@ -1133,19 +1133,19 @@ Note: The "min_creation_time" and "max_creation_time" options currently work onl
 To extract structured content in HTML format, use the following command:
 
 ```bash
-docwire --output_type html document.docx
+df0 --output_type html document.docx
 ```
 
 #### Secure offline AI document analysis
 
 ```bash
-docwire --local-ai-prompt "What is the conclusion of the following document?" data_processing_definition.doc
+df0 --local-ai-prompt "What is the conclusion of the following document?" data_processing_definition.doc
 ```
 
 ### Secure offline AI embedding generation
 
 ```bash
-docwire --local-ai-embed passage data_processing_definition.doc
+df0 --local-ai-embed passage data_processing_definition.doc
 ```
 
 #### Leveraging OpenAI for Intelligent Document Analysis
@@ -1153,7 +1153,7 @@ docwire --local-ai-embed passage data_processing_definition.doc
 Harness the power of OpenAI to analyze and extract valuable insights from your document. For example, initiate a chat prompt to interact with the document's content:
 
 ```bash
-docwire --openai-chat "What are the key points in the document provided?" document.docx
+df0 --openai-chat "What are the key points in the document provided?" document.docx
 ```
 
 #### Sentiment Analysis for Document Understanding
@@ -1161,7 +1161,7 @@ docwire --openai-chat "What are the key points in the document provided?" docume
 Gain a deeper understanding of the document's sentiment using OpenAI. Detect the sentiment of the exported data with the following command:
 
 ```bash
-docwire --openai-detect-sentiment document.docx
+df0 --openai-detect-sentiment document.docx
 ```
 
 #### Dynamic Language Translation for Multilingual Documents
@@ -1169,7 +1169,7 @@ docwire --openai-detect-sentiment document.docx
 Translate your document into another language using OpenAI. Specify the target language with the following command:
 
 ```bash
-docwire --openai-translate-to spanish document.docx
+df0 --openai-translate-to spanish document.docx
 ```
 
 #### Summarization and text to speech conversion
@@ -1177,7 +1177,7 @@ docwire --openai-translate-to spanish document.docx
 Summarize your document using GPT model, convert summary to audio using TTS model and read it loud:
 
 ```bash
-docwire document.doc --openai-summarize --openai-text-to-speech | ffplay -nodisp -autoexit -
+df0 document.doc --openai-summarize --openai-text-to-speech | ffplay -nodisp -autoexit -
 ```
 
 #### Searching for objects or events in image or photo
@@ -1185,9 +1185,9 @@ docwire document.doc --openai-summarize --openai-text-to-speech | ffplay -nodisp
 Find objects or events in image using GPT model:
 
 ```bash
-docwire --openai-find car --local-processing=off image.jpg
-docwire --openai-find person --local-processing=off image.jpg
-docwire --openai-find running --local-processing=off image.jpg
+df0 --openai-find car --local-processing=off image.jpg
+df0 --openai-find person --local-processing=off image.jpg
+df0 --openai-find running --local-processing=off image.jpg
 ```
 
 #### Embeddings generation for advanced AI applications
@@ -1195,7 +1195,7 @@ docwire --openai-find running --local-processing=off image.jpg
 Generate embedding of document using OpenAI service for advanced AI applications like Retrieval Augmented Generation (RAG), semantic search, and document clustering.
 
 ```bash
-docwire --openai-embed data_processing_definition.doc
+df0 --openai-embed data_processing_definition.doc
 ```
 
 Happy Document Processing with DF-0 CLI!

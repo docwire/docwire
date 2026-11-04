@@ -276,7 +276,7 @@ int main(int argc, char* argv[])
 	if (vm.count("help"))
 	{
 		readme();
-		std::cout << std::endl << "Usage: docwire [options] file_name" << std::endl << std::endl << desc << std::endl;
+		std::cout << std::endl << "Usage: df0 [options] file_name" << std::endl << std::endl << desc << std::endl;
 		return 0;
 	}
 

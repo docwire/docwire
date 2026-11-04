@@ -126,11 +126,11 @@ set_property(TEST integration_run_installed PROPERTY DEPENDS integration_install
 
 
 # --- 2. CLI Tests ---
-# This section finds the 'docwire' executable in the path
+# This section finds the 'df0' executable in the path
 # and runs it against test files.
 
-find_program(DF0_CLI docwire REQUIRED)
-message(STATUS "Found docwire CLI for testing at: ${DF0_CLI}")
+find_program(DF0_CLI df0 REQUIRED)
+message(STATUS "Found DF-0 CLI for testing at: ${DF0_CLI}")
 
 foreach(file IN ITEMS 1.doc 1.pdf basic_ocr-eng.png)
     add_test(
