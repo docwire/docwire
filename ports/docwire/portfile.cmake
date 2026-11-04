@@ -104,7 +104,7 @@ vcpkg_copy_tools(
 	DESTINATION ${CURRENT_PACKAGES_DIR}/debug/tools
 )
 vcpkg_clean_executables_in_bin(FILE_NAMES docwire)
-vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/docwire)
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/df0)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
 vcpkg_install_copyright(FILE_LIST ${SOURCE_PATH}/LICENSE ${SOURCE_PATH}/doc/COPYING.AGPLv3)
