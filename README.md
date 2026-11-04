@@ -1013,10 +1013,10 @@ For example, `std::cerr << df0::errors::diagnostic_message(e) << std::endl;` can
 ```
 Error: "triggering_condition: impl().ArchiveFile == NULL"
 in void df0::zip_reader::open()
-at /home/adrian/Work/docwire/src/zip_reader.cpp:146
+at /home/john/work/df0/src/zip_reader.cpp:146
 with context "Could not open zip archive"
 wrapping at: void df0::pimpl_impl<df0::xlsb_parser>::parse(const df0::data_source&, const df0::message_callbacks&)
-at /home/adrian/Work/docwire/src/xlsb_parser.cpp:700
+at /home/john/work/df0/src/xlsb_parser.cpp:700
 with context "file encrypted error tag"
 with context "Microsoft Office Document Cryptography"
 ```
