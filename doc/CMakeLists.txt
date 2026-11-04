@@ -20,7 +20,7 @@ set(DOXYGEN_GENERATE_HTML YES)
 
 set(DOXYGEN_PROJECT_NAME "DocWire SDK")
 set(DOXYGEN_PROJECT_NUMBER ${DF0_VERSION})
-set(DOXYGEN_PROJECT_BRIEF "DocWire SDK: Deterministic, auditable, and secure data processing in C++20. On-premise by default. No compromises on computational speed.")
+set(DOXYGEN_PROJECT_BRIEF "DF-0: Data processing Framework with Zero-overhead")
 set(DOXYGEN_STRIP_FROM_PATH ../src/)
 set(DOXYGEN_GENERATE_LATEX NO) # Added for consistency. It is set to NO by default by the CMake module.
 set(DOXYGEN_EXAMPLE_PATH ../tests/)
