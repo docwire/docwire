@@ -85,7 +85,7 @@
 
 /**
  * @example integration_example.cmake
- * This example presents how to integrate DocWire SDK with your project using CMake
+ * This example presents how to integrate DF-0 with your project using CMake
 */
 
 /**
@@ -197,12 +197,12 @@
 
 /**
  * @example xml_parsing_example.cpp
- * This example demonstrates how to parse XML documents using the DocWire SDK modern C++ API.
+ * This example demonstrates how to parse XML documents using the DF-0 modern C++ API.
 */
 
 /**
  * @namespace df0
- * @brief The main namespace for the DocWire SDK.
+ * @brief The main namespace for the DF-0.
  */
 
 #endif

@@ -16,7 +16,7 @@ This release introduces a major overhaul of the local AI subsystem, adding suppo
   - **Abstract AI Runner Interface**: Introduced `docwire::ai::ai_runner` – a pure virtual base that defines `process()`, `embed()`, and `unload()` for all local AI backends. Backends guarantee thread safety and deterministic teardown.
   - **Modular AI Backends**: Split the local AI runtime into separate optional libraries: `docwire_ai_ct2` (CTranslate2) and `docwire_ai_llama` (Llama.cpp). A common `docwire_ai` library now contains shared components such as `ai::task`, `ai::summarize`, `ai::translate`, and `ai::embed`.
   - **High-Level Local AI API**: New convenience classes in the `ai::local` namespace (`summarize`, `translate`, `task`, `passage::embedder`, `query::embedder`) automatically select a default backend model, simplifying the most common use cases.
-  - **Documentation**: Added the **DocWire SDK Manifesto** and **Coding Guidelines** to the repository documentation (`doc/manifesto.md`, `doc/coding_guidelines.md`), outlining the project’s philosophy and architectural rules.
+  - **Documentation**: Added the **DF-0 Manifesto** and **Coding Guidelines** to the repository documentation (`doc/manifesto.md`, `doc/coding_guidelines.md`), outlining the project’s philosophy and architectural rules.
 
 - **Improvements**
   - **Naming Normalization**: All class/struct/enum names have been converted to `snake_case` according to the new coding guidelines. Publicly visible types such as `ChainElement`, `PlainTextExporter`, `HtmlWriter`, `ParsingChain`, `TransformerFunc`, `FileStream`, `ZipReader`, etc., are now `chain_element`, `plain_text_exporter`, `html_writer`, `parsing_chain`, `transformer_func`, `file_stream`, `zip_reader`, and so on. Document element tags (`document::Text` → `document::text`, `mail::Mail` → `mail::mail`, …) have been similarly renamed.
@@ -361,7 +361,7 @@ This release introduces a major update to the integrated OpenAI functionalities,
 
 ## Version 2025.06.19
 
-Version 2025.06.19 introduces notable advancements to DocWire SDK, featuring significant upgrades to OCR capabilities, greatly improved precision in PDF document handling including richer positional metadata, and a modernized approach to archive processing. This release also includes expanded content type support, refined text output, and strengthened build and testing infrastructure, providing developers with enhanced data extraction tools, more reliable document analysis, and an improved development workflow. **Please note: Support for the deprecated windows-2019 GitHub runners has been removed from our CI/CD pipeline. If this change impacts your workflow, please contact us for assistance.**
+Version 2025.06.19 introduces notable advancements to DF-0, featuring significant upgrades to OCR capabilities, greatly improved precision in PDF document handling including richer positional metadata, and a modernized approach to archive processing. This release also includes expanded content type support, refined text output, and strengthened build and testing infrastructure, providing developers with enhanced data extraction tools, more reliable document analysis, and an improved development workflow. **Please note: Support for the deprecated windows-2019 GitHub runners has been removed from our CI/CD pipeline. If this change impacts your workflow, please contact us for assistance.**
 
 
 > OCR's vision, sharp and newly bright,  
@@ -473,7 +473,7 @@ This release significantly overhauls the classic Word Document (.doc) parsing by
 
 ## Version 2025.03.24
 
-This release introduces a major overhaul of the HTML parsing component within the DocWire SDK, significantly enhancing the accuracy, robustness, and efficiency of HTML processing.  Alongside this core update, we've modernized the build system and improved overall project structure. **Please note that we have removed support for Ubuntu 20.04 in our CI/CD pipeline. If this change impacts your workflow, please contact us for assistance.**
+This release introduces a major overhaul of the HTML parsing component within the DF-0, significantly enhancing the accuracy, robustness, and efficiency of HTML processing.  Alongside this core update, we've modernized the build system and improved overall project structure. **Please note that we have removed support for Ubuntu 20.04 in our CI/CD pipeline. If this change impacts your workflow, please contact us for assistance.**
 
 > I'm a coding bunny on a merry sprint,  
 > Hopping through workflows without a hint,  
@@ -586,7 +586,7 @@ This release introduces significant improvements to error handling and code orga
 
 ## Version 2024.11.23
 
-This release introduces improvements to the DocWire SDK's codebase, focusing on enhancing code organization, modernizing features, and optimizing compilation times.
+This release introduces improvements to the DF-0's codebase, focusing on enhancing code organization, modernizing features, and optimizing compilation times.
 
 > Functions moved, headers light,  
 > Logs decoupled, code shines bright.  
@@ -622,7 +622,7 @@ This release introduces updates to the build workflow configuration, adding new 
 
 ## Version 2024.11.10
 
-This release introduces significant enhancements to error handling across various components of the DocWire SDK. A new section in the documentation outlines the comprehensive error handling framework, detailing features such as chained exceptions, type-safe context values, and secure error messages. Additionally, multiple source files have been updated to implement more structured error reporting, including the introduction of specific error types and improved context for exceptions. The changes aim to provide clearer diagnostics and facilitate better debugging practices throughout the SDK.
+This release introduces significant enhancements to error handling across various components of the DF-0. A new section in the documentation outlines the comprehensive error handling framework, detailing features such as chained exceptions, type-safe context values, and secure error messages. Additionally, multiple source files have been updated to implement more structured error reporting, including the introduction of specific error types and improved context for exceptions. The changes aim to provide clearer diagnostics and facilitate better debugging practices throughout the SDK.
 
 > 🐇 In the land of code, where errors do roam,  
 > A new framework shines, guiding us home.  
@@ -701,7 +701,7 @@ The changes encompass updates across various components in the project, includin
 > In tech we trust, with love sincere! 🌼
 
 - **New Features**
-	- Enhanced installation instructions for the DocWire SDK, emphasizing vcpkg integration.
+	- Enhanced installation instructions for the DF-0, emphasizing vcpkg integration.
 	- Added base64 encoding capabilities to public API to allow for encoding of binary data.
 	- Introduced support for additional document formats (specialized XML parser) and parsing strategies.
 	- Implemented a mechanism for handling hyperlinks in RTF and OOXML documents.
@@ -727,7 +727,7 @@ The changes encompass updates across various components in the project, includin
 
 ## Version 2024.07.31
 
-Recent enhancements to the DocWire SDK significantly boost its natural language processing capabilities by integrating local AI models. Developers can now perform tasks like text classification and sentiment analysis directly within C++ applications, improving performance and safeguarding data privacy. Additionally, refined dependency management and build configurations provide a comprehensive toolkit for developing AI-driven applications. Overall, the updates significantly enhance the SDK's utility for developers working on NLP and AI projects, providing them with powerful tools to process and analyze data effectively while maintaining control over their data privacy.
+Recent enhancements to the DF-0 significantly boost its natural language processing capabilities by integrating local AI models. Developers can now perform tasks like text classification and sentiment analysis directly within C++ applications, improving performance and safeguarding data privacy. Additionally, refined dependency management and build configurations provide a comprehensive toolkit for developing AI-driven applications. Overall, the updates significantly enhance the SDK's utility for developers working on NLP and AI projects, providing them with powerful tools to process and analyze data effectively while maintaining control over their data privacy.
 
 > 🐰 In the burrow where ideas sprout,  
 > Local models bring cheer, there's no doubt!  
@@ -838,7 +838,7 @@ The recent changes include updates to the libbfio library, adjustments in test f
 
 ## Version 2024.04.04
 
-The DocWire SDK is embracing a dynamic development approach with its new "Release Early, Release Often" strategy and date-based versioning. This shift aims to enhance user experience by ensuring rapid releases, allowing users to benefit from the latest advancements with greater transparency and efficiency. While this release focuses on adopting this new versioning strategy and updating documentation, it's important to note that the significant improvements in memory management, thread safety, document processing, and build configurations were introduced in earlier versions. These enhancements are documented in the ChangeLog, highlighting the SDK's ongoing evolution.
+The DF-0 is embracing a dynamic development approach with its new "Release Early, Release Often" strategy and date-based versioning. This shift aims to enhance user experience by ensuring rapid releases, allowing users to benefit from the latest advancements with greater transparency and efficiency. While this release focuses on adopting this new versioning strategy and updating documentation, it's important to note that the significant improvements in memory management, thread safety, document processing, and build configurations were introduced in earlier versions. These enhancements are documented in the ChangeLog, highlighting the SDK's ongoing evolution.
 
 > 🐰✨  
 > In the world of code, where changes abound,  
@@ -850,7 +850,7 @@ The DocWire SDK is embracing a dynamic development approach with its new "Releas
 > 🌟📚  
 
 - **Documentation**
-	- Introduced a "Release Early, Release Often" strategy with date-based versioning for the DocWire SDK, enhancing transparency and ease of tracking updates.
+	- Introduced a "Release Early, Release Often" strategy with date-based versioning for the DF-0, enhancing transparency and ease of tracking updates.
 	- Updated the `ChangeLog` with details on significant enhancements including memory management, thread safety, document processing capabilities, and build configurations across various versions.
 - **Refactor**
 	- Modified the project's versioning approach in the `vcpkg.json` file to use "latest" as the version string, simplifying version management.
@@ -1121,7 +1121,7 @@ The recent modifications introduce a significant enhancement to the project's co
 
 ## Version 2024.01.20
 
-Significantly enhances the capabilities of the DocWire SDK by integrating it with OpenAI Vision. The integration introduces advanced features and optimizations, including improved AI capabilities. The changes also include updates to environment variable handling, particularly the OPENAI_API_KEY, and the introduction of new classes and methods to support image processing and analysis. The upgrade to C++20 and the addition of functionalities such as the openai::find transformer, extended CLI options, and enhanced openai transformers mark a significant leap in the SDK's capabilities. Additionally, the new version includes improvements to testing configurations and dependencies, aiming for a robust and reliable development environment.
+Significantly enhances the capabilities of the DF-0 by integrating it with OpenAI Vision. The integration introduces advanced features and optimizations, including improved AI capabilities. The changes also include updates to environment variable handling, particularly the OPENAI_API_KEY, and the introduction of new classes and methods to support image processing and analysis. The upgrade to C++20 and the addition of functionalities such as the openai::find transformer, extended CLI options, and enhanced openai transformers mark a significant leap in the SDK's capabilities. Additionally, the new version includes improvements to testing configurations and dependencies, aiming for a robust and reliable development environment.
 
 > In the garden of code, where ideas take flight,  
 > DocWire blooms, a beacon of light.  
@@ -1137,7 +1137,7 @@ Significantly enhances the capabilities of the DocWire SDK by integrating it wit
 > Where bytes and bits, take their flight.  
 
 - **New Features**
-	- Enhanced DocWire SDK with AI capabilities
+	- Enhanced DF-0 with AI capabilities
 	- Integrated C++20 and OpenAI Vision for advanced data processing.
 	- Added `openai-find` option for text and image search.
 	- Implemented base64 encoding and various image detail handling in chat functionalities.
@@ -1158,7 +1158,7 @@ Significantly enhances the capabilities of the DocWire SDK by integrating it wit
 
 ## Version 2024.01.11
 
-This upgrade enhances DocWire SDK's capabilities in handling a wide range of data processing tasks, including robust HTTP capabilities, comprehensive network APIs, and efficient web data extraction. Upgrade to the C++20 standard is a significant part of the changes in the release.
+This upgrade enhances DF-0's capabilities in handling a wide range of data processing tasks, including robust HTTP capabilities, comprehensive network APIs, and efficient web data extraction. Upgrade to the C++20 standard is a significant part of the changes in the release.
 
 > In the digital forge, where code takes flight,  
 > DocWire embarks on a journey, bold and bright.  
@@ -1217,7 +1217,7 @@ This upgrade enhances DocWire SDK's capabilities in handling a wide range of dat
 
 ### Other Changes
 
-- Renaming DocToText to DocWire SDK for a more impactful brand representation.
+- Renaming DocToText to DF-0 for a more impactful brand representation.
 - Streamlining the search strategy for plugins, resources, and test files.
 - Introducing logic-specific error exception classes (LogicError and RuntimeError) for improved code readability and management.
 - Refactoring the CLI to use Boost.Program_options for easy extensibility.
@@ -1228,7 +1228,7 @@ This upgrade enhances DocWire SDK's capabilities in handling a wide range of dat
 
 ### Summary
 
-These updates collectively contribute to a more robust, feature-rich, and user-friendly DocWire SDK experience, with enhanced OCR capabilities, advanced sanitization, improved dependency management, and versatile OpenAI model integration.
+These updates collectively contribute to a more robust, feature-rich, and user-friendly DF-0 experience, with enhanced OCR capabilities, advanced sanitization, improved dependency management, and versatile OpenAI model integration.
 
 Version 5.0.9:
     * Replace README file with more detailed README.md prepared for public GitHub repository

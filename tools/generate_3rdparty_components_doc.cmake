@@ -402,12 +402,12 @@ endfunction()
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
 	"# 3rdparty components used\n\n"
-	"The DocWire SDK incorporates code that falls under licenses separate from the GNU General Public License or the DocWire Commercial License;\n"
+	"The DF-0 incorporates code that falls under licenses separate from the GNU General Public License or the DocWire Commercial License;\n"
 	"instead, it operates under specific licenses granted by the original authors.\n\n"
-	"We express our gratitude for all contributions to the DocWire SDK and encourage users to acknowledge these contributions.\n"
+	"We express our gratitude for all contributions to the DF-0 and encourage users to acknowledge these contributions.\n"
 	"It is recommended that programs using the SDK include these acknowledgments, along with relevant license statements and disclaimers,\n"
 	"in an appendix to the documentation.\n\n"
-	"It's important to note that all third-party components integrated into the DocWire SDK are licensed under open-source licenses.\n"
+	"It's important to note that all third-party components integrated into the DF-0 are licensed under open-source licenses.\n"
 	"This allows their free usage, even in closed-source commercial software, without incurring licensing fees.\n\n"
 	"Compliance with and acknowledgment of the licenses associated with third-party components is required only for those specific components used in your application.\n\n")
 if (DEFINED ENV{READTHEDOCS})

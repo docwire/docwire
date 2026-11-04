@@ -64,7 +64,7 @@ jobs:
           script: |
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-      - name: Build DocWire SDK
+      - name: Build DF-0
         run: |
           ${{ matrix.os == 'ubuntu-24.04' && 'sudo apt-get install -y mono-complete' || '' }}
           ${{ matrix.os == 'ubuntu-26.04' && 'sudo bash tools/install_mono_with_certs.sh' || '' }}

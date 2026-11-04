@@ -4,16 +4,16 @@ project(integration_example LANGUAGES CXX)
 
 add_executable(integration_example integration_example.cpp)
 
-# Find the DocWire SDK package.
+# Find the DF-0 package.
 # This requires CMAKE_TOOLCHAIN_FILE to be set (e.g. for vcpkg) or CMAKE_PREFIX_PATH to point to the installation.
 find_package(docwire CONFIG REQUIRED)
 
-# DocWire SDK is designed to be used as a shared library (DLL/SO/DYLIB).
+# DF-0 is designed to be used as a shared library (DLL/SO/DYLIB).
 # Static linking is not supported due to the complexity of dependencies and resource management.
 # This check verifies that the found 'df0_core' target is a shared library.
 get_target_property(DF0_CORE_TYPE df0_core TYPE)
 if(NOT DF0_CORE_TYPE STREQUAL "SHARED_LIBRARY")
-    message(FATAL_ERROR "DocWire SDK requires dynamic linking, but the found 'df0_core' target is not a shared library. Please ensure you are using a dynamic build configuration.")
+    message(FATAL_ERROR "DF-0 requires dynamic linking, but the found 'df0_core' target is not a shared library. Please ensure you are using a dynamic build configuration.")
 endif()
 
 # Link against the specific DocWire libraries your application needs.

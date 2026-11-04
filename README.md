@@ -1,13 +1,13 @@
-# DocWire SDK
+# DF-0
 
 **Deterministic, auditable, and secure data processing in C++20.**
 
 **On-premise by default. No compromises on computational speed.**
 
 <a name="what-is-docwire-sdk"></a>
-## What is DocWire SDK?
+## What is DF-0?
 
-DocWire SDK is an embeddable software development kit (SDK): a set of reusable C++ building blocks for building data-processing pipelines and infrastructure. It is not a single parser, ETL service, or cloud tool. You compile it into your own application and control how data flows through it.
+DF-0 is an embeddable software development kit (SDK): a set of reusable C++ building blocks for building data-processing pipelines and infrastructure. It is not a single parser, ETL service, or cloud tool. You compile it into your own application and control how data flows through it.
 
 DocWire treats data processing in the broad sense used by modern data-protection frameworks: collection, organisation, structuring, storage, adaptation, alteration, retrieval, consultation, use, disclosure by transmission, combination, restriction, erasure, and destruction. The goal is for DocWire components to cover the complete data-processing life cycle. Parts of that life cycle are available today; the rest are defined in the roadmap.
 
@@ -30,7 +30,7 @@ DocWire is production-tested today and is continuously extending its architectur
 
 ## Table of Contents
 
-- [What is DocWire SDK?](#what-is-docwire-sdk)
+- [What is DF-0?](#what-is-docwire-sdk)
 - [Manifesto](#manifesto)
 - [Engineering Principles](#engineering-principles)
 - [Why DocWire and Key Benefits](#why-docwire-and-key-benefits)
@@ -60,7 +60,7 @@ Most data processing stacks are built for the easy case: clean inputs, unlimited
 - A **trading platform** cannot tolerate a garbage-collection pause at the wrong moment.
 - An **autonomous system** cannot crash because of an undocumented proprietary file format.
 
-These are not edge cases. They are the normal operating conditions of any system that runs in production, at scale, in a regulated or time-critical environment. DocWire SDK is built for exactly these conditions.
+These are not edge cases. They are the normal operating conditions of any system that runs in production, at scale, in a regulated or time-critical environment. DF-0 is built for exactly these conditions.
 
 We are building a toolkit with **mechanical sympathy** for the hardware it runs on:
 
@@ -142,7 +142,7 @@ Features marked **(planned)** are on the public roadmap and may not be fully ava
     - CSV: Export data to Comma-Separated Values format.
     - XLSX and more are coming: Additional export formats for diverse use cases.
 
-- **Fast and accurate file format detection**: Leveraging file signatures, file name extensions, content analysis, and MIME type recognition, the DocWire SDK automatically detects the format of any file. This ensures that the appropriate parser is selected for processing. With its ability to identify various formats, DocWire SDK serves as a versatile tool for numerous file processing tasks. For more information, see the following functions and classes: [content_type::detector](https://docwire.readthedocs.io/en/latest/classdf0_1_1content__type_1_1detector.html) and [content_type::detect](https://docwire.readthedocs.io/en/latest/namespacedf0_1_1content__type.html#ab8fcce329158e74aed1c402df93fa4e4). [You can find example how to perform file type detection (with or without document processing) here](https://docwire.readthedocs.io/en/latest/file_type_determination_8cpp-example.html).
+- **Fast and accurate file format detection**: Leveraging file signatures, file name extensions, content analysis, and MIME type recognition, the DF-0 automatically detects the format of any file. This ensures that the appropriate parser is selected for processing. With its ability to identify various formats, DF-0 serves as a versatile tool for numerous file processing tasks. For more information, see the following functions and classes: [content_type::detector](https://docwire.readthedocs.io/en/latest/classdf0_1_1content__type_1_1detector.html) and [content_type::detect](https://docwire.readthedocs.io/en/latest/namespacedf0_1_1content__type.html#ab8fcce329158e74aed1c402df93fa4e4). [You can find example how to perform file type detection (with or without document processing) here](https://docwire.readthedocs.io/en/latest/file_type_determination_8cpp-example.html).
 Additionally, the SDK provides functionality to convert a MIME type back to a file extension via `content_type::by_file_extension::to_extension`, which can be useful in scenarios where a file name is needed.
 
 - **Modern C++20 XML Parsing**: A new, expressive, and safe API for parsing XML documents. It features a single-pass, forward-only reader and utilizes C++20 ranges and views for efficient and elegant node filtering and manipulation. [You can find example how to parse XML documents here](https://docwire.readthedocs.io/en/latest/xml_parsing_example_8cpp-example.html).
@@ -153,7 +153,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Optional powerful IBM Granite 4.0 1B model** (via `local-ai-model-granite` feature): This compact yet capable language model can be installed as an optional feature for a wide range of natural language processing tasks, including text extraction, classification, question answering, summarization, and more. It runs via **llama.cpp** and is optimized for CPU inference on lower-end desktops without GPU acceleration.
 
-- **Flan-t5-large model** (via `local-ai-ct2` feature): This state-of-the-art transformer-based model is designed for a wide range of natural language processing tasks, including text translation, question answering, summarization, text generation, and more. It has been trained on a diverse range of data sources and can handle complex linguistic phenomena such as word order, syntax, and semantics. The model's versatility and ability to perform multiple tasks make it a valuable addition to the DocWire SDK, allowing developers to leverage its capabilities for a variety of NLP tasks within their applications. It is provided as part of the optional `local-ai-ct2` feature and is optimized to run with decent speed on lower-end desktops and mobile devices without GPU acceleration and consuming less than 1 GB of memory.
+- **Flan-t5-large model** (via `local-ai-ct2` feature): This state-of-the-art transformer-based model is designed for a wide range of natural language processing tasks, including text translation, question answering, summarization, text generation, and more. It has been trained on a diverse range of data sources and can handle complex linguistic phenomena such as word order, syntax, and semantics. The model's versatility and ability to perform multiple tasks make it a valuable addition to the DF-0, allowing developers to leverage its capabilities for a variety of NLP tasks within their applications. It is provided as part of the optional `local-ai-ct2` feature and is optimized to run with decent speed on lower-end desktops and mobile devices without GPU acceleration and consuming less than 1 GB of memory.
 
 - **Powerful multilingual-e5-small model** (via `local-ai-ct2` feature): This powerful and efficient multilingual text embedding model is designed to generate high-quality vector representations (embeddings) for text in over 100 languages. These embeddings are crucial for a wide range of NLP tasks, including semantic search, retrieval-augmented generation (RAG), text clustering, and similarity comparison. The `multilingual-e5-small` model is optimized for performance, making it suitable for applications where both speed and accuracy are important. It is included with the `local-ai-ct2` feature.
 
@@ -184,7 +184,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 - **OpenRouter support (planned)**: Expanding optional cloud LLM integrations to support a wide range of open and commercial models through OpenRouter. Cloud integrations remain opt-in and do not change the local-first core behavior.
 - **Incremental parsing** returning data as soon as they are available
 
-- **Structured Content Extraction**: DocWire SDK excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
+- **Structured Content Extraction**: DF-0 excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
 
 - **Preprocessing for Embeddings (planned)**: DocWire will provide built-in cleaning and preprocessing utilities to ensure high-quality input for embedding models. Current extraction already yields structured text; advanced tokenization/detokenization and output sanitization are under development.
 
@@ -194,21 +194,21 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docwire.readthedocs.io/en/latest/classdf0_1_1openai_1_1embed.html), the local embedding steps `ai::local::ct2::passage::embedder` and `ai::local::ct2::query::embedder`, or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT. Generated embeddings can be used in various NLP tasks.
 
-- **Enhancing AI/NLP Pipelines**: Embeddings obtained from DocWire SDK can be used to enhance AI/NLP pipelines, enabling more accurate and context-aware applications such as document classification, sentiment analysis, and information retrieval.
+- **Enhancing AI/NLP Pipelines**: Embeddings obtained from DF-0 can be used to enhance AI/NLP pipelines, enabling more accurate and context-aware applications such as document classification, sentiment analysis, and information retrieval.
 
-- **Advanced Document Chunking (planned)**: DocWire SDK introduces sophisticated chunking capabilities, leveraging metadata and document elements to partition documents into smaller, semantically coherent parts. This feature is invaluable for applications such as Retrieval Augmented Generation (RAG), where the ability to process and retrieve information from specific document segments can significantly enhance the performance of AI models. By understanding the structure and semantics of each document, DocWire SDK can intelligently divide content into meaningful units, preserving the context and coherence necessary for high-quality AI interactions.
+- **Advanced Document Chunking (planned)**: DF-0 introduces sophisticated chunking capabilities, leveraging metadata and document elements to partition documents into smaller, semantically coherent parts. This feature is invaluable for applications such as Retrieval Augmented Generation (RAG), where the ability to process and retrieve information from specific document segments can significantly enhance the performance of AI models. By understanding the structure and semantics of each document, DF-0 can intelligently divide content into meaningful units, preserving the context and coherence necessary for high-quality AI interactions.
 
 - **Semantic Unit Coherence (planned)**: The SDK's chunking mechanism is designed to maintain the coherence of semantic units established during partitioning. This ensures that when a document is split into chunks, each piece retains its contextual integrity, making it suitable for use cases where understanding the flow and connection between segments is crucial, such as in conversational AI, document summarization, and topic extraction.
 
-- **NLP Model Training Data Preparation**: Prepare your training data with precision. DocWire SDK's structured content extraction is ideal for preparing datasets for NLP model training. By extracting only the relevant sections of text, you can create clean, focused datasets that lead to more effective and efficient model training.
+- **NLP Model Training Data Preparation**: Prepare your training data with precision. DF-0's structured content extraction is ideal for preparing datasets for NLP model training. By extracting only the relevant sections of text, you can create clean, focused datasets that lead to more effective and efficient model training.
 
-- **Data Sanitization for AI Safety (planned)**: Ensure the safety and integrity of your AI models. DocWire SDK's data sanitization capabilities help prevent the introduction of biased, sensitive, or inappropriate content into your models, safeguarding the quality and reliability of your AI applications.
+- **Data Sanitization for AI Safety (planned)**: Ensure the safety and integrity of your AI models. DF-0's data sanitization capabilities help prevent the introduction of biased, sensitive, or inappropriate content into your models, safeguarding the quality and reliability of your AI applications.
 
-- **Customizable Data Cleaning Pipelines (planned)**: Tailor your data cleaning process to fit the unique needs of your project. With DocWire SDK, you can build customizable pipelines that automate the cleaning, normalization, and transformation of your data, saving time and reducing the potential for human error.
+- **Customizable Data Cleaning Pipelines (planned)**: Tailor your data cleaning process to fit the unique needs of your project. With DF-0, you can build customizable pipelines that automate the cleaning, normalization, and transformation of your data, saving time and reducing the potential for human error.
 
-- **Seamless Integration with AI and NLP Libraries (in progress)**: DocWire SDK is designed to work hand-in-hand with popular AI and NLP libraries. Its flexible API allows for easy integration, enabling you to preprocess data within the same framework used for model training and inference.
+- **Seamless Integration with AI and NLP Libraries (in progress)**: DF-0 is designed to work hand-in-hand with popular AI and NLP libraries. Its flexible API allows for easy integration, enabling you to preprocess data within the same framework used for model training and inference.
 
-- **Enhanced AI and NLP Support (planned)**: DocWire SDK is not only a tool for data extraction but also a powerful ally for AI and NLP developers. With its advanced chunking and semantic unit preservation, the SDK is perfectly suited for preparing data for AI models that require a deep understanding of document structure and content. Whether you're working on machine learning, deep learning, or any other AI project, DocWire SDK provides the features you need to ensure your data is ready for the challenge.
+- **Enhanced AI and NLP Support (planned)**: DF-0 is not only a tool for data extraction but also a powerful ally for AI and NLP developers. With its advanced chunking and semantic unit preservation, the SDK is perfectly suited for preparing data for AI models that require a deep understanding of document structure and content. Whether you're working on machine learning, deep learning, or any other AI project, DF-0 provides the features you need to ensure your data is ready for the challenge.
 
 - **Cross-platform**: Linux, Windows, macOS, and more to come
 - **Can be embedded** in your application (SDK)
@@ -609,7 +609,7 @@ for (auto product_node : products)
 <a name="installation"></a>
 ## Installation
 
-### Why Choose vcpkg for DocWire SDK Installation?
+### Why Choose vcpkg for DF-0 Installation?
 DocWire has embraced vcpkg as the preferred installation method for several compelling reasons:
 - **Microsoft's Trusted Solution:** vcpkg is a package manager developed and backed by Microsoft, ensuring reliability, ongoing support, and compatibility.
 - **Cross-Platform Simplicity:** With vcpkg, DocWire installation becomes a breeze on Windows, Linux, and macOS, providing a unified and hassle-free experience.
@@ -620,7 +620,7 @@ By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, use
 
 ### Supported Platforms
 
-DocWire SDK is compatible with a variety of operating systems. Windows, Linux, and macOS are supported officially. The officially supported and CI-tested triplets are:
+DF-0 is compatible with a variety of operating systems. Windows, Linux, and macOS are supported officially. The officially supported and CI-tested triplets are:
 
 - `x64-linux-dynamic`
 - `x64-windows`
@@ -641,17 +641,17 @@ To ensure compatibility, our continuous integration tests run on the following G
 As the project evolves, we will continue to expand the list of officially supported platforms to ensure broad compatibility and meet the needs of our users.
 
 ### Required Tools
-DocWire SDK installation process is based on the VCPKG package manager so all requirements of vcpkg apply:
+DF-0 installation process is based on the VCPKG package manager so all requirements of vcpkg apply:
 - ["Prerequisites" on Microsoft Learn](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started#prerequisites)
 
-In addition to vcpkg requirements, DocWire SDK requires the following tools:
+In addition to vcpkg requirements, DF-0 requires the following tools:
 - GCC 11 or higher on Linux because of C++20 support
 - MSVC 2019 or higher on Windows because of C++20 support
 - Doxygen with Graphviz is required for documentation generation: ["Installation" on Doxygen website](https://www.doxygen.nl/manual/install.html)
 - Autoconf, Autogen, Automake, Autoconf-archive, Autopoint are required for building some of 3rdparty dependencies on Linux and MacOS (we are working to eliminate this)
 
 ### Installation via build.sh or build.ps1 scripts
-The current preferred installation method is via build.sh or build.ps1 scripts. The script will automatically install vcpkg, select correct triplet, add required overlays and install DocWire SDK with all dependencies from sources.
+The current preferred installation method is via build.sh or build.ps1 scripts. The script will automatically install vcpkg, select correct triplet, add required overlays and install DF-0 with all dependencies from sources.
 
 1. **Clone the DocWire Repository:**
 Clone the DocWire repository from GitHub if you haven't already:
@@ -673,19 +673,19 @@ cd docwire
 ./build.ps1
 ```
 
-**Important note**: Sometimes installation of dependencies may fail due to various reasons. Some of those reasons are not related to the DocWire SDK itself, but rather to the vcpkg package manager or the specific dependencies being installed. For example, errors may occur while downloading sources or if there are unexpected changes in vcpkg ports or upstream websites. In such cases, it is recommended to [report the issue to the vcpkg](https://github.com/microsoft/vcpkg/issues) or just try running the installation script again. In rare cases, some dependencies may require manual intervention or additional configuration before they can be successfully installed. If you encounter any issues during the installation process, please don't hesitate to reach out to the [DocWire SDK community for support](https://github.com/docwire/docwire/issues).
+**Important note**: Sometimes installation of dependencies may fail due to various reasons. Some of those reasons are not related to the DF-0 itself, but rather to the vcpkg package manager or the specific dependencies being installed. For example, errors may occur while downloading sources or if there are unexpected changes in vcpkg ports or upstream websites. In such cases, it is recommended to [report the issue to the vcpkg](https://github.com/microsoft/vcpkg/issues) or just try running the installation script again. In rare cases, some dependencies may require manual intervention or additional configuration before they can be successfully installed. If you encounter any issues during the installation process, please don't hesitate to reach out to the [DF-0 community for support](https://github.com/docwire/docwire/issues).
 
 3. **Integrate with your project or development environment**
 
-You can use vcpkg toolchain file to integrate DocWire SDK with your CMake project:
+You can use vcpkg toolchain file to integrate DF-0 with your CMake project:
 ```bash
 cmake -DCMAKE_TOOLCHAIN_FILE=docwire/vcpkg/scripts/buildsystems/vcpkg.cmake ..
 ```
 Please refer to ["vcpkg in CMake projects" on Microsoft Learn](https://learn.microsoft.com/en-us/vcpkg/users/buildsystems/cmake-integration) for more information on how to use vcpkg with your CMake project.
 
-[You can find example how to integrate DocWire SDK with your project using CMake here](https://docwire.readthedocs.io/en/latest/integration_example_8cmake-example.html).
+[You can find example how to integrate DF-0 with your project using CMake here](https://docwire.readthedocs.io/en/latest/integration_example_8cmake-example.html).
 
-To use DocWire SDK in your MSBuild projects (Visual Studio) run the following command:
+To use DF-0 in your MSBuild projects (Visual Studio) run the following command:
 ```
 cd docwire/vcpkg
 vcpkg integrate install
@@ -699,7 +699,7 @@ Please refer to ["Manual Integration" on Microsoft Learn](https://learn.microsof
 
 ### Optional Features
 
-DocWire SDK can be built with additional features via vcpkg features. By default, the build scripts install the core SDK without optional features.
+DF-0 can be built with additional features via vcpkg features. By default, the build scripts install the core SDK without optional features.
 
 #### Available features
 
@@ -783,7 +783,7 @@ Vcpkg builds libraries from source but offers an option to store the results of 
 
 Please refer ["What is binary caching?" on Microsoft Learn](https://learn.microsoft.com/en-us/vcpkg/consume/binary-caching-overview) for more information.
 
-We used to provide pre-built binaries but we realized that they are not reliable as they are tightly coupled with specific versions of compiler, operating system and other dependencies. To solve this issue, our continuous integration scripts use vcpkg binary caching with GitHub packages and we are working to offer this to other users. This will allow everyone to use the latest version of DocWire SDK without having to worry about compatibility.
+We used to provide pre-built binaries but we realized that they are not reliable as they are tightly coupled with specific versions of compiler, operating system and other dependencies. To solve this issue, our continuous integration scripts use vcpkg binary caching with GitHub packages and we are working to offer this to other users. This will allow everyone to use the latest version of DF-0 without having to worry about compatibility.
 
 ### Conclusion
 You're all set! You've successfully installed the DocWire library using vcpkg. You can now use the DocWire library in your code to perform text extraction and other data processing tasks. 
@@ -791,13 +791,13 @@ You're all set! You've successfully installed the DocWire library using vcpkg. Y
 <a name="versioning"></a>
 ## Versioning
 
-DocWire SDK introduces a distinctive versioning methodology, deviating from conventional semantic versioning (SemVer) in favor of a dynamic, date-centric system. This chapter elucidates the versioning strategy of DocWire SDK, shedding light on its unique attributes and the benefits derived from this innovative approach.
+DF-0 introduces a distinctive versioning methodology, deviating from conventional semantic versioning (SemVer) in favor of a dynamic, date-centric system. This chapter elucidates the versioning strategy of DF-0, shedding light on its unique attributes and the benefits derived from this innovative approach.
 
 ### "Release Early, Release Often" Strategy with Date-Based Versioning
 
-DocWire SDK's versioning system adopts the "release early, release often" concept, ensuring that users benefit from the latest features and improvements as soon as they are available. This approach minimizes the usage of outdated code, ensuring that resources are directed towards delivering the best possible user experience.
+DF-0's versioning system adopts the "release early, release often" concept, ensuring that users benefit from the latest features and improvements as soon as they are available. This approach minimizes the usage of outdated code, ensuring that resources are directed towards delivering the best possible user experience.
 
-DocWire SDK's versioning system integrates release dates as a pivotal element. Each release is identified by a specific date, providing users with a transparent timeline of updates and enhancements. In most cases new release is created immediately after merging of new feature or important bug fix to the main branch.
+DF-0's versioning system integrates release dates as a pivotal element. Each release is identified by a specific date, providing users with a transparent timeline of updates and enhancements. In most cases new release is created immediately after merging of new feature or important bug fix to the main branch.
 
 The "release early, release often" strategy is based on the idea that releasing code frequently allows for faster resolution of issues, faster feedback from users, and enables developers to incorporate community feedback more effectively. By releasing code more frequently, users benefit from the latest changes and features, enabling them to stay up-to-date with the SDK's evolution.
 
@@ -819,15 +819,15 @@ The "release early, release often" concept accelerates issue resolution by provi
 
 #### User-Centric Updates
 
-DocWire SDK's versioning approach prioritizes user-centric updates, enabling developers to make informed decisions about when to integrate the latest changes into their projects. This flexibility empowers users to tailor their SDK experience based on specific features or fixes introduced in each release.
+DF-0's versioning approach prioritizes user-centric updates, enabling developers to make informed decisions about when to integrate the latest changes into their projects. This flexibility empowers users to tailor their SDK experience based on specific features or fixes introduced in each release.
 
 ### Codebase Strategy
 
-DocWire SDK maintains a single code branch, focusing on continuous improvement of the API and staying up-to-date with integrated external services. This strategy prioritizes innovation over stability, ensuring that resources are directed towards enhancing the SDK rather than maintaining outdated code branches. This approach aligns with industry best practices and optimizes the SDK for evolving technology landscapes.
+DF-0 maintains a single code branch, focusing on continuous improvement of the API and staying up-to-date with integrated external services. This strategy prioritizes innovation over stability, ensuring that resources are directed towards enhancing the SDK rather than maintaining outdated code branches. This approach aligns with industry best practices and optimizes the SDK for evolving technology landscapes.
 
 ### Long-Term Support (LTS) Agreements
 
-Recognizing the diverse needs of our users, DocWire SDK offers Long-Term Support (LTS) agreements, providing a tailored solution for those seeking sustained stability and reliability. The LTS agreement is designed to address specific concerns related to feature stability, API consistency, and platform support, offering peace of mind as projects progress and evolve.
+Recognizing the diverse needs of our users, DF-0 offers Long-Term Support (LTS) agreements, providing a tailored solution for those seeking sustained stability and reliability. The LTS agreement is designed to address specific concerns related to feature stability, API consistency, and platform support, offering peace of mind as projects progress and evolve.
 
 #### Customized Stability
 
@@ -843,11 +843,11 @@ The LTS agreement extends to platform support, offering a guarantee that the SDK
 
 #### Tailored Support Duration
 
-DocWire SDK understands that the definition of "long-term" can vary based on individual project timelines and needs. Therefore, LTS agreements come with the flexibility to negotiate the support duration, allowing customers to align the agreement with their project's lifecycle and development roadmap.
+DF-0 understands that the definition of "long-term" can vary based on individual project timelines and needs. Therefore, LTS agreements come with the flexibility to negotiate the support duration, allowing customers to align the agreement with their project's lifecycle and development roadmap.
 
 #### Ongoing Collaboration
 
-An LTS agreement signifies an ongoing collaboration between DocWire SDK and the customer. It establishes a dedicated channel for communication, ensuring that any concerns or specific requirements related to stability, API, or platform support are addressed promptly. This collaborative approach reflects our commitment to supporting our users throughout their development journey.
+An LTS agreement signifies an ongoing collaboration between DF-0 and the customer. It establishes a dedicated channel for communication, ensuring that any concerns or specific requirements related to stability, API, or platform support are addressed promptly. This collaborative approach reflects our commitment to supporting our users throughout their development journey.
 
 #### How to Enquire about LTS
 
@@ -902,7 +902,7 @@ The console application injects `audit::null_auditor` by default, so normal docu
 
 <a name="api-documentation"></a>
 ## API Documentation
-The API documentation for the DocWire SDK/library is readily available in various formats to assist you in seamlessly integrating it into your projects. Whether you prefer reading detailed doxygen-style documentation, accessing it through binary packages, or installing it via package managers like Vcpkg, we've got you covered.
+The API documentation for the DF-0/library is readily available in various formats to assist you in seamlessly integrating it into your projects. Whether you prefer reading detailed doxygen-style documentation, accessing it through binary packages, or installing it via package managers like Vcpkg, we've got you covered.
 
 ### ReadTheDocs - Doxygen Format
 Our API documentation is hosted on [ReadTheDocs](https://docwire.readthedocs.io/), presented in the widely recognized and developer-friendly Doxygen format. This comprehensive documentation provides insights into the functionality, usage, and features of the DocWire library. You can explore it at your own pace to better understand how to harness the power of DocWire within your applications.
@@ -936,7 +936,7 @@ Explore the documentation, experiment with the library, and feel free to reach o
 <a name="error-handling"></a>
 ## Error handling: robust and secure
 
-DocWire SDK provides a comprehensive error handling framework with typed context, embedded source location, and secure messages. The SDK is being extended with an injectable error-policy abstraction that will allow compile-time selection between deterministic return-value errors and exception-based propagation. Today, the SDK ships a mature exception-based framework with chainable context, categorized errors, and fine-grained diagnostic control.
+DF-0 provides a comprehensive error handling framework with typed context, embedded source location, and secure messages. The SDK is being extended with an injectable error-policy abstraction that will allow compile-time selection between deterministic return-value errors and exception-based propagation. Today, the SDK ships a mature exception-based framework with chainable context, categorized errors, and fine-grained diagnostic control.
 
 ### Current exception-based error handling
 
@@ -1045,7 +1045,7 @@ Core algorithms are being refactored to support both modes without duplicating b
 
 ### Modern C++ features used
 
-The current framework is designed to take advantage of modern C++ features, such as `std::nested_exception` and `std::exception_ptr`, to build an exception chain instead of adding multiple values to a single exception object. This approach ensures alignment with the latest C++ standards and best practices. Although the design shares similarities with Boost Exception, the DocWire SDK error handling framework is more closely aligned with modern C++ standards.
+The current framework is designed to take advantage of modern C++ features, such as `std::nested_exception` and `std::exception_ptr`, to build an exception chain instead of adding multiple values to a single exception object. This approach ensures alignment with the latest C++ standards and best practices. Although the design shares similarities with Boost Exception, the DF-0 error handling framework is more closely aligned with modern C++ standards.
 
 <a name="console-application"></a>
 ## Console Application (CLI)
@@ -1210,9 +1210,9 @@ Product is double licensed:
 - It can be used in open source projects under the terms of the GNU Affero General Public License, version 3
 - It can be used in commercial projects under the terms of commercial license agreement
 
-Please contact SILVERCODERS (http://silvercoders.com) for a commercial license for DocWire SDK.
+Please contact SILVERCODERS (http://silvercoders.com) for a commercial license for DF-0.
 
-In addition DocWire SDK incorporates code that falls under licenses separate from the GNU Affero General Public License or the DocWire Commercial License;
+In addition DF-0 incorporates code that falls under licenses separate from the GNU Affero General Public License or the DocWire Commercial License;
 instead, it operates under specific opensource licenses granted by the original authors.
 Details are described in "3rdparty components used" documentation chapter.
 

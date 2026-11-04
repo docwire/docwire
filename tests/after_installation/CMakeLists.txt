@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.21)
 project(df0_after_installation_tests LANGUAGES CXX)
 
-# This project is designed to be built and run AFTER the DocWire SDK has been installed.
+# This project is designed to be built and run AFTER the DF-0 has been installed.
 # It simulates how a downstream user would find and use the SDK, verifying the installation.
-# It relies on a CMake toolchain file or CMAKE_PREFIX_PATH to locate the installed DocWire SDK.
+# It relies on a CMake toolchain file or CMAKE_PREFIX_PATH to locate the installed DF-0.
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     message(WARNING "CMAKE_TOOLCHAIN_FILE is not defined. find_package(docwire) will rely on CMAKE_PREFIX_PATH to find the installed SDK.")
 endif()
 
 enable_testing()
 
-# Verify that the DocWire SDK can be found in the current environment.
+# Verify that the DF-0 can be found in the current environment.
 find_package(docwire CONFIG REQUIRED)
 
 # --- 1. Integration Example Test ---

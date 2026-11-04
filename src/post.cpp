@@ -176,7 +176,7 @@ try
 	}
 
 	httplib::Headers headers;
-	headers.emplace("User-Agent", std::string("DocWire SDK/") + VERSION);
+	headers.emplace("User-Agent", std::string("DF-0/") + VERSION);
 	if (!impl().m_oauth2_bearer_token.empty())
 	{
 		headers.emplace("Authorization", "Bearer " + impl().m_oauth2_bearer_token);

@@ -523,7 +523,7 @@ TEST(plain_text_exporter, custom_link_formatting)
     (
         document::document{},
         document::link{.url = "https://docwire.io"},
-        document::text{.text = "DocWire SDK home page"},
+        document::text{.text = "DF-0 home page"},
         document::close_link{},
         document::close_document{}
     );
@@ -531,7 +531,7 @@ TEST(plain_text_exporter, custom_link_formatting)
     {
         parsing_chain(std::move(msg));
     }
-    ASSERT_EQ(output_stream.str(), "(https://docwire.io)[DocWire SDK home page]\n");
+    ASSERT_EQ(output_stream.str(), "(https://docwire.io)[DF-0 home page]\n");
 }
 
 TEST(plain_text_layout, wrap)

@@ -1,4 +1,4 @@
-# DocWire SDK: The foundation for trustworthy software. Building blocks for high-performance, predictable, and auditable data processing.
+# DF-0: The foundation for trustworthy software. Building blocks for high-performance, predictable, and auditable data processing.
 
 ## The State of Modern Software
 
@@ -10,7 +10,7 @@ For mission-critical systems and edge computing, reliability is not a feature - 
 
 ## Our Philosophy: Restoring Mechanical Sympathy
 
-DocWire SDK was built to bring extreme engineering discipline back to data processing. We provide a universal toolkit of reusable, open-source prefabricates designed for the harshest computing environments. Whether you are building local AI pipelines on constrained IoT devices or processing gigabytes of enterprise records, DocWire is engineered with absolute "mechanical sympathy" - a deep respect for the hardware it runs on.
+DF-0 was built to bring extreme engineering discipline back to data processing. We provide a universal toolkit of reusable, open-source prefabricates designed for the harshest computing environments. Whether you are building local AI pipelines on constrained IoT devices or processing gigabytes of enterprise records, DocWire is engineered with absolute "mechanical sympathy" - a deep respect for the hardware it runs on.
 
 To make software trustworthy, we have built the DocWire ecosystem on four uncompromising pillars:
 

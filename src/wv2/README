@@ -3,4 +3,4 @@ This is a modified version of the wv2 library:
 - libgsf and glib2 dependencies removed (OLE container handling is abstracted)
 - exporting symbols improved
 - few bugs and warnings fixed
-- building and installing modified to be an internal library of DocWire SDK project
+- building and installing modified to be an internal library of DF-0 project

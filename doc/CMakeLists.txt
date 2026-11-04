@@ -18,7 +18,7 @@ find_package(Doxygen 1.18.0 REQUIRED)
 set(DOXYGEN_GENERATE_MAN NO)
 set(DOXYGEN_GENERATE_HTML YES)
 
-set(DOXYGEN_PROJECT_NAME "DocWire SDK")
+set(DOXYGEN_PROJECT_NAME "DF-0")
 set(DOXYGEN_PROJECT_NUMBER ${DF0_VERSION})
 set(DOXYGEN_PROJECT_BRIEF "DF-0: Data processing Framework with Zero-overhead")
 set(DOXYGEN_STRIP_FROM_PATH ../src/)
@@ -66,7 +66,7 @@ doxygen_add_docs(
     ${CMAKE_CURRENT_BINARY_DIR}/coding_guidelines.md
     ${HEADERS}
     ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
-    COMMENT "Generate html documentation of DocWire SDK"
+    COMMENT "Generate html documentation of DF-0"
     ALL
 )
 

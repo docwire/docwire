@@ -51,7 +51,7 @@ TEST(Http, post)
 	ASSERT_TRUE(output_val.as_object()["headers"].is_object());
 	ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-type"].as_string().c_str(), "text/plain");
 	ASSERT_THAT(std::string{output_val.as_object()["headers"].as_object()["user-agent"].as_string()},
-                ::testing::StartsWith("DocWire SDK/"));
+                ::testing::StartsWith("DF-0/"));
 	ASSERT_STREQ(output_val.as_object()["data"].as_string().c_str(), "<http://www.silvercoders.com/>hyperlink test\n\n");
 }
 
