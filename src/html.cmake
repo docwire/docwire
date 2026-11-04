@@ -13,4 +13,4 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_html EXPORT_FILE_NAME html_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/html_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/html_export.h DESTINATION include/df0)

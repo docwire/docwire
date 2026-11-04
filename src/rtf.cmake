@@ -9,4 +9,4 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_rtf EXPORT_FILE_NAME rtf_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rtf_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rtf_export.h DESTINATION include/df0)

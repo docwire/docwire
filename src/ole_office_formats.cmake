@@ -16,4 +16,4 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_ole_office_formats EXPORT_FILE_NAME ole_office_formats_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ole_office_formats_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ole_office_formats_export.h DESTINATION include/df0)

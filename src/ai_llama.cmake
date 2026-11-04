@@ -24,12 +24,12 @@ generate_export_header(df0_ai_llama EXPORT_FILE_NAME ai_llama_export.h)
 
 target_include_directories(df0_ai_llama PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-    $<INSTALL_INTERFACE:include/docwire>
+    $<INSTALL_INTERFACE:include/df0>
 )
 
 install(TARGETS df0_ai_llama EXPORT df0_targets)
 
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/ai_llama_export.h
-    DESTINATION include/docwire
+    DESTINATION include/df0
 )

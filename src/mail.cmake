@@ -12,4 +12,4 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_mail EXPORT_FILE_NAME mail_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mail_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mail_export.h DESTINATION include/df0)

@@ -10,4 +10,4 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_archives EXPORT_FILE_NAME archives_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/archives_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/archives_export.h DESTINATION include/df0)

@@ -22,4 +22,4 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_openai EXPORT_FILE_NAME openai_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openai_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openai_export.h DESTINATION include/df0)

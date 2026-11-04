@@ -9,4 +9,4 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_iwork EXPORT_FILE_NAME iwork_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/iwork_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/iwork_export.h DESTINATION include/df0)

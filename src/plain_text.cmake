@@ -12,4 +12,4 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_plain_text EXPORT_FILE_NAME plain_text_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plain_text_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plain_text_export.h DESTINATION include/df0)

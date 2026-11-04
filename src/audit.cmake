@@ -20,4 +20,4 @@ generate_export_header(df0_audit EXPORT_FILE_NAME audit_export.h)
 target_include_directories(df0_audit PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 # Install audit_export.h alongside the other audit headers so that
 # `#include "audit_export.h"` resolves for both in-tree and installed consumers.
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/audit_export.h DESTINATION include/docwire/audit)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/audit_export.h DESTINATION include/df0/audit)

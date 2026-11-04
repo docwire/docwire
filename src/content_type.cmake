@@ -21,7 +21,7 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_content_type EXPORT_FILE_NAME content_type_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/content_type_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/content_type_export.h DESTINATION include/df0)
 
 df0_find_resource(MAGIC_MGC_FULL_PATH REL_PATH "libmagic/misc/magic.mgc" REQUIRED)
 df0_target_resources(df0_content_type "libmagic/misc/magic.mgc" SOURCE "${MAGIC_MGC_FULL_PATH}")

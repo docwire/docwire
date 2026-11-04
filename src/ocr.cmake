@@ -16,7 +16,7 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_ocr EXPORT_FILE_NAME ocr_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ocr_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ocr_export.h DESTINATION include/df0)
 
 df0_find_resource(TESSDATA_FULL_PATH REL_PATH "tessdata-fast" REQUIRED)
 df0_target_resources(df0_ocr "tessdata-fast" SOURCE "${TESSDATA_FULL_PATH}")

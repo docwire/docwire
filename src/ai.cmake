@@ -11,7 +11,7 @@ endif()
 # Enable access to SDK headers
 target_include_directories(df0_ai PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> # during building headers are in the source tree
-    $<INSTALL_INTERFACE:include>) # after installation headers are in include/docwire
+    $<INSTALL_INTERFACE:include>) # after installation headers are in include/df0
 
 install(TARGETS df0_ai EXPORT df0_targets)
 if(MSVC)
@@ -21,4 +21,4 @@ endif()
 include(GenerateExportHeader)
 generate_export_header(df0_ai EXPORT_FILE_NAME ai_export.h)
 target_include_directories(df0_ai PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ai_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ai_export.h DESTINATION include/df0)

@@ -439,7 +439,7 @@ Example from a header in `src/audit/`:
 #include "../source_location.h"
 ```
 
-**The Why:** File-relative includes resolve identically in the source tree and the installed SDK, without requiring consumers to add internal source-root-like include directories such as `include/docwire`.
+**The Why:** File-relative includes resolve identically in the source tree and the installed SDK, without requiring consumers to add internal source-root-like include directories such as `include/df0`.
 
 ### [BUILD-LINK-AGNOSTIC]
 

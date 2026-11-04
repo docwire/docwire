@@ -15,4 +15,4 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_xml EXPORT_FILE_NAME xml_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/xml_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/xml_export.h DESTINATION include/df0)

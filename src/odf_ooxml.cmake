@@ -15,4 +15,4 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_odf_ooxml EXPORT_FILE_NAME odf_ooxml_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/odf_ooxml_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/odf_ooxml_export.h DESTINATION include/df0)

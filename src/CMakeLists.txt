@@ -46,25 +46,25 @@ include(openai.cmake)
 include(cli.cmake)
 
 file(GLOB HEADERS "*.h" "*.hpp")
-install(FILES ${HEADERS} DESTINATION include/docwire)
+install(FILES ${HEADERS} DESTINATION include/df0)
 
 file(GLOB PIPELINE_HEADERS "pipeline/*.hpp")
-install(FILES ${PIPELINE_HEADERS} DESTINATION include/docwire/pipeline)
+install(FILES ${PIPELINE_HEADERS} DESTINATION include/df0/pipeline)
 
 file(GLOB PLAIN_TEXT_HEADERS "plain_text/*.h" "plain_text/*.hpp")
-install(FILES ${PLAIN_TEXT_HEADERS} DESTINATION include/docwire/plain_text)
+install(FILES ${PLAIN_TEXT_HEADERS} DESTINATION include/df0/plain_text)
 
 file(GLOB AUDIT_HEADERS "audit/*.hpp")
-install(FILES ${AUDIT_HEADERS} DESTINATION include/docwire/audit)
+install(FILES ${AUDIT_HEADERS} DESTINATION include/df0/audit)
 
 file(GLOB AUDIT_DETAIL_HEADERS "audit/detail/*.hpp")
-install(FILES ${AUDIT_DETAIL_HEADERS} DESTINATION include/docwire/audit/detail)
+install(FILES ${AUDIT_DETAIL_HEADERS} DESTINATION include/df0/audit/detail)
 
 file(GLOB AUDIT_SERIALIZE_HEADERS "audit/serialize/*.hpp")
-install(FILES ${AUDIT_SERIALIZE_HEADERS} DESTINATION include/docwire/audit/serialize)
+install(FILES ${AUDIT_SERIALIZE_HEADERS} DESTINATION include/df0/audit/serialize)
 
 file(GLOB AUDIT_SINK_HEADERS "audit/sink/*.hpp")
-install(FILES ${AUDIT_SINK_HEADERS} DESTINATION include/docwire/audit/sink)
+install(FILES ${AUDIT_SINK_HEADERS} DESTINATION include/df0/audit/sink)
 
 include(GNUInstallDirs)
 

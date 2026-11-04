@@ -12,4 +12,4 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(df0_base64 EXPORT_FILE_NAME base64_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/base64_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/base64_export.h DESTINATION include/df0)

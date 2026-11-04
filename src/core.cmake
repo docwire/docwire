@@ -32,7 +32,7 @@ target_include_directories(df0_core PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}
 # Enable access to SDK headers
 target_include_directories(df0_core PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> # during building headers are in the source tree
-    $<INSTALL_INTERFACE:include>) # after installation headers are in include/docwire
+    $<INSTALL_INTERFACE:include>) # after installation headers are in include/df0
 
 install(TARGETS df0_core EXPORT df0_targets)
 if(MSVC)
@@ -42,4 +42,4 @@ endif()
 include(GenerateExportHeader)
 generate_export_header(df0_core EXPORT_FILE_NAME core_export.h)
 target_include_directories(df0_core PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/core_export.h DESTINATION include/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/core_export.h DESTINATION include/df0)
