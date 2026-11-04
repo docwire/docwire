@@ -9,7 +9,7 @@
 
 #define DF0_ENABLE_SHORT_MACRO_NAMES
 
-#include "docwire.h"
+#include "df0.hpp"
 #include "error_tags.h"
 #include "error.h"
 #include "make_error.h"
