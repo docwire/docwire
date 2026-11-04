@@ -71,8 +71,10 @@ static void readme()
 {
   // warning TODO: Generate readme string literal automatically.
   std::cout <<
-	"DocWire SDK: Deterministic, auditable, and secure data processing in C++20.\n"
-	"On-premise by default. No compromises on computational speed.\n";
+	"DF-0: Data processing Framework with Zero-overhead\n"
+	"\n"
+	"Copyright (c) DF-0 Team, project website https://github.com/df0/df0\n"
+	"SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial\n"
 }
 
 static void version()
