@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_ATTRIBUTES_H
-#define DOCWIRE_ATTRIBUTES_H
+#ifndef DF0_ATTRIBUTES_H
+#define DF0_ATTRIBUTES_H
 
 #include <chrono>
 #include <concepts>
@@ -96,4 +96,4 @@ struct position
 } // namespace attributes
 } // namespace df0
 
-#endif // DOCWIRE_ATTRIBUTES_H
+#endif // DF0_ATTRIBUTES_H

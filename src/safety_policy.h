@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SAFETY_POLICY_H
-#define DOCWIRE_SAFETY_POLICY_H
+#ifndef DF0_SAFETY_POLICY_H
+#define DF0_SAFETY_POLICY_H
 
 namespace df0
 {
@@ -29,4 +29,4 @@ constexpr inline safety_policy default_safety_level = strict;
 
 }
 
-#endif // DOCWIRE_SAFETY_POLICY_H
+#endif // DF0_SAFETY_POLICY_H

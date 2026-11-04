@@ -39,7 +39,7 @@ if(TARGET docwire_local_ai)
     target_link_libraries(docwire_tests PRIVATE docwire_local_ai)
 endif()
 
-target_compile_definitions(docwire_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
+target_compile_definitions(docwire_tests PRIVATE DF0_ENABLE_SHORT_MACRO_NAMES)
 target_include_directories(docwire_tests PRIVATE ${Boost_INCLUDE_DIRS})
 
 docwire_deploy_resources(TARGETS docwire_tests)

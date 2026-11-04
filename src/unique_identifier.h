@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_UNIQUE_IDENTIFIER_H
-#define DOCWIRE_UNIQUE_IDENTIFIER_H
+#ifndef DF0_UNIQUE_IDENTIFIER_H
+#define DF0_UNIQUE_IDENTIFIER_H
 
 #include "core_export.h"
 #include <cstddef>
@@ -73,4 +73,4 @@ struct hash<df0::unique_identifier> {
 };
 } // namespace std
 
-#endif // DOCWIRE_UNIQUE_IDENTIFIER_H
+#endif // DF0_UNIQUE_IDENTIFIER_H

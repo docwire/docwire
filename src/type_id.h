@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_TYPE_ID_HPP
-#define DOCWIRE_TYPE_ID_HPP
+#ifndef DF0_TYPE_ID_HPP
+#define DF0_TYPE_ID_HPP
 
 #include <compare>
 #include <cstdint>
@@ -88,4 +88,4 @@ consteval type_id type_id_of() noexcept
 
 } // namespace df0
 
-#endif // DOCWIRE_TYPE_ID_HPP
+#endif // DF0_TYPE_ID_HPP

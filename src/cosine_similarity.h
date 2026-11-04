@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_COSINE_SIMILARITY_H
-#define DOCWIRE_COSINE_SIMILARITY_H
+#ifndef DF0_COSINE_SIMILARITY_H
+#define DF0_COSINE_SIMILARITY_H
 
 #include "core_export.h"
 #include <cmath>
@@ -37,7 +37,7 @@ namespace df0
  */
 inline double cosine_similarity(const std::vector<double>& a, const std::vector<double>& b)
 {
-  DOCWIRE_THROW_IF(a.size() != b.size(), "Vectors must have the same size", errors::program_logic{});
+  DF0_THROW_IF(a.size() != b.size(), "Vectors must have the same size", errors::program_logic{});
   double dot_product = 0.0;
   double norm_a = 0.0;
   double norm_b = 0.0;
@@ -55,4 +55,4 @@ inline double cosine_similarity(const std::vector<double>& a, const std::vector<
 }
 
 } // namespace df0
-#endif // DOCWIRE_COSINE_SIMILARITY_H
+#endif // DF0_COSINE_SIMILARITY_H

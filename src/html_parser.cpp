@@ -940,7 +940,7 @@ void html_parser<auditor_type>::skipCharsetDecoding()
 	impl().m_skip_decoding = true;
 }
 
-template class DOCWIRE_HTML_EXPORT html_parser<df0::audit::null_auditor>;
-template class DOCWIRE_HTML_EXPORT html_parser<df0::audit::json_stream_auditor>;
+template class DF0_HTML_EXPORT html_parser<df0::audit::null_auditor>;
+template class DF0_HTML_EXPORT html_parser<df0::audit::json_stream_auditor>;
 
 } // namespace df0

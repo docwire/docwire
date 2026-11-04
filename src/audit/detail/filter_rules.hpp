@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AUDIT_DETAIL_FILTER_RULES_HPP
-#define DOCWIRE_AUDIT_DETAIL_FILTER_RULES_HPP
+#ifndef DF0_AUDIT_DETAIL_FILTER_RULES_HPP
+#define DF0_AUDIT_DETAIL_FILTER_RULES_HPP
 
 #include "../../source_location.h"
 #include "../../type_name_base.h"

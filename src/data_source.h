@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DATA_SOURCE_H
-#define DOCWIRE_DATA_SOURCE_H
+#ifndef DF0_DATA_SOURCE_H
+#define DF0_DATA_SOURCE_H
 
 #include "core_export.h"
 #include "file_extension.h"
@@ -341,7 +341,7 @@ inline void read_unseekable_stream_into_memory(std::shared_ptr<memory_buffer> bu
 			break;
 		size_t to_read = limit ? (std::min)(chunk_size, limit->v - size) : chunk_size;
 		buffer->resize(size + to_read);
-		DOCWIRE_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read) && !stream->eof());
+		DF0_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read) && !stream->eof());
 		size_t bytes_read = stream->gcount();
 		size += bytes_read;
 		if (bytes_read < to_read)
@@ -356,16 +356,16 @@ inline void read_seekable_stream_into_memory(std::shared_ptr<memory_buffer> buff
 {
 	if (!stream_size)
 	{
-		DOCWIRE_THROW_IF (!stream->seekg(0, std::ios::end));
+		DF0_THROW_IF (!stream->seekg(0, std::ios::end));
 		stream_size = stream->tellg();
-		DOCWIRE_THROW_IF (!stream->seekg(0, std::ios::beg));
+		DF0_THROW_IF (!stream->seekg(0, std::ios::beg));
 	}
 	size_t size = buffer->size();
 	if ((limit ? (std::min)(*stream_size, limit->v) : *stream_size) <= size)
 		return;
 	size_t to_read = (limit ? (std::min)(*stream_size, limit->v) : *stream_size) - size;
 	buffer->resize(size + to_read);
-	DOCWIRE_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read));
+	DF0_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read));
 }
 
 } // namespace detail
@@ -492,14 +492,14 @@ inline std::optional<df0::file_extension> data_source::file_extension() const
 inline bool data_source::has_highest_confidence_mime_type_in(const std::vector<mime_type>& mts) const
 {
 	std::optional<mime_type> mt = highest_confidence_mime_type();
-	DOCWIRE_THROW_IF(!mt, "Data source has no mime type", errors::uninterpretable_data{});
+	DF0_THROW_IF(!mt, "Data source has no mime type", errors::uninterpretable_data{});
 	return std::find(mts.begin(), mts.end(), *mt) != mts.end();
 }
 
 inline void data_source::assert_not_encrypted() const
 {
 	bool is_encrypted = mime_type_confidence(mime_type { "application/encrypted" }) >= confidence::high;
-	DOCWIRE_THROW_IF(is_encrypted, errors::file_encrypted{});
+	DF0_THROW_IF(is_encrypted, errors::file_encrypted{});
 }
 
 inline void data_source::fill_memory_cache(std::optional<length_limit> limit) const
@@ -511,18 +511,18 @@ inline void data_source::fill_memory_cache(std::optional<length_limit> limit) co
 				if (!m_memory_cache)
 				{
 					m_path_stream = std::make_shared<std::ifstream>(source, std::ios::binary);
-					DOCWIRE_THROW_IF (!m_path_stream->good(), source);
+					DF0_THROW_IF (!m_path_stream->good(), source);
 					m_memory_cache = std::make_shared<memory_buffer>(0);
 				}
 				detail::read_seekable_stream_into_memory(m_memory_cache, m_stream_size, m_path_stream, limit);
 			},
 			[this](const std::span<const std::byte>& source)
 			{
-				throw DOCWIRE_MAKE_ERROR("std::span cannot be cached in memory", errors::program_logic{});
+				throw DF0_MAKE_ERROR("std::span cannot be cached in memory", errors::program_logic{});
 			},
 			[this](const std::string& source)
 			{
-				throw DOCWIRE_MAKE_ERROR("std::string cannot be cached in memory", errors::program_logic{});
+				throw DF0_MAKE_ERROR("std::string cannot be cached in memory", errors::program_logic{});
 			},
 			[this, limit](seekable_stream_ptr source)
 			{
@@ -543,4 +543,4 @@ inline void data_source::fill_memory_cache(std::optional<length_limit> limit) co
 
 } // namespace df0
 
-#endif // DOCWIRE_DATA_SOURCE_H
+#endif // DF0_DATA_SOURCE_H

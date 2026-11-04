@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DETAIL_HTTP_LISTENER_H
-#define DOCWIRE_DETAIL_HTTP_LISTENER_H
+#ifndef DF0_DETAIL_HTTP_LISTENER_H
+#define DF0_DETAIL_HTTP_LISTENER_H
 
 #include "http_export.h"
 #include "ssl_certificate.h"
@@ -65,7 +65,7 @@ using http_route_handler = std::function<void(const http_request&, http_response
  * quarantined inside a dedicated translation unit so that no third-party
  * header leaks into `df0::http`.
  */
-class DOCWIRE_HTTP_EXPORT http_listener
+class DF0_HTTP_EXPORT http_listener
 {
 public:
     struct options
@@ -106,4 +106,4 @@ private:
 
 } // namespace df0::detail
 
-#endif // DOCWIRE_DETAIL_HTTP_LISTENER_H
+#endif // DF0_DETAIL_HTTP_LISTENER_H

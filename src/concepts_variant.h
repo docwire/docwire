@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONCEPTS_VARIANT_H
-#define DOCWIRE_CONCEPTS_VARIANT_H
+#ifndef DF0_CONCEPTS_VARIANT_H
+#define DF0_CONCEPTS_VARIANT_H
 
 #include <variant>
 #include <type_traits>
@@ -29,4 +29,4 @@ concept variant_alternative = is_variant_alternative_trait<T, Variant>::value;
 
 }
 
-#endif // DOCWIRE_CONCEPTS_VARIANT_H
+#endif // DF0_CONCEPTS_VARIANT_H

@@ -442,8 +442,8 @@ std::vector<double> llama_runner<auditor_type>::embed(const std::string& input)
     return result;
 }
 
-template class DOCWIRE_AI_LLAMA_EXPORT df0::ai::llama::llama_runner<df0::audit::null_auditor>;
-template class DOCWIRE_AI_LLAMA_EXPORT df0::ai::llama::llama_runner<df0::audit::json_stream_auditor>;
+template class DF0_AI_LLAMA_EXPORT df0::ai::llama::llama_runner<df0::audit::null_auditor>;
+template class DF0_AI_LLAMA_EXPORT df0::ai::llama::llama_runner<df0::audit::json_stream_auditor>;
 
 } // namespace ai::llama
 

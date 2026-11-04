@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_CT2_RUNNER_FACTORY_H
-#define DOCWIRE_LOCAL_AI_CT2_RUNNER_FACTORY_H
+#ifndef DF0_LOCAL_AI_CT2_RUNNER_FACTORY_H
+#define DF0_LOCAL_AI_CT2_RUNNER_FACTORY_H
 
 #include "ai_runner.h"
 #include "ct2_runner.h"

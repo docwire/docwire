@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_WITH_PARTIAL_MATCH_H
-#define DOCWIRE_WITH_PARTIAL_MATCH_H
+#ifndef DF0_WITH_PARTIAL_MATCH_H
+#define DF0_WITH_PARTIAL_MATCH_H
 
 #include <string_view>
 
@@ -28,4 +28,4 @@ struct partial_match
 
 } // namespace with
 
-#endif // DOCWIRE_WITH_PARTIAL_MATCH_H
+#endif // DF0_WITH_PARTIAL_MATCH_H

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_BOOST_DLL_WRAPPER_H
-#define DOCWIRE_BOOST_DLL_WRAPPER_H
+#ifndef DF0_BOOST_DLL_WRAPPER_H
+#define DF0_BOOST_DLL_WRAPPER_H
 
 #include "core_export.h"
 
@@ -21,11 +21,11 @@ namespace df0::detail
 
 using this_line_location_t = std::filesystem::path();
 
-DOCWIRE_CORE_EXPORT std::filesystem::path this_line_location_helper(
+DF0_CORE_EXPORT std::filesystem::path this_line_location_helper(
     const this_line_location_t& this_line_location_instance);
 
-DOCWIRE_CORE_EXPORT std::filesystem::path program_location();
+DF0_CORE_EXPORT std::filesystem::path program_location();
 
 } // namespace df0::detail
 
-#endif // DOCWIRE_BOOST_DLL_WRAPPER_H
+#endif // DF0_BOOST_DLL_WRAPPER_H

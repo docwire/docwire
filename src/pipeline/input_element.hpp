@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PIPELINE_INPUT_ELEMENT_H
-#define DOCWIRE_PIPELINE_INPUT_ELEMENT_H
+#ifndef DF0_PIPELINE_INPUT_ELEMENT_H
+#define DF0_PIPELINE_INPUT_ELEMENT_H
 
 #include <concepts>
 #include <iostream>
@@ -106,4 +106,4 @@ auto operator|(T&& v, ChainElement&& chain_element)
 
 } // namespace df0::pipeline
 
-#endif //DOCWIRE_PIPELINE_INPUT_ELEMENT_H
+#endif //DF0_PIPELINE_INPUT_ELEMENT_H

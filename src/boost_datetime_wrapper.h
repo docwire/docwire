@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_BOOST_DATETIME_WRAPPER_H
-#define DOCWIRE_BOOST_DATETIME_WRAPPER_H
+#ifndef DF0_BOOST_DATETIME_WRAPPER_H
+#define DF0_BOOST_DATETIME_WRAPPER_H
 
 #include "core_export.h"
 
@@ -25,8 +25,8 @@ namespace df0::detail
  * @return A timestamp in the format:
  *         `YYYY-MM-DDTHH:MM:SS+HHMM` or `YYYY-MM-DDTHH:MM:SS-HHMM`.
  */
-DOCWIRE_CORE_EXPORT std::string local_iso_datetime_with_timezone_offset();
+DF0_CORE_EXPORT std::string local_iso_datetime_with_timezone_offset();
 
 } // namespace df0::detail
 
-#endif // DOCWIRE_BOOST_DATETIME_WRAPPER_H
+#endif // DF0_BOOST_DATETIME_WRAPPER_H

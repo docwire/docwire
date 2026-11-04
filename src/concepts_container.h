@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONCEPTS_CONTAINER_H
-#define DOCWIRE_CONCEPTS_CONTAINER_H
+#ifndef DF0_CONCEPTS_CONTAINER_H
+#define DF0_CONCEPTS_CONTAINER_H
 
 #include <iterator>
 #include <type_traits>
@@ -30,4 +30,4 @@ concept container = requires(const T& t) {
 
 } // namespace df0
 
-#endif // DOCWIRE_CONCEPTS_CONTAINER_H
+#endif // DF0_CONCEPTS_CONTAINER_H

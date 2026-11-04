@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OCR_PARSER_H
-#define DOCWIRE_OCR_PARSER_H
+#ifndef DF0_OCR_PARSER_H
+#define DF0_OCR_PARSER_H
 
 #include "pipeline/element_base.hpp"
 #include <cstdint>
@@ -40,7 +40,7 @@ struct ocr_data_path { std::filesystem::path v; };
 struct ocr_timeout { std::optional<int32_t> v; };
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_OCR_EXPORT ocr_parser
+class DF0_OCR_EXPORT ocr_parser
     : public pipeline::transformer_element<ocr_parser<auditor_type>>,
       public with_pimpl<ocr_parser<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -125,4 +125,4 @@ ocr_parser(
 
 } // namespace df0
 
-#endif // DOCWIRE_OCR_PARSER_H
+#endif // DF0_OCR_PARSER_H

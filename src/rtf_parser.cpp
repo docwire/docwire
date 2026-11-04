@@ -894,7 +894,7 @@ continuation rtf_parser<auditor_type>::operator()(
 	return continuation::proceed;
 }
 
-template class DOCWIRE_RTF_EXPORT rtf_parser<df0::audit::null_auditor>;
-template class DOCWIRE_RTF_EXPORT rtf_parser<df0::audit::json_stream_auditor>;
+template class DF0_RTF_EXPORT rtf_parser<df0::audit::null_auditor>;
+template class DF0_RTF_EXPORT rtf_parser<df0::audit::json_stream_auditor>;
 
 } // namespace df0

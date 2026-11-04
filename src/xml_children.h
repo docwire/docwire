@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /* *******************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XML_CHILDREN_VIEW_H
-#define DOCWIRE_XML_CHILDREN_VIEW_H
+#ifndef DF0_XML_CHILDREN_VIEW_H
+#define DF0_XML_CHILDREN_VIEW_H
 
 #include "xml_descendants.h"
 #include "audit.hpp"

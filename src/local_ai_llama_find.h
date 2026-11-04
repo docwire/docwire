@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_LLAMA_FIND_H
-#define DOCWIRE_LOCAL_AI_LLAMA_FIND_H
+#ifndef DF0_LOCAL_AI_LLAMA_FIND_H
+#define DF0_LOCAL_AI_LLAMA_FIND_H
 
 #include "ai_find.h"
 #include "local_ai_llama_runner_factory.h"
@@ -23,7 +23,7 @@ class find :
 	public df0::pipeline::transformer_element<find>,
 	public df0::ai::find {
 public:
-#ifdef DOCWIRE_GRANITE
+#ifdef DF0_GRANITE
   // Constructor with Default Granite model
   explicit find(
       const std::string &what,
@@ -44,4 +44,4 @@ public:
 
 } // namespace df0::ai::local::llama
 
-#endif // DOCWIRE_LOCAL_AI_LLAMA_FIND_H
+#endif // DF0_LOCAL_AI_LLAMA_FIND_H

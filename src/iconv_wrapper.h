@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_ICONV_WRAPPER_H
-#define DOCWIRE_ICONV_WRAPPER_H
+#ifndef DF0_ICONV_WRAPPER_H
+#define DF0_ICONV_WRAPPER_H
 
 #include <cstdint>
 #include <string>
@@ -27,9 +27,9 @@ struct state
     std::string to;
 };
 
-DOCWIRE_CORE_EXPORT void open(state& st);
-DOCWIRE_CORE_EXPORT void close(state& st) noexcept;
-DOCWIRE_CORE_EXPORT std::string convert(state& st, std::string_view input);
+DF0_CORE_EXPORT void open(state& st);
+DF0_CORE_EXPORT void close(state& st) noexcept;
+DF0_CORE_EXPORT std::string convert(state& st, std::string_view input);
 
 } // namespace df0::detail::iconv_wrapper
 

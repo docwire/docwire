@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SERIALIZATION_FILESYSTEM_H
-#define DOCWIRE_SERIALIZATION_FILESYSTEM_H
+#ifndef DF0_SERIALIZATION_FILESYSTEM_H
+#define DF0_SERIALIZATION_FILESYSTEM_H
 
 #include <filesystem>
 #include "serialization_base.h"
@@ -30,4 +30,4 @@ struct serializer<std::filesystem::path>
 
 } // namespace df0::serialization
 
-#endif // DOCWIRE_SERIALIZATION_FILESYSTEM_H
+#endif // DF0_SERIALIZATION_FILESYSTEM_H

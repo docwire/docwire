@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /* *******************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XML_NODES_VIEW_H
-#define DOCWIRE_XML_NODES_VIEW_H
+#ifndef DF0_XML_NODES_VIEW_H
+#define DF0_XML_NODES_VIEW_H
 
 #include <optional>
 #include "checked.h"

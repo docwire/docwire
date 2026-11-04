@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_TIME_UTILS_H
-#define DOCWIRE_TIME_UTILS_H
+#ifndef DF0_TIME_UTILS_H
+#define DF0_TIME_UTILS_H
 
 #include <ctime>
 

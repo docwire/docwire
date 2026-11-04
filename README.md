@@ -768,7 +768,7 @@ When DocWire is a dependency in another project, specify features in your `vcpkg
 If you build DocWire with CMake directly, using a vcpkg toolchain, you can set the corresponding CMake options:
 
 ```bash
-cmake -DDOCWIRE_CT2=ON -DDOCWIRE_LLAMA=ON ..
+cmake -DDF0_CT2=ON -DDF0_LLAMA=ON ..
 ```
 
 When building directly with CMake, responsibility for providing model resources and dependencies falls on the developer. The vcpkg feature pathway is recommended for easier setup.

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_TYPE_NAME_VECTOR_H
-#define DOCWIRE_TYPE_NAME_VECTOR_H
+#ifndef DF0_TYPE_NAME_VECTOR_H
+#define DF0_TYPE_NAME_VECTOR_H
 
 #include "type_name_base.h"
 #include <string>
@@ -26,4 +26,4 @@ struct pretty_impl<std::vector<T, Alloc>> {
 
 } // namespace df0::type_name
 
-#endif // DOCWIRE_TYPE_NAME_VECTOR_H
+#endif // DF0_TYPE_NAME_VECTOR_H

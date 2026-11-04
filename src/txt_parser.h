@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_TXT_PARSER_H
-#define DOCWIRE_TXT_PARSER_H
+#ifndef DF0_TXT_PARSER_H
+#define DF0_TXT_PARSER_H
 
 #include "pipeline/element_base.hpp"
 #include "plain_text_export.h"
@@ -26,7 +26,7 @@ struct parse_paragraphs { bool v; };
 struct parse_lines { bool v; };
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser
+class DF0_PLAIN_TEXT_EXPORT txt_parser
     : public pipeline::transformer_element<txt_parser<auditor_type>>,
       public with_pimpl<txt_parser<auditor_type>>,
       private audit::with_auditor<auditor_type>

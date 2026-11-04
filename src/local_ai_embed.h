@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_EMBED_H
-#define DOCWIRE_LOCAL_AI_EMBED_H
+#ifndef DF0_LOCAL_AI_EMBED_H
+#define DF0_LOCAL_AI_EMBED_H
 
 #include "ai_embed.h"
 #include "local_ai_export.h"
@@ -27,7 +27,7 @@ namespace df0::ai::local::passage
  * is applied automatically. No model-specific knowledge required at the call site.
  */
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_LOCAL_AI_EXPORT embedder
+class DF0_LOCAL_AI_EXPORT embedder
     : public df0::pipeline::transformer_element<embedder<auditor_type>>
     , public df0::ai::embed<auditor_type>
 {
@@ -63,7 +63,7 @@ namespace df0::ai::local::query
 
  */
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_LOCAL_AI_EXPORT embedder
+class DF0_LOCAL_AI_EXPORT embedder
     : public df0::pipeline::transformer_element<embedder<auditor_type>>
     , public df0::ai::embed<auditor_type>
 {
@@ -89,4 +89,4 @@ embedder() -> embedder<audit::null_auditor>;
 
 } // namespace df0::ai::local::query
 
-#endif // DOCWIRE_LOCAL_AI_EMBED_H
+#endif // DF0_LOCAL_AI_EMBED_H

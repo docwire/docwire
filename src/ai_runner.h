@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AI_RUNNER_H
-#define DOCWIRE_AI_RUNNER_H
+#ifndef DF0_AI_RUNNER_H
+#define DF0_AI_RUNNER_H
 
 #include "ai_export.h"
 #include <stdexcept>
@@ -39,7 +39,7 @@ namespace df0::ai {
  *   calls; prefer explicit lifetime management (guards) or documented external
  *   synchronization.
  */
-class DOCWIRE_AI_EXPORT ai_runner {
+class DF0_AI_EXPORT ai_runner {
   public:
     /**
      * @brief Virtual destructor.

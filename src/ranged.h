@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_RANGED_H
-#define DOCWIRE_RANGED_H
+#ifndef DF0_RANGED_H
+#define DF0_RANGED_H
 
 #include "safety_policy.h"
 #include "enforce.h"
@@ -105,4 +105,4 @@ using non_negative = at_least<0, T, safety_level>;
 
 } // namespace df0
 
-#endif // DOCWIRE_RANGED_H
+#endif // DF0_RANGED_H

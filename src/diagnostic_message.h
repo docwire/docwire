@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DIAGNOSTIC_MESSAGE_H
-#define DOCWIRE_DIAGNOSTIC_MESSAGE_H
+#ifndef DF0_DIAGNOSTIC_MESSAGE_H
+#define DF0_DIAGNOSTIC_MESSAGE_H
 
 #include "core_export.h"
 #include <exception>
@@ -92,4 +92,4 @@ inline std::string diagnostic_message(std::exception_ptr eptr)
 
 } // namespace df0::errors
 
-#endif // DOCWIRE_DIAGNOSTIC_MESSAGE_H
+#endif // DF0_DIAGNOSTIC_MESSAGE_H

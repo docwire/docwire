@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OPENAI_TEXT_TO_SPEECH_H
-#define DOCWIRE_OPENAI_TEXT_TO_SPEECH_H
+#ifndef DF0_OPENAI_TEXT_TO_SPEECH_H
+#define DF0_OPENAI_TEXT_TO_SPEECH_H
 
 #include "pipeline/element_base.hpp"
 #include "openai_export.h"
@@ -37,7 +37,7 @@ enum class text_to_speech_voice
 };
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_OPENAI_EXPORT text_to_speech
+class DF0_OPENAI_EXPORT text_to_speech
     : public pipeline::transformer_element<text_to_speech<auditor_type>>,
       public with_pimpl<text_to_speech<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -87,4 +87,4 @@ text_to_speech(const std::string&, text_to_speech_model, text_to_speech_voice) -
 } // namespace openai
 } // namespace df0
 
-#endif //DOCWIRE_OPENAI_TEXT_TO_SPEECH_H
+#endif //DF0_OPENAI_TEXT_TO_SPEECH_H

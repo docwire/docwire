@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_MINIZIP_WRAPPER_H
-#define DOCWIRE_MINIZIP_WRAPPER_H
+#ifndef DF0_MINIZIP_WRAPPER_H
+#define DF0_MINIZIP_WRAPPER_H
 
 #include <cstddef>
 #include <cstdint>
@@ -33,15 +33,15 @@ struct state
     ~state();
 };
 
-DOCWIRE_CORE_EXPORT void open(state& st, std::span<const std::byte> source);
-DOCWIRE_CORE_EXPORT void close(state& st) noexcept;
-DOCWIRE_CORE_EXPORT bool exists(state& st, const std::string& file_name);
-DOCWIRE_CORE_EXPORT bool read(state& st, const std::string& file_name, std::string* contents, int num_of_chars);
-DOCWIRE_CORE_EXPORT bool get_file_size(state& st, const std::string& file_name, unsigned long& file_size);
-DOCWIRE_CORE_EXPORT bool read_chunk(state& st, const std::string& file_name, char* contents, int num_of_chars, int& readed, bool add_null_terminator);
-DOCWIRE_CORE_EXPORT bool read_chunk(state& st, const std::string& file_name, std::string* contents, int num_of_chars);
-DOCWIRE_CORE_EXPORT void close_reading_file_for_chunks(state& st);
-DOCWIRE_CORE_EXPORT bool load_directory(state& st);
+DF0_CORE_EXPORT void open(state& st, std::span<const std::byte> source);
+DF0_CORE_EXPORT void close(state& st) noexcept;
+DF0_CORE_EXPORT bool exists(state& st, const std::string& file_name);
+DF0_CORE_EXPORT bool read(state& st, const std::string& file_name, std::string* contents, int num_of_chars);
+DF0_CORE_EXPORT bool get_file_size(state& st, const std::string& file_name, unsigned long& file_size);
+DF0_CORE_EXPORT bool read_chunk(state& st, const std::string& file_name, char* contents, int num_of_chars, int& readed, bool add_null_terminator);
+DF0_CORE_EXPORT bool read_chunk(state& st, const std::string& file_name, std::string* contents, int num_of_chars);
+DF0_CORE_EXPORT void close_reading_file_for_chunks(state& st);
+DF0_CORE_EXPORT bool load_directory(state& st);
 
 inline state::~state()
 {

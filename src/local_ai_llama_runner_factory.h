@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_LLAMA_RUNNER_FACTORY_H
-#define DOCWIRE_LOCAL_AI_LLAMA_RUNNER_FACTORY_H
+#ifndef DF0_LOCAL_AI_LLAMA_RUNNER_FACTORY_H
+#define DF0_LOCAL_AI_LLAMA_RUNNER_FACTORY_H
 
 #include "ai_runner.h"
 #include "llama_runner.h"
@@ -39,7 +39,7 @@ inline model_inference_config default_config(std::filesystem::path model_path)
     return config;
 }
 
-#ifdef DOCWIRE_GRANITE
+#ifdef DF0_GRANITE
 template<typename auditor_type>
 inline std::shared_ptr<df0::ai::ai_runner> make_default_runner(
     df0::audit::auditor_ref<auditor_type> auditor)

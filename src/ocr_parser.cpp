@@ -507,7 +507,7 @@ continuation ocr_parser<auditor_type>::operator()(
         return emit_message(std::move(msg));
 }
 
-template class DOCWIRE_OCR_EXPORT ocr_parser<df0::audit::null_auditor>;
-template class DOCWIRE_OCR_EXPORT ocr_parser<df0::audit::json_stream_auditor>;
+template class DF0_OCR_EXPORT ocr_parser<df0::audit::null_auditor>;
+template class DF0_OCR_EXPORT ocr_parser<df0::audit::json_stream_auditor>;
 
 } // namespace df0

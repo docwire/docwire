@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DATA_STREAM_H
-#define DOCWIRE_DATA_STREAM_H
+#ifndef DF0_DATA_STREAM_H
+#define DF0_DATA_STREAM_H
 
 #include "core_export.h"
 #include <cstring>
@@ -277,4 +277,4 @@ inline data_stream* buffer_stream::clone()
 
 } // namespace df0
 
-#endif	//DOCWIRE_DATA_STREAM_H
+#endif	//DF0_DATA_STREAM_H

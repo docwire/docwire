@@ -10,8 +10,8 @@
 /*********************************************************************************************************************************************/
 
 
-#ifndef DOCWIRE_PST_PARSER_H
-#define DOCWIRE_PST_PARSER_H
+#ifndef DF0_PST_PARSER_H
+#define DF0_PST_PARSER_H
 
 #include "mail_export.h"
 
@@ -25,7 +25,7 @@ namespace df0
 {
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_MAIL_EXPORT pst_parser
+class DF0_MAIL_EXPORT pst_parser
     : public pipeline::transformer_element<pst_parser<auditor_type>>,
       public with_pimpl<pst_parser<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -59,4 +59,4 @@ pst_parser() -> pst_parser<audit::null_auditor>;
 
 } // namespace df0
 
-#endif //DOCWIRE_PST_PARSER_H
+#endif //DF0_PST_PARSER_H

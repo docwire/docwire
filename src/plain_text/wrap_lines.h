@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PLAIN_TEXT_WRAP_LINES_H
-#define DOCWIRE_PLAIN_TEXT_WRAP_LINES_H
+#ifndef DF0_PLAIN_TEXT_WRAP_LINES_H
+#define DF0_PLAIN_TEXT_WRAP_LINES_H
 
 #include "wrap.h"
 #include <string>

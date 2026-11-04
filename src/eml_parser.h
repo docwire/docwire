@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_EML_PARSER_H
-#define DOCWIRE_EML_PARSER_H
+#ifndef DF0_EML_PARSER_H
+#define DF0_EML_PARSER_H
 
 #include "mail_export.h"
 
@@ -24,7 +24,7 @@ namespace df0
 {
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_MAIL_EXPORT eml_parser
+class DF0_MAIL_EXPORT eml_parser
     : public pipeline::transformer_element<eml_parser<auditor_type>>,
       public with_pimpl<eml_parser<auditor_type>>,
       private audit::with_auditor<auditor_type>

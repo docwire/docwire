@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_TESTS_MESSAGE_MATCHERS_H
-#define DOCWIRE_TESTS_MESSAGE_MATCHERS_H
+#ifndef DF0_TESTS_MESSAGE_MATCHERS_H
+#define DF0_TESTS_MESSAGE_MATCHERS_H
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -74,4 +74,4 @@ namespace df0 {
     }
 }
 
-#endif // DOCWIRE_TESTS_MESSAGE_MATCHERS_H
+#endif // DF0_TESTS_MESSAGE_MATCHERS_H

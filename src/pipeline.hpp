@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PIPELINE_HPP
-#define DOCWIRE_PIPELINE_HPP
+#ifndef DF0_PIPELINE_HPP
+#define DF0_PIPELINE_HPP
 
 // IWYU pragma: begin_exports
 #include "pipeline/element_base.hpp"
@@ -23,4 +23,4 @@
 #include "pipeline/noop_transformer.hpp"
 // IWYU pragma: end_exports
 
-#endif // DOCWIRE_PIPELINE_HPP
+#endif // DF0_PIPELINE_HPP

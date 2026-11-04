@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PIPELINE_CHAIN_EXPRESSION_H
-#define DOCWIRE_PIPELINE_CHAIN_EXPRESSION_H
+#ifndef DF0_PIPELINE_CHAIN_EXPRESSION_H
+#define DF0_PIPELINE_CHAIN_EXPRESSION_H
 
 #include "element_base.hpp"
 #include "../ref_or_owned.h"
@@ -213,4 +213,4 @@ auto operator|(L&& lhs, R&& rhs)
 
 } // namespace df0::pipeline
 
-#endif //DOCWIRE_PIPELINE_CHAIN_EXPRESSION_H
+#endif //DF0_PIPELINE_CHAIN_EXPRESSION_H

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OPENAI_EMBED_H
-#define DOCWIRE_OPENAI_EMBED_H
+#ifndef DF0_OPENAI_EMBED_H
+#define DF0_OPENAI_EMBED_H
 
 #include "pipeline/element_base.hpp"
 #include "openai_export.h"
@@ -37,7 +37,7 @@ enum class embed_model
 };
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_OPENAI_EXPORT embed
+class DF0_OPENAI_EXPORT embed
     : public pipeline::transformer_element<embed<auditor_type>>,
       public with_pimpl<embed<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -84,4 +84,4 @@ embed(const std::string&, embed_model) -> embed<audit::null_auditor>;
 } // namespace openai
 } // namespace df0
 
-#endif //DOCWIRE_OPENAI_EMBED_H
+#endif //DF0_OPENAI_EMBED_H

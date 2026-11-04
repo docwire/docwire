@@ -2259,7 +2259,7 @@ continuation iwork_parser<auditor_type>::operator()(
 }
 
 
-template class DOCWIRE_IWORK_EXPORT iwork_parser<df0::audit::null_auditor>;
-template class DOCWIRE_IWORK_EXPORT iwork_parser<df0::audit::json_stream_auditor>;
+template class DF0_IWORK_EXPORT iwork_parser<df0::audit::null_auditor>;
+template class DF0_IWORK_EXPORT iwork_parser<df0::audit::json_stream_auditor>;
 
 } // namespace df0

@@ -20,17 +20,17 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 		asan ADDRESS_SANITIZER
 		tsan THREAD_SANITIZER
 		helgrind HELGRIND_ENABLED
-		local-ai-ct2 DOCWIRE_CT2
-        local-ai-llama DOCWIRE_LLAMA
-        local-ai-model-granite DOCWIRE_GRANITE
-        docs DOCWIRE_DOC
+		local-ai-ct2 DF0_CT2
+        local-ai-llama DF0_LLAMA
+        local-ai-model-granite DF0_GRANITE
+        docs DF0_DOC
 )
 
 if(DEFINED ENV{CMAKE_MESSAGE_LOG_LEVEL})
 	list(APPEND FEATURE_OPTIONS "-DCMAKE_MESSAGE_LOG_LEVEL=$ENV{CMAKE_MESSAGE_LOG_LEVEL}")
 endif()
 
-if(DOCWIRE_DOC)
+if(DF0_DOC)
     if(VCPKG_HOST_IS_WINDOWS)
         set(DOXYGEN_ASSET "doxygen-${DOXYGEN_VERSION}.windows.x64.bin.zip")
         set(DOXYGEN_SHA512 "c4f7b45a4ae5f49b9d232036ec200033be7a44c41dfa717f121c05a06a9377838795ef9e931267dcb4d73be2d3bb34c97d79f46f464c8a4d62ef4664210e5491")

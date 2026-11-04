@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_META_DATA_EXPORTER_H
-#define DOCWIRE_META_DATA_EXPORTER_H
+#ifndef DF0_META_DATA_EXPORTER_H
+#define DF0_META_DATA_EXPORTER_H
 
 #include "pipeline/element_base.hpp"
 #include "core_export.h"
@@ -80,4 +80,4 @@ metadata_exporter() -> metadata_exporter<audit::null_auditor>;
 
 } // namespace df0
 
-#endif //DOCWIRE_META_DATA_EXPORTER_H
+#endif //DF0_META_DATA_EXPORTER_H

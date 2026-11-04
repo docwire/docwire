@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AI_LLAMA_RUNNER_H
-#define DOCWIRE_AI_LLAMA_RUNNER_H
+#ifndef DF0_AI_LLAMA_RUNNER_H
+#define DF0_AI_LLAMA_RUNNER_H
 
 #include "ai_runner.h"
 #include "ai_llama_export.h"
@@ -29,7 +29,7 @@ namespace df0::ai::llama
  * the model configuration.
  */
 template<typename auditor_type = df0::audit::null_auditor>
-class DOCWIRE_AI_LLAMA_EXPORT llama_runner
+class DF0_AI_LLAMA_EXPORT llama_runner
     : public ai_runner,
       public with_pimpl<llama_runner<auditor_type>>,
       private audit::with_auditor<auditor_type>

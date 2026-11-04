@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_FILE_EXTENSION_H
-#define DOCWIRE_FILE_EXTENSION_H
+#ifndef DF0_FILE_EXTENSION_H
+#define DF0_FILE_EXTENSION_H
 
 #include <algorithm>
 #include <compare>

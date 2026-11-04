@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_MAIL_ELEMENTS_H
-#define DOCWIRE_MAIL_ELEMENTS_H
+#ifndef DF0_MAIL_ELEMENTS_H
+#define DF0_MAIL_ELEMENTS_H
 
 #include <cstddef>
 #include <cstdint>
@@ -56,4 +56,4 @@ struct close_folder { };
 } // namespace mail
 } // namespace df0
 
-#endif // DOCWIRE_MAIL_ELEMENTS_H
+#endif // DF0_MAIL_ELEMENTS_H

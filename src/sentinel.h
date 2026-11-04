@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SENTINEL_H
-#define DOCWIRE_SENTINEL_H
+#ifndef DF0_SENTINEL_H
+#define DF0_SENTINEL_H
 
 #include "core_export.h"
 
@@ -24,4 +24,4 @@ struct sentinel {};
 
 } // namespace df0
 
-#endif // DOCWIRE_SENTINEL_H
+#endif // DF0_SENTINEL_H

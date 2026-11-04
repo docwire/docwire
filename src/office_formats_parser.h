@@ -10,8 +10,8 @@
 /*********************************************************************************************************************************************/
 
 
-#ifndef DOCWIRE_OFFICE_FORMATS_PARSER_H
-#define DOCWIRE_OFFICE_FORMATS_PARSER_H
+#ifndef DF0_OFFICE_FORMATS_PARSER_H
+#define DF0_OFFICE_FORMATS_PARSER_H
 
 #include "doc_parser.h"
 #include "html_parser.h"
@@ -103,4 +103,4 @@ office_formats_parser() ->
 
 } // namespace df0
 
-#endif //DOCWIRE_OFFICE_FORMATS_PARSER_H
+#endif //DF0_OFFICE_FORMATS_PARSER_H

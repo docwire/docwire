@@ -1,7 +1,7 @@
 set(CMAKE_INSTALL_RPATH .)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-add_compile_definitions(DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
+add_compile_definitions(DF0_ENABLE_SHORT_MACRO_NAMES)
 
 add_subdirectory(wv2)
 
@@ -26,15 +26,15 @@ include(mail.cmake)
 include(archives.cmake)
 include(ai.cmake)
 
-if(DOCWIRE_CT2)
+if(DF0_CT2)
     include(ai_ct2.cmake)
 endif()
 
-if(DOCWIRE_LLAMA)
+if(DF0_LLAMA)
     include(ai_llama.cmake)
 endif()
 
-if(DOCWIRE_CT2 OR DOCWIRE_LLAMA)
+if(DF0_CT2 OR DF0_LLAMA)
     include(local_ai.cmake)
 endif()
 

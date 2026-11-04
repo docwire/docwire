@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_HTTP_POST_H
-#define DOCWIRE_HTTP_POST_H
+#ifndef DF0_HTTP_POST_H
+#define DF0_HTTP_POST_H
 
 #include "pipeline/element_base.hpp"
 #include "http_export.h"
@@ -37,7 +37,7 @@ namespace http
 struct ssl_verify_peer { bool v; };
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_HTTP_EXPORT post
+class DF0_HTTP_EXPORT post
     : public pipeline::transformer_element<post<auditor_type>>,
       public with_pimpl<post<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -121,4 +121,4 @@ private:
 } // namespace http
 } // namespace df0
 
-#endif //DOCWIRE_HTTP_POST_H
+#endif //DF0_HTTP_POST_H

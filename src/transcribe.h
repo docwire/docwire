@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_TRANSCRIBE_H
-#define DOCWIRE_TRANSCRIBE_H
+#ifndef DF0_TRANSCRIBE_H
+#define DF0_TRANSCRIBE_H
 
 #include "pipeline/element_base.hpp"
 #include "openai_export.h"
@@ -31,7 +31,7 @@ enum class transcribe_model
 };
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_OPENAI_EXPORT transcribe
+class DF0_OPENAI_EXPORT transcribe
     : public pipeline::transformer_element<transcribe<auditor_type>>,
       public with_pimpl<transcribe<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -78,4 +78,4 @@ transcribe(const std::string&, transcribe_model) -> transcribe<audit::null_audit
 } // namespace openai
 } // namespace df0
 
-#endif //DOCWIRE_OPENAI_TRANSCRIBE_H
+#endif //DF0_OPENAI_TRANSCRIBE_H

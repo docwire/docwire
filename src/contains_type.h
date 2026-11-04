@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONTAINS_TYPE_H
-#define DOCWIRE_CONTAINS_TYPE_H
+#ifndef DF0_CONTAINS_TYPE_H
+#define DF0_CONTAINS_TYPE_H
 
 #include "error.h"
 #include <exception>
@@ -53,4 +53,4 @@ bool contains_type(const std::exception& e)
 
 } // namespace df0::errors
 
-#endif // DOCWIRE_CONTAINS_TYPE_H
+#endif // DF0_CONTAINS_TYPE_H

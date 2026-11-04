@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SERIALIZATION_TYPEINDEX_H
-#define DOCWIRE_SERIALIZATION_TYPEINDEX_H
+#ifndef DF0_SERIALIZATION_TYPEINDEX_H
+#define DF0_SERIALIZATION_TYPEINDEX_H
 
 #include "core_export.h"
 #include "serialization_base.h"
@@ -32,4 +32,4 @@ struct serializer<std::type_index>
 
 } // namespace df0::serialization
 
-#endif // DOCWIRE_SERIALIZATION_TYPEINDEX_H
+#endif // DF0_SERIALIZATION_TYPEINDEX_H

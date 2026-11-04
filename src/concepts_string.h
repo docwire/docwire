@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONCEPTS_STRING_H
-#define DOCWIRE_CONCEPTS_STRING_H
+#ifndef DF0_CONCEPTS_STRING_H
+#define DF0_CONCEPTS_STRING_H
 
 #include <concepts>
 #include <string_view>
@@ -33,4 +33,4 @@ concept string_like = std::is_convertible_v<T, std::string_view>;
 
 } // namespace df0
 
-#endif // DOCWIRE_CONCEPTS_STRING_H
+#endif // DF0_CONCEPTS_STRING_H

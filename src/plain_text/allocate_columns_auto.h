@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PLAIN_TEXT_ALLOCATE_COLUMNS_AUTO_H
-#define DOCWIRE_PLAIN_TEXT_ALLOCATE_COLUMNS_AUTO_H
+#ifndef DF0_PLAIN_TEXT_ALLOCATE_COLUMNS_AUTO_H
+#define DF0_PLAIN_TEXT_ALLOCATE_COLUMNS_AUTO_H
 
 #include "allocate_columns_proportional.h"
 #include "allocate_columns_overshoot.h"
@@ -47,4 +47,4 @@ allocate_columns_auto(const std::vector<int>& min_widths,
 
 } // namespace df0::plain_text
 
-#endif // DOCWIRE_PLAIN_TEXT_ALLOCATE_COLUMNS_AUTO_H
+#endif // DF0_PLAIN_TEXT_ALLOCATE_COLUMNS_AUTO_H

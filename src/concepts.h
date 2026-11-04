@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONCEPTS_H
-#define DOCWIRE_CONCEPTS_H
+#ifndef DF0_CONCEPTS_H
+#define DF0_CONCEPTS_H
 
 // IWYU pragma: begin_exports
 #include "concepts_container.h"
@@ -20,4 +20,4 @@
 #include "concepts_variant.h"
 // IWYU pragma: end_exports
 
-#endif // DOCWIRE_CONCEPTS_H
+#endif // DF0_CONCEPTS_H

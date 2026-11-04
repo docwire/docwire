@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AI_MODEL_INFERENCE_CONFIG_H
-#define DOCWIRE_AI_MODEL_INFERENCE_CONFIG_H
+#ifndef DF0_AI_MODEL_INFERENCE_CONFIG_H
+#define DF0_AI_MODEL_INFERENCE_CONFIG_H
 #include "model_inference_config_type.h"
 #include <string>
 #include <filesystem>

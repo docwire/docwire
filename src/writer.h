@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_WRITER_H
-#define DOCWIRE_WRITER_H
+#ifndef DF0_WRITER_H
+#define DF0_WRITER_H
 
 #include "core_export.h"
 #include "message.h"
@@ -50,4 +50,4 @@ public:
 
 } // namespace df0
 
-#endif //DOCWIRE_WRITER_H
+#endif //DF0_WRITER_H

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AI_FIND_H
-#define DOCWIRE_AI_FIND_H
+#ifndef DF0_AI_FIND_H
+#define DF0_AI_FIND_H
 
 #include "ai_export.h"
 #include "model_chain_element.h"
@@ -18,7 +18,7 @@
 namespace df0::ai
 {
 
-class DOCWIRE_AI_EXPORT find : public model_chain_element
+class DF0_AI_EXPORT find : public model_chain_element
 {
   	public:
     	explicit find(const std::string& what, std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
@@ -26,4 +26,4 @@ class DOCWIRE_AI_EXPORT find : public model_chain_element
 
 } // namespace df0::ai
 
-#endif // DOCWIRE_AI_FIND_H
+#endif // DF0_AI_FIND_H

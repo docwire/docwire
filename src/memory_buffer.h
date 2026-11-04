@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_MEMORY_BUFFER_H
-#define DOCWIRE_MEMORY_BUFFER_H
+#ifndef DF0_MEMORY_BUFFER_H
+#define DF0_MEMORY_BUFFER_H
 
 #include <cstring>
 #include <memory>
@@ -69,4 +69,4 @@ public:
     }
 };
 
-#endif // DOCWIRE_MEMORY_BUFFER_H
+#endif // DF0_MEMORY_BUFFER_H

@@ -34,7 +34,7 @@ namespace
 std::mutex iconv_open_mutex;
 } // namespace
 
-DOCWIRE_CORE_EXPORT void open(state& st)
+DF0_CORE_EXPORT void open(state& st)
 {
     std::lock_guard<std::mutex> lock(iconv_open_mutex);
     iconv_t descriptor = iconv_open(st.to.c_str(), st.from.c_str());
@@ -42,7 +42,7 @@ DOCWIRE_CORE_EXPORT void open(state& st)
     st.descriptor = reinterpret_cast<std::uintptr_t>(descriptor);
 }
 
-DOCWIRE_CORE_EXPORT void close(state& st) noexcept
+DF0_CORE_EXPORT void close(state& st) noexcept
 {
     if (st.descriptor == 0)
         return;
@@ -52,7 +52,7 @@ DOCWIRE_CORE_EXPORT void close(state& st) noexcept
     st.descriptor = 0;
 }
 
-DOCWIRE_CORE_EXPORT std::string convert(state& st, std::string_view input)
+DF0_CORE_EXPORT std::string convert(state& st, std::string_view input)
 {
     if (st.descriptor == 0)
         throw make_error("Cannot convert: iconv descriptor is not open");

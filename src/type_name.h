@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_TYPE_NAME_H
-#define DOCWIRE_TYPE_NAME_H
+#ifndef DF0_TYPE_NAME_H
+#define DF0_TYPE_NAME_H
 
 #include "boost_demangle_wrapper.h"
 #include <typeindex>
@@ -64,4 +64,4 @@ inline std::string pretty_function(const std::string& function_name)
 
 } // namespace df0::type_name
 
-#endif // DOCWIRE_TYPE_NAME_H
+#endif // DF0_TYPE_NAME_H

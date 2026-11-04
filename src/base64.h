@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_BASE64_H
-#define DOCWIRE_BASE64_H
+#ifndef DF0_BASE64_H
+#define DF0_BASE64_H
 
 #include "base64_export.h"
 #include <span>
@@ -20,9 +20,9 @@
 namespace df0::base64
 {
 
-DOCWIRE_BASE64_EXPORT std::string encode(std::span<const std::byte> data);
-DOCWIRE_BASE64_EXPORT std::vector<std::byte> decode(std::string_view data);
+DF0_BASE64_EXPORT std::string encode(std::span<const std::byte> data);
+DF0_BASE64_EXPORT std::vector<std::byte> decode(std::string_view data);
 
 } // namespace df0::base64
 
-#endif //DOCWIRE_BASE64_H
+#endif //DF0_BASE64_H

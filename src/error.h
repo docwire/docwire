@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_ERROR_H
-#define DOCWIRE_ERROR_H
+#ifndef DF0_ERROR_H
+#define DF0_ERROR_H
 
 #include "core_export.h"
 #include "diagnostic_context.h" // IWYU pragma: keep
@@ -28,8 +28,8 @@
  */
 namespace df0::errors
 {
-#ifdef DOCWIRE_ENABLE_SHORT_MACRO_NAMES
-	#define current_location DOCWIRE_CURRENT_LOCATION
+#ifdef DF0_ENABLE_SHORT_MACRO_NAMES
+	#define current_location DF0_CURRENT_LOCATION
 #endif
 
 /**
@@ -72,7 +72,7 @@ namespace df0::errors
  * @see errors::diagnostic_message
  * @see @ref handling_errors_and_warnings.cpp "handling errors and warnings example"
  */
-struct DOCWIRE_CORE_EXPORT base : public std::exception
+struct DF0_CORE_EXPORT base : public std::exception
 {
 	/// @brief The source location where the exception was thrown.
 	source_location location;

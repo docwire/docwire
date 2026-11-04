@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_ERROR_HASH_H
-#define DOCWIRE_ERROR_HASH_H
+#ifndef DF0_ERROR_HASH_H
+#define DF0_ERROR_HASH_H
 
 #include <boost/container_hash/hash.hpp>
 #include "error.h"

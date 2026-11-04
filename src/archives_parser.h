@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_ARCHIVES_PARSER_H
-#define DOCWIRE_ARCHIVES_PARSER_H
+#ifndef DF0_ARCHIVES_PARSER_H
+#define DF0_ARCHIVES_PARSER_H
 
 #include "archives_export.h"
 #include "pipeline/element_base.hpp"
@@ -22,7 +22,7 @@ namespace df0
 {
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_ARCHIVES_EXPORT archives_parser
+class DF0_ARCHIVES_EXPORT archives_parser
     : public pipeline::transformer_element<archives_parser<auditor_type>>,
       private audit::with_auditor<auditor_type>
 {
@@ -61,4 +61,4 @@ archives_parser() -> archives_parser<audit::null_auditor>;
 
 } // namespace df0
 
-#endif // DOCWIRE_ARCHIVES_PARSER_H
+#endif // DF0_ARCHIVES_PARSER_H

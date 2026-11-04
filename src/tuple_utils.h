@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_TUPLE_UTILS_H
-#define DOCWIRE_TUPLE_UTILS_H
+#ifndef DF0_TUPLE_UTILS_H
+#define DF0_TUPLE_UTILS_H
 
 #include <tuple>
 
@@ -143,4 +143,4 @@ using last_element_t = decltype(last_element(std::declval<T>()));
 
 } // namespace df0::tuple_utils
 
-#endif //DOCWIRE_TUPLE_UTILS_H
+#endif //DF0_TUPLE_UTILS_H

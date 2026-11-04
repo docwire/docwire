@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XLSB_PARSER_H
-#define DOCWIRE_XLSB_PARSER_H
+#ifndef DF0_XLSB_PARSER_H
+#define DF0_XLSB_PARSER_H
 
 #include "pipeline/element_base.hpp"
 #include "message.h"
@@ -26,7 +26,7 @@ namespace df0
 class zip_reader;
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_XLSB_EXPORT xlsb_parser
+class DF0_XLSB_EXPORT xlsb_parser
     : public pipeline::transformer_element<xlsb_parser<auditor_type>>,
       public with_pimpl<xlsb_parser<auditor_type>>,
       private audit::with_auditor<auditor_type>

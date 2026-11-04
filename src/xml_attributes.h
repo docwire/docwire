@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XML_ATTRIBUTES_H
-#define DOCWIRE_XML_ATTRIBUTES_H
+#ifndef DF0_XML_ATTRIBUTES_H
+#define DF0_XML_ATTRIBUTES_H
 
 #include "safety_policy.h"
 #include "xml_node_ref.h"
@@ -162,4 +162,4 @@ private:
 
 } // namespace df0::xml
 
-#endif // DOCWIRE_XML_ATTRIBUTES_H
+#endif // DF0_XML_ATTRIBUTES_H

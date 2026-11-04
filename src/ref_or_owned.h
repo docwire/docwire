@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_REF_OR_OWNED_H
-#define DOCWIRE_REF_OR_OWNED_H
+#ifndef DF0_REF_OR_OWNED_H
+#define DF0_REF_OR_OWNED_H
 
 #include <memory>
 #include <type_traits>
@@ -114,4 +114,4 @@ private:
 
 } // namespace df0
 
-#endif //DOCWIRE_REF_OR_OWNED_H
+#endif //DF0_REF_OR_OWNED_H

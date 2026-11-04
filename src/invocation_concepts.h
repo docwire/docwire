@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_INVOCATION_CONCEPTS_H
-#define DOCWIRE_INVOCATION_CONCEPTS_H
+#ifndef DF0_INVOCATION_CONCEPTS_H
+#define DF0_INVOCATION_CONCEPTS_H
 
 #include "invocation_traits.h"
 
@@ -60,4 +60,4 @@ concept pushable = requires(T&& t) {
 
 } // namespace df0::invocation_concepts
 
-#endif //DOCWIRE_INVOCATION_CONCEPTS_H
+#endif //DF0_INVOCATION_CONCEPTS_H

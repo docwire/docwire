@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OPENAI_EXTRACT_ENTITIES_H
-#define DOCWIRE_OPENAI_EXTRACT_ENTITIES_H
+#ifndef DF0_OPENAI_EXTRACT_ENTITIES_H
+#define DF0_OPENAI_EXTRACT_ENTITIES_H
 
 #include "chat.h"
 #include <concepts>
@@ -21,7 +21,7 @@ namespace openai
 {
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_OPENAI_EXPORT extract_entities
+class DF0_OPENAI_EXPORT extract_entities
     : public pipeline::transformer_element<extract_entities<auditor_type>>,
       public chat<auditor_type>
 {
@@ -58,4 +58,4 @@ extract_entities(const std::string&, model, float, image_detail) -> extract_enti
 } // namespace openai
 } // namespace df0
 
-#endif //DOCWIRE_OPENAI_EXTRACT_ENTITIES_H
+#endif //DF0_OPENAI_EXTRACT_ENTITIES_H

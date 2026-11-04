@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_NESTED_EXCEPTION_H
-#define DOCWIRE_NESTED_EXCEPTION_H
+#ifndef DF0_NESTED_EXCEPTION_H
+#define DF0_NESTED_EXCEPTION_H
 
 #include <exception>
 

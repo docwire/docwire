@@ -71,7 +71,7 @@ continuation html_exporter<auditor_type>::operator()(message_ptr msg, const mess
 	return continuation::proceed;
 }
 
-template class DOCWIRE_HTML_EXPORT html_exporter<df0::audit::null_auditor>;
-template class DOCWIRE_HTML_EXPORT html_exporter<df0::audit::json_stream_auditor>;
+template class DF0_HTML_EXPORT html_exporter<df0::audit::null_auditor>;
+template class DF0_HTML_EXPORT html_exporter<df0::audit::json_stream_auditor>;
 
 } // namespace df0

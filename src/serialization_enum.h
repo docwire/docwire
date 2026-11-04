@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SERIALIZATION_ENUM_H
-#define DOCWIRE_SERIALIZATION_ENUM_H
+#ifndef DF0_SERIALIZATION_ENUM_H
+#define DF0_SERIALIZATION_ENUM_H
 
 #include "serialization_base.h"
 #include <magic_enum/magic_enum.hpp>
@@ -27,4 +27,4 @@ struct serializer<T>
 
 } // namespace df0::serialization
 
-#endif // DOCWIRE_SERIALIZATION_ENUM_H
+#endif // DF0_SERIALIZATION_ENUM_H

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONVERT_BASE_H
-#define DOCWIRE_CONVERT_BASE_H
+#ifndef DF0_CONVERT_BASE_H
+#define DF0_CONVERT_BASE_H
 
 #include <optional>
 #include <tuple>
@@ -89,4 +89,4 @@ To to(const From& from)
 
 } // namespace df0::convert
 
-#endif // DOCWIRE_CONVERT_BASE_H
+#endif // DF0_CONVERT_BASE_H

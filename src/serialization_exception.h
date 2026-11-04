@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SERIALIZATION_EXCEPTION_H
-#define DOCWIRE_SERIALIZATION_EXCEPTION_H
+#ifndef DF0_SERIALIZATION_EXCEPTION_H
+#define DF0_SERIALIZATION_EXCEPTION_H
 
 #include "serialization_base.h"
 #include <exception>
@@ -27,4 +27,4 @@ struct serializer<T>
 
 } // namespace df0::serialization
 
-#endif // DOCWIRE_SERIALIZATION_EXCEPTION_H
+#endif // DF0_SERIALIZATION_EXCEPTION_H

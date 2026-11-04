@@ -12,16 +12,16 @@
 
 #include "model_chain_element.h"
 #include "model_inference_config.h"
-#ifdef DOCWIRE_CT2
+#ifdef DF0_CT2
 #include "ct2_runner.h"
 #include "local_ai_ct2_embed.h"
 #include "local_ai_ct2_runner_factory.h"
 #endif
-#ifdef DOCWIRE_LLAMA
+#ifdef DF0_LLAMA
 #include "llama_runner.h"
 #include "local_ai_llama_runner_factory.h"
 #endif
-#ifdef DOCWIRE_LOCAL_AI
+#ifdef DF0_LOCAL_AI
 #include "local_ai_task.h"
 #endif
 #include "ai_elements.h"
@@ -114,7 +114,7 @@ std::string enum_names_str()
 	}
 	return names_str;
 }
-#ifdef DOCWIRE_LOCAL_AI
+#ifdef DF0_LOCAL_AI
 template<typename auditor_type>
 static std::shared_ptr<ai::ai_runner>
 create_local_runner(
@@ -126,7 +126,7 @@ create_local_runner(
         std::string model_path = vm["local-ai-model"].as<std::string>();
         if (model_path.ends_with(".gguf"))
         {
-            #ifdef DOCWIRE_LLAMA
+            #ifdef DF0_LLAMA
                 ai::model_inference_config config;
                 config.model_path = model_path;
                 config.n_ctx = ai::context_size{4096};
@@ -138,7 +138,7 @@ create_local_runner(
                 throw std::runtime_error("GGUF model support requires the local-ai-llama feature");
             #endif
         }
-        #ifdef DOCWIRE_CT2
+        #ifdef DF0_CT2
             return std::make_shared<ai::ct2::ct2_runner<auditor_type>>(
                 model_path,
                 auditor);
@@ -147,11 +147,11 @@ create_local_runner(
         #endif
     }
 
-    #ifdef DOCWIRE_CT2
+    #ifdef DF0_CT2
         return ai::local::ct2::make_default_runner(auditor);
-    #elif defined(DOCWIRE_LLAMA) && defined(DOCWIRE_GRANITE)
+    #elif defined(DF0_LLAMA) && defined(DF0_GRANITE)
         return ai::local::llama::make_default_runner(auditor);
-    #elif defined(DOCWIRE_LLAMA)
+    #elif defined(DF0_LLAMA)
         throw std::runtime_error(
             "No default local AI model available for this build. "
             "Specify --local-ai-model, or rebuild with the local-ai-model-granite "
@@ -162,7 +162,7 @@ create_local_runner(
             "which can be coupled with local-ai-model-granite feature.");
     #endif
 }
-#endif // DOCWIRE_LOCAL_AI
+#endif // DF0_LOCAL_AI
 
 namespace
 {
@@ -307,12 +307,12 @@ int main(int argc, char* argv[])
 		return data_source{std::filesystem::path{file_name}};
 	}();
 
-	#ifndef DOCWIRE_CT2
+	#ifndef DF0_CT2
 	if (vm.count("local-ai-prompt") || vm.count("local-ai-ct2-embed"))
 	{
 		std::cerr << "Error: Local AI features requested, but this build does not include "
-		             "DOCWIRE_CT2 support.\n"
-		             "Rebuild with DOCWIRE_CT2 enabled to use --local-ai-prompt or "
+		             "DF0_CT2 support.\n"
+		             "Rebuild with DF0_CT2 enabled to use --local-ai-prompt or "
 		             "--local-ai-ct2-embed." << std::endl;
 		return 1;
 	}
@@ -474,7 +474,7 @@ int run_with_auditor(
 				vm["openai-image-detail"].as<openai::image_detail>(),
 				auditor);
 		})
-#ifdef DOCWIRE_LOCAL_AI
+#ifdef DF0_LOCAL_AI
 		| maybe(vm.count("local-ai-prompt"), [&] {
 			auto runner = create_local_runner(
 				vm,
@@ -483,7 +483,7 @@ int run_with_auditor(
 				vm["local-ai-prompt"].as<std::string>(), runner);
 		})
 #endif
-#ifdef DOCWIRE_CT2
+#ifdef DF0_CT2
 		| maybe(vm.count("local-ai-ct2-embed") &&
 			vm["local-ai-ct2-embed"].as<embed_prefix_type>() == embed_prefix_type::query, [&] {
 			return ai::local::ct2::query::embedder<configured_auditor>{

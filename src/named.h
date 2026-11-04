@@ -8,8 +8,8 @@
 /*                                                                                                                                           */
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
-#ifndef DOCWIRE_NAMED_H
-#define DOCWIRE_NAMED_H
+#ifndef DF0_NAMED_H
+#define DF0_NAMED_H
 #include <string_view>
 #include <utility>
 #include <tuple>
@@ -137,4 +137,4 @@ namespace std
     };
 }
 
-#endif // DOCWIRE_NAMED_H
+#endif // DF0_NAMED_H

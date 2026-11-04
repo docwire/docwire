@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PLAIN_TEXT_WRAP_H
-#define DOCWIRE_PLAIN_TEXT_WRAP_H
+#ifndef DF0_PLAIN_TEXT_WRAP_H
+#define DF0_PLAIN_TEXT_WRAP_H
 
 #include <string>
 #include <vector>
@@ -66,4 +66,4 @@ inline std::vector<std::string> wrap(const std::string& line, int width, bool br
 
 } // namespace df0::plain_text
 
-#endif // DOCWIRE_PLAIN_TEXT_WRAP_H
+#endif // DF0_PLAIN_TEXT_WRAP_H

@@ -55,8 +55,8 @@ embedder<auditor_type>::embedder(df0::audit::auditor_ref<auditor_type> auditor)
 {}
 } // namespace df0::ai::local::query
 
-template class DOCWIRE_LOCAL_AI_EXPORT df0::ai::local::passage::embedder<df0::audit::null_auditor>;
-template class DOCWIRE_LOCAL_AI_EXPORT df0::ai::local::passage::embedder<df0::audit::json_stream_auditor>;
+template class DF0_LOCAL_AI_EXPORT df0::ai::local::passage::embedder<df0::audit::null_auditor>;
+template class DF0_LOCAL_AI_EXPORT df0::ai::local::passage::embedder<df0::audit::json_stream_auditor>;
 
-template class DOCWIRE_LOCAL_AI_EXPORT df0::ai::local::query::embedder<df0::audit::null_auditor>;
-template class DOCWIRE_LOCAL_AI_EXPORT df0::ai::local::query::embedder<df0::audit::json_stream_auditor>;
+template class DF0_LOCAL_AI_EXPORT df0::ai::local::query::embedder<df0::audit::null_auditor>;
+template class DF0_LOCAL_AI_EXPORT df0::ai::local::query::embedder<df0::audit::json_stream_auditor>;

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_STANDARD_FILTER_H
-#define DOCWIRE_STANDARD_FILTER_H
+#ifndef DF0_STANDARD_FILTER_H
+#define DF0_STANDARD_FILTER_H
 
 #include "pipeline/element_base.hpp"
 #include "core_export.h"
@@ -202,4 +202,4 @@ public:
 
 } // namespace df0
 
-#endif //DOCWIRE_STANDARD_FILTER_H
+#endif //DF0_STANDARD_FILTER_H

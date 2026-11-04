@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PIPELINE_VARIANT_EXPRESSION_H
-#define DOCWIRE_PIPELINE_VARIANT_EXPRESSION_H
+#ifndef DF0_PIPELINE_VARIANT_EXPRESSION_H
+#define DF0_PIPELINE_VARIANT_EXPRESSION_H
 
 #include "element_base.hpp"
 #include "noop_transformer.hpp"
@@ -167,4 +167,4 @@ auto operator|(LeftVariant&& lhs, RightVariant&& rhs)
 
 } // namespace df0
 
-#endif // DOCWIRE_PIPELINE_VARIANT_EXPRESSION_H
+#endif // DF0_PIPELINE_VARIANT_EXPRESSION_H

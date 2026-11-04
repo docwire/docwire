@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_HTTPLIB_PATCHED_H
-#define DOCWIRE_HTTPLIB_PATCHED_H
+#ifndef DF0_HTTPLIB_PATCHED_H
+#define DF0_HTTPLIB_PATCHED_H
 
 #if defined(__SANITIZE_THREAD__) || defined(HELGRIND_ENABLED)
     // Fallback to blocking DNS for ThreadSanitizer and Helgrind.
@@ -20,4 +20,4 @@
 #endif
 #include <httplib.h> // IWYU pragma: export
 
-#endif //DOCWIRE_HTTPLIB_PATCHED_H
+#endif //DF0_HTTPLIB_PATCHED_H

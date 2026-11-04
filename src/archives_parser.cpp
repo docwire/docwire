@@ -277,7 +277,7 @@ continuation archives_parser<auditor_type>::operator()(message_ptr msg, const me
 	return continuation::proceed;
 }
 
-template class DOCWIRE_ARCHIVES_EXPORT archives_parser<df0::audit::null_auditor>;
-template class DOCWIRE_ARCHIVES_EXPORT archives_parser<df0::audit::json_stream_auditor>;
+template class DF0_ARCHIVES_EXPORT archives_parser<df0::audit::null_auditor>;
+template class DF0_ARCHIVES_EXPORT archives_parser<df0::audit::json_stream_auditor>;
 
 } // namespace df0

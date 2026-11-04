@@ -174,8 +174,8 @@ continuation embed<auditor_type>::operator()(
 	return emit_message(ai::embedding{std::move(embedding_vector)});
 }
 
-template class DOCWIRE_OPENAI_EXPORT df0::openai::embed<df0::audit::null_auditor>;
-template class DOCWIRE_OPENAI_EXPORT df0::openai::embed<df0::audit::json_stream_auditor>;
+template class DF0_OPENAI_EXPORT df0::openai::embed<df0::audit::null_auditor>;
+template class DF0_OPENAI_EXPORT df0::openai::embed<df0::audit::json_stream_auditor>;
 
 } // namespace openai
 } // namespace df0

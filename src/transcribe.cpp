@@ -119,8 +119,8 @@ continuation transcribe<auditor_type>::operator()(
     return emit_message(document::close_document{});
 }
 
-template class DOCWIRE_OPENAI_EXPORT df0::openai::transcribe<df0::audit::null_auditor>;
-template class DOCWIRE_OPENAI_EXPORT df0::openai::transcribe<df0::audit::json_stream_auditor>;
+template class DF0_OPENAI_EXPORT df0::openai::transcribe<df0::audit::null_auditor>;
+template class DF0_OPENAI_EXPORT df0::openai::transcribe<df0::audit::json_stream_auditor>;
 
 } // namespace openai
 } // namespace df0

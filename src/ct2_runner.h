@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AI_CT2_RUNNER_H
-#define DOCWIRE_AI_CT2_RUNNER_H
+#ifndef DF0_AI_CT2_RUNNER_H
+#define DF0_AI_CT2_RUNNER_H
 
 #include "ai_ct2_export.h"
 #include "pimpl.h"
@@ -33,7 +33,7 @@ namespace df0::ai::ct2
  * It is important not to duplicate the object because memory consumption can be high.
  */
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_AI_CT2_EXPORT ct2_runner
+class DF0_AI_CT2_EXPORT ct2_runner
     : public ai_runner,
       public with_pimpl<ct2_runner<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -87,4 +87,4 @@ ct2_runner(const std::filesystem::path&) -> ct2_runner<audit::null_auditor>;
 
 } // namespace df0::ai::ct2
 
-#endif // DOCWIRE_AI_CT2_RUNNER_H
+#endif // DF0_AI_CT2_RUNNER_H

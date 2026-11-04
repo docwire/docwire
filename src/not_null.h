@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_NOT_NULL_H
-#define DOCWIRE_NOT_NULL_H
+#ifndef DF0_NOT_NULL_H
+#define DF0_NOT_NULL_H
 
 #include "safety_policy.h"
 #include "enforce.h"
@@ -106,4 +106,4 @@ template <typename Ptr>
 
 } // namespace df0
 
-#endif // DOCWIRE_NOT_NULL_H
+#endif // DF0_NOT_NULL_H

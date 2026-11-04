@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_HTML_WRITER_H
-#define DOCWIRE_HTML_WRITER_H
+#ifndef DF0_HTML_WRITER_H
+#define DF0_HTML_WRITER_H
 
 #include "html_export.h"
 #include <iostream>
@@ -21,7 +21,7 @@
 namespace df0
 {
 
-class DOCWIRE_HTML_EXPORT html_writer : public writer, public with_pimpl<html_writer>
+class DF0_HTML_EXPORT html_writer : public writer, public with_pimpl<html_writer>
 {
 public:
 
@@ -39,4 +39,4 @@ private:
 };
 } // namespace df0
 
-#endif //DOCWIRE_HTML_WRITER_H
+#endif //DF0_HTML_WRITER_H

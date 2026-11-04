@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_COMMON_XML_PARSER_H
-#define DOCWIRE_COMMON_XML_PARSER_H
+#ifndef DF0_COMMON_XML_PARSER_H
+#define DF0_COMMON_XML_PARSER_H
 
 #include "attributes.h"
 #include "audit.hpp"

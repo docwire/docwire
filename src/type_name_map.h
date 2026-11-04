@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_TYPE_NAME_MAP_H
-#define DOCWIRE_TYPE_NAME_MAP_H
+#ifndef DF0_TYPE_NAME_MAP_H
+#define DF0_TYPE_NAME_MAP_H
 
 #include "type_name_base.h"
 #include <map>
@@ -31,4 +31,4 @@ struct pretty_impl<std::unordered_map<Key, T, Hash, KeyEqual, Alloc>> {
 
 } // namespace df0::type_name
 
-#endif // DOCWIRE_TYPE_NAME_MAP_H
+#endif // DF0_TYPE_NAME_MAP_H

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_TEXT_FORMATTING_H
-#define DOCWIRE_TEXT_FORMATTING_H
+#ifndef DF0_TEXT_FORMATTING_H
+#define DF0_TEXT_FORMATTING_H
 
 #include <concepts>
 

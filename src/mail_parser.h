@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_MAIL_PARSER_H
-#define DOCWIRE_MAIL_PARSER_H
+#ifndef DF0_MAIL_PARSER_H
+#define DF0_MAIL_PARSER_H
 
 #include "eml_parser.h"
 #include "pipeline/composition.hpp"
@@ -78,4 +78,4 @@ mail_parser() -> mail_parser<audit::null_auditor>;
 
 } // namespace df0
 
-#endif //DOCWIRE_MAIL_PARSER_H
+#endif //DF0_MAIL_PARSER_H

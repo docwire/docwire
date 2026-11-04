@@ -609,7 +609,7 @@ attributes::metadata metaData(
 
 } // anonymous namespace
 
-template class DOCWIRE_MAIL_EXPORT eml_parser<df0::audit::null_auditor>;
-template class DOCWIRE_MAIL_EXPORT eml_parser<df0::audit::json_stream_auditor>;
+template class DF0_MAIL_EXPORT eml_parser<df0::audit::null_auditor>;
+template class DF0_MAIL_EXPORT eml_parser<df0::audit::json_stream_auditor>;
 
 } // namespace df0

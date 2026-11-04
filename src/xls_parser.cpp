@@ -1006,7 +1006,7 @@ std::string xls_parser<auditor_type>::parse(thread_safe_ole_storage& storage, co
 	return impl().parse(storage, emit_message);
 }
 
-template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser<df0::audit::null_auditor>;
-template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser<df0::audit::json_stream_auditor>;
+template class DF0_OLE_OFFICE_FORMATS_EXPORT xls_parser<df0::audit::null_auditor>;
+template class DF0_OLE_OFFICE_FORMATS_EXPORT xls_parser<df0::audit::json_stream_auditor>;
 
 } // namespace df0

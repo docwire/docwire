@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CSV_WRITER_H
-#define DOCWIRE_CSV_WRITER_H
+#ifndef DF0_CSV_WRITER_H
+#define DF0_CSV_WRITER_H
 
 #include "core_export.h"
 #include <iostream>
@@ -67,4 +67,4 @@ inline void csv_writer::write_to(const message_ptr &msg, std::ostream &stream) {
 
 } // namespace df0
 
-#endif //DOCWIRE_CSV_WRITER_H
+#endif //DF0_CSV_WRITER_H

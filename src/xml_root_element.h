@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XML_ROOT_ELEMENT_H
-#define DOCWIRE_XML_ROOT_ELEMENT_H
+#ifndef DF0_XML_ROOT_ELEMENT_H
+#define DF0_XML_ROOT_ELEMENT_H
 
 #include "xml_children.h"
 #include "xml_node_ref.h"
@@ -36,9 +36,9 @@ node_ref<safety_level> root_element(reader<safety_level>& reader)
         if (node.type() == node_type::element)
             return node;
     }
-    throw DOCWIRE_MAKE_ERROR("No root element found", df0::errors::uninterpretable_data{});
+    throw DF0_MAKE_ERROR("No root element found", df0::errors::uninterpretable_data{});
 }
 
 }
 
-#endif // DOCWIRE_XML_ROOT_ELEMENT_H
+#endif // DF0_XML_ROOT_ELEMENT_H

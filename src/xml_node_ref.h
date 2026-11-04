@@ -20,8 +20,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XML_NODE_REF_H
-#define DOCWIRE_XML_NODE_REF_H
+#ifndef DF0_XML_NODE_REF_H
+#define DF0_XML_NODE_REF_H
 
 #include <memory>
 #include "xml_iterator_state.h"

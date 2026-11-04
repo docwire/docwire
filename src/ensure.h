@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_ENSURE_H
-#define DOCWIRE_ENSURE_H
+#ifndef DF0_ENSURE_H
+#define DF0_ENSURE_H
 
 #include <initializer_list>
 #include <cassert>
@@ -84,7 +84,7 @@ public:
     void operator==(const U& other) const
     {
         set_comparison_performed();
-        DOCWIRE_THROW_IF_AT_LOCATION(!(m_value == other), m_location, m_value, other);
+        DF0_THROW_IF_AT_LOCATION(!(m_value == other), m_location, m_value, other);
     }
 
     /**
@@ -95,7 +95,7 @@ public:
     void operator!=(const U& other) const
     {
         set_comparison_performed();
-        DOCWIRE_THROW_IF_AT_LOCATION(!(m_value != other), m_location, m_value, other);
+        DF0_THROW_IF_AT_LOCATION(!(m_value != other), m_location, m_value, other);
     }
 
     /**
@@ -106,7 +106,7 @@ public:
     void operator>(const U& other) const
     {
         set_comparison_performed();
-        DOCWIRE_THROW_IF_AT_LOCATION(!(m_value > other), m_location, m_value, other);
+        DF0_THROW_IF_AT_LOCATION(!(m_value > other), m_location, m_value, other);
     }
 
     /**
@@ -117,7 +117,7 @@ public:
     void operator>=(const U& other) const
     {
         set_comparison_performed();
-        DOCWIRE_THROW_IF_AT_LOCATION(!(m_value >= other), m_location, m_value, other);
+        DF0_THROW_IF_AT_LOCATION(!(m_value >= other), m_location, m_value, other);
     }
 
     /**
@@ -128,7 +128,7 @@ public:
     void operator<(const U& other) const
     {
         set_comparison_performed();
-        DOCWIRE_THROW_IF_AT_LOCATION(!(m_value < other), m_location, m_value, other);
+        DF0_THROW_IF_AT_LOCATION(!(m_value < other), m_location, m_value, other);
     }
 
     /**
@@ -139,7 +139,7 @@ public:
     void operator<=(const U& other) const
     {
         set_comparison_performed();
-        DOCWIRE_THROW_IF_AT_LOCATION(!(m_value <= other), m_location, m_value, other);
+        DF0_THROW_IF_AT_LOCATION(!(m_value <= other), m_location, m_value, other);
     }
 
     /**
@@ -153,7 +153,7 @@ public:
     void contains(const U& substring) const
     {
         set_comparison_performed();
-        DOCWIRE_THROW_IF_AT_LOCATION(std::string_view(m_value).find(substring) == std::string_view::npos, m_location, m_value, substring);
+        DF0_THROW_IF_AT_LOCATION(std::string_view(m_value).find(substring) == std::string_view::npos, m_location, m_value, substring);
     }
 
     /**
@@ -174,7 +174,7 @@ public:
                 return; // Match found, success.
             }
         }
-        DOCWIRE_THROW_IF_AT_LOCATION(true, m_location, m_value, std::vector<T>(expected_values));
+        DF0_THROW_IF_AT_LOCATION(true, m_location, m_value, std::vector<T>(expected_values));
     }
 private:
     /**
@@ -206,4 +206,4 @@ ensure(const T&, const df0::source_location&) -> ensure<T>;
 
 } // namespace df0
 
-#endif // DOCWIRE_ENSURE_H
+#endif // DF0_ENSURE_H

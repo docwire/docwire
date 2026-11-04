@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_ODFXML_PARSER_H
-#define DOCWIRE_ODFXML_PARSER_H
+#ifndef DF0_ODFXML_PARSER_H
+#define DF0_ODFXML_PARSER_H
 
 #include "audit.hpp"
 #include "common_xml_document_parser.h"
@@ -29,7 +29,7 @@ namespace df0
  */
 template <safety_policy safety_level = default_safety_level,
           typename auditor_type = audit::null_auditor>
-class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser
+class DF0_ODF_OOXML_EXPORT odfxml_parser
     : public common_xml_document_parser<safety_level, auditor_type>,
       public pipeline::transformer_element<odfxml_parser<safety_level, auditor_type>>,
       public with_pimpl<odfxml_parser<safety_level, auditor_type>>

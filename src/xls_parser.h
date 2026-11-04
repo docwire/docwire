@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XLS_PARSER_H
-#define DOCWIRE_XLS_PARSER_H
+#ifndef DF0_XLS_PARSER_H
+#define DF0_XLS_PARSER_H
 
 #include "ole_office_formats_export.h"
 #include "pipeline/element_base.hpp"
@@ -26,7 +26,7 @@ namespace df0
 class thread_safe_ole_storage;
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser
+class DF0_OLE_OFFICE_FORMATS_EXPORT xls_parser
     : public pipeline::transformer_element<xls_parser<auditor_type>>,
       public with_pimpl<xls_parser<auditor_type>>,
       private audit::with_auditor<auditor_type>

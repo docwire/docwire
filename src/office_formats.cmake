@@ -3,7 +3,7 @@ file(GENERATE OUTPUT ${EMPTY_SOURCE} CONTENT "
 	#include \"office_formats_export.h\"
 	namespace df0
 	{
-		DOCWIRE_OFFICE_FORMATS_EXPORT void dummy() {}
+		DF0_OFFICE_FORMATS_EXPORT void dummy() {}
 	}
 ")
 

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PLAIN_TEXT_RENDER_TABLE_H
-#define DOCWIRE_PLAIN_TEXT_RENDER_TABLE_H
+#ifndef DF0_PLAIN_TEXT_RENDER_TABLE_H
+#define DF0_PLAIN_TEXT_RENDER_TABLE_H
 
 #include <algorithm>
 #include <string>
@@ -71,4 +71,4 @@ inline std::string render_table(const std::vector<std::vector<std::vector<std::s
 
 } // namespace df0::plain_text
 
-#endif // DOCWIRE_PLAIN_TEXT_RENDER_TABLE_H
+#endif // DF0_PLAIN_TEXT_RENDER_TABLE_H

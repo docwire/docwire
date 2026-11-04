@@ -9,13 +9,13 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DEBUG_ASSERT_H
-#define DOCWIRE_DEBUG_ASSERT_H
+#ifndef DF0_DEBUG_ASSERT_H
+#define DF0_DEBUG_ASSERT_H
 
 #include "make_error.h"
 #include "with_source_location.h"
 
-// In debug builds (when NDEBUG is not defined), DOCWIRE_DEBUG_ASSERT checks a condition
+// In debug builds (when NDEBUG is not defined), DF0_DEBUG_ASSERT checks a condition
 // and if it's false, prints a message and terminates the program.
 // In release builds (when NDEBUG is defined), it compiles to nothing.
 #ifndef NDEBUG
@@ -70,4 +70,4 @@ constexpr void debug_assert(detail::with_source_location<bool> /*condition*/, Co
 
 } // namespace df0
 
-#endif // DOCWIRE_DEBUG_ASSERT_H
+#endif // DF0_DEBUG_ASSERT_H

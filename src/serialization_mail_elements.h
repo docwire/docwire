@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SERIALIZATION_MAIL_ELEMENTS_H
-#define DOCWIRE_SERIALIZATION_MAIL_ELEMENTS_H
+#ifndef DF0_SERIALIZATION_MAIL_ELEMENTS_H
+#define DF0_SERIALIZATION_MAIL_ELEMENTS_H
 
 #include "mail_elements.h"
 #include "serialization_base.h"
@@ -62,4 +62,4 @@ struct serializer<mail::folder>
 
 }
 
-#endif // DOCWIRE_SERIALIZATION_MAIL_ELEMENTS_H
+#endif // DF0_SERIALIZATION_MAIL_ELEMENTS_H

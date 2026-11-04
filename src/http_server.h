@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_HTTP_SERVER_H
-#define DOCWIRE_HTTP_SERVER_H
+#ifndef DF0_HTTP_SERVER_H
+#define DF0_HTTP_SERVER_H
 
 #include <concepts>
 
@@ -153,7 +153,7 @@ public:
         }
         catch (const std::exception&)
         {
-            std::throw_with_nested(DOCWIRE_MAKE_ERROR("HTTP server failed to start"));
+            std::throw_with_nested(DF0_MAKE_ERROR("HTTP server failed to start"));
         }
     }
 
@@ -317,7 +317,7 @@ private:
 
 namespace detail
 {
-DOCWIRE_HTTP_EXPORT certificate_info generate_self_signed_cert_impl(
+DF0_HTTP_EXPORT certificate_info generate_self_signed_cert_impl(
     const std::string& common_name,
     const std::string& country,
     const std::string& organization);
@@ -362,4 +362,4 @@ certificate_info generate_self_signed_cert(
 
 } // namespace df0::http
 
-#endif //DOCWIRE_HTTP_SERVER_H
+#endif //DF0_HTTP_SERVER_H

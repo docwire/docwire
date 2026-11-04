@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DOCUMENT_ELEMENTS_H
-#define DOCWIRE_DOCUMENT_ELEMENTS_H
+#ifndef DF0_DOCUMENT_ELEMENTS_H
+#define DF0_DOCUMENT_ELEMENTS_H
 
 #include "attributes.h"
 #include "core_export.h"
@@ -170,4 +170,4 @@ struct close_document { };
 } // namespace document
 } // namespace df0
 
-#endif // DOCWIRE_DOCUMENT_ELEMENTS_H
+#endif // DF0_DOCUMENT_ELEMENTS_H

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OPENAI_TRANSLATE_TO_H
-#define DOCWIRE_OPENAI_TRANSLATE_TO_H
+#ifndef DF0_OPENAI_TRANSLATE_TO_H
+#define DF0_OPENAI_TRANSLATE_TO_H
 
 #include "chat.h"
 #include <concepts>
@@ -21,7 +21,7 @@ namespace openai
 {
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_OPENAI_EXPORT translate_to
+class DF0_OPENAI_EXPORT translate_to
     : public pipeline::transformer_element<translate_to<auditor_type>>,
       public chat<auditor_type>
 {
@@ -60,4 +60,4 @@ translate_to(const std::string&, const std::string&, model, float, image_detail)
 } // namespace openai
 } // namespace df0
 
-#endif //DOCWIRE_OPENAI_TRANSLATE_TO_H
+#endif //DF0_OPENAI_TRANSLATE_TO_H

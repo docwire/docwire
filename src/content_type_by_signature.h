@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONTENT_TYPE_BY_SIGNATURE_H
-#define DOCWIRE_CONTENT_TYPE_BY_SIGNATURE_H
+#ifndef DF0_CONTENT_TYPE_BY_SIGNATURE_H
+#define DF0_CONTENT_TYPE_BY_SIGNATURE_H
 
 #include "pipeline/element_base.hpp"
 #include "content_type_export.h"
@@ -56,11 +56,11 @@ struct allow_multiple
  * @see content_type::by_signature::detector
  * @see content_type::by_signature::detect
  */
-class DOCWIRE_CONTENT_TYPE_EXPORT database : public with_pimpl<database>
+class DF0_CONTENT_TYPE_EXPORT database : public with_pimpl<database>
 {
 public:
     explicit database();
-    friend DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& database_to_use, allow_multiple allow_multiple);
+    friend DF0_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& database_to_use, allow_multiple allow_multiple);
 };
 
 /**
@@ -79,7 +79,7 @@ public:
 * @see content_type::by_signature::database
 * @see content_type::by_signature::detector
 */
-DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& database_to_use = database{}, allow_multiple allow_multiple = {false});
+DF0_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& database_to_use = database{}, allow_multiple allow_multiple = {false});
 
 /**
 * @brief Detector chain element
@@ -127,7 +127,7 @@ public:
         }
         catch (const std::exception& e)
         {
-            emit_message(make_nested_ptr(std::current_exception(), DOCWIRE_MAKE_ERROR("Content type detection by signature failed")));
+            emit_message(make_nested_ptr(std::current_exception(), DF0_MAKE_ERROR("Content type detection by signature failed")));
         }
         return emit_message(std::move(msg));
     }
@@ -139,4 +139,4 @@ private:
 
 } // namespace df0::content_type::by_signature
 
-#endif // DOCWIRE_CONTENT_TYPE_BY_SIGNATURE_H
+#endif // DF0_CONTENT_TYPE_BY_SIGNATURE_H

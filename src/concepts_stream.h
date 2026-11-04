@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONCEPTS_STREAM_H
-#define DOCWIRE_CONCEPTS_STREAM_H
+#ifndef DF0_CONCEPTS_STREAM_H
+#define DF0_CONCEPTS_STREAM_H
 
 #include <concepts>
 #include <iosfwd>
@@ -26,4 +26,4 @@ concept streamable = requires (std::ostream& os, const T& value) { { os << value
 
 } // namespace df0
 
-#endif // DOCWIRE_CONCEPTS_STREAM_H
+#endif // DF0_CONCEPTS_STREAM_H

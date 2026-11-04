@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AI_EMBED_H
-#define DOCWIRE_AI_EMBED_H
+#ifndef DF0_AI_EMBED_H
+#define DF0_AI_EMBED_H
 
 #include "ai_export.h"
 #include "ai_runner.h"
@@ -25,7 +25,7 @@ namespace df0::ai
 {
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_AI_EXPORT embed
+class DF0_AI_EXPORT embed
     : public pipeline::transformer_element<embed<auditor_type>>,
       public with_pimpl<embed<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -71,4 +71,4 @@ embed(not_null<std::shared_ptr<ai_runner>>, std::string) -> embed<audit::null_au
 
 } // namespace df0::ai
 
-#endif // DOCWIRE_AI_EMBED_H
+#endif // DF0_AI_EMBED_H

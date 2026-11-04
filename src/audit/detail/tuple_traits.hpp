@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AUDIT_DETAIL_TUPLE_TRAITS_HPP
-#define DOCWIRE_AUDIT_DETAIL_TUPLE_TRAITS_HPP
+#ifndef DF0_AUDIT_DETAIL_TUPLE_TRAITS_HPP
+#define DF0_AUDIT_DETAIL_TUPLE_TRAITS_HPP
 
 #include <tuple>
 #include <type_traits>

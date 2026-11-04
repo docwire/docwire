@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LRU_MEMORY_CACHE_H
-#define DOCWIRE_LRU_MEMORY_CACHE_H
+#ifndef DF0_LRU_MEMORY_CACHE_H
+#define DF0_LRU_MEMORY_CACHE_H
 
 #include <functional>
 #include <limits>
@@ -80,4 +80,4 @@ private:
 
 } // namespace df0
 
-#endif // DOCWIRE_LRU_MEMORY_CACHE_H
+#endif // DF0_LRU_MEMORY_CACHE_H

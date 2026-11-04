@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_WITH_SOURCE_LOCATION_H
-#define DOCWIRE_WITH_SOURCE_LOCATION_H
+#ifndef DF0_WITH_SOURCE_LOCATION_H
+#define DF0_WITH_SOURCE_LOCATION_H
 
 #include "source_location.h"
 
@@ -32,4 +32,4 @@ namespace df0::detail
     };
 }
 
-#endif // DOCWIRE_WITH_SOURCE_LOCATION_H
+#endif // DF0_WITH_SOURCE_LOCATION_H

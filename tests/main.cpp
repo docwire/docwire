@@ -11,7 +11,7 @@
 
 #include "gtest/gtest.h"
 
-// Legacy global DOCWIRE_TESTS_CONSOLE_LOGGING support was removed with
+// Legacy global DF0_TESTS_CONSOLE_LOGGING support was removed with
 // df0::log. The injected-auditor architecture intentionally has no
 // process-global sink or filter, so this test main must not re-introduce
 // global logging state.
@@ -24,7 +24,7 @@
 //
 // When the test matrix is available, control the second variant with an
 // explicit test helper rather than a global environment variable; the
-// helper may read DOCWIRE_TESTS_CONSOLE_LOGGING to choose
+// helper may read DF0_TESTS_CONSOLE_LOGGING to choose
 // json_stream_auditor over null_auditor/recording_auditor.
 
 int main(int argc, char* argv[])

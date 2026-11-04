@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DETAIL_OFFICE_CRYPTO_H
-#define DOCWIRE_DETAIL_OFFICE_CRYPTO_H
+#ifndef DF0_DETAIL_OFFICE_CRYPTO_H
+#define DF0_DETAIL_OFFICE_CRYPTO_H
 
 #include "data_source.h"
 #include "serialization_data_source.h"
@@ -40,4 +40,4 @@ inline bool is_encrypted_with_ms_offcrypto(const data_source& data)
 
 } // namespace df0
 
-#endif // DOCWIRE_DETAIL_OFFICE_CRYPTO_H
+#endif // DF0_DETAIL_OFFICE_CRYPTO_H

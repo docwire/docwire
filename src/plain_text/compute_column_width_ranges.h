@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PLAIN_TEXT_COMPUTE_COLUMN_WIDTH_RANGES_H
-#define DOCWIRE_PLAIN_TEXT_COMPUTE_COLUMN_WIDTH_RANGES_H
+#ifndef DF0_PLAIN_TEXT_COMPUTE_COLUMN_WIDTH_RANGES_H
+#define DF0_PLAIN_TEXT_COMPUTE_COLUMN_WIDTH_RANGES_H
 
 #include <algorithm>
 #include <sstream>

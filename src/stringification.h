@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_STRINGIFICATION_H
-#define DOCWIRE_STRINGIFICATION_H
+#ifndef DF0_STRINGIFICATION_H
+#define DF0_STRINGIFICATION_H
 
 #include "concepts_misc.h"
 #include "concepts_stream.h"

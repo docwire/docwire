@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_THREAD_SAFE_OLE_STREAM_READER_H
-#define DOCWIRE_THREAD_SAFE_OLE_STREAM_READER_H
+#ifndef DF0_THREAD_SAFE_OLE_STREAM_READER_H
+#define DF0_THREAD_SAFE_OLE_STREAM_READER_H
 
 #include "core_export.h"
 #include <cstdint>
@@ -335,4 +335,4 @@ inline wvWare::S32 thread_safe_ole_stream_reader::readS32()
 
 } // namespace df0
 
-#endif // DOCWIRE_THREAD_SAFE_OLE_STREAM_READER_H
+#endif // DF0_THREAD_SAFE_OLE_STREAM_READER_H

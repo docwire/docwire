@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CHECKED_H
-#define DOCWIRE_CHECKED_H
+#ifndef DF0_CHECKED_H
+#define DF0_CHECKED_H
 
 #include "safety_policy.h"
 #include "enforce.h"
@@ -173,4 +173,4 @@ private:
 
 } // namespace df0
 
-#endif // DOCWIRE_CHECKED_H
+#endif // DF0_CHECKED_H

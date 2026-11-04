@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OPENAI_SUMMARIZE_H
-#define DOCWIRE_OPENAI_SUMMARIZE_H
+#ifndef DF0_OPENAI_SUMMARIZE_H
+#define DF0_OPENAI_SUMMARIZE_H
 
 #include "chat.h"
 #include <concepts>
@@ -21,7 +21,7 @@ namespace openai
 {
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_OPENAI_EXPORT summarize
+class DF0_OPENAI_EXPORT summarize
     : public pipeline::transformer_element<summarize<auditor_type>>,
       public chat<auditor_type>
 {
@@ -58,4 +58,4 @@ summarize(const std::string&, model, float, image_detail) -> summarize<audit::nu
 } // namespace openai
 } // namespace df0
 
-#endif //DOCWIRE_OPENAI_SUMMARIZE_H
+#endif //DF0_OPENAI_SUMMARIZE_H

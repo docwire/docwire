@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PLAIN_TEXT_EXPORTER_H
-#define DOCWIRE_PLAIN_TEXT_EXPORTER_H
+#ifndef DF0_PLAIN_TEXT_EXPORTER_H
+#define DF0_PLAIN_TEXT_EXPORTER_H
 
 #include "pipeline/element_base.hpp"
 #include <functional>
@@ -80,7 +80,7 @@ inline continuation plain_text_exporter::operator()(message_ptr msg, const messa
 	m_writer.write_to(msg, *m_stream);
 	if (msg->is<document::close_document>())
 	{
-		DOCWIRE_THROW_IF(m_nested_docs_level <= 0, errors::program_logic{});
+		DF0_THROW_IF(m_nested_docs_level <= 0, errors::program_logic{});
 		--m_nested_docs_level;
 		if (m_nested_docs_level == 0)
 		{
@@ -93,4 +93,4 @@ inline continuation plain_text_exporter::operator()(message_ptr msg, const messa
 
 } // namespace df0
 
-#endif //DOCWIRE_PLAIN_TEXT_EXPORTER_H
+#endif //DF0_PLAIN_TEXT_EXPORTER_H

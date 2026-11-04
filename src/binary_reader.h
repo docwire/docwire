@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_BINARY_READER_H
-#define DOCWIRE_BINARY_READER_H
+#ifndef DF0_BINARY_READER_H
+#define DF0_BINARY_READER_H
 
 #include <bit>
 #include <concepts>
@@ -102,4 +102,4 @@ private:
 
 } // namespace df0::binary
 
-#endif // DOCWIRE_BINARY_READER_H
+#endif // DF0_BINARY_READER_H

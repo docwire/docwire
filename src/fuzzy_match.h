@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_FUZZY_MATCH_H
-#define DOCWIRE_FUZZY_MATCH_H
+#ifndef DF0_FUZZY_MATCH_H
+#define DF0_FUZZY_MATCH_H
 
 #include "fuzzy_match_export.h"
 #include <string>
@@ -30,8 +30,8 @@ namespace df0::fuzzy_match
  *
  * @return The ratio of similarity between the two strings.
  */
-DOCWIRE_FUZZY_MATCH_EXPORT double ratio(const std::string& a, const std::string& b);
+DF0_FUZZY_MATCH_EXPORT double ratio(const std::string& a, const std::string& b);
 
 } // namespace df0::fuzzy_match
 
-#endif // DOCWIRE_FUZZY_MATCH_H
+#endif // DF0_FUZZY_MATCH_H

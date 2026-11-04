@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_THREAD_SAFE_OLE_STORAGE_H
-#define DOCWIRE_THREAD_SAFE_OLE_STORAGE_H
+#ifndef DF0_THREAD_SAFE_OLE_STORAGE_H
+#define DF0_THREAD_SAFE_OLE_STORAGE_H
 
 #include "core_export.h"
 #include <cmath>
@@ -751,4 +751,4 @@ inline void thread_safe_ole_storage::parseHeader()
 
 } // namespace df0
 
-#endif // DOCWIRE_THREAD_SAFE_OLE_STORAGE_H
+#endif // DF0_THREAD_SAFE_OLE_STORAGE_H

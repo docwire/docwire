@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_ENVIRONMENT_H
-#define DOCWIRE_ENVIRONMENT_H
+#ifndef DF0_ENVIRONMENT_H
+#define DF0_ENVIRONMENT_H
 
 #include "core_export.h"
 #include <cstdlib>
@@ -32,4 +32,4 @@ namespace df0::environment
     }
 }
 
-#endif // DOCWIRE_ENVIRONMENT_H
+#endif // DF0_ENVIRONMENT_H

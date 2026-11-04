@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_MESSAGE_COUNTERS_H
-#define DOCWIRE_MESSAGE_COUNTERS_H
+#ifndef DF0_MESSAGE_COUNTERS_H
+#define DF0_MESSAGE_COUNTERS_H
 
 #include "message.h"
 #include "document_elements.h"

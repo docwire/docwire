@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XML_ITERATOR_STATE_H
-#define DOCWIRE_XML_ITERATOR_STATE_H
+#ifndef DF0_XML_ITERATOR_STATE_H
+#define DF0_XML_ITERATOR_STATE_H
 
 #include "xml_reader.h"
 

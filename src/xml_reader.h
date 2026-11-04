@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XML_READER_H
-#define DOCWIRE_XML_READER_H
+#ifndef DF0_XML_READER_H
+#define DF0_XML_READER_H
 
 #include "safety_policy.h"
 #include "pimpl.h"
@@ -60,7 +60,7 @@ enum class node_type
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
 template <safety_policy safety_level = default_safety_level>
-class DOCWIRE_XML_EXPORT reader : public with_pimpl<reader<safety_level>>
+class DF0_XML_EXPORT reader : public with_pimpl<reader<safety_level>>
 {
 	using with_pimpl<reader<safety_level>>::impl;
 public:
@@ -121,4 +121,4 @@ public:
 	node_type type() const;
 };
 }
-#endif // DOCWIRE_XML_READER_H
+#endif // DF0_XML_READER_H

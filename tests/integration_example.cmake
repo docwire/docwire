@@ -11,8 +11,8 @@ find_package(docwire CONFIG REQUIRED)
 # DocWire SDK is designed to be used as a shared library (DLL/SO/DYLIB).
 # Static linking is not supported due to the complexity of dependencies and resource management.
 # This check verifies that the found 'docwire_core' target is a shared library.
-get_target_property(DOCWIRE_CORE_TYPE docwire_core TYPE)
-if(NOT DOCWIRE_CORE_TYPE STREQUAL "SHARED_LIBRARY")
+get_target_property(DF0_CORE_TYPE docwire_core TYPE)
+if(NOT DF0_CORE_TYPE STREQUAL "SHARED_LIBRARY")
     message(FATAL_ERROR "DocWire SDK requires dynamic linking, but the found 'docwire_core' target is not a shared library. Please ensure you are using a dynamic build configuration.")
 endif()
 

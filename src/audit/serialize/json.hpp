@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AUDIT_SERIALIZE_JSON_HPP
-#define DOCWIRE_AUDIT_SERIALIZE_JSON_HPP
+#ifndef DF0_AUDIT_SERIALIZE_JSON_HPP
+#define DF0_AUDIT_SERIALIZE_JSON_HPP
 
 #include "../detail/chaining.hpp"
 #include "../detail/value_conversion.hpp"

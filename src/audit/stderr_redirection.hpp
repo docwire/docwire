@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AUDIT_STDERR_REDIRECTION_HPP
-#define DOCWIRE_AUDIT_STDERR_REDIRECTION_HPP
+#ifndef DF0_AUDIT_STDERR_REDIRECTION_HPP
+#define DF0_AUDIT_STDERR_REDIRECTION_HPP
 
 #include "audit_export.h"
 #include "auditor_ref.hpp"
@@ -46,7 +46,7 @@ namespace detail
  * The mutex lives in `docwire_audit` so it can be shared across DSO boundaries
  * without exposing global mutable state in the header.
  */
-DOCWIRE_AUDIT_EXPORT std::mutex& cerr_redirection_mutex();
+DF0_AUDIT_EXPORT std::mutex& cerr_redirection_mutex();
 
 } // namespace detail
 
@@ -162,4 +162,4 @@ private:
 
 } // namespace df0::audit
 
-#endif // DOCWIRE_AUDIT_STDERR_REDIRECTION_HPP
+#endif // DF0_AUDIT_STDERR_REDIRECTION_HPP

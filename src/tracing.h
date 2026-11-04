@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_TRACING_H
-#define DOCWIRE_TRACING_H
+#ifndef DF0_TRACING_H
+#define DF0_TRACING_H
 
 void docwire_init_tracing(const char* filename);
 

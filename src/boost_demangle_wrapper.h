@@ -9,15 +9,15 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_BOOST_DEMANGLE_WRAPPER_H
-#define DOCWIRE_BOOST_DEMANGLE_WRAPPER_H
+#ifndef DF0_BOOST_DEMANGLE_WRAPPER_H
+#define DF0_BOOST_DEMANGLE_WRAPPER_H
 
 #include "core_export.h"
 #include <string>
 
 namespace df0::detail
 {
-DOCWIRE_CORE_EXPORT std::string demangle_type_name(const char* name);
+DF0_CORE_EXPORT std::string demangle_type_name(const char* name);
 }
 
-#endif // DOCWIRE_BOOST_DEMANGLE_WRAPPER_H
+#endif // DF0_BOOST_DEMANGLE_WRAPPER_H

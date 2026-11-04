@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_HTML_PARSER_H
-#define DOCWIRE_HTML_PARSER_H
+#ifndef DF0_HTML_PARSER_H
+#define DF0_HTML_PARSER_H
 
 #include "html_export.h"
 #include "audit.hpp"
@@ -22,7 +22,7 @@ namespace df0
 {
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_HTML_EXPORT html_parser
+class DF0_HTML_EXPORT html_parser
     : public pipeline::transformer_element<html_parser<auditor_type>>,
       public with_pimpl<html_parser<auditor_type>>,
       private audit::with_auditor<auditor_type>

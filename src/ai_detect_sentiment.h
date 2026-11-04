@@ -9,15 +9,15 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AI_DETECT_SENTIMENT_H
-#define DOCWIRE_AI_DETECT_SENTIMENT_H
+#ifndef DF0_AI_DETECT_SENTIMENT_H
+#define DF0_AI_DETECT_SENTIMENT_H
 
 #include "ai_export.h"
 #include "model_chain_element.h"
 
 namespace df0::ai {
 
-class DOCWIRE_AI_EXPORT detect_sentiment : public model_chain_element {
+class DF0_AI_EXPORT detect_sentiment : public model_chain_element {
 public:
   explicit detect_sentiment(
       std::shared_ptr<ai_runner> runner,
@@ -32,4 +32,4 @@ protected:
 
 } // namespace df0::ai
 
-#endif // DOCWIRE_AI_DETECT_SENTIMENT_H
+#endif // DF0_AI_DETECT_SENTIMENT_H

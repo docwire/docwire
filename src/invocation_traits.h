@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_INVOCATION_TRAITS_H
-#define DOCWIRE_INVOCATION_TRAITS_H
+#ifndef DF0_INVOCATION_TRAITS_H
+#define DF0_INVOCATION_TRAITS_H
 
 #include <boost/callable_traits/args.hpp>
 #include <boost/callable_traits/return_type.hpp>
@@ -212,4 +212,4 @@ inline constexpr bool is_invocable_v = is_invocable<T>::value;
 
 } // namespace df0::invocation_traits
 
-#endif //DOCWIRE_INVOCATION_TRAITS_H
+#endif //DF0_INVOCATION_TRAITS_H

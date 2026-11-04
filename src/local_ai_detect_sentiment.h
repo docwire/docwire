@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_DETECT_SENTIMENT_H
-#define DOCWIRE_LOCAL_AI_DETECT_SENTIMENT_H
+#ifndef DF0_LOCAL_AI_DETECT_SENTIMENT_H
+#define DF0_LOCAL_AI_DETECT_SENTIMENT_H
 
 #include "ai_detect_sentiment.h"
 
@@ -28,4 +28,4 @@ public:
 
 } // namespace df0::ai::local
 
-#endif // DOCWIRE_LOCAL_AI_DETECT_SENTIMENT_H
+#endif // DF0_LOCAL_AI_DETECT_SENTIMENT_H

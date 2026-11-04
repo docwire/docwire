@@ -766,9 +766,9 @@ continuation odf_ooxml_parser<safety_level, auditor_type>::operator()(message_pt
 	return continuation::proceed;
 }
 
-template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<strict, audit::null_auditor>;
-template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<relaxed, audit::null_auditor>;
-template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<df0::safety_policy::strict, df0::audit::json_stream_auditor>;
-template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<df0::safety_policy::relaxed, df0::audit::json_stream_auditor>;
+template class DF0_ODF_OOXML_EXPORT odf_ooxml_parser<strict, audit::null_auditor>;
+template class DF0_ODF_OOXML_EXPORT odf_ooxml_parser<relaxed, audit::null_auditor>;
+template class DF0_ODF_OOXML_EXPORT odf_ooxml_parser<df0::safety_policy::strict, df0::audit::json_stream_auditor>;
+template class DF0_ODF_OOXML_EXPORT odf_ooxml_parser<df0::safety_policy::relaxed, df0::audit::json_stream_auditor>;
 
 } // namespace df0

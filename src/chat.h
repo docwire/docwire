@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OPENAI_CHAT_H
-#define DOCWIRE_OPENAI_CHAT_H
+#ifndef DF0_OPENAI_CHAT_H
+#define DF0_OPENAI_CHAT_H
 
 #include "pipeline/element_base.hpp"
 #include "openai_export.h"
@@ -68,7 +68,7 @@ enum class image_detail
 };
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_OPENAI_EXPORT chat
+class DF0_OPENAI_EXPORT chat
     : public pipeline::transformer_element<chat<auditor_type>>,
       public with_pimpl<chat<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -123,4 +123,4 @@ chat(const std::string&, const std::string&, model, float, image_detail) -> chat
 } // namespace openai
 } // namespace df0
 
-#endif //DOCWIRE_OPENAI_CHAT_H
+#endif //DF0_OPENAI_CHAT_H

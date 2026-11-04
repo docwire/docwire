@@ -243,8 +243,8 @@ catch (const std::exception&)
 	std::throw_with_nested(make_error(impl().m_url));
 }
 
-template class DOCWIRE_HTTP_EXPORT df0::http::post<df0::audit::null_auditor>;
-template class DOCWIRE_HTTP_EXPORT df0::http::post<df0::audit::json_stream_auditor>;
+template class DF0_HTTP_EXPORT df0::http::post<df0::audit::null_auditor>;
+template class DF0_HTTP_EXPORT df0::http::post<df0::audit::json_stream_auditor>;
 
 } // namespace http
 } // namespace df0

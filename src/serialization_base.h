@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SERIALIZATION_BASE_H
-#define DOCWIRE_SERIALIZATION_BASE_H
+#ifndef DF0_SERIALIZATION_BASE_H
+#define DF0_SERIALIZATION_BASE_H
 
 #include "concepts_container.h"
 #include "concepts_misc.h"
@@ -287,4 +287,4 @@ struct serializer<std::variant<Ts...>>
 
 } // namespace df0
 
-#endif // DOCWIRE_SERIALIZATION_BASE_H
+#endif // DF0_SERIALIZATION_BASE_H

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SERIALIZATION_H
-#define DOCWIRE_SERIALIZATION_H
+#ifndef DF0_SERIALIZATION_H
+#define DF0_SERIALIZATION_H
 
 // IWYU pragma: begin_exports
 #include "serialization_base.h"
@@ -26,4 +26,4 @@
 #include "serialization_typeindex.h"
 // IWYU pragma: end_exports
 
-#endif // DOCWIRE_SERIALIZATION_H
+#endif // DF0_SERIALIZATION_H

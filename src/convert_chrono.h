@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONVERT_CHRONO_H
-#define DOCWIRE_CONVERT_CHRONO_H
+#ifndef DF0_CONVERT_CHRONO_H
+#define DF0_CONVERT_CHRONO_H
 
 #include "convert_base.h"
 #include <chrono>
@@ -141,4 +141,4 @@ inline std::optional<std::string> convert_impl(std::chrono::sys_seconds tp, dest
 
 } // namespace df0::convert
 
-#endif // DOCWIRE_CONVERT_CHRONO_H
+#endif // DF0_CONVERT_CHRONO_H

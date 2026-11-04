@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PIPELINE_NOOP_TRANSFORMER_H
-#define DOCWIRE_PIPELINE_NOOP_TRANSFORMER_H
+#ifndef DF0_PIPELINE_NOOP_TRANSFORMER_H
+#define DF0_PIPELINE_NOOP_TRANSFORMER_H
 
 #include "element_base.hpp"
 #include <utility>
@@ -48,4 +48,4 @@ public:
 
 } // namespace df0::pipeline
 
-#endif // DOCWIRE_PIPELINE_NOOP_TRANSFORMER_H
+#endif // DF0_PIPELINE_NOOP_TRANSFORMER_H

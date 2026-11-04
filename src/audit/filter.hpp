@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AUDIT_FILTER_HPP
-#define DOCWIRE_AUDIT_FILTER_HPP
+#ifndef DF0_AUDIT_FILTER_HPP
+#define DF0_AUDIT_FILTER_HPP
 
 #include "detail/chaining.hpp"
 #include "detail/filter_rules.hpp"

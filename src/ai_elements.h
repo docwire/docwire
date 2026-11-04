@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AI_ELEMENTS_H
-#define DOCWIRE_AI_ELEMENTS_H
+#ifndef DF0_AI_ELEMENTS_H
+#define DF0_AI_ELEMENTS_H
 
 #include "ai_export.h"
 #include <vector>
@@ -18,11 +18,11 @@
 namespace df0::ai
 {
 
-struct DOCWIRE_AI_EXPORT embedding
+struct DF0_AI_EXPORT embedding
 {
   std::vector<double> values;
 };
 
 } // namespace df0::ai
 
-#endif // DOCWIRE_AI_ELEMENTS_H
+#endif // DF0_AI_ELEMENTS_H

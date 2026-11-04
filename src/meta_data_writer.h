@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_METADATA_WRITER_H
-#define DOCWIRE_METADATA_WRITER_H
+#ifndef DF0_METADATA_WRITER_H
+#define DF0_METADATA_WRITER_H
 
 #include "core_export.h"
 #include <iostream>
@@ -99,4 +99,4 @@ inline void metadata_writer::write_to(const message_ptr& msg, std::ostream &file
 }
 } // namespace df0
 
-#endif //DOCWIRE_METADATA_WRITER_H
+#endif //DF0_METADATA_WRITER_H

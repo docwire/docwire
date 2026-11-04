@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_ENFORCE_H
-#define DOCWIRE_ENFORCE_H
+#ifndef DF0_ENFORCE_H
+#define DF0_ENFORCE_H
 
 #include "safety_policy.h"
 #include "with_source_location.h"
@@ -50,4 +50,4 @@ void enforce(detail::with_source_location<bool> condition, Context&&... context)
 
 }
 
-#endif // DOCWIRE_ENFORCE_H
+#endif // DF0_ENFORCE_H

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONTENT_TYPE_ODF_OOXML_H
-#define DOCWIRE_CONTENT_TYPE_ODF_OOXML_H
+#ifndef DF0_CONTENT_TYPE_ODF_OOXML_H
+#define DF0_CONTENT_TYPE_ODF_OOXML_H
 
 #include "pipeline/element_base.hpp"
 #include "content_type_export.h"
@@ -32,7 +32,7 @@ namespace df0::content_type::odf_ooxml
  *
  * @param data The data source to be analyzed.
  */
-DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
+DF0_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
 /**
  * @brief Detector chain element for ODF and OOXML formats.
@@ -55,4 +55,4 @@ public:
 
 } // namespace df0::content_type::odf_ooxml
 
-#endif // DOCWIRE_CONTENT_TYPE_ODF_OOXML_H
+#endif // DF0_CONTENT_TYPE_ODF_OOXML_H

@@ -771,17 +771,17 @@ common_xml_document_parser<safety_level, auditor_type>::scoped_context_stack_pus
 	m_parser.impl().m_context_stack.pop();
 }
 
-template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<strict, audit::null_auditor>;
-template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, audit::null_auditor>;
+template class DF0_ODF_OOXML_EXPORT common_xml_document_parser<strict, audit::null_auditor>;
+template class DF0_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, audit::null_auditor>;
 
 // These are not required but help static analyzer
 template class pimpl_impl<common_xml_document_parser<strict, audit::null_auditor>>;
 template class pimpl_impl<common_xml_document_parser<relaxed, audit::null_auditor>>;
 
-template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<strict, df0::audit::json_stream_auditor>;
+template class DF0_ODF_OOXML_EXPORT common_xml_document_parser<strict, df0::audit::json_stream_auditor>;
 template class pimpl_impl<common_xml_document_parser<strict, df0::audit::json_stream_auditor>>;
 
-template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, df0::audit::json_stream_auditor>;
+template class DF0_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, df0::audit::json_stream_auditor>;
 template class pimpl_impl<common_xml_document_parser<relaxed, df0::audit::json_stream_auditor>>;
 
 } // namespace df0

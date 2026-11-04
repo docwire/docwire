@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONCEPTS_MISC_H
-#define DOCWIRE_CONCEPTS_MISC_H
+#ifndef DF0_CONCEPTS_MISC_H
+#define DF0_CONCEPTS_MISC_H
 
 #include <type_traits>
 
@@ -37,4 +37,4 @@ concept empty = std::is_empty_v<T>;
 
 } // namespace df0
 
-#endif // DOCWIRE_CONCEPTS_MISC_H
+#endif // DF0_CONCEPTS_MISC_H

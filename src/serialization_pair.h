@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SERIALIZATION_PAIR_H
-#define DOCWIRE_SERIALIZATION_PAIR_H
+#ifndef DF0_SERIALIZATION_PAIR_H
+#define DF0_SERIALIZATION_PAIR_H
 
 #include "serialization_base.h"
 #include <utility>
@@ -40,4 +40,4 @@ struct serializer<std::pair<T1, T2>>
 
 } // namespace df0::serialization
 
-#endif // DOCWIRE_SERIALIZATION_PAIR_H
+#endif // DF0_SERIALIZATION_PAIR_H

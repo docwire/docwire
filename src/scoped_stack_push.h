@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SCOPED_STACK_PUSH_H
-#define DOCWIRE_SCOPED_STACK_PUSH_H
+#ifndef DF0_SCOPED_STACK_PUSH_H
+#define DF0_SCOPED_STACK_PUSH_H
 
 #include <stack>
 

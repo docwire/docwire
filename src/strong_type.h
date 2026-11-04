@@ -11,8 +11,8 @@
 /*                                                                                                                                           */
 /*  SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-DocWire-Commercial */
 
-#ifndef DOCWIRE_STRONG_TYPE_H
-#define DOCWIRE_STRONG_TYPE_H
+#ifndef DF0_STRONG_TYPE_H
+#define DF0_STRONG_TYPE_H
 
 #include <utility>
 namespace df0

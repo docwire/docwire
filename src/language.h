@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LANGUAGE_H
-#define DOCWIRE_LANGUAGE_H
+#ifndef DF0_LANGUAGE_H
+#define DF0_LANGUAGE_H
 
 namespace df0
 {

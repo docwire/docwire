@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONTENT_TYPE_H
-#define DOCWIRE_CONTENT_TYPE_H
+#ifndef DF0_CONTENT_TYPE_H
+#define DF0_CONTENT_TYPE_H
 
 #include "pipeline/element_base.hpp"
 #include "content_type_by_signature.h"
@@ -71,7 +71,7 @@ namespace df0::content_type
  * @see content_type::outlook::detect
  * @see content_type::xlsb::detect
  */
-DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const by_signature::database& signatures_db_to_use = by_signature::database{});
+DF0_CONTENT_TYPE_EXPORT void detect(data_source& data, const by_signature::database& signatures_db_to_use = by_signature::database{});
 
 /**
  * @brief Content type detection chain element
@@ -137,7 +137,7 @@ public:
         }
         catch (const std::exception& e)
         {
-            emit_message(make_nested_ptr(std::current_exception(), DOCWIRE_MAKE_ERROR("Content type detection failed")));
+            emit_message(make_nested_ptr(std::current_exception(), DF0_MAKE_ERROR("Content type detection failed")));
         }
 	    return emit_message(std::move(msg));
     }
@@ -148,4 +148,4 @@ private:
 
 } // namespace df0::content_type
 
-#endif // DOCWIRE_CONTENT_TYPE
+#endif // DF0_CONTENT_TYPE

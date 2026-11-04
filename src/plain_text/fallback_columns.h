@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PLAIN_TEXT_FALLBACK_COLUMNS_H
-#define DOCWIRE_PLAIN_TEXT_FALLBACK_COLUMNS_H
+#ifndef DF0_PLAIN_TEXT_FALLBACK_COLUMNS_H
+#define DF0_PLAIN_TEXT_FALLBACK_COLUMNS_H
 
 #include <vector>
 

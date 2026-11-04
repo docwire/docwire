@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_LLAMA_TASK_H
-#define DOCWIRE_LOCAL_AI_LLAMA_TASK_H
+#ifndef DF0_LOCAL_AI_LLAMA_TASK_H
+#define DF0_LOCAL_AI_LLAMA_TASK_H
 
 #include "ai_task.h"
 #include "local_ai_llama_runner_factory.h"
@@ -22,7 +22,7 @@ class task :
 	public df0::pipeline::transformer_element<task>,
 	public df0::ai::task {
 public:
-#ifdef DOCWIRE_GRANITE
+#ifdef DF0_GRANITE
   // Constructor with Default Granite model
   explicit task(
       const std::string &prompt,
@@ -42,4 +42,4 @@ public:
 };
 } // namespace df0::ai::local::llama
 
-#endif // DOCWIRE_LOCAL_AI_LLAMA_TASK_H
+#endif // DF0_LOCAL_AI_LLAMA_TASK_H

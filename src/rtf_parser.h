@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_RTF_PARSER_H
-#define DOCWIRE_RTF_PARSER_H
+#ifndef DF0_RTF_PARSER_H
+#define DF0_RTF_PARSER_H
 
 #include "pipeline/element_base.hpp"
 #include "rtf_export.h"
@@ -22,7 +22,7 @@ namespace df0
 {
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_RTF_EXPORT rtf_parser
+class DF0_RTF_EXPORT rtf_parser
     : public pipeline::transformer_element<rtf_parser<auditor_type>>,
       private audit::with_auditor<auditor_type>
 {

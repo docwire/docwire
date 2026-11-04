@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DETAIL_USTRING_CONVERSIONS_H
-#define DOCWIRE_DETAIL_USTRING_CONVERSIONS_H
+#ifndef DF0_DETAIL_USTRING_CONVERSIONS_H
+#define DF0_DETAIL_USTRING_CONVERSIONS_H
 
 #include <string>
 #include "wv2/src/ustring.h"
@@ -130,4 +130,4 @@ inline UString utf8_to_ustring(const std::string& src)
 
 } // namespace df0
 
-#endif // DOCWIRE_DETAIL_USTRING_CONVERSIONS_H
+#endif // DF0_DETAIL_USTRING_CONVERSIONS_H

@@ -189,9 +189,9 @@ continuation odfxml_parser<safety_level, auditor_type>::operator()(message_ptr m
 	return continuation::proceed;
 }
 
-template class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser<strict, audit::null_auditor>;
-template class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser<relaxed, audit::null_auditor>;
-template class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser<df0::safety_policy::strict, df0::audit::json_stream_auditor>;
-template class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser<df0::safety_policy::relaxed, df0::audit::json_stream_auditor>;
+template class DF0_ODF_OOXML_EXPORT odfxml_parser<strict, audit::null_auditor>;
+template class DF0_ODF_OOXML_EXPORT odfxml_parser<relaxed, audit::null_auditor>;
+template class DF0_ODF_OOXML_EXPORT odfxml_parser<df0::safety_policy::strict, df0::audit::json_stream_auditor>;
+template class DF0_ODF_OOXML_EXPORT odfxml_parser<df0::safety_policy::relaxed, df0::audit::json_stream_auditor>;
 
 } // namespace df0

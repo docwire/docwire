@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AI_TASK_H
-#define DOCWIRE_AI_TASK_H
+#ifndef DF0_AI_TASK_H
+#define DF0_AI_TASK_H
 
 #include "ai_export.h"
 #include "model_chain_element.h"
@@ -18,7 +18,7 @@
 namespace df0::ai
 {
 
-class DOCWIRE_AI_EXPORT task
+class DF0_AI_EXPORT task
     : public model_chain_element,
       public pipeline::transformer_element<task>
 {
@@ -28,4 +28,4 @@ class DOCWIRE_AI_EXPORT task
 
 } // namespace df0::ai
 
-#endif // DOCWIRE_AI_TASK_H
+#endif // DF0_AI_TASK_H

@@ -163,8 +163,8 @@ continuation text_to_speech<auditor_type>::operator()(
 	return emit_message(data_source{content});
 }
 
-template class DOCWIRE_OPENAI_EXPORT df0::openai::text_to_speech<df0::audit::null_auditor>;
-template class DOCWIRE_OPENAI_EXPORT df0::openai::text_to_speech<df0::audit::json_stream_auditor>;
+template class DF0_OPENAI_EXPORT df0::openai::text_to_speech<df0::audit::null_auditor>;
+template class DF0_OPENAI_EXPORT df0::openai::text_to_speech<df0::audit::json_stream_auditor>;
 
 } // namespace openai
 } // namespace df0

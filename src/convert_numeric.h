@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONVERT_NUMERIC_H
-#define DOCWIRE_CONVERT_NUMERIC_H
+#ifndef DF0_CONVERT_NUMERIC_H
+#define DF0_CONVERT_NUMERIC_H
 
 #include "convert_base.h"
 #include <cerrno>
@@ -132,4 +132,4 @@ std::optional<To> convert_impl(const From& s, dest_type_tag<To>) noexcept
 
 } // namespace df0::convert
 
-#endif // DOCWIRE_CONVERT_NUMERIC_H
+#endif // DF0_CONVERT_NUMERIC_H

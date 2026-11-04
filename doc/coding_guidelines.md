@@ -94,7 +94,7 @@
 
 **The Rule:** `#define` macros are universally banned for logic, constants, and logging. Feature toggles must use `if constexpr`. Constants must use `constexpr` or `consteval`. Short-circuit evaluation must use C++20 Concepts and lambdas. Context capture must use `std::source_location`.
 
-**The Exception:** Macros are strictly quarantined to physical compilation necessities: Header include guards (`#ifndef`) and dynamic library export visibility (`DOCWIRE_API`).
+**The Exception:** Macros are strictly quarantined to physical compilation necessities: Header include guards (`#ifndef`) and dynamic library export visibility (`DF0_API`).
 
 **The Why:** C++20 Modules do not export macros. Relying on macros for API logic breaks our `[BUILD-FUTURE-MODULES]` migration path. Quarantining them to compilation boundaries keeps the C++ namespace mathematically pure while allowing standard DLL compilation.
 

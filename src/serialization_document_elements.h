@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SERIALIZATION_DOCUMENT_ELEMENTS_H
-#define DOCWIRE_SERIALIZATION_DOCUMENT_ELEMENTS_H
+#ifndef DF0_SERIALIZATION_DOCUMENT_ELEMENTS_H
+#define DF0_SERIALIZATION_DOCUMENT_ELEMENTS_H
 
 #include "attributes.h"
 #include "document_elements.h"
@@ -118,4 +118,4 @@ struct serializer<attributes::styling>
 
 } // namespace df0::serialization
 
-#endif // DOCWIRE_SERIALIZATION_DOCUMENT_ELEMENTS_H
+#endif // DF0_SERIALIZATION_DOCUMENT_ELEMENTS_H

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_CT2_EMBED_H
-#define DOCWIRE_LOCAL_AI_CT2_EMBED_H
+#ifndef DF0_LOCAL_AI_CT2_EMBED_H
+#define DF0_LOCAL_AI_CT2_EMBED_H
 
 #include "ai_ct2_export.h"
 #include "ai_embed.h"
@@ -112,4 +112,4 @@ embedder() -> embedder<df0::audit::null_auditor>;
 
 } // namespace df0::ai::local::ct2::query
 
-#endif // DOCWIRE_LOCAL_AI_CT2_EMBED_H
+#endif // DF0_LOCAL_AI_CT2_EMBED_H

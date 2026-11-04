@@ -43,8 +43,8 @@ summarize<auditor_type>::summarize(
 	}};
 }
 
-template class DOCWIRE_OPENAI_EXPORT summarize<df0::audit::null_auditor>;
-template class DOCWIRE_OPENAI_EXPORT summarize<df0::audit::json_stream_auditor>;
+template class DF0_OPENAI_EXPORT summarize<df0::audit::null_auditor>;
+template class DF0_OPENAI_EXPORT summarize<df0::audit::json_stream_auditor>;
 
 } // namespace openai
 } // namespace df0

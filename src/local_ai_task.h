@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_TASK_H
-#define DOCWIRE_LOCAL_AI_TASK_H
+#ifndef DF0_LOCAL_AI_TASK_H
+#define DF0_LOCAL_AI_TASK_H
 
 #include "ai_task.h"
 
@@ -29,4 +29,4 @@ public:
 
 } // namespace df0::ai::local
 
-#endif // DOCWIRE_LOCAL_AI_TASK_H
+#endif // DF0_LOCAL_AI_TASK_H

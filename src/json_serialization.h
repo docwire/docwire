@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_JSON_SERIALIZATION_H
-#define DOCWIRE_JSON_SERIALIZATION_H
+#ifndef DF0_JSON_SERIALIZATION_H
+#define DF0_JSON_SERIALIZATION_H
 
 #include "core_export.h"
 #include "serialization_base.h"
@@ -35,4 +35,4 @@ inline std::string to_json(const value& s_val)
 
 } // namespace df0::serialization
 
-#endif // DOCWIRE_JSON_SERIALIZATION_H
+#endif // DF0_JSON_SERIALIZATION_H

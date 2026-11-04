@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AI_LLAMA_HANDLER_H
-#define DOCWIRE_AI_LLAMA_HANDLER_H
+#ifndef DF0_AI_LLAMA_HANDLER_H
+#define DF0_AI_LLAMA_HANDLER_H
 
 #include <llama.h>
 #include <memory>

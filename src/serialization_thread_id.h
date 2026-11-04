@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SERIALIZATION_THREAD_ID_H
-#define DOCWIRE_SERIALIZATION_THREAD_ID_H
+#ifndef DF0_SERIALIZATION_THREAD_ID_H
+#define DF0_SERIALIZATION_THREAD_ID_H
 
 #include "core_export.h"
 #include "serialization_base.h"
@@ -34,4 +34,4 @@ struct serializer<std::thread::id>
 
 } // namespace df0::serialization
 
-#endif // DOCWIRE_SERIALIZATION_THREAD_ID_H
+#endif // DF0_SERIALIZATION_THREAD_ID_H

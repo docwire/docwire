@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_SOURCE_LOCATION_H
-#define DOCWIRE_SOURCE_LOCATION_H
+#ifndef DF0_SOURCE_LOCATION_H
+#define DF0_SOURCE_LOCATION_H
 
 #if __has_include(<source_location>) && (!defined(__clang__) || __clang_major__ >= 16) // https://github.com/llvm/llvm-project/issues/56379
 	#define USE_STD_SOURCE_LOCATION 1
@@ -67,4 +67,4 @@ private:
 
 #undef USE_STD_SOURCE_LOCATION
 
-#endif // DOCWIRE_SOURCE_LOCATION_H
+#endif // DF0_SOURCE_LOCATION_H

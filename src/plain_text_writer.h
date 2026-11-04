@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PLAIN_TEXT_WRITER_H
-#define DOCWIRE_PLAIN_TEXT_WRITER_H
+#ifndef DF0_PLAIN_TEXT_WRITER_H
+#define DF0_PLAIN_TEXT_WRITER_H
 
 #include "core_export.h"
 #include <array>
@@ -504,20 +504,20 @@ struct plain_text_writer::impl
             open_table_msgs--;
         }
         while (open_table_msgs > 0);
-        DOCWIRE_THROW_IF (table.empty(), "Table inside table without rows", errors::program_logic{});
-        DOCWIRE_THROW_IF (table.back().empty(), "Table inside table row without cells", errors::program_logic{});
+        DF0_THROW_IF (table.empty(), "Table inside table without rows", errors::program_logic{});
+        DF0_THROW_IF (table.back().empty(), "Table inside table row without cells", errors::program_logic{});
         table.back().back().write(ss.str());
       }
       else if (msgs[i]->is<document::caption>())
       {
-        DOCWIRE_THROW_IF (table_caption_mode, "Table caption inside table caption", errors::program_logic{});
-        DOCWIRE_THROW_IF (table_caption_writer, "Second caption inside table", errors::program_logic{});
+        DF0_THROW_IF (table_caption_mode, "Table caption inside table caption", errors::program_logic{});
+        DF0_THROW_IF (table_caption_writer, "Second caption inside table", errors::program_logic{});
         table_caption_mode = true;
         table_caption_writer = nested_writer{m_eol_sequence, m_format_link_opening, m_format_link_closing, m_max_output_width};
       }
       else if (msgs[i]->is<document::close_caption>())
       {
-        DOCWIRE_THROW_IF (!table_caption_mode, "Close caption outside table caption", errors::program_logic{});
+        DF0_THROW_IF (!table_caption_mode, "Close caption outside table caption", errors::program_logic{});
         table_caption_mode = false;
       }
       else if (msgs[i]->is<document::table_row>())
@@ -526,7 +526,7 @@ struct plain_text_writer::impl
       }
       else if (msgs[i]->is<document::table_cell>())
       {
-        DOCWIRE_THROW_IF (table.empty(), "Cell inside table without rows", errors::program_logic{});
+        DF0_THROW_IF (table.empty(), "Cell inside table without rows", errors::program_logic{});
         table.back().push_back(cell{m_eol_sequence, m_format_link_opening, m_format_link_closing, m_max_output_width});
       }
       else if (!msgs[i]->is<document::close_table_row>() && !msgs[i]->is<document::close_table_cell>())
@@ -537,8 +537,8 @@ struct plain_text_writer::impl
         }
         else
         {
-          DOCWIRE_THROW_IF (table.empty(), "Cell content inside table without rows", errors::program_logic{});
-          DOCWIRE_THROW_IF (table.back().empty(), "Cell content inside table row without cells", errors::program_logic{});
+          DF0_THROW_IF (table.empty(), "Cell content inside table without rows", errors::program_logic{});
+          DF0_THROW_IF (table.back().empty(), "Cell content inside table row without cells", errors::program_logic{});
           table.back().back().write(msgs[i]);
         }
       }
@@ -625,4 +625,4 @@ inline const std::string plain_text_writer::eol_sequence() const
 
 } // namespace df0
 
-#endif //DOCWIRE_PLAIN_TEXT_WRITER_H
+#endif //DF0_PLAIN_TEXT_WRITER_H

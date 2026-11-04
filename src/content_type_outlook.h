@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CONTENT_TYPE_OUTLOOK_H
-#define DOCWIRE_CONTENT_TYPE_OUTLOOK_H
+#ifndef DF0_CONTENT_TYPE_OUTLOOK_H
+#define DF0_CONTENT_TYPE_OUTLOOK_H
 
 #include "pipeline/element_base.hpp"
 #include "content_type_export.h"
@@ -28,7 +28,7 @@ namespace df0::content_type::outlook
  * @param data The data source to be analyzed.
  * @param signatures_db_to_use The loaded database of signatures used for signature-based content detection.
  */
-DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data,
+DF0_CONTENT_TYPE_EXPORT void detect(data_source& data,
     const by_signature::database& signatures_db_to_use = by_signature::database{});
 
 /**
@@ -64,4 +64,4 @@ private:
 
 } // namespace df0::content_type::outlook
 
-#endif // DOCWIRE_CONTENT_TYPE_OUTLOOK
+#endif // DF0_CONTENT_TYPE_OUTLOOK

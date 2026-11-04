@@ -733,7 +733,7 @@ continuation pdf_parser<auditor_type>::operator()(message_ptr msg, const message
 	return continuation::proceed;
 }
 
-template class DOCWIRE_PDF_EXPORT pdf_parser<df0::audit::null_auditor>;
-template class DOCWIRE_PDF_EXPORT pdf_parser<df0::audit::json_stream_auditor>;
+template class DF0_PDF_EXPORT pdf_parser<df0::audit::null_auditor>;
+template class DF0_PDF_EXPORT pdf_parser<df0::audit::json_stream_auditor>;
 
 } // namespace df0

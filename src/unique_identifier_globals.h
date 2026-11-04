@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_UNIQUE_IDENTIFIER_GLOBALS_H
-#define DOCWIRE_UNIQUE_IDENTIFIER_GLOBALS_H
+#ifndef DF0_UNIQUE_IDENTIFIER_GLOBALS_H
+#define DF0_UNIQUE_IDENTIFIER_GLOBALS_H
 
 #include "core_export.h"
 #include <cstddef>
@@ -27,8 +27,8 @@ namespace df0::detail
  *       Keeping the counter here ensures identifiers remain unique across
  *       DLL boundaries.
  */
-DOCWIRE_CORE_EXPORT size_t next_unique_identifier();
+DF0_CORE_EXPORT size_t next_unique_identifier();
 
 } // namespace df0::detail
 
-#endif // DOCWIRE_UNIQUE_IDENTIFIER_GLOBALS_H
+#endif // DF0_UNIQUE_IDENTIFIER_GLOBALS_H

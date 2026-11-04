@@ -20,7 +20,7 @@ function(docwire_find_resource result_var)
     # Create a unique and predictable variable name for the cache.
     string(TOUPPER "${PARSE_ARGS_REL_PATH}" CACHE_VAR_SUFFIX)
     string(REGEX REPLACE "[/.-]" "_" CACHE_VAR_SUFFIX "${CACHE_VAR_SUFFIX}")
-    set(CACHE_VAR_NAME "DOCWIRE_RESOURCE_${CACHE_VAR_SUFFIX}")
+    set(CACHE_VAR_NAME "DF0_RESOURCE_${CACHE_VAR_SUFFIX}")
 
     set(FIND_ARGS "")
     if(PARSE_ARGS_REQUIRED)
@@ -30,8 +30,8 @@ function(docwire_find_resource result_var)
     set(FOUND_PATH "")
 
     set(docwire_search_paths "")
-    if(DEFINED DOCWIRE_DATADIR)
-        list(APPEND docwire_search_paths "${DOCWIRE_DATADIR}")
+    if(DEFINED DF0_DATADIR)
+        list(APPEND docwire_search_paths "${DF0_DATADIR}")
     endif()
     foreach(prefix IN LISTS CMAKE_PREFIX_PATH)
         list(APPEND docwire_search_paths "${prefix}/share")
@@ -79,23 +79,23 @@ function(docwire_target_resources target rel_dest_path)
     # Property for use within the current build tree (e.g., for tests).
     # This is a non-interface property and will not be exported with the target.
     set_property(TARGET "${target}" APPEND PROPERTY
-        _DOCWIRE_RESOURCE_SOURCES
+        _DF0_RESOURCE_SOURCES
         "${abs_source_path}"
     )
 
     # Property for use by downstream consumers after installation.
     # This is a public property and will be part of the installed target information via EXPORT_PROPERTIES.
     set_property(TARGET "${target}" APPEND PROPERTY
-        DOCWIRE_RESOURCES
+        DF0_RESOURCES
         "${rel_dest_path}"
     )
 
     # Explicitly mark the custom property for export so it appears in docwire-targets.cmake
     get_target_property(_current_export_props "${target}" EXPORT_PROPERTIES)
-    if(NOT _current_export_props OR NOT "DOCWIRE_RESOURCES" IN_LIST _current_export_props)
+    if(NOT _current_export_props OR NOT "DF0_RESOURCES" IN_LIST _current_export_props)
         set_property(TARGET "${target}" APPEND PROPERTY
             EXPORT_PROPERTIES
-            DOCWIRE_RESOURCES
+            DF0_RESOURCES
         )
     endif()
 endfunction()
@@ -187,15 +187,15 @@ function(_docwire_collect_resources_for_target app_target out_var)
     set(collected_resources "")
 
     foreach(current_target IN LISTS dependency_targets)
-        get_target_property(interface_res ${current_target} DOCWIRE_RESOURCES)
+        get_target_property(interface_res ${current_target} DF0_RESOURCES)
         if(interface_res)
-            get_target_property(build_sources ${current_target} _DOCWIRE_RESOURCE_SOURCES)
+            get_target_property(build_sources ${current_target} _DF0_RESOURCE_SOURCES)
             if(build_sources)
                 # Build tree context: Zip the lists
                 list(LENGTH interface_res count_dst)
                 list(LENGTH build_sources count_src)
                 if(NOT count_dst EQUAL count_src)
-                    message(FATAL_ERROR "DocWire: Resource property mismatch for target ${current_target}. DOCWIRE_RESOURCES and _DOCWIRE_RESOURCE_SOURCES have different lengths.")
+                    message(FATAL_ERROR "DocWire: Resource property mismatch for target ${current_target}. DF0_RESOURCES and _DF0_RESOURCE_SOURCES have different lengths.")
                 endif()
                 math(EXPR loop_max "${count_dst} - 1")
                 foreach(i RANGE ${loop_max})

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PIMPL_H
-#define DOCWIRE_PIMPL_H
+#ifndef DF0_PIMPL_H
+#define DF0_PIMPL_H
 
 #include <memory>
 

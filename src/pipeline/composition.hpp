@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_PIPELINE_COMPOSITION_HPP
-#define DOCWIRE_PIPELINE_COMPOSITION_HPP
+#ifndef DF0_PIPELINE_COMPOSITION_HPP
+#define DF0_PIPELINE_COMPOSITION_HPP
 
 #include "chain_expression.hpp"
 #include "element_base.hpp"
@@ -261,4 +261,4 @@ auto compose(ElementTypes&&... elements)
 
 } // namespace df0::pipeline
 
-#endif // DOCWIRE_PIPELINE_COMPOSITION_HPP
+#endif // DF0_PIPELINE_COMPOSITION_HPP

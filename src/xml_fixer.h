@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_XML_FIXER_H
-#define DOCWIRE_XML_FIXER_H
+#ifndef DF0_XML_FIXER_H
+#define DF0_XML_FIXER_H
 
 #include "pimpl.h"
 #include <string>
@@ -19,7 +19,7 @@
 namespace df0
 {
 
-class DOCWIRE_XML_EXPORT xml_fixer : public with_pimpl<xml_fixer>
+class DF0_XML_EXPORT xml_fixer : public with_pimpl<xml_fixer>
 {
 	public:
 		xml_fixer();

@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DOCWIRE_H
-#define DOCWIRE_DOCWIRE_H
+#ifndef DF0_DF0_H
+#define DF0_DF0_H
 
 // IWYU pragma: begin_exports
 #include "ai_runner.h"
@@ -21,7 +21,7 @@
 #include "ai_find.h"
 #include "ai_task.h"
 #include "model_chain_element.h"
-#ifdef DOCWIRE_CT2
+#ifdef DF0_CT2
 #include "ct2_runner.h"
 #include "local_ai_ct2_embed.h"
 #include "local_ai_ct2_find.h"
@@ -31,7 +31,7 @@
 #include "local_ai_ct2_task.h"
 #include "local_ai_ct2_detect_sentiment.h"
 #endif
-#ifdef DOCWIRE_LLAMA
+#ifdef DF0_LLAMA
 #include "llama_runner.h"
 #include "model_inference_config.h"
 #include "llama_models.h"
@@ -42,7 +42,7 @@
 #include "local_ai_llama_translate.h"
 #include "local_ai_llama_detect_sentiment.h"
 #endif
-#ifdef DOCWIRE_LOCAL_AI
+#ifdef DF0_LOCAL_AI
 #include "local_ai_find.h"
 #include "local_ai_summarize.h"
 #include "local_ai_translate.h"

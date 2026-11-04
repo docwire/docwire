@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_DETAIL_SSL_CERTIFICATE_H
-#define DOCWIRE_DETAIL_SSL_CERTIFICATE_H
+#ifndef DF0_DETAIL_SSL_CERTIFICATE_H
+#define DF0_DETAIL_SSL_CERTIFICATE_H
 
 #include <memory>
 #include <string>
@@ -79,4 +79,4 @@ private:
 
 } // namespace df0::detail
 
-#endif // DOCWIRE_DETAIL_SSL_CERTIFICATE_H
+#endif // DF0_DETAIL_SSL_CERTIFICATE_H

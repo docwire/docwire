@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AUDIT_AUDIT_TAG_H
-#define DOCWIRE_AUDIT_AUDIT_TAG_H
+#ifndef DF0_AUDIT_AUDIT_TAG_H
+#define DF0_AUDIT_AUDIT_TAG_H
 
 #include <concepts>
 #include <string_view>

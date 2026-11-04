@@ -129,13 +129,13 @@ set_property(TEST integration_run_installed PROPERTY DEPENDS integration_install
 # This section finds the 'docwire' executable in the path
 # and runs it against test files.
 
-find_program(DOCWIRE_CLI docwire REQUIRED)
-message(STATUS "Found docwire CLI for testing at: ${DOCWIRE_CLI}")
+find_program(DF0_CLI docwire REQUIRED)
+message(STATUS "Found docwire CLI for testing at: ${DF0_CLI}")
 
 foreach(file IN ITEMS 1.doc 1.pdf basic_ocr-eng.png)
     add_test(
         NAME cli_${file}
-        COMMAND ${DOCWIRE_CLI} ${EXAMPLE_SRC_DIR}/${file}
+        COMMAND ${DF0_CLI} ${EXAMPLE_SRC_DIR}/${file}
     )
 endforeach()
 
@@ -154,14 +154,14 @@ set(CLI_AUDIT_TEST_FILES
 foreach(file IN LISTS CLI_AUDIT_TEST_FILES)
     add_test(
         NAME cli_verbose_${file}
-        COMMAND ${DOCWIRE_CLI} --verbose ${EXAMPLE_SRC_DIR}/${file}
+        COMMAND ${DF0_CLI} --verbose ${EXAMPLE_SRC_DIR}/${file}
     )
 endforeach()
 
 # Exercise the file-based audit sink through the CLI.
 add_test(
     NAME cli_verbose_with_log_file_1.docx
-    COMMAND ${DOCWIRE_CLI}
+    COMMAND ${DF0_CLI}
         --verbose
         --log_file ${CMAKE_BINARY_DIR}/audit_cli_1.docx.json
         ${EXAMPLE_SRC_DIR}/1.docx
@@ -170,10 +170,10 @@ add_test(
 # Verify basic alternate exporter paths through the installed CLI.
 add_test(
     NAME cli_html_output_1.doc
-    COMMAND ${DOCWIRE_CLI} --output_type html ${EXAMPLE_SRC_DIR}/1.doc
+    COMMAND ${DF0_CLI} --output_type html ${EXAMPLE_SRC_DIR}/1.doc
 )
 
 add_test(
     NAME cli_metadata_output_1.doc
-    COMMAND ${DOCWIRE_CLI} --output_type metadata ${EXAMPLE_SRC_DIR}/1.doc
+    COMMAND ${DF0_CLI} --output_type metadata ${EXAMPLE_SRC_DIR}/1.doc
 )

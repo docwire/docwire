@@ -91,9 +91,9 @@ continuation xml_parser<safety_level, auditor_type>::operator()(message_ptr msg,
 	return continuation::proceed;
 }
 
-template class DOCWIRE_XML_EXPORT xml_parser<strict, audit::null_auditor>;
-template class DOCWIRE_XML_EXPORT xml_parser<relaxed, audit::null_auditor>;
-template class DOCWIRE_XML_EXPORT xml_parser<df0::safety_policy::strict, df0::audit::json_stream_auditor>;
-template class DOCWIRE_XML_EXPORT xml_parser<df0::safety_policy::relaxed, df0::audit::json_stream_auditor>;
+template class DF0_XML_EXPORT xml_parser<strict, audit::null_auditor>;
+template class DF0_XML_EXPORT xml_parser<relaxed, audit::null_auditor>;
+template class DF0_XML_EXPORT xml_parser<df0::safety_policy::strict, df0::audit::json_stream_auditor>;
+template class DF0_XML_EXPORT xml_parser<df0::safety_policy::relaxed, df0::audit::json_stream_auditor>;
 
 } // namespace df0

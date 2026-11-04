@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_RESOURCE_PATH_H
-#define DOCWIRE_RESOURCE_PATH_H
+#ifndef DF0_RESOURCE_PATH_H
+#define DF0_RESOURCE_PATH_H
 
 #include "boost_dll_wrapper.h"
 #include "core_export.h"
@@ -94,9 +94,9 @@ inline std::filesystem::path resource_path(const std::filesystem::path& resource
         }
     }
 
-    throw DOCWIRE_MAKE_ERROR("Resource not found", resource_rel_path, errors::program_corrupted{});
+    throw DF0_MAKE_ERROR("Resource not found", resource_rel_path, errors::program_corrupted{});
 }
 
 } // namespace df0
 
-#endif //DOCWIRE_RESOURCE_PATH_H
+#endif //DF0_RESOURCE_PATH_H

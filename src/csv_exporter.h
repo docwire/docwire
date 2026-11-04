@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_CSV_EXPORTER_H
-#define DOCWIRE_CSV_EXPORTER_H
+#ifndef DF0_CSV_EXPORTER_H
+#define DF0_CSV_EXPORTER_H
 
 #include "pipeline/element_base.hpp"
 #include "csv_writer.h"
@@ -52,4 +52,4 @@ private:
 
 } // namespace df0
 
-#endif //DOCWIRE_CSV_EXPORTER_H
+#endif //DF0_CSV_EXPORTER_H

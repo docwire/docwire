@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_AI_TOKENIZER_H
-#define DOCWIRE_AI_TOKENIZER_H
+#ifndef DF0_AI_TOKENIZER_H
+#define DF0_AI_TOKENIZER_H
 
 #include "ai_ct2_export.h"
 #include "pimpl.h"
@@ -25,7 +25,7 @@ namespace df0::ai::ct2
 {
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_AI_CT2_EXPORT tokenizer
+class DF0_AI_CT2_EXPORT tokenizer
     : public with_pimpl<tokenizer<auditor_type>>,
       private audit::with_auditor<auditor_type>
 {
@@ -63,4 +63,4 @@ tokenizer(const std::filesystem::path&) -> tokenizer<audit::null_auditor>;
 
 } // namespace df0::ai::ct2
 
-#endif // DOCWIRE_AI_TOKENIZER_H
+#endif // DF0_AI_TOKENIZER_H

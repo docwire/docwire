@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_OSHARED_H
-#define DOCWIRE_OSHARED_H
+#ifndef DF0_OSHARED_H
+#define DF0_OSHARED_H
 
 #include "attributes.h"
 #include "audit/auditor_ref.hpp"

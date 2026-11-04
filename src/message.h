@@ -9,8 +9,8 @@
 /*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
 /*********************************************************************************************************************************************/
 
-#ifndef DOCWIRE_MESSAGE_H
-#define DOCWIRE_MESSAGE_H
+#ifndef DF0_MESSAGE_H
+#define DF0_MESSAGE_H
 
 #include <concepts>
 #include <functional>
@@ -117,4 +117,4 @@ struct message_callbacks
 
 } // namespace df0
 
-#endif //DOCWIRE_MESSAGE_H
+#endif //DF0_MESSAGE_H

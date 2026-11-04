@@ -465,7 +465,7 @@ continuation ppt_parser<auditor_type>::operator()(
 	return continuation::proceed;
 }
 
-template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser<df0::audit::null_auditor>;
-template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser<df0::audit::json_stream_auditor>;
+template class DF0_OLE_OFFICE_FORMATS_EXPORT ppt_parser<df0::audit::null_auditor>;
+template class DF0_OLE_OFFICE_FORMATS_EXPORT ppt_parser<df0::audit::json_stream_auditor>;
 
 } // namespace df0
