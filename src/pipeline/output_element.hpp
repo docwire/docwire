@@ -25,7 +25,7 @@
 #include "../ref_or_owned.h"
 #include "../throw_if.h"
 
-namespace docwire::pipeline
+namespace df0::pipeline
 {
 
 template<class T>
@@ -92,6 +92,6 @@ auto operator|(ChainElement&& element, ref_or_owned<std::vector<message_ptr>> ve
   return std::forward<ChainElement>(element) | output_element(vector);
 }
 
-} // namespace docwire::pipeline
+} // namespace df0::pipeline
 
 #endif //DOCWIRE_PIPELINE_OUTPUT_ELEMENT_H

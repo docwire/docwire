@@ -20,7 +20,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::audit::serialize
+namespace df0::audit::serialize
 {
 
 template<typename Next = void>
@@ -64,6 +64,6 @@ private:
     detail::next_storage_t<Next> m_next;
 };
 
-} // namespace docwire::audit::serialize
+} // namespace df0::audit::serialize
 
 #endif

@@ -15,7 +15,7 @@
 #include "error.h"
 #include <exception>
 
-namespace docwire::errors
+namespace df0::errors
 {
 
 /**
@@ -51,6 +51,6 @@ bool contains_type(const std::exception& e)
 	return false;
 }
 
-} // namespace docwire::errors
+} // namespace df0::errors
 
 #endif // DOCWIRE_CONTAINS_TYPE_H

@@ -35,7 +35,7 @@
 #include <variant>
 #include <vector>
 
-namespace docwire
+namespace df0
 {
 
 /// Wrapper for a shared pointer to a seekable input stream.
@@ -68,18 +68,18 @@ struct mime_type
 namespace std {
 template <>
 /**
- * @brief Specialization of std::hash for docwire::mime_type.
+ * @brief Specialization of std::hash for df0::mime_type.
  */
-struct hash<docwire::mime_type>
+struct hash<df0::mime_type>
 {
-	size_t operator()(const docwire::mime_type& mt) const
+	size_t operator()(const df0::mime_type& mt) const
 	{
 		return hash<std::string>{}(mt.v);
 	}
 };
 } // namespace std
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -232,7 +232,7 @@ class data_source
 		std::optional<std::filesystem::path> path() const;
 
 		/// Returns the file extension if available.
-		std::optional<docwire::file_extension> file_extension() const;
+		std::optional<df0::file_extension> file_extension() const;
 
 		/// Returns the unique identifier for this data source.
 		unique_identifier id() const
@@ -319,7 +319,7 @@ class data_source
 
 	private:
 		std::variant<std::filesystem::path, std::vector<std::byte>, std::span<const std::byte>, std::string, std::string_view, seekable_stream_ptr, unseekable_stream_ptr> m_source;
-		std::optional<docwire::file_extension> m_file_extension;
+		std::optional<df0::file_extension> m_file_extension;
 		mutable std::shared_ptr<memory_buffer> m_memory_cache;
 		mutable std::shared_ptr<std::istream> m_path_stream;
 		mutable std::optional<size_t> m_stream_size;
@@ -479,12 +479,12 @@ inline std::optional<std::filesystem::path> data_source::path() const
 		return std::nullopt;
 }
 
-inline std::optional<docwire::file_extension> data_source::file_extension() const
+inline std::optional<df0::file_extension> data_source::file_extension() const
 {
 	if (m_file_extension)
 		return m_file_extension;
 	if (std::holds_alternative<std::filesystem::path>(m_source))
-		return docwire::file_extension{std::get<std::filesystem::path>(m_source)};
+		return df0::file_extension{std::get<std::filesystem::path>(m_source)};
 	else
 		return std::nullopt;
 }
@@ -541,6 +541,6 @@ inline void data_source::fill_memory_cache(std::optional<length_limit> limit) co
 	);
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_DATA_SOURCE_H

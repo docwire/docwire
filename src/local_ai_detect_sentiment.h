@@ -14,18 +14,18 @@
 
 #include "ai_detect_sentiment.h"
 
-namespace docwire::ai::local {
+namespace df0::ai::local {
 
 class detect_sentiment :
-	public docwire::pipeline::transformer_element<detect_sentiment>,
-	public docwire::ai::detect_sentiment {
+	public df0::pipeline::transformer_element<detect_sentiment>,
+	public df0::ai::detect_sentiment {
 public:
   explicit detect_sentiment(
-      std::shared_ptr<docwire::ai::ai_runner> runner,
+      std::shared_ptr<df0::ai::ai_runner> runner,
       model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::detect_sentiment(runner, lifetime){};
+      : df0::ai::detect_sentiment(runner, lifetime){};
 };
 
-} // namespace docwire::ai::local
+} // namespace df0::ai::local
 
 #endif // DOCWIRE_LOCAL_AI_DETECT_SENTIMENT_H

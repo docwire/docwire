@@ -30,7 +30,7 @@
 #include "odf_ooxml_export.h"
 #include "xml_attributes.h"
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -778,10 +778,10 @@ template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, audi
 template class pimpl_impl<common_xml_document_parser<strict, audit::null_auditor>>;
 template class pimpl_impl<common_xml_document_parser<relaxed, audit::null_auditor>>;
 
-template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<strict, docwire::audit::json_stream_auditor>;
-template class pimpl_impl<common_xml_document_parser<strict, docwire::audit::json_stream_auditor>>;
+template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<strict, df0::audit::json_stream_auditor>;
+template class pimpl_impl<common_xml_document_parser<strict, df0::audit::json_stream_auditor>>;
 
-template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, docwire::audit::json_stream_auditor>;
-template class pimpl_impl<common_xml_document_parser<relaxed, docwire::audit::json_stream_auditor>>;
+template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, df0::audit::json_stream_auditor>;
+template class pimpl_impl<common_xml_document_parser<relaxed, df0::audit::json_stream_auditor>>;
 
-} // namespace docwire
+} // namespace df0

@@ -15,7 +15,7 @@
 #include "chat.h"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -58,6 +58,6 @@ public:
 translate_to(const std::string&, const std::string&, model, float, image_detail) -> translate_to<audit::null_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_OPENAI_TRANSLATE_TO_H

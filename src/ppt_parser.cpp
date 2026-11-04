@@ -34,7 +34,7 @@
 #include "detail/thread_safe_ole_stream_reader.h"
 #include "detail/thread_safe_ole_storage.h"
 
-namespace docwire
+namespace df0
 {
 
 using namespace wvWare;
@@ -465,7 +465,7 @@ continuation ppt_parser<auditor_type>::operator()(
 	return continuation::proceed;
 }
 
-template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser<df0::audit::null_auditor>;
+template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT ppt_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

@@ -13,7 +13,7 @@
 
 #include "zip_reader.h"
 
-namespace docwire::content_type::xlsb
+namespace df0::content_type::xlsb
 {
 
 void detect(data_source& data)
@@ -60,4 +60,4 @@ void detect(data_source& data)
     }
 }
 
-} // namespace docwire::content_type::xlsb
+} // namespace df0::content_type::xlsb

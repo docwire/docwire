@@ -5,7 +5,7 @@
 #include <string>
 #include <typeindex>
 
-using namespace docwire;
+using namespace df0;
 
 TEST(StaticFlatMap, SortsInput)
 {

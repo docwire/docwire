@@ -13,7 +13,7 @@
 
 #include <rapidfuzz/fuzz.hpp>
 
-namespace docwire::fuzzy_match
+namespace df0::fuzzy_match
 {
 
 double ratio(const std::string& a, const std::string& b)
@@ -21,4 +21,4 @@ double ratio(const std::string& a, const std::string& b)
     return rapidfuzz::fuzz::ratio(a, b);
 }
 
-} // namespace docwire::fuzzy_match
+} // namespace df0::fuzzy_match

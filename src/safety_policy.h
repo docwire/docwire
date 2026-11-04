@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_SAFETY_POLICY_H
 #define DOCWIRE_SAFETY_POLICY_H
 
-namespace docwire
+namespace df0
 {
 
 /**

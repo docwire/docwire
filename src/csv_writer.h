@@ -18,7 +18,7 @@
 #include "document_elements.h"
 #include <vector>
 
-namespace docwire
+namespace df0
 {
 
 class csv_writer : public writer
@@ -65,6 +65,6 @@ inline void csv_writer::write_to(const message_ptr &msg, std::ostream &stream) {
     m_curr_cell += msg->get<document::text>().text;
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_CSV_WRITER_H

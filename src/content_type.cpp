@@ -21,7 +21,7 @@
 #include "content_type_outlook.h"
 #include "content_type_xlsb.h"
 
-namespace docwire::content_type
+namespace df0::content_type
 {
 
 void detect(data_source& data, const by_signature::database& signatures_db_to_use)
@@ -38,4 +38,4 @@ void detect(data_source& data, const by_signature::database& signatures_db_to_us
     content_type::xlsb::detect(data);
 }
 
-} // namespace docwire::content_type
+} // namespace df0::content_type

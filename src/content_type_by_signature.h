@@ -22,7 +22,7 @@
 #include "ref_or_owned.h"
 
 /**
- * @namespace docwire::content_type::by_signature
+ * @namespace df0::content_type::by_signature
  * @brief Provides content type detection based on file signatures (magic bytes).
  * 
  * This module wraps `libmagic`. 
@@ -37,7 +37,7 @@
  * validate RIFF containers. It will often return `application/zip` or `application/octet-stream` in 
  * these cases. Downstream heuristic detectors are required to resolve these generic types.
  */
-namespace docwire::content_type::by_signature
+namespace df0::content_type::by_signature
 {
 
 struct allow_multiple
@@ -137,6 +137,6 @@ private:
     allow_multiple m_allow_multiple;
 };
 
-} // namespace docwire::content_type::by_signature
+} // namespace df0::content_type::by_signature
 
 #endif // DOCWIRE_CONTENT_TYPE_BY_SIGNATURE_H

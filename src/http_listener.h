@@ -22,7 +22,7 @@
 #include <optional>
 #include <string>
 
-namespace docwire::detail
+namespace df0::detail
 {
 
 /**
@@ -63,7 +63,7 @@ using http_route_handler = std::function<void(const http_request&, http_response
  * This class owns the third-party server and thread pool, and hides them
  * behind a small, dependency-free interface. Its implementation is
  * quarantined inside a dedicated translation unit so that no third-party
- * header leaks into `docwire::http`.
+ * header leaks into `df0::http`.
  */
 class DOCWIRE_HTTP_EXPORT http_listener
 {
@@ -104,6 +104,6 @@ private:
     std::unique_ptr<impl> m_impl;
 };
 
-} // namespace docwire::detail
+} // namespace df0::detail
 
 #endif // DOCWIRE_DETAIL_HTTP_LISTENER_H

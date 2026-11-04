@@ -24,7 +24,7 @@
 #include <string>
 #include <utility>
 
-namespace docwire::audit::sink
+namespace df0::audit::sink
 {
 
 class ostream
@@ -78,6 +78,6 @@ private:
     std::shared_ptr<state> m_state;
 };
 
-} // namespace docwire::audit::sink
+} // namespace df0::audit::sink
 
 #endif

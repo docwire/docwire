@@ -1,7 +1,7 @@
 set(EMPTY_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/office_formats_empty.cpp)
 file(GENERATE OUTPUT ${EMPTY_SOURCE} CONTENT "
 	#include \"office_formats_export.h\"
-	namespace docwire
+	namespace df0
 	{
 		DOCWIRE_OFFICE_FORMATS_EXPORT void dummy() {}
 	}

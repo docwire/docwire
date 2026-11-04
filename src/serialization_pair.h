@@ -15,7 +15,7 @@
 #include "serialization_base.h"
 #include <utility>
 
-namespace docwire::serialization
+namespace df0::serialization
 {
 
 template <typename T1, typename T2>
@@ -38,6 +38,6 @@ struct serializer<std::pair<T1, T2>>
     }
 };
 
-} // namespace docwire::serialization
+} // namespace df0::serialization
 
 #endif // DOCWIRE_SERIALIZATION_PAIR_H

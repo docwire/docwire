@@ -19,7 +19,7 @@
 #include <functional>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 
 class thread_safe_ole_storage;
@@ -75,6 +75,6 @@ std::string get_codepage_from_document_summary_info(
         audit::auditor_ref<stateless_auditor_type>{});
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif

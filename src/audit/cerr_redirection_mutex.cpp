@@ -11,7 +11,7 @@
 
 #include "stderr_redirection.hpp"
 
-namespace docwire::audit::detail
+namespace df0::audit::detail
 {
 
 std::mutex& cerr_redirection_mutex()
@@ -20,4 +20,4 @@ std::mutex& cerr_redirection_mutex()
     return mutex;
 }
 
-} // namespace docwire::audit::detail
+} // namespace df0::audit::detail

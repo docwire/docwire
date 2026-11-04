@@ -13,7 +13,7 @@
 
 #include <boost/dll/runtime_symbol_info.hpp>
 
-namespace docwire::detail
+namespace df0::detail
 {
 
 std::filesystem::path this_line_location_helper(const this_line_location_t& this_line_location_instance)
@@ -26,4 +26,4 @@ std::filesystem::path program_location()
     return std::filesystem::path(boost::dll::program_location().string());
 }
 
-} // namespace docwire::detail
+} // namespace df0::detail

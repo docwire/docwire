@@ -18,7 +18,7 @@
 #include "error_tags.h"
 #include "throw_if.h"
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -54,5 +54,5 @@ inline double cosine_similarity(const std::vector<double>& a, const std::vector<
   return dot_product / (std::sqrt(norm_a) * std::sqrt(norm_b));
 }
 
-} // namespace docwire
+} // namespace df0
 #endif // DOCWIRE_COSINE_SIMILARITY_H

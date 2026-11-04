@@ -19,7 +19,7 @@
 #include <typeinfo>
 #include "type_id.h"
 
-namespace docwire
+namespace df0
 {
 
 enum class continuation { proceed, skip, stop };
@@ -115,6 +115,6 @@ struct message_callbacks
   continuation operator()(T&& object) const { return further(std::forward<T>(object)); }
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_MESSAGE_H

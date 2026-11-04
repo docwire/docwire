@@ -6,7 +6,7 @@
 
 int main()
 {
-    using namespace docwire;
+    using namespace df0;
 
     // Sample XML data representing a product catalog
     std::string xml_data = R"(

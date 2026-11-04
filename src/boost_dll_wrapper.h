@@ -16,7 +16,7 @@
 
 #include <filesystem>
 
-namespace docwire::detail
+namespace df0::detail
 {
 
 using this_line_location_t = std::filesystem::path();
@@ -26,6 +26,6 @@ DOCWIRE_CORE_EXPORT std::filesystem::path this_line_location_helper(
 
 DOCWIRE_CORE_EXPORT std::filesystem::path program_location();
 
-} // namespace docwire::detail
+} // namespace df0::detail
 
 #endif // DOCWIRE_BOOST_DLL_WRAPPER_H

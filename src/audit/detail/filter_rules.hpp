@@ -22,7 +22,7 @@
 #include <string_view>
 #include <vector>
 
-namespace docwire::audit::detail
+namespace df0::audit::detail
 {
 
 struct filter_rule
@@ -166,7 +166,7 @@ inline bool matches(
         : std::string{};
 
     std::string funcname = function_name_ptr
-        ? docwire::type_name::pretty_function(function_name_ptr)
+        ? df0::type_name::pretty_function(function_name_ptr)
         : std::string{};
 
     auto matches_file = [&](std::string_view pattern)
@@ -218,6 +218,6 @@ inline bool matches(
     return false;
 }
 
-} // namespace docwire::audit::detail
+} // namespace df0::audit::detail
 
 #endif

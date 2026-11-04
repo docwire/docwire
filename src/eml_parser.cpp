@@ -39,7 +39,7 @@
 #include "scoped_stack_push.h"
 #include "message_counters.h"
 
-namespace docwire
+namespace df0
 {
 
 using mailio::mime;
@@ -609,7 +609,7 @@ attributes::metadata metaData(
 
 } // anonymous namespace
 
-template class DOCWIRE_MAIL_EXPORT eml_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_MAIL_EXPORT eml_parser<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_MAIL_EXPORT eml_parser<df0::audit::null_auditor>;
+template class DOCWIRE_MAIL_EXPORT eml_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

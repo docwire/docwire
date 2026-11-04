@@ -16,16 +16,16 @@
 #include "serialization_base.h"
 #include "boost_json_wrapper.h"
 
-namespace docwire::serialization
+namespace df0::serialization
 {
 
 /**
- * @brief Converts a `docwire::serialization::value` to a JSON string.
+ * @brief Converts a `df0::serialization::value` to a JSON string.
  *
  * This allows the generic serialization mechanism to be used for JSON-specific
  * tasks like stringification or structured logging.
  *
- * @param s_val The `docwire::serialization::value` to convert.
+ * @param s_val The `df0::serialization::value` to convert.
  * @return A string containing the JSON representation of the value.
  */
 inline std::string to_json(const value& s_val)
@@ -33,6 +33,6 @@ inline std::string to_json(const value& s_val)
     return detail::to_json_string(s_val);
 }
 
-} // namespace docwire::serialization
+} // namespace df0::serialization
 
 #endif // DOCWIRE_JSON_SERIALIZATION_H

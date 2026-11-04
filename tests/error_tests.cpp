@@ -24,7 +24,7 @@
 #include <filesystem>
 #include <string>
 
-using namespace docwire;
+using namespace df0;
 
 TEST (errors, throwing)
 {
@@ -201,7 +201,7 @@ TEST(errors, hashing)
 
 namespace
 {
-    void check_caller_location(const docwire::basic_source_location& loc, int expected_line, const char* expected_func_substr)
+    void check_caller_location(const df0::basic_source_location& loc, int expected_line, const char* expected_func_substr)
     {
         // `file_name()` may return a full path, so we check the ending.
         EXPECT_TRUE(std::string(loc.file_name()).ends_with("error_tests.cpp"));
@@ -213,7 +213,7 @@ namespace
 
     BOOST_NOINLINE void get_location_and_check()
     {
-        check_caller_location(docwire::basic_source_location::current(), __LINE__, "get_location_and_check");
+        check_caller_location(df0::basic_source_location::current(), __LINE__, "get_location_and_check");
     }
 }
 

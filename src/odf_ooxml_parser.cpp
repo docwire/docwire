@@ -38,7 +38,7 @@
 #include "throw_if.h"
 #include "xml_root_element.h"
 
-namespace docwire
+namespace df0
 {
 
 using namespace std;
@@ -768,7 +768,7 @@ continuation odf_ooxml_parser<safety_level, auditor_type>::operator()(message_pt
 
 template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<strict, audit::null_auditor>;
 template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<relaxed, audit::null_auditor>;
-template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<docwire::safety_policy::strict, docwire::audit::json_stream_auditor>;
-template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<docwire::safety_policy::relaxed, docwire::audit::json_stream_auditor>;
+template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<df0::safety_policy::strict, df0::audit::json_stream_auditor>;
+template class DOCWIRE_ODF_OOXML_EXPORT odf_ooxml_parser<df0::safety_policy::relaxed, df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

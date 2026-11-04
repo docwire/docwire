@@ -16,7 +16,7 @@
 #include "pipeline/input_element.hpp"
 #include "pipeline/output_element.hpp"
 
-using namespace docwire;
+using namespace df0;
 using namespace testing;
 
 TEST(ocr_parser, leptonica_stderr_capturer)

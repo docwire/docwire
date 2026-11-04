@@ -41,7 +41,7 @@
 #include "pipeline/function_transformer.hpp"
 #include "pipeline/input_element.hpp"
 
-using namespace docwire;
+using namespace df0;
 
 std::vector<std::string> generate_list_for_basic_tests() {
     std::vector<std::string> files;
@@ -231,7 +231,7 @@ INSTANTIATE_TEST_SUITE_P(
     });
 
 class callback_test : public ::testing::TestWithParam<
-    std::tuple<const char*, const char*, docwire::filter_by_mail_min_creation_time>>
+    std::tuple<const char*, const char*, df0::filter_by_mail_min_creation_time>>
 {
 };
 

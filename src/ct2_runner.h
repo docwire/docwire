@@ -22,7 +22,7 @@
 #include <string>
 #include "ai_runner.h"
 
-namespace docwire::ai::ct2
+namespace df0::ai::ct2
 {
 
 /**
@@ -85,6 +85,6 @@ private:
 // Deduction guide for CTAD
 ct2_runner(const std::filesystem::path&) -> ct2_runner<audit::null_auditor>;
 
-} // namespace docwire::ai::ct2
+} // namespace df0::ai::ct2
 
 #endif // DOCWIRE_AI_CT2_RUNNER_H

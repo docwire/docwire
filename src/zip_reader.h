@@ -17,7 +17,7 @@
 #include "minizip_wrapper.h"
 #include <string>
 
-namespace docwire
+namespace df0
 {
 
 class zip_reader
@@ -77,6 +77,6 @@ private:
 	detail::minizip::state m_state;
 };
 
-}; // namespace docwire
+}; // namespace df0
 
 #endif

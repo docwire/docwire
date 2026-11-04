@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-namespace docwire::plain_text {
+namespace df0::plain_text {
 
 /**
  * @brief Renders a plain‑text table from already wrapped cell content.
@@ -69,6 +69,6 @@ inline std::string render_table(const std::vector<std::vector<std::vector<std::s
     return out;
 }
 
-} // namespace docwire::plain_text
+} // namespace df0::plain_text
 
 #endif // DOCWIRE_PLAIN_TEXT_RENDER_TABLE_H

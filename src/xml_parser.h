@@ -18,7 +18,7 @@
 #include "xml_export.h"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -55,6 +55,6 @@ public:
 	continuation operator()(message_ptr msg, const message_callbacks& emit_message);
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_XML_PARSER_H

@@ -3,7 +3,7 @@
 
 #include <exception>
 
-using namespace docwire;
+using namespace df0;
 
 TEST(IconvWrapper, ConvertUtf8ToUtf16)
 {

@@ -68,7 +68,7 @@
 #include <set>
 #include <variant>
 
-using namespace docwire;
+using namespace df0;
 
 static void readme()
 {
@@ -84,13 +84,13 @@ static void version()
   std::cout << std::endl << "Version: " << VERSION << std::endl;
 }
 
-namespace docwire
+namespace df0
 {
 	using magic_enum::istream_operators::operator>>;
 	using magic_enum::ostream_operators::operator<<;
 }
 
-namespace docwire::openai
+namespace df0::openai
 {
 	using magic_enum::istream_operators::operator>>;
 	using magic_enum::ostream_operators::operator<<;
@@ -325,7 +325,7 @@ int main(int argc, char* argv[])
 
 	if (audit_enabled)
 	{
-		docwire::ref_or_owned<std::ostream> audit_stream{std::clog};
+		df0::ref_or_owned<std::ostream> audit_stream{std::clog};
 		std::unique_ptr<std::ofstream> log_file;
 
 		if (vm.count("log_file"))
@@ -336,7 +336,7 @@ int main(int argc, char* argv[])
 				std::cerr << "Error: Unable to open log file: " << vm["log_file"].as<std::string>() << std::endl;
 				return 1;
 			}
-			audit_stream = docwire::ref_or_owned<std::ostream>{std::move(*log_file)};
+			audit_stream = df0::ref_or_owned<std::ostream>{std::move(*log_file)};
 		}
 
 		const std::string filter_spec =
@@ -346,7 +346,7 @@ int main(int argc, char* argv[])
 					? "*"
 					: "";
 
-		docwire::audit::json_stream_auditor auditor{
+		df0::audit::json_stream_auditor auditor{
 			filter_spec,
 			std::move(audit_stream)
 		};
@@ -354,14 +354,14 @@ int main(int argc, char* argv[])
 		return run_with_auditor(
 			vm,
 			std::move(data),
-			docwire::audit::auditor_ref<docwire::audit::json_stream_auditor>{auditor});
+			df0::audit::auditor_ref<df0::audit::json_stream_auditor>{auditor});
 	}
 
-	docwire::audit::null_auditor auditor;
+	df0::audit::null_auditor auditor;
 	return run_with_auditor(
 		vm,
 		std::move(data),
-		docwire::audit::auditor_ref<docwire::audit::null_auditor>{auditor});
+		df0::audit::auditor_ref<df0::audit::null_auditor>{auditor});
 }
 
 template<typename auditor_type>
@@ -625,7 +625,7 @@ int run_with_auditor(
 			content_type::detector{}
 			| archives_parser<configured_auditor>{
 				auditor}
-			| office_formats_parser<docwire::safety_policy::strict, configured_auditor>{
+			| office_formats_parser<df0::safety_policy::strict, configured_auditor>{
 				auditor}
 			| mail_parser<configured_auditor>{
 				auditor}

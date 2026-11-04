@@ -21,7 +21,7 @@
 #include <concepts>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -68,7 +68,7 @@ public:
 
 	/**
 	* @brief Executes transform operation for given node data.
-	* @see docwire::message_ptr, docwire::message_callbacks
+	* @see df0::message_ptr, df0::message_callbacks
 	* @param msg
 	* @param emit_message
 	**/
@@ -85,6 +85,6 @@ private:
 text_to_speech(const std::string&, text_to_speech_model, text_to_speech_voice) -> text_to_speech<audit::null_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_OPENAI_TEXT_TO_SPEECH_H

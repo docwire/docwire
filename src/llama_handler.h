@@ -15,7 +15,7 @@
 #include <llama.h>
 #include <memory>
 
-namespace docwire::ai::llama {
+namespace df0::ai::llama {
 /*
  * @brief A generic deleter to delete various Llama objects created on Heap memory;
  */
@@ -88,6 +88,6 @@ private:
   std::unique_ptr<T, llama_deleter<T>> ptr_;
 };
 
-} // namespace docwire::ai::llama
+} // namespace df0::ai::llama
 
 #endif

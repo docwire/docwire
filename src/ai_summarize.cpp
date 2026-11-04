@@ -10,11 +10,11 @@
 /*********************************************************************************************************************************************/
 #include "ai_summarize.h"
 
-namespace docwire::ai
+namespace df0::ai
 {
 
 summarize::summarize(std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime)
     : model_chain_element(summary_prompt, runner, lifetime)
 {
 }
-} // namespace docwire::ai
+} // namespace df0::ai

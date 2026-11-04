@@ -11,11 +11,11 @@
 
 #include "ai_task.h"
 
-namespace docwire::ai
+namespace df0::ai
 {
 
 task::task(const std::string& prompt, std::shared_ptr<ai_runner> runner,model_lifetime_policy lifetime)
     : model_chain_element(prompt, runner, lifetime)
 {
 }
-} // namespace docwire::ai
+} // namespace df0::ai

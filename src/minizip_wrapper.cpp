@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace docwire::detail::minizip
+namespace df0::detail::minizip
 {
 
 namespace
@@ -309,4 +309,4 @@ DOCWIRE_CORE_EXPORT bool load_directory(state& st)
     return true;
 }
 
-} // namespace docwire::detail::minizip
+} // namespace df0::detail::minizip

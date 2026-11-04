@@ -15,7 +15,7 @@
 #include "file_extension.h"
 #include "serialization_base.h"
 
-namespace docwire::serialization
+namespace df0::serialization
 {
 
 /**
@@ -31,6 +31,6 @@ struct serializer<file_extension>
     value typed_summary(const file_extension& ext) const { return decorate_with_typeid(full(ext), type_name::pretty<file_extension>()); }
 };
 
-} // namespace docwire::serialization
+} // namespace df0::serialization
 
 #endif // DOCWIRE_SERIALIZATION_FILE_EXTENSION_H

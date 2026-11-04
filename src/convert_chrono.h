@@ -19,7 +19,7 @@
 #include "with_date_format.h"
 #include "convert_numeric.h"
 
-namespace docwire::convert
+namespace df0::convert
 {
 
 namespace detail
@@ -139,6 +139,6 @@ inline std::optional<std::string> convert_impl(std::chrono::sys_seconds tp, dest
            to_string_padded(time.seconds().count());
 }
 
-} // namespace docwire::convert
+} // namespace df0::convert
 
 #endif // DOCWIRE_CONVERT_CHRONO_H

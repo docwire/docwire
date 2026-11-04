@@ -21,7 +21,7 @@
 #include <vector>
 #include "make_error.h"
 
-namespace docwire
+namespace df0
 {
 
 
@@ -40,7 +40,7 @@ inline std::filesystem::path this_line_location()
  *
  * @param resource_rel_path The relative path of the resource to find (e.g., "docwire/data.bin").
  * @return The absolute path to the found resource.
- * @throws docwire::errors::base if the resource cannot be found.
+ * @throws df0::errors::base if the resource cannot be found.
  */
 inline std::filesystem::path resource_path(const std::filesystem::path& resource_rel_path)
 {
@@ -97,6 +97,6 @@ inline std::filesystem::path resource_path(const std::filesystem::path& resource
     throw DOCWIRE_MAKE_ERROR("Resource not found", resource_rel_path, errors::program_corrupted{});
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_RESOURCE_PATH_H

@@ -18,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::audit
+namespace df0::audit
 {
 
 template<typename auditor_type>
@@ -55,6 +55,6 @@ template<typename T>
 concept stateless_auditor =
     std::default_initializable<auditor_ref<T>>;
 
-} // namespace docwire::audit
+} // namespace df0::audit
 
 #endif

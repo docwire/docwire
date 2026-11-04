@@ -15,7 +15,7 @@
 #include "serialization_base.h"
 #include <exception>
 
-namespace docwire::serialization
+namespace df0::serialization
 {
 
 template<typename T> requires std::is_base_of_v<std::exception, T>
@@ -25,6 +25,6 @@ struct serializer<T>
     value typed_summary(const T& e) const { return decorate_with_typeid(full(e), type_name::pretty<T>()); }
 };
 
-} // namespace docwire::serialization
+} // namespace df0::serialization
 
 #endif // DOCWIRE_SERIALIZATION_EXCEPTION_H

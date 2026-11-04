@@ -39,7 +39,7 @@
 #include "throw_if.h"
 #include <vector>
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -737,7 +737,7 @@ continuation xlsb_parser<auditor_type>::operator()(message_ptr msg, const messag
 	return continuation::proceed;
 }
 
-template class DOCWIRE_XLSB_EXPORT xlsb_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_XLSB_EXPORT xlsb_parser<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_XLSB_EXPORT xlsb_parser<df0::audit::null_auditor>;
+template class DOCWIRE_XLSB_EXPORT xlsb_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

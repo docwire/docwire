@@ -36,7 +36,7 @@ public:
         sub_matcher_.DescribeNegationTo(os);
     }
 
-    bool MatchAndExplain(const docwire::message_ptr& msg, testing::MatchResultListener* listener) const {
+    bool MatchAndExplain(const df0::message_ptr& msg, testing::MatchResultListener* listener) const {
         if (!msg) {
             *listener << "which is a null pointer";
             return false;
@@ -58,13 +58,13 @@ testing::PolymorphicMatcher<message_ptr_with_matcher<T>> MessagePtrWith(const te
     return testing::MakePolymorphicMatcher(message_ptr_with_matcher<T>(sub_matcher));
 }
 
-namespace docwire::document {
+namespace df0::document {
     inline void PrintTo(const text& text, std::ostream* os) {
         *os << testing::PrintToString(text.text);
     }
 }
 
-namespace docwire {
+namespace df0 {
     inline void PrintTo(const mime_type& mt, std::ostream* os) {
         *os << stringify(mt);
     }

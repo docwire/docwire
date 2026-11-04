@@ -17,7 +17,7 @@
 #include "type_name_base.h"
 #include <typeindex>
 
-namespace docwire::serialization
+namespace df0::serialization
 {
 
 template <>
@@ -25,11 +25,11 @@ struct serializer<std::type_index>
 {
     value full(const std::type_index& t) const
     {
-        return docwire::type_name::from_type_index(t);
+        return df0::type_name::from_type_index(t);
     }
     value typed_summary(const std::type_index& t) const { return decorate_with_typeid(this->full(t), type_name::pretty<std::type_index>()); }
 };
 
-} // namespace docwire::serialization
+} // namespace df0::serialization
 
 #endif // DOCWIRE_SERIALIZATION_TYPEINDEX_H

@@ -21,7 +21,7 @@
 #include <filesystem>
 #include <map>
 
-namespace docwire
+namespace df0
 {
 
 struct default_file_name
@@ -104,8 +104,8 @@ public:
 
 	/**
 	 * @brief Executes transform for the given message; consumes msg.
-	 * @see docwire::message_ptr
-	 * @see docwire::message_callbacks
+	 * @see df0::message_ptr
+	 * @see df0::message_callbacks
 	 * @param msg Message to process.
 	 * @param emit_message Emission callbacks for produced messages.
 	 */
@@ -119,6 +119,6 @@ private:
 };
 
 } // namespace http
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_HTTP_POST_H

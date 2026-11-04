@@ -15,7 +15,7 @@
 #include "resource_path.h"
 #include "throw_if.h"
 
-namespace docwire::ai
+namespace df0::ai
 {
 /**
  * @brief constructor to run llama models
@@ -43,4 +43,4 @@ continuation model_chain_element::operator()(message_ptr msg, const message_call
     return emit_message(data_source{std::move(output)});
 }
 
-} // namespace docwire::ai
+} // namespace df0::ai

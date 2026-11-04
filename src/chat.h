@@ -20,7 +20,7 @@
 #include <concepts>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -103,8 +103,8 @@ public:
 
 	/**
 	* @brief Executes transform operation for given node data.
-	* @see docwire::message_ptr
-	* @see docwire::message_callbacks
+	* @see df0::message_ptr
+	* @see df0::message_callbacks
 	* @param msg The input message to process.
 	* @param emit_message Callback invoked to emit produced messages.
 	*/
@@ -121,6 +121,6 @@ private:
 chat(const std::string&, const std::string&, model, float, image_detail) -> chat<audit::null_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_OPENAI_CHAT_H

@@ -16,7 +16,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -86,6 +86,6 @@ consteval type_id type_id_of() noexcept
     return type_id{detail::fnv1a_64(signature)};
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_TYPE_ID_HPP

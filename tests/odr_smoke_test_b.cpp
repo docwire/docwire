@@ -5,5 +5,5 @@
 
 std::string odr_smoke_from_b()
 {
-    return docwire::type_name::pretty<int>();
+    return df0::type_name::pretty<int>();
 }

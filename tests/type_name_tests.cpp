@@ -3,7 +3,7 @@
 #include <typeindex>
 #include <string>
 
-using namespace docwire;
+using namespace df0;
 
 TEST(TypeName, FromTypeIndex)
 {

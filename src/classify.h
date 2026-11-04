@@ -17,7 +17,7 @@
 #include <set>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -60,6 +60,6 @@ public:
 classify(const std::set<std::string>&, const std::string&, model, float, image_detail) -> classify<audit::null_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_OPENAI_CLASSIFY_H

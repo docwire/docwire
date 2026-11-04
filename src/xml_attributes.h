@@ -25,7 +25,7 @@
 /**
  * @brief XML processing utilities.
  */
-namespace docwire::xml
+namespace df0::xml
 {
 
 /**
@@ -160,6 +160,6 @@ private:
     checked<std::optional<value_type>, safety_level> m_attribute; // The presence of a value indicates a valid iterator.
 };
 
-} // namespace docwire::xml
+} // namespace df0::xml
 
 #endif // DOCWIRE_XML_ATTRIBUTES_H

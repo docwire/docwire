@@ -16,7 +16,7 @@
 #include <numeric>
 #include <vector>
 
-namespace docwire::plain_text {
+namespace df0::plain_text {
 
 /**
  * @brief Allocate column widths proportionally, respecting minimum widths
@@ -63,6 +63,6 @@ inline std::vector<int> allocate_columns_proportional(const std::vector<int>& mi
     return col_widths;
 }
 
-} // namespace docwire::plain_text
+} // namespace df0::plain_text
 
 #endif

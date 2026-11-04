@@ -15,7 +15,7 @@
 #include <concepts>
 #include <string_view>
 
-namespace docwire::audit
+namespace df0::audit
 {
 
 /**
@@ -30,6 +30,6 @@ concept audit_tag = requires
     { T::string() } -> std::convertible_to<std::string_view>;
 };
 
-} // namespace docwire::audit
+} // namespace df0::audit
 
 #endif

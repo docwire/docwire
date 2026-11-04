@@ -16,7 +16,7 @@
 #include "content_type_export.h"
 #include "data_source.h"
 
-namespace docwire::content_type::xlsb
+namespace df0::content_type::xlsb
 {
 
 /**
@@ -45,6 +45,6 @@ public:
     }
 };
 
-} // namespace docwire::content_type::xlsb
+} // namespace df0::content_type::xlsb
 
 #endif // DOCWIRE_CONTENT_TYPE_XLSB

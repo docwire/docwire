@@ -46,7 +46,7 @@
 #include "detail/thread_safe_ole_stream_reader.h"
 #include "detail/thread_safe_ole_storage.h"
 
-namespace docwire
+namespace df0
 {
 
 using namespace wvWare;
@@ -109,12 +109,12 @@ enum field_part
 
 struct current_state
 {
-	std::stack<docwire::table_state> table_state;
+	std::stack<df0::table_state> table_state;
 	current_header_footer header_footer;
 	std::list<std::string> obj_texts;
 	std::list<std::string>::iterator obj_texts_iter;
-	docwire::field_type field_type;
-	docwire::field_part field_part;
+	df0::field_type field_type;
+	df0::field_part field_part;
 	UString field_params;
 	UString field_value;
 	current_state() : field_type(FLT_NONE), field_part(FIELD_PART_NONE) {};
@@ -800,7 +800,7 @@ continuation doc_parser<auditor_type>::operator()(
     return continuation::proceed;
 }
 
-template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT doc_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT doc_parser<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT doc_parser<df0::audit::null_auditor>;
+template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT doc_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

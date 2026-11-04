@@ -31,7 +31,7 @@
 #include <concepts>
 #include <utility>
 
-namespace docwire
+namespace df0
 {
 
 // Forward declaration so the detail alias can reference the class.
@@ -101,6 +101,6 @@ public:
 office_formats_parser() ->
     office_formats_parser<default_safety_level, audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_OFFICE_FORMATS_PARSER_H

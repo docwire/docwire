@@ -14,7 +14,7 @@
 
 #include <memory>
 
-namespace docwire
+namespace df0
 {
 
 template <typename T>
@@ -114,6 +114,6 @@ private:
 	friend with_pimpl<T>;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif

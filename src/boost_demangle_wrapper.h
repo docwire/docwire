@@ -15,7 +15,7 @@
 #include "core_export.h"
 #include <string>
 
-namespace docwire::detail
+namespace df0::detail
 {
 DOCWIRE_CORE_EXPORT std::string demangle_type_name(const char* name);
 }

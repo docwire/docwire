@@ -15,7 +15,7 @@
 #include <filesystem>
 #include "serialization_base.h"
 
-namespace docwire::serialization
+namespace df0::serialization
 {
 
 template <>
@@ -28,6 +28,6 @@ struct serializer<std::filesystem::path>
     value typed_summary(const std::filesystem::path& p) const { return decorate_with_typeid(full(p), type_name::pretty<std::filesystem::path>()); }
 };
 
-} // namespace docwire::serialization
+} // namespace df0::serialization
 
 #endif // DOCWIRE_SERIALIZATION_FILESYSTEM_H

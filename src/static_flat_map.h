@@ -17,7 +17,7 @@
 #include <cstddef>
 #include <functional>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -94,6 +94,6 @@ private:
     std::array<value_type, N> m_items;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_STATIC_FLAT_MAP_H

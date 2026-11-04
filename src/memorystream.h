@@ -15,7 +15,7 @@
 #include <istream>
 #include <span>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -128,6 +128,6 @@ private:
 	imemorystreambuf m_streambuf;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_MEMORY_STREAM_H

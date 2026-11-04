@@ -19,7 +19,7 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 template<typename auditor_type = audit::null_auditor>
@@ -56,6 +56,6 @@ private:
 // Deduction guide for CTAD
 iwork_parser() -> iwork_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif

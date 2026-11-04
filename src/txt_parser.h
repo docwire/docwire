@@ -19,7 +19,7 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 struct parse_paragraphs { bool v; };
@@ -85,6 +85,6 @@ txt_parser() -> txt_parser<audit::null_auditor>;
 txt_parser(parse_paragraphs) -> txt_parser<audit::null_auditor>;
 txt_parser(parse_paragraphs, parse_lines) -> txt_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif

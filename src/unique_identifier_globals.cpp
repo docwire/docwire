@@ -14,7 +14,7 @@
 #include <atomic>
 #include <cstddef>
 
-namespace docwire::detail
+namespace df0::detail
 {
 
 size_t next_unique_identifier()
@@ -23,4 +23,4 @@ size_t next_unique_identifier()
     return counter.fetch_add(1, std::memory_order_relaxed);
 }
 
-} // namespace docwire::detail
+} // namespace df0::detail

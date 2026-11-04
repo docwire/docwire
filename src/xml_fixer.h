@@ -16,7 +16,7 @@
 #include <string>
 #include "xml_export.h"
 
-namespace docwire
+namespace df0
 {
 
 class DOCWIRE_XML_EXPORT xml_fixer : public with_pimpl<xml_fixer>
@@ -26,6 +26,6 @@ class DOCWIRE_XML_EXPORT xml_fixer : public with_pimpl<xml_fixer>
 		std::string fix(const std::string& xml);
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif

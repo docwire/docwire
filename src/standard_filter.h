@@ -21,7 +21,7 @@
 #include <utility>
 #include <vector>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -200,6 +200,6 @@ public:
   }
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_STANDARD_FILTER_H

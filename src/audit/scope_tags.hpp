@@ -14,7 +14,7 @@
 
 #include <string_view>
 
-namespace docwire::audit
+namespace df0::audit
 {
 
 struct scope_enter
@@ -27,6 +27,6 @@ struct scope_exit
     static constexpr std::string_view string() { return "scope_exit"; }
 };
 
-} // namespace docwire::audit
+} // namespace df0::audit
 
 #endif

@@ -19,7 +19,7 @@
 #include <utility>
 #include <vector>
 
-namespace docwire::plain_text {
+namespace df0::plain_text {
 
 /**
  * @brief Chooses the best column‑width allocation strategy automatically.
@@ -45,6 +45,6 @@ allocate_columns_auto(const std::vector<int>& min_widths,
     return { allocate_columns_proportional(min_widths, desired_widths, usable_width), inter_col_gap };
 }
 
-} // namespace docwire::plain_text
+} // namespace df0::plain_text
 
 #endif // DOCWIRE_PLAIN_TEXT_ALLOCATE_COLUMNS_AUTO_H

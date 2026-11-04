@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace docwire::ai {
+namespace df0::ai {
 
 /**
  * @brief Abstract interface for AI model runners.
@@ -69,6 +69,6 @@ class DOCWIRE_AI_EXPORT ai_runner {
     virtual void unload() = 0;
 };
 
-} // namespace docwire::ai
+} // namespace df0::ai
 
 #endif

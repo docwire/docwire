@@ -18,7 +18,7 @@
 #include "content_type.h"
 #include <filesystem>
 
-using namespace docwire;
+using namespace df0;
 using namespace testing;
 
 // Helper for direct parser testing

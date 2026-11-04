@@ -19,7 +19,7 @@
 #include "serialization_message.h" // IWYU pragma: keep
 #include "xml_children.h"
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -93,7 +93,7 @@ continuation xml_parser<safety_level, auditor_type>::operator()(message_ptr msg,
 
 template class DOCWIRE_XML_EXPORT xml_parser<strict, audit::null_auditor>;
 template class DOCWIRE_XML_EXPORT xml_parser<relaxed, audit::null_auditor>;
-template class DOCWIRE_XML_EXPORT xml_parser<docwire::safety_policy::strict, docwire::audit::json_stream_auditor>;
-template class DOCWIRE_XML_EXPORT xml_parser<docwire::safety_policy::relaxed, docwire::audit::json_stream_auditor>;
+template class DOCWIRE_XML_EXPORT xml_parser<df0::safety_policy::strict, df0::audit::json_stream_auditor>;
+template class DOCWIRE_XML_EXPORT xml_parser<df0::safety_policy::relaxed, df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

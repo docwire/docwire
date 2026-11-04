@@ -25,7 +25,7 @@
 #include "serialization_enum.h" // IWYU pragma: keep
 #include <sstream>
 
-namespace docwire
+namespace df0
 {
 
 using namespace openai;
@@ -163,8 +163,8 @@ continuation text_to_speech<auditor_type>::operator()(
 	return emit_message(data_source{content});
 }
 
-template class DOCWIRE_OPENAI_EXPORT docwire::openai::text_to_speech<docwire::audit::null_auditor>;
-template class DOCWIRE_OPENAI_EXPORT docwire::openai::text_to_speech<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_OPENAI_EXPORT df0::openai::text_to_speech<df0::audit::null_auditor>;
+template class DOCWIRE_OPENAI_EXPORT df0::openai::text_to_speech<df0::audit::json_stream_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0

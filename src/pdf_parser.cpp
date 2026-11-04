@@ -46,7 +46,7 @@
 #include "message_counters.h"
 #include "charset_converter.h"
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -733,7 +733,7 @@ continuation pdf_parser<auditor_type>::operator()(message_ptr msg, const message
 	return continuation::proceed;
 }
 
-template class DOCWIRE_PDF_EXPORT pdf_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_PDF_EXPORT pdf_parser<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_PDF_EXPORT pdf_parser<df0::audit::null_auditor>;
+template class DOCWIRE_PDF_EXPORT pdf_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

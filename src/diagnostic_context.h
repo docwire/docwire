@@ -22,7 +22,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire
+namespace df0
 {
 
 template <typename T>
@@ -84,17 +84,17 @@ const char* make_context_item(const char* name, const char (&v)[N])
 } // namespace diagnostic_context
 
 #define DOCWIRE_DIAGNOSTIC_CONTEXT_MAKE_TUPLE_ELEM(r, data, i, elem) \
-    BOOST_PP_COMMA_IF(i) docwire::diagnostic_context::make_context_item(BOOST_PP_STRINGIZE(elem), elem)
+    BOOST_PP_COMMA_IF(i) df0::diagnostic_context::make_context_item(BOOST_PP_STRINGIZE(elem), elem)
 
 #define DOCWIRE_DIAGNOSTIC_CONTEXT_MAKE_TUPLE(...) \
     __VA_OPT__(BOOST_PP_SEQ_FOR_EACH_I(DOCWIRE_DIAGNOSTIC_CONTEXT_MAKE_TUPLE_ELEM, _, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))
 
 #define DOCWIRE_DIAGNOSTIC_CONTEXT_GET_TYPE_ELEM(r, data, i, elem) \
-    BOOST_PP_COMMA_IF(i) decltype(docwire::diagnostic_context::make_context_item(BOOST_PP_STRINGIZE(elem), elem))
+    BOOST_PP_COMMA_IF(i) decltype(df0::diagnostic_context::make_context_item(BOOST_PP_STRINGIZE(elem), elem))
 
 #define DOCWIRE_DIAGNOSTIC_CONTEXT_GET_TYPES(...) \
     __VA_OPT__(BOOST_PP_SEQ_FOR_EACH_I(DOCWIRE_DIAGNOSTIC_CONTEXT_GET_TYPE_ELEM, _, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_DIAGNOSTIC_CONTEXT_H

@@ -15,18 +15,18 @@
 #include "ai_task.h"
 #include "local_ai_ct2_runner_factory.h"
 
-namespace docwire::ai::local::ct2 {
+namespace df0::ai::local::ct2 {
 class task :
-	public docwire::pipeline::transformer_element<task>,
-	public docwire::ai::task {
+	public df0::pipeline::transformer_element<task>,
+	public df0::ai::task {
 
 public:
   explicit task(
       const std::string &prompt,
       model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::task(prompt, make_default_runner(), lifetime){};
+      : df0::ai::task(prompt, make_default_runner(), lifetime){};
 };
 
-} // namespace docwire::ai::local::ct2
+} // namespace df0::ai::local::ct2
 
 #endif // DOCWIRE_LOCAL_AI_CT2_TASK_H

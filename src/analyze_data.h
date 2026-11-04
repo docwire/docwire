@@ -16,7 +16,7 @@
 #include <concepts>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -57,6 +57,6 @@ public:
 analyze_data(const std::string&, model, float, image_detail) -> analyze_data<audit::null_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_OPENAI_ANALYZE_DATA_H

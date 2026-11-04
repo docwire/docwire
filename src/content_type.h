@@ -17,7 +17,7 @@
 #include "ref_or_owned.h"
 
 /**
- * @namespace docwire::content_type
+ * @namespace df0::content_type
  * @brief Provides a multi-stage pipeline for content type detection.
  * 
  * ### Architecture
@@ -36,7 +36,7 @@
  * by reading only a small initial buffer (e.g., 4KB) to check for local file headers before falling back 
  * to deep inspection (like ZIP parsing), preventing massive files from being downloaded into memory.
  */
-namespace docwire::content_type
+namespace df0::content_type
 {
 
 /**
@@ -146,6 +146,6 @@ private:
     ref_or_owned<by_signature::database> m_signatures_db_to_use;
 };
 
-} // namespace docwire::content_type
+} // namespace df0::content_type
 
 #endif // DOCWIRE_CONTENT_TYPE

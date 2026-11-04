@@ -15,7 +15,7 @@
 #include "core_export.h"
 #include <string_view>
 
-namespace docwire::errors
+namespace df0::errors
 {
 
 /**
@@ -135,6 +135,6 @@ struct file_encrypted
 	static constexpr std::string_view string() { return "file encrypted error tag"; }
 };
 
-} // namespace docwire::errors
+} // namespace df0::errors
 
 #endif

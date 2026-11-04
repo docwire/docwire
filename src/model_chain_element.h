@@ -16,7 +16,7 @@
 #include "pipeline/element_base.hpp"
 #include "ai_export.h"
 
-namespace docwire::ai
+namespace df0::ai
 {
 
 /***
@@ -78,6 +78,6 @@ class DOCWIRE_AI_EXPORT model_chain_element
     model_lifetime_policy m_model_lifetime;
 };
 
-} // namespace docwire::ai
+} // namespace df0::ai
 
 #endif // DOCWIRE_AI_MODEL_CHAIN_ELEMENT_H

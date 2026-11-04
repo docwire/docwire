@@ -14,7 +14,7 @@
 
 #include "source_location.h"
 
-namespace docwire::detail
+namespace df0::detail
 {
     /**
      * @brief Helper struct to capture the source location of a call site.

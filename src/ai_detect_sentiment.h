@@ -15,7 +15,7 @@
 #include "ai_export.h"
 #include "model_chain_element.h"
 
-namespace docwire::ai {
+namespace df0::ai {
 
 class DOCWIRE_AI_EXPORT detect_sentiment : public model_chain_element {
 public:
@@ -30,6 +30,6 @@ protected:
       "negative, mixed::\n\n";
 };
 
-} // namespace docwire::ai
+} // namespace df0::ai
 
 #endif // DOCWIRE_AI_DETECT_SENTIMENT_H

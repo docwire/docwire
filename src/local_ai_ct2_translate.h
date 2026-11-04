@@ -16,17 +16,17 @@
 
 #include "local_ai_ct2_runner_factory.h"
 
-namespace docwire::ai::local::ct2 {
+namespace df0::ai::local::ct2 {
 
 class translate :
-	public docwire::pipeline::transformer_element<translate>,
-	public docwire::ai::translate {
+	public df0::pipeline::transformer_element<translate>,
+	public df0::ai::translate {
 public:
   translate(const std::string &language,
             model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::translate(language, make_default_runner(), lifetime){};
+      : df0::ai::translate(language, make_default_runner(), lifetime){};
 };
 
-} // namespace docwire::ai::local::ct2
+} // namespace df0::ai::local::ct2
 
 #endif // DOCWIRE_LOCAL_AI_CT2_TRANSLATE_H

@@ -20,7 +20,7 @@
 /**
  * Provides content type detection based on file extension
  */
-namespace docwire::content_type::by_file_extension
+namespace df0::content_type::by_file_extension
 {
 
 /**
@@ -73,6 +73,6 @@ public:
     }
 };
 
-} // namespace docwire::content_type::by_file_extension
+} // namespace df0::content_type::by_file_extension
 
 #endif // DOCWIRE_CONTENT_TYPE_BY_FILE_EXTENSION_H

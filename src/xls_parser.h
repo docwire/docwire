@@ -20,7 +20,7 @@
 #include <concepts>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 
 class thread_safe_ole_storage;
@@ -59,6 +59,6 @@ public:
 // Deduction guide for CTAD
 xls_parser() -> xls_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif

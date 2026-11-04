@@ -16,7 +16,7 @@
 #include "enforce.h"
 #include <type_traits>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -103,6 +103,6 @@ using exactly = ranged<Value, Value, T, safety_level>;
 template <typename T, safety_policy safety_level = default_safety_level>
 using non_negative = at_least<0, T, safety_level>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_RANGED_H

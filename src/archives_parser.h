@@ -18,7 +18,7 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 template<typename auditor_type = audit::null_auditor>
@@ -46,7 +46,7 @@ public:
 
 	/**
 	* @brief Executes transform operation for given node data.
-	* @see docwire::message_ptr
+	* @see df0::message_ptr
 	* @param msg incoming message
 	* @param emit_message callback to emit messages
 	*/
@@ -59,6 +59,6 @@ private:
 // Deduction guide for CTAD
 archives_parser() -> archives_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_ARCHIVES_PARSER_H

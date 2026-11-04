@@ -20,12 +20,12 @@
 #include <magic_enum/magic_enum_iostream.hpp>
 #include "serialization_document_elements.h" // IWYU pragma: keep
 
-using namespace docwire;
+using namespace df0;
 
 TEST(fuzzy_match, ratio)
 {
-    ASSERT_EQ(docwire::fuzzy_match::ratio("hello", "hello"), 100.0);
-    ASSERT_EQ(docwire::fuzzy_match::ratio("hello", "helll"), 80.0);
+    ASSERT_EQ(df0::fuzzy_match::ratio("hello", "hello"), 100.0);
+    ASSERT_EQ(df0::fuzzy_match::ratio("hello", "helll"), 80.0);
 }
 
 TEST(base64, encode)

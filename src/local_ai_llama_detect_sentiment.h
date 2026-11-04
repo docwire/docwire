@@ -17,30 +17,30 @@
 #include "local_ai_llama_runner_factory.h"
 #include <filesystem>
 
-namespace docwire::ai::local::llama {
+namespace df0::ai::local::llama {
 
 class detect_sentiment :
-	public docwire::pipeline::transformer_element<detect_sentiment>,
-	public docwire::ai::detect_sentiment {
+	public df0::pipeline::transformer_element<detect_sentiment>,
+	public df0::ai::detect_sentiment {
 public:
 #ifdef DOCWIRE_GRANITE
   // Constructor with Default Granite model
   explicit detect_sentiment(
       model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::detect_sentiment(make_default_runner(), lifetime){};
+      : df0::ai::detect_sentiment(make_default_runner(), lifetime){};
 #endif
   // Constructor allowing custom model path but with default config
   explicit detect_sentiment(
       const std::filesystem::path &model_path,
       model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::detect_sentiment(make_runner(model_path), lifetime){};
+      : df0::ai::detect_sentiment(make_runner(model_path), lifetime){};
   // Constructor allowing custom model and relevant config
   explicit detect_sentiment(
-      docwire::ai::model_inference_config config,
+      df0::ai::model_inference_config config,
       model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::detect_sentiment(make_runner(config), lifetime){};
+      : df0::ai::detect_sentiment(make_runner(config), lifetime){};
 };
 
-} // namespace docwire::ai::local::llama
+} // namespace df0::ai::local::llama
 
 #endif // DOCWIRE_LOCAL_AI_LLAMA_DETECT_SENTIMENT_H

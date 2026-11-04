@@ -24,7 +24,7 @@
 #include <functional>
 #include "type_id.h"
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -95,7 +95,7 @@ struct pimpl_impl<html_writer> : pimpl_impl_base
   bool m_header_is_open { false };
   int m_nested_docs_counter { 0 };
   using handler_func = std::function<std::shared_ptr<text_element>(const message_ptr&)>;
-  const boost::container::flat_map<docwire::type_id, handler_func> m_handlers;
+  const boost::container::flat_map<df0::type_id, handler_func> m_handlers;
 
   pimpl_impl()
     : m_handlers{
@@ -195,7 +195,7 @@ struct pimpl_impl<html_writer> : pimpl_impl_base
     {
       auto image_mime_type = image.source.highest_confidence_mime_type();
       throw_if (!image_mime_type);
-      std::string encoded_string = docwire::base64::encode(image.source.span());
+      std::string encoded_string = df0::base64::encode(image.source.span());
       src_value = "data:" + image_mime_type->v + ";base64," + encoded_string;
     }
     attrs.insert({"src", src_value});
@@ -253,7 +253,7 @@ struct pimpl_impl<html_writer> : pimpl_impl_base
     auto it = m_handlers.find(msg->object_type_id());
     std::shared_ptr<text_element> text_element = (it != m_handlers.end())
                                                     ? it->second(msg)
-                                                    : std::shared_ptr<docwire::text_element>();
+                                                    : std::shared_ptr<df0::text_element>();
     if (text_element)
       text_element->write_to(stream);
   }
@@ -268,4 +268,4 @@ void html_writer::write_to(const message_ptr& msg, std::ostream &stream)
 	impl().write_to(msg, stream);
 }
 
-} // namespace docwire
+} // namespace df0

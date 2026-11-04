@@ -15,16 +15,16 @@
 #include "ai_detect_sentiment.h"
 #include "local_ai_ct2_runner_factory.h"
 
-namespace docwire::ai::local::ct2 {
+namespace df0::ai::local::ct2 {
 
 class detect_sentiment :
-	public docwire::pipeline::transformer_element<detect_sentiment>,
-	public docwire::ai::detect_sentiment {
+	public df0::pipeline::transformer_element<detect_sentiment>,
+	public df0::ai::detect_sentiment {
 public:
   detect_sentiment(model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::detect_sentiment(make_default_runner(), lifetime){};
+      : df0::ai::detect_sentiment(make_default_runner(), lifetime){};
 };
 
-} // namespace docwire::ai::local::ct2
+} // namespace df0::ai::local::ct2
 
 #endif // DOCWIRE_LOCAL_AI_CT2_DETECT_SENTIMENT_H

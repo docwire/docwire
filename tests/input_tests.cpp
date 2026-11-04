@@ -25,7 +25,7 @@
 #include "plain_text_exporter.h"
 #include "pipeline/input_element.hpp"
 
-using namespace docwire;
+using namespace df0;
 
 namespace
 {

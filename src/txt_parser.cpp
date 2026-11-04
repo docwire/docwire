@@ -26,7 +26,7 @@
 #include "serialization_data_source.h" // IWYU pragma: keep
 #include <string.h>
 
-namespace docwire
+namespace df0
 {
 
 template<typename auditor_type>
@@ -308,7 +308,7 @@ continuation txt_parser<auditor_type>::operator()(message_ptr msg, const message
   return continuation::proceed;
 }
 
-template class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser<df0::audit::null_auditor>;
+template class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

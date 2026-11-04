@@ -15,7 +15,7 @@
 #include <memory>
 #include <type_traits>
 
-namespace docwire
+namespace df0
 {
 
 template<typename U, typename T>
@@ -112,6 +112,6 @@ private:
   std::shared_ptr<T> v;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_REF_OR_OWNED_H

@@ -27,7 +27,7 @@
 #include <vector>
 #include "message_counters.h"
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -277,7 +277,7 @@ continuation archives_parser<auditor_type>::operator()(message_ptr msg, const me
 	return continuation::proceed;
 }
 
-template class DOCWIRE_ARCHIVES_EXPORT archives_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_ARCHIVES_EXPORT archives_parser<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_ARCHIVES_EXPORT archives_parser<df0::audit::null_auditor>;
+template class DOCWIRE_ARCHIVES_EXPORT archives_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

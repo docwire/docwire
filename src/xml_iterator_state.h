@@ -14,7 +14,7 @@
 
 #include "xml_reader.h"
 
-namespace docwire::xml
+namespace df0::xml
 {
 
 /**

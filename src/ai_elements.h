@@ -15,7 +15,7 @@
 #include "ai_export.h"
 #include <vector>
 
-namespace docwire::ai
+namespace df0::ai
 {
 
 struct DOCWIRE_AI_EXPORT embedding
@@ -23,6 +23,6 @@ struct DOCWIRE_AI_EXPORT embedding
   std::vector<double> values;
 };
 
-} // namespace docwire::ai
+} // namespace df0::ai
 
 #endif // DOCWIRE_AI_ELEMENTS_H

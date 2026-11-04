@@ -20,7 +20,7 @@
 #include "data_stream.h"
 #include "wv2/src/olestream.h"
 
-namespace docwire
+namespace df0
 {
 
 class data_stream;
@@ -333,6 +333,6 @@ inline wvWare::S32 thread_safe_ole_stream_reader::readS32()
 	return static_cast<wvWare::S32>(data);
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_THREAD_SAFE_OLE_STREAM_READER_H

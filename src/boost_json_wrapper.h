@@ -15,7 +15,7 @@
 #include "core_export.h"
 #include "serialization_base.h"
 
-namespace docwire::serialization::detail
+namespace df0::serialization::detail
 {
 DOCWIRE_CORE_EXPORT std::string to_json_string(const value& s_val);
 }

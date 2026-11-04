@@ -21,7 +21,7 @@
 #include <concepts>
 #include <utility>
 
-namespace docwire
+namespace df0
 {
 
 // Forward declaration so the detail alias can reference the class.
@@ -76,6 +76,6 @@ public:
 // Default deduction guide enabling `mail_parser{}`.
 mail_parser() -> mail_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_MAIL_PARSER_H

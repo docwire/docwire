@@ -15,7 +15,7 @@
 #include "serialization_base.h"
 #include <magic_enum/magic_enum.hpp>
 
-namespace docwire::serialization
+namespace df0::serialization
 {
 
 template <typename T> requires std::is_enum_v<T>
@@ -25,6 +25,6 @@ struct serializer<T>
     value typed_summary(const T& value) const { return decorate_with_typeid(full(value), type_name::pretty<T>()); }
 };
 
-} // namespace docwire::serialization
+} // namespace df0::serialization
 
 #endif // DOCWIRE_SERIALIZATION_ENUM_H

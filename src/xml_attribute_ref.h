@@ -19,7 +19,7 @@
 #include <optional>
 #include "convert_base.h"
 
-namespace docwire::xml
+namespace df0::xml
 {
 
 /**

@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include "core_export.h"
 
-namespace docwire::detail::minizip
+namespace df0::detail::minizip
 {
 
 struct state
@@ -48,6 +48,6 @@ inline state::~state()
     close(*this);
 }
 
-} // namespace docwire::detail::minizip
+} // namespace df0::detail::minizip
 
 #endif

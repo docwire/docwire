@@ -23,7 +23,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::audit::filter
+namespace df0::audit::filter
 {
 
 template<typename Next = void>
@@ -90,6 +90,6 @@ private:
 
 by_spec(std::string) -> by_spec<void>;
 
-} // namespace docwire::audit::filter
+} // namespace df0::audit::filter
 
 #endif

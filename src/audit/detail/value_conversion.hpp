@@ -34,7 +34,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::audit::detail
+namespace df0::audit::detail
 {
 
 serialization::value to_log_value(const audit_tag auto& tag)
@@ -62,7 +62,7 @@ serialization::value to_log_value(const std::pair<T1, T2>& p)
 }
 
 template<typename T>
-serialization::value to_log_value(const docwire::named::value<T>& p)
+serialization::value to_log_value(const df0::named::value<T>& p)
 {
     serialization::object context_obj;
     context_obj.v[std::string{p.name}] = serialization::typed_summary(p.value);
@@ -149,13 +149,13 @@ inline serialization::object create_record_object(
     serialization::object record_object;
 
     std::string timestamp =
-        docwire::detail::local_iso_datetime_with_timezone_offset();
+        df0::detail::local_iso_datetime_with_timezone_offset();
 
     record_object.v = {
         {"timestamp", timestamp},
         {"file", serialization::full(std::filesystem::path(location.file_name()).filename())},
         {"line", static_cast<std::int64_t>(location.line())},
-        {"function", docwire::type_name::pretty_function(location.function_name())},
+        {"function", df0::type_name::pretty_function(location.function_name())},
         {"thread_id", serialization::full(std::this_thread::get_id())},
         {"log", std::move(context)}
     };
@@ -163,6 +163,6 @@ inline serialization::object create_record_object(
     return record_object;
 }
 
-} // namespace docwire::audit::detail
+} // namespace df0::audit::detail
 
 #endif

@@ -14,7 +14,7 @@
 
 #include <ctime>
 
-namespace docwire
+namespace df0
 {
 
 inline tm* thread_safe_gmtime(const time_t* timer, struct tm& time_buffer)
@@ -27,6 +27,6 @@ inline tm* thread_safe_gmtime(const time_t* timer, struct tm& time_buffer)
 #endif
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif

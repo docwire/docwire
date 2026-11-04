@@ -15,7 +15,7 @@
 #include "ai_export.h"
 #include "model_chain_element.h"
 
-namespace docwire::ai
+namespace df0::ai
 {
 
 class DOCWIRE_AI_EXPORT task
@@ -26,6 +26,6 @@ class DOCWIRE_AI_EXPORT task
     	explicit task(const std::string& prompt, std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime = model_lifetime_policy::persistent);
 };
 
-} // namespace docwire::ai
+} // namespace df0::ai
 
 #endif // DOCWIRE_AI_TASK_H

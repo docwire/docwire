@@ -20,7 +20,7 @@
  * This namespace contains transformations that can be used to manipulate
  * tuple types.
  */
-namespace docwire::tuple_utils
+namespace df0::tuple_utils
 {
 
 /**
@@ -141,6 +141,6 @@ auto last_element(T&& tuple) {
 template <typename T>
 using last_element_t = decltype(last_element(std::declval<T>()));
 
-} // namespace docwire::tuple_utils
+} // namespace df0::tuple_utils
 
 #endif //DOCWIRE_TUPLE_UTILS_H

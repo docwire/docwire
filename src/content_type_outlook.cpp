@@ -13,7 +13,7 @@
 
 #include "content_type_by_signature.h"
 
-namespace docwire::content_type::outlook
+namespace df0::content_type::outlook
 {
 
 void detect(data_source& data, const by_signature::database& signatures_db_to_use)
@@ -22,10 +22,10 @@ void detect(data_source& data, const by_signature::database& signatures_db_to_us
 		return;
     if (data.mime_types.empty() || data.mime_type_confidence(mime_type { "application/vnd.ms-outlook" }) >= confidence::medium)
     {
-        docwire::content_type::by_signature::detect(data, signatures_db_to_use, by_signature::allow_multiple{true});
+        df0::content_type::by_signature::detect(data, signatures_db_to_use, by_signature::allow_multiple{true});
         if (data.mime_type_confidence(mime_type { "application/x-ms-msg" }) < confidence::medium)
             data.add_mime_type(mime_type { "application/vnd.ms-outlook-pst" }, confidence::highest);
     }
 }
 
-} // namespace docwire::content_type::outlook
+} // namespace df0::content_type::outlook

@@ -11,7 +11,7 @@
 
 #include "error.h"
 
-namespace docwire::errors
+namespace df0::errors
 {
 
 base::base(const source_location& location)
@@ -30,4 +30,4 @@ const char* base::what() const noexcept
 	return typeid(*this).name();
 }
 
-} // namespace docwire::errors
+} // namespace df0::errors

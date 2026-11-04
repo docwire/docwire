@@ -25,7 +25,7 @@
 #include <sentencepiece_processor.h>
 #include "throw_if.h"
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -193,8 +193,8 @@ std::string tokenizer<auditor_type>::detokenize(const std::vector<std::string>& 
     return output;
 }
 
-template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::tokenizer<docwire::audit::null_auditor>;
-template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::tokenizer<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_AI_CT2_EXPORT df0::ai::ct2::tokenizer<df0::audit::null_auditor>;
+template class DOCWIRE_AI_CT2_EXPORT df0::ai::ct2::tokenizer<df0::audit::json_stream_auditor>;
 
 } // namespace ai::ct2
-} // namespace docwire
+} // namespace df0

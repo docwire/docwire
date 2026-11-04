@@ -15,7 +15,7 @@
 #include <concepts>
 #include <iosfwd>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -24,6 +24,6 @@ namespace docwire
 template <typename T>
 concept streamable = requires (std::ostream& os, const T& value) { { os << value } -> std::convertible_to<std::ostream&>; };
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_CONCEPTS_STREAM_H

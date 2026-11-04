@@ -29,7 +29,7 @@
 #include "ranged.h"
 #include "convert_base.h"
 
-namespace docwire::xml
+namespace df0::xml
 {
 
 /**

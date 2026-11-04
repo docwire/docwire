@@ -15,7 +15,7 @@
 #include "chat.h"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -56,6 +56,6 @@ public:
 summarize(const std::string&, model, float, image_detail) -> summarize<audit::null_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_OPENAI_SUMMARIZE_H

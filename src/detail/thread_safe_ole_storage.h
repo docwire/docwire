@@ -27,7 +27,7 @@
 #include "thread_safe_ole_stream_reader.h"
 #include "wv2/src/olestorage.h"
 
-namespace docwire
+namespace df0
 {
 
 class thread_safe_ole_storage : public wvWare::OLEStorage
@@ -749,6 +749,6 @@ inline void thread_safe_ole_storage::parseHeader()
 		return;
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_THREAD_SAFE_OLE_STORAGE_H

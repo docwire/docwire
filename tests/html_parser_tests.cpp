@@ -14,13 +14,13 @@
 #include "pipeline/input_element.hpp"
 #include "pipeline/output_element.hpp"
 
-using namespace docwire;
+using namespace df0;
 using namespace testing;
 
 TEST(html_parser, table)
 {
     std::vector<message_ptr> msgs;
-    docwire::data_source{std::string{
+    df0::data_source{std::string{
         "<table>"
             "<caption>Table caption</caption>"
             "<thead><tr><th>Header 1</th><th>Header 2</th></tr></thead>"
@@ -78,7 +78,7 @@ TEST(html_parser, table)
 TEST(html_parser, whitespaces)
 {
     std::vector<message_ptr> msgs;
-    docwire::data_source{std::string{
+    df0::data_source{std::string{
         "<div>\n"
             "\t <p> Paragraph </p> \n"
             "\t <p>  Paragraph   with   many   spaces   </p>\n"
@@ -131,7 +131,7 @@ TEST(html_parser, encoding)
     for (const auto& html_content : test_cases)
     {
         std::vector<message_ptr> msgs;
-        docwire::data_source{std::string{html_content},
+        df0::data_source{std::string{html_content},
             mime_type{"text/html"}, confidence::highest} |
             html_parser{} | msgs;
         ASSERT_THAT(msgs, ElementsAre(
@@ -147,7 +147,7 @@ TEST(html_parser, encoding)
 TEST(html_parser, lists)
 {
     std::vector<message_ptr> msgs;
-    docwire::data_source{std::string{
+    df0::data_source{std::string{
         "<ul>"
             "<li>Item 1</li>"
             "<li>Item 2</li>"
@@ -195,7 +195,7 @@ TEST(html_parser, lists)
 TEST(html_parser, misplaced_tags)
 {
     std::vector<message_ptr> msgs;
-    docwire::data_source{std::string{
+    df0::data_source{std::string{
         "<html>\n"
         "\t<body>\n"
         "\t\t<title>title1</title>\n"

@@ -11,7 +11,7 @@
 
 #include "content_type_asp.h"
 
-namespace docwire::content_type::asp
+namespace df0::content_type::asp
 {
 
 void detect(data_source& data)
@@ -38,4 +38,4 @@ void detect(data_source& data)
     }
 }
 
-} // namespace docwire::content_type::asp
+} // namespace df0::content_type::asp

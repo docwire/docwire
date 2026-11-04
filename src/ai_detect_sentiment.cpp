@@ -10,11 +10,11 @@
 /*********************************************************************************************************************************************/
 #include "ai_detect_sentiment.h"
 
-namespace docwire::ai
+namespace df0::ai
 {
 
 detect_sentiment::detect_sentiment(std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime)
     : model_chain_element(detect_sentiment_prompt, runner, lifetime)
 {
 }
-} // namespace docwire::ai
+} // namespace df0::ai

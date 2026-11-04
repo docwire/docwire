@@ -15,7 +15,7 @@
 #include <string>
 #include "wv2/src/ustring.h"
 
-namespace docwire
+namespace df0
 {
 
 using wvWare::UString;
@@ -128,6 +128,6 @@ inline UString utf8_to_ustring(const std::string& src)
 	return res;
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_DETAIL_USTRING_CONVERSIONS_H

@@ -18,7 +18,7 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 template<typename auditor_type = audit::null_auditor>
@@ -51,6 +51,6 @@ private:
 // Deduction guide for CTAD
 rtf_parser() -> rtf_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif

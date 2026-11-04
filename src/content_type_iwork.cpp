@@ -13,7 +13,7 @@
 
 #include "zip_reader.h"
 
-namespace docwire::content_type::iwork
+namespace df0::content_type::iwork
 {
 
 void detect(data_source& data)
@@ -61,4 +61,4 @@ void detect(data_source& data)
     }
 }
 
-} // namespace docwire::content_type::iwork
+} // namespace df0::content_type::iwork

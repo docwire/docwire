@@ -23,7 +23,7 @@
 #include <utility>
 #include "throw_if.h"
 
-namespace docwire::detail
+namespace df0::detail
 {
 
 namespace
@@ -138,4 +138,4 @@ void ssl_certificate::apply_to(void* tls_context) const
     throw_if(SSL_CTX_use_PrivateKey(ssl_ctx, m_impl->key.get()) <= 0, "Failed to apply private key");
 }
 
-} // namespace docwire::detail
+} // namespace df0::detail

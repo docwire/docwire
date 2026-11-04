@@ -23,9 +23,9 @@
 #include "data_source.h"
 #include "throw_if.h"
 
-namespace docwire
+namespace df0
 {
-using docwire::plain_text::output_width;
+using df0::plain_text::output_width;
 
 struct eol_sequence { std::string v; };
 
@@ -91,6 +91,6 @@ inline continuation plain_text_exporter::operator()(message_ptr msg, const messa
 	return continuation::proceed;
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_PLAIN_TEXT_EXPORTER_H

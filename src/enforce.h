@@ -18,14 +18,14 @@
 #include "error_tags.h"
 #include "debug_assert.h"
 
-namespace docwire
+namespace df0
 {
 
 /**
  * @brief Enforces a condition based on the safety policy.
  * 
  * If the condition is false:
- * - In `strict` mode: Throws a `docwire::error` exception with the `docwire::errors::program_logic` tag attached and the provided context.
+ * - In `strict` mode: Throws a `df0::error` exception with the `df0::errors::program_logic` tag attached and the provided context.
  * - In `relaxed` mode: Triggers a `debug_assert`, which terminates in debug builds but does nothing in release builds.
  * 
  * @tparam safety_level The safety policy to apply (default is strict).

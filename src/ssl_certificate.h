@@ -15,7 +15,7 @@
 #include <memory>
 #include <string>
 
-namespace docwire::detail
+namespace df0::detail
 {
 
 /**
@@ -77,6 +77,6 @@ private:
     std::unique_ptr<impl> m_impl;
 };
 
-} // namespace docwire::detail
+} // namespace df0::detail
 
 #endif // DOCWIRE_DETAIL_SSL_CERTIFICATE_H

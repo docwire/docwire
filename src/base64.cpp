@@ -15,7 +15,7 @@
 #include <libbase64.h>
 #include "throw_if.h"
 
-namespace docwire::base64
+namespace df0::base64
 {
 
 std::string encode(std::span<const std::byte> input_data)
@@ -41,4 +41,4 @@ std::vector<std::byte> decode(std::string_view input_data)
 	return out;
 }
 
-} // namespace docwire::base64
+} // namespace df0::base64

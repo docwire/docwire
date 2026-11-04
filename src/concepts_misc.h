@@ -14,7 +14,7 @@
 
 #include <type_traits>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -35,6 +35,6 @@ concept strong_type_alias = requires(T value) { value.v; };
 template<typename T>
 concept empty = std::is_empty_v<T>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_CONCEPTS_MISC_H

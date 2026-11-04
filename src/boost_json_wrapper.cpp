@@ -12,7 +12,7 @@
 #include "boost_json_wrapper.h"
 #include <boost/json.hpp>
 
-namespace docwire::serialization::detail
+namespace df0::serialization::detail
 {
 
 namespace
@@ -54,4 +54,4 @@ std::string to_json_string(const value& s_val)
     return boost::json::serialize(to_json_value(s_val));
 }
 
-} // namespace docwire::serialization::detail
+} // namespace df0::serialization::detail

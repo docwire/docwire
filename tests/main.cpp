@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 
 // Legacy global DOCWIRE_TESTS_CONSOLE_LOGGING support was removed with
-// docwire::log. The injected-auditor architecture intentionally has no
+// df0::log. The injected-auditor architecture intentionally has no
 // process-global sink or filter, so this test main must not re-introduce
 // global logging state.
 //

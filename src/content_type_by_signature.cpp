@@ -20,7 +20,7 @@
 #include "resource_path.h"
 #include "throw_if.h"
 
-namespace docwire
+namespace df0
 {
 
 template<>
@@ -47,9 +47,9 @@ struct pimpl_impl<content_type::by_signature::database> : public pimpl_impl_base
     size_t bytes_max;
 };
 
-} // namespace docwire
+} // namespace df0
 
-namespace docwire::content_type::by_signature
+namespace df0::content_type::by_signature
 {
 
 database::database() = default;
@@ -82,4 +82,4 @@ void detect(data_source& data, const database& database_to_use, allow_multiple a
     }
 }
 
-} // namespace docwire::content_type::by_signature
+} // namespace df0::content_type::by_signature

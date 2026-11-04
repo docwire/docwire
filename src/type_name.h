@@ -24,7 +24,7 @@
 #include "type_name_vector.h"
 // IWYU pragma: end_exports
 
-namespace docwire::type_name
+namespace df0::type_name
 {
 
 inline std::string normalize_name(const std::string& name)
@@ -62,6 +62,6 @@ inline std::string pretty_function(const std::string& function_name)
     return normalize_name(function_name);
 }
 
-} // namespace docwire::type_name
+} // namespace df0::type_name
 
 #endif // DOCWIRE_TYPE_NAME_H

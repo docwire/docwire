@@ -20,7 +20,7 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 class zip_reader;
@@ -58,6 +58,6 @@ public:
 // Deduction guide for CTAD
 xlsb_parser() -> xlsb_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif

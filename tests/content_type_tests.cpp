@@ -32,7 +32,7 @@
 #include <utility>
 #include <vector>
 
-using namespace docwire;
+using namespace df0;
 
 TEST(content_type, by_file_extension)
 {
@@ -54,8 +54,8 @@ TEST(content_type, by_file_extension)
 
 TEST(content_type, to_extension)
 {
-    using namespace docwire::content_type::by_file_extension;
-    using docwire::mime_type;
+    using namespace df0::content_type::by_file_extension;
+    using df0::mime_type;
 
     // Test a common case where multiple extensions exist for one mime type.
     // The first one in the list should be chosen, which is .txt for text/plain.

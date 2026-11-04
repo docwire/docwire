@@ -16,7 +16,7 @@
 
 #include <string>
 
-namespace docwire::detail
+namespace df0::detail
 {
 
 /**
@@ -27,6 +27,6 @@ namespace docwire::detail
  */
 DOCWIRE_CORE_EXPORT std::string local_iso_datetime_with_timezone_offset();
 
-} // namespace docwire::detail
+} // namespace df0::detail
 
 #endif // DOCWIRE_BOOST_DATETIME_WRAPPER_H

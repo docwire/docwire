@@ -29,7 +29,7 @@
 #include "tokenizer.h"
 #include <variant>
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -234,8 +234,8 @@ void ct2_runner<auditor_type>::unload()
     impl().m_model.template emplace<std::monostate>();
 }
 
-template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::ct2_runner<docwire::audit::null_auditor>;
-template class DOCWIRE_AI_CT2_EXPORT docwire::ai::ct2::ct2_runner<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_AI_CT2_EXPORT df0::ai::ct2::ct2_runner<df0::audit::null_auditor>;
+template class DOCWIRE_AI_CT2_EXPORT df0::ai::ct2::ct2_runner<df0::audit::json_stream_auditor>;
 
 } // namespace ai::ct2
-} // namespace docwire
+} // namespace df0

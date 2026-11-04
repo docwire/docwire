@@ -16,7 +16,7 @@
 #include <string_view>
 #include <type_traits>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -31,6 +31,6 @@ concept string_method_equipped = requires(const T& t) { { t.string() } -> std::c
 template<typename T>
 concept string_like = std::is_convertible_v<T, std::string_view>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_CONCEPTS_STRING_H

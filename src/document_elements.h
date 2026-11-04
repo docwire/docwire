@@ -20,7 +20,7 @@
 #include <optional>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 namespace document
 {
@@ -168,6 +168,6 @@ struct document
 struct close_document { };
 
 } // namespace document
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_DOCUMENT_ELEMENTS_H

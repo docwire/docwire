@@ -44,7 +44,7 @@
 #include <tesseract/resultiterator.h>
 #include "throw_if.h"
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -507,7 +507,7 @@ continuation ocr_parser<auditor_type>::operator()(
         return emit_message(std::move(msg));
 }
 
-template class DOCWIRE_OCR_EXPORT ocr_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_OCR_EXPORT ocr_parser<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_OCR_EXPORT ocr_parser<df0::audit::null_auditor>;
+template class DOCWIRE_OCR_EXPORT ocr_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

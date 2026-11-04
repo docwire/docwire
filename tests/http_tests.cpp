@@ -32,7 +32,7 @@
 #include "pipeline/input_element.hpp"
 #include "http_server.h"
 
-using namespace docwire;
+using namespace df0;
 
 TEST(Http, post)
 {
@@ -290,7 +290,7 @@ TEST(Http, ServerNonFatalError)
     // 4. Make a request to the error-producing endpoint. This should trigger the error handler and throw on the client side.
     ASSERT_THROW(
         {
-            docwire::data_source{std::string_view{"some data"}} | http::post("http://" + addr.v + ":" + std::to_string(port.v) + "/error") | std::ostringstream{};
+            df0::data_source{std::string_view{"some data"}} | http::post("http://" + addr.v + ":" + std::to_string(port.v) + "/error") | std::ostringstream{};
         },
         std::exception
     );
@@ -298,7 +298,7 @@ TEST(Http, ServerNonFatalError)
     // 5. Make a request to the successful endpoint to ensure the server is still running.
     std::ostringstream success_response_stream;
     ASSERT_NO_THROW({
-        docwire::data_source{std::string_view{"success data"}} | http::post("http://" + addr.v + ":" + std::to_string(port.v) + "/success") | success_response_stream;
+        df0::data_source{std::string_view{"success data"}} | http::post("http://" + addr.v + ":" + std::to_string(port.v) + "/success") | success_response_stream;
     });
 
     // 6. Verify the error handler was called and that the server is still running.

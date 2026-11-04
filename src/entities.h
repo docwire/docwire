@@ -21,7 +21,7 @@
 #include <cstdlib>
 #include <cstring>
 
-namespace docwire
+namespace df0
 {
 
 namespace detail
@@ -407,6 +407,6 @@ inline size_t decode_html_entities_utf8(char* dest, const char* src)
 	return (size_t)(to - dest);
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif

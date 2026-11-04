@@ -16,29 +16,29 @@
 #include "error.h"
 
 /**
- * @brief Custom hash function for docwire::errors::base objects.
+ * @brief Custom hash function for df0::errors::base objects.
  *
  * This hash function is designed to be used with unordered containers, such as
- * std::unordered_map and std::unordered_set, to store docwire::errors::base objects.
+ * std::unordered_map and std::unordered_set, to store df0::errors::base objects.
  *
  * The hash value is calculated based on the following information:
  * - File name where the error occurred
  * - Line number where the error occurred
  * - Column number where the error occurred
- * - Any nested errors of the same type (docwire::errors::base)
+ * - Any nested errors of the same type (df0::errors::base)
  *
- * @tparam docwire::errors::base The type of object being hashed.
+ * @tparam df0::errors::base The type of object being hashed.
  */
 template<>
-struct std::hash<docwire::errors::base>
+struct std::hash<df0::errors::base>
 {
 	/**
-     * @brief Calculates the hash value for a given docwire::errors::base object.
+     * @brief Calculates the hash value for a given df0::errors::base object.
      *
-     * @param e The docwire::errors::base object to be hashed.
+     * @param e The df0::errors::base object to be hashed.
      * @return size_t The calculated hash value.
      */
-	size_t operator()(const docwire::errors::base& e) const noexcept
+	size_t operator()(const df0::errors::base& e) const noexcept
 	{
 		size_t hash = 0;
 		boost::hash_combine(hash, std::string_view{e.location.file_name()});
@@ -48,7 +48,7 @@ struct std::hash<docwire::errors::base>
 		{
     		std::rethrow_if_nested(e);
 		}
-		catch (const docwire::errors::base& nested_e)
+		catch (const df0::errors::base& nested_e)
 		{
 			boost::hash_combine(hash, (*this)(nested_e));
 		}

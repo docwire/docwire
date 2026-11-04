@@ -22,7 +22,7 @@
 #include <sstream>
 #include <type_traits>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -65,9 +65,9 @@ struct stringifier<T>
 /**
  * @brief Default stringifier for types not covered by more specific specializations.
  *
- * This fallback uses the generic `docwire::serialization` mechanism:
- * 1. Serializes the object to a `docwire::serialization::value`.
- * 2. Converts that `docwire::serialization::value` to a human-readable string.
+ * This fallback uses the generic `df0::serialization` mechanism:
+ * 1. Serializes the object to a `df0::serialization::value`.
+ * 2. Converts that `df0::serialization::value` to a human-readable string.
  *
  * This ensures that any type that can be serialized can also be stringified in a default way,
  * providing a consistent fallback for complex types.
@@ -109,7 +109,7 @@ struct stringifier<std::pair<T1, T2>>
 };
 
 /**
- * @brief Specialization for `docwire::named::value`, providing a "name: value" string representation.
+ * @brief Specialization for `df0::named::value`, providing a "name: value" string representation.
  */
 template <typename T>
 struct stringifier<named::value<T>>
@@ -195,6 +195,6 @@ struct stringifier<serialization::value>
 	}
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif

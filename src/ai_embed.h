@@ -21,7 +21,7 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire::ai
+namespace df0::ai
 {
 
 template<typename auditor_type = audit::null_auditor>
@@ -69,6 +69,6 @@ private:
 // Deduction guide for CTAD
 embed(not_null<std::shared_ptr<ai_runner>>, std::string) -> embed<audit::null_auditor>;
 
-} // namespace docwire::ai
+} // namespace df0::ai
 
 #endif // DOCWIRE_AI_EMBED_H

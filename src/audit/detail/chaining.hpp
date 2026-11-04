@@ -14,7 +14,7 @@
 
 #include <type_traits>
 
-namespace docwire::audit::detail
+namespace df0::audit::detail
 {
 
 struct empty {};
@@ -22,6 +22,6 @@ struct empty {};
 template<typename Next>
 using next_storage_t = std::conditional_t<std::is_void_v<Next>, empty, Next>;
 
-} // namespace docwire::audit::detail
+} // namespace df0::audit::detail
 
 #endif

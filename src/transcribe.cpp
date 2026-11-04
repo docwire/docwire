@@ -27,7 +27,7 @@
 #include <map>
 #include <sstream>
 
-namespace docwire
+namespace df0
 {
 
 template<typename auditor_type>
@@ -119,8 +119,8 @@ continuation transcribe<auditor_type>::operator()(
     return emit_message(document::close_document{});
 }
 
-template class DOCWIRE_OPENAI_EXPORT docwire::openai::transcribe<docwire::audit::null_auditor>;
-template class DOCWIRE_OPENAI_EXPORT docwire::openai::transcribe<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_OPENAI_EXPORT df0::openai::transcribe<df0::audit::null_auditor>;
+template class DOCWIRE_OPENAI_EXPORT df0::openai::transcribe<df0::audit::json_stream_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0

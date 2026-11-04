@@ -16,7 +16,7 @@
 #include "content_type_export.h"
 #include "data_source.h"
 
-namespace docwire::content_type::image
+namespace df0::content_type::image
 {
 
 /**
@@ -48,6 +48,6 @@ public:
     }
 };
 
-} // namespace docwire::content_type::image
+} // namespace df0::content_type::image
 
 #endif // DOCWIRE_CONTENT_TYPE_IMAGE_H

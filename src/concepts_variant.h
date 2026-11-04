@@ -15,7 +15,7 @@
 #include <variant>
 #include <type_traits>
 
-namespace docwire
+namespace df0
 {
 
 template <typename T, typename Variant>

@@ -24,18 +24,18 @@
 #include <vector>
 #include "type_name.h"
 
-namespace docwire
+namespace df0
 {
 
 /**
  * @brief Provides a generic, concept-based serialization framework.
  *
  * This namespace contains the tools to convert arbitrary C++ types into a structured,
- * serializable representation. The core of the framework is the `docwire::serialization::value`
+ * serializable representation. The core of the framework is the `df0::serialization::value`
  * type, a `std::variant` that can hold primitive types, arrays, or objects.
  *
  * The framework is designed to be non-intrusive. To add serialization support for a new type,
- * you specialize the `docwire::serialization::serializer` struct for that type. The framework
+ * you specialize the `df0::serialization::serializer` struct for that type. The framework
  * already provides specializations for many standard library types, primitives, and common
  * patterns like containers and pointers.
  *
@@ -54,7 +54,7 @@ struct array;
  * @brief A variant type representing any serialized value.
  *
  * This is the cornerstone of the serialization framework, representing a value as one of
- * C++'s primitive types or a container of other `docwire::serialization::value`s.
+ * C++'s primitive types or a container of other `df0::serialization::value`s.
  */
 using value = std::variant<
     std::nullptr_t,
@@ -92,12 +92,12 @@ inline value decorate_with_typeid(const value& base_val, const std::string& type
     }};
 }
 /**
- * @brief Serializes a value of type T into a `docwire::serialization::value`.
+ * @brief Serializes a value of type T into a `df0::serialization::value`.
  *
- * This function uses the `docwire::serialization::serializer` struct to perform the conversion.
+ * This function uses the `df0::serialization::serializer` struct to perform the conversion.
  * @tparam T The type of the value to serialize.
  * @param value The value to serialize.
- * @return The serialized `docwire::serialization::value`.
+ * @return The serialized `df0::serialization::value`.
  */
 template <typename T> value full(const T& value);
 
@@ -105,7 +105,7 @@ template <typename T> value full(const T& value);
  * @brief Primary template for the serializer
  *
  * This struct is specialized for different types to provide a uniform way
- * to convert them into a `docwire::serialization::value`.
+ * to convert them into a `df0::serialization::value`.
  * It defines two main operations: `full` for untyped serialization and `typed_summary` for typed serialization.
  */
 template <typename T>
@@ -121,13 +121,13 @@ value typed_summary(const T& value)
 }
 
 /**
- * @brief A specific concept to check if a type `T` is one of the alternatives in `docwire::serialization::value`.
+ * @brief A specific concept to check if a type `T` is one of the alternatives in `df0::serialization::value`.
  */
 template <typename T>
 concept value_alternative = variant_alternative<T, value>;
 
 /**
- * @brief Specialization for types that are direct alternatives in `docwire::serialization::value`.
+ * @brief Specialization for types that are direct alternatives in `df0::serialization::value`.
  * This handles `bool`, `std::int64_t`, `std::uint64_t`, `double`, `std::string`, etc.
  */
 template <value_alternative T>
@@ -145,7 +145,7 @@ struct serializer<T>
  * @brief Specialization for arithmetic types (integers, floats).
  *
  * This converts various integer and floating-point types to the types
- * supported by the `docwire::serialization::value` variant.
+ * supported by the `df0::serialization::value` variant.
  */
 template <typename T> requires(std::is_arithmetic_v<T> && !value_alternative<T>)
 struct serializer<T>
@@ -238,7 +238,7 @@ struct serializer<T>
 /**
  * @brief Specialization for iterable types (e.g., std::vector, std::list).
  *
- * Serializes the container into a `docwire::serialization::array`.
+ * Serializes the container into a `df0::serialization::array`.
  * It excludes std::string, which is iterable but should be treated as a single value.
  */
 template <typename T> requires (container<T> && !string_like<T> && !value_alternative<T>)
@@ -285,6 +285,6 @@ struct serializer<std::variant<Ts...>>
 
 } // namespace serialization
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_SERIALIZATION_BASE_H

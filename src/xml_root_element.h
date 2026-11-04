@@ -17,14 +17,14 @@
 #include "make_error.h"
 #include "error_tags.h"
 
-namespace docwire::xml
+namespace df0::xml
 {
 
 /**
  * @brief Finds and returns the root element of the XML document.
  * @tparam safety_level The safety policy to use.
  * @param reader The XML reader to search.
- * @throws docwire::error with docwire::errors::uninterpretable_data tag attached if no root element is found.
+ * @throws df0::error with df0::errors::uninterpretable_data tag attached if no root element is found.
  * @warning This function advances the single-pass XML reader.
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
@@ -36,7 +36,7 @@ node_ref<safety_level> root_element(reader<safety_level>& reader)
         if (node.type() == node_type::element)
             return node;
     }
-    throw DOCWIRE_MAKE_ERROR("No root element found", docwire::errors::uninterpretable_data{});
+    throw DOCWIRE_MAKE_ERROR("No root element found", df0::errors::uninterpretable_data{});
 }
 
 }

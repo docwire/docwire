@@ -17,7 +17,7 @@
 #include "content_type_by_signature.h"
 #include "data_source.h"
 
-namespace docwire::content_type::outlook
+namespace df0::content_type::outlook
 {
 
 /**
@@ -62,6 +62,6 @@ private:
     ref_or_owned<by_signature::database> m_signatures_db_to_use;
 };
 
-} // namespace docwire::content_type::outlook
+} // namespace df0::content_type::outlook
 
 #endif // DOCWIRE_CONTENT_TYPE_OUTLOOK

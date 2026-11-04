@@ -21,7 +21,7 @@
 #include "ranged.h"
 #include "serialization_enum.h" // IWYU pragma: keep
 
-namespace docwire::xml
+namespace df0::xml
 {
 
 namespace
@@ -58,9 +58,9 @@ static std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> make_xml_tex
 
 } // anonymous namespace
 
-} // namespace docwire::xml
+} // namespace df0::xml
 
-namespace docwire
+namespace df0
 {
 template<safety_policy safety_level>
 struct pimpl_impl<xml::reader<safety_level>> : pimpl_impl_base
@@ -119,9 +119,9 @@ struct pimpl_impl<xml::reader<safety_level>> : pimpl_impl_base
 		return true;
 	}
 };
-} // namespace docwire
+} // namespace df0
 
-namespace docwire::xml
+namespace df0::xml
 {
 
 template<safety_policy safety_level>

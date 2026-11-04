@@ -15,10 +15,10 @@
 #include <filesystem>
 #include <string_view>
 
-namespace docwire::ai::llama {
+namespace df0::ai::llama {
 inline constexpr std::string_view granite_relative_path =
     "granite-4-1b-q8-0/granite-4.0-1b-Q8_0.gguf";
 
 DOCWIRE_AI_LLAMA_EXPORT std::filesystem::path granite_model_path();
-} // namespace docwire::ai::llama
+} // namespace df0::ai::llama
 #endif

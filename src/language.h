@@ -12,7 +12,7 @@
 #ifndef DOCWIRE_LANGUAGE_H
 #define DOCWIRE_LANGUAGE_H
 
-namespace docwire
+namespace df0
 {
 
 enum class language
@@ -139,6 +139,6 @@ enum class language
 	yor ///< Yoruba
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif

@@ -14,7 +14,7 @@
 
 #include <stack>
 
-namespace docwire::scoped
+namespace df0::scoped
 {
 
 template <typename T>
@@ -40,6 +40,6 @@ private:
 	std::stack<T>& m_stack;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif

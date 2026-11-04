@@ -18,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::pipeline
+namespace df0::pipeline
 {
 
 /**
@@ -71,6 +71,6 @@ auto operator|(Chain&& chain, Func&& func)
          | function_transformer<callable_type>{std::forward<Func>(func)};
 }
 
-} // namespace docwire::pipeline
+} // namespace df0::pipeline
 
 #endif // DOCWIRE_PIPELINE_FUNCTION_TRANSFORMER_HPP

@@ -16,7 +16,7 @@
 #include "content_type_export.h"
 #include "data_source.h"
 
-namespace docwire::content_type::odf_flat
+namespace df0::content_type::odf_flat
 {
 
 /**
@@ -47,6 +47,6 @@ public:
     }
 };
 
-} // namespace docwire::content_type::odf_flat
+} // namespace df0::content_type::odf_flat
 
 #endif // DOCWIRE_CONTENT_TYPE_ODF_FLAT_H

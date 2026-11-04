@@ -26,7 +26,7 @@
  * @brief Provides features for reporting and handling errors with context data using nested exceptions.
  * @see @ref handling_errors_and_warnings.cpp "handling errors and warnings example"
  */
-namespace docwire::errors
+namespace df0::errors
 {
 #ifdef DOCWIRE_ENABLE_SHORT_MACRO_NAMES
 	#define current_location DOCWIRE_CURRENT_LOCATION
@@ -56,7 +56,7 @@ namespace docwire::errors
  * @code
  * try {
  * 	// SDK code that may throw an error
- * } catch (const docwire::errors::base& e) {
+ * } catch (const df0::errors::base& e) {
  *  std::cerr << "Exception type: " << e.what() << std::endl;
  *  // Manually inspect context items:
  *  for (size_t i = 0; i < e.context_count(); ++i) {
@@ -124,17 +124,17 @@ struct DOCWIRE_CORE_EXPORT base : public std::exception
 	const char* what() const noexcept override;
 };
 
-} // namespace docwire::errors
+} // namespace df0::errors
 
-namespace docwire::errors
+namespace df0::errors
 {
 std::string diagnostic_message(const std::exception& e);
 std::string diagnostic_message(std::exception_ptr eptr);
-} // namespace docwire::errors
+} // namespace df0::errors
 
 #include "stringification.h"
 
-namespace docwire::errors
+namespace df0::errors
 {
 
 /**
@@ -246,6 +246,6 @@ public:
 	}
 };
 
-} // namespace docwire::errors
+} // namespace df0::errors
 
 #endif

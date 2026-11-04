@@ -24,7 +24,7 @@
 #include <type_traits>
 #include <vector>
 
-using namespace docwire;
+using namespace df0;
 
 namespace
 {
@@ -32,11 +32,11 @@ namespace
 struct recording_auditor
 {
     int record_count = 0;
-    docwire::source_location last_location;
+    df0::source_location last_location;
     std::vector<std::string> values;
 
     template<typename... Args>
-    void record(docwire::source_location location, Args&&... args)
+    void record(df0::source_location location, Args&&... args)
     {
         ++record_count;
         last_location = location;

@@ -16,7 +16,7 @@
 #include "document_elements.h"
 #include <exception>
 
-namespace docwire {
+namespace df0 {
 
 struct message_counters {
     size_t attempts = 0;

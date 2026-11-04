@@ -15,7 +15,7 @@
 #include "core_export.h"
 #include <cstddef>
 
-namespace docwire::detail
+namespace df0::detail
 {
 
 /**
@@ -29,6 +29,6 @@ namespace docwire::detail
  */
 DOCWIRE_CORE_EXPORT size_t next_unique_identifier();
 
-} // namespace docwire::detail
+} // namespace df0::detail
 
 #endif // DOCWIRE_UNIQUE_IDENTIFIER_GLOBALS_H

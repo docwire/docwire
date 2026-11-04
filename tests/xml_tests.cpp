@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 #include <iostream>
 
-using namespace docwire;
+using namespace df0;
 
 TEST(XmlTests, IterateChildren)
 {

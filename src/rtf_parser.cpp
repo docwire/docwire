@@ -38,7 +38,7 @@
 #include "wv2/src/textconverter.h"
 #include "wv2/src/ustring.h"
 
-namespace docwire
+namespace df0
 {
 
 using namespace wvWare;
@@ -894,7 +894,7 @@ continuation rtf_parser<auditor_type>::operator()(
 	return continuation::proceed;
 }
 
-template class DOCWIRE_RTF_EXPORT rtf_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_RTF_EXPORT rtf_parser<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_RTF_EXPORT rtf_parser<df0::audit::null_auditor>;
+template class DOCWIRE_RTF_EXPORT rtf_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

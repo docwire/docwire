@@ -18,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-namespace docwire::plain_text {
+namespace df0::plain_text {
 
 /**
  * @brief Computes minimum and desired column widths from raw cell lines.
@@ -56,6 +56,6 @@ compute_column_width_ranges(const std::vector<std::vector<std::vector<std::strin
     return {min_widths, desired_widths};
 }
 
-} // namespace docwire::plain_text
+} // namespace df0::plain_text
 
 #endif

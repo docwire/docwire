@@ -19,7 +19,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::audit
+namespace df0::audit
 {
 
 template<typename auditor_type, typename context_fn_type>
@@ -34,12 +34,12 @@ public:
           m_context_fn(std::forward<context_fn_type>(context_fn)),
           m_location(location)
     {
-        m_auditor.auditor().record(m_location, docwire::audit::scope_enter{}, m_context_fn);
+        m_auditor.auditor().record(m_location, df0::audit::scope_enter{}, m_context_fn);
     }
 
     ~scope()
     {
-        m_auditor.auditor().record(m_location, docwire::audit::scope_exit{}, m_context_fn);
+        m_auditor.auditor().record(m_location, df0::audit::scope_exit{}, m_context_fn);
     }
 
     scope(const scope&) = delete;
@@ -65,6 +65,6 @@ scope(auditor_ref<auditor_type>, context_fn_type&&) -> scope<auditor_type, conte
 template<auditor auditor_type, typename context_fn_type>
 scope(auditor_type&, context_fn_type&&) -> scope<auditor_type, context_fn_type>;
 
-} // namespace docwire::audit
+} // namespace df0::audit
 
 #endif

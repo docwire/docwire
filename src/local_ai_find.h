@@ -14,17 +14,17 @@
 
 #include "ai_find.h"
 
-namespace docwire::ai::local {
+namespace df0::ai::local {
 
 class find :
-	public docwire::pipeline::transformer_element<find>,
-	public docwire::ai::find {
+	public df0::pipeline::transformer_element<find>,
+	public df0::ai::find {
 public:
   explicit find(const std::string &what,
                      std::shared_ptr<ai_runner> runner)
-  : docwire::ai::find(what, runner){};
+  : df0::ai::find(what, runner){};
 };
 
-} // namespace docwire::ai::local
+} // namespace df0::ai::local
 
 #endif // DOCWIRE_LOCAL_AI_FIND_H

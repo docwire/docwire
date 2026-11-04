@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     return 0;
   }
 
-  using namespace docwire;
+  using namespace df0;
 
   // Verify installed public HTTP API and its link dependency.
   {

@@ -23,7 +23,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::audit
+namespace df0::audit
 {
 
 /**
@@ -66,6 +66,6 @@ private:
     impl_type m_impl;
 };
 
-} // namespace docwire::audit
+} // namespace df0::audit
 
 #endif

@@ -18,7 +18,7 @@
 #include "pimpl.h"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 template<typename auditor_type = audit::null_auditor>
@@ -57,6 +57,6 @@ class DOCWIRE_HTML_EXPORT html_parser
 // Deduction guide for CTAD
 html_parser() -> html_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif

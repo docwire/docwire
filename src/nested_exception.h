@@ -14,7 +14,7 @@
 
 #include <exception>
 
-namespace docwire::errors
+namespace df0::errors
 {
 
 /**
@@ -147,6 +147,6 @@ std::exception_ptr make_nested_ptr(Inner&& inner, Outer&& outer, Rest&&... rest)
 	return std::make_exception_ptr(make_nested(std::forward<Inner>(inner), std::forward<Outer>(outer), std::forward<Rest>(rest)...));
 }
 
-} // namespace docwire::errors
+} // namespace df0::errors
 
 #endif

@@ -23,7 +23,7 @@
 #include "data_source.h"
 #include "serialization_message.h"
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -78,6 +78,6 @@ inline continuation metadata_exporter<auditor_type>::operator()(message_ptr msg,
 // Deduction guide for CTAD
 metadata_exporter() -> metadata_exporter<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_META_DATA_EXPORTER_H

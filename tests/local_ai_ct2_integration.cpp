@@ -4,7 +4,7 @@
 
 int main(int argc, char* argv[])
 {
-    using namespace docwire;
+    using namespace df0;
     std::stringstream out_stream;
     try {
         std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser() |

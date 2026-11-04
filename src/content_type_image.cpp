@@ -11,7 +11,7 @@
 
 #include "content_type_image.h"
 
-namespace docwire::content_type::image
+namespace df0::content_type::image
 {
 
 void detect(data_source& data)
@@ -48,4 +48,4 @@ void detect(data_source& data)
     }
 }
 
-} // namespace docwire::content_type::image
+} // namespace df0::content_type::image

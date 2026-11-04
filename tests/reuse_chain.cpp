@@ -3,7 +3,7 @@
 
 int main(int argc, char* argv[])
 {
-  using namespace docwire;
+  using namespace df0;
 
   try
   {

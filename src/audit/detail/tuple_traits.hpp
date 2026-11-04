@@ -15,7 +15,7 @@
 #include <tuple>
 #include <type_traits>
 
-namespace docwire::audit::detail
+namespace df0::audit::detail
 {
 
 template <typename T>
@@ -27,6 +27,6 @@ struct is_std_tuple<std::tuple<Args...>> : std::true_type {};
 template <typename T>
 inline constexpr bool is_std_tuple_v = is_std_tuple<T>::value;
 
-} // namespace docwire::audit::detail
+} // namespace df0::audit::detail
 
 #endif

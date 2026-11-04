@@ -14,7 +14,7 @@
 
 #include "core_export.h"
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -22,6 +22,6 @@ namespace docwire
  */
 struct sentinel {};
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_SENTINEL_H

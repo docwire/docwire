@@ -15,16 +15,16 @@
 #include "ai_summarize.h"
 #include "local_ai_ct2_runner_factory.h"
 
-namespace docwire::ai::local::ct2 {
+namespace df0::ai::local::ct2 {
 
 class summarize :
-	public docwire::pipeline::transformer_element<summarize>,
-	public docwire::ai::summarize {
+	public df0::pipeline::transformer_element<summarize>,
+	public df0::ai::summarize {
 public:
   summarize(model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::summarize(make_default_runner(), lifetime){};
+      : df0::ai::summarize(make_default_runner(), lifetime){};
 };
 
-} // namespace docwire::ai::local::ct2
+} // namespace df0::ai::local::ct2
 
 #endif // DOCWIRE_LOCAL_AI_CT2_SUMMARIZE_H

@@ -17,7 +17,7 @@
 #include <utility>
 #include <type_traits>
 
-namespace docwire
+namespace df0
 {
 
 /// A tag to indicate that a pointer is guaranteed to be non-null, bypassing the runtime check in not_null's constructor.
@@ -104,6 +104,6 @@ template <typename Ptr>
     return not_null<std::remove_cvref_t<Ptr>>(std::forward<Ptr>(ptr), guaranteed);
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_NOT_NULL_H

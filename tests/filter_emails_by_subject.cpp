@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[])
 {
-  using namespace docwire;
+  using namespace df0;
   try
   {
     std::filesystem::path("1.pst") | content_type::detector{} | mail_parser{} | office_formats_parser{}

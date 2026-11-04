@@ -18,7 +18,7 @@
 #include "ranged.h"
 #include "xml_export.h"
 
-namespace docwire::xml
+namespace df0::xml
 {
 /**
  * @brief Options for handling blank nodes in the XML reader.
@@ -106,7 +106,7 @@ public:
 	bool move_to_next_attribute() const;
 	/**
 	 * @brief Moves the reader back to the element containing the attributes.
-	 * @throws docwire::error In strict mode, throws if the operation fails (e.g., reader is not positioned on an attribute).
+	 * @throws df0::error In strict mode, throws if the operation fails (e.g., reader is not positioned on an attribute).
 	 */
 	void move_to_element() const noexcept(safety_level == relaxed);
 

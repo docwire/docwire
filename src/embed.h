@@ -21,7 +21,7 @@
 #include <concepts>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -65,7 +65,7 @@ public:
 
 	/**
 	* @brief Executes transform operation for given node data.
-	* @see docwire::message_ptr
+	* @see df0::message_ptr
 	* @param tag
 	* @param callback
 	*/
@@ -82,6 +82,6 @@ private:
 embed(const std::string&, embed_model) -> embed<audit::null_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_OPENAI_EMBED_H

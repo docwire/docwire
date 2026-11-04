@@ -18,7 +18,7 @@
 /**
  * @brief Utilities for named parameters.
  */
-namespace docwire::named
+namespace df0::named
 {
     /**
      * @brief A named value wrapper.
@@ -112,27 +112,27 @@ namespace docwire::named
     }
 }
 
-namespace docwire
+namespace df0
 {
-    // Bring the _v literal into the docwire namespace for convenience.
-    using namespace docwire::named::literals;
+    // Bring the _v literal into the df0 namespace for convenience.
+    using namespace df0::named::literals;
 }
 
 namespace std
 {
     /**
-     * @brief Specialization of `std::tuple_size` for `docwire::named::value` to enable structured bindings.
+     * @brief Specialization of `std::tuple_size` for `df0::named::value` to enable structured bindings.
      */
     template <typename T>
-    struct tuple_size<docwire::named::value<T>> : std::integral_constant<size_t, 2> {};
+    struct tuple_size<df0::named::value<T>> : std::integral_constant<size_t, 2> {};
 
     /**
-     * @brief Specialization of `std::tuple_element` for `docwire::named::value` to enable structured bindings.
+     * @brief Specialization of `std::tuple_element` for `df0::named::value` to enable structured bindings.
      */
     template <size_t I, typename T>
-    struct tuple_element<I, docwire::named::value<T>>
+    struct tuple_element<I, df0::named::value<T>>
     {
-        static_assert(I < 2, "index out of range for docwire::named::value");
+        static_assert(I < 2, "index out of range for df0::named::value");
         using type = std::conditional_t<I == 0, std::string_view, T>;
     };
 }

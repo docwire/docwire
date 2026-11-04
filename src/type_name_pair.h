@@ -15,7 +15,7 @@
 #include "type_name_base.h"
 #include <utility>
 
-namespace docwire::type_name
+namespace df0::type_name
 {
 
 template<typename T1, typename T2>
@@ -23,6 +23,6 @@ struct pretty_impl<std::pair<T1, T2>> {
 	std::string operator()() const { return "std::pair<" + pretty<T1>() + "," + pretty<T2>() + ">"; }
 };
 
-} // namespace docwire::type_name
+} // namespace df0::type_name
 
 #endif // DOCWIRE_TYPE_NAME_PAIR_H

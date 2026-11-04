@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-namespace docwire::type_name
+namespace df0::type_name
 {
 
 template<typename T, typename Alloc>
@@ -24,6 +24,6 @@ struct pretty_impl<std::vector<T, Alloc>> {
 	std::string operator()() const { return "std::vector<" + pretty<T>() + ">"; }
 };
 
-} // namespace docwire::type_name
+} // namespace df0::type_name
 
 #endif // DOCWIRE_TYPE_NAME_VECTOR_H

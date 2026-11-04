@@ -18,7 +18,7 @@
 #include "core_export.h"
 #include "iconv_wrapper.h"
 
-namespace docwire
+namespace df0
 {
 
 class charset_converter
@@ -44,6 +44,6 @@ private:
 	detail::iconv_wrapper::state m_state;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif

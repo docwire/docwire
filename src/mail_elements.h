@@ -19,7 +19,7 @@
 #include <optional>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 namespace mail
 {
@@ -54,6 +54,6 @@ struct folder
 struct close_folder { };
 
 } // namespace mail
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_MAIL_ELEMENTS_H

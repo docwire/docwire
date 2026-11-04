@@ -17,7 +17,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace docwire::plain_text {
+namespace df0::plain_text {
 
 /**
  * @brief Wraps a single line of text to fit within a given width.
@@ -64,6 +64,6 @@ inline std::vector<std::string> wrap(const std::string& line, int width, bool br
     return result;
 }
 
-} // namespace docwire::plain_text
+} // namespace df0::plain_text
 
 #endif // DOCWIRE_PLAIN_TEXT_WRAP_H

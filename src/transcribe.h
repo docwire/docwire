@@ -20,7 +20,7 @@
 #include <concepts>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -59,7 +59,7 @@ public:
 
 	/**
 	* @brief Executes transform operation for given node data.
-	* @see docwire::message_ptr
+	* @see df0::message_ptr
 	* @param msg
 	* @param emit_message
 	*/
@@ -76,6 +76,6 @@ private:
 transcribe(const std::string&, transcribe_model) -> transcribe<audit::null_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_OPENAI_TRANSCRIBE_H

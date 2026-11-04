@@ -17,7 +17,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::audit
+namespace df0::audit
 {
 
 /**
@@ -56,6 +56,6 @@ protected:
     }
 };
 
-} // namespace docwire::audit
+} // namespace df0::audit
 
 #endif

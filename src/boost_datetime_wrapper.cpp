@@ -18,7 +18,7 @@
 #include <sstream>
 #include <string>
 
-namespace docwire::detail
+namespace df0::detail
 {
 
 std::string local_iso_datetime_with_timezone_offset()
@@ -45,4 +45,4 @@ std::string local_iso_datetime_with_timezone_offset()
     return stream.str();
 }
 
-} // namespace docwire::detail
+} // namespace df0::detail

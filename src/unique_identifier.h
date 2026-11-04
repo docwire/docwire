@@ -18,7 +18,7 @@
 #include <compare>
 #include <functional>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -62,12 +62,12 @@ private:
 	friend struct std::hash<unique_identifier>;
 };
 
-} // namespace docwire
+} // namespace df0
 
 namespace std {
 template<>
-struct hash<docwire::unique_identifier> {
-	size_t operator()(const docwire::unique_identifier& id) const {
+struct hash<df0::unique_identifier> {
+	size_t operator()(const df0::unique_identifier& id) const {
 		return std::hash<size_t>{}(id.m_id);
 	}
 };

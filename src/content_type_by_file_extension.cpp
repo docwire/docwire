@@ -13,7 +13,7 @@
 
 #include <unordered_map>
 
-namespace docwire::content_type::by_file_extension
+namespace df0::content_type::by_file_extension
 {
 
 namespace
@@ -1349,4 +1349,4 @@ std::optional<file_extension> to_extension(const mime_type& mt)
 	return std::nullopt;
 }
 
-} // namespace docwire::content_type::by_file_extension
+} // namespace df0::content_type::by_file_extension

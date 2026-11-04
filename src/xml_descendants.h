@@ -23,7 +23,7 @@
 #include <memory>
 #include <ranges>
 
-namespace docwire::xml
+namespace df0::xml
 {
 
 /**

@@ -19,7 +19,7 @@
 #include "named.h"
 #include "serialization_enum.h" // IWYU pragma: keep
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -43,8 +43,8 @@ analyze_data<auditor_type>::analyze_data(
 	}};
 }
 
-template class DOCWIRE_OPENAI_EXPORT analyze_data<docwire::audit::null_auditor>;
-template class DOCWIRE_OPENAI_EXPORT analyze_data<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_OPENAI_EXPORT analyze_data<df0::audit::null_auditor>;
+template class DOCWIRE_OPENAI_EXPORT analyze_data<df0::audit::json_stream_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0

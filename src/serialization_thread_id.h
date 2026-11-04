@@ -17,7 +17,7 @@
 #include <sstream>
 #include <thread>
 
-namespace docwire::serialization
+namespace df0::serialization
 {
 
 template <>
@@ -32,6 +32,6 @@ struct serializer<std::thread::id>
     value typed_summary(const std::thread::id& i) const { return decorate_with_typeid(full(i), type_name::pretty<std::thread::id>()); }
 };
 
-} // namespace docwire::serialization
+} // namespace df0::serialization
 
 #endif // DOCWIRE_SERIALIZATION_THREAD_ID_H

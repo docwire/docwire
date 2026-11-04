@@ -11,7 +11,7 @@
 
 #include "content_type_html.h"
 
-namespace docwire::content_type::html
+namespace df0::content_type::html
 {
 
 void detect(data_source& data)
@@ -28,4 +28,4 @@ void detect(data_source& data)
 		data.add_mime_type(mime_type { "text/html" }, confidence::highest);
 }
 
-} // namespace docwire::content_type::html
+} // namespace df0::content_type::html

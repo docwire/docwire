@@ -24,7 +24,7 @@
 #include <iostream>
 #include <cstdlib>
 
-namespace docwire::errors
+namespace df0::errors
 {
     /**
      * @brief Terminates the program with a panic message in debug builds.
@@ -37,7 +37,7 @@ namespace docwire::errors
 }
 #endif // NDEBUG
 
-namespace docwire
+namespace df0
 {
 
 #ifndef NDEBUG
@@ -68,6 +68,6 @@ constexpr void debug_assert(detail::with_source_location<bool> /*condition*/, Co
 
 #endif // NDEBUG
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_DEBUG_ASSERT_H

@@ -39,9 +39,9 @@
 #include "plain_text/render_table.h"
 #include "plain_text/compute_column_width_ranges.h"
 
-namespace docwire
+namespace df0
 {
-using docwire::plain_text::output_width;
+using df0::plain_text::output_width;
 
 class plain_text_writer : public writer
 {
@@ -68,7 +68,7 @@ private:
 struct plain_text_writer::impl
 {
   using handler_func = std::function<std::shared_ptr<text_element>(const message_ptr&)>;
-  using text_handler_map = docwire::static_flat_map<docwire::type_id, handler_func, 26>;
+  using text_handler_map = df0::static_flat_map<df0::type_id, handler_func, 26>;
 
   class cell
   {
@@ -623,6 +623,6 @@ inline const std::string plain_text_writer::eol_sequence() const
   return m_impl->m_eol_sequence;
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_PLAIN_TEXT_WRITER_H

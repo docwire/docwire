@@ -16,17 +16,17 @@
 
 #include "local_ai_ct2_runner_factory.h"
 
-namespace docwire::ai::local::ct2 {
+namespace df0::ai::local::ct2 {
 
 class find :
-	public docwire::pipeline::transformer_element<find>,
-	public docwire::ai::find {
+	public df0::pipeline::transformer_element<find>,
+	public df0::ai::find {
 public:
   find(const std::string &what,
             model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::find(what, make_default_runner(), lifetime){};
+      : df0::ai::find(what, make_default_runner(), lifetime){};
 };
 
-} // namespace docwire::ai::local::ct2
+} // namespace df0::ai::local::ct2
 
 #endif // DOCWIRE_LOCAL_AI_CT2_FIND_H

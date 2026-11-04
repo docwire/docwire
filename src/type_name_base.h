@@ -17,7 +17,7 @@
 #include <type_traits>
 #include <typeindex>
 
-namespace docwire::type_name
+namespace df0::type_name
 {
 
 std::string from_type_index(std::type_index t);
@@ -77,6 +77,6 @@ inline std::string pretty() { return pretty_impl<T>{}(); }
 
 std::string pretty_function(const std::string& function_name);
 
-} // namespace docwire::type_name
+} // namespace df0::type_name
 
 #endif // DOCWIRE_TYPE_NAME_BASE_H

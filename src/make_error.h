@@ -17,7 +17,7 @@
 #include <tuple> // IWYU pragma: keep
 #include <type_traits> // IWYU pragma: keep
 
-namespace docwire::errors
+namespace df0::errors
 {
 
 /**
@@ -46,13 +46,13 @@ auto make_error_ptr_from_tuple(const source_location& location, std::tuple<Conte
     return std::make_exception_ptr(make_error_from_tuple(location, std::move(context_tuple)));
 }
 
-} // namespace docwire::errors
+} // namespace df0::errors
 
 #define DOCWIRE_MAKE_ERROR_AT_LOCATION(explicit_location, ...) \
-    ::docwire::errors::make_error_from_tuple(explicit_location, std::make_tuple(DOCWIRE_DIAGNOSTIC_CONTEXT_MAKE_TUPLE(__VA_ARGS__)))
+    ::df0::errors::make_error_from_tuple(explicit_location, std::make_tuple(DOCWIRE_DIAGNOSTIC_CONTEXT_MAKE_TUPLE(__VA_ARGS__)))
 
 #define DOCWIRE_MAKE_ERROR(...) \
-    DOCWIRE_MAKE_ERROR_AT_LOCATION(docwire::source_location::current() __VA_OPT__(,) __VA_ARGS__)
+    DOCWIRE_MAKE_ERROR_AT_LOCATION(df0::source_location::current() __VA_OPT__(,) __VA_ARGS__)
 
 #define DOCWIRE_MAKE_ERROR_PTR(...) \
 	std::make_exception_ptr(DOCWIRE_MAKE_ERROR(__VA_ARGS__))

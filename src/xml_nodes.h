@@ -20,7 +20,7 @@
 #include "xml_iterator_state.h"
 #include "xml_reader.h"
 
-namespace docwire::xml
+namespace df0::xml
 {
 
 /**

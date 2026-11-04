@@ -15,7 +15,7 @@
 #include <string>
 #include <filesystem>
 
-namespace docwire::ai
+namespace df0::ai
 {
 /*
  * @brief Handles configuration for llama model initialization and paramters
@@ -35,6 +35,6 @@ struct model_inference_config
     std::string grammar_root = "root";
 };
 
-} // namespace docwire::ai
+} // namespace df0::ai
 
 #endif

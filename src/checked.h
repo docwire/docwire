@@ -17,7 +17,7 @@
 #include <utility>
 #include <type_traits>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -171,6 +171,6 @@ private:
     Dereferenceable m_value;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_CHECKED_H

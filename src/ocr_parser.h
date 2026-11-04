@@ -25,7 +25,7 @@
 #include "audit/auditor_ref.hpp"
 #include "audit/with_auditor.hpp"
 
-namespace docwire
+namespace df0
 {
 
 namespace ocr
@@ -123,6 +123,6 @@ ocr_parser(
     ocr_timeout,
     ocr_data_path) -> ocr_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_OCR_PARSER_H

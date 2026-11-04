@@ -22,7 +22,7 @@
 #include "make_error.h"
 #include "throw_if.h"
 
-namespace docwire::detail
+namespace df0::detail
 {
 
 namespace
@@ -198,4 +198,4 @@ void http_listener::stop()
     m_impl->stop();
 }
 
-} // namespace docwire::detail
+} // namespace df0::detail

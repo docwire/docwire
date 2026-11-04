@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-namespace docwire
+namespace df0
 {
 /**
  * @brief Contains definitions for document attributes and metadata.
@@ -94,6 +94,6 @@ struct position
 };
 
 } // namespace attributes
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_ATTRIBUTES_H

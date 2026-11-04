@@ -29,7 +29,7 @@
 #include "serialization_message.h" // IWYU pragma: keep
 #include <sstream>
 
-namespace docwire
+namespace df0
 {
 
 using namespace openai;
@@ -65,7 +65,7 @@ struct pimpl_impl<openai::chat<auditor_type>>
 
 }
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -278,8 +278,8 @@ continuation chat<auditor_type>::operator()(
 	return emit_message(data_source{content});
 }
 
-template class DOCWIRE_OPENAI_EXPORT chat<docwire::audit::null_auditor>;
-template class DOCWIRE_OPENAI_EXPORT chat<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_OPENAI_EXPORT chat<df0::audit::null_auditor>;
+template class DOCWIRE_OPENAI_EXPORT chat<df0::audit::json_stream_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0

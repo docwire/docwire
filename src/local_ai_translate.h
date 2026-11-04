@@ -14,20 +14,20 @@
 
 #include "ai_translate.h"
 
-namespace docwire::ai::local {
+namespace df0::ai::local {
 
 class translate
-    : public docwire::pipeline::transformer_element<translate>
-    , public docwire::ai::translate
+    : public df0::pipeline::transformer_element<translate>
+    , public df0::ai::translate
 {
 public:
     explicit translate(const std::string& language);
 
     explicit translate(
         const std::string& language,
-        std::shared_ptr<docwire::ai::ai_runner> runner);
+        std::shared_ptr<df0::ai::ai_runner> runner);
 };
 
-} // namespace docwire::ai::local
+} // namespace df0::ai::local
 
 #endif // DOCWIRE_LOCAL_AI_TRANSLATE_H

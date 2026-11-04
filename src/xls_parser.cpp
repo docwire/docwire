@@ -42,7 +42,7 @@
 
 using namespace wvWare;
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -1006,7 +1006,7 @@ std::string xls_parser<auditor_type>::parse(thread_safe_ole_storage& storage, co
 	return impl().parse(storage, emit_message);
 }
 
-template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser<df0::audit::null_auditor>;
+template class DOCWIRE_OLE_OFFICE_FORMATS_EXPORT xls_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

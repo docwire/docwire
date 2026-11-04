@@ -12,7 +12,7 @@
 #include "llama_models.h"
 #include "resource_path.h"
 
-namespace docwire::ai::llama {
+namespace df0::ai::llama {
 std::filesystem::path granite_model_path() {
   try {
     return resource_path(std::string(granite_relative_path));
@@ -23,4 +23,4 @@ std::filesystem::path granite_model_path() {
         "or supply your own GGUF model_path in model_inference_config."));
   }
 }
-} // namespace docwire::ai::llama
+} // namespace df0::ai::llama

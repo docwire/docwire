@@ -16,7 +16,7 @@
 #include <compare>
 #include <filesystem>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -111,6 +111,6 @@ private:
 	std::string m_ext;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif

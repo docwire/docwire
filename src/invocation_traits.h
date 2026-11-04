@@ -22,7 +22,7 @@
  * This namespace contains traits classes that can be used to extract information about callable objects,
  * such as their argument types and return types. It also provides a way to check if a type is invocable.
  */
-namespace docwire::invocation_traits
+namespace df0::invocation_traits
 {
 
 /**
@@ -210,6 +210,6 @@ struct is_invocable
 template <typename T>
 inline constexpr bool is_invocable_v = is_invocable<T>::value;
 
-} // namespace docwire::invocation_traits
+} // namespace df0::invocation_traits
 
 #endif //DOCWIRE_INVOCATION_TRAITS_H

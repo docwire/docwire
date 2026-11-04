@@ -21,7 +21,7 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 template<typename auditor_type = audit::null_auditor>
@@ -57,6 +57,6 @@ public:
 // Deduction guide for CTAD
 pst_parser() -> pst_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_PST_PARSER_H

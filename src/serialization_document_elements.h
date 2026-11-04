@@ -17,7 +17,7 @@
 #include "serialization_base.h"
 #include "serialization_filesystem.h" // IWYU pragma: keep
 
-namespace docwire::serialization
+namespace df0::serialization
 {
 
 /**
@@ -116,6 +116,6 @@ struct serializer<attributes::styling>
     value typed_summary(const attributes::styling& styling) const { return decorate_with_typeid(serialization::full(styling), type_name::pretty<attributes::styling>()); }
 };
 
-} // namespace docwire::serialization
+} // namespace df0::serialization
 
 #endif // DOCWIRE_SERIALIZATION_DOCUMENT_ELEMENTS_H

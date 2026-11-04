@@ -17,7 +17,7 @@
 #include "serialization_file_extension.h" // IWYU pragma: keep
 #include "serialization_filesystem.h" // IWYU pragma: keep
 
-namespace docwire::serialization
+namespace df0::serialization
 {
 
 template <>
@@ -40,6 +40,6 @@ struct serializer<data_source>
     }
 };
 
-} // namespace docwire::serialization
+} // namespace df0::serialization
 
 #endif // DOCWIRE_SERIALIZATION_DATA_SOURCE_H

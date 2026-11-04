@@ -15,7 +15,7 @@
 #include "type_name_base.h"
 #include <list>
 
-namespace docwire::type_name
+namespace df0::type_name
 {
 
 template<typename T, typename Alloc>
@@ -23,6 +23,6 @@ struct pretty_impl<std::list<T, Alloc>> {
 	std::string operator()() const { return "std::list<" + pretty<T>() + ">"; }
 };
 
-} // namespace docwire::type_name
+} // namespace df0::type_name
 
 #endif // DOCWIRE_TYPE_NAME_LIST_H

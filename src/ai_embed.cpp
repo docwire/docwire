@@ -24,7 +24,7 @@
 #include "throw_if.h"
 #include <vector>
 
-namespace docwire
+namespace df0
 {
 
 template<typename auditor_type>
@@ -78,8 +78,8 @@ continuation embed<auditor_type>::operator()(
     std::vector<double> embedding_vector = impl().m_model_runner->embed(prefixed_input);
     return emit_message(ai::embedding{std::move(embedding_vector)});
 }
-template class DOCWIRE_AI_EXPORT docwire::ai::embed<docwire::audit::null_auditor>;
-template class DOCWIRE_AI_EXPORT docwire::ai::embed<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_AI_EXPORT df0::ai::embed<df0::audit::null_auditor>;
+template class DOCWIRE_AI_EXPORT df0::ai::embed<df0::audit::json_stream_auditor>;
 
 } // namespace ai
-} // namespace docwire
+} // namespace df0

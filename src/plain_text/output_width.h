@@ -14,7 +14,7 @@
 
 #include "../ranged.h"
 
-namespace docwire::plain_text {
+namespace df0::plain_text {
 
 /**
  * @brief Strong type representing maximum output line width for plain text.
@@ -29,6 +29,6 @@ private:
     at_least<20, int> m_value;
 };
 
-} // namespace docwire::plain_text
+} // namespace df0::plain_text
 
 #endif

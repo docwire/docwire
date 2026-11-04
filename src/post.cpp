@@ -26,7 +26,7 @@
 #include <sstream>
 #include "version.h"
 
-namespace docwire
+namespace df0
 {
 
 template<typename auditor_type>
@@ -243,8 +243,8 @@ catch (const std::exception&)
 	std::throw_with_nested(make_error(impl().m_url));
 }
 
-template class DOCWIRE_HTTP_EXPORT docwire::http::post<docwire::audit::null_auditor>;
-template class DOCWIRE_HTTP_EXPORT docwire::http::post<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_HTTP_EXPORT df0::http::post<df0::audit::null_auditor>;
+template class DOCWIRE_HTTP_EXPORT df0::http::post<df0::audit::json_stream_auditor>;
 
 } // namespace http
-} // namespace docwire
+} // namespace df0

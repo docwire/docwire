@@ -15,7 +15,7 @@
 #include "strong_type.h"
 #include <cstddef>
 
-namespace docwire::ai
+namespace df0::ai
 {
 struct context_size_tag
 {
@@ -43,6 +43,6 @@ using token_limit = strong_type<std::size_t, token_limit_tag>;
 
 using temperature = strong_type<float, temperature_tag>;
 using min_p = strong_type<float, min_p_tag>;
-} // namespace docwire::ai
+} // namespace df0::ai
 
 #endif

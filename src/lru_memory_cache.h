@@ -17,7 +17,7 @@
 #include <list>
 #include <unordered_map>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -78,6 +78,6 @@ private:
     std::unordered_map<Key, typename std::list<entry>::iterator> m_entry_list_iter_map;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_LRU_MEMORY_CACHE_H

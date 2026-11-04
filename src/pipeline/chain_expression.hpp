@@ -24,7 +24,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::pipeline
+namespace df0::pipeline
 {
 
 namespace detail
@@ -211,6 +211,6 @@ auto operator|(L&& lhs, R&& rhs)
     return chain;
 }
 
-} // namespace docwire::pipeline
+} // namespace df0::pipeline
 
 #endif //DOCWIRE_PIPELINE_CHAIN_EXPRESSION_H

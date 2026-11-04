@@ -17,7 +17,7 @@
 #include "detail/thread_safe_ole_storage.h"
 #include <vector>
 
-namespace docwire
+namespace df0
 {
 
 inline bool is_encrypted_with_ms_offcrypto(const data_source& data)
@@ -38,6 +38,6 @@ inline bool is_encrypted_with_ms_offcrypto(const data_source& data)
 	return false;
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_DETAIL_OFFICE_CRYPTO_H

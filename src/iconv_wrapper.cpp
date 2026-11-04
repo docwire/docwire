@@ -26,7 +26,7 @@
 #undef close
 #endif
 
-namespace docwire::detail::iconv_wrapper
+namespace df0::detail::iconv_wrapper
 {
 
 namespace
@@ -96,4 +96,4 @@ DOCWIRE_CORE_EXPORT std::string convert(state& st, std::string_view input)
     return output;
 }
 
-} // namespace docwire::detail::iconv_wrapper
+} // namespace df0::detail::iconv_wrapper

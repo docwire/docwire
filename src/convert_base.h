@@ -22,7 +22,7 @@
 /**
  * @brief Namespace for type conversion utilities.
  */
-namespace docwire::convert
+namespace df0::convert
 {
 
 /**
@@ -72,7 +72,7 @@ constexpr std::optional<To> try_to(const From& from) noexcept
  * @tparam To The target type.
  * @tparam From The source type.
  * @param from The value to convert.
- * @throws docwire::error with docwire::errors::uninterpretable_data tag attached if the conversion fails.
+ * @throws df0::error with df0::errors::uninterpretable_data tag attached if the conversion fails.
  */
 template<typename To, typename From>
 requires conversion_implementation_exists<To, From>
@@ -87,6 +87,6 @@ To to(const From& from)
 	return *result;
 }
 
-} // namespace docwire::convert
+} // namespace df0::convert
 
 #endif // DOCWIRE_CONVERT_BASE_H

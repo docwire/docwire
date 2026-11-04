@@ -20,7 +20,7 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 template<typename auditor_type = audit::null_auditor>
@@ -56,6 +56,6 @@ class DOCWIRE_MAIL_EXPORT eml_parser
 // Deduction guide for CTAD
 eml_parser() -> eml_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif

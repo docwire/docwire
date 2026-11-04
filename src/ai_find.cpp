@@ -11,7 +11,7 @@
 
 #include "ai_find.h"
 
-namespace docwire::ai
+namespace df0::ai
 {
 
 find::find(const std::string& what, std::shared_ptr<ai_runner> runner, model_lifetime_policy lifetime)
@@ -20,4 +20,4 @@ find::find(const std::string& what, std::shared_ptr<ai_runner> runner, model_lif
 {
 }
 
-} // namespace docwire::ai
+} // namespace df0::ai

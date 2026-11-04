@@ -20,7 +20,7 @@
 #include <span>
 #include <type_traits>
 
-namespace docwire::binary
+namespace df0::binary
 {
 
 // Polyfill for std::byteswap, which is C++23
@@ -100,6 +100,6 @@ private:
     pull_reader m_reader;
 };
 
-} // namespace docwire::binary
+} // namespace df0::binary
 
 #endif // DOCWIRE_BINARY_READER_H

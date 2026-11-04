@@ -5,12 +5,12 @@
 #include <cstddef>
 #include <vector>
 
-using namespace docwire;
+using namespace df0;
 
 TEST(MinizipWrapper, OpenInvalidArchiveThrows)
 {
     std::vector<std::byte> empty_zip;
     detail::minizip::state zip_state;
 
-    EXPECT_THROW(detail::minizip::open(zip_state, empty_zip), docwire::errors::base);
+    EXPECT_THROW(detail::minizip::open(zip_state, empty_zip), df0::errors::base);
 }

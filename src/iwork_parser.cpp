@@ -38,7 +38,7 @@
 #include <vector>
 #include <cmath>
 
-namespace docwire
+namespace df0
 {
 
 //Functions for parsing date/duration. Not sure if they should be here (in this file)
@@ -2197,7 +2197,7 @@ iwork_parser<auditor_type>::iwork_parser(audit::auditor_ref<auditor_type> audito
 
 template<typename auditor_type>
 void pimpl_impl<iwork_parser<auditor_type>>::parse(
-	const docwire::data_source& data,
+	const df0::data_source& data,
 	const message_callbacks& emit_message)
 {
 	audit::scope audit_scope{auditor(), [&]{ return "data"_v = data; }};
@@ -2259,7 +2259,7 @@ continuation iwork_parser<auditor_type>::operator()(
 }
 
 
-template class DOCWIRE_IWORK_EXPORT iwork_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_IWORK_EXPORT iwork_parser<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_IWORK_EXPORT iwork_parser<df0::audit::null_auditor>;
+template class DOCWIRE_IWORK_EXPORT iwork_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

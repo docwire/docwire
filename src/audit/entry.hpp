@@ -20,7 +20,7 @@
 #include <tuple>
 #include <utility>
 
-namespace docwire::audit
+namespace df0::audit
 {
 
 template<typename auditor_type, std::invocable<> context_fn_type>
@@ -78,6 +78,6 @@ void entry(auditor_type& auditor,
           tags_arg, location);
 }
 
-} // namespace docwire::audit
+} // namespace df0::audit
 
 #endif

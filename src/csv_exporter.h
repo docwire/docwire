@@ -19,7 +19,7 @@
 #include <memory>
 #include <sstream>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -50,6 +50,6 @@ private:
     csv_writer m_writer;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_CSV_EXPORTER_H

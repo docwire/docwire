@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-namespace docwire::ai::ct2
+namespace df0::ai::ct2
 {
 
 template<typename auditor_type = audit::null_auditor>
@@ -61,6 +61,6 @@ private:
 // Deduction guide for CTAD
 tokenizer(const std::filesystem::path&) -> tokenizer<audit::null_auditor>;
 
-} // namespace docwire::ai::ct2
+} // namespace df0::ai::ct2
 
 #endif // DOCWIRE_AI_TOKENIZER_H

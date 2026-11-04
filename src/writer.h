@@ -17,7 +17,7 @@
 #include <ostream>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 
 class text_element
@@ -48,6 +48,6 @@ public:
   virtual void write_to(const message_ptr& msg, std::ostream &stream) = 0;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_WRITER_H

@@ -29,7 +29,7 @@
 #include "throw_if.h"
 #include <sstream>
 
-namespace docwire
+namespace df0
 {
 
 using namespace openai;
@@ -56,7 +56,7 @@ struct pimpl_impl<openai::embed<auditor_type>>
 
 }
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -174,8 +174,8 @@ continuation embed<auditor_type>::operator()(
 	return emit_message(ai::embedding{std::move(embedding_vector)});
 }
 
-template class DOCWIRE_OPENAI_EXPORT docwire::openai::embed<docwire::audit::null_auditor>;
-template class DOCWIRE_OPENAI_EXPORT docwire::openai::embed<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_OPENAI_EXPORT df0::openai::embed<df0::audit::null_auditor>;
+template class DOCWIRE_OPENAI_EXPORT df0::openai::embed<df0::audit::json_stream_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0

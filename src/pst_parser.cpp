@@ -42,7 +42,7 @@ extern "C"
 #include "throw_if.h"
 #include "message_counters.h"
 
-namespace docwire
+namespace df0
 {
 
 inline std::string toString(const uint8_t* text)
@@ -585,7 +585,7 @@ continuation pst_parser<auditor_type>::operator()(
     return continuation::proceed;
 }
 
-template class DOCWIRE_MAIL_EXPORT pst_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_MAIL_EXPORT pst_parser<docwire::audit::json_stream_auditor>;
+template class DOCWIRE_MAIL_EXPORT pst_parser<df0::audit::null_auditor>;
+template class DOCWIRE_MAIL_EXPORT pst_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

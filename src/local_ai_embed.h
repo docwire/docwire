@@ -18,7 +18,7 @@
 #include "audit/core.hpp"
 #include <concepts>
 
-namespace docwire::ai::local::passage
+namespace df0::ai::local::passage
 {
 
 /**
@@ -28,8 +28,8 @@ namespace docwire::ai::local::passage
  */
 template<typename auditor_type = audit::null_auditor>
 class DOCWIRE_LOCAL_AI_EXPORT embedder
-    : public docwire::pipeline::transformer_element<embedder<auditor_type>>
-    , public docwire::ai::embed<auditor_type>
+    : public df0::pipeline::transformer_element<embedder<auditor_type>>
+    , public df0::ai::embed<auditor_type>
 {
   public:
     /**
@@ -51,9 +51,9 @@ class DOCWIRE_LOCAL_AI_EXPORT embedder
 // Deduction guide for CTAD
 embedder() -> embedder<audit::null_auditor>;
 
-} // namespace docwire::ai::local::passage
+} // namespace df0::ai::local::passage
 
-namespace docwire::ai::local::query
+namespace df0::ai::local::query
 {
 /**
  * @brief Embeds a search query (search input) using the local AI model's default query prefix.
@@ -64,8 +64,8 @@ namespace docwire::ai::local::query
  */
 template<typename auditor_type = audit::null_auditor>
 class DOCWIRE_LOCAL_AI_EXPORT embedder
-    : public docwire::pipeline::transformer_element<embedder<auditor_type>>
-    , public docwire::ai::embed<auditor_type>
+    : public df0::pipeline::transformer_element<embedder<auditor_type>>
+    , public df0::ai::embed<auditor_type>
 {
   public:
     /**
@@ -87,6 +87,6 @@ class DOCWIRE_LOCAL_AI_EXPORT embedder
 // Deduction guide for CTAD
 embedder() -> embedder<audit::null_auditor>;
 
-} // namespace docwire::ai::local::query
+} // namespace df0::ai::local::query
 
 #endif // DOCWIRE_LOCAL_AI_EMBED_H

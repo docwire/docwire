@@ -18,7 +18,7 @@
 #include <typeinfo>
 #include "error.h"
 
-namespace docwire::errors
+namespace df0::errors
 {
 
 /**
@@ -90,6 +90,6 @@ inline std::string diagnostic_message(std::exception_ptr eptr)
 	}
 }
 
-} // namespace docwire::errors
+} // namespace df0::errors
 
 #endif // DOCWIRE_DIAGNOSTIC_MESSAGE_H

@@ -18,26 +18,26 @@
 #include "throw_if.h"
 #include <vector>
 
-namespace docwire
+namespace df0
 {
 
 /**
  * @brief A utility for creating expressive, exception-throwing assertions in a fluent style.
  * @details This class is the core of a fluent validation API. It is designed to be
  * constructed with a value to be tested, and then used with a comparison operator
- * to check a condition. If the condition fails, it throws a `docwire::error` with
+ * to check a condition. If the condition fails, it throws a `df0::error` with
  * rich diagnostic information, including the source location of the check and the
  * values involved.
  *
  * The intended usage is natural and expressive:
  * @code
- * docwire::ensure(actual_value) == expected_value;
- * docwire::ensure(similarity_score) > 0.9;
- * docwire::ensure(my_string).contains("substring");
+ * df0::ensure(actual_value) == expected_value;
+ * df0::ensure(similarity_score) > 0.9;
+ * df0::ensure(my_string).contains("substring");
  * @endcode
  *
  * To prevent accidental misuse where a check is written but no comparison is performed
- * (e.g., `docwire::ensure(a == b);`), the class is marked `[[nodiscard]]` to encourage
+ * (e.g., `df0::ensure(a == b);`), the class is marked `[[nodiscard]]` to encourage
  * compiler warnings. More importantly, in debug builds, its destructor will `assert`
  * if no comparison operator was called, immediately flagging the bug at runtime.
  * This runtime check is compiled out in release builds for zero performance overhead.
@@ -72,7 +72,7 @@ public:
         // In debug builds, assert that a comparison operator was used. This prevents incorrect
         // usage like `ensure(a == b);` from silently passing. The assert macro is automatically
         // compiled out in release builds (when NDEBUG is defined), resulting in zero overhead.
-        assert(m_comparison_performed && "docwire::ensure() was called without a comparison operator (e.g., ==, !=, <, etc.). "
+        assert(m_comparison_performed && "df0::ensure() was called without a comparison operator (e.g., ==, !=, <, etc.). "
                                          "This is a bug in the calling code, not a runtime error.");
     }
 
@@ -190,7 +190,7 @@ private:
     }
 
     const T& m_value;
-    docwire::source_location m_location;
+    df0::source_location m_location;
 #ifndef NDEBUG
     mutable bool m_comparison_performed;
 #endif
@@ -202,8 +202,8 @@ private:
  * enabling the clean `ensure(value)` syntax without needing a factory function.
  */
 template<typename T>
-ensure(const T&, const docwire::source_location&) -> ensure<T>;
+ensure(const T&, const df0::source_location&) -> ensure<T>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_ENSURE_H

@@ -15,7 +15,7 @@
 #include "message.h"
 #include "serialization_base.h"
 
-namespace docwire::serialization
+namespace df0::serialization
 {
 
 template <>
@@ -28,6 +28,6 @@ struct serializer<message_base>
     value typed_summary(const message_base& msg) const { return decorate_with_typeid(full(msg), type_name::pretty<message_base>()); }
 };
 
-} // namespace docwire::serialization
+} // namespace df0::serialization
 
 #endif // DOCWIRE_SERIALIZATION_MESSAGE_H

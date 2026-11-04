@@ -20,7 +20,7 @@
 #include <utility>
 #include <variant>
 
-namespace docwire
+namespace df0
 {
 
 template <typename T>
@@ -165,6 +165,6 @@ auto operator|(LeftVariant&& lhs, RightVariant&& rhs)
 
 } // namespace pipeline
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_PIPELINE_VARIANT_EXPRESSION_H

@@ -19,7 +19,7 @@
 #include "safety_policy.h"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -74,6 +74,6 @@ class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser
 // Deduction guide for CTAD
 odfxml_parser() -> odfxml_parser<default_safety_level, audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif

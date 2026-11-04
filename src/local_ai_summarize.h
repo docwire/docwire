@@ -14,19 +14,19 @@
 
 #include "ai_summarize.h"
 
-namespace docwire::ai::local {
+namespace df0::ai::local {
 
 class summarize
-    : public docwire::pipeline::transformer_element<summarize>
-    , public docwire::ai::summarize
+    : public df0::pipeline::transformer_element<summarize>
+    , public df0::ai::summarize
 {
 public:
   explicit summarize(
-      std::shared_ptr<docwire::ai::ai_runner> runner,
+      std::shared_ptr<df0::ai::ai_runner> runner,
       model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::summarize(runner, lifetime){};
+      : df0::ai::summarize(runner, lifetime){};
 };
 
-} // namespace docwire::ai::local
+} // namespace df0::ai::local
 
 #endif // DOCWIRE_LOCAL_AI_SUMMARIZE_H

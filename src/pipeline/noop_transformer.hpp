@@ -15,7 +15,7 @@
 #include "element_base.hpp"
 #include <utility>
 
-namespace docwire::pipeline
+namespace df0::pipeline
 {
 
 /**
@@ -46,6 +46,6 @@ public:
     }
 };
 
-} // namespace docwire::pipeline
+} // namespace df0::pipeline
 
 #endif // DOCWIRE_PIPELINE_NOOP_TRANSFORMER_H

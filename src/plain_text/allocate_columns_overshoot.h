@@ -16,7 +16,7 @@
 #include <numeric>
 #include <vector>
 
-namespace docwire::plain_text {
+namespace df0::plain_text {
 
 /**
  * @brief Allocate column widths when minimum widths overflow usable space
@@ -56,6 +56,6 @@ inline std::vector<int> allocate_columns_overshoot(const std::vector<int>& min_w
     return col_widths;
 }
 
-} // namespace docwire::plain_text
+} // namespace df0::plain_text
 
 #endif

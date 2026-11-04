@@ -16,7 +16,7 @@
 #include <map>
 #include <unordered_map>
 
-namespace docwire::type_name
+namespace df0::type_name
 {
 
 template<typename Key, typename T, typename Compare, typename Alloc>
@@ -29,6 +29,6 @@ struct pretty_impl<std::unordered_map<Key, T, Hash, KeyEqual, Alloc>> {
     std::string operator()() const { return "std::unordered_map<" + pretty<Key>() + "," + pretty<T>() + ">"; }
 };
 
-} // namespace docwire::type_name
+} // namespace df0::type_name
 
 #endif // DOCWIRE_TYPE_NAME_MAP_H

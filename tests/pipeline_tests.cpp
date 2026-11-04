@@ -20,7 +20,7 @@
 #include <type_traits>
 #include <utility>
 
-using namespace docwire;
+using namespace df0;
 
 namespace
 {

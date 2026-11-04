@@ -16,7 +16,7 @@
 #include "serialization_base.h"
 #include "serialization_file_extension.h" // IWYU pragma: keep
 
-namespace docwire::serialization
+namespace df0::serialization
 {
 
 template<>

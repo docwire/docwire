@@ -21,41 +21,41 @@
 #include <concepts>
 #include <memory>
 
-namespace docwire::ai::local::ct2
+namespace df0::ai::local::ct2
 {
 
 template<typename auditor_type>
-inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner(
-    docwire::audit::auditor_ref<auditor_type> auditor)
+inline std::shared_ptr<df0::ai::ai_runner> make_default_runner(
+    df0::audit::auditor_ref<auditor_type> auditor)
 {
-    return std::make_shared<docwire::ai::ct2::ct2_runner<auditor_type>>(
+    return std::make_shared<df0::ai::ct2::ct2_runner<auditor_type>>(
         resource_path("flan-t5-large-ct2-int8"),
         auditor);
 }
 
 template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
-inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
+inline std::shared_ptr<df0::ai::ai_runner> make_default_runner()
 {
     return make_default_runner<stateless_auditor_type>(
-        docwire::audit::auditor_ref<stateless_auditor_type>{});
+        df0::audit::auditor_ref<stateless_auditor_type>{});
 }
 
 template<typename auditor_type>
-inline std::shared_ptr<docwire::ai::ai_runner> make_embedding_runner(
-    docwire::audit::auditor_ref<auditor_type> auditor)
+inline std::shared_ptr<df0::ai::ai_runner> make_embedding_runner(
+    df0::audit::auditor_ref<auditor_type> auditor)
 {
-    return std::make_shared<docwire::ai::ct2::ct2_runner<auditor_type>>(
+    return std::make_shared<df0::ai::ct2::ct2_runner<auditor_type>>(
         resource_path("multilingual-e5-small-ct2-int8"),
         auditor);
 }
 
 template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
-inline std::shared_ptr<docwire::ai::ai_runner> make_embedding_runner()
+inline std::shared_ptr<df0::ai::ai_runner> make_embedding_runner()
 {
     return make_embedding_runner<stateless_auditor_type>(
-        docwire::audit::auditor_ref<stateless_auditor_type>{});
+        df0::audit::auditor_ref<stateless_auditor_type>{});
 }
 
-} // namespace docwire::ai::local::ct2
+} // namespace df0::ai::local::ct2
 
 #endif

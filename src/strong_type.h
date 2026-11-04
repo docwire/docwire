@@ -15,7 +15,7 @@
 #define DOCWIRE_STRONG_TYPE_H
 
 #include <utility>
-namespace docwire
+namespace df0
 {
 template <typename T, typename Tag> class strong_type
 {
@@ -30,6 +30,6 @@ template <typename T, typename Tag> class strong_type
     T value_;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif

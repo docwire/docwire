@@ -203,7 +203,7 @@
 */
 
 /**
- * @namespace docwire
+ * @namespace df0
  * @brief The main namespace for the DocWire SDK.
  */
 

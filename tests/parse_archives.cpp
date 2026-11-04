@@ -2,7 +2,7 @@
 
 int main(int argc, char* argv[])
 {
-  using namespace docwire;
+  using namespace df0;
   try
   {
     std::filesystem::path("test.zip") | content_type::detector{} | archives_parser{} | office_formats_parser{} | ocr_parser{} | plain_text_exporter() | std::cout;

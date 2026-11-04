@@ -17,7 +17,7 @@
 #include <concepts>
 #include <tuple>
 
-namespace docwire::audit
+namespace df0::audit
 {
 
 struct null_auditor
@@ -36,6 +36,6 @@ concept auditor = requires(A& a, source_location loc)
     { a.record(loc, no_context) } -> std::same_as<void>;
 };
 
-} // namespace docwire::audit
+} // namespace df0::audit
 
 #endif

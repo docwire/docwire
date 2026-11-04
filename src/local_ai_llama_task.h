@@ -17,29 +17,29 @@
 #include "model_inference_config.h"
 #include <filesystem>
 
-namespace docwire::ai::local::llama {
+namespace df0::ai::local::llama {
 class task :
-	public docwire::pipeline::transformer_element<task>,
-	public docwire::ai::task {
+	public df0::pipeline::transformer_element<task>,
+	public df0::ai::task {
 public:
 #ifdef DOCWIRE_GRANITE
   // Constructor with Default Granite model
   explicit task(
       const std::string &prompt,
       model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::task(prompt, make_default_runner(), lifetime){};
+      : df0::ai::task(prompt, make_default_runner(), lifetime){};
 #endif
   // Constructor allowing custom model path but with default config
   explicit task(
       const std::string &prompt, const std::filesystem::path &model_path,
       model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::task(prompt, make_runner(model_path), lifetime){};
+      : df0::ai::task(prompt, make_runner(model_path), lifetime){};
   // Constructor allowing custom model and relevant config
   explicit task(
-      const std::string &prompt, docwire::ai::model_inference_config config,
+      const std::string &prompt, df0::ai::model_inference_config config,
       model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::task(prompt, make_runner(config), lifetime){};
+      : df0::ai::task(prompt, make_runner(config), lifetime){};
 };
-} // namespace docwire::ai::local::llama
+} // namespace df0::ai::local::llama
 
 #endif // DOCWIRE_LOCAL_AI_LLAMA_TASK_H

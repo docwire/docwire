@@ -17,7 +17,7 @@
 #include <sstream>
 #include <stack>
 
-namespace docwire
+namespace df0
 {
 
 struct xml_name
@@ -425,4 +425,4 @@ std::string xml_fixer::fix(const std::string& xml)
 	return fixed_xml;
 }
 
-} // namespace docwire
+} // namespace df0

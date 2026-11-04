@@ -13,7 +13,7 @@
 
 #include "zip_reader.h"
 
-namespace docwire::content_type::odf_ooxml
+namespace df0::content_type::odf_ooxml
 {
 
 void detect(data_source& data)
@@ -84,4 +84,4 @@ void detect(data_source& data)
     }
 }
 
-} // namespace docwire::content_type::odf_ooxml
+} // namespace df0::content_type::odf_ooxml

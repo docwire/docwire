@@ -24,7 +24,7 @@
 	#include <source_location>
 #endif
 
-namespace docwire {
+namespace df0 {
 
 /// @brief A fallback implementation of source_location for compilers that do not support std::source_location.
 struct basic_source_location
@@ -63,7 +63,7 @@ private:
     using source_location = basic_source_location;
 #endif
 
-} // namespace docwire
+} // namespace df0
 
 #undef USE_STD_SOURCE_LOCATION
 

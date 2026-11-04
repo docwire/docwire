@@ -14,7 +14,7 @@
 
 #include <vector>
 
-namespace docwire::plain_text {
+namespace df0::plain_text {
 
 /**
  * @brief Fallback column allocation for extremely narrow windows.
@@ -40,6 +40,6 @@ inline std::vector<int> fallback_columns(int num_cols, int total_width)
     return widths;
 }
 
-} // namespace docwire::plain_text
+} // namespace df0::plain_text
 
 #endif

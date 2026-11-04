@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-namespace docwire::plain_text {
+namespace df0::plain_text {
 
 /**
  * @brief Wraps multiple lines to fit within a given width.
@@ -40,6 +40,6 @@ inline std::vector<std::string> wrap_lines(const std::vector<std::string>& lines
     return wrapped;
 }
 
-} // namespace docwire::plain_text
+} // namespace df0::plain_text
 
 #endif

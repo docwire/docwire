@@ -17,31 +17,31 @@
 #include "model_inference_config.h"
 #include <filesystem>
 
-namespace docwire::ai::local::llama {
+namespace df0::ai::local::llama {
 
 class translate :
-	public docwire::pipeline::transformer_element<translate>,
-	public docwire::ai::translate {
+	public df0::pipeline::transformer_element<translate>,
+	public df0::ai::translate {
 public:
 #ifdef DOCWIRE_GRANITE
   // Constructor with Default Granite model
   explicit translate(
       const std::string &language,
       model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::translate(language, make_default_runner(), lifetime){};
+      : df0::ai::translate(language, make_default_runner(), lifetime){};
 #endif
   // Constructor allowing custom model path but with default config
   explicit translate(
       const std::string &language, const std::filesystem::path &model_path,
       model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::translate(language, make_runner(model_path), lifetime){};
+      : df0::ai::translate(language, make_runner(model_path), lifetime){};
   // Constructor allowing custom model and relevant config
   explicit translate(
-      const std::string &language, docwire::ai::model_inference_config config,
+      const std::string &language, df0::ai::model_inference_config config,
       model_lifetime_policy lifetime = model_lifetime_policy::persistent)
-      : docwire::ai::translate(language, make_runner(config), lifetime){};
+      : df0::ai::translate(language, make_runner(config), lifetime){};
 };
 
-} // namespace docwire::ai::local::llama
+} // namespace df0::ai::local::llama
 
 #endif // DOCWIRE_LOCAL_AI_LLAMA_TRANSLATE_H

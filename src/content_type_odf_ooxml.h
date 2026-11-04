@@ -16,7 +16,7 @@
 #include "content_type_export.h"
 #include "data_source.h"
 
-namespace docwire::content_type::odf_ooxml
+namespace df0::content_type::odf_ooxml
 {
 
 /**
@@ -53,6 +53,6 @@ public:
     }
 };
 
-} // namespace docwire::content_type::odf_ooxml
+} // namespace df0::content_type::odf_ooxml
 
 #endif // DOCWIRE_CONTENT_TYPE_ODF_OOXML_H

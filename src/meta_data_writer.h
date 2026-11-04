@@ -20,7 +20,7 @@
 #include "document_elements.h"
 #include "convert_chrono.h"
 
-namespace docwire
+namespace df0
 {
 
 class metadata_writer : public writer
@@ -97,6 +97,6 @@ inline void metadata_writer::write_to(const message_ptr& msg, std::ostream &file
     write_meta_data(msg->get<document::document>().metadata())->write_to(file);
   }
 }
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_METADATA_WRITER_H

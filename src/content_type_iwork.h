@@ -16,7 +16,7 @@
 #include "content_type_export.h"
 #include "data_source.h"
 
-namespace docwire::content_type::iwork
+namespace df0::content_type::iwork
 {
 
 /**
@@ -47,6 +47,6 @@ public:
     }
 };
 
-} // namespace docwire::content_type::iwork
+} // namespace df0::content_type::iwork
 
 #endif // DOCWIRE_CONTENT_TYPE_IWORK

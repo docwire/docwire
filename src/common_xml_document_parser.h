@@ -22,7 +22,7 @@
 #include <vector>
 #include <map>
 
-namespace docwire
+namespace df0
 {
 	class zip_reader;
 	class Metadata;
@@ -239,6 +239,6 @@ class common_xml_document_parser
 // Deduction guide for CTAD
 common_xml_document_parser() -> common_xml_document_parser<default_safety_level, audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif

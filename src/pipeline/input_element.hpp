@@ -23,7 +23,7 @@
 #include "../audit/entry.hpp"
 #include "chain_expression.hpp"
 
-namespace docwire::pipeline
+namespace df0::pipeline
 {
 
 template<class T>
@@ -104,6 +104,6 @@ auto operator|(T&& v, ChainElement&& chain_element)
   return input_element{data_source{std::forward<T>(v)}} | std::forward<ChainElement>(chain_element);
 }
 
-} // namespace docwire::pipeline
+} // namespace df0::pipeline
 
 #endif //DOCWIRE_PIPELINE_INPUT_ELEMENT_H

@@ -20,7 +20,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire
+namespace df0
 {
 
 namespace pipeline

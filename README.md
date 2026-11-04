@@ -147,7 +147,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Modern C++20 XML Parsing**: A new, expressive, and safe API for parsing XML documents. It features a single-pass, forward-only reader and utilizes C++20 ranges and views for efficient and elegant node filtering and manipulation. [You can find example how to parse XML documents here](https://docwire.readthedocs.io/en/latest/xml_parsing_example_8cpp-example.html).
 
-- **Configurable Safety Policies**: The SDK provides `strict` and `relaxed` safety policies for XML-based parsers, with other components to follow. In `strict` mode, developer contract violations throw typed exceptions through the current error framework. In `relaxed` mode, trusted developer checks are compiled out for zero overhead. Relaxed mode should be used only for trusted XML input; untrusted input should use strict validation. The SDK is evolving toward injectable error policies that will also support `docwire::expected`-based propagation.
+- **Configurable Safety Policies**: The SDK provides `strict` and `relaxed` safety policies for XML-based parsers, with other components to follow. In `strict` mode, developer contract violations throw typed exceptions through the current error framework. In `relaxed` mode, trusted developer checks are compiled out for zero overhead. Relaxed mode should be used only for trusted XML input; untrusted input should use strict validation. The SDK is evolving toward injectable error policies that will also support `df0::expected`-based propagation.
 
 - **Llama.cpp Integration** (optional `local-ai-llama` feature): The SDK integrates seamlessly with llama.cpp, allowing users to select a model of their choice and integrate it within the workflow using the `llama` wrapper provided in the SDK. This feature is optional and must be enabled at build time.
 
@@ -514,7 +514,7 @@ Create embedding for document in any format (Office, PDF, mail, etc) using built
 ```cpp
 std::filesystem::path("data_processing_definition.doc") | ... | ai::local::ct2::passage::embedder{} | passage_msgs;
 ...
-docwire::data_source{std::string{"What is data processing?"}, ...} | ai::local::ct2::query::embedder{} | similar_query_msgs;
+df0::data_source{std::string{"What is data processing?"}, ...} | ai::local::ct2::query::embedder{} | similar_query_msgs;
 ...
 double sim = cosine_similarity(passage_embedding.values, similar_query_embedding.values);
 ...
@@ -858,33 +858,33 @@ To explore the possibilities of an LTS agreement or to discuss specific requirem
 
 DocWire uses a dependency-injected audit mechanism. There is no process-global logger, static sink, or logging macro.
 
-Parsers, exporters, and pipeline elements accept an `auditor_type` template parameter. The default is `docwire::audit::null_auditor`, a stateless no-op that adds no runtime cost.
+Parsers, exporters, and pipeline elements accept an `auditor_type` template parameter. The default is `df0::audit::null_auditor`, a stateless no-op that adds no runtime cost.
 
 For structured output, audit components are composed with `operator|`:
 
 ```cpp
 auto audit =
-    docwire::audit::filter::by_spec{"*"}
-    | docwire::audit::serialize::json{}
-    | docwire::audit::sink::ostream{std::clog};
+    df0::audit::filter::by_spec{"*"}
+    | df0::audit::serialize::json{}
+    | df0::audit::sink::ostream{std::clog};
 ```
 [Full example](https://docwire.readthedocs.io/en/latest/audit_composition_8cpp-example.html)
 
 The resulting auditor can be injected into a pipeline:
 
 ```cpp
-docwire::audit::json_stream_auditor audit{
+df0::audit::json_stream_auditor audit{
     "*",
-    docwire::ref_or_owned<std::ostream>{std::clog}
+    df0::ref_or_owned<std::ostream>{std::clog}
 };
 
 std::filesystem::path{"data_processing_definition.doc"}
     | content_type::detector{}
     | office_formats_parser<
-          docwire::safety_policy::strict,
-          docwire::audit::json_stream_auditor>{
-          docwire::audit::auditor_ref<
-              docwire::audit::json_stream_auditor>{audit}}
+          df0::safety_policy::strict,
+          df0::audit::json_stream_auditor>{
+          df0::audit::auditor_ref<
+              df0::audit::json_stream_auditor>{audit}}
     | plain_text_exporter{}
     | std::cout;
 ```
@@ -945,7 +945,7 @@ DocWire SDK provides a comprehensive error handling framework with typed context
 The framework supports building an exception chain, allowing the creation of a longer error context across different layers of the backtrace. This enables tracking of the sequence of events leading up to an error, making it easier to identify the root cause.
 
 In addition to `std::nested_exception`, `std::exception_ptr`, and `std::throw_with_nested`, the framework includes the [errors::make_nested](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#afde521434d8ac75136d13bc9d42c17a2) and [errors::make_nested_ptr](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#a7380b5b4f036f549a9c284261d9f31ac) function templates and the [errors::nested](https://docwire.readthedocs.io/en/latest/classdocwire_1_1errors_1_1nested.html) class template for easy error chaining like:  
-`docwire::errors::make_nested_ptr(error_object_1, error_object_2)`.
+`df0::errors::make_nested_ptr(error_object_1, error_object_2)`.
 
 #### Type-safe context values
 
@@ -955,7 +955,7 @@ The [errors::impl](https://docwire.readthedocs.io/en/latest/structdocwire_1_1err
 `throw make_error(custom_type_value);`.
 
 The [errors::base](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1base.html) structure provides a base class for all error types for easy error handling:  
-`catch (const docwire::errors::base& e) { ... }`.
+`catch (const df0::errors::base& e) { ... }`.
 
 #### Embedded context variable names and triggering expressions
 
@@ -969,9 +969,9 @@ For example:
 Errors can be tagged with a custom type or multiple types like [errors::network_failure](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1network__failure.html) or [errors::file_encrypted](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1file__encrypted.html), providing fine-grained control over error handling. Decisions, such as retrying an operation or asking for a password, can be made based on the presence of a specific tag type in the error chain:
 
 ```cpp
-catch (const docwire::errors::base& e)
+catch (const df0::errors::base& e)
 {
-  if (docwire::errors::contains_type<docwire::errors::network_failure>(e))
+  if (df0::errors::contains_type<df0::errors::network_failure>(e))
     retry();
 }
 ```
@@ -982,7 +982,7 @@ catch (const docwire::errors::base& e)
 Error objects include embedded source location information, providing essential context for debugging:
 
 ```cpp
-catch (const docwire::errors::base& e)
+catch (const df0::errors::base& e)
 {
   std::cerr << e.location.file_name() << ":" << e.location.line() << std::endl;
 }
@@ -994,9 +994,9 @@ catch (const docwire::errors::base& e)
 To reduce the risk of security breaches, the framework avoids including sensitive information in formatted error messages. There is no implicit stringification of context values, and the standard `what()` method is secured to return only the exception type name. Sensitive information can be retrieved from the error object on-demand only:
 
 ```cpp
-std::cerr << docwire::errors::diagnostic_message(e) << std::endl;
+std::cerr << df0::errors::diagnostic_message(e) << std::endl;
 // or
-if (auto* impl_ptr = dynamic_cast<docwire::errors::impl<std::filesystem::path>*>(&e))
+if (auto* impl_ptr = dynamic_cast<df0::errors::impl<std::filesystem::path>*>(&e))
 {
   auto fn = impl_ptr->context;
   (void)fn; // avoid unused variable warning
@@ -1008,14 +1008,14 @@ if (auto* impl_ptr = dynamic_cast<docwire::errors::impl<std::filesystem::path>*>
 
 Functions like [errors::diagnostic_message](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#a2446f6c81b6a5b338dea00cb29c40263) and [errors::contains_type](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#aa2af5b81a3e66772f19506d8e8a93184) allow access to context data in a controlled manner, facilitating effective error handling.
 
-For example, `std::cerr << docwire::errors::diagnostic_message(e) << std::endl;` can give the following result:
+For example, `std::cerr << df0::errors::diagnostic_message(e) << std::endl;` can give the following result:
 
 ```
 Error: "triggering_condition: impl().ArchiveFile == NULL"
-in void docwire::zip_reader::open()
+in void df0::zip_reader::open()
 at /home/adrian/Work/docwire/src/zip_reader.cpp:146
 with context "Could not open zip archive"
-wrapping at: void docwire::pimpl_impl<docwire::xlsb_parser>::parse(const docwire::data_source&, const docwire::message_callbacks&)
+wrapping at: void df0::pimpl_impl<df0::xlsb_parser>::parse(const df0::data_source&, const df0::message_callbacks&)
 at /home/adrian/Work/docwire/src/xlsb_parser.cpp:700
 with context "file encrypted error tag"
 with context "Microsoft Office Document Cryptography"
@@ -1033,7 +1033,7 @@ This gives them similar security and debugging capabilities to fatal errors and 
 
 DocWire is evolving its error handling from a single exception-based model to an **injectable error-policy abstraction**. This will allow the same parsing/processing algorithm to be compiled with different error propagation strategies:
 
-- **Deterministic mode (`docwire::expected`)** – fallible operations return a value or a coarse-grained error category. Control flow is explicit and predictable, with no stack unwinding. This mode is suitable for real-time, embedded, and safety-critical workloads.
+- **Deterministic mode (`df0::expected`)** – fallible operations return a value or a coarse-grained error category. Control flow is explicit and predictable, with no stack unwinding. This mode is suitable for real-time, embedded, and safety-critical workloads.
 
 - **Exception mode** – fallible operations throw typed exceptions when an error occurs. Happy-path code avoids explicit checks, giving zero-cost success paths and familiar C++ exception ergonomics.
 

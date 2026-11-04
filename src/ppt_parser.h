@@ -18,7 +18,7 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 class thread_safe_ole_storage;
@@ -53,6 +53,6 @@ private:
 // Deduction guide for CTAD
 ppt_parser() -> ppt_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif

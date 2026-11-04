@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 
 class data_stream
@@ -275,6 +275,6 @@ inline data_stream* buffer_stream::clone()
 	return new buffer_stream(m_buffer, m_size);
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif	//DOCWIRE_DATA_STREAM_H

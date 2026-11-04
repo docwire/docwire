@@ -16,7 +16,7 @@
 #include "content_type_export.h"
 #include "data_source.h"
 
-namespace docwire::content_type::html
+namespace df0::content_type::html
 {
 
 /**
@@ -45,6 +45,6 @@ public:
     }
 };
 
-} // namespace docwire::content_type::html
+} // namespace df0::content_type::html
 
 #endif // DOCWIRE_CONTENT_TYPE_HTML

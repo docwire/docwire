@@ -20,7 +20,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::pipeline
+namespace df0::pipeline
 {
 
 namespace detail
@@ -259,6 +259,6 @@ auto compose(ElementTypes&&... elements)
     };
 }
 
-} // namespace docwire::pipeline
+} // namespace df0::pipeline
 
 #endif // DOCWIRE_PIPELINE_COMPOSITION_HPP

@@ -7,5 +7,5 @@ std::string odr_smoke_from_b();
 
 TEST(ODR, Smoke)
 {
-    EXPECT_EQ(docwire::type_name::pretty<int>(), odr_smoke_from_b());
+    EXPECT_EQ(df0::type_name::pretty<int>(), odr_smoke_from_b());
 }

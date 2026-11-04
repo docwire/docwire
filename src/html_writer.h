@@ -18,7 +18,7 @@
 #include "pimpl.h"
 #include "writer.h"
 
-namespace docwire
+namespace df0
 {
 
 class DOCWIRE_HTML_EXPORT html_writer : public writer, public with_pimpl<html_writer>
@@ -37,6 +37,6 @@ public:
 private:
   using with_pimpl<html_writer>::impl;
 };
-} // namespace docwire
+} // namespace df0
 
 #endif //DOCWIRE_HTML_WRITER_H

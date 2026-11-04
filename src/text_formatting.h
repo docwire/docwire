@@ -20,7 +20,7 @@
 #include "audit/auditor_ref.hpp"
 #include "audit/scope.hpp"
 
-namespace docwire
+namespace df0
 {
 
 using svector = std::vector<std::string>;
@@ -218,6 +218,6 @@ inline std::string formatNumberedList(std::vector<std::string>& mlist)
         audit::auditor_ref<stateless_auditor_type>{});
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif

@@ -21,14 +21,14 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire::ai::llama
+namespace df0::ai::llama
 {
 /**
  * @brief This class is intended to load a Llama model with its correct model path and
  * respective configuration and run inference on the prompt supplied along with
  * the model configuration.
  */
-template<typename auditor_type = docwire::audit::null_auditor>
+template<typename auditor_type = df0::audit::null_auditor>
 class DOCWIRE_AI_LLAMA_EXPORT llama_runner
     : public ai_runner,
       public with_pimpl<llama_runner<auditor_type>>,
@@ -41,12 +41,12 @@ class DOCWIRE_AI_LLAMA_EXPORT llama_runner
         const model_inference_config& config)
         : llama_runner(
               config,
-              docwire::audit::auditor_ref<stateless_auditor_type>{})
+              df0::audit::auditor_ref<stateless_auditor_type>{})
     {}
 
     explicit llama_runner(
         const model_inference_config& config,
-        docwire::audit::auditor_ref<auditor_type> auditor);
+        df0::audit::auditor_ref<auditor_type> auditor);
 
     std::string process(const std::string& input) override;
 
@@ -60,8 +60,8 @@ class DOCWIRE_AI_LLAMA_EXPORT llama_runner
 };
 
 // Deduction guide for CTAD
-llama_runner(const model_inference_config&) -> llama_runner<docwire::audit::null_auditor>;
+llama_runner(const model_inference_config&) -> llama_runner<df0::audit::null_auditor>;
 
-} // namespace docwire::ai::llama
+} // namespace df0::ai::llama
 
 #endif

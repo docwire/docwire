@@ -15,7 +15,7 @@
 #include <iterator>
 #include <type_traits>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -28,6 +28,6 @@ concept container = requires(const T& t) {
     requires !std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<typename std::iterator_traits<decltype(std::begin(t))>::value_type>>;
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif // DOCWIRE_CONCEPTS_CONTAINER_H

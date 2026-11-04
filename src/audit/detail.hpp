@@ -21,7 +21,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::audit::detail
+namespace df0::audit::detail
 {
 
 template <typename... Args>
@@ -61,6 +61,6 @@ auto normalize_context_tuple(Result&& result)
     }
 }
 
-} // namespace docwire::audit::detail
+} // namespace df0::audit::detail
 
 #endif

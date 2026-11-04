@@ -3,7 +3,7 @@
 #include "gtest/gtest.h"
 #include <cstdint>
 
-using namespace docwire::serialization;
+using namespace df0::serialization;
 
 TEST(JsonSerialization, Null)
 {

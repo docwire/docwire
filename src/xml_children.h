@@ -17,7 +17,7 @@
 #include <ranges>
 #include "xml_node_ref.h"
 
-namespace docwire::xml
+namespace df0::xml
 {
 
 /**
