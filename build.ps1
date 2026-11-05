@@ -90,7 +90,7 @@ if ($env:DEBUG -eq "1")
     $VCPKG_DEBUG_OPTION = "--debug"
 }
 
-Get-Date | Out-File -FilePath ports\docwire\disable_binary_cache.tmp
+Get-Date | Out-File -FilePath ports\df0\disable_binary_cache.tmp
 $Env:SOURCE_PATH = "$PWD"
 $Env:VCPKG_KEEP_ENV_VARS = "SOURCE_PATH;CMAKE_MESSAGE_LOG_LEVEL;DF0_TESTS_CONSOLE_LOGGING;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS"
 if ($Env:OPENAI_API_KEY -ne $null -and $env:OPENAI_API_KEY -ne "") {
@@ -101,7 +101,7 @@ if ($Env:OPENAI_API_KEY -ne $null -and $env:OPENAI_API_KEY -ne "") {
     Write-Host "DEBUG: OPENAI_API_KEY does not exist."
 }
 Invoke-ExternalCommand {
-    vcpkg\vcpkg --overlay-ports=ports install ${VCPKG_DEBUG_OPTION} docwire${env:FEATURES}:${VCPKG_TRIPLET}
+    vcpkg\vcpkg --overlay-ports=ports install ${VCPKG_DEBUG_OPTION} df0${env:FEATURES}:${VCPKG_TRIPLET}
 }
 
 Write-Host "Done."

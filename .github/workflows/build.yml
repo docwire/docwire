@@ -104,13 +104,13 @@ jobs:
       - name: "Export built packages with 'vcpkg export'"
         if: success() && github.event.inputs.vcpkg_export == 'true' && matrix.sanitizer == ''
         run: |
-          ./vcpkg/vcpkg export docwire:${{ matrix.triplet }} --output=docwire-vcpkg --raw --output-dir=.
-          cmake -E tar czvf docwire-vcpkg-${{ matrix.triplet }}-${{ matrix.os }}-${{ github.sha }}.tar.gz docwire-vcpkg
+          ./vcpkg/vcpkg export df0:${{ matrix.triplet }} --output=df0-vcpkg --raw --output-dir=.
+          cmake -E tar czvf df0-vcpkg-${{ matrix.triplet }}-${{ matrix.os }}-${{ github.sha }}.tar.gz df0-vcpkg
       - name: "Upload 'vcpkg export' archive"
         uses: actions/upload-artifact@v6
         if: success() && github.event.inputs.vcpkg_export == 'true' && matrix.sanitizer == ''
         with:
           name: ${{ matrix.triplet }}-${{ matrix.os }}-binaries
           path: |
-            docwire-vcpkg-${{ matrix.triplet }}-${{ matrix.os }}-${{ github.sha }}.tar.gz
+            df0-vcpkg-${{ matrix.triplet }}-${{ matrix.os }}-${{ github.sha }}.tar.gz
           if-no-files-found: error

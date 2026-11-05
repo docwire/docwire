@@ -61,6 +61,6 @@ if [[ "$DEBUG" == "1" ]]; then
 	VCPKG_DEBUG_OPTION="--debug"
 fi
 
-date > ./ports/docwire/.disable_binary_cache
-SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS=SOURCE_PATH ./vcpkg/vcpkg --overlay-ports=./ports remove docwire:$VCPKG_TRIPLET
-SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS="SOURCE_PATH;CMAKE_MESSAGE_LOG_LEVEL;DF0_TESTS_CONSOLE_LOGGING;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS" ./vcpkg/vcpkg --overlay-ports=./ports install $VCPKG_DEBUG_OPTION docwire$FEATURES:$VCPKG_TRIPLET
+date > ./ports/df0/.disable_binary_cache
+SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS=SOURCE_PATH ./vcpkg/vcpkg --overlay-ports=./ports remove df0:$VCPKG_TRIPLET
+SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS="SOURCE_PATH;CMAKE_MESSAGE_LOG_LEVEL;DF0_TESTS_CONSOLE_LOGGING;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS" ./vcpkg/vcpkg --overlay-ports=./ports install $VCPKG_DEBUG_OPTION df0$FEATURES:$VCPKG_TRIPLET

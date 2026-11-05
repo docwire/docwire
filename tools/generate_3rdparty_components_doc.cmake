@@ -129,7 +129,7 @@ function(traverse_dependency_tree_from_port port_name use_default_features featu
 endfunction()
 
 function(traverse_whole_dependency_tree)
-	traverse_dependency_tree_from_port(docwire TRUE "")
+	traverse_dependency_tree_from_port(df0 TRUE "")
 endfunction()
 
 function(all_dependencies out_var)

@@ -754,7 +754,7 @@ When DF-0 is a dependency in another project, specify features in your `vcpkg.js
 {
   "dependencies": [
     {
-      "name": "docwire",
+      "name": "df0",
       "features": ["local-ai-ct2"]
     }
   ]
