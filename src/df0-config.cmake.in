@@ -5,7 +5,7 @@ set_and_check(DF0_DATADIR "@PACKAGE_CMAKE_INSTALL_DATADIR@")
 include("${CMAKE_CURRENT_LIST_DIR}/df0-targets.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/df0_resources.cmake")
 
-check_required_components(docwire)
+check_required_components(df0)
 
 include(CMakeFindDependencyMacro)
 find_dependency(magic_enum REQUIRED)

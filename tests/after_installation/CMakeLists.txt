@@ -5,17 +5,17 @@ project(df0_after_installation_tests LANGUAGES CXX)
 # It simulates how a downstream user would find and use the SDK, verifying the installation.
 # It relies on a CMake toolchain file or CMAKE_PREFIX_PATH to locate the installed DF-0.
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    message(WARNING "CMAKE_TOOLCHAIN_FILE is not defined. find_package(docwire) will rely on CMAKE_PREFIX_PATH to find the installed SDK.")
+    message(WARNING "CMAKE_TOOLCHAIN_FILE is not defined. find_package(df0) will rely on CMAKE_PREFIX_PATH to find the installed SDK.")
 endif()
 
 enable_testing()
 
 # Verify that the DF-0 can be found in the current environment.
-find_package(docwire CONFIG REQUIRED)
+find_package(df0 CONFIG REQUIRED)
 
 # --- 1. Integration Example Test ---
 # This section rebuilds and tests the integration_example from scratch,
-# relying on find_package(docwire) to link against the installed SDK.
+# relying on find_package(df0) to link against the installed SDK.
 
 # First, copy the example source files into a subdirectory of our build tree.
 # The source files are located relative to this script in the main 'tests' directory.
@@ -38,7 +38,7 @@ set(CONFIGURE_OPTIONS "")
 if(DEFINED CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE STREQUAL "")
     list(APPEND CONFIGURE_OPTIONS "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 endif()
-# The find_package(docwire) call above located the SDK. To ensure the nested
+# The find_package(df0) call above located the SDK. To ensure the nested
 # integration_example project can also find it, we forward any relevant
 # variables that were used for the initial find_package call.
 if(DEFINED CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")

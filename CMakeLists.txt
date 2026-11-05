@@ -25,8 +25,8 @@ endfunction()
 
 extract_version()
 
-project(docwire VERSION ${SIMPLE_DF0_VERSION} LANGUAGES CXX C)
-message(STATUS "Build docwire: ${DF0_VERSION}")
+project(df0 VERSION ${SIMPLE_DF0_VERSION} LANGUAGES CXX C)
+message(STATUS "Build df0: ${DF0_VERSION}")
 
 if(MSVC)
     # This is necessary for some translation units which use heavily templated libraries and

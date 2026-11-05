@@ -6,7 +6,7 @@ add_executable(integration_example integration_example.cpp)
 
 # Find the DF-0 package.
 # This requires CMAKE_TOOLCHAIN_FILE to be set (e.g. for vcpkg) or CMAKE_PREFIX_PATH to point to the installation.
-find_package(docwire CONFIG REQUIRED)
+find_package(df0 CONFIG REQUIRED)
 
 # DF-0 is designed to be used as a shared library (DLL/SO/DYLIB).
 # Static linking is not supported due to the complexity of dependencies and resource management.
