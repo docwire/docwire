@@ -3,7 +3,7 @@ if(DEFINED ENV{SOURCE_PATH})
 else()
 	vcpkg_from_github(
 		OUT_SOURCE_PATH SOURCE_PATH
-		REPO docwire/docwire
+		REPO df0/df0
 		HEAD_REF master
 	)
 endif()

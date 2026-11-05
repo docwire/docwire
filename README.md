@@ -654,30 +654,30 @@ The current preferred installation method is via build.sh or build.ps1 scripts. 
 1. **Clone the DF-0 Repository:**
 Clone the DF-0 repository from GitHub if you haven't already:
 ```
-git clone https://github.com/docwire/docwire.git
+git clone https://github.com/df0/df0.git
 ```
 
 2. **Run build.sh (Linux, MacOS) or build.ps1 (Windows):**
 
 - Linux, MacOS:
 ```
-cd docwire
+cd df0
 ./build.sh
 ```
 
 - Windows:
 ```
-cd docwire
+cd df0
 ./build.ps1
 ```
 
-**Important note**: Sometimes installation of dependencies may fail due to various reasons. Some of those reasons are not related to the DF-0 itself, but rather to the vcpkg package manager or the specific dependencies being installed. For example, errors may occur while downloading sources or if there are unexpected changes in vcpkg ports or upstream websites. In such cases, it is recommended to [report the issue to the vcpkg](https://github.com/microsoft/vcpkg/issues) or just try running the installation script again. In rare cases, some dependencies may require manual intervention or additional configuration before they can be successfully installed. If you encounter any issues during the installation process, please don't hesitate to reach out to the [DF-0 community for support](https://github.com/docwire/docwire/issues).
+**Important note**: Sometimes installation of dependencies may fail due to various reasons. Some of those reasons are not related to the DF-0 itself, but rather to the vcpkg package manager or the specific dependencies being installed. For example, errors may occur while downloading sources or if there are unexpected changes in vcpkg ports or upstream websites. In such cases, it is recommended to [report the issue to the vcpkg](https://github.com/microsoft/vcpkg/issues) or just try running the installation script again. In rare cases, some dependencies may require manual intervention or additional configuration before they can be successfully installed. If you encounter any issues during the installation process, please don't hesitate to reach out to the [DF-0 community for support](https://github.com/df0/df0/issues).
 
 3. **Integrate with your project or development environment**
 
 You can use vcpkg toolchain file to integrate DF-0 with your CMake project:
 ```bash
-cmake -DCMAKE_TOOLCHAIN_FILE=docwire/vcpkg/scripts/buildsystems/vcpkg.cmake ..
+cmake -DCMAKE_TOOLCHAIN_FILE=df0/vcpkg/scripts/buildsystems/vcpkg.cmake ..
 ```
 Please refer to ["vcpkg in CMake projects" on Microsoft Learn](https://learn.microsoft.com/en-us/vcpkg/users/buildsystems/cmake-integration) for more information on how to use vcpkg with your CMake project.
 
@@ -685,7 +685,7 @@ Please refer to ["vcpkg in CMake projects" on Microsoft Learn](https://learn.mic
 
 To use DF-0 in your MSBuild projects (Visual Studio) run the following command:
 ```
-cd docwire/vcpkg
+cd df0/vcpkg
 vcpkg integrate install
 ```
 This automatically adds installed packages to the following project properties: Include Directories, Link Directories, and Link Libraries. Additionally, it creates a post-build action that ensures that any required DLLs are copied into the build output folder.
@@ -907,7 +907,7 @@ Our API documentation is hosted on [ReadTheDocs](https://df0.readthedocs.io/), p
 
 ### GitHub Releases
 
-If you're looking for a more direct way to access the documentation, you can find it bundled with our binary packages in the [GitHub Releases](https://github.com/docwire/docwire/releases) section. Simply download the appropriate release for your platform, and you'll have the API documentation readily available alongside the library itself.
+If you're looking for a more direct way to access the documentation, you can find it bundled with our binary packages in the [GitHub Releases](https://github.com/df0/df0/releases) section. Simply download the appropriate release for your platform, and you'll have the API documentation readily available alongside the library itself.
 
 ### Vcpkg Package Manager
 
