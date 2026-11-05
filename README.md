@@ -4,7 +4,7 @@
 
 **On-premise by default. No compromises on computational speed.**
 
-<a name="what-is-docwire-sdk"></a>
+<a name="what-is-df0"></a>
 ## What is DF-0?
 
 DF-0 is an embeddable software development kit (SDK): a set of reusable C++ building blocks for building data-processing pipelines and infrastructure. It is not a single parser, ETL service, or cloud tool. You compile it into your own application and control how data flows through it.
@@ -30,10 +30,10 @@ DF-0 is production-tested today and is continuously extending its architectural 
 
 ## Table of Contents
 
-- [What is DF-0?](#what-is-docwire-sdk)
+- [What is DF-0?](#what-is-df0)
 - [Manifesto](#manifesto)
 - [Engineering Principles](#engineering-principles)
-- [Why DF-0 and Key Benefits](#why-docwire-and-key-benefits)
+- [Why DF-0 and Key Benefits](#why-df0-and-key-benefits)
 - [Features](#features)
 - [Roadmap](#roadmap)
 - [API Concept](#api-concept)
@@ -89,7 +89,7 @@ Non-owning views already avoid copies across many pipeline boundaries. The archi
 
 Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is reported as an error without crashing the host process. Structural validation of incoming data is always required; it can never be disabled by optimized build modes.
 
-<a name="why-docwire-and-key-benefits"></a>
+<a name="why-df0-and-key-benefits"></a>
 ## Why DF-0 and Key Benefits
 
 **For Developers:** DF-0 provides a flexible C++ API to build data processing pipelines. It supports custom chain elements and integrates with existing codebases.
