@@ -100,7 +100,7 @@
 }
 
 # ==============================================================================
-# SECTION: DOCWIRE HTTP SERVER (NON-INLINED WRAPPERS)
+# SECTION: DF-0 HTTP SERVER (NON-INLINED WRAPPERS)
 # ==============================================================================
 # cpp-httplib's server implementation contains intentional, safe race conditions
 # regarding its 'is_running' flag during startup and shutdown. 
@@ -112,13 +112,13 @@
    df0_httplib_server_listen
    Helgrind:Dubious
    ...
-   fun:_ZN7docwire6detail13http_listener4impl25httplib_listen_noninlinedEv
+   fun:_ZN7df06detail13http_listener4impl25httplib_listen_noninlinedEv
 }
 {
    df0_httplib_server_stop
    Helgrind:Dubious
    ...
-   fun:_ZN7docwire6detail13http_listener4impl23httplib_stop_noninlinedEv
+   fun:_ZN7df06detail13http_listener4impl23httplib_stop_noninlinedEv
 }
 
 # ------------------------------------------------------------------------------
