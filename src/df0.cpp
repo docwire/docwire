@@ -7,6 +7,7 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "ai_runner.h"
 #include "model_chain_element.h"
 #include "model_inference_config.h"
 #ifdef DF0_CT2
@@ -74,7 +75,7 @@ static void readme()
 	"DF-0: Data processing Framework with Zero-overhead\n"
 	"\n"
 	"Copyright (c) DF-0 Team, project website https://github.com/df0/df0\n"
-	"SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial\n"
+	"SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial\n";
 }
 
 static void version()

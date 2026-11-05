@@ -7,6 +7,14 @@
 /*                                                                        */
 /**************************************************************************/
 
+#ifndef DF0_NAMED_H
+#define DF0_NAMED_H
+
+#include <string_view>
+#include <utility>
+#include <tuple>
+#include <type_traits>
+
 /**
  * @brief Utilities for named parameters.
  */
