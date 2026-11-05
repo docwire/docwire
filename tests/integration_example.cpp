@@ -7,8 +7,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "docwire/df0.hpp"
-#include "docwire/http_server.h"
+#include "df0/df0.hpp"
+#include "df0/http_server.h"
 #include <sstream>
 #include <iostream>
 #include <string>
