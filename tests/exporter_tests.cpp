@@ -522,8 +522,8 @@ TEST(plain_text_exporter, custom_link_formatting)
     std::vector<message_ptr> msgs = make_message_vector
     (
         document::document{},
-        document::link{.url = "https://docwire.io"},
-        document::text{.text = "DF-0 home page"},
+        document::link{.url = "https://example.com"},
+        document::text{.text = "Example website"},
         document::close_link{},
         document::close_document{}
     );
@@ -531,7 +531,7 @@ TEST(plain_text_exporter, custom_link_formatting)
     {
         parsing_chain(std::move(msg));
     }
-    ASSERT_EQ(output_stream.str(), "(https://docwire.io)[DF-0 home page]\n");
+    ASSERT_EQ(output_stream.str(), "(https://example.com)[Example website]\n");
 }
 
 TEST(plain_text_layout, wrap)
