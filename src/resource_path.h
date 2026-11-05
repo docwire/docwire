@@ -36,7 +36,7 @@ inline std::filesystem::path this_line_location()
  * running executable and the shared library. It supports both build-tree layouts (via .path files)
  * and installed layouts (relative to bin/ or lib/).
  *
- * @param resource_rel_path The relative path of the resource to find (e.g., "docwire/data.bin").
+ * @param resource_rel_path The relative path of the resource to find.
  * @return The absolute path to the found resource.
  * @throws df0::errors::base if the resource cannot be found.
  */
