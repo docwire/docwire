@@ -902,8 +902,8 @@ The console application injects `audit::null_auditor` by default, so normal docu
 ## API Documentation
 The API documentation for the DF-0/library is readily available in various formats to assist you in seamlessly integrating it into your projects. Whether you prefer reading detailed doxygen-style documentation, accessing it through binary packages, or installing it via package managers like Vcpkg, we've got you covered.
 
-### ReadTheDocs - Doxygen Format
-Our API documentation is hosted on [ReadTheDocs](https://docs.df0.io/), presented in the widely recognized and developer-friendly Doxygen format. This comprehensive documentation provides insights into the functionality, usage, and features of the DF-0 library. You can explore it at your own pace to better understand how to harness the power of DF-0 within your applications.
+### Online Doxygen Format
+Our API documentation is hosted on [docs.df0.io](https://docs.df0.io/), presented in the widely recognized and developer-friendly Doxygen format. This comprehensive documentation provides insights into the functionality, usage, and features of the DF-0 library. You can explore it at your own pace to better understand how to harness the power of DF-0 within your applications.
 
 ### GitHub Releases
 
@@ -915,21 +915,7 @@ For users who prefer to manage their dependencies using Vcpkg, we've made sure t
 
 ### Consistency Across Platforms
 
-It's worth noting that no matter where you choose to access our API documentation—whether through ReadTheDocs, GitHub Releases, or Vcpkg—you will find the same comprehensive doxygen-style documentation. This ensures a consistent and reliable resource for understanding and utilizing the DF-0 library.
-
-### Why ReadTheDocs?
-
-You might wonder why we chose ReadTheDocs to host our documentation. While some might see this as a marketing signal, we believe it's a practical choice for several reasons:
-
-1. **Accessibility**: ReadTheDocs provides an easy-to-navigate platform that ensures our documentation is readily accessible to all users.
-
-2. **Versioning**: We can maintain multiple versions of our documentation, ensuring that you can always find the information relevant to your specific library version.
-
-3. **Automation**: ReadTheDocs allows us to automate the documentation publishing process, ensuring that you have the latest documentation whenever you need it without delay.
-
-We believe in making the integration of DF-0 as smooth as possible, and providing our documentation through ReadTheDocs is just one way we're committed to simplifying your experience.
-
-Explore the documentation, experiment with the library, and feel free to reach out if you have any questions or feedback. We're here to support you on your journey with DF-0.
+It's worth noting that no matter where you choose to access our API documentation—whether through website, GitHub Releases, or Vcpkg—you will find the same comprehensive doxygen-style documentation. This ensures a consistent and reliable resource for understanding and utilizing the DF-0 library.
 
 <a name="error-handling"></a>
 ## Error handling: robust and secure
