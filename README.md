@@ -1208,7 +1208,7 @@ Product is double licensed:
 - It can be used in open source projects under the terms of the GNU Affero General Public License, version 3
 - It can be used in commercial projects under the terms of commercial license agreement
 
-Please contact SILVERCODERS (http://silvercoders.com) for a commercial license for DF-0.
+Please contact DF-0 Team for a commercial license for DF-0.
 
 In addition DF-0 incorporates code that falls under licenses separate from the GNU Affero General Public License or the DF-0 Commercial License;
 instead, it operates under specific opensource licenses granted by the original authors.
