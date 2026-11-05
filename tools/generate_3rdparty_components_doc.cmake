@@ -148,7 +148,7 @@ endfunction()
 
 function(df0_modules_using_dependency port_name out_var)
 	if(NOT DEFINED df0_modules_using_dependency_cached_result_${port_name})
-		message("Searching for docwire modules using dependency ${port_name}")
+		message("Searching for DF-0 modules using dependency ${port_name}")
 		set(df0_core_deps vcpkg-cmake wv2 boost-filesystem boost-dll boost-json magic-enum minizip zlib gtest)
 		set(df0_html_deps lexbor libcharsetdetect)
 		set(df0_pdf_deps pdfium leptonica)
