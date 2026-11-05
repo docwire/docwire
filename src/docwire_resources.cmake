@@ -90,7 +90,7 @@ function(df0_target_resources target rel_dest_path)
         "${rel_dest_path}"
     )
 
-    # Explicitly mark the custom property for export so it appears in docwire-targets.cmake
+    # Explicitly mark the custom property for export so it appears in df0-targets.cmake
     get_target_property(_current_export_props "${target}" EXPORT_PROPERTIES)
     if(NOT _current_export_props OR NOT "DF0_RESOURCES" IN_LIST _current_export_props)
         set_property(TARGET "${target}" APPEND PROPERTY
