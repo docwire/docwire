@@ -67,8 +67,8 @@ We are building a toolkit with **mechanical sympathy** for the hardware it runs 
 - **Edge optimization** – zero-copy pipelines, allocator-aware memory.
 - **Graceful degradation** – malformed input returns errors, not crashes.
 
-[Read the full manifesto →](https://df0.readthedocs.io/en/latest/manifesto.html)
-[Read the engineering rules →](https://df0.readthedocs.io/en/latest/coding_guidelines.html)
+[Read the full manifesto →](https://docs.df0.io/en/latest/manifesto.html)
+[Read the engineering rules →](https://docs.df0.io/en/latest/coding_guidelines.html)
 
 <a name="engineering-principles"></a>
 ## Engineering Principles
@@ -140,10 +140,10 @@ Features marked **(planned)** are on the public roadmap and may not be fully ava
     - CSV: Export data to Comma-Separated Values format.
     - XLSX and more are coming: Additional export formats for diverse use cases.
 
-- **Fast and accurate file format detection**: Leveraging file signatures, file name extensions, content analysis, and MIME type recognition, the DF-0 automatically detects the format of any file. This ensures that the appropriate parser is selected for processing. With its ability to identify various formats, DF-0 serves as a versatile tool for numerous file processing tasks. For more information, see the following functions and classes: [content_type::detector](https://df0.readthedocs.io/en/latest/classdf0_1_1content__type_1_1detector.html) and [content_type::detect](https://df0.readthedocs.io/en/latest/namespacedf0_1_1content__type.html#ab8fcce329158e74aed1c402df93fa4e4). [You can find example how to perform file type detection (with or without document processing) here](https://df0.readthedocs.io/en/latest/file_type_determination_8cpp-example.html).
+- **Fast and accurate file format detection**: Leveraging file signatures, file name extensions, content analysis, and MIME type recognition, the DF-0 automatically detects the format of any file. This ensures that the appropriate parser is selected for processing. With its ability to identify various formats, DF-0 serves as a versatile tool for numerous file processing tasks. For more information, see the following functions and classes: [content_type::detector](https://docs.df0.io/en/latest/classdf0_1_1content__type_1_1detector.html) and [content_type::detect](https://docs.df0.io/en/latest/namespacedf0_1_1content__type.html#ab8fcce329158e74aed1c402df93fa4e4). [You can find example how to perform file type detection (with or without document processing) here](https://docs.df0.io/en/latest/file_type_determination_8cpp-example.html).
 Additionally, the SDK provides functionality to convert a MIME type back to a file extension via `content_type::by_file_extension::to_extension`, which can be useful in scenarios where a file name is needed.
 
-- **Modern C++20 XML Parsing**: A new, expressive, and safe API for parsing XML documents. It features a single-pass, forward-only reader and utilizes C++20 ranges and views for efficient and elegant node filtering and manipulation. [You can find example how to parse XML documents here](https://df0.readthedocs.io/en/latest/xml_parsing_example_8cpp-example.html).
+- **Modern C++20 XML Parsing**: A new, expressive, and safe API for parsing XML documents. It features a single-pass, forward-only reader and utilizes C++20 ranges and views for efficient and elegant node filtering and manipulation. [You can find example how to parse XML documents here](https://docs.df0.io/en/latest/xml_parsing_example_8cpp-example.html).
 
 - **Configurable Safety Policies**: The SDK provides `strict` and `relaxed` safety policies for XML-based parsers, with other components to follow. In `strict` mode, developer contract violations throw typed exceptions through the current error framework. In `relaxed` mode, trusted developer checks are compiled out for zero overhead. Relaxed mode should be used only for trusted XML input; untrusted input should use strict validation. The SDK is evolving toward injectable error policies that will also support `df0::expected`-based propagation.
 
@@ -190,7 +190,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 
 - **Semantic Chunking (planned)**: Group related content using the SDK's chunking feature to create contextually rich embeddings that capture the nuances of the document's structure.
 
-- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://df0.readthedocs.io/en/latest/classdf0_1_1openai_1_1embed.html), the local embedding steps `ai::local::ct2::passage::embedder` and `ai::local::ct2::query::embedder`, or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT. Generated embeddings can be used in various NLP tasks.
+- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docs.df0.io/en/latest/classdf0_1_1openai_1_1embed.html), the local embedding steps `ai::local::ct2::passage::embedder` and `ai::local::ct2::query::embedder`, or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT. Generated embeddings can be used in various NLP tasks.
 
 - **Enhancing AI/NLP Pipelines**: Embeddings obtained from DF-0 can be used to enhance AI/NLP pipelines, enabling more accurate and context-aware applications such as document classification, sentiment analysis, and information retrieval.
 
@@ -389,7 +389,7 @@ Parse file in any format (Office, PDF, mail, etc) having its path, export to pla
 std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | plain_text_exporter() | out_stream;
 ensure(out_stream.str()) == "Data processing refers to the activities performed on raw data...";
 ```
-[Full example](https://df0.readthedocs.io/en/latest/path_to_text_stream_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/path_to_text_stream_8cpp-example.html)
 
 Parse file in any format (Office, PDF, mail, etc) having stream, export to HTML and write to stream:
 
@@ -397,14 +397,14 @@ Parse file in any format (Office, PDF, mail, etc) having stream, export to HTML 
 std::ifstream("data_processing_definition.docx", std::ios_base::binary) | content_type::detector{} | office_formats_parser{} | html_exporter() | out_stream;
 ensure(out_stream.str()).contains("Data processing refers to the activities");
 ```
-[Full example](https://df0.readthedocs.io/en/latest/stream_to_html_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/stream_to_html_8cpp-example.html)
 
 Parse all files in any format inside archives (ZIP, TAR, RAR, GZ, BZ2, XZ) recursively:
 
 ```cpp
 std::filesystem::path("test.zip") | content_type::detector{} | archives_parser{} | office_formats_parser{} | ocr_parser{} | plain_text_exporter() | std::cout;
 ```
-[Full example](https://df0.readthedocs.io/en/latest/parse_archives_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/parse_archives_8cpp-example.html)
 
 The examples below use `ai::local::ct2::*`, which comes with a built-in default CT2 model and needs no configuration. Alternatively, `ai::local::llama::*` can be used for integrating `.gguf` models with `llama.cpp` and running various tasks on them. 
 A backend-agnostic `ai::local::*` family also exists (`task`, `translate`, `summarize`) that takes an explicit runner instead, so it can be pointed at either `ai::local::ct2::make_default_runner()` or the llama.cpp backend via `ai::local::llama::make_runner(...)`.
@@ -417,7 +417,7 @@ Classify file in any format (Office, PDF, mail, etc) to any categories using bui
 std::filesystem::path("...") | ... | ai::local::ct2::task("Classify to...: agreement, invoice, report...") | out_stream;
 ensure(out_stream.str()) == "report";
 ```
-[Full example](https://df0.readthedocs.io/en/latest/local_ai_ct2_classify_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/local_ai_ct2_classify_8cpp-example.html)
 
 Classify file in any format (Office, PDF, mail, etc) to any categories using OpenAI service:
 
@@ -425,7 +425,7 @@ Classify file in any format (Office, PDF, mail, etc) to any categories using Ope
 std::filesystem::path("...") | ... | openai::classify({ "agreement", "invoice", "report", ...}, ...) | out_stream;
 ensure(out_stream.str()) == "report\n";
 ```
-[Full example](https://df0.readthedocs.io/en/latest/openai_classify_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_classify_8cpp-example.html)
 
 Translate document in any format (Office, PDF, mail, etc) to other language using built-in local AI model:
 
@@ -433,7 +433,7 @@ Translate document in any format (Office, PDF, mail, etc) to other language usin
 std::filesystem::path("...") | ... | ai::local::ct2::translate("spanish") | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "La procesación de datos se refiere a las actividades...")) > 80;
 ```
-[Full example](https://df0.readthedocs.io/en/latest/local_ai_ct2_translate_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/local_ai_ct2_translate_8cpp-example.html)
 
 Translate document in any format (Office, PDF, mail, etc) to other language using OpenAI service:
 
@@ -441,7 +441,7 @@ Translate document in any format (Office, PDF, mail, etc) to other language usin
 std::filesystem::path("...") | ... | openai::translate_to("spanish", ...) | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "El procesamiento de datos se refiere a las actividades...")) > 80;
 ```
-[Full example](https://df0.readthedocs.io/en/latest/openai_translate_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_translate_8cpp-example.html)
 
 Detect sentiment of document in any format (Office, PDF, mail, etc) using built-in local AI model:
 
@@ -449,14 +449,14 @@ Detect sentiment of document in any format (Office, PDF, mail, etc) using built-
 std::filesystem::path("...") | ... | ai::local::ct2::detect_sentiment() | out_stream;
 ensure(out_stream.str()) == "positive";
 ```
-[Full example](https://df0.readthedocs.io/en/latest/local_ai_ct2_sentiment_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/local_ai_ct2_sentiment_8cpp-example.html)
 
 Detect sentiment of document in any format (Office, PDF, mail, etc) using OpenAI service:
 
 ```cpp
 std::filesystem::path("1.doc") | ... | openai::detect_sentiment(...) | std::cout;
 ```
-[Full example](https://df0.readthedocs.io/en/latest/openai_sentiment_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_sentiment_8cpp-example.html)
 
 Make a summary of document in any format (Office, PDF, mail, etc) using built-in local AI model:
 
@@ -464,14 +464,14 @@ Make a summary of document in any format (Office, PDF, mail, etc) using built-in
 std::filesystem::path("...") | ... | ai::local::ct2::summarize() | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "Data processing is the collection, organization, analysis, and interpretation of data.\n")) > 50
 ```
-[Full example](https://df0.readthedocs.io/en/latest/local_ai_ct2_summary_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/local_ai_ct2_summary_8cpp-example.html)
 
 Make a voice summary of document in any format (Office, PDF, mail, etc) in two steps: summarize using GPT model and convert the summary to speech using text to speech model. Result is saved to mp3 file:
 
 ```cpp
 std::filesystem::path("1.doc") | ... | openai::summarize(...) | openai::text_to_speech(...) | std::ofstream("summary.mp3");
 ```
-[Full example](https://df0.readthedocs.io/en/latest/openai_voice_summary_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_voice_summary_8cpp-example.html)
 
 Make a text summary of voice recording (e.g. mp3 file with meeting recording) in two steps: convert voice to text and summarize text using OpenAI services (with non-default model selected):
 
@@ -479,7 +479,7 @@ Make a text summary of voice recording (e.g. mp3 file with meeting recording) in
 std::filesystem::path("...mp3") | openai::transcribe(...) | ... | openai::summarize(..., openai::model::gpt_4o) | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "Data processing involves converting raw data...")) > 80;
 ```
-[Full example](https://df0.readthedocs.io/en/latest/openai_transcribe_summary_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_transcribe_summary_8cpp-example.html)
 
 Find phrases, objects and events with smart matching in documents in any format (Office, PDF, mail, etc) using built-in local AI model:
 
@@ -487,7 +487,7 @@ Find phrases, objects and events with smart matching in documents in any format 
 std::filesystem::path("...") | ... | ai::local::ct2::find("data conversion") | out_stream;
 ensure(out_stream.str()).is_one_of({ "Data processing refers to the activities performed on raw data to convert it into meaningful information."...
 ```
-[Full example](https://df0.readthedocs.io/en/latest/local_ai_ct2_find_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/local_ai_ct2_find_8cpp-example.html)
 
 Find phrases, objects and events in text or image using GPT model (with non-default model selected):
 
@@ -495,7 +495,7 @@ Find phrases, objects and events in text or image using GPT model (with non-defa
 std::filesystem::path("scene_1.png") | ... | openai::find("tree", ..., openai::model::gpt_4o) | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "2\n- A tree is located on the left side...")) > 80;
 ```
-[Full example](https://df0.readthedocs.io/en/latest/openai_find_image_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_find_image_8cpp-example.html)
 
 Create embedding for document in any format (Office, PDF, mail, etc) using OpenAI service:
 
@@ -505,7 +505,7 @@ std::filesystem::path("...") | ... | openai::embed(...) | out_msgs;
 ensure(out_msgs[0]->is<ai::embedding>()) == true;
 ensure(out_msgs[0]->get<ai::embedding>().values.size()) == 1536;
 ```
-[Full example](https://df0.readthedocs.io/en/latest/openai_embedding_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_embedding_8cpp-example.html)
 
 Create embedding for document in any format (Office, PDF, mail, etc) using built-in local AI model, create embeddings for two queries and calculate similarity:
 
@@ -519,7 +519,7 @@ double sim = cosine_similarity(passage_embedding.values, similar_query_embedding
 ensure(sim) > partial_sim;
 ensure(partial_sim) > dissim;
 ```
-[Full example](https://df0.readthedocs.io/en/latest/local_embedding_similarity_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/local_embedding_similarity_8cpp-example.html)
 
 Reusing single parsing chain to parse multiple input files:
 
@@ -528,11 +528,11 @@ auto chain = content_type::detector{} | office_formats_parser{} | plain_text_exp
 for (int i = 1; i < 3; ++i)
   std::ifstream(std::to_string(i) + ".docx", std::ios_base::binary) | chain; // set the input file as an input stream
 ```
-[Full example](https://df0.readthedocs.io/en/latest/reuse_chain_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/reuse_chain_8cpp-example.html)
 
 Handling errors and warnings:
 
-[You can find example of handling errors and warnings here](https://df0.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
+[You can find example of handling errors and warnings here](https://docs.df0.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 Using transformer to filter out emails (eg. from Outlook PST mailbox) with subject containing "Hello":
 
@@ -548,7 +548,7 @@ std::filesystem::path("1.pst") | content_type::detector{} | mail_parser{} | offi
 ...
   | plain_text_exporter() | std::cout;
 ```
-[Full example](https://df0.readthedocs.io/en/latest/filter_emails_by_subject_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/filter_emails_by_subject_8cpp-example.html)
 
 ![Example flow](doc/images/example_flow.png)
 
@@ -567,7 +567,7 @@ std::filesystem::path("1.pst") | content_type::detector{} | mail_parser{} | offi
   plain_text_exporter() | // sets exporter to plain text
   std::cout;
 ```
-[Full example](https://df0.readthedocs.io/en/latest/join_transformers_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/join_transformers_8cpp-example.html)
 
 Parse XML using modern C++20 API:
 
@@ -602,7 +602,7 @@ for (auto product_node : products)
     ...
 }
 ```
-[Full example](https://df0.readthedocs.io/en/latest/xml_parsing_example_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/xml_parsing_example_8cpp-example.html)
 
 <a name="installation"></a>
 ## Installation
@@ -681,7 +681,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE=df0/vcpkg/scripts/buildsystems/vcpkg.cmake ..
 ```
 Please refer to ["vcpkg in CMake projects" on Microsoft Learn](https://learn.microsoft.com/en-us/vcpkg/users/buildsystems/cmake-integration) for more information on how to use vcpkg with your CMake project.
 
-[You can find example how to integrate DF-0 with your project using CMake here](https://df0.readthedocs.io/en/latest/integration_example_8cmake-example.html).
+[You can find example how to integrate DF-0 with your project using CMake here](https://docs.df0.io/en/latest/integration_example_8cmake-example.html).
 
 To use DF-0 in your MSBuild projects (Visual Studio) run the following command:
 ```
@@ -866,7 +866,7 @@ auto audit =
     | df0::audit::serialize::json{}
     | df0::audit::sink::ostream{std::clog};
 ```
-[Full example](https://df0.readthedocs.io/en/latest/audit_composition_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/audit_composition_8cpp-example.html)
 
 The resulting auditor can be injected into a pipeline:
 
@@ -886,7 +886,7 @@ std::filesystem::path{"data_processing_definition.doc"}
     | plain_text_exporter{}
     | std::cout;
 ```
-[Full example](https://df0.readthedocs.io/en/latest/audit_pipeline_injection_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/audit_pipeline_injection_8cpp-example.html)
 
 Audit records are emitted as structured JSON objects containing source location, timestamp, thread ID, and typed C++ context values.
 
@@ -903,7 +903,7 @@ The console application injects `audit::null_auditor` by default, so normal docu
 The API documentation for the DF-0/library is readily available in various formats to assist you in seamlessly integrating it into your projects. Whether you prefer reading detailed doxygen-style documentation, accessing it through binary packages, or installing it via package managers like Vcpkg, we've got you covered.
 
 ### ReadTheDocs - Doxygen Format
-Our API documentation is hosted on [ReadTheDocs](https://df0.readthedocs.io/), presented in the widely recognized and developer-friendly Doxygen format. This comprehensive documentation provides insights into the functionality, usage, and features of the DF-0 library. You can explore it at your own pace to better understand how to harness the power of DF-0 within your applications.
+Our API documentation is hosted on [ReadTheDocs](https://docs.df0.io/), presented in the widely recognized and developer-friendly Doxygen format. This comprehensive documentation provides insights into the functionality, usage, and features of the DF-0 library. You can explore it at your own pace to better understand how to harness the power of DF-0 within your applications.
 
 ### GitHub Releases
 
@@ -942,17 +942,17 @@ DF-0 provides a comprehensive error handling framework with typed context, embed
 
 The framework supports building an exception chain, allowing the creation of a longer error context across different layers of the backtrace. This enables tracking of the sequence of events leading up to an error, making it easier to identify the root cause.
 
-In addition to `std::nested_exception`, `std::exception_ptr`, and `std::throw_with_nested`, the framework includes the [errors::make_nested](https://df0.readthedocs.io/en/latest/namespacedf0_1_1errors.html#afde521434d8ac75136d13bc9d42c17a2) and [errors::make_nested_ptr](https://df0.readthedocs.io/en/latest/namespacedf0_1_1errors.html#a7380b5b4f036f549a9c284261d9f31ac) function templates and the [errors::nested](https://df0.readthedocs.io/en/latest/classdf0_1_1errors_1_1nested.html) class template for easy error chaining like:  
+In addition to `std::nested_exception`, `std::exception_ptr`, and `std::throw_with_nested`, the framework includes the [errors::make_nested](https://docs.df0.io/en/latest/namespacedf0_1_1errors.html#afde521434d8ac75136d13bc9d42c17a2) and [errors::make_nested_ptr](https://docs.df0.io/en/latest/namespacedf0_1_1errors.html#a7380b5b4f036f549a9c284261d9f31ac) function templates and the [errors::nested](https://docs.df0.io/en/latest/classdf0_1_1errors_1_1nested.html) class template for easy error chaining like:  
 `df0::errors::make_nested_ptr(error_object_1, error_object_2)`.
 
 #### Type-safe context values
 
 Context values are type-safe, meaning any type, including custom types, can be used in the context value. The context is built from original C++ types, and context objects can be accessed during the error handling process.
 
-The [errors::impl](https://df0.readthedocs.io/en/latest/structdf0_1_1errors_1_1impl.html) structure template provides an implementation of the context value mechanism, including support for custom types. It is recommended to use the `make_error` macro for construction:  
+The [errors::impl](https://docs.df0.io/en/latest/structdf0_1_1errors_1_1impl.html) structure template provides an implementation of the context value mechanism, including support for custom types. It is recommended to use the `make_error` macro for construction:  
 `throw make_error(custom_type_value);`.
 
-The [errors::base](https://df0.readthedocs.io/en/latest/structdf0_1_1errors_1_1base.html) structure provides a base class for all error types for easy error handling:  
+The [errors::base](https://docs.df0.io/en/latest/structdf0_1_1errors_1_1base.html) structure provides a base class for all error types for easy error handling:  
 `catch (const df0::errors::base& e) { ... }`.
 
 #### Embedded context variable names and triggering expressions
@@ -964,7 +964,7 @@ For example:
 
 #### Categorized and tagged errors
 
-Errors can be tagged with a custom type or multiple types like [errors::network_failure](https://df0.readthedocs.io/en/latest/structdf0_1_1errors_1_1network__failure.html) or [errors::file_encrypted](https://df0.readthedocs.io/en/latest/structdf0_1_1errors_1_1file__encrypted.html), providing fine-grained control over error handling. Decisions, such as retrying an operation or asking for a password, can be made based on the presence of a specific tag type in the error chain:
+Errors can be tagged with a custom type or multiple types like [errors::network_failure](https://docs.df0.io/en/latest/structdf0_1_1errors_1_1network__failure.html) or [errors::file_encrypted](https://docs.df0.io/en/latest/structdf0_1_1errors_1_1file__encrypted.html), providing fine-grained control over error handling. Decisions, such as retrying an operation or asking for a password, can be made based on the presence of a specific tag type in the error chain:
 
 ```cpp
 catch (const df0::errors::base& e)
@@ -973,7 +973,7 @@ catch (const df0::errors::base& e)
     retry();
 }
 ```
-[Full example](https://df0.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 #### Embedded source location
 
@@ -985,7 +985,7 @@ catch (const df0::errors::base& e)
   std::cerr << e.location.file_name() << ":" << e.location.line() << std::endl;
 }
 ```
-[Full example](https://df0.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 #### Secure error messages
 
@@ -1000,11 +1000,11 @@ if (auto* impl_ptr = dynamic_cast<df0::errors::impl<std::filesystem::path>*>(&e)
   (void)fn; // avoid unused variable warning
 }
 ```
-[Full example](https://df0.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 #### Easy context data retrieval
 
-Functions like [errors::diagnostic_message](https://df0.readthedocs.io/en/latest/namespacedf0_1_1errors.html#a2446f6c81b6a5b338dea00cb29c40263) and [errors::contains_type](https://df0.readthedocs.io/en/latest/namespacedf0_1_1errors.html#aa2af5b81a3e66772f19506d8e8a93184) allow access to context data in a controlled manner, facilitating effective error handling.
+Functions like [errors::diagnostic_message](https://docs.df0.io/en/latest/namespacedf0_1_1errors.html#a2446f6c81b6a5b338dea00cb29c40263) and [errors::contains_type](https://docs.df0.io/en/latest/namespacedf0_1_1errors.html#aa2af5b81a3e66772f19506d8e8a93184) allow access to context data in a controlled manner, facilitating effective error handling.
 
 For example, `std::cerr << df0::errors::diagnostic_message(e) << std::endl;` can give the following result:
 
@@ -1025,7 +1025,7 @@ Errors that are not fatal are represented with the same chained error objects, b
 
 This gives them similar security and debugging capabilities to fatal errors and allows easy conversion between fatal and non-fatal errors on different backtrace levels (it usually cannot be decided at the point of failure) without breaking the error chain.
 
-[You can find an example of handling non-fatal errors here](https://df0.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
+[You can find an example of handling non-fatal errors here](https://docs.df0.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 ### Policy-based error handling (in progress)
 
