@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_AUDIT_SERIALIZE_JSON_HPP
-#define DOCWIRE_AUDIT_SERIALIZE_JSON_HPP
+#ifndef DF0_AUDIT_SERIALIZE_JSON_HPP
+#define DF0_AUDIT_SERIALIZE_JSON_HPP
 
 #include "../detail/chaining.hpp"
 #include "../detail/value_conversion.hpp"
@@ -20,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::audit::serialize
+namespace df0::audit::serialize
 {
 
 template<typename Next = void>
@@ -64,6 +62,6 @@ private:
     detail::next_storage_t<Next> m_next;
 };
 
-} // namespace docwire::audit::serialize
+} // namespace df0::audit::serialize
 
 #endif

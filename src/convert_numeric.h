@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_CONVERT_NUMERIC_H
-#define DOCWIRE_CONVERT_NUMERIC_H
+#ifndef DF0_CONVERT_NUMERIC_H
+#define DF0_CONVERT_NUMERIC_H
 
 #include "convert_base.h"
 #include <cerrno>
@@ -22,7 +20,7 @@
 #include "with_partial_match.h"
 #include "core_export.h"
 
-namespace docwire::convert {
+namespace df0::convert {
 
 // Concept for types supported by std::from_chars in C++20.
 // This excludes bool, which is only supported from C++23.
@@ -130,6 +128,6 @@ std::optional<To> convert_impl(const From& s, dest_type_tag<To>) noexcept
     return detail::from_chars_fallback(std::string_view(s), std::is_same_v<From, with::partial_match>, dest_type_tag<To>{});
 }
 
-} // namespace docwire::convert
+} // namespace df0::convert
 
-#endif // DOCWIRE_CONVERT_NUMERIC_H
+#endif // DF0_CONVERT_NUMERIC_H

@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_DOCWIRE_H
-#define DOCWIRE_DOCWIRE_H
+#ifndef DF0_DF0_H
+#define DF0_DF0_H
 
 // IWYU pragma: begin_exports
 #include "ai_runner.h"
@@ -21,7 +19,7 @@
 #include "ai_find.h"
 #include "ai_task.h"
 #include "model_chain_element.h"
-#ifdef DOCWIRE_CT2
+#ifdef DF0_CT2
 #include "ct2_runner.h"
 #include "local_ai_ct2_embed.h"
 #include "local_ai_ct2_find.h"
@@ -31,7 +29,7 @@
 #include "local_ai_ct2_task.h"
 #include "local_ai_ct2_detect_sentiment.h"
 #endif
-#ifdef DOCWIRE_LLAMA
+#ifdef DF0_LLAMA
 #include "llama_runner.h"
 #include "model_inference_config.h"
 #include "llama_models.h"
@@ -42,7 +40,7 @@
 #include "local_ai_llama_translate.h"
 #include "local_ai_llama_detect_sentiment.h"
 #endif
-#ifdef DOCWIRE_LOCAL_AI
+#ifdef DF0_LOCAL_AI
 #include "local_ai_find.h"
 #include "local_ai_summarize.h"
 #include "local_ai_translate.h"
@@ -87,7 +85,7 @@
 
 /**
  * @example integration_example.cmake
- * This example presents how to integrate DocWire SDK with your project using CMake
+ * This example presents how to integrate DF-0 with your project using CMake
 */
 
 /**
@@ -199,12 +197,12 @@
 
 /**
  * @example xml_parsing_example.cpp
- * This example demonstrates how to parse XML documents using the DocWire SDK modern C++ API.
+ * This example demonstrates how to parse XML documents using the DF-0 modern C++ API.
 */
 
 /**
- * @namespace docwire
- * @brief The main namespace for the DocWire SDK.
+ * @namespace df0
+ * @brief The main namespace for the DF-0.
  */
 
 #endif

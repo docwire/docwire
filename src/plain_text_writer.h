@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_PLAIN_TEXT_WRITER_H
-#define DOCWIRE_PLAIN_TEXT_WRITER_H
+#ifndef DF0_PLAIN_TEXT_WRITER_H
+#define DF0_PLAIN_TEXT_WRITER_H
 
 #include "core_export.h"
 #include <array>
@@ -39,9 +37,9 @@
 #include "plain_text/render_table.h"
 #include "plain_text/compute_column_width_ranges.h"
 
-namespace docwire
+namespace df0
 {
-using docwire::plain_text::output_width;
+using df0::plain_text::output_width;
 
 class plain_text_writer : public writer
 {
@@ -68,7 +66,7 @@ private:
 struct plain_text_writer::impl
 {
   using handler_func = std::function<std::shared_ptr<text_element>(const message_ptr&)>;
-  using text_handler_map = docwire::static_flat_map<docwire::type_id, handler_func, 26>;
+  using text_handler_map = df0::static_flat_map<df0::type_id, handler_func, 26>;
 
   class cell
   {
@@ -504,20 +502,20 @@ struct plain_text_writer::impl
             open_table_msgs--;
         }
         while (open_table_msgs > 0);
-        DOCWIRE_THROW_IF (table.empty(), "Table inside table without rows", errors::program_logic{});
-        DOCWIRE_THROW_IF (table.back().empty(), "Table inside table row without cells", errors::program_logic{});
+        DF0_THROW_IF (table.empty(), "Table inside table without rows", errors::program_logic{});
+        DF0_THROW_IF (table.back().empty(), "Table inside table row without cells", errors::program_logic{});
         table.back().back().write(ss.str());
       }
       else if (msgs[i]->is<document::caption>())
       {
-        DOCWIRE_THROW_IF (table_caption_mode, "Table caption inside table caption", errors::program_logic{});
-        DOCWIRE_THROW_IF (table_caption_writer, "Second caption inside table", errors::program_logic{});
+        DF0_THROW_IF (table_caption_mode, "Table caption inside table caption", errors::program_logic{});
+        DF0_THROW_IF (table_caption_writer, "Second caption inside table", errors::program_logic{});
         table_caption_mode = true;
         table_caption_writer = nested_writer{m_eol_sequence, m_format_link_opening, m_format_link_closing, m_max_output_width};
       }
       else if (msgs[i]->is<document::close_caption>())
       {
-        DOCWIRE_THROW_IF (!table_caption_mode, "Close caption outside table caption", errors::program_logic{});
+        DF0_THROW_IF (!table_caption_mode, "Close caption outside table caption", errors::program_logic{});
         table_caption_mode = false;
       }
       else if (msgs[i]->is<document::table_row>())
@@ -526,7 +524,7 @@ struct plain_text_writer::impl
       }
       else if (msgs[i]->is<document::table_cell>())
       {
-        DOCWIRE_THROW_IF (table.empty(), "Cell inside table without rows", errors::program_logic{});
+        DF0_THROW_IF (table.empty(), "Cell inside table without rows", errors::program_logic{});
         table.back().push_back(cell{m_eol_sequence, m_format_link_opening, m_format_link_closing, m_max_output_width});
       }
       else if (!msgs[i]->is<document::close_table_row>() && !msgs[i]->is<document::close_table_cell>())
@@ -537,8 +535,8 @@ struct plain_text_writer::impl
         }
         else
         {
-          DOCWIRE_THROW_IF (table.empty(), "Cell content inside table without rows", errors::program_logic{});
-          DOCWIRE_THROW_IF (table.back().empty(), "Cell content inside table row without cells", errors::program_logic{});
+          DF0_THROW_IF (table.empty(), "Cell content inside table without rows", errors::program_logic{});
+          DF0_THROW_IF (table.back().empty(), "Cell content inside table row without cells", errors::program_logic{});
           table.back().back().write(msgs[i]);
         }
       }
@@ -623,6 +621,6 @@ inline const std::string plain_text_writer::eol_sequence() const
   return m_impl->m_eol_sequence;
 }
 
-} // namespace docwire
+} // namespace df0
 
-#endif //DOCWIRE_PLAIN_TEXT_WRITER_H
+#endif //DF0_PLAIN_TEXT_WRITER_H

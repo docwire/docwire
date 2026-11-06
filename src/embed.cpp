@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include "embed.h"
 
@@ -29,7 +27,7 @@
 #include "throw_if.h"
 #include <sstream>
 
-namespace docwire
+namespace df0
 {
 
 using namespace openai;
@@ -56,7 +54,7 @@ struct pimpl_impl<openai::embed<auditor_type>>
 
 }
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -174,8 +172,8 @@ continuation embed<auditor_type>::operator()(
 	return emit_message(ai::embedding{std::move(embedding_vector)});
 }
 
-template class DOCWIRE_OPENAI_EXPORT docwire::openai::embed<docwire::audit::null_auditor>;
-template class DOCWIRE_OPENAI_EXPORT docwire::openai::embed<docwire::audit::json_stream_auditor>;
+template class DF0_OPENAI_EXPORT df0::openai::embed<df0::audit::null_auditor>;
+template class DF0_OPENAI_EXPORT df0::openai::embed<df0::audit::json_stream_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0

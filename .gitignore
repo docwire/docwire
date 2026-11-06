@@ -4,7 +4,7 @@ tests/after_installation/build-Release
 vcpkg/
 .vscode/
 version.h
-ports/docwire/.disable_binary_cache
+ports/df0/.disable_binary_cache
 .cache
 compile_commands.json
 .zed

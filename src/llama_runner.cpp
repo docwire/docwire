@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include "llama_runner.h"
 #include "error_tags.h"
@@ -25,7 +23,7 @@
 #include <mutex>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -153,7 +151,7 @@ struct pimpl_impl<ai::llama::llama_runner<auditor_type>>
         llama_model_params model_params = llama_model_default_params();
         auto u8_model_path = config.model_path.u8string();
         std::string model_path(reinterpret_cast<const char*>(u8_model_path.data()), u8_model_path.size());
-        model = docwire::ai::llama::llama_handle<llama_model>(
+        model = df0::ai::llama::llama_handle<llama_model>(
             llama_model_load_from_file(model_path.c_str(), model_params));
 
         throw_if(!model, "Failed to load llama model.", errors::program_corrupted{});
@@ -166,13 +164,13 @@ struct pimpl_impl<ai::llama::llama_runner<auditor_type>>
         ctx_params.n_threads = config.n_threads.get();
         ctx_params.embeddings = true;
 
-        ctx = docwire::ai::llama::llama_handle<llama_context>(llama_init_from_model(model.get(), ctx_params));
+        ctx = df0::ai::llama::llama_handle<llama_context>(llama_init_from_model(model.get(), ctx_params));
 
         throw_if(!ctx, "Failed to create llama context.", errors::program_corrupted{});
 
         llama_sampler_chain_params sp = llama_sampler_chain_default_params();
 
-        sampler = docwire::ai::llama::llama_handle<llama_sampler>(llama_sampler_chain_init(sp));
+        sampler = df0::ai::llama::llama_handle<llama_sampler>(llama_sampler_chain_init(sp));
 
         throw_if(!sampler, "Failed to create sampler.", errors::program_corrupted{});
 
@@ -442,9 +440,9 @@ std::vector<double> llama_runner<auditor_type>::embed(const std::string& input)
     return result;
 }
 
-template class DOCWIRE_AI_LLAMA_EXPORT docwire::ai::llama::llama_runner<docwire::audit::null_auditor>;
-template class DOCWIRE_AI_LLAMA_EXPORT docwire::ai::llama::llama_runner<docwire::audit::json_stream_auditor>;
+template class DF0_AI_LLAMA_EXPORT df0::ai::llama::llama_runner<df0::audit::null_auditor>;
+template class DF0_AI_LLAMA_EXPORT df0::ai::llama::llama_runner<df0::audit::json_stream_auditor>;
 
 } // namespace ai::llama
 
-} // namespace docwire
+} // namespace df0

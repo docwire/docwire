@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.17)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for VSCode CLangd extension
 
-option(DOCWIRE_CT2 "Enable CT2 models (Translation / Text Generation / Embedding models)" OFF)
-option(DOCWIRE_LLAMA    "Enable llama.cpp engine" OFF)
-option(DOCWIRE_GRANITE "Enable IBM Granite model" OFF)
+option(DF0_CT2 "Enable CT2 models (Translation / Text Generation / Embedding models)" OFF)
+option(DF0_LLAMA    "Enable llama.cpp engine" OFF)
+option(DF0_GRANITE "Enable IBM Granite model" OFF)
 
-# Get version from ChangeLog.md and store it in DOCWIRE_VERSION and SIMPLE_DOCWIRE_VERSION
+# Get version from ChangeLog.md and store it in DF0_VERSION and SIMPLE_DF0_VERSION
 function(extract_version)
 	file(READ "${CMAKE_CURRENT_SOURCE_DIR}/doc/ChangeLog.md" changelog_text)
 	if(${changelog_text} MATCHES "Version ([0-9]+\\.[0-9]+\\.[0-9]+)")
@@ -19,14 +19,14 @@ function(extract_version)
 	else()
 		set(doc_ver ${simple_doc_ver})
 	endif()
-	set(DOCWIRE_VERSION ${doc_ver} PARENT_SCOPE)
-	set(SIMPLE_DOCWIRE_VERSION ${simple_doc_ver} PARENT_SCOPE)
+	set(DF0_VERSION ${doc_ver} PARENT_SCOPE)
+	set(SIMPLE_DF0_VERSION ${simple_doc_ver} PARENT_SCOPE)
 endfunction()
 
 extract_version()
 
-project(docwire VERSION ${SIMPLE_DOCWIRE_VERSION} LANGUAGES CXX C)
-message(STATUS "Build docwire: ${DOCWIRE_VERSION}")
+project(df0 VERSION ${SIMPLE_DF0_VERSION} LANGUAGES CXX C)
+message(STATUS "Build df0: ${DF0_VERSION}")
 
 if(MSVC)
     # This is necessary for some translation units which use heavily templated libraries and
@@ -36,8 +36,8 @@ if(MSVC)
     add_compile_definitions(_WIN32_WINNT=0x0A00)
 endif()
 
-option(DOCWIRE_DOC "Compile Documentation" OFF)
-option(DOCWIRE_TRACE "Enable Tracing" OFF)
+option(DF0_DOC "Compile Documentation" OFF)
+option(DF0_TRACE "Enable Tracing" OFF)
 option(ADDRESS_SANITIZER "Enable address sanitizer" OFF)
 
 if (ADDRESS_SANITIZER)
@@ -75,16 +75,16 @@ endif()
 
 enable_testing ()
 
-file(WRITE ${CMAKE_SOURCE_DIR}/version.h "#define VERSION \"${DOCWIRE_VERSION}\"")
-file(WRITE ${CMAKE_BINARY_DIR}/VERSION "${DOCWIRE_VERSION}")
-install(FILES ${CMAKE_BINARY_DIR}/VERSION DESTINATION share/docwire)
+file(WRITE ${CMAKE_SOURCE_DIR}/version.h "#define VERSION \"${DF0_VERSION}\"")
+file(WRITE ${CMAKE_BINARY_DIR}/VERSION "${DF0_VERSION}")
+install(FILES ${CMAKE_BINARY_DIR}/VERSION DESTINATION share/df0)
 
 string(TOLOWER ${CMAKE_CXX_COMPILER_ID} compiler_id)
 if(compiler_id STREQUAL "gnu")
     set(compiler_id "gcc")
 endif()
 file(WRITE ${CMAKE_BINARY_DIR}/abi-id.txt "${compiler_id}-${CMAKE_CXX_COMPILER_VERSION}")
-install(FILES ${CMAKE_BINARY_DIR}/abi-id.txt DESTINATION share/docwire)
+install(FILES ${CMAKE_BINARY_DIR}/abi-id.txt DESTINATION share/df0)
 
 add_subdirectory(src)
 
@@ -95,6 +95,6 @@ endforeach()
 
 add_subdirectory(tests)
 
-if (DOCWIRE_DOC)
+if (DF0_DOC)
    add_subdirectory(doc)
 endif()

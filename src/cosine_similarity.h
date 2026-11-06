@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_COSINE_SIMILARITY_H
-#define DOCWIRE_COSINE_SIMILARITY_H
+#ifndef DF0_COSINE_SIMILARITY_H
+#define DF0_COSINE_SIMILARITY_H
 
 #include "core_export.h"
 #include <cmath>
@@ -18,7 +16,7 @@
 #include "error_tags.h"
 #include "throw_if.h"
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -37,7 +35,7 @@ namespace docwire
  */
 inline double cosine_similarity(const std::vector<double>& a, const std::vector<double>& b)
 {
-  DOCWIRE_THROW_IF(a.size() != b.size(), "Vectors must have the same size", errors::program_logic{});
+  DF0_THROW_IF(a.size() != b.size(), "Vectors must have the same size", errors::program_logic{});
   double dot_product = 0.0;
   double norm_a = 0.0;
   double norm_b = 0.0;
@@ -54,5 +52,5 @@ inline double cosine_similarity(const std::vector<double>& a, const std::vector<
   return dot_product / (std::sqrt(norm_a) * std::sqrt(norm_b));
 }
 
-} // namespace docwire
-#endif // DOCWIRE_COSINE_SIMILARITY_H
+} // namespace df0
+#endif // DF0_COSINE_SIMILARITY_H

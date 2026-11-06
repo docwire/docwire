@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include "post.h"
 
@@ -26,7 +24,7 @@
 #include <sstream>
 #include "version.h"
 
-namespace docwire
+namespace df0
 {
 
 template<typename auditor_type>
@@ -178,7 +176,7 @@ try
 	}
 
 	httplib::Headers headers;
-	headers.emplace("User-Agent", std::string("DocWire SDK/") + VERSION);
+	headers.emplace("User-Agent", std::string("DF-0/") + VERSION);
 	if (!impl().m_oauth2_bearer_token.empty())
 	{
 		headers.emplace("Authorization", "Bearer " + impl().m_oauth2_bearer_token);
@@ -243,8 +241,8 @@ catch (const std::exception&)
 	std::throw_with_nested(make_error(impl().m_url));
 }
 
-template class DOCWIRE_HTTP_EXPORT docwire::http::post<docwire::audit::null_auditor>;
-template class DOCWIRE_HTTP_EXPORT docwire::http::post<docwire::audit::json_stream_auditor>;
+template class DF0_HTTP_EXPORT df0::http::post<df0::audit::null_auditor>;
+template class DF0_HTTP_EXPORT df0::http::post<df0::audit::json_stream_auditor>;
 
 } // namespace http
-} // namespace docwire
+} // namespace df0

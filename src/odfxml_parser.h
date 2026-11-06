@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_ODFXML_PARSER_H
-#define DOCWIRE_ODFXML_PARSER_H
+#ifndef DF0_ODFXML_PARSER_H
+#define DF0_ODFXML_PARSER_H
 
 #include "audit.hpp"
 #include "common_xml_document_parser.h"
@@ -19,7 +17,7 @@
 #include "safety_policy.h"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -29,7 +27,7 @@ namespace docwire
  */
 template <safety_policy safety_level = default_safety_level,
           typename auditor_type = audit::null_auditor>
-class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser
+class DF0_ODF_OOXML_EXPORT odfxml_parser
     : public common_xml_document_parser<safety_level, auditor_type>,
       public pipeline::transformer_element<odfxml_parser<safety_level, auditor_type>>,
       public with_pimpl<odfxml_parser<safety_level, auditor_type>>
@@ -74,6 +72,6 @@ class DOCWIRE_ODF_OOXML_EXPORT odfxml_parser
 // Deduction guide for CTAD
 odfxml_parser() -> odfxml_parser<default_safety_level, audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif

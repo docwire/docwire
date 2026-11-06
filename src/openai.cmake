@@ -1,4 +1,4 @@
-add_library(docwire_openai SHARED
+add_library(df0_openai SHARED
     analyze_data.cpp
     chat.cpp
     classify.cpp
@@ -13,13 +13,13 @@ add_library(docwire_openai SHARED
     translate_to.cpp)
 
 find_package(Boost REQUIRED COMPONENTS json)
-target_link_libraries(docwire_openai PRIVATE docwire_base64 docwire_core docwire_ai docwire_http Boost::json)
+target_link_libraries(df0_openai PRIVATE df0_base64 df0_core df0_ai df0_http Boost::json)
 
-install(TARGETS docwire_openai EXPORT docwire_targets)
+install(TARGETS df0_openai EXPORT df0_targets)
 if(MSVC)
-	install(FILES $<TARGET_PDB_FILE:docwire_openai> DESTINATION bin CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:df0_openai> DESTINATION bin CONFIGURATIONS Debug)
 endif()
 
 include(GenerateExportHeader)
-generate_export_header(docwire_openai EXPORT_FILE_NAME openai_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openai_export.h DESTINATION include/docwire)
+generate_export_header(df0_openai EXPORT_FILE_NAME openai_export.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openai_export.h DESTINATION include/df0)

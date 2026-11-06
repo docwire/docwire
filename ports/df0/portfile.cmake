@@ -3,7 +3,7 @@ if(DEFINED ENV{SOURCE_PATH})
 else()
 	vcpkg_from_github(
 		OUT_SOURCE_PATH SOURCE_PATH
-		REPO docwire/docwire
+		REPO df0/df0
 		HEAD_REF master
 	)
 endif()
@@ -20,17 +20,17 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 		asan ADDRESS_SANITIZER
 		tsan THREAD_SANITIZER
 		helgrind HELGRIND_ENABLED
-		local-ai-ct2 DOCWIRE_CT2
-        local-ai-llama DOCWIRE_LLAMA
-        local-ai-model-granite DOCWIRE_GRANITE
-        docs DOCWIRE_DOC
+		local-ai-ct2 DF0_CT2
+        local-ai-llama DF0_LLAMA
+        local-ai-model-granite DF0_GRANITE
+        docs DF0_DOC
 )
 
 if(DEFINED ENV{CMAKE_MESSAGE_LOG_LEVEL})
 	list(APPEND FEATURE_OPTIONS "-DCMAKE_MESSAGE_LOG_LEVEL=$ENV{CMAKE_MESSAGE_LOG_LEVEL}")
 endif()
 
-if(DOCWIRE_DOC)
+if(DF0_DOC)
     if(VCPKG_HOST_IS_WINDOWS)
         set(DOXYGEN_ASSET "doxygen-${DOXYGEN_VERSION}.windows.x64.bin.zip")
         set(DOXYGEN_SHA512 "c4f7b45a4ae5f49b9d232036ec200033be7a44c41dfa717f121c05a06a9377838795ef9e931267dcb4d73be2d3bb34c97d79f46f464c8a4d62ef4664210e5491")
@@ -94,17 +94,17 @@ else()
 endif()
 
 vcpkg_copy_tools(
-	TOOL_NAMES docwire
+	TOOL_NAMES df0
 	SEARCH_DIR ${CURRENT_PACKAGES_DIR}/bin
 	DESTINATION ${CURRENT_PACKAGES_DIR}/tools
 )
 vcpkg_copy_tools(
-	TOOL_NAMES docwire
+	TOOL_NAMES df0
 	SEARCH_DIR ${CURRENT_PACKAGES_DIR}/debug/bin
 	DESTINATION ${CURRENT_PACKAGES_DIR}/debug/tools
 )
-vcpkg_clean_executables_in_bin(FILE_NAMES docwire)
-vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/docwire)
+vcpkg_clean_executables_in_bin(FILE_NAMES df0)
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/df0)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
 vcpkg_install_copyright(FILE_LIST ${SOURCE_PATH}/LICENSE ${SOURCE_PATH}/doc/COPYING.AGPLv3)

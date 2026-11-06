@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_AI_LLAMA_RUNNER_H
-#define DOCWIRE_AI_LLAMA_RUNNER_H
+#ifndef DF0_AI_LLAMA_RUNNER_H
+#define DF0_AI_LLAMA_RUNNER_H
 
 #include "ai_runner.h"
 #include "ai_llama_export.h"
@@ -21,15 +19,15 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire::ai::llama
+namespace df0::ai::llama
 {
 /**
  * @brief This class is intended to load a Llama model with its correct model path and
  * respective configuration and run inference on the prompt supplied along with
  * the model configuration.
  */
-template<typename auditor_type = docwire::audit::null_auditor>
-class DOCWIRE_AI_LLAMA_EXPORT llama_runner
+template<typename auditor_type = df0::audit::null_auditor>
+class DF0_AI_LLAMA_EXPORT llama_runner
     : public ai_runner,
       public with_pimpl<llama_runner<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -41,12 +39,12 @@ class DOCWIRE_AI_LLAMA_EXPORT llama_runner
         const model_inference_config& config)
         : llama_runner(
               config,
-              docwire::audit::auditor_ref<stateless_auditor_type>{})
+              df0::audit::auditor_ref<stateless_auditor_type>{})
     {}
 
     explicit llama_runner(
         const model_inference_config& config,
-        docwire::audit::auditor_ref<auditor_type> auditor);
+        df0::audit::auditor_ref<auditor_type> auditor);
 
     std::string process(const std::string& input) override;
 
@@ -60,8 +58,8 @@ class DOCWIRE_AI_LLAMA_EXPORT llama_runner
 };
 
 // Deduction guide for CTAD
-llama_runner(const model_inference_config&) -> llama_runner<docwire::audit::null_auditor>;
+llama_runner(const model_inference_config&) -> llama_runner<df0::audit::null_auditor>;
 
-} // namespace docwire::ai::llama
+} // namespace df0::ai::llama
 
 #endif

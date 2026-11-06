@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include "common_xml_document_parser.h" 
 
@@ -30,7 +28,7 @@
 #include "odf_ooxml_export.h"
 #include "xml_attributes.h"
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -771,17 +769,17 @@ common_xml_document_parser<safety_level, auditor_type>::scoped_context_stack_pus
 	m_parser.impl().m_context_stack.pop();
 }
 
-template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<strict, audit::null_auditor>;
-template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, audit::null_auditor>;
+template class DF0_ODF_OOXML_EXPORT common_xml_document_parser<strict, audit::null_auditor>;
+template class DF0_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, audit::null_auditor>;
 
 // These are not required but help static analyzer
 template class pimpl_impl<common_xml_document_parser<strict, audit::null_auditor>>;
 template class pimpl_impl<common_xml_document_parser<relaxed, audit::null_auditor>>;
 
-template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<strict, docwire::audit::json_stream_auditor>;
-template class pimpl_impl<common_xml_document_parser<strict, docwire::audit::json_stream_auditor>>;
+template class DF0_ODF_OOXML_EXPORT common_xml_document_parser<strict, df0::audit::json_stream_auditor>;
+template class pimpl_impl<common_xml_document_parser<strict, df0::audit::json_stream_auditor>>;
 
-template class DOCWIRE_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, docwire::audit::json_stream_auditor>;
-template class pimpl_impl<common_xml_document_parser<relaxed, docwire::audit::json_stream_auditor>>;
+template class DF0_ODF_OOXML_EXPORT common_xml_document_parser<relaxed, df0::audit::json_stream_auditor>;
+template class pimpl_impl<common_xml_document_parser<relaxed, df0::audit::json_stream_auditor>>;
 
-} // namespace docwire
+} // namespace df0

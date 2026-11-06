@@ -1,27 +1,25 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include "message_matchers.h"
 #include "txt_parser.h"
 #include "pipeline/input_element.hpp"
 #include "pipeline/output_element.hpp"
 
-using namespace docwire;
+using namespace df0;
 using namespace testing;
 
 TEST(txt_parser, lines)
 {
     std::vector<message_ptr> msgs;
     std::string test_input {"Line ends with LF\nLine ends with CR\rLine ends with CRLF\r\nLine without EOL"};
-    docwire::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
+    df0::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
         txt_parser{} | msgs;
     ASSERT_THAT(msgs, ElementsAre(
         MessagePtrWith<document::document>(_),
@@ -38,7 +36,7 @@ TEST(txt_parser, lines)
     ));
     
     msgs.clear();
-    docwire::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
+    df0::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
         txt_parser{parse_paragraphs{true}, parse_lines{false}} | msgs;
     ASSERT_THAT(msgs, ElementsAre(
         MessagePtrWith<document::document>(_),
@@ -55,7 +53,7 @@ TEST(txt_parser, lines)
     ));
     
     msgs.clear();
-    docwire::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
+    df0::data_source{test_input, mime_type{"text/plain"}, confidence::highest} |
         txt_parser{parse_paragraphs{false}, parse_lines{false}} | msgs;
     ASSERT_THAT(msgs, ElementsAre(
         MessagePtrWith<document::document>(_),
@@ -67,7 +65,7 @@ TEST(txt_parser, lines)
 TEST(txt_parser, paragraphs)
 {
     std::vector<message_ptr> msgs;
-    docwire::data_source{
+    df0::data_source{
             std::string{"Paragraph 1 Line 1\nParagraph 1 Line 2\n\nParagraph 2 Line 1"},
             mime_type{"text/plain"}, confidence::highest} |
         txt_parser{} | msgs;
@@ -85,7 +83,7 @@ TEST(txt_parser, paragraphs)
     ));
     
     msgs.clear();
-    docwire::data_source{std::string{"\nLine\n"}, mime_type{"text/plain"}, confidence::highest} |
+    df0::data_source{std::string{"\nLine\n"}, mime_type{"text/plain"}, confidence::highest} |
         txt_parser{} | msgs;
     ASSERT_THAT(msgs, ElementsAre(
         MessagePtrWith<document::document>(_),
@@ -98,7 +96,7 @@ TEST(txt_parser, paragraphs)
     ));
     
     msgs.clear();
-    docwire::data_source{std::string{"\nLine\n"}, mime_type{"text/plain"}, confidence::highest} |
+    df0::data_source{std::string{"\nLine\n"}, mime_type{"text/plain"}, confidence::highest} |
         txt_parser{parse_paragraphs{false}} | msgs;
     ASSERT_THAT(msgs, ElementsAre(
         MessagePtrWith<document::document>(_),

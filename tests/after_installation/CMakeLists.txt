@@ -1,21 +1,21 @@
 cmake_minimum_required(VERSION 3.21)
-project(docwire_after_installation_tests LANGUAGES CXX)
+project(df0_after_installation_tests LANGUAGES CXX)
 
-# This project is designed to be built and run AFTER the DocWire SDK has been installed.
+# This project is designed to be built and run AFTER the DF-0 has been installed.
 # It simulates how a downstream user would find and use the SDK, verifying the installation.
-# It relies on a CMake toolchain file or CMAKE_PREFIX_PATH to locate the installed DocWire SDK.
+# It relies on a CMake toolchain file or CMAKE_PREFIX_PATH to locate the installed DF-0.
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    message(WARNING "CMAKE_TOOLCHAIN_FILE is not defined. find_package(docwire) will rely on CMAKE_PREFIX_PATH to find the installed SDK.")
+    message(WARNING "CMAKE_TOOLCHAIN_FILE is not defined. find_package(df0) will rely on CMAKE_PREFIX_PATH to find the installed SDK.")
 endif()
 
 enable_testing()
 
-# Verify that the DocWire SDK can be found in the current environment.
-find_package(docwire CONFIG REQUIRED)
+# Verify that the DF-0 can be found in the current environment.
+find_package(df0 CONFIG REQUIRED)
 
 # --- 1. Integration Example Test ---
 # This section rebuilds and tests the integration_example from scratch,
-# relying on find_package(docwire) to link against the installed SDK.
+# relying on find_package(df0) to link against the installed SDK.
 
 # First, copy the example source files into a subdirectory of our build tree.
 # The source files are located relative to this script in the main 'tests' directory.
@@ -38,7 +38,7 @@ set(CONFIGURE_OPTIONS "")
 if(DEFINED CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE STREQUAL "")
     list(APPEND CONFIGURE_OPTIONS "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 endif()
-# The find_package(docwire) call above located the SDK. To ensure the nested
+# The find_package(df0) call above located the SDK. To ensure the nested
 # integration_example project can also find it, we forward any relevant
 # variables that were used for the initial find_package call.
 if(DEFINED CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")
@@ -126,16 +126,16 @@ set_property(TEST integration_run_installed PROPERTY DEPENDS integration_install
 
 
 # --- 2. CLI Tests ---
-# This section finds the 'docwire' executable in the path
+# This section finds the 'df0' executable in the path
 # and runs it against test files.
 
-find_program(DOCWIRE_CLI docwire REQUIRED)
-message(STATUS "Found docwire CLI for testing at: ${DOCWIRE_CLI}")
+find_program(DF0_CLI df0 REQUIRED)
+message(STATUS "Found DF-0 CLI for testing at: ${DF0_CLI}")
 
 foreach(file IN ITEMS 1.doc 1.pdf basic_ocr-eng.png)
     add_test(
         NAME cli_${file}
-        COMMAND ${DOCWIRE_CLI} ${EXAMPLE_SRC_DIR}/${file}
+        COMMAND ${DF0_CLI} ${EXAMPLE_SRC_DIR}/${file}
     )
 endforeach()
 
@@ -154,14 +154,14 @@ set(CLI_AUDIT_TEST_FILES
 foreach(file IN LISTS CLI_AUDIT_TEST_FILES)
     add_test(
         NAME cli_verbose_${file}
-        COMMAND ${DOCWIRE_CLI} --verbose ${EXAMPLE_SRC_DIR}/${file}
+        COMMAND ${DF0_CLI} --verbose ${EXAMPLE_SRC_DIR}/${file}
     )
 endforeach()
 
 # Exercise the file-based audit sink through the CLI.
 add_test(
     NAME cli_verbose_with_log_file_1.docx
-    COMMAND ${DOCWIRE_CLI}
+    COMMAND ${DF0_CLI}
         --verbose
         --log_file ${CMAKE_BINARY_DIR}/audit_cli_1.docx.json
         ${EXAMPLE_SRC_DIR}/1.docx
@@ -170,10 +170,10 @@ add_test(
 # Verify basic alternate exporter paths through the installed CLI.
 add_test(
     NAME cli_html_output_1.doc
-    COMMAND ${DOCWIRE_CLI} --output_type html ${EXAMPLE_SRC_DIR}/1.doc
+    COMMAND ${DF0_CLI} --output_type html ${EXAMPLE_SRC_DIR}/1.doc
 )
 
 add_test(
     NAME cli_metadata_output_1.doc
-    COMMAND ${DOCWIRE_CLI} --output_type metadata ${EXAMPLE_SRC_DIR}/1.doc
+    COMMAND ${DF0_CLI} --output_type metadata ${EXAMPLE_SRC_DIR}/1.doc
 )

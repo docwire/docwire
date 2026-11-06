@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include <boost/algorithm/string.hpp>
 #include <boost/config.hpp>
@@ -32,7 +30,7 @@
 #include "pipeline/input_element.hpp"
 #include "http_server.h"
 
-using namespace docwire;
+using namespace df0;
 
 TEST(Http, post)
 {
@@ -53,7 +51,7 @@ TEST(Http, post)
 	ASSERT_TRUE(output_val.as_object()["headers"].is_object());
 	ASSERT_STREQ(output_val.as_object()["headers"].as_object()["content-type"].as_string().c_str(), "text/plain");
 	ASSERT_THAT(std::string{output_val.as_object()["headers"].as_object()["user-agent"].as_string()},
-                ::testing::StartsWith("DocWire SDK/"));
+                ::testing::StartsWith("DF-0/"));
 	ASSERT_STREQ(output_val.as_object()["data"].as_string().c_str(), "<http://www.silvercoders.com/>hyperlink test\n\n");
 }
 
@@ -147,7 +145,7 @@ protected:
                 return http::server(
                     addr,
                     port,
-                    http::generate_self_signed_cert(addr.v, "US", "DocWire Test"),
+                    http::generate_self_signed_cert(addr.v, "US", "DF-0 Test"),
                     route);
 
             return http::server(addr, port, route);
@@ -290,7 +288,7 @@ TEST(Http, ServerNonFatalError)
     // 4. Make a request to the error-producing endpoint. This should trigger the error handler and throw on the client side.
     ASSERT_THROW(
         {
-            docwire::data_source{std::string_view{"some data"}} | http::post("http://" + addr.v + ":" + std::to_string(port.v) + "/error") | std::ostringstream{};
+            df0::data_source{std::string_view{"some data"}} | http::post("http://" + addr.v + ":" + std::to_string(port.v) + "/error") | std::ostringstream{};
         },
         std::exception
     );
@@ -298,7 +296,7 @@ TEST(Http, ServerNonFatalError)
     // 5. Make a request to the successful endpoint to ensure the server is still running.
     std::ostringstream success_response_stream;
     ASSERT_NO_THROW({
-        docwire::data_source{std::string_view{"success data"}} | http::post("http://" + addr.v + ":" + std::to_string(port.v) + "/success") | success_response_stream;
+        df0::data_source{std::string_view{"success data"}} | http::post("http://" + addr.v + ":" + std::to_string(port.v) + "/success") | success_response_stream;
     });
 
     // 6. Verify the error handler was called and that the server is still running.

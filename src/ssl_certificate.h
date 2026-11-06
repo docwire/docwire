@@ -1,21 +1,19 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_DETAIL_SSL_CERTIFICATE_H
-#define DOCWIRE_DETAIL_SSL_CERTIFICATE_H
+#ifndef DF0_DETAIL_SSL_CERTIFICATE_H
+#define DF0_DETAIL_SSL_CERTIFICATE_H
 
 #include <memory>
 #include <string>
 
-namespace docwire::detail
+namespace df0::detail
 {
 
 /**
@@ -77,6 +75,6 @@ private:
     std::unique_ptr<impl> m_impl;
 };
 
-} // namespace docwire::detail
+} // namespace df0::detail
 
-#endif // DOCWIRE_DETAIL_SSL_CERTIFICATE_H
+#endif // DF0_DETAIL_SSL_CERTIFICATE_H

@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_CT2_RUNNER_FACTORY_H
-#define DOCWIRE_LOCAL_AI_CT2_RUNNER_FACTORY_H
+#ifndef DF0_LOCAL_AI_CT2_RUNNER_FACTORY_H
+#define DF0_LOCAL_AI_CT2_RUNNER_FACTORY_H
 
 #include "ai_runner.h"
 #include "ct2_runner.h"
@@ -21,41 +19,41 @@
 #include <concepts>
 #include <memory>
 
-namespace docwire::ai::local::ct2
+namespace df0::ai::local::ct2
 {
 
 template<typename auditor_type>
-inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner(
-    docwire::audit::auditor_ref<auditor_type> auditor)
+inline std::shared_ptr<df0::ai::ai_runner> make_default_runner(
+    df0::audit::auditor_ref<auditor_type> auditor)
 {
-    return std::make_shared<docwire::ai::ct2::ct2_runner<auditor_type>>(
+    return std::make_shared<df0::ai::ct2::ct2_runner<auditor_type>>(
         resource_path("flan-t5-large-ct2-int8"),
         auditor);
 }
 
 template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
-inline std::shared_ptr<docwire::ai::ai_runner> make_default_runner()
+inline std::shared_ptr<df0::ai::ai_runner> make_default_runner()
 {
     return make_default_runner<stateless_auditor_type>(
-        docwire::audit::auditor_ref<stateless_auditor_type>{});
+        df0::audit::auditor_ref<stateless_auditor_type>{});
 }
 
 template<typename auditor_type>
-inline std::shared_ptr<docwire::ai::ai_runner> make_embedding_runner(
-    docwire::audit::auditor_ref<auditor_type> auditor)
+inline std::shared_ptr<df0::ai::ai_runner> make_embedding_runner(
+    df0::audit::auditor_ref<auditor_type> auditor)
 {
-    return std::make_shared<docwire::ai::ct2::ct2_runner<auditor_type>>(
+    return std::make_shared<df0::ai::ct2::ct2_runner<auditor_type>>(
         resource_path("multilingual-e5-small-ct2-int8"),
         auditor);
 }
 
 template<audit::stateless_auditor stateless_auditor_type = audit::null_auditor>
-inline std::shared_ptr<docwire::ai::ai_runner> make_embedding_runner()
+inline std::shared_ptr<df0::ai::ai_runner> make_embedding_runner()
 {
     return make_embedding_runner<stateless_auditor_type>(
-        docwire::audit::auditor_ref<stateless_auditor_type>{});
+        df0::audit::auditor_ref<stateless_auditor_type>{});
 }
 
-} // namespace docwire::ai::local::ct2
+} // namespace df0::ai::local::ct2
 
 #endif

@@ -1,22 +1,20 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_CONCEPTS_STRING_H
-#define DOCWIRE_CONCEPTS_STRING_H
+#ifndef DF0_CONCEPTS_STRING_H
+#define DF0_CONCEPTS_STRING_H
 
 #include <concepts>
 #include <string_view>
 #include <type_traits>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -31,6 +29,6 @@ concept string_method_equipped = requires(const T& t) { { t.string() } -> std::c
 template<typename T>
 concept string_like = std::is_convertible_v<T, std::string_view>;
 
-} // namespace docwire
+} // namespace df0
 
-#endif // DOCWIRE_CONCEPTS_STRING_H
+#endif // DF0_CONCEPTS_STRING_H

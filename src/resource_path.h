@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_RESOURCE_PATH_H
-#define DOCWIRE_RESOURCE_PATH_H
+#ifndef DF0_RESOURCE_PATH_H
+#define DF0_RESOURCE_PATH_H
 
 #include "boost_dll_wrapper.h"
 #include "core_export.h"
@@ -21,7 +19,7 @@
 #include <vector>
 #include "make_error.h"
 
-namespace docwire
+namespace df0
 {
 
 
@@ -38,9 +36,9 @@ inline std::filesystem::path this_line_location()
  * running executable and the shared library. It supports both build-tree layouts (via .path files)
  * and installed layouts (relative to bin/ or lib/).
  *
- * @param resource_rel_path The relative path of the resource to find (e.g., "docwire/data.bin").
+ * @param resource_rel_path The relative path of the resource to find.
  * @return The absolute path to the found resource.
- * @throws docwire::errors::base if the resource cannot be found.
+ * @throws df0::errors::base if the resource cannot be found.
  */
 inline std::filesystem::path resource_path(const std::filesystem::path& resource_rel_path)
 {
@@ -94,9 +92,9 @@ inline std::filesystem::path resource_path(const std::filesystem::path& resource
         }
     }
 
-    throw DOCWIRE_MAKE_ERROR("Resource not found", resource_rel_path, errors::program_corrupted{});
+    throw DF0_MAKE_ERROR("Resource not found", resource_rel_path, errors::program_corrupted{});
 }
 
-} // namespace docwire
+} // namespace df0
 
-#endif //DOCWIRE_RESOURCE_PATH_H
+#endif //DF0_RESOURCE_PATH_H

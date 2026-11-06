@@ -1,12 +1,12 @@
-add_library(docwire_rtf SHARED rtf_parser.cpp)
+add_library(df0_rtf SHARED rtf_parser.cpp)
 
-target_link_libraries(docwire_rtf PRIVATE docwire_wv2 docwire_core)
+target_link_libraries(df0_rtf PRIVATE df0_wv2 df0_core)
 
-install(TARGETS docwire_rtf EXPORT docwire_targets)
+install(TARGETS df0_rtf EXPORT df0_targets)
 if(MSVC)
-	install(FILES $<TARGET_PDB_FILE:docwire_rtf> DESTINATION bin CONFIGURATIONS Debug)
+	install(FILES $<TARGET_PDB_FILE:df0_rtf> DESTINATION bin CONFIGURATIONS Debug)
 endif()
 
 include(GenerateExportHeader)
-generate_export_header(docwire_rtf EXPORT_FILE_NAME rtf_export.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rtf_export.h DESTINATION include/docwire)
+generate_export_header(df0_rtf EXPORT_FILE_NAME rtf_export.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rtf_export.h DESTINATION include/df0)

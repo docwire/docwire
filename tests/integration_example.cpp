@@ -1,5 +1,14 @@
-#include "docwire/docwire.h"
-#include "docwire/http_server.h"
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
+
+#include "df0/df0.hpp"
+#include "df0/http_server.h"
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -18,7 +27,7 @@ int main(int argc, char* argv[])
     return 0;
   }
 
-  using namespace docwire;
+  using namespace df0;
 
   // Verify installed public HTTP API and its link dependency.
   {

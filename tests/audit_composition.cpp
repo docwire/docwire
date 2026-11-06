@@ -1,3 +1,12 @@
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
+
 #include "audit.hpp"
 #include "audit/filter.hpp"
 #include "audit/serialize/json.hpp"
@@ -7,16 +16,16 @@
 
 #include <iostream>
 
-using namespace docwire;
+using namespace df0;
 
 int main()
 {
     auto audit =
-        docwire::audit::filter::by_spec{"*"}
-        | docwire::audit::serialize::json{}
-        | docwire::audit::sink::ostream{std::clog};
+        df0::audit::filter::by_spec{"*"}
+        | df0::audit::serialize::json{}
+        | df0::audit::sink::ostream{std::clog};
 
-    audit.record(docwire::source_location::current(), "audit_composition_example"_v = 42);
+    audit.record(df0::source_location::current(), "audit_composition_example"_v = 42);
 
     return 0;
 }

@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_PLAIN_TEXT_EXPORTER_H
-#define DOCWIRE_PLAIN_TEXT_EXPORTER_H
+#ifndef DF0_PLAIN_TEXT_EXPORTER_H
+#define DF0_PLAIN_TEXT_EXPORTER_H
 
 #include "pipeline/element_base.hpp"
 #include <functional>
@@ -23,9 +21,9 @@
 #include "data_source.h"
 #include "throw_if.h"
 
-namespace docwire
+namespace df0
 {
-using docwire::plain_text::output_width;
+using df0::plain_text::output_width;
 
 struct eol_sequence { std::string v; };
 
@@ -80,7 +78,7 @@ inline continuation plain_text_exporter::operator()(message_ptr msg, const messa
 	m_writer.write_to(msg, *m_stream);
 	if (msg->is<document::close_document>())
 	{
-		DOCWIRE_THROW_IF(m_nested_docs_level <= 0, errors::program_logic{});
+		DF0_THROW_IF(m_nested_docs_level <= 0, errors::program_logic{});
 		--m_nested_docs_level;
 		if (m_nested_docs_level == 0)
 		{
@@ -91,6 +89,6 @@ inline continuation plain_text_exporter::operator()(message_ptr msg, const messa
 	return continuation::proceed;
 }
 
-} // namespace docwire
+} // namespace df0
 
-#endif //DOCWIRE_PLAIN_TEXT_EXPORTER_H
+#endif //DF0_PLAIN_TEXT_EXPORTER_H

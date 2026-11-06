@@ -1,27 +1,25 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_CONTENT_TYPE_H
-#define DOCWIRE_CONTENT_TYPE_H
+#ifndef DF0_CONTENT_TYPE_H
+#define DF0_CONTENT_TYPE_H
 
 #include "pipeline/element_base.hpp"
 #include "content_type_by_signature.h"
 #include "ref_or_owned.h"
 
 /**
- * @namespace docwire::content_type
+ * @namespace df0::content_type
  * @brief Provides a multi-stage pipeline for content type detection.
  * 
  * ### Architecture
- * The content type detection in DocWire uses a multi-stage pipeline to ensure accuracy and performance:
+ * The content type detection in DF-0 uses a multi-stage pipeline to ensure accuracy and performance:
  * 1. **By File Extension:** Fast lookup using a comprehensive dictionary. Note that we intentionally 
  *    keep multiple MIME type aliases for a single extension (e.g., `.xml` maps to both `text/xml` 
  *    and `application/xml`) so users can query any valid historical variant.
@@ -36,7 +34,7 @@
  * by reading only a small initial buffer (e.g., 4KB) to check for local file headers before falling back 
  * to deep inspection (like ZIP parsing), preventing massive files from being downloaded into memory.
  */
-namespace docwire::content_type
+namespace df0::content_type
 {
 
 /**
@@ -71,7 +69,7 @@ namespace docwire::content_type
  * @see content_type::outlook::detect
  * @see content_type::xlsb::detect
  */
-DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const by_signature::database& signatures_db_to_use = by_signature::database{});
+DF0_CONTENT_TYPE_EXPORT void detect(data_source& data, const by_signature::database& signatures_db_to_use = by_signature::database{});
 
 /**
  * @brief Content type detection chain element
@@ -137,7 +135,7 @@ public:
         }
         catch (const std::exception& e)
         {
-            emit_message(make_nested_ptr(std::current_exception(), DOCWIRE_MAKE_ERROR("Content type detection failed")));
+            emit_message(make_nested_ptr(std::current_exception(), DF0_MAKE_ERROR("Content type detection failed")));
         }
 	    return emit_message(std::move(msg));
     }
@@ -146,6 +144,6 @@ private:
     ref_or_owned<by_signature::database> m_signatures_db_to_use;
 };
 
-} // namespace docwire::content_type
+} // namespace df0::content_type
 
-#endif // DOCWIRE_CONTENT_TYPE
+#endif // DF0_CONTENT_TYPE

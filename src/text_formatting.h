@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_TEXT_FORMATTING_H
-#define DOCWIRE_TEXT_FORMATTING_H
+#ifndef DF0_TEXT_FORMATTING_H
+#define DF0_TEXT_FORMATTING_H
 
 #include <concepts>
 
@@ -20,7 +18,7 @@
 #include "audit/auditor_ref.hpp"
 #include "audit/scope.hpp"
 
-namespace docwire
+namespace df0
 {
 
 using svector = std::vector<std::string>;
@@ -218,6 +216,6 @@ inline std::string formatNumberedList(std::vector<std::string>& mlist)
         audit::auditor_ref<stateless_auditor_type>{});
 }
 
-} // namespace docwire
+} // namespace df0
 
 #endif

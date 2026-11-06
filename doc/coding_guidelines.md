@@ -1,4 +1,4 @@
-# DocWire Coding Guidelines
+# DF-0 Coding Guidelines
 
 ## RULES (Meta & Governance)
 
@@ -30,7 +30,7 @@
 
 **The Rule:** Code snippets within these guidelines contain two distinct categories of code: **Core Infrastructure** and **Domain Examples**.
 
-1. **Core Infrastructure** (e.g., `docwire::resource_factory`, `docwire::pipeline_step`, `docwire::destination`, `docwire::annotated::object`): These are mandated, foundational SDK templates. Even if they are currently being drafted, they represent strict architectural law. When the rules state you *must* use them, it is a hard requirement.
+1. **Core Infrastructure** (e.g., `df0::resource_factory`, `df0::pipeline_step`, `df0::destination`, `df0::annotated::object`): These are mandated, foundational SDK templates. Even if they are currently being drafted, they represent strict architectural law. When the rules state you *must* use them, it is a hard requirement.
 
 2. **Domain Examples** (e.g., `pdf::writer`, `zip::stream_deferred`, `fs::file_name`): These are hypothetical illustrations used to demonstrate *how* to apply the Core Infrastructure. They represent the required shape and naming conventions for future code, regardless of whether those specific classes exist in the repository today.
 
@@ -44,13 +44,13 @@
 
 ### [RULES-ITERATIVE-LIFECYCLE]
 
-**The Rule:** We prioritize business velocity over Day-1 architectural purity. New features and 3rd-party integrations are permitted to temporarily violate strict performance rules (e.g., hidden heap allocations, caught exceptions) provided they are strictly quarantined behind a compliant DocWire API boundary. Optimization and refactoring are driven strictly by profiling data, not theoretical perfection.
+**The Rule:** We prioritize business velocity over Day-1 architectural purity. New features and 3rd-party integrations are permitted to temporarily violate strict performance rules (e.g., hidden heap allocations, caught exceptions) provided they are strictly quarantined behind a compliant DF-0 API boundary. Optimization and refactoring are driven strictly by profiling data, not theoretical perfection.
 
 **The Why:** Demanding 100% compliance before merging a new feature stalls product delivery. By isolating the messy code early, we ship the feature to users today, and we rely on real-world profiling to tell us if the architectural violation is actually causing a bottleneck worth fixing tomorrow.
 
 ### [RULES-DEFAULTS-CPP_CORE]
 
-**The Rule:** For general C++ practices not covered here, the codebase defaults to the C++ Core Guidelines. This document purely defines DocWire-specific overrides.
+**The Rule:** For general C++ practices not covered here, the codebase defaults to the C++ Core Guidelines. This document purely defines DF-0-specific overrides.
 
 **The Why:** Prevents this document from bloating into a 100-page generic C++ manual, keeping the focus entirely on high-performance edge architecture.
 
@@ -60,7 +60,7 @@
 
 **The Rule:** Architectural conflicts must be resolved using this strict hierarchy of values: 1. Safety → 2. Predictability → 3. Peak Throughput → 4. Binary Size → 5. Build Performance → 6. ABI/API Stability → 7. Developer Convenience.
 
-**The Why:** DocWire is a mission-critical edge toolkit. We will gladly write boilerplate (#7) or break ABI (#6) to achieve peak throughput (#3). We will sacrifice compile times (#5) to keep binaries small (#4). Above all, we never sacrifice determinism (#2) or safety (#1) for speed.
+**The Why:** DF-0 is a mission-critical edge toolkit. We will gladly write boilerplate (#7) or break ABI (#6) to achieve peak throughput (#3). We will sacrifice compile times (#5) to keep binaries small (#4). Above all, we never sacrifice determinism (#2) or safety (#1) for speed.
 
 ### [DESIGN-LANG-CPP]
 
@@ -82,7 +82,7 @@
 
 * **The C++20 Sweet Spot:** C++20 provides the exact foundational tools we need for safe pipelines (`std::span` for zero-copy parsing, `consteval` for hardcoded depth limits, and Concepts to enforce static polymorphism across our lazy-evaluation pipelines).
 
-* **Enterprise Compatibility:** Enterprise clients (defense, finance, embedded hardware) upgrade their compiler toolchains conservatively. Freezing the standard at C++20 ensures maximum commercial compatibility. If we need paradigms from newer standards (like C++23's `std::expected`), we implement them internally (`docwire::expected`) so we can deploy them immediately while enforcing our own stricter, exception-free constraints.
+* **Enterprise Compatibility:** Enterprise clients (defense, finance, embedded hardware) upgrade their compiler toolchains conservatively. Freezing the standard at C++20 ensures maximum commercial compatibility. If we need paradigms from newer standards (like C++23's `std::expected`), we implement them internally (`df0::expected`) so we can deploy them immediately while enforcing our own stricter, exception-free constraints.
 
 ### [DESIGN-DISPATCH-STATIC]
 
@@ -94,7 +94,7 @@
 
 **The Rule:** `#define` macros are universally banned for logic, constants, and logging. Feature toggles must use `if constexpr`. Constants must use `constexpr` or `consteval`. Short-circuit evaluation must use C++20 Concepts and lambdas. Context capture must use `std::source_location`.
 
-**The Exception:** Macros are strictly quarantined to physical compilation necessities: Header include guards (`#ifndef`) and dynamic library export visibility (`DOCWIRE_API`).
+**The Exception:** Macros are strictly quarantined to physical compilation necessities: Header include guards (`#ifndef`) and dynamic library export visibility (`DF0_API`).
 
 **The Why:** C++20 Modules do not export macros. Relying on macros for API logic breaks our `[BUILD-FUTURE-MODULES]` migration path. Quarantining them to compilation boundaries keeps the C++ namespace mathematically pure while allowing standard DLL compilation.
 
@@ -177,7 +177,7 @@ context is consumed only during factory setup and must not be retained.
 **The Why:** Strong wrapper types prevent accidental argument-order bugs
 between two contexts that may otherwise have identical shapes. Keeping
 failure-prone work inside a factory preserves an exception-free path returning
-`docwire::expected`. Detailed failure propagation remains governed by
+`df0::expected`. Detailed failure propagation remains governed by
 `[ERR-ROUTING-VALUE_BASED]`.
 
 ### [DESIGN-AUDIT-UNIFIED]
@@ -208,7 +208,7 @@ This policy class must contain:
 
 ### [DESIGN-CONTRACTS-COMPILE_TIME]
 
-**The Rule:** The SDK must enforce internal API preconditions using custom, strong-type wrappers (e.g., `docwire::not_null<T>`, `docwire::ranged<T>`) to shift logic checks to compile-time wherever mathematically possible. Standard library GSL is banned, as its enforcement relies on global macros that violate our dependency injection model.
+**The Rule:** The SDK must enforce internal API preconditions using custom, strong-type wrappers (e.g., `df0::not_null<T>`, `df0::ranged<T>`) to shift logic checks to compile-time wherever mathematically possible. Standard library GSL is banned, as its enforcement relies on global macros that violate our dependency injection model.
 
 Crucially, strong-type wrappers must expose two distinct ingestion paths to perfectly separate trusted developer logic from untrusted payload data:
 
@@ -228,15 +228,15 @@ Crucially, strong-type wrappers must expose two distinct ingestion paths to perf
 
 ### [DESIGN-METADATA-ANNOTATION]
 
-**The Rule:** When attaching compile-time metadata to a payload, developers must use the metadata engine located in the `docwire::annotated::` namespace. Metadata tags themselves should reside in their respective domain namespaces (e.g., `fs::file_name`, `http::mime_type`), not a generic junk-drawer namespace.
+**The Rule:** When attaching compile-time metadata to a payload, developers must use the metadata engine located in the `df0::annotated::` namespace. Metadata tags themselves should reside in their respective domain namespaces (e.g., `fs::file_name`, `http::mime_type`), not a generic junk-drawer namespace.
 
-* **The Wrapper:** Use `docwire::annotated::object<Payload, Tags...>`. It must provide an implicit conversion operator to its underlying Payload type, allowing it to cross API boundaries into generic algorithms seamlessly.
+* **The Wrapper:** Use `df0::annotated::object<Payload, Tags...>`. It must provide an implicit conversion operator to its underlying Payload type, allowing it to cross API boundaries into generic algorithms seamlessly.
 
-* **The Appender:** Use the `docwire::annotated::append(payload, tags...)` factory to add new metadata, which handles the underlying `std::tuple_cat` logic without manual template nesting.
+* **The Appender:** Use the `df0::annotated::append(payload, tags...)` factory to add new metadata, which handles the underlying `std::tuple_cat` logic without manual template nesting.
 
-* **The Concept:** Functions requiring specific metadata must enforce it via the `docwire::annotated::has<T, DomainTag>` Concept.
+* **The Concept:** Functions requiring specific metadata must enforce it via the `df0::annotated::has<T, DomainTag>` Concept.
 
-* **The Extractor:** Metadata must be extracted using the free function `docwire::annotated::get<DomainTag>(obj)` to avoid template keyword disambiguation.
+* **The Extractor:** Metadata must be extracted using the free function `df0::annotated::get<DomainTag>(obj)` to avoid template keyword disambiguation.
 
 **The Why:** Isolating the metadata feature into the `annotated::` namespace prevents global namespace pollution. The implicit conversion operator allows annotated types to behave transparently as their underlying payloads when metadata is not required. Using Concepts for extraction guarantees mathematically robust, order-independent structural subtyping with zero runtime overhead.
 
@@ -244,11 +244,11 @@ Crucially, strong-type wrappers must expose two distinct ingestion paths to perf
 
 **The Rule:** The instantiation and teardown of fallible OS resources (e.g., files, network sockets) must be strictly managed using lazy **Resource Factories**, ensuring safe execution and strictly ordered teardown. This must be enforced at compile-time via strict encapsulation.
 
-1. **Universal Factory Template:** SDK developers must not write custom boilerplate factories. Instead, they must use the standard `docwire::resource_factory<Resource>` template, which securely stores constructor arguments in a tuple until execution.
+1. **Universal Factory Template:** SDK developers must not write custom boilerplate factories. Instead, they must use the standard `df0::resource_factory<Resource>` template, which securely stores constructor arguments in a tuple until execution.
 
 2. **Strict Encapsulation (The Friendship Rule):**
 
-   * **Resources:** Resource classes (e.g., `pdf::reader`) must have **private constructors** to physically prevent eager instantiation. They must declare `friend class docwire::resource_factory<Resource>;` to allow only the factory to create them.
+   * **Resources:** Resource classes (e.g., `pdf::reader`) must have **private constructors** to physically prevent eager instantiation. They must declare `friend class df0::resource_factory<Resource>;` to allow only the factory to create them.
 
    * **Factories:** The factory's `.create()` and `.destroy()` methods must also be **private**. The factory must declare the pipeline execution engine as a `friend` to ensure only the pipeline can trigger resource allocation.
 
@@ -266,13 +266,13 @@ class pdf_reader {
     pdf_reader(std::string_view path) { ... }
     
     // 2. Only the universal factory template can create this
-    friend class docwire::resource_factory<pdf_reader>; 
+    friend class df0::resource_factory<pdf_reader>; 
 public:
     expected<page, Error> read_page();
 };
 
 // 3. User creates a factory using the template alias
-using reader_factory = docwire::resource_factory<pdf_reader>;
+using reader_factory = df0::resource_factory<pdf_reader>;
 
 // 4. Composable factories for simultaneous resource consumption
 auto doc_factory = reader_factory{"input.pdf"};
@@ -290,9 +290,9 @@ auto composite_source = doc_factory + image_factory;
 
    * **Source:** The input of the pipeline. This can be a Resource Factory (when lifecycle management is needed), or standard data containers (e.g., `std::span`, `std::vector`).
 
-   * **Step:** Intermediate transformations must be stateful class objects inheriting from `docwire::pipeline_step`, instantiated universally with braces (e.g., `encryptor{key}` or `count_pages{}`).
+   * **Step:** Intermediate transformations must be stateful class objects inheriting from `df0::pipeline_step`, instantiated universally with braces (e.g., `encryptor{key}` or `count_pages{}`).
 
-   * **Destination:** The pipeline must end with an explicit terminal node holding a reference to the output variable (e.g., `docwire::destination{my_var}`).
+   * **Destination:** The pipeline must end with an explicit terminal node holding a reference to the output variable (e.g., `df0::destination{my_var}`).
 
 2. **Compile-Time Type Safety:** The `operator|` strictly enforces type compatibility. The output type of the Left-Hand Side must directly match the accepted input parameter of the Right-Hand Side's `operator()`. Incompatible connections will yield compile-time errors.
 
@@ -314,13 +314,13 @@ std::vector<std::byte> raw_buffer = get_data();
 auto factory_pipe = pdf::reader_factory{"doc.pdf"} 
                   | pdf::decryptor{my_key}
                   | pdf::count_pages{} 
-                  | docwire::destination{page_count};
+                  | df0::destination{page_count};
 auto err1 = factory_pipe();
 
 // Example B: Raw Data Source (Type-checked at compile time)
 auto memory_pipe = raw_buffer 
                  | security::validate_checksum{} 
-                 | docwire::destination{page_count};
+                 | df0::destination{page_count};
 auto err2 = memory_pipe();
 ```
 
@@ -439,7 +439,7 @@ Example from a header in `src/audit/`:
 #include "../source_location.h"
 ```
 
-**The Why:** File-relative includes resolve identically in the source tree and the installed SDK, without requiring consumers to add internal source-root-like include directories such as `include/docwire`.
+**The Why:** File-relative includes resolve identically in the source tree and the installed SDK, without requiring consumers to add internal source-root-like include directories such as `include/df0`.
 
 ### [BUILD-LINK-AGNOSTIC]
 
@@ -449,13 +449,13 @@ Example from a header in `src/audit/`:
 
 ## MEMORY (Allocation & Teardown)
 
-*Context: DocWire operates a "Zero-Heap Pipeline." During active parsing, standard OS heap allocations (`new`, `malloc`, `std::vector`) are mathematically too slow and cause fragmentation. We achieve deterministic, O(1) performance by routing all memory through a custom bump-allocator (the arena) and strictly managing the OS stack.*
+*Context: DF-0 operates a "Zero-Heap Pipeline." During active parsing, standard OS heap allocations (`new`, `malloc`, `std::vector`) are mathematically too slow and cause fragmentation. We achieve deterministic, O(1) performance by routing all memory through a custom bump-allocator (the arena) and strictly managing the OS stack.*
 
 ### [MEM-HOST-OWNERSHIP]
 
 **The Rule:** The Host Application (the top-level execution scope calling the SDK) is the exclusive owner of the OS boundary. It is strictly and solely responsible for allocating massive Input Payloads (via `mmap` or heap `std::vector`) and instantiating the Memory Allocators/arenas. These resources must be passed into the pipeline strictly via Dependency Injection (the execution context).
 
-**The Why:** Domain structs (e.g., the `pdf::document` returned by a parser) are lightweight, transient, and immutable; they must never manage OS resources or their own memory pools. Centralizing OS-level allocations at the host boundary guarantees that the DocWire pipeline remains a pure, zero-allocation, zero-copy state machine and honors the `[API-STATE-INJECTION]` rule.
+**The Why:** Domain structs (e.g., the `pdf::document` returned by a parser) are lightweight, transient, and immutable; they must never manage OS resources or their own memory pools. Centralizing OS-level allocations at the host boundary guarantees that the DF-0 pipeline remains a pure, zero-allocation, zero-copy state machine and honors the `[API-STATE-INJECTION]` rule.
 
 ### [MEM-DATA-COMPOSITION]
 
@@ -471,7 +471,7 @@ Example from a header in `src/audit/`:
 
 ### [MEM-TEARDOWN-OPTIMIZER_DRIVEN]
 
-**The Rule:** Data structures and intermediate states allocated via the injected `docwire::arena::allocator` must be designed to be Trivially Destructible whenever mathematically possible. Domain structs must strictly avoid acquiring external system resources (e.g., file handles, OS mutexes) that require complex destructor logic.
+**The Rule:** Data structures and intermediate states allocated via the injected `df0::arena::allocator` must be designed to be Trivially Destructible whenever mathematically possible. Domain structs must strictly avoid acquiring external system resources (e.g., file handles, OS mutexes) that require complex destructor logic.
 
 **The Why:** The `arena` achieves $O(1)$ memory release simply by resetting an internal bump pointer. However, C++ still executes destructors for objects (like `std::vector`) when they go out of scope. If the internal domain structs are cleanly designed and manage no external OS resources, the compiler's Dead Code Elimination (DCE) will completely optimize away the destruction loops, making the entire pipeline's teardown mathematically instantaneous.
 
@@ -489,7 +489,7 @@ Example from a header in `src/audit/`:
 
 ### [MEM-ALLOCATOR-FLEXIBILITY]
 
-**The Rule:** SDK components that require dynamic memory must be templated on an `Allocator` type (typically via the injected execution context) to allow end-user substitution. The SDK must provide a high-performance default (e.g., `docwire::arena::allocator`). Tuning parameters for this default arena (chunk size, bypass limits) must be configured via runtime constructor arguments, never template arguments.
+**The Rule:** SDK components that require dynamic memory must be templated on an `Allocator` type (typically via the injected execution context) to allow end-user substitution. The SDK must provide a high-performance default (e.g., `df0::arena::allocator`). Tuning parameters for this default arena (chunk size, bypass limits) must be configured via runtime constructor arguments, never template arguments.
 
 **The Why:** We must assume enterprise users (cloud-scale backend servers, embedded edge devices) have highly specific, proprietary memory managers. Providing a default `arena::allocator` offers a zero-configuration "Golden Path" for 99% of users, while strict template injection preserves standard C++ flexibility for the 1%. Keeping tuning parameters in the constructor prevents catastrophic type-system fragmentation.
 
@@ -501,7 +501,7 @@ Example from a header in `src/audit/`:
 
 * **Worker Methods:** If a class or free function only allocates memory to generate an output the executing method must require the allocator as a parameter.
 
-* **Propagation Mechanics:** Because our `docwire::arena::allocator` is stateful and lacks a default constructor, the allocator must be passed by const reference (e.g., `const Allocator& alloc`) and manually propagated down to all dynamic children.
+* **Propagation Mechanics:** Because our `df0::arena::allocator` is stateful and lacks a default constructor, the allocator must be passed by const reference (e.g., `const Allocator& alloc`) and manually propagated down to all dynamic children.
 
 **The Why:** By demanding the allocator exactly where the allocation happens, we guarantee pure Dependency Injection, making hidden heap allocations impossible and memory lifetimes instantly visible. Furthermore, passing by `const Allocator&` matches STL conventions and prevents expensive copies of stateful allocators, ensuring the exact same physical memory pointer cascades safely down the entire parsed tree.
 
@@ -525,7 +525,7 @@ Example from a header in `src/audit/`:
 
 ### [MEM-COROUTINE-RESTRICTION]
 
-**The Rule:** C++20 Coroutines (`co_await`, `co_yield`) are strictly banned in core data pipelines and parsers unless their `promise_type` is explicitly overridden to allocate the coroutine state frame from the `docwire::arena::allocator`.
+**The Rule:** C++20 Coroutines (`co_await`, `co_yield`) are strictly banned in core data pipelines and parsers unless their `promise_type` is explicitly overridden to allocate the coroutine state frame from the `df0::arena::allocator`.
 
 **The Why:** By default, the C++ standard mandates that coroutine suspension frames are dynamically allocated on the OS heap. While compilers attempt Heap Allocation Elision (HALO) to optimize this onto the stack, it frequently fails across translation boundaries or in complex loops. A failed HALO will silently trigger an OS heap allocation, violating our deterministic memory architecture and triggering the `[TEST-HEAP-TRIPWIRE]`. Explicit State Machine structs are preferred for parsing state.
 
@@ -533,7 +533,7 @@ Example from a header in `src/audit/`:
 
 ### [ERR-ROUTING-VALUE_BASED]
 
-**The Rule:** All fallible SDK algorithms must be templated on an injected **ErrorPolicy**, defaulting to the exception-free `docwire::expected<T, E = docwire::error_category>` policy. The error payload must be a Trivially Copyable type (e.g., an enum or bitmask) representing coarse-grained control-flow states such as `program_logic`, `uninterpretable_data`, and `network_failure`.
+**The Rule:** All fallible SDK algorithms must be templated on an injected **ErrorPolicy**, defaulting to the exception-free `df0::expected<T, E = df0::error_category>` policy. The error payload must be a Trivially Copyable type (e.g., an enum or bitmask) representing coarse-grained control-flow states such as `program_logic`, `uninterpretable_data`, and `network_failure`.
 
 The ErrorPolicy controls propagation:
 
@@ -585,7 +585,7 @@ SDK business logic must not directly use `throw`, `try`, or `catch`. It must pus
 
 ### [CONCURRENCY-PRIMITIVE-QUARANTINE]
 
-**The Rule:** Domain objects, processing pipelines, and custom allocators (like the `docwire::arena::allocator`) are strictly prohibited from containing OS synchronization primitives (`std::mutex`, `std::shared_mutex`, `std::condition_variable`). Synchronization state must live exclusively in the infrastructure/execution layer (e.g., Thread Pools, Task Schedulers).
+**The Rule:** Domain objects, processing pipelines, and custom allocators (like the `df0::arena::allocator`) are strictly prohibited from containing OS synchronization primitives (`std::mutex`, `std::shared_mutex`, `std::condition_variable`). Synchronization state must live exclusively in the infrastructure/execution layer (e.g., Thread Pools, Task Schedulers).
 
 **The Why:** We rely on the C++ compiler's Dead Code Elimination to achieve O(1) teardown (`[MEM-TEARDOWN-OPTIMIZER_DRIVEN]`). Embedding OS synchronization primitives (which require complex destructors) inside arena-allocated data structures forces the compiler to abandon O(1) elision and execute a slow O(N) teardown. Furthermore, embedding locks inside allocators or data structures destroys deterministic O(1) cache performance during active parsing. Infrastructure manages threads; data pipelines just execute logic.
 
@@ -621,7 +621,7 @@ SDK business logic must not directly use `throw`, `try`, or `catch`. It must pus
 
 ### [DEPENDENCY-CONTAINMENT-REALITY]
 
-**The Rule:** Hostile dependencies (those that throw exceptions or allocate globally) must be quarantined inside private `.cpp` translation units. The wrapper must translate exceptions into `docwire::expected` and manage internal states. We explicitly acknowledge that while this protects our API boundary, it does not mitigate the runtime performance penalty of stack unwinding or internal heap usage.
+**The Rule:** Hostile dependencies (those that throw exceptions or allocate globally) must be quarantined inside private `.cpp` translation units. The wrapper must translate exceptions into `df0::expected` and manage internal states. We explicitly acknowledge that while this protects our API boundary, it does not mitigate the runtime performance penalty of stack unwinding or internal heap usage.
 
 **The Why:** Containment stops architectural pollution from spreading to the user's codebase, but it cannot bend the laws of physics. We accept the localized performance degradation of the wrapped library as explicitly tracked technical debt.
 
@@ -633,7 +633,7 @@ SDK business logic must not directly use `throw`, `try`, or `catch`. It must pus
 
 * **Profile & Patch:** If profiling proves the library is a bottleneck, fork it and apply minimal compiler flags or allocator overrides (e.g., hooking into its internal memory callbacks).
 
-* **Reimplement:** Only rewrite the logic from scratch if profiling proves the library's internal architecture fundamentally blocks DocWire's peak throughput goals and users are actively utilizing the feature.
+* **Reimplement:** Only rewrite the logic from scratch if profiling proves the library's internal architecture fundamentally blocks DF-0's peak throughput goals and users are actively utilizing the feature.
 
 **The Why:** Reimplementing complex formats (like image decoding or compression) from scratch delays deliverables by months. This lifecycle guarantees we only spend engineering hours rewriting the exact components that actually limit system scale.
 

@@ -129,7 +129,7 @@ function(traverse_dependency_tree_from_port port_name use_default_features featu
 endfunction()
 
 function(traverse_whole_dependency_tree)
-	traverse_dependency_tree_from_port(docwire TRUE "")
+	traverse_dependency_tree_from_port(df0 TRUE "")
 endfunction()
 
 function(all_dependencies out_var)
@@ -146,26 +146,26 @@ function(port_required_by port_name out_var)
 	set(${out_var} ${traverse_dependency_tree_cached_${port_name}_is_required_by} PARENT_SCOPE)
 endfunction()
 
-function(docwire_modules_using_dependency port_name out_var)
-	if(NOT DEFINED docwire_modules_using_dependency_cached_result_${port_name})
-		message("Searching for docwire modules using dependency ${port_name}")
-		set(docwire_core_deps vcpkg-cmake wv2 boost-filesystem boost-dll boost-json magic-enum minizip zlib gtest)
-		set(docwire_html_deps lexbor libcharsetdetect)
-		set(docwire_pdf_deps pdfium leptonica)
-		set(docwire_ocr_deps tesseract tessdata-fast leptonica)
-		set(docwire_xml_deps libxml2)
-		set(docwire_mail_deps libpff libpff-unix libbfio mailio boost-date-time)
-		set(docwire_archives_deps libarchive)
-		set(docwire_plain_text_deps libcharsetdetect)
-		set(docwire_local_ai_deps boost-filesystem boost-system boost-json ctranslate2 sentencepiece flan-t5-large-ct2-int8)
-		set(docwire_fuzzy_match_deps rapidfuzz-cpp)
-		set(docwire_base64_deps aklomp-base64)
-		set(docwire_http_deps cpp-httplib)
-		set(docwire_content_type_deps libmagic)
-		set(docwire_openai_deps boost-json)
-		set(docwire_cli_deps boost-program-options)
+function(df0_modules_using_dependency port_name out_var)
+	if(NOT DEFINED df0_modules_using_dependency_cached_result_${port_name})
+		message("Searching for DF-0 modules using dependency ${port_name}")
+		set(df0_core_deps vcpkg-cmake wv2 boost-filesystem boost-dll boost-json magic-enum minizip zlib gtest)
+		set(df0_html_deps lexbor libcharsetdetect)
+		set(df0_pdf_deps pdfium leptonica)
+		set(df0_ocr_deps tesseract tessdata-fast leptonica)
+		set(df0_xml_deps libxml2)
+		set(df0_mail_deps libpff libpff-unix libbfio mailio boost-date-time)
+		set(df0_archives_deps libarchive)
+		set(df0_plain_text_deps libcharsetdetect)
+		set(df0_local_ai_deps boost-filesystem boost-system boost-json ctranslate2 sentencepiece flan-t5-large-ct2-int8)
+		set(df0_fuzzy_match_deps rapidfuzz-cpp)
+		set(df0_base64_deps aklomp-base64)
+		set(df0_http_deps cpp-httplib)
+		set(df0_content_type_deps libmagic)
+		set(df0_openai_deps boost-json)
+		set(df0_cli_deps boost-program-options)
 		set(modules "")
-		foreach(module docwire_core docwire_html docwire_pdf docwire_ocr docwire_xml docwire_mail docwire_plain_text docwire_local_ai docwire_fuzzy_match docwire_base64 docwire_http docwire_content_type docwire_openai docwire_cli)
+		foreach(module df0_core df0_html df0_pdf df0_ocr df0_xml df0_mail df0_plain_text df0_local_ai df0_fuzzy_match df0_base64 df0_http df0_content_type df0_openai df0_cli)
 			list(FIND ${module}_deps ${port_name} deps_index)
 			if(NOT ${deps_index} EQUAL -1)
 				list(APPEND modules ${module})
@@ -173,13 +173,13 @@ function(docwire_modules_using_dependency port_name out_var)
 		endforeach()
 		port_required_by(${port_name} required_by)
 		foreach(req ${required_by})
-			docwire_modules_using_dependency(${req} req_mods)
+			df0_modules_using_dependency(${req} req_mods)
 			list(APPEND modules ${req_mods})
 			list(REMOVE_DUPLICATES modules)
 		endforeach()
-		set(docwire_modules_using_dependency_cached_result_${port_name} ${modules} CACHE INTERNAL "")
+		set(df0_modules_using_dependency_cached_result_${port_name} ${modules} CACHE INTERNAL "")
 	endif()
-	set(${out_var} ${docwire_modules_using_dependency_cached_result_${port_name}} PARENT_SCOPE)
+	set(${out_var} ${df0_modules_using_dependency_cached_result_${port_name}} PARENT_SCOPE)
 endfunction()
 
 function(port_vcpkg_json port_name out_var)
@@ -356,7 +356,7 @@ function(write_port_info file_name port_name)
 	extract_version(${port_name} version)
 	extract_homepage(${port_name} homepage)
 	port_required_by(${port_name} required_by)
-	docwire_modules_using_dependency(${port_name} modules)
+	df0_modules_using_dependency(${port_name} modules)
 	extract_license_expression(${port_name} license_expr)
 	file(APPEND ${file_name}
 		"## ${port_name}\n\n"
@@ -364,7 +364,7 @@ function(write_port_info file_name port_name)
 		"Version: ${version}\n\n"
 		"Homepage: ${homepage}\n\n"
 		"Required by: ${required_by}\n\n"
-		"DocWire modules: ${modules}\n\n")
+		"DF-0 modules: ${modules}\n\n")
 	file(APPEND ${file_name} "### Short license summary\n\n")
 	file(APPEND ${file_name} "Full SPDX-License-Identifier: ${license_expr}\n\n")
 	simplify_spdx_license_expression(${license_expr} license_expr)
@@ -402,12 +402,12 @@ endfunction()
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
 	"# 3rdparty components used\n\n"
-	"The DocWire SDK incorporates code that falls under licenses separate from the GNU General Public License or the DocWire Commercial License;\n"
+	"The DF-0 incorporates code that falls under licenses separate from the GNU Affero General Public License or the DF-0 Commercial License;\n"
 	"instead, it operates under specific licenses granted by the original authors.\n\n"
-	"We express our gratitude for all contributions to the DocWire SDK and encourage users to acknowledge these contributions.\n"
+	"We express our gratitude for all contributions to the DF-0 and encourage users to acknowledge these contributions.\n"
 	"It is recommended that programs using the SDK include these acknowledgments, along with relevant license statements and disclaimers,\n"
 	"in an appendix to the documentation.\n\n"
-	"It's important to note that all third-party components integrated into the DocWire SDK are licensed under open-source licenses.\n"
+	"It's important to note that all third-party components integrated into the DF-0 are licensed under open-source licenses.\n"
 	"This allows their free usage, even in closed-source commercial software, without incurring licensing fees.\n\n"
 	"Compliance with and acknowledgment of the licenses associated with third-party components is required only for those specific components used in your application.\n\n")
 if (DEFINED ENV{READTHEDOCS})

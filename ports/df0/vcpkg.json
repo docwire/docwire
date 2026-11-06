@@ -1,8 +1,8 @@
 {
-	"name": "docwire",
+	"name": "df0",
 	"version-string": "latest",
 	"description": "Data processing library/SDK. Parses DOC, XLS, XLSB, PPT, RTF, ODF (ODT, ODS, ODP), OOXML (DOCX, XLSX, PPTX), iWork (PAGES, NUMBERS, KEYNOTE), ODFXML (FODP, FODS, FODT), PST, OST and more. Contains embedded OCR engine and CLI utility.",
-	"license": "AGPL-3.0-only OR LicenseRef-DocWire-Commercial",
+	"license": "AGPL-3.0-only OR LicenseRef-DF0-Commercial",
 	"features":
 	{
 		"asan":
@@ -54,7 +54,7 @@
 		{
 			"description": "Install IBM Granite 4.0 1B Q8_0 GGUF model",
 			"dependencies": [
-			{ "name": "docwire", "features": ["local-ai-llama"] },
+			{ "name": "df0", "features": ["local-ai-llama"] },
 			"granite-4-1b-q8-0"
 			]
 		}

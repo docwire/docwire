@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_ENFORCE_H
-#define DOCWIRE_ENFORCE_H
+#ifndef DF0_ENFORCE_H
+#define DF0_ENFORCE_H
 
 #include "safety_policy.h"
 #include "with_source_location.h"
@@ -18,14 +16,14 @@
 #include "error_tags.h"
 #include "debug_assert.h"
 
-namespace docwire
+namespace df0
 {
 
 /**
  * @brief Enforces a condition based on the safety policy.
  * 
  * If the condition is false:
- * - In `strict` mode: Throws a `docwire::error` exception with the `docwire::errors::program_logic` tag attached and the provided context.
+ * - In `strict` mode: Throws a `df0::error` exception with the `df0::errors::program_logic` tag attached and the provided context.
  * - In `relaxed` mode: Triggers a `debug_assert`, which terminates in debug builds but does nothing in release builds.
  * 
  * @tparam safety_level The safety policy to apply (default is strict).
@@ -50,4 +48,4 @@ void enforce(detail::with_source_location<bool> condition, Context&&... context)
 
 }
 
-#endif // DOCWIRE_ENFORCE_H
+#endif // DF0_ENFORCE_H

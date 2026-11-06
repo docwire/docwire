@@ -1,23 +1,21 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_AI_RUNNER_H
-#define DOCWIRE_AI_RUNNER_H
+#ifndef DF0_AI_RUNNER_H
+#define DF0_AI_RUNNER_H
 
 #include "ai_export.h"
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-namespace docwire::ai {
+namespace df0::ai {
 
 /**
  * @brief Abstract interface for AI model runners.
@@ -39,7 +37,7 @@ namespace docwire::ai {
  *   calls; prefer explicit lifetime management (guards) or documented external
  *   synchronization.
  */
-class DOCWIRE_AI_EXPORT ai_runner {
+class DF0_AI_EXPORT ai_runner {
   public:
     /**
      * @brief Virtual destructor.
@@ -69,6 +67,6 @@ class DOCWIRE_AI_EXPORT ai_runner {
     virtual void unload() = 0;
 };
 
-} // namespace docwire::ai
+} // namespace df0::ai
 
 #endif

@@ -1,23 +1,21 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_DETAIL_OFFICE_CRYPTO_H
-#define DOCWIRE_DETAIL_OFFICE_CRYPTO_H
+#ifndef DF0_DETAIL_OFFICE_CRYPTO_H
+#define DF0_DETAIL_OFFICE_CRYPTO_H
 
 #include "data_source.h"
 #include "serialization_data_source.h"
 #include "detail/thread_safe_ole_storage.h"
 #include <vector>
 
-namespace docwire
+namespace df0
 {
 
 inline bool is_encrypted_with_ms_offcrypto(const data_source& data)
@@ -38,6 +36,6 @@ inline bool is_encrypted_with_ms_offcrypto(const data_source& data)
 	return false;
 }
 
-} // namespace docwire
+} // namespace df0
 
-#endif // DOCWIRE_DETAIL_OFFICE_CRYPTO_H
+#endif // DF0_DETAIL_OFFICE_CRYPTO_H

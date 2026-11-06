@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_TRANSCRIBE_H
-#define DOCWIRE_TRANSCRIBE_H
+#ifndef DF0_TRANSCRIBE_H
+#define DF0_TRANSCRIBE_H
 
 #include "pipeline/element_base.hpp"
 #include "openai_export.h"
@@ -20,7 +18,7 @@
 #include <concepts>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
@@ -31,7 +29,7 @@ enum class transcribe_model
 };
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_OPENAI_EXPORT transcribe
+class DF0_OPENAI_EXPORT transcribe
     : public pipeline::transformer_element<transcribe<auditor_type>>,
       public with_pimpl<transcribe<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -59,7 +57,7 @@ public:
 
 	/**
 	* @brief Executes transform operation for given node data.
-	* @see docwire::message_ptr
+	* @see df0::message_ptr
 	* @param msg
 	* @param emit_message
 	*/
@@ -76,6 +74,6 @@ private:
 transcribe(const std::string&, transcribe_model) -> transcribe<audit::null_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0
 
-#endif //DOCWIRE_OPENAI_TRANSCRIBE_H
+#endif //DF0_OPENAI_TRANSCRIBE_H

@@ -1,9 +1,18 @@
-#include "docwire.h"
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
+
+#include "df0.hpp"
 #include <fstream>
 
 int main()
 {
-  using namespace docwire;
+  using namespace df0;
   std::stringstream out_stream;
   const std::string expected_output_1 = "Data processing refers to the activities performed on raw data to convert it into meaningful information. It involves collecting, organizing, analyzing, and interpreting data to extract useful insights and support decision-making. This can include tasks such as sorting, filtering, summarizing, and transforming data through various computational and statistical methods. Data processing is essential in various fields, including business, science, and technology, as it enables organizations to derive valuable knowledge from large datasets, make informed decisions, and improve overall efficiency.\n\n";
   const std::string expected_output_2 = "<http://www.silvercoders.com/>hyperlink test\n\n";

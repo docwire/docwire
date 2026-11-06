@@ -1,23 +1,21 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_DATA_STREAM_H
-#define DOCWIRE_DATA_STREAM_H
+#ifndef DF0_DATA_STREAM_H
+#define DF0_DATA_STREAM_H
 
 #include "core_export.h"
 #include <cstring>
 #include <stdio.h>
 #include <string>
 
-namespace docwire
+namespace df0
 {
 
 class data_stream
@@ -275,6 +273,6 @@ inline data_stream* buffer_stream::clone()
 	return new buffer_stream(m_buffer, m_size);
 }
 
-} // namespace docwire
+} // namespace df0
 
-#endif	//DOCWIRE_DATA_STREAM_H
+#endif	//DF0_DATA_STREAM_H

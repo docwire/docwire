@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include <boost/algorithm/string.hpp>
 #include <boost/config.hpp>
@@ -31,17 +29,17 @@
 #include "plain_text/allocate_columns_auto.h"
 #include "plain_text/render_table.h"
 
-using namespace docwire;
-using docwire::plain_text::output_width;
+using namespace df0;
+using df0::plain_text::output_width;
 
 namespace
 {
 template<typename... T>
-std::vector<docwire::message_ptr> make_message_vector(T&&... args)
+std::vector<df0::message_ptr> make_message_vector(T&&... args)
 {
-    std::vector<docwire::message_ptr> vec;
+    std::vector<df0::message_ptr> vec;
     vec.reserve(sizeof...(args));
-    (vec.push_back(std::make_shared<docwire::message<std::decay_t<T>>>(std::forward<T>(args))), ...);
+    (vec.push_back(std::make_shared<df0::message<std::decay_t<T>>>(std::forward<T>(args))), ...);
     return vec;
 }
 template<typename Exporter>
@@ -161,7 +159,7 @@ TEST(html_exporter, table)
         "<html>\n"
         "<head>\n"
         "<meta charset=\"utf-8\">\n"
-        "<title>DocWire</title>\n"
+        "<title>DF-0</title>\n"
         "</head>\n"
         "<body>\n"
         "<table>"
@@ -524,8 +522,8 @@ TEST(plain_text_exporter, custom_link_formatting)
     std::vector<message_ptr> msgs = make_message_vector
     (
         document::document{},
-        document::link{.url = "https://docwire.io"},
-        document::text{.text = "DocWire SDK home page"},
+        document::link{.url = "https://example.com"},
+        document::text{.text = "Example website"},
         document::close_link{},
         document::close_document{}
     );
@@ -533,12 +531,12 @@ TEST(plain_text_exporter, custom_link_formatting)
     {
         parsing_chain(std::move(msg));
     }
-    ASSERT_EQ(output_stream.str(), "(https://docwire.io)[DocWire SDK home page]\n");
+    ASSERT_EQ(output_stream.str(), "(https://example.com)[Example website]\n");
 }
 
 TEST(plain_text_layout, wrap)
 {
-    using namespace docwire::plain_text;
+    using namespace df0::plain_text;
 
     // empty input -> one empty line
     auto wrapped = wrap("", 5);
@@ -570,14 +568,14 @@ TEST(plain_text_layout, wrap)
 
 TEST(plain_text_layout, wrap_rejects_nonpositive_width)
 {
-    using namespace docwire::plain_text;
+    using namespace df0::plain_text;
     EXPECT_THROW(wrap("hello", 0), std::invalid_argument);
     EXPECT_THROW(wrap("hello", -1), std::invalid_argument);
 }
 
 TEST(plain_text_layout, wrap_lines)
 {
-    using namespace docwire::plain_text;
+    using namespace df0::plain_text;
 
     auto lines = wrap_lines(std::vector<std::string>{}, 10);
     ASSERT_EQ(lines.size(), 1);
@@ -594,7 +592,7 @@ TEST(plain_text_layout, wrap_lines)
 
 TEST(plain_text_layout, compute_column_width_ranges)
 {
-    using namespace docwire::plain_text;
+    using namespace df0::plain_text;
     std::vector<std::vector<std::vector<std::string>>> raw = {
         { {"Header 1"}, {"Header 2"}, {"Header 3"} },
         { {"Row 1 Cell 1"}, {"Row 1 Cell 2"}, {} }
@@ -612,7 +610,7 @@ TEST(plain_text_layout, compute_column_width_ranges)
 
 TEST(plain_text_layout, allocate_columns_proportional)
 {
-    using namespace docwire::plain_text;
+    using namespace df0::plain_text;
     std::vector<int> min_widths = {6, 6};
     std::vector<int> desired_widths = {13, 13};
     auto widths = allocate_columns_proportional(min_widths, desired_widths, 198);
@@ -624,14 +622,14 @@ TEST(plain_text_layout, allocate_columns_proportional)
 
 TEST(plain_text_layout, allocate_columns_proportional_empty)
 {
-    using namespace docwire::plain_text;
+    using namespace df0::plain_text;
     auto widths = allocate_columns_proportional({}, {}, 10);
     EXPECT_TRUE(widths.empty());
 }
 
 TEST(plain_text_layout, allocate_columns_overshoot)
 {
-    using namespace docwire::plain_text;
+    using namespace df0::plain_text;
     std::vector<int> min_widths = {5, 2000, 4, 4, 4};
     auto widths = allocate_columns_overshoot(min_widths, 72);
     ASSERT_EQ(widths.size(), 5);
@@ -643,7 +641,7 @@ TEST(plain_text_layout, allocate_columns_overshoot)
 
 TEST(plain_text_layout, fallback_columns)
 {
-    using namespace docwire::plain_text;
+    using namespace df0::plain_text;
     // Normal case: total_width >= num_cols
     auto widths = fallback_columns(3, 10);
     ASSERT_EQ(widths.size(), 3);
@@ -669,14 +667,14 @@ TEST(plain_text_layout, fallback_columns)
 
 TEST(plain_text_layout, fallback_columns_zero_or_negative)
 {
-    using namespace docwire::plain_text;
+    using namespace df0::plain_text;
     EXPECT_TRUE(fallback_columns(0, 10).empty());
     EXPECT_TRUE(fallback_columns(-1, 10).empty());
 }
 
 TEST(plain_text_layout, allocate_columns_auto)
 {
-    using namespace docwire::plain_text;
+    using namespace df0::plain_text;
     std::vector<int> min_widths;
     std::vector<int> desired_widths;
 
@@ -704,7 +702,7 @@ TEST(plain_text_layout, allocate_columns_auto)
 
 TEST(plain_text_layout, allocate_columns_auto_fallback_boundary)
 {
-    using namespace docwire::plain_text;
+    using namespace df0::plain_text;
     // total_width=20, 10 columns, gap=2 -> usable_width=2 < max_cols=10,
     // should use fallback and drop gap.
     std::vector<int> min_widths(10, 1);
@@ -718,7 +716,7 @@ TEST(plain_text_layout, allocate_columns_auto_fallback_boundary)
 
 TEST(plain_text_layout, render_table_skips_empty_rows)
 {
-    using namespace docwire::plain_text;
+    using namespace df0::plain_text;
     std::vector<std::vector<std::vector<std::string>>> cell_lines = {
         { {"Header 1"} },
         { {} },

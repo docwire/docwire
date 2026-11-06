@@ -18,9 +18,9 @@ find_package(Doxygen 1.18.0 REQUIRED)
 set(DOXYGEN_GENERATE_MAN NO)
 set(DOXYGEN_GENERATE_HTML YES)
 
-set(DOXYGEN_PROJECT_NAME "DocWire SDK")
-set(DOXYGEN_PROJECT_NUMBER ${DOCWIRE_VERSION})
-set(DOXYGEN_PROJECT_BRIEF "DocWire SDK: Deterministic, auditable, and secure data processing in C++20. On-premise by default. No compromises on computational speed.")
+set(DOXYGEN_PROJECT_NAME "DF-0")
+set(DOXYGEN_PROJECT_NUMBER ${DF0_VERSION})
+set(DOXYGEN_PROJECT_BRIEF "DF-0: Data processing Framework with Zero-overhead")
 set(DOXYGEN_STRIP_FROM_PATH ../src/)
 set(DOXYGEN_GENERATE_LATEX NO) # Added for consistency. It is set to NO by default by the CMake module.
 set(DOXYGEN_EXAMPLE_PATH ../tests/)
@@ -56,7 +56,7 @@ include(../tools/generate_3rdparty_components_doc.cmake)
 file(GLOB HEADERS "../src/*.h")
 
 file(READ ../README.md readme_contents)
-string(REPLACE "https://docwire.readthedocs.io/en/latest/" "" readme_contents "${readme_contents}")
+string(REPLACE "https://docs.df0.io/en/latest/" "" readme_contents "${readme_contents}")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/readme.md ${readme_contents})
 
 doxygen_add_docs(
@@ -66,7 +66,7 @@ doxygen_add_docs(
     ${CMAKE_CURRENT_BINARY_DIR}/coding_guidelines.md
     ${HEADERS}
     ${CMAKE_CURRENT_BINARY_DIR}/3rdparty_components.md
-    COMMENT "Generate html documentation of DocWire SDK"
+    COMMENT "Generate html documentation of DF-0"
     ALL
 )
 
@@ -76,6 +76,6 @@ configure_file(index.html ${CMAKE_BINARY_DIR}/doc/index.html COPYONLY)
 # Generate 'install' target
 # -----------------------------------------------------
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/docwire/doc)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/index.html DESTINATION share/docwire/doc)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ChangeLog.md DESTINATION share/docwire/doc)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/df0/doc)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/index.html DESTINATION share/df0/doc)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ChangeLog.md DESTINATION share/df0/doc)

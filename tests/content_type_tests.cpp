@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include "content_type.h"
 #include "content_type_by_file_extension.h"
@@ -32,7 +30,7 @@
 #include <utility>
 #include <vector>
 
-using namespace docwire;
+using namespace df0;
 
 TEST(content_type, by_file_extension)
 {
@@ -54,8 +52,8 @@ TEST(content_type, by_file_extension)
 
 TEST(content_type, to_extension)
 {
-    using namespace docwire::content_type::by_file_extension;
-    using docwire::mime_type;
+    using namespace df0::content_type::by_file_extension;
+    using df0::mime_type;
 
     // Test a common case where multiple extensions exist for one mime type.
     // The first one in the list should be chosen, which is .txt for text/plain.

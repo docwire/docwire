@@ -1,4 +1,6 @@
-DocWire SDK, Copyright (c) SILVERCODERS Ltd
+DF-0: Data processing Framework with Zero-overhead
+Copyright (c) DF-0 Team, project website https://github.com/df0/df0
+SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial
 
 This program is is double licensed:
 
@@ -16,7 +18,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 2.
-Please contact SILVERCODERS (http://silvercoders.com) for a commercial license for DocWire SDK.
+Please contact DF-0 Team for a commercial license for DF-0.
 
 Please keep in mind that any attempt to circumvent the terms of the GNU Affero General Public License by employing wrappers, pipelines,
 client/server protocols, etc. is illegal. You must purchase a commercial license if your program, which is distributed under a license

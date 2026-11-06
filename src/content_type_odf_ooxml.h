@@ -1,22 +1,20 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_CONTENT_TYPE_ODF_OOXML_H
-#define DOCWIRE_CONTENT_TYPE_ODF_OOXML_H
+#ifndef DF0_CONTENT_TYPE_ODF_OOXML_H
+#define DF0_CONTENT_TYPE_ODF_OOXML_H
 
 #include "pipeline/element_base.hpp"
 #include "content_type_export.h"
 #include "data_source.h"
 
-namespace docwire::content_type::odf_ooxml
+namespace df0::content_type::odf_ooxml
 {
 
 /**
@@ -32,7 +30,7 @@ namespace docwire::content_type::odf_ooxml
  *
  * @param data The data source to be analyzed.
  */
-DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
+DF0_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
 /**
  * @brief Detector chain element for ODF and OOXML formats.
@@ -53,6 +51,6 @@ public:
     }
 };
 
-} // namespace docwire::content_type::odf_ooxml
+} // namespace df0::content_type::odf_ooxml
 
-#endif // DOCWIRE_CONTENT_TYPE_ODF_OOXML_H
+#endif // DF0_CONTENT_TYPE_ODF_OOXML_H

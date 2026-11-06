@@ -1,15 +1,15 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
-#ifndef DOCWIRE_NAMED_H
-#define DOCWIRE_NAMED_H
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
+
+#ifndef DF0_NAMED_H
+#define DF0_NAMED_H
+
 #include <string_view>
 #include <utility>
 #include <tuple>
@@ -18,7 +18,7 @@
 /**
  * @brief Utilities for named parameters.
  */
-namespace docwire::named
+namespace df0::named
 {
     /**
      * @brief A named value wrapper.
@@ -112,29 +112,29 @@ namespace docwire::named
     }
 }
 
-namespace docwire
+namespace df0
 {
-    // Bring the _v literal into the docwire namespace for convenience.
-    using namespace docwire::named::literals;
+    // Bring the _v literal into the df0 namespace for convenience.
+    using namespace df0::named::literals;
 }
 
 namespace std
 {
     /**
-     * @brief Specialization of `std::tuple_size` for `docwire::named::value` to enable structured bindings.
+     * @brief Specialization of `std::tuple_size` for `df0::named::value` to enable structured bindings.
      */
     template <typename T>
-    struct tuple_size<docwire::named::value<T>> : std::integral_constant<size_t, 2> {};
+    struct tuple_size<df0::named::value<T>> : std::integral_constant<size_t, 2> {};
 
     /**
-     * @brief Specialization of `std::tuple_element` for `docwire::named::value` to enable structured bindings.
+     * @brief Specialization of `std::tuple_element` for `df0::named::value` to enable structured bindings.
      */
     template <size_t I, typename T>
-    struct tuple_element<I, docwire::named::value<T>>
+    struct tuple_element<I, df0::named::value<T>>
     {
-        static_assert(I < 2, "index out of range for docwire::named::value");
+        static_assert(I < 2, "index out of range for df0::named::value");
         using type = std::conditional_t<I == 0, std::string_view, T>;
     };
 }
 
-#endif // DOCWIRE_NAMED_H
+#endif // DF0_NAMED_H

@@ -1,27 +1,25 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_OPENAI_SUMMARIZE_H
-#define DOCWIRE_OPENAI_SUMMARIZE_H
+#ifndef DF0_OPENAI_SUMMARIZE_H
+#define DF0_OPENAI_SUMMARIZE_H
 
 #include "chat.h"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 namespace openai
 {
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_OPENAI_EXPORT summarize
+class DF0_OPENAI_EXPORT summarize
     : public pipeline::transformer_element<summarize<auditor_type>>,
       public chat<auditor_type>
 {
@@ -56,6 +54,6 @@ public:
 summarize(const std::string&, model, float, image_detail) -> summarize<audit::null_auditor>;
 
 } // namespace openai
-} // namespace docwire
+} // namespace df0
 
-#endif //DOCWIRE_OPENAI_SUMMARIZE_H
+#endif //DF0_OPENAI_SUMMARIZE_H

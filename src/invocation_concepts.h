@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_INVOCATION_CONCEPTS_H
-#define DOCWIRE_INVOCATION_CONCEPTS_H
+#ifndef DF0_INVOCATION_CONCEPTS_H
+#define DF0_INVOCATION_CONCEPTS_H
 
 #include "invocation_traits.h"
 
@@ -18,16 +16,16 @@
  * @brief Provides concepts for working with invocable objects and pushable containers.
  *
  * This namespace contains concepts that can be used to constrain template parameters to invocable objects and pushable containers.
- * The concepts are built on top of the traits classes provided in the @ref docwire::invocation_traits namespace.
+ * The concepts are built on top of the traits classes provided in the @ref df0::invocation_traits namespace.
  */
-namespace docwire::invocation_concepts
+namespace df0::invocation_concepts
 {
 
 /**
  * @brief Checks if a type is invocable.
  *
  * A type is considered invocable if it can be called like a function.
- * This concept uses the @ref docwire::invocation_traits::is_invocable_v trait to check for invocability.
+ * This concept uses the @ref df0::invocation_traits::is_invocable_v trait to check for invocability.
  *
  * @tparam T The type to check for invocability.
  */
@@ -58,6 +56,6 @@ concept pushable = requires(T&& t) {
   { t.push_back(std::declval<typename std::remove_reference_t<T>::value_type>()) };
 };
 
-} // namespace docwire::invocation_concepts
+} // namespace df0::invocation_concepts
 
-#endif //DOCWIRE_INVOCATION_CONCEPTS_H
+#endif //DF0_INVOCATION_CONCEPTS_H

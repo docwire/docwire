@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_PIPELINE_OUTPUT_ELEMENT_H
-#define DOCWIRE_PIPELINE_OUTPUT_ELEMENT_H
+#ifndef DF0_PIPELINE_OUTPUT_ELEMENT_H
+#define DF0_PIPELINE_OUTPUT_ELEMENT_H
 
 #include "element_base.hpp"
 #include <concepts>
@@ -25,7 +23,7 @@
 #include "../ref_or_owned.h"
 #include "../throw_if.h"
 
-namespace docwire::pipeline
+namespace df0::pipeline
 {
 
 template<class T>
@@ -66,7 +64,7 @@ inline continuation output_element::operator()(message_ptr msg, const message_ca
   {
     if (msg->is<std::exception_ptr>())
       return emit_message(std::move(msg));
-    DOCWIRE_THROW_IF(!msg->is<data_source>(),
+    DF0_THROW_IF(!msg->is<data_source>(),
       "Only data_source elements are supported", errors::program_logic{});
     std::shared_ptr<std::istream> in_stream = msg->get<data_source>().istream();
     std::get<ref_or_owned<std::ostream>>(m_out_obj).get() << in_stream->rdbuf();
@@ -92,6 +90,6 @@ auto operator|(ChainElement&& element, ref_or_owned<std::vector<message_ptr>> ve
   return std::forward<ChainElement>(element) | output_element(vector);
 }
 
-} // namespace docwire::pipeline
+} // namespace df0::pipeline
 
-#endif //DOCWIRE_PIPELINE_OUTPUT_ELEMENT_H
+#endif //DF0_PIPELINE_OUTPUT_ELEMENT_H

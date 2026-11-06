@@ -2,7 +2,7 @@ find_package(GTest CONFIG REQUIRED)
 find_package(Boost REQUIRED COMPONENTS json)
 
 # --- ALL TESTS IN ONE EXECUTABLE ---
-add_executable(docwire_tests
+add_executable(df0_tests
 	main.cpp
 	core_tests.cpp error_tests.cpp audit_tests.cpp serialization_tests.cpp
 	exporter_tests.cpp
@@ -27,40 +27,40 @@ add_executable(docwire_tests
 	pipeline_tests.cpp
 )
 
-target_link_libraries(docwire_tests PRIVATE
-	docwire_audit
-	docwire_core docwire_office_formats docwire_mail docwire_ocr docwire_archives
-	docwire_fuzzy_match docwire_base64 docwire_content_type docwire_http
-	docwire_openai docwire_xml
+target_link_libraries(df0_tests PRIVATE
+	df0_audit
+	df0_core df0_office_formats df0_mail df0_ocr df0_archives
+	df0_fuzzy_match df0_base64 df0_content_type df0_http
+	df0_openai df0_xml
 	GTest::gtest GTest::gmock Boost::json
 )
 
-if(TARGET docwire_local_ai)
-    target_link_libraries(docwire_tests PRIVATE docwire_local_ai)
+if(TARGET df0_local_ai)
+    target_link_libraries(df0_tests PRIVATE df0_local_ai)
 endif()
 
-target_compile_definitions(docwire_tests PRIVATE DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
-target_include_directories(docwire_tests PRIVATE ${Boost_INCLUDE_DIRS})
+target_compile_definitions(df0_tests PRIVATE DF0_ENABLE_SHORT_MACRO_NAMES)
+target_include_directories(df0_tests PRIVATE ${Boost_INCLUDE_DIRS})
 
-docwire_deploy_resources(TARGETS docwire_tests)
+df0_deploy_resources(TARGETS df0_tests)
 
 if(WIN32)
-	docwire_collect_transitive_dependencies(docwire_tests all_deps)
-	set(docwire_test_path_dirs "")
+	df0_collect_transitive_dependencies(df0_tests all_deps)
+	set(df0_test_path_dirs "")
 	foreach(dep IN LISTS all_deps)
 		get_target_property(target_type ${dep} TYPE)
 		if(target_type STREQUAL "SHARED_LIBRARY" OR target_type STREQUAL "MODULE_LIBRARY" OR target_type STREQUAL "EXECUTABLE" OR target_type STREQUAL "UNKNOWN_LIBRARY")
-			list(APPEND docwire_test_path_dirs "$<TARGET_FILE_DIR:${dep}>")
+			list(APPEND df0_test_path_dirs "$<TARGET_FILE_DIR:${dep}>")
 		endif()
 	endforeach()
-	list(REMOVE_DUPLICATES docwire_test_path_dirs)
+	list(REMOVE_DUPLICATES df0_test_path_dirs)
 
 	# Escape semicolons in the host PATH so they aren't interpreted as list separators by CMake
 	string(REPLACE ";" "\;" escaped_path "$ENV{PATH}")
 	# Join with escaped semicolons for the ENVIRONMENT property
-	list(JOIN docwire_test_path_dirs "\\;" joined_docwire_paths)
-	set(docwire_test_env_path "PATH=${joined_docwire_paths}\;${escaped_path}")
-	message(VERBOSE "docwire_test_env_path: ${docwire_test_env_path}")
+	list(JOIN df0_test_path_dirs "\\;" joined_df0_paths)
+	set(df0_test_env_path "PATH=${joined_df0_paths}\;${escaped_path}")
+	message(VERBOSE "df0_test_env_path: ${df0_test_env_path}")
 endif()
 
 file(GLOB test_files *)
@@ -71,10 +71,10 @@ include(GoogleTest)
 
 # Run all gtests within a single process. This is much faster, especially under Valgrind,
 # as it avoids the overhead of starting a new process for each of the 700+ tests.
-add_test(NAME docwire_tests COMMAND docwire_tests)
-set_property(TEST docwire_tests PROPERTY LABELS "is_api_test")
+add_test(NAME df0_tests COMMAND df0_tests)
+set_property(TEST df0_tests PROPERTY LABELS "is_api_test")
 if(WIN32)
-	set_property(TEST docwire_tests APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
+	set_property(TEST df0_tests APPEND PROPERTY ENVIRONMENT "${df0_test_env_path}")
 endif()
 
 # This script verifies that snippets in README.md are consistent with their corresponding full example source files
@@ -241,11 +241,11 @@ set(local_ai_llama_examples
 # Merge lists conditionally
 set(all_examples ${common_examples})
 
-if(TARGET docwire_ai_ct2)
+if(TARGET df0_ai_ct2)
     list(APPEND all_examples ${local_ai_ct2_examples})
 endif()
 
-if(TARGET docwire_ai_llama)
+if(TARGET df0_ai_llama)
 	list(APPEND all_examples ${local_ai_llama_examples})
 endif()
 
@@ -253,12 +253,12 @@ foreach(example IN LISTS all_examples)
 	message(STATUS "Adding test ${example}")
 	add_executable(${example} ${example}.cpp)
 	target_include_directories(${example} PUBLIC ../src)
-	target_link_libraries(${example} PRIVATE docwire_core docwire_office_formats docwire_mail
-		docwire_ocr docwire_archives docwire_ai docwire_openai docwire_fuzzy_match
-		docwire_content_type docwire_http)
+	target_link_libraries(${example} PRIVATE df0_core df0_office_formats df0_mail
+		df0_ocr df0_archives df0_ai df0_openai df0_fuzzy_match
+		df0_content_type df0_http)
 
-	if(TARGET docwire_local_ai)
-        target_link_libraries(${example} PRIVATE docwire_local_ai)
+	if(TARGET df0_local_ai)
+        target_link_libraries(${example} PRIVATE df0_local_ai)
     endif()
 
 	# Read the example file to check for OpenAI and local AI usage.
@@ -270,7 +270,7 @@ foreach(example IN LISTS all_examples)
 	if ((openai_pos EQUAL -1 AND openai_key_pos EQUAL -1) OR NOT "$ENV{OPENAI_API_KEY}" STREQUAL "")
 		add_test(NAME ${example} COMMAND ${example})
 		if(WIN32)
-			set_property(TEST ${example} APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
+			set_property(TEST ${example} APPEND PROPERTY ENVIRONMENT "${df0_test_env_path}")
 		endif()
 		string(FIND "${example_content}" "ai::local::" local_ai_pos)
 		if (NOT local_ai_pos EQUAL -1)
@@ -284,51 +284,51 @@ foreach(example IN LISTS all_examples)
 	endif()
 endforeach()
 
-if(TARGET docwire_ai_ct2)
+if(TARGET df0_ai_ct2)
 	message(STATUS "Adding CT2 integration test")
     add_executable(local_ai_ct2_integration local_ai_ct2_integration.cpp)
     target_include_directories(local_ai_ct2_integration PRIVATE ../src)
     target_link_libraries(local_ai_ct2_integration PRIVATE
-	    docwire_core
-	    docwire_office_formats
-	    docwire_mail
-	    docwire_ocr
-	    docwire_archives
-	    docwire_content_type
-	    docwire_ai
-	    docwire_local_ai
-	    docwire_openai
-	    docwire_fuzzy_match
-	    docwire_http
+	    df0_core
+	    df0_office_formats
+	    df0_mail
+	    df0_ocr
+	    df0_archives
+	    df0_content_type
+	    df0_ai
+	    df0_local_ai
+	    df0_openai
+	    df0_fuzzy_match
+	    df0_http
     )
     add_test(NAME local_ai_ct2_integration COMMAND local_ai_ct2_integration)
     set_property(TEST local_ai_ct2_integration PROPERTY LABELS "is_example;uses_model_runner")
     if(WIN32)
-        set_property(TEST local_ai_ct2_integration APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
+        set_property(TEST local_ai_ct2_integration APPEND PROPERTY ENVIRONMENT "${df0_test_env_path}")
     endif()
 endif()
 
-if(TARGET docwire_ai_llama)
+if(TARGET df0_ai_llama)
     message(STATUS "Adding Llama integration test")
     add_executable(local_ai_llama_integration local_ai_llama_integration.cpp)
     target_include_directories(local_ai_llama_integration PRIVATE ../src)
     target_link_libraries(local_ai_llama_integration PRIVATE
-        docwire_core
-	    docwire_office_formats
-	    docwire_mail
-	    docwire_ocr
-	    docwire_archives
-	    docwire_content_type
-	    docwire_ai
-	    docwire_local_ai
-	    docwire_openai
-	    docwire_fuzzy_match
-	    docwire_http
+        df0_core
+	    df0_office_formats
+	    df0_mail
+	    df0_ocr
+	    df0_archives
+	    df0_content_type
+	    df0_ai
+	    df0_local_ai
+	    df0_openai
+	    df0_fuzzy_match
+	    df0_http
     )
 
     add_test(NAME local_ai_llama_integration COMMAND local_ai_llama_integration)
     set_property(TEST local_ai_llama_integration PROPERTY LABELS "is_example;uses_model_runner")
     if(WIN32)
-        set_property(TEST local_ai_llama_integration APPEND PROPERTY ENVIRONMENT "${docwire_test_env_path}")
+        set_property(TEST local_ai_llama_integration APPEND PROPERTY ENVIRONMENT "${df0_test_env_path}")
     endif()
 endif()

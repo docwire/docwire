@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_AUDIT_SCOPE_H
-#define DOCWIRE_AUDIT_SCOPE_H
+#ifndef DF0_AUDIT_SCOPE_H
+#define DF0_AUDIT_SCOPE_H
 
 #include "auditor_ref.hpp"
 #include "scope_tags.hpp"
@@ -19,7 +17,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::audit
+namespace df0::audit
 {
 
 template<typename auditor_type, typename context_fn_type>
@@ -34,12 +32,12 @@ public:
           m_context_fn(std::forward<context_fn_type>(context_fn)),
           m_location(location)
     {
-        m_auditor.auditor().record(m_location, docwire::audit::scope_enter{}, m_context_fn);
+        m_auditor.auditor().record(m_location, df0::audit::scope_enter{}, m_context_fn);
     }
 
     ~scope()
     {
-        m_auditor.auditor().record(m_location, docwire::audit::scope_exit{}, m_context_fn);
+        m_auditor.auditor().record(m_location, df0::audit::scope_exit{}, m_context_fn);
     }
 
     scope(const scope&) = delete;
@@ -65,6 +63,6 @@ scope(auditor_ref<auditor_type>, context_fn_type&&) -> scope<auditor_type, conte
 template<auditor auditor_type, typename context_fn_type>
 scope(auditor_type&, context_fn_type&&) -> scope<auditor_type, context_fn_type>;
 
-} // namespace docwire::audit
+} // namespace df0::audit
 
 #endif

@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_AUDIT_STDERR_REDIRECTION_HPP
-#define DOCWIRE_AUDIT_STDERR_REDIRECTION_HPP
+#ifndef DF0_AUDIT_STDERR_REDIRECTION_HPP
+#define DF0_AUDIT_STDERR_REDIRECTION_HPP
 
 #include "audit_export.h"
 #include "auditor_ref.hpp"
@@ -28,7 +26,7 @@
 #include <tuple>
 #include <utility>
 
-namespace docwire::audit
+namespace df0::audit
 {
 
 /// @brief Tag for audit entries that contain content redirected from `stderr`.
@@ -43,10 +41,10 @@ namespace detail
 /**
  * @brief Returns the process-wide mutex protecting `std::cerr` redirection.
  *
- * The mutex lives in `docwire_audit` so it can be shared across DSO boundaries
+ * The mutex lives in `df0_audit` so it can be shared across DSO boundaries
  * without exposing global mutable state in the header.
  */
-DOCWIRE_AUDIT_EXPORT std::mutex& cerr_redirection_mutex();
+DF0_AUDIT_EXPORT std::mutex& cerr_redirection_mutex();
 
 } // namespace detail
 
@@ -59,7 +57,7 @@ DOCWIRE_AUDIT_EXPORT std::mutex& cerr_redirection_mutex();
  *
  * @tparam auditor_type The auditor type used to report the captured stderr.
  */
-template<typename auditor_type = ::docwire::audit::null_auditor>
+template<typename auditor_type = ::df0::audit::null_auditor>
 class stderr_redirection
 {
 public:
@@ -72,15 +70,15 @@ public:
 	 * @tparam stateless_auditor_type Injected auditor type selected by this overload.
 	 */
 	template<audit::stateless_auditor stateless_auditor_type = auditor_type>
-	stderr_redirection(const ::docwire::source_location& location = ::docwire::source_location::current())
+	stderr_redirection(const ::df0::source_location& location = ::df0::source_location::current())
 		: stderr_redirection(
-			::docwire::audit::auditor_ref<stateless_auditor_type>{},
+			::df0::audit::auditor_ref<stateless_auditor_type>{},
 			location)
 	{}
 
 	explicit stderr_redirection(
-		::docwire::audit::auditor_ref<auditor_type> auditor,
-		const ::docwire::source_location& location = ::docwire::source_location::current())
+		::df0::audit::auditor_ref<auditor_type> auditor,
+		const ::df0::source_location& location = ::df0::source_location::current())
 		: m_auditor{auditor}
 	{
 #ifndef NDEBUG
@@ -136,7 +134,7 @@ public:
 
 		if (!redirected_cerr.empty())
 		{
-			::docwire::audit::entry(
+			::df0::audit::entry(
 				m_auditor,
 				[&] {
 					return serialization::object{
@@ -152,7 +150,7 @@ public:
 private:
 	bool m_redirected{false};
 	std::streambuf* m_cerr_buf_backup{nullptr};
-	::docwire::audit::auditor_ref<auditor_type> m_auditor;
+	::df0::audit::auditor_ref<auditor_type> m_auditor;
 #ifndef NDEBUG
 	source_location m_location;
 	std::ostringstream m_string_stream;
@@ -160,6 +158,6 @@ private:
 	std::unique_lock<std::mutex> m_cerr_redirection_mutex_lock;
 };
 
-} // namespace docwire::audit
+} // namespace df0::audit
 
-#endif // DOCWIRE_AUDIT_STDERR_REDIRECTION_HPP
+#endif // DF0_AUDIT_STDERR_REDIRECTION_HPP

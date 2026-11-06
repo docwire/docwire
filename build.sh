@@ -20,14 +20,14 @@ if [[ -n "$BINARY_CACHE_GITHUB_TOKEN" ]]; then
 	echo "Configuring GitHub packages binary cache."
 	NUGET=`./vcpkg/vcpkg fetch nuget | tail -n1`
 	echo "Using NuGet: $NUGET"
-	BINARY_CACHE_GITHUB_OWNERS="${BINARY_CACHE_GITHUB_OWNERS:-docwire}"
+	BINARY_CACHE_GITHUB_OWNERS="${BINARY_CACHE_GITHUB_OWNERS:-df0}"
 	for OWNER in $BINARY_CACHE_GITHUB_OWNERS; do
 		SOURCE_URL="https://nuget.pkg.github.com/$OWNER/index.json"
 		echo "Using cache source: $SOURCE_URL"
 		SOURCE_NAME="${OWNER}_github"
 		mono "$NUGET" sources add -source "$SOURCE_URL" -storepasswordincleartext -name "$SOURCE_NAME" -username "$BINARY_CACHE_GITHUB_USER" -password "$BINARY_CACHE_GITHUB_TOKEN"
 		mono "$NUGET" setapikey "$BINARY_CACHE_GITHUB_TOKEN" -source "$SOURCE_URL"
-		if ! mono "$NUGET" search docwire -Source "$SOURCE_NAME" -NonInteractive > /tmp/nuget_search.log 2>&1; then
+		if ! mono "$NUGET" search df0 -Source "$SOURCE_NAME" -NonInteractive > /tmp/nuget_search.log 2>&1; then
 			echo "ERROR: NuGet source check failed for source '$SOURCE_NAME'." >&2
 			cat /tmp/nuget_search.log >&2
 			echo "Review the NuGet error above. If it includes CERTIFICATE_VERIFY_FAILED, ensure the Mono certificate store is synchronized with the system CA bundle." >&2
@@ -57,10 +57,10 @@ fi
 
 if [[ "$DEBUG" == "1" ]]; then
 	export CMAKE_MESSAGE_LOG_LEVEL="VERBOSE"
-	export DOCWIRE_TESTS_CONSOLE_LOGGING="1"
+	export DF0_TESTS_CONSOLE_LOGGING="1"
 	VCPKG_DEBUG_OPTION="--debug"
 fi
 
-date > ./ports/docwire/.disable_binary_cache
-SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS=SOURCE_PATH ./vcpkg/vcpkg --overlay-ports=./ports remove docwire:$VCPKG_TRIPLET
-SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS="SOURCE_PATH;CMAKE_MESSAGE_LOG_LEVEL;DOCWIRE_TESTS_CONSOLE_LOGGING;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS" ./vcpkg/vcpkg --overlay-ports=./ports install $VCPKG_DEBUG_OPTION docwire$FEATURES:$VCPKG_TRIPLET
+date > ./ports/df0/.disable_binary_cache
+SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS=SOURCE_PATH ./vcpkg/vcpkg --overlay-ports=./ports remove df0:$VCPKG_TRIPLET
+SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS="SOURCE_PATH;CMAKE_MESSAGE_LOG_LEVEL;DF0_TESTS_CONSOLE_LOGGING;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS" ./vcpkg/vcpkg --overlay-ports=./ports install $VCPKG_DEBUG_OPTION df0$FEATURES:$VCPKG_TRIPLET

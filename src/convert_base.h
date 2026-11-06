@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_CONVERT_BASE_H
-#define DOCWIRE_CONVERT_BASE_H
+#ifndef DF0_CONVERT_BASE_H
+#define DF0_CONVERT_BASE_H
 
 #include <optional>
 #include <tuple>
@@ -22,7 +20,7 @@
 /**
  * @brief Namespace for type conversion utilities.
  */
-namespace docwire::convert
+namespace df0::convert
 {
 
 /**
@@ -72,7 +70,7 @@ constexpr std::optional<To> try_to(const From& from) noexcept
  * @tparam To The target type.
  * @tparam From The source type.
  * @param from The value to convert.
- * @throws docwire::error with docwire::errors::uninterpretable_data tag attached if the conversion fails.
+ * @throws df0::error with df0::errors::uninterpretable_data tag attached if the conversion fails.
  */
 template<typename To, typename From>
 requires conversion_implementation_exists<To, From>
@@ -87,6 +85,6 @@ To to(const From& from)
 	return *result;
 }
 
-} // namespace docwire::convert
+} // namespace df0::convert
 
-#endif // DOCWIRE_CONVERT_BASE_H
+#endif // DF0_CONVERT_BASE_H

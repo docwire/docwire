@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_INVOCATION_TRAITS_H
-#define DOCWIRE_INVOCATION_TRAITS_H
+#ifndef DF0_INVOCATION_TRAITS_H
+#define DF0_INVOCATION_TRAITS_H
 
 #include <boost/callable_traits/args.hpp>
 #include <boost/callable_traits/return_type.hpp>
@@ -22,7 +20,7 @@
  * This namespace contains traits classes that can be used to extract information about callable objects,
  * such as their argument types and return types. It also provides a way to check if a type is invocable.
  */
-namespace docwire::invocation_traits
+namespace df0::invocation_traits
 {
 
 /**
@@ -210,6 +208,6 @@ struct is_invocable
 template <typename T>
 inline constexpr bool is_invocable_v = is_invocable<T>::value;
 
-} // namespace docwire::invocation_traits
+} // namespace df0::invocation_traits
 
-#endif //DOCWIRE_INVOCATION_TRAITS_H
+#endif //DF0_INVOCATION_TRAITS_H

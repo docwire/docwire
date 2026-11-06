@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_DATA_SOURCE_H
-#define DOCWIRE_DATA_SOURCE_H
+#ifndef DF0_DATA_SOURCE_H
+#define DF0_DATA_SOURCE_H
 
 #include "core_export.h"
 #include "file_extension.h"
@@ -35,7 +33,7 @@
 #include <variant>
 #include <vector>
 
-namespace docwire
+namespace df0
 {
 
 /// Wrapper for a shared pointer to a seekable input stream.
@@ -68,18 +66,18 @@ struct mime_type
 namespace std {
 template <>
 /**
- * @brief Specialization of std::hash for docwire::mime_type.
+ * @brief Specialization of std::hash for df0::mime_type.
  */
-struct hash<docwire::mime_type>
+struct hash<df0::mime_type>
 {
-	size_t operator()(const docwire::mime_type& mt) const
+	size_t operator()(const df0::mime_type& mt) const
 	{
 		return hash<std::string>{}(mt.v);
 	}
 };
 } // namespace std
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -232,7 +230,7 @@ class data_source
 		std::optional<std::filesystem::path> path() const;
 
 		/// Returns the file extension if available.
-		std::optional<docwire::file_extension> file_extension() const;
+		std::optional<df0::file_extension> file_extension() const;
 
 		/// Returns the unique identifier for this data source.
 		unique_identifier id() const
@@ -319,7 +317,7 @@ class data_source
 
 	private:
 		std::variant<std::filesystem::path, std::vector<std::byte>, std::span<const std::byte>, std::string, std::string_view, seekable_stream_ptr, unseekable_stream_ptr> m_source;
-		std::optional<docwire::file_extension> m_file_extension;
+		std::optional<df0::file_extension> m_file_extension;
 		mutable std::shared_ptr<memory_buffer> m_memory_cache;
 		mutable std::shared_ptr<std::istream> m_path_stream;
 		mutable std::optional<size_t> m_stream_size;
@@ -341,7 +339,7 @@ inline void read_unseekable_stream_into_memory(std::shared_ptr<memory_buffer> bu
 			break;
 		size_t to_read = limit ? (std::min)(chunk_size, limit->v - size) : chunk_size;
 		buffer->resize(size + to_read);
-		DOCWIRE_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read) && !stream->eof());
+		DF0_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read) && !stream->eof());
 		size_t bytes_read = stream->gcount();
 		size += bytes_read;
 		if (bytes_read < to_read)
@@ -356,16 +354,16 @@ inline void read_seekable_stream_into_memory(std::shared_ptr<memory_buffer> buff
 {
 	if (!stream_size)
 	{
-		DOCWIRE_THROW_IF (!stream->seekg(0, std::ios::end));
+		DF0_THROW_IF (!stream->seekg(0, std::ios::end));
 		stream_size = stream->tellg();
-		DOCWIRE_THROW_IF (!stream->seekg(0, std::ios::beg));
+		DF0_THROW_IF (!stream->seekg(0, std::ios::beg));
 	}
 	size_t size = buffer->size();
 	if ((limit ? (std::min)(*stream_size, limit->v) : *stream_size) <= size)
 		return;
 	size_t to_read = (limit ? (std::min)(*stream_size, limit->v) : *stream_size) - size;
 	buffer->resize(size + to_read);
-	DOCWIRE_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read));
+	DF0_THROW_IF (!stream->read(reinterpret_cast<char*>(buffer->data() + size), to_read));
 }
 
 } // namespace detail
@@ -479,12 +477,12 @@ inline std::optional<std::filesystem::path> data_source::path() const
 		return std::nullopt;
 }
 
-inline std::optional<docwire::file_extension> data_source::file_extension() const
+inline std::optional<df0::file_extension> data_source::file_extension() const
 {
 	if (m_file_extension)
 		return m_file_extension;
 	if (std::holds_alternative<std::filesystem::path>(m_source))
-		return docwire::file_extension{std::get<std::filesystem::path>(m_source)};
+		return df0::file_extension{std::get<std::filesystem::path>(m_source)};
 	else
 		return std::nullopt;
 }
@@ -492,14 +490,14 @@ inline std::optional<docwire::file_extension> data_source::file_extension() cons
 inline bool data_source::has_highest_confidence_mime_type_in(const std::vector<mime_type>& mts) const
 {
 	std::optional<mime_type> mt = highest_confidence_mime_type();
-	DOCWIRE_THROW_IF(!mt, "Data source has no mime type", errors::uninterpretable_data{});
+	DF0_THROW_IF(!mt, "Data source has no mime type", errors::uninterpretable_data{});
 	return std::find(mts.begin(), mts.end(), *mt) != mts.end();
 }
 
 inline void data_source::assert_not_encrypted() const
 {
 	bool is_encrypted = mime_type_confidence(mime_type { "application/encrypted" }) >= confidence::high;
-	DOCWIRE_THROW_IF(is_encrypted, errors::file_encrypted{});
+	DF0_THROW_IF(is_encrypted, errors::file_encrypted{});
 }
 
 inline void data_source::fill_memory_cache(std::optional<length_limit> limit) const
@@ -511,18 +509,18 @@ inline void data_source::fill_memory_cache(std::optional<length_limit> limit) co
 				if (!m_memory_cache)
 				{
 					m_path_stream = std::make_shared<std::ifstream>(source, std::ios::binary);
-					DOCWIRE_THROW_IF (!m_path_stream->good(), source);
+					DF0_THROW_IF (!m_path_stream->good(), source);
 					m_memory_cache = std::make_shared<memory_buffer>(0);
 				}
 				detail::read_seekable_stream_into_memory(m_memory_cache, m_stream_size, m_path_stream, limit);
 			},
 			[this](const std::span<const std::byte>& source)
 			{
-				throw DOCWIRE_MAKE_ERROR("std::span cannot be cached in memory", errors::program_logic{});
+				throw DF0_MAKE_ERROR("std::span cannot be cached in memory", errors::program_logic{});
 			},
 			[this](const std::string& source)
 			{
-				throw DOCWIRE_MAKE_ERROR("std::string cannot be cached in memory", errors::program_logic{});
+				throw DF0_MAKE_ERROR("std::string cannot be cached in memory", errors::program_logic{});
 			},
 			[this, limit](seekable_stream_ptr source)
 			{
@@ -541,6 +539,6 @@ inline void data_source::fill_memory_cache(std::optional<length_limit> limit) co
 	);
 }
 
-} // namespace docwire
+} // namespace df0
 
-#endif // DOCWIRE_DATA_SOURCE_H
+#endif // DF0_DATA_SOURCE_H

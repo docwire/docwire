@@ -1,17 +1,17 @@
-# DocWire SDK
+# DF-0
 
 **Deterministic, auditable, and secure data processing in C++20.**
 
 **On-premise by default. No compromises on computational speed.**
 
-<a name="what-is-docwire-sdk"></a>
-## What is DocWire SDK?
+<a name="what-is-df0"></a>
+## What is DF-0?
 
-DocWire SDK is an embeddable software development kit (SDK): a set of reusable C++ building blocks for building data-processing pipelines and infrastructure. It is not a single parser, ETL service, or cloud tool. You compile it into your own application and control how data flows through it.
+DF-0 is an embeddable software development kit (SDK): a set of reusable C++ building blocks for building data-processing pipelines and infrastructure. It is not a single parser, ETL service, or cloud tool. You compile it into your own application and control how data flows through it.
 
-DocWire treats data processing in the broad sense used by modern data-protection frameworks: collection, organisation, structuring, storage, adaptation, alteration, retrieval, consultation, use, disclosure by transmission, combination, restriction, erasure, and destruction. The goal is for DocWire components to cover the complete data-processing life cycle. Parts of that life cycle are available today; the rest are defined in the roadmap.
+DF-0 treats data processing in the broad sense used by modern data-protection frameworks: collection, organisation, structuring, storage, adaptation, alteration, retrieval, consultation, use, disclosure by transmission, combination, restriction, erasure, and destruction. The goal is for DF-0 components to cover the complete data-processing life cycle. Parts of that life cycle are available today; the rest are defined in the roadmap.
 
-### What you can do with DocWire today
+### What you can do with DF-0 today
 
 - **Ingest** files, email boxes, archives, HTTP request payloads, JSON, XML, CSV, and more.
 - **Normalize and structure** raw input using format detection, parsers, OCR, document element extraction, and structured-data handling.
@@ -24,16 +24,16 @@ DocWire treats data processing in the broad sense used by modern data-protection
 
 1. **It is an SDK.** Reusable, embeddable components—not a closed black-box product.
 2. **It is data infrastructure.** The same pipeline model is intended to cover documents, structured records, streams, sensors, and hardware effects.
-3. **It is mechanically sympathetic.** The design follows DocWire’s engineering principles of predictability, auditability, edge optimization, and graceful degradation.
+3. **It is mechanically sympathetic.** The design follows DF-0’s engineering principles of predictability, auditability, edge optimization, and graceful degradation.
 
-DocWire is production-tested today and is continuously extending its architectural core.
+DF-0 is production-tested today and is continuously extending its architectural core.
 
 ## Table of Contents
 
-- [What is DocWire SDK?](#what-is-docwire-sdk)
+- [What is DF-0?](#what-is-df0)
 - [Manifesto](#manifesto)
 - [Engineering Principles](#engineering-principles)
-- [Why DocWire and Key Benefits](#why-docwire-and-key-benefits)
+- [Why DF-0 and Key Benefits](#why-df0-and-key-benefits)
 - [Features](#features)
 - [Roadmap](#roadmap)
 - [API Concept](#api-concept)
@@ -45,13 +45,11 @@ DocWire is production-tested today and is continuously extending its architectur
 - [API documentation](#api-documentation)
 - [Console application](#console-application)
 - [License](#license)
-- [Authors](#authors)
-- [External links](#external-links)
 
 <a name="manifesto"></a>
 ## Manifesto
 
-DocWire exists because modern data processing often trades predictable execution, memory ownership, and auditability for framework convenience.
+DF-0 exists because modern data processing often trades predictable execution, memory ownership, and auditability for framework convenience.
 
 Most data processing stacks are built for the easy case: clean inputs, unlimited cloud resources, and a human in the loop when something breaks. The real world looks different:
 
@@ -60,7 +58,7 @@ Most data processing stacks are built for the easy case: clean inputs, unlimited
 - A **trading platform** cannot tolerate a garbage-collection pause at the wrong moment.
 - An **autonomous system** cannot crash because of an undocumented proprietary file format.
 
-These are not edge cases. They are the normal operating conditions of any system that runs in production, at scale, in a regulated or time-critical environment. DocWire SDK is built for exactly these conditions.
+These are not edge cases. They are the normal operating conditions of any system that runs in production, at scale, in a regulated or time-critical environment. DF-0 is built for exactly these conditions.
 
 We are building a toolkit with **mechanical sympathy** for the hardware it runs on:
 
@@ -69,19 +67,19 @@ We are building a toolkit with **mechanical sympathy** for the hardware it runs 
 - **Edge optimization** – zero-copy pipelines, allocator-aware memory.
 - **Graceful degradation** – malformed input returns errors, not crashes.
 
-[Read the full manifesto →](https://docwire.readthedocs.io/en/latest/manifesto.html)
-[Read the engineering rules →](https://docwire.readthedocs.io/en/latest/coding_guidelines.html)
+[Read the full manifesto →](https://docs.df0.io/en/latest/manifesto.html)
+[Read the engineering rules →](https://docs.df0.io/en/latest/coding_guidelines.html)
 
 <a name="engineering-principles"></a>
 ## Engineering Principles
 
 ### Predictability
 
-DocWire rejects hidden allocations, background work, and implicit global state. Pipelines are built around `operator|` and are designed for deterministic execution. Today, core pipeline flows use this model, and we are migrating all existing format handlers to the same rules.
+DF-0 rejects hidden allocations, background work, and implicit global state. Pipelines are built around `operator|` and are designed for deterministic execution. Today, core pipeline flows use this model, and we are migrating all existing format handlers to the same rules.
 
 ### Auditability
 
-DocWire gives developers control over diagnostics and audit output through a dependency-injected auditor. There is no hidden global logger and no mutable static sink. Components accept an `auditor_type`; the default `audit::null_auditor` is a zero-overhead no-op, while stateful output is created explicitly by composing filter, serializer, and sink objects.
+DF-0 gives developers control over diagnostics and audit output through a dependency-injected auditor. There is no hidden global logger and no mutable static sink. Components accept an `auditor_type`; the default `audit::null_auditor` is a zero-overhead no-op, while stateful output is created explicitly by composing filter, serializer, and sink objects.
 
 ### Edge Optimization
 
@@ -91,20 +89,20 @@ Non-owning views already avoid copies across many pipeline boundaries. The archi
 
 Untrusted input is normalized at SDK boundaries. Malformed or encrypted data is reported as an error without crashing the host process. Structural validation of incoming data is always required; it can never be disabled by optimized build modes.
 
-<a name="why-docwire-and-key-benefits"></a>
-## Why DocWire and Key Benefits
+<a name="why-df0-and-key-benefits"></a>
+## Why DF-0 and Key Benefits
 
-**For Developers:** DocWire provides a flexible C++ API to build data processing pipelines. It supports custom chain elements and integrates with existing codebases.
+**For Developers:** DF-0 provides a flexible C++ API to build data processing pipelines. It supports custom chain elements and integrates with existing codebases.
 
-**Optimized for NLP and AI Projects:** DocWire includes structured document element extraction, content filtering, and pluggable message transformations. Planned enhancements include tokenization/detokenization, output sanitization, and customizable data cleaning pipelines. It can prepare datasets for AI training, inference, and embedding workflows.
+**Optimized for NLP and AI Projects:** DF-0 includes structured document element extraction, content filtering, and pluggable message transformations. Planned enhancements include tokenization/detokenization, output sanitization, and customizable data cleaning pipelines. It can prepare datasets for AI training, inference, and embedding workflows.
 
-**Enhanced AI/NLP Integration:** DocWire supports structured document element extraction. Semantic partitioning and context-aware chunking are under active development. Extracted elements can be used to generate embeddings for semantic search, retrieval augmented generation (RAG), document clustering, and similarity analysis.
+**Enhanced AI/NLP Integration:** DF-0 supports structured document element extraction. Semantic partitioning and context-aware chunking are under active development. Extracted elements can be used to generate embeddings for semantic search, retrieval augmented generation (RAG), document clustering, and similarity analysis.
 
-**The layer your AI pipeline is missing:** Raw documents are rarely LLM-ready. Dirty PDFs, malformed email archives, legacy Office files, OCR scans, and mixed-format datasets must be normalized before they can be embedded, chunked, or summarized. DocWire ingests and structures that unstructured input into clean, typed document elements—on-premise by default, with an injected audit mechanism for deterministic observability—and optional cloud AI steps.
+**The layer your AI pipeline is missing:** Raw documents are rarely LLM-ready. Dirty PDFs, malformed email archives, legacy Office files, OCR scans, and mixed-format datasets must be normalized before they can be embedded, chunked, or summarized. DF-0 ingests and structures that unstructured input into clean, typed document elements—on-premise by default, with an injected audit mechanism for deterministic observability—and optional cloud AI steps.
 
-**For Businesses:** DocWire processes unstructured, semi-structured, and structured data from diverse sources including PDF, Office documents, email boxes, web services, JSON, XML, CSV, and more. It integrates cloud and local AI models as explicit processing steps. Direct database, ERP, message-queue, and industrial-stream connectors are planned extensions.
+**For Businesses:** DF-0 processes unstructured, semi-structured, and structured data from diverse sources including PDF, Office documents, email boxes, web services, JSON, XML, CSV, and more. It integrates cloud and local AI models as explicit processing steps. Direct database, ERP, message-queue, and industrial-stream connectors are planned extensions.
 
-**Input and Output Sources:** Email boxes, local filesystem, structured files such as JSON, XML, and CSV, and HTTP/web services can be connected to DocWire pipelines today. Cloud drives, ERP systems, relational databases, message queues, and industrial data streams are planned extensions. A pipeline can end in an exporter or in an effect, such as posting data, publishing a message, sending an email, or commanding hardware. Cloud AI providers are supported through explicit pipeline integrations, not hidden background calls.
+**Input and Output Sources:** Email boxes, local filesystem, structured files such as JSON, XML, and CSV, and HTTP/web services can be connected to DF-0 pipelines today. Cloud drives, ERP systems, relational databases, message queues, and industrial data streams are planned extensions. A pipeline can end in an exporter or in an effect, such as posting data, publishing a message, sending an email, or commanding hardware. Cloud AI providers are supported through explicit pipeline integrations, not hidden background calls.
 
 
 <a name="features"></a>
@@ -142,18 +140,18 @@ Features marked **(planned)** are on the public roadmap and may not be fully ava
     - CSV: Export data to Comma-Separated Values format.
     - XLSX and more are coming: Additional export formats for diverse use cases.
 
-- **Fast and accurate file format detection**: Leveraging file signatures, file name extensions, content analysis, and MIME type recognition, the DocWire SDK automatically detects the format of any file. This ensures that the appropriate parser is selected for processing. With its ability to identify various formats, DocWire SDK serves as a versatile tool for numerous file processing tasks. For more information, see the following functions and classes: [content_type::detector](https://docwire.readthedocs.io/en/latest/classdocwire_1_1content__type_1_1detector.html) and [content_type::detect](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1content__type.html#ab8fcce329158e74aed1c402df93fa4e4). [You can find example how to perform file type detection (with or without document processing) here](https://docwire.readthedocs.io/en/latest/file_type_determination_8cpp-example.html).
+- **Fast and accurate file format detection**: Leveraging file signatures, file name extensions, content analysis, and MIME type recognition, the DF-0 automatically detects the format of any file. This ensures that the appropriate parser is selected for processing. With its ability to identify various formats, DF-0 serves as a versatile tool for numerous file processing tasks. For more information, see the following functions and classes: [content_type::detector](https://docs.df0.io/en/latest/classdf0_1_1content__type_1_1detector.html) and [content_type::detect](https://docs.df0.io/en/latest/namespacedf0_1_1content__type.html#ab8fcce329158e74aed1c402df93fa4e4). [You can find example how to perform file type detection (with or without document processing) here](https://docs.df0.io/en/latest/file_type_determination_8cpp-example.html).
 Additionally, the SDK provides functionality to convert a MIME type back to a file extension via `content_type::by_file_extension::to_extension`, which can be useful in scenarios where a file name is needed.
 
-- **Modern C++20 XML Parsing**: A new, expressive, and safe API for parsing XML documents. It features a single-pass, forward-only reader and utilizes C++20 ranges and views for efficient and elegant node filtering and manipulation. [You can find example how to parse XML documents here](https://docwire.readthedocs.io/en/latest/xml_parsing_example_8cpp-example.html).
+- **Modern C++20 XML Parsing**: A new, expressive, and safe API for parsing XML documents. It features a single-pass, forward-only reader and utilizes C++20 ranges and views for efficient and elegant node filtering and manipulation. [You can find example how to parse XML documents here](https://docs.df0.io/en/latest/xml_parsing_example_8cpp-example.html).
 
-- **Configurable Safety Policies**: The SDK provides `strict` and `relaxed` safety policies for XML-based parsers, with other components to follow. In `strict` mode, developer contract violations throw typed exceptions through the current error framework. In `relaxed` mode, trusted developer checks are compiled out for zero overhead. Relaxed mode should be used only for trusted XML input; untrusted input should use strict validation. The SDK is evolving toward injectable error policies that will also support `docwire::expected`-based propagation.
+- **Configurable Safety Policies**: The SDK provides `strict` and `relaxed` safety policies for XML-based parsers, with other components to follow. In `strict` mode, developer contract violations throw typed exceptions through the current error framework. In `relaxed` mode, trusted developer checks are compiled out for zero overhead. Relaxed mode should be used only for trusted XML input; untrusted input should use strict validation. The SDK is evolving toward injectable error policies that will also support `df0::expected`-based propagation.
 
 - **Llama.cpp Integration** (optional `local-ai-llama` feature): The SDK integrates seamlessly with llama.cpp, allowing users to select a model of their choice and integrate it within the workflow using the `llama` wrapper provided in the SDK. This feature is optional and must be enabled at build time.
 
 - **Optional powerful IBM Granite 4.0 1B model** (via `local-ai-model-granite` feature): This compact yet capable language model can be installed as an optional feature for a wide range of natural language processing tasks, including text extraction, classification, question answering, summarization, and more. It runs via **llama.cpp** and is optimized for CPU inference on lower-end desktops without GPU acceleration.
 
-- **Flan-t5-large model** (via `local-ai-ct2` feature): This state-of-the-art transformer-based model is designed for a wide range of natural language processing tasks, including text translation, question answering, summarization, text generation, and more. It has been trained on a diverse range of data sources and can handle complex linguistic phenomena such as word order, syntax, and semantics. The model's versatility and ability to perform multiple tasks make it a valuable addition to the DocWire SDK, allowing developers to leverage its capabilities for a variety of NLP tasks within their applications. It is provided as part of the optional `local-ai-ct2` feature and is optimized to run with decent speed on lower-end desktops and mobile devices without GPU acceleration and consuming less than 1 GB of memory.
+- **Flan-t5-large model** (via `local-ai-ct2` feature): This state-of-the-art transformer-based model is designed for a wide range of natural language processing tasks, including text translation, question answering, summarization, text generation, and more. It has been trained on a diverse range of data sources and can handle complex linguistic phenomena such as word order, syntax, and semantics. The model's versatility and ability to perform multiple tasks make it a valuable addition to the DF-0, allowing developers to leverage its capabilities for a variety of NLP tasks within their applications. It is provided as part of the optional `local-ai-ct2` feature and is optimized to run with decent speed on lower-end desktops and mobile devices without GPU acceleration and consuming less than 1 GB of memory.
 
 - **Powerful multilingual-e5-small model** (via `local-ai-ct2` feature): This powerful and efficient multilingual text embedding model is designed to generate high-quality vector representations (embeddings) for text in over 100 languages. These embeddings are crucial for a wide range of NLP tasks, including semantic search, retrieval-augmented generation (RAG), text clustering, and similarity comparison. The `multilingual-e5-small` model is optimized for performance, making it suitable for applications where both speed and accuracy are important. It is included with the `local-ai-ct2` feature.
 
@@ -184,31 +182,31 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 - **OpenRouter support (planned)**: Expanding optional cloud LLM integrations to support a wide range of open and commercial models through OpenRouter. Cloud integrations remain opt-in and do not change the local-first core behavior.
 - **Incremental parsing** returning data as soon as they are available
 
-- **Structured Content Extraction**: DocWire SDK excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
+- **Structured Content Extraction**: DF-0 excels in transforming unstructured documents into structured content. By breaking down documents into discernible elements such as titles, paragraphs, list items, tables, and metadata, the SDK facilitates a granular level of control over the data extraction process. This feature is particularly beneficial for developers working with NLP and LLM models, as it allows them to selectively retain content that is most relevant to their application. For instance, when training a summarization model, users may opt to focus solely on narrative text, excluding headers, footers, and other non-essential elements. The SDK's structured content extraction capability ensures that the integrity and context of the document are preserved, enabling more accurate and meaningful interactions with AI-driven projects.
 
-- **Preprocessing for Embeddings (planned)**: DocWire will provide built-in cleaning and preprocessing utilities to ensure high-quality input for embedding models. Current extraction already yields structured text; advanced tokenization/detokenization and output sanitization are under development.
+- **Preprocessing for Embeddings (planned)**: DF-0 will provide built-in cleaning and preprocessing utilities to ensure high-quality input for embedding models. Current extraction already yields structured text; advanced tokenization/detokenization and output sanitization are under development.
 
 - **Document Element Extraction**: Extract specific document elements such as paragraphs, headings, and lists, which can then be used to generate embeddings for each element.
 
 - **Semantic Chunking (planned)**: Group related content using the SDK's chunking feature to create contextually rich embeddings that capture the nuances of the document's structure.
 
-- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docwire.readthedocs.io/en/latest/classdocwire_1_1openai_1_1embed.html), the local embedding steps `ai::local::ct2::passage::embedder` and `ai::local::ct2::query::embedder`, or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT. Generated embeddings can be used in various NLP tasks.
+- **Integration with Embedding Models**: Once the data is preprocessed and structured, you can use [openai::embed](https://docs.df0.io/en/latest/classdf0_1_1openai_1_1embed.html), the local embedding steps `ai::local::ct2::passage::embedder` and `ai::local::ct2::query::embedder`, or integrate with your choice of embedding models, such as word2vec, GloVe, or BERT. Generated embeddings can be used in various NLP tasks.
 
-- **Enhancing AI/NLP Pipelines**: Embeddings obtained from DocWire SDK can be used to enhance AI/NLP pipelines, enabling more accurate and context-aware applications such as document classification, sentiment analysis, and information retrieval.
+- **Enhancing AI/NLP Pipelines**: Embeddings obtained from DF-0 can be used to enhance AI/NLP pipelines, enabling more accurate and context-aware applications such as document classification, sentiment analysis, and information retrieval.
 
-- **Advanced Document Chunking (planned)**: DocWire SDK introduces sophisticated chunking capabilities, leveraging metadata and document elements to partition documents into smaller, semantically coherent parts. This feature is invaluable for applications such as Retrieval Augmented Generation (RAG), where the ability to process and retrieve information from specific document segments can significantly enhance the performance of AI models. By understanding the structure and semantics of each document, DocWire SDK can intelligently divide content into meaningful units, preserving the context and coherence necessary for high-quality AI interactions.
+- **Advanced Document Chunking (planned)**: DF-0 introduces sophisticated chunking capabilities, leveraging metadata and document elements to partition documents into smaller, semantically coherent parts. This feature is invaluable for applications such as Retrieval Augmented Generation (RAG), where the ability to process and retrieve information from specific document segments can significantly enhance the performance of AI models. By understanding the structure and semantics of each document, DF-0 can intelligently divide content into meaningful units, preserving the context and coherence necessary for high-quality AI interactions.
 
 - **Semantic Unit Coherence (planned)**: The SDK's chunking mechanism is designed to maintain the coherence of semantic units established during partitioning. This ensures that when a document is split into chunks, each piece retains its contextual integrity, making it suitable for use cases where understanding the flow and connection between segments is crucial, such as in conversational AI, document summarization, and topic extraction.
 
-- **NLP Model Training Data Preparation**: Prepare your training data with precision. DocWire SDK's structured content extraction is ideal for preparing datasets for NLP model training. By extracting only the relevant sections of text, you can create clean, focused datasets that lead to more effective and efficient model training.
+- **NLP Model Training Data Preparation**: Prepare your training data with precision. DF-0's structured content extraction is ideal for preparing datasets for NLP model training. By extracting only the relevant sections of text, you can create clean, focused datasets that lead to more effective and efficient model training.
 
-- **Data Sanitization for AI Safety (planned)**: Ensure the safety and integrity of your AI models. DocWire SDK's data sanitization capabilities help prevent the introduction of biased, sensitive, or inappropriate content into your models, safeguarding the quality and reliability of your AI applications.
+- **Data Sanitization for AI Safety (planned)**: Ensure the safety and integrity of your AI models. DF-0's data sanitization capabilities help prevent the introduction of biased, sensitive, or inappropriate content into your models, safeguarding the quality and reliability of your AI applications.
 
-- **Customizable Data Cleaning Pipelines (planned)**: Tailor your data cleaning process to fit the unique needs of your project. With DocWire SDK, you can build customizable pipelines that automate the cleaning, normalization, and transformation of your data, saving time and reducing the potential for human error.
+- **Customizable Data Cleaning Pipelines (planned)**: Tailor your data cleaning process to fit the unique needs of your project. With DF-0, you can build customizable pipelines that automate the cleaning, normalization, and transformation of your data, saving time and reducing the potential for human error.
 
-- **Seamless Integration with AI and NLP Libraries (in progress)**: DocWire SDK is designed to work hand-in-hand with popular AI and NLP libraries. Its flexible API allows for easy integration, enabling you to preprocess data within the same framework used for model training and inference.
+- **Seamless Integration with AI and NLP Libraries (in progress)**: DF-0 is designed to work hand-in-hand with popular AI and NLP libraries. Its flexible API allows for easy integration, enabling you to preprocess data within the same framework used for model training and inference.
 
-- **Enhanced AI and NLP Support (planned)**: DocWire SDK is not only a tool for data extraction but also a powerful ally for AI and NLP developers. With its advanced chunking and semantic unit preservation, the SDK is perfectly suited for preparing data for AI models that require a deep understanding of document structure and content. Whether you're working on machine learning, deep learning, or any other AI project, DocWire SDK provides the features you need to ensure your data is ready for the challenge.
+- **Enhanced AI and NLP Support (planned)**: DF-0 is not only a tool for data extraction but also a powerful ally for AI and NLP developers. With its advanced chunking and semantic unit preservation, the SDK is perfectly suited for preparing data for AI models that require a deep understanding of document structure and content. Whether you're working on machine learning, deep learning, or any other AI project, DF-0 provides the features you need to ensure your data is ready for the challenge.
 
 - **Cross-platform**: Linux, Windows, macOS, and more to come
 - **Can be embedded** in your application (SDK)
@@ -220,7 +218,7 @@ Additionally, the SDK provides functionality to convert a MIME type back to a fi
 <a name="roadmap"></a>
 ## Roadmap
 
-DocWire is actively evolving to meet future data processing demands.
+DF-0 is actively evolving to meet future data processing demands.
 
 ### Future Capabilities
 
@@ -282,11 +280,11 @@ DocWire is actively evolving to meet future data processing demands.
 <a name="api-concept"></a>
 ## API Concept
 
-DocWire is infrastructure, not a wrapper. You control the parsing chain, memory ownership, and data flow instead of depending on an opaque third-party service. The SDK processes data as a typed, lazy pipeline. You connect sources, parsers, transformers, and destinations using `operator|`. Building the pipeline does not execute it. Execution happens only when the pipeline is invoked.
+DF-0 is infrastructure, not a wrapper. You control the parsing chain, memory ownership, and data flow instead of depending on an opaque third-party service. The SDK processes data as a typed, lazy pipeline. You connect sources, parsers, transformers, and destinations using `operator|`. Building the pipeline does not execute it. Execution happens only when the pipeline is invoked.
 
 ### PipeChain and DataTree
 
-DocWire combines two views of data processing:
+DF-0 combines two views of data processing:
 
 - **PipeChain** is the pipeline assembly line. Parsers, transformers, and exporters are connected by `operator|` into a reusable, ordered processing path.
 - **DataTree** is the structured information flow inside that pipeline. Messages represent data elements such as files, folders, emails, attachments, documents, pages, paragraphs, tables, links, images, structured records, and metadata.
@@ -307,7 +305,7 @@ Callables can be attached directly as transformers. They are automatically wrapp
 
 ### Message-driven information flow
 
-Instead of copying whole data payloads between stages, DocWire emits lightweight message nodes that represent the structured data flow. These nodes provide typed access to the underlying data and can be filtered, transformed, or forwarded by later pipeline elements.
+Instead of copying whole data payloads between stages, DF-0 emits lightweight message nodes that represent the structured data flow. These nodes provide typed access to the underlying data and can be filtered, transformed, or forwarded by later pipeline elements.
 
 For nested formats, the messages form a tree-like flow:
 
@@ -360,13 +358,13 @@ Because these are pipeline steps, they can be combined with parsing, OCR, filter
 
 ### Memory and policy-based execution
 
-DocWire is designed around explicit, injectable execution policies. The SDK exposes pipeline components as objects, so they can be composed with allocator, audit, and error-policy selection as the architecture evolves.
+DF-0 is designed around explicit, injectable execution policies. The SDK exposes pipeline components as objects, so they can be composed with allocator, audit, and error-policy selection as the architecture evolves.
 
 This allows host applications to choose deterministic memory and error behavior without changing the parsing or export logic.
 
 ### Beyond Documents: A General Data-Processing Foundation
 
-DocWire’s pipeline model is intentionally generic. A source can be a file, socket, sensor stream, camera, audio stream, database cursor, message queue, or API. A destination can export data or perform an effect: publish a message, send an email, write a record, call a webhook, raise an alert, or command hardware.
+DF-0’s pipeline model is intentionally generic. A source can be a file, socket, sensor stream, camera, audio stream, database cursor, message queue, or API. A destination can export data or perform an effect: publish a message, send an email, write a record, call a webhook, raise an alert, or command hardware.
 
 The SDK is organized around a small number of long-lived component families:
 
@@ -383,7 +381,7 @@ A pipeline may end in a destination that exports data, or in an effect that acts
 <a name="examples"></a>
 ## Examples
 
-The examples below reflect the current public API. DocWire is introducing injectable error policies, allocator policies, and audit policies. Existing parsers, transformers, and exporters remain supported during this transition.
+The examples below reflect the current public API. DF-0 is introducing injectable error policies, allocator policies, and audit policies. Existing parsers, transformers, and exporters remain supported during this transition.
 
 Parse file in any format (Office, PDF, mail, etc) having its path, export to plain text and write to string stream:
 
@@ -391,7 +389,7 @@ Parse file in any format (Office, PDF, mail, etc) having its path, export to pla
 std::filesystem::path("data_processing_definition.doc") | content_type::detector{} | office_formats_parser{} | plain_text_exporter() | out_stream;
 ensure(out_stream.str()) == "Data processing refers to the activities performed on raw data...";
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/path_to_text_stream_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/path_to_text_stream_8cpp-example.html)
 
 Parse file in any format (Office, PDF, mail, etc) having stream, export to HTML and write to stream:
 
@@ -399,14 +397,14 @@ Parse file in any format (Office, PDF, mail, etc) having stream, export to HTML 
 std::ifstream("data_processing_definition.docx", std::ios_base::binary) | content_type::detector{} | office_formats_parser{} | html_exporter() | out_stream;
 ensure(out_stream.str()).contains("Data processing refers to the activities");
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/stream_to_html_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/stream_to_html_8cpp-example.html)
 
 Parse all files in any format inside archives (ZIP, TAR, RAR, GZ, BZ2, XZ) recursively:
 
 ```cpp
 std::filesystem::path("test.zip") | content_type::detector{} | archives_parser{} | office_formats_parser{} | ocr_parser{} | plain_text_exporter() | std::cout;
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/parse_archives_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/parse_archives_8cpp-example.html)
 
 The examples below use `ai::local::ct2::*`, which comes with a built-in default CT2 model and needs no configuration. Alternatively, `ai::local::llama::*` can be used for integrating `.gguf` models with `llama.cpp` and running various tasks on them. 
 A backend-agnostic `ai::local::*` family also exists (`task`, `translate`, `summarize`) that takes an explicit runner instead, so it can be pointed at either `ai::local::ct2::make_default_runner()` or the llama.cpp backend via `ai::local::llama::make_runner(...)`.
@@ -419,7 +417,7 @@ Classify file in any format (Office, PDF, mail, etc) to any categories using bui
 std::filesystem::path("...") | ... | ai::local::ct2::task("Classify to...: agreement, invoice, report...") | out_stream;
 ensure(out_stream.str()) == "report";
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/local_ai_ct2_classify_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/local_ai_ct2_classify_8cpp-example.html)
 
 Classify file in any format (Office, PDF, mail, etc) to any categories using OpenAI service:
 
@@ -427,7 +425,7 @@ Classify file in any format (Office, PDF, mail, etc) to any categories using Ope
 std::filesystem::path("...") | ... | openai::classify({ "agreement", "invoice", "report", ...}, ...) | out_stream;
 ensure(out_stream.str()) == "report\n";
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/openai_classify_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_classify_8cpp-example.html)
 
 Translate document in any format (Office, PDF, mail, etc) to other language using built-in local AI model:
 
@@ -435,7 +433,7 @@ Translate document in any format (Office, PDF, mail, etc) to other language usin
 std::filesystem::path("...") | ... | ai::local::ct2::translate("spanish") | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "La procesación de datos se refiere a las actividades...")) > 80;
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/local_ai_ct2_translate_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/local_ai_ct2_translate_8cpp-example.html)
 
 Translate document in any format (Office, PDF, mail, etc) to other language using OpenAI service:
 
@@ -443,7 +441,7 @@ Translate document in any format (Office, PDF, mail, etc) to other language usin
 std::filesystem::path("...") | ... | openai::translate_to("spanish", ...) | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "El procesamiento de datos se refiere a las actividades...")) > 80;
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/openai_translate_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_translate_8cpp-example.html)
 
 Detect sentiment of document in any format (Office, PDF, mail, etc) using built-in local AI model:
 
@@ -451,14 +449,14 @@ Detect sentiment of document in any format (Office, PDF, mail, etc) using built-
 std::filesystem::path("...") | ... | ai::local::ct2::detect_sentiment() | out_stream;
 ensure(out_stream.str()) == "positive";
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/local_ai_ct2_sentiment_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/local_ai_ct2_sentiment_8cpp-example.html)
 
 Detect sentiment of document in any format (Office, PDF, mail, etc) using OpenAI service:
 
 ```cpp
 std::filesystem::path("1.doc") | ... | openai::detect_sentiment(...) | std::cout;
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/openai_sentiment_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_sentiment_8cpp-example.html)
 
 Make a summary of document in any format (Office, PDF, mail, etc) using built-in local AI model:
 
@@ -466,14 +464,14 @@ Make a summary of document in any format (Office, PDF, mail, etc) using built-in
 std::filesystem::path("...") | ... | ai::local::ct2::summarize() | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "Data processing is the collection, organization, analysis, and interpretation of data.\n")) > 50
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/local_ai_ct2_summary_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/local_ai_ct2_summary_8cpp-example.html)
 
 Make a voice summary of document in any format (Office, PDF, mail, etc) in two steps: summarize using GPT model and convert the summary to speech using text to speech model. Result is saved to mp3 file:
 
 ```cpp
 std::filesystem::path("1.doc") | ... | openai::summarize(...) | openai::text_to_speech(...) | std::ofstream("summary.mp3");
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/openai_voice_summary_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_voice_summary_8cpp-example.html)
 
 Make a text summary of voice recording (e.g. mp3 file with meeting recording) in two steps: convert voice to text and summarize text using OpenAI services (with non-default model selected):
 
@@ -481,7 +479,7 @@ Make a text summary of voice recording (e.g. mp3 file with meeting recording) in
 std::filesystem::path("...mp3") | openai::transcribe(...) | ... | openai::summarize(..., openai::model::gpt_4o) | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "Data processing involves converting raw data...")) > 80;
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/openai_transcribe_summary_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_transcribe_summary_8cpp-example.html)
 
 Find phrases, objects and events with smart matching in documents in any format (Office, PDF, mail, etc) using built-in local AI model:
 
@@ -489,7 +487,7 @@ Find phrases, objects and events with smart matching in documents in any format 
 std::filesystem::path("...") | ... | ai::local::ct2::find("data conversion") | out_stream;
 ensure(out_stream.str()).is_one_of({ "Data processing refers to the activities performed on raw data to convert it into meaningful information."...
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/local_ai_ct2_find_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/local_ai_ct2_find_8cpp-example.html)
 
 Find phrases, objects and events in text or image using GPT model (with non-default model selected):
 
@@ -497,7 +495,7 @@ Find phrases, objects and events in text or image using GPT model (with non-defa
 std::filesystem::path("scene_1.png") | ... | openai::find("tree", ..., openai::model::gpt_4o) | out_stream;
 ensure(fuzzy_match::ratio(out_stream.str(), "2\n- A tree is located on the left side...")) > 80;
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/openai_find_image_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_find_image_8cpp-example.html)
 
 Create embedding for document in any format (Office, PDF, mail, etc) using OpenAI service:
 
@@ -507,21 +505,21 @@ std::filesystem::path("...") | ... | openai::embed(...) | out_msgs;
 ensure(out_msgs[0]->is<ai::embedding>()) == true;
 ensure(out_msgs[0]->get<ai::embedding>().values.size()) == 1536;
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/openai_embedding_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/openai_embedding_8cpp-example.html)
 
 Create embedding for document in any format (Office, PDF, mail, etc) using built-in local AI model, create embeddings for two queries and calculate similarity:
 
 ```cpp
 std::filesystem::path("data_processing_definition.doc") | ... | ai::local::ct2::passage::embedder{} | passage_msgs;
 ...
-docwire::data_source{std::string{"What is data processing?"}, ...} | ai::local::ct2::query::embedder{} | similar_query_msgs;
+df0::data_source{std::string{"What is data processing?"}, ...} | ai::local::ct2::query::embedder{} | similar_query_msgs;
 ...
 double sim = cosine_similarity(passage_embedding.values, similar_query_embedding.values);
 ...
 ensure(sim) > partial_sim;
 ensure(partial_sim) > dissim;
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/local_embedding_similarity_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/local_embedding_similarity_8cpp-example.html)
 
 Reusing single parsing chain to parse multiple input files:
 
@@ -530,11 +528,11 @@ auto chain = content_type::detector{} | office_formats_parser{} | plain_text_exp
 for (int i = 1; i < 3; ++i)
   std::ifstream(std::to_string(i) + ".docx", std::ios_base::binary) | chain; // set the input file as an input stream
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/reuse_chain_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/reuse_chain_8cpp-example.html)
 
 Handling errors and warnings:
 
-[You can find example of handling errors and warnings here](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
+[You can find example of handling errors and warnings here](https://docs.df0.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 Using transformer to filter out emails (eg. from Outlook PST mailbox) with subject containing "Hello":
 
@@ -550,7 +548,7 @@ std::filesystem::path("1.pst") | content_type::detector{} | mail_parser{} | offi
 ...
   | plain_text_exporter() | std::cout;
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/filter_emails_by_subject_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/filter_emails_by_subject_8cpp-example.html)
 
 ![Example flow](doc/images/example_flow.png)
 
@@ -569,7 +567,7 @@ std::filesystem::path("1.pst") | content_type::detector{} | mail_parser{} | offi
   plain_text_exporter() | // sets exporter to plain text
   std::cout;
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/join_transformers_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/join_transformers_8cpp-example.html)
 
 Parse XML using modern C++20 API:
 
@@ -604,23 +602,23 @@ for (auto product_node : products)
     ...
 }
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/xml_parsing_example_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/xml_parsing_example_8cpp-example.html)
 
 <a name="installation"></a>
 ## Installation
 
-### Why Choose vcpkg for DocWire SDK Installation?
-DocWire has embraced vcpkg as the preferred installation method for several compelling reasons:
+### Why Choose vcpkg for DF-0 Installation?
+DF-0 has embraced vcpkg as the preferred installation method for several compelling reasons:
 - **Microsoft's Trusted Solution:** vcpkg is a package manager developed and backed by Microsoft, ensuring reliability, ongoing support, and compatibility.
-- **Cross-Platform Simplicity:** With vcpkg, DocWire installation becomes a breeze on Windows, Linux, and macOS, providing a unified and hassle-free experience.
+- **Cross-Platform Simplicity:** With vcpkg, DF-0 installation becomes a breeze on Windows, Linux, and macOS, providing a unified and hassle-free experience.
 - **Effortless Dependency Management:** vcpkg takes care of resolving and installing dependencies automatically, reducing manual configuration efforts for developers.
 - **Swift Binary Package Deployment:** The availability of pre-built binary packages in vcpkg accelerates installation, minimizing the need for time-consuming manual compilation.
-- **Seamless CMake Integration:** vcpkg seamlessly integrates with the CMake build system, simplifying the incorporation of DocWire into CMake-based projects.
-By selecting vcpkg, DocWire ensures that programmers benefit from a trusted, user-friendly, and well-supported solution that guarantees a smooth installation experience.
+- **Seamless CMake Integration:** vcpkg seamlessly integrates with the CMake build system, simplifying the incorporation of DF-0 into CMake-based projects.
+By selecting vcpkg, DF-0 ensures that programmers benefit from a trusted, user-friendly, and well-supported solution that guarantees a smooth installation experience.
 
 ### Supported Platforms
 
-DocWire SDK is compatible with a variety of operating systems. Windows, Linux, and macOS are supported officially. The officially supported and CI-tested triplets are:
+DF-0 is compatible with a variety of operating systems. Windows, Linux, and macOS are supported officially. The officially supported and CI-tested triplets are:
 
 - `x64-linux-dynamic`
 - `x64-windows`
@@ -641,53 +639,53 @@ To ensure compatibility, our continuous integration tests run on the following G
 As the project evolves, we will continue to expand the list of officially supported platforms to ensure broad compatibility and meet the needs of our users.
 
 ### Required Tools
-DocWire SDK installation process is based on the VCPKG package manager so all requirements of vcpkg apply:
+DF-0 installation process is based on the VCPKG package manager so all requirements of vcpkg apply:
 - ["Prerequisites" on Microsoft Learn](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started#prerequisites)
 
-In addition to vcpkg requirements, DocWire SDK requires the following tools:
+In addition to vcpkg requirements, DF-0 requires the following tools:
 - GCC 11 or higher on Linux because of C++20 support
 - MSVC 2019 or higher on Windows because of C++20 support
 - Doxygen with Graphviz is required for documentation generation: ["Installation" on Doxygen website](https://www.doxygen.nl/manual/install.html)
 - Autoconf, Autogen, Automake, Autoconf-archive, Autopoint are required for building some of 3rdparty dependencies on Linux and MacOS (we are working to eliminate this)
 
 ### Installation via build.sh or build.ps1 scripts
-The current preferred installation method is via build.sh or build.ps1 scripts. The script will automatically install vcpkg, select correct triplet, add required overlays and install DocWire SDK with all dependencies from sources.
+The current preferred installation method is via build.sh or build.ps1 scripts. The script will automatically install vcpkg, select correct triplet, add required overlays and install DF-0 with all dependencies from sources.
 
-1. **Clone the DocWire Repository:**
-Clone the DocWire repository from GitHub if you haven't already:
+1. **Clone the DF-0 Repository:**
+Clone the DF-0 repository from GitHub if you haven't already:
 ```
-git clone https://github.com/docwire/docwire.git
+git clone https://github.com/df0/df0.git
 ```
 
 2. **Run build.sh (Linux, MacOS) or build.ps1 (Windows):**
 
 - Linux, MacOS:
 ```
-cd docwire
+cd df0
 ./build.sh
 ```
 
 - Windows:
 ```
-cd docwire
+cd df0
 ./build.ps1
 ```
 
-**Important note**: Sometimes installation of dependencies may fail due to various reasons. Some of those reasons are not related to the DocWire SDK itself, but rather to the vcpkg package manager or the specific dependencies being installed. For example, errors may occur while downloading sources or if there are unexpected changes in vcpkg ports or upstream websites. In such cases, it is recommended to [report the issue to the vcpkg](https://github.com/microsoft/vcpkg/issues) or just try running the installation script again. In rare cases, some dependencies may require manual intervention or additional configuration before they can be successfully installed. If you encounter any issues during the installation process, please don't hesitate to reach out to the [DocWire SDK community for support](https://github.com/docwire/docwire/issues).
+**Important note**: Sometimes installation of dependencies may fail due to various reasons. Some of those reasons are not related to the DF-0 itself, but rather to the vcpkg package manager or the specific dependencies being installed. For example, errors may occur while downloading sources or if there are unexpected changes in vcpkg ports or upstream websites. In such cases, it is recommended to [report the issue to the vcpkg](https://github.com/microsoft/vcpkg/issues) or just try running the installation script again. In rare cases, some dependencies may require manual intervention or additional configuration before they can be successfully installed. If you encounter any issues during the installation process, please don't hesitate to reach out to the [DF-0 community for support](https://github.com/df0/df0/issues).
 
 3. **Integrate with your project or development environment**
 
-You can use vcpkg toolchain file to integrate DocWire SDK with your CMake project:
+You can use vcpkg toolchain file to integrate DF-0 with your CMake project:
 ```bash
-cmake -DCMAKE_TOOLCHAIN_FILE=docwire/vcpkg/scripts/buildsystems/vcpkg.cmake ..
+cmake -DCMAKE_TOOLCHAIN_FILE=df0/vcpkg/scripts/buildsystems/vcpkg.cmake ..
 ```
 Please refer to ["vcpkg in CMake projects" on Microsoft Learn](https://learn.microsoft.com/en-us/vcpkg/users/buildsystems/cmake-integration) for more information on how to use vcpkg with your CMake project.
 
-[You can find example how to integrate DocWire SDK with your project using CMake here](https://docwire.readthedocs.io/en/latest/integration_example_8cmake-example.html).
+[You can find example how to integrate DF-0 with your project using CMake here](https://docs.df0.io/en/latest/integration_example_8cmake-example.html).
 
-To use DocWire SDK in your MSBuild projects (Visual Studio) run the following command:
+To use DF-0 in your MSBuild projects (Visual Studio) run the following command:
 ```
-cd docwire/vcpkg
+cd df0/vcpkg
 vcpkg integrate install
 ```
 This automatically adds installed packages to the following project properties: Include Directories, Link Directories, and Link Libraries. Additionally, it creates a post-build action that ensures that any required DLLs are copied into the build output folder.
@@ -699,7 +697,7 @@ Please refer to ["Manual Integration" on Microsoft Learn](https://learn.microsof
 
 ### Optional Features
 
-DocWire SDK can be built with additional features via vcpkg features. By default, the build scripts install the core SDK without optional features.
+DF-0 can be built with additional features via vcpkg features. By default, the build scripts install the core SDK without optional features.
 
 #### Available features
 
@@ -750,13 +748,13 @@ $env:FEATURES = "[local-ai-ct2,tests]"
 
 #### Enabling features with vcpkg manifest
 
-When DocWire is a dependency in another project, specify features in your `vcpkg.json` manifest:
+When DF-0 is a dependency in another project, specify features in your `vcpkg.json` manifest:
 
 ```json
 {
   "dependencies": [
     {
-      "name": "docwire",
+      "name": "df0",
       "features": ["local-ai-ct2"]
     }
   ]
@@ -765,10 +763,10 @@ When DocWire is a dependency in another project, specify features in your `vcpkg
 
 #### Enabling features with CMake directly
 
-If you build DocWire with CMake directly, using a vcpkg toolchain, you can set the corresponding CMake options:
+If you build DF-0 with CMake directly, using a vcpkg toolchain, you can set the corresponding CMake options:
 
 ```bash
-cmake -DDOCWIRE_CT2=ON -DDOCWIRE_LLAMA=ON ..
+cmake -DDF0_CT2=ON -DDF0_LLAMA=ON ..
 ```
 
 When building directly with CMake, responsibility for providing model resources and dependencies falls on the developer. The vcpkg feature pathway is recommended for easier setup.
@@ -783,21 +781,21 @@ Vcpkg builds libraries from source but offers an option to store the results of 
 
 Please refer ["What is binary caching?" on Microsoft Learn](https://learn.microsoft.com/en-us/vcpkg/consume/binary-caching-overview) for more information.
 
-We used to provide pre-built binaries but we realized that they are not reliable as they are tightly coupled with specific versions of compiler, operating system and other dependencies. To solve this issue, our continuous integration scripts use vcpkg binary caching with GitHub packages and we are working to offer this to other users. This will allow everyone to use the latest version of DocWire SDK without having to worry about compatibility.
+We used to provide pre-built binaries but we realized that they are not reliable as they are tightly coupled with specific versions of compiler, operating system and other dependencies. To solve this issue, our continuous integration scripts use vcpkg binary caching with GitHub packages and we are working to offer this to other users. This will allow everyone to use the latest version of DF-0 without having to worry about compatibility.
 
 ### Conclusion
-You're all set! You've successfully installed the DocWire library using vcpkg. You can now use the DocWire library in your code to perform text extraction and other data processing tasks. 
+You're all set! You've successfully installed the DF-0 library using vcpkg. You can now use the DF-0 library in your code to perform text extraction and other data processing tasks. 
 
 <a name="versioning"></a>
 ## Versioning
 
-DocWire SDK introduces a distinctive versioning methodology, deviating from conventional semantic versioning (SemVer) in favor of a dynamic, date-centric system. This chapter elucidates the versioning strategy of DocWire SDK, shedding light on its unique attributes and the benefits derived from this innovative approach.
+DF-0 introduces a distinctive versioning methodology, deviating from conventional semantic versioning (SemVer) in favor of a dynamic, date-centric system. This chapter elucidates the versioning strategy of DF-0, shedding light on its unique attributes and the benefits derived from this innovative approach.
 
 ### "Release Early, Release Often" Strategy with Date-Based Versioning
 
-DocWire SDK's versioning system adopts the "release early, release often" concept, ensuring that users benefit from the latest features and improvements as soon as they are available. This approach minimizes the usage of outdated code, ensuring that resources are directed towards delivering the best possible user experience.
+DF-0's versioning system adopts the "release early, release often" concept, ensuring that users benefit from the latest features and improvements as soon as they are available. This approach minimizes the usage of outdated code, ensuring that resources are directed towards delivering the best possible user experience.
 
-DocWire SDK's versioning system integrates release dates as a pivotal element. Each release is identified by a specific date, providing users with a transparent timeline of updates and enhancements. In most cases new release is created immediately after merging of new feature or important bug fix to the main branch.
+DF-0's versioning system integrates release dates as a pivotal element. Each release is identified by a specific date, providing users with a transparent timeline of updates and enhancements. In most cases new release is created immediately after merging of new feature or important bug fix to the main branch.
 
 The "release early, release often" strategy is based on the idea that releasing code frequently allows for faster resolution of issues, faster feedback from users, and enables developers to incorporate community feedback more effectively. By releasing code more frequently, users benefit from the latest changes and features, enabling them to stay up-to-date with the SDK's evolution.
 
@@ -819,15 +817,15 @@ The "release early, release often" concept accelerates issue resolution by provi
 
 #### User-Centric Updates
 
-DocWire SDK's versioning approach prioritizes user-centric updates, enabling developers to make informed decisions about when to integrate the latest changes into their projects. This flexibility empowers users to tailor their SDK experience based on specific features or fixes introduced in each release.
+DF-0's versioning approach prioritizes user-centric updates, enabling developers to make informed decisions about when to integrate the latest changes into their projects. This flexibility empowers users to tailor their SDK experience based on specific features or fixes introduced in each release.
 
 ### Codebase Strategy
 
-DocWire SDK maintains a single code branch, focusing on continuous improvement of the API and staying up-to-date with integrated external services. This strategy prioritizes innovation over stability, ensuring that resources are directed towards enhancing the SDK rather than maintaining outdated code branches. This approach aligns with industry best practices and optimizes the SDK for evolving technology landscapes.
+DF-0 maintains a single code branch, focusing on continuous improvement of the API and staying up-to-date with integrated external services. This strategy prioritizes innovation over stability, ensuring that resources are directed towards enhancing the SDK rather than maintaining outdated code branches. This approach aligns with industry best practices and optimizes the SDK for evolving technology landscapes.
 
 ### Long-Term Support (LTS) Agreements
 
-Recognizing the diverse needs of our users, DocWire SDK offers Long-Term Support (LTS) agreements, providing a tailored solution for those seeking sustained stability and reliability. The LTS agreement is designed to address specific concerns related to feature stability, API consistency, and platform support, offering peace of mind as projects progress and evolve.
+Recognizing the diverse needs of our users, DF-0 offers Long-Term Support (LTS) agreements, providing a tailored solution for those seeking sustained stability and reliability. The LTS agreement is designed to address specific concerns related to feature stability, API consistency, and platform support, offering peace of mind as projects progress and evolve.
 
 #### Customized Stability
 
@@ -843,11 +841,11 @@ The LTS agreement extends to platform support, offering a guarantee that the SDK
 
 #### Tailored Support Duration
 
-DocWire SDK understands that the definition of "long-term" can vary based on individual project timelines and needs. Therefore, LTS agreements come with the flexibility to negotiate the support duration, allowing customers to align the agreement with their project's lifecycle and development roadmap.
+DF-0 understands that the definition of "long-term" can vary based on individual project timelines and needs. Therefore, LTS agreements come with the flexibility to negotiate the support duration, allowing customers to align the agreement with their project's lifecycle and development roadmap.
 
 #### Ongoing Collaboration
 
-An LTS agreement signifies an ongoing collaboration between DocWire SDK and the customer. It establishes a dedicated channel for communication, ensuring that any concerns or specific requirements related to stability, API, or platform support are addressed promptly. This collaborative approach reflects our commitment to supporting our users throughout their development journey.
+An LTS agreement signifies an ongoing collaboration between DF-0 and the customer. It establishes a dedicated channel for communication, ensuring that any concerns or specific requirements related to stability, API, or platform support are addressed promptly. This collaborative approach reflects our commitment to supporting our users throughout their development journey.
 
 #### How to Enquire about LTS
 
@@ -856,39 +854,39 @@ To explore the possibilities of an LTS agreement or to discuss specific requirem
 <a name="audit-and-diagnostics"></a>
 ## Audit and Diagnostics
 
-DocWire uses a dependency-injected audit mechanism. There is no process-global logger, static sink, or logging macro.
+DF-0 uses a dependency-injected audit mechanism. There is no process-global logger, static sink, or logging macro.
 
-Parsers, exporters, and pipeline elements accept an `auditor_type` template parameter. The default is `docwire::audit::null_auditor`, a stateless no-op that adds no runtime cost.
+Parsers, exporters, and pipeline elements accept an `auditor_type` template parameter. The default is `df0::audit::null_auditor`, a stateless no-op that adds no runtime cost.
 
 For structured output, audit components are composed with `operator|`:
 
 ```cpp
 auto audit =
-    docwire::audit::filter::by_spec{"*"}
-    | docwire::audit::serialize::json{}
-    | docwire::audit::sink::ostream{std::clog};
+    df0::audit::filter::by_spec{"*"}
+    | df0::audit::serialize::json{}
+    | df0::audit::sink::ostream{std::clog};
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/audit_composition_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/audit_composition_8cpp-example.html)
 
 The resulting auditor can be injected into a pipeline:
 
 ```cpp
-docwire::audit::json_stream_auditor audit{
+df0::audit::json_stream_auditor audit{
     "*",
-    docwire::ref_or_owned<std::ostream>{std::clog}
+    df0::ref_or_owned<std::ostream>{std::clog}
 };
 
 std::filesystem::path{"data_processing_definition.doc"}
     | content_type::detector{}
     | office_formats_parser<
-          docwire::safety_policy::strict,
-          docwire::audit::json_stream_auditor>{
-          docwire::audit::auditor_ref<
-              docwire::audit::json_stream_auditor>{audit}}
+          df0::safety_policy::strict,
+          df0::audit::json_stream_auditor>{
+          df0::audit::auditor_ref<
+              df0::audit::json_stream_auditor>{audit}}
     | plain_text_exporter{}
     | std::cout;
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/audit_pipeline_injection_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/audit_pipeline_injection_8cpp-example.html)
 
 Audit records are emitted as structured JSON objects containing source location, timestamp, thread ID, and typed C++ context values.
 
@@ -902,41 +900,27 @@ The console application injects `audit::null_auditor` by default, so normal docu
 
 <a name="api-documentation"></a>
 ## API Documentation
-The API documentation for the DocWire SDK/library is readily available in various formats to assist you in seamlessly integrating it into your projects. Whether you prefer reading detailed doxygen-style documentation, accessing it through binary packages, or installing it via package managers like Vcpkg, we've got you covered.
+The API documentation for the DF-0/library is readily available in various formats to assist you in seamlessly integrating it into your projects. Whether you prefer reading detailed doxygen-style documentation, accessing it through binary packages, or installing it via package managers like Vcpkg, we've got you covered.
 
-### ReadTheDocs - Doxygen Format
-Our API documentation is hosted on [ReadTheDocs](https://docwire.readthedocs.io/), presented in the widely recognized and developer-friendly Doxygen format. This comprehensive documentation provides insights into the functionality, usage, and features of the DocWire library. You can explore it at your own pace to better understand how to harness the power of DocWire within your applications.
+### Online Doxygen Format
+Our API documentation is hosted on [docs.df0.io](https://docs.df0.io/), presented in the widely recognized and developer-friendly Doxygen format. This comprehensive documentation provides insights into the functionality, usage, and features of the DF-0 library. You can explore it at your own pace to better understand how to harness the power of DF-0 within your applications.
 
 ### GitHub Releases
 
-If you're looking for a more direct way to access the documentation, you can find it bundled with our binary packages in the [GitHub Releases](https://github.com/docwire/docwire/releases) section. Simply download the appropriate release for your platform, and you'll have the API documentation readily available alongside the library itself.
+If you're looking for a more direct way to access the documentation, you can find it bundled with our binary packages in the [GitHub Releases](https://github.com/df0/df0/releases) section. Simply download the appropriate release for your platform, and you'll have the API documentation readily available alongside the library itself.
 
 ### Vcpkg Package Manager
 
-For users who prefer to manage their dependencies using Vcpkg, we've made sure that our API documentation is included with the packages you install. This means you can access the same doxygen-style documentation seamlessly as you manage and integrate DocWire into your C++ projects.
+For users who prefer to manage their dependencies using Vcpkg, we've made sure that our API documentation is included with the packages you install. This means you can access the same doxygen-style documentation seamlessly as you manage and integrate DF-0 into your C++ projects.
 
 ### Consistency Across Platforms
 
-It's worth noting that no matter where you choose to access our API documentation—whether through ReadTheDocs, GitHub Releases, or Vcpkg—you will find the same comprehensive doxygen-style documentation. This ensures a consistent and reliable resource for understanding and utilizing the DocWire library.
-
-### Why ReadTheDocs?
-
-You might wonder why we chose ReadTheDocs to host our documentation. While some might see this as a marketing signal, we believe it's a practical choice for several reasons:
-
-1. **Accessibility**: ReadTheDocs provides an easy-to-navigate platform that ensures our documentation is readily accessible to all users.
-
-2. **Versioning**: We can maintain multiple versions of our documentation, ensuring that you can always find the information relevant to your specific library version.
-
-3. **Automation**: ReadTheDocs allows us to automate the documentation publishing process, ensuring that you have the latest documentation whenever you need it without delay.
-
-We believe in making the integration of DocWire as smooth as possible, and providing our documentation through ReadTheDocs is just one way we're committed to simplifying your experience.
-
-Explore the documentation, experiment with the library, and feel free to reach out if you have any questions or feedback. We're here to support you on your journey with DocWire.
+It's worth noting that no matter where you choose to access our API documentation—whether through website, GitHub Releases, or Vcpkg—you will find the same comprehensive doxygen-style documentation. This ensures a consistent and reliable resource for understanding and utilizing the DF-0 library.
 
 <a name="error-handling"></a>
 ## Error handling: robust and secure
 
-DocWire SDK provides a comprehensive error handling framework with typed context, embedded source location, and secure messages. The SDK is being extended with an injectable error-policy abstraction that will allow compile-time selection between deterministic return-value errors and exception-based propagation. Today, the SDK ships a mature exception-based framework with chainable context, categorized errors, and fine-grained diagnostic control.
+DF-0 provides a comprehensive error handling framework with typed context, embedded source location, and secure messages. The SDK is being extended with an injectable error-policy abstraction that will allow compile-time selection between deterministic return-value errors and exception-based propagation. Today, the SDK ships a mature exception-based framework with chainable context, categorized errors, and fine-grained diagnostic control.
 
 ### Current exception-based error handling
 
@@ -944,18 +928,18 @@ DocWire SDK provides a comprehensive error handling framework with typed context
 
 The framework supports building an exception chain, allowing the creation of a longer error context across different layers of the backtrace. This enables tracking of the sequence of events leading up to an error, making it easier to identify the root cause.
 
-In addition to `std::nested_exception`, `std::exception_ptr`, and `std::throw_with_nested`, the framework includes the [errors::make_nested](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#afde521434d8ac75136d13bc9d42c17a2) and [errors::make_nested_ptr](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#a7380b5b4f036f549a9c284261d9f31ac) function templates and the [errors::nested](https://docwire.readthedocs.io/en/latest/classdocwire_1_1errors_1_1nested.html) class template for easy error chaining like:  
-`docwire::errors::make_nested_ptr(error_object_1, error_object_2)`.
+In addition to `std::nested_exception`, `std::exception_ptr`, and `std::throw_with_nested`, the framework includes the [errors::make_nested](https://docs.df0.io/en/latest/namespacedf0_1_1errors.html#afde521434d8ac75136d13bc9d42c17a2) and [errors::make_nested_ptr](https://docs.df0.io/en/latest/namespacedf0_1_1errors.html#a7380b5b4f036f549a9c284261d9f31ac) function templates and the [errors::nested](https://docs.df0.io/en/latest/classdf0_1_1errors_1_1nested.html) class template for easy error chaining like:  
+`df0::errors::make_nested_ptr(error_object_1, error_object_2)`.
 
 #### Type-safe context values
 
 Context values are type-safe, meaning any type, including custom types, can be used in the context value. The context is built from original C++ types, and context objects can be accessed during the error handling process.
 
-The [errors::impl](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1impl.html) structure template provides an implementation of the context value mechanism, including support for custom types. It is recommended to use the `make_error` macro for construction:  
+The [errors::impl](https://docs.df0.io/en/latest/structdf0_1_1errors_1_1impl.html) structure template provides an implementation of the context value mechanism, including support for custom types. It is recommended to use the `make_error` macro for construction:  
 `throw make_error(custom_type_value);`.
 
-The [errors::base](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1base.html) structure provides a base class for all error types for easy error handling:  
-`catch (const docwire::errors::base& e) { ... }`.
+The [errors::base](https://docs.df0.io/en/latest/structdf0_1_1errors_1_1base.html) structure provides a base class for all error types for easy error handling:  
+`catch (const df0::errors::base& e) { ... }`.
 
 #### Embedded context variable names and triggering expressions
 
@@ -966,57 +950,57 @@ For example:
 
 #### Categorized and tagged errors
 
-Errors can be tagged with a custom type or multiple types like [errors::network_failure](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1network__failure.html) or [errors::file_encrypted](https://docwire.readthedocs.io/en/latest/structdocwire_1_1errors_1_1file__encrypted.html), providing fine-grained control over error handling. Decisions, such as retrying an operation or asking for a password, can be made based on the presence of a specific tag type in the error chain:
+Errors can be tagged with a custom type or multiple types like [errors::network_failure](https://docs.df0.io/en/latest/structdf0_1_1errors_1_1network__failure.html) or [errors::file_encrypted](https://docs.df0.io/en/latest/structdf0_1_1errors_1_1file__encrypted.html), providing fine-grained control over error handling. Decisions, such as retrying an operation or asking for a password, can be made based on the presence of a specific tag type in the error chain:
 
 ```cpp
-catch (const docwire::errors::base& e)
+catch (const df0::errors::base& e)
 {
-  if (docwire::errors::contains_type<docwire::errors::network_failure>(e))
+  if (df0::errors::contains_type<df0::errors::network_failure>(e))
     retry();
 }
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 #### Embedded source location
 
 Error objects include embedded source location information, providing essential context for debugging:
 
 ```cpp
-catch (const docwire::errors::base& e)
+catch (const df0::errors::base& e)
 {
   std::cerr << e.location.file_name() << ":" << e.location.line() << std::endl;
 }
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 #### Secure error messages
 
 To reduce the risk of security breaches, the framework avoids including sensitive information in formatted error messages. There is no implicit stringification of context values, and the standard `what()` method is secured to return only the exception type name. Sensitive information can be retrieved from the error object on-demand only:
 
 ```cpp
-std::cerr << docwire::errors::diagnostic_message(e) << std::endl;
+std::cerr << df0::errors::diagnostic_message(e) << std::endl;
 // or
-if (auto* impl_ptr = dynamic_cast<docwire::errors::impl<std::filesystem::path>*>(&e))
+if (auto* impl_ptr = dynamic_cast<df0::errors::impl<std::filesystem::path>*>(&e))
 {
   auto fn = impl_ptr->context;
   (void)fn; // avoid unused variable warning
 }
 ```
-[Full example](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
+[Full example](https://docs.df0.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 #### Easy context data retrieval
 
-Functions like [errors::diagnostic_message](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#a2446f6c81b6a5b338dea00cb29c40263) and [errors::contains_type](https://docwire.readthedocs.io/en/latest/namespacedocwire_1_1errors.html#aa2af5b81a3e66772f19506d8e8a93184) allow access to context data in a controlled manner, facilitating effective error handling.
+Functions like [errors::diagnostic_message](https://docs.df0.io/en/latest/namespacedf0_1_1errors.html#a2446f6c81b6a5b338dea00cb29c40263) and [errors::contains_type](https://docs.df0.io/en/latest/namespacedf0_1_1errors.html#aa2af5b81a3e66772f19506d8e8a93184) allow access to context data in a controlled manner, facilitating effective error handling.
 
-For example, `std::cerr << docwire::errors::diagnostic_message(e) << std::endl;` can give the following result:
+For example, `std::cerr << df0::errors::diagnostic_message(e) << std::endl;` can give the following result:
 
 ```
 Error: "triggering_condition: impl().ArchiveFile == NULL"
-in void docwire::zip_reader::open()
-at /home/adrian/Work/docwire/src/zip_reader.cpp:146
+in void df0::zip_reader::open()
+at /home/john/work/df0/src/zip_reader.cpp:146
 with context "Could not open zip archive"
-wrapping at: void docwire::pimpl_impl<docwire::xlsb_parser>::parse(const docwire::data_source&, const docwire::message_callbacks&)
-at /home/adrian/Work/docwire/src/xlsb_parser.cpp:700
+wrapping at: void df0::pimpl_impl<df0::xlsb_parser>::parse(const df0::data_source&, const df0::message_callbacks&)
+at /home/john/work/df0/src/xlsb_parser.cpp:700
 with context "file encrypted error tag"
 with context "Microsoft Office Document Cryptography"
 ```
@@ -1027,13 +1011,13 @@ Errors that are not fatal are represented with the same chained error objects, b
 
 This gives them similar security and debugging capabilities to fatal errors and allows easy conversion between fatal and non-fatal errors on different backtrace levels (it usually cannot be decided at the point of failure) without breaking the error chain.
 
-[You can find an example of handling non-fatal errors here](https://docwire.readthedocs.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
+[You can find an example of handling non-fatal errors here](https://docs.df0.io/en/latest/handling_errors_and_warnings_8cpp-example.html)
 
 ### Policy-based error handling (in progress)
 
-DocWire is evolving its error handling from a single exception-based model to an **injectable error-policy abstraction**. This will allow the same parsing/processing algorithm to be compiled with different error propagation strategies:
+DF-0 is evolving its error handling from a single exception-based model to an **injectable error-policy abstraction**. This will allow the same parsing/processing algorithm to be compiled with different error propagation strategies:
 
-- **Deterministic mode (`docwire::expected`)** – fallible operations return a value or a coarse-grained error category. Control flow is explicit and predictable, with no stack unwinding. This mode is suitable for real-time, embedded, and safety-critical workloads.
+- **Deterministic mode (`df0::expected`)** – fallible operations return a value or a coarse-grained error category. Control flow is explicit and predictable, with no stack unwinding. This mode is suitable for real-time, embedded, and safety-critical workloads.
 
 - **Exception mode** – fallible operations throw typed exceptions when an error occurs. Happy-path code avoids explicit checks, giving zero-cost success paths and familiar C++ exception ergonomics.
 
@@ -1045,24 +1029,24 @@ Core algorithms are being refactored to support both modes without duplicating b
 
 ### Modern C++ features used
 
-The current framework is designed to take advantage of modern C++ features, such as `std::nested_exception` and `std::exception_ptr`, to build an exception chain instead of adding multiple values to a single exception object. This approach ensures alignment with the latest C++ standards and best practices. Although the design shares similarities with Boost Exception, the DocWire SDK error handling framework is more closely aligned with modern C++ standards.
+The current framework is designed to take advantage of modern C++ features, such as `std::nested_exception` and `std::exception_ptr`, to build an exception chain instead of adding multiple values to a single exception object. This approach ensures alignment with the latest C++ standards and best practices. Although the design shares similarities with Boost Exception, the DF-0 error handling framework is more closely aligned with modern C++ standards.
 
 <a name="console-application"></a>
 ## Console Application (CLI)
 
-Welcome to the DocWire Console Application (DocWire CLI). This versatile command-line tool empowers users to extract content from documents, including text, document structure, and metadata. Whether you're processing documents for analysis, summarization, sentiment detection, or translation, DocWire CLI has you covered.
+Welcome to the DF-0 Console Application (DF-0 CLI). This versatile command-line tool empowers users to extract content from documents, including text, document structure, and metadata. Whether you're processing documents for analysis, summarization, sentiment detection, or translation, DF-0 CLI has you covered.
 
 ### Usage
 
 To run the program and process a document, use the following command:
 
 ```bash
-docwire [options] file_name
+df0 [options] file_name
 ```
 
 ### Basic options
 - **&ndash;&ndash;help**: Display the help message.
-- **&ndash;&ndash;version**: Display the DocWire version.
+- **&ndash;&ndash;version**: Display the DF-0 version.
 - **&ndash;&ndash;verbose**: Enable verbose audit output, equivalent to `--log-filter='*'`.
 - **&ndash;&ndash;input-file <file_path>**: Specify the path to the file to process (or you can provide filename without --input-file).
 - **&ndash;&ndash;output_type <type>** (default: plain_text): Set the output type. Available types include plain_text, html (preserving document structure), csv (structured data), and metadata (document information).
@@ -1106,7 +1090,7 @@ Unlock the power of OpenAI with the following options:
 
 - **&ndash;&ndash;ocr-confidence-threshold <value>**: Set the OCR confidence threshold (0-100). Words with confidence below this will be excluded. The CLI passes this value to the OCR parser when provided; if omitted, the parser’s own default behavior applies.
 
-- **&ndash;&ndash;local-processing <yes|no> (default: yes)**: Process documents locally, including local OCR. When set to `no`, local parsers are skipped; this is useful when combining DocWire with OpenAI processing for image/PDF data.
+- **&ndash;&ndash;local-processing <yes|no> (default: yes)**: Process documents locally, including local OCR. When set to `no`, local parsers are skipped; this is useful when combining DF-0 with OpenAI processing for image/PDF data.
 
 - **&ndash;&ndash;use-stream <yes|no> (default: no)**: Pass the file stream to the SDK instead of the filename.
 
@@ -1135,19 +1119,19 @@ Note: The "min_creation_time" and "max_creation_time" options currently work onl
 To extract structured content in HTML format, use the following command:
 
 ```bash
-docwire --output_type html document.docx
+df0 --output_type html document.docx
 ```
 
 #### Secure offline AI document analysis
 
 ```bash
-docwire --local-ai-prompt "What is the conclusion of the following document?" data_processing_definition.doc
+df0 --local-ai-prompt "What is the conclusion of the following document?" data_processing_definition.doc
 ```
 
 ### Secure offline AI embedding generation
 
 ```bash
-docwire --local-ai-embed passage data_processing_definition.doc
+df0 --local-ai-embed passage data_processing_definition.doc
 ```
 
 #### Leveraging OpenAI for Intelligent Document Analysis
@@ -1155,7 +1139,7 @@ docwire --local-ai-embed passage data_processing_definition.doc
 Harness the power of OpenAI to analyze and extract valuable insights from your document. For example, initiate a chat prompt to interact with the document's content:
 
 ```bash
-docwire --openai-chat "What are the key points in the document provided?" document.docx
+df0 --openai-chat "What are the key points in the document provided?" document.docx
 ```
 
 #### Sentiment Analysis for Document Understanding
@@ -1163,7 +1147,7 @@ docwire --openai-chat "What are the key points in the document provided?" docume
 Gain a deeper understanding of the document's sentiment using OpenAI. Detect the sentiment of the exported data with the following command:
 
 ```bash
-docwire --openai-detect-sentiment document.docx
+df0 --openai-detect-sentiment document.docx
 ```
 
 #### Dynamic Language Translation for Multilingual Documents
@@ -1171,7 +1155,7 @@ docwire --openai-detect-sentiment document.docx
 Translate your document into another language using OpenAI. Specify the target language with the following command:
 
 ```bash
-docwire --openai-translate-to spanish document.docx
+df0 --openai-translate-to spanish document.docx
 ```
 
 #### Summarization and text to speech conversion
@@ -1179,7 +1163,7 @@ docwire --openai-translate-to spanish document.docx
 Summarize your document using GPT model, convert summary to audio using TTS model and read it loud:
 
 ```bash
-docwire document.doc --openai-summarize --openai-text-to-speech | ffplay -nodisp -autoexit -
+df0 document.doc --openai-summarize --openai-text-to-speech | ffplay -nodisp -autoexit -
 ```
 
 #### Searching for objects or events in image or photo
@@ -1187,9 +1171,9 @@ docwire document.doc --openai-summarize --openai-text-to-speech | ffplay -nodisp
 Find objects or events in image using GPT model:
 
 ```bash
-docwire --openai-find car --local-processing=off image.jpg
-docwire --openai-find person --local-processing=off image.jpg
-docwire --openai-find running --local-processing=off image.jpg
+df0 --openai-find car --local-processing=off image.jpg
+df0 --openai-find person --local-processing=off image.jpg
+df0 --openai-find running --local-processing=off image.jpg
 ```
 
 #### Embeddings generation for advanced AI applications
@@ -1197,10 +1181,10 @@ docwire --openai-find running --local-processing=off image.jpg
 Generate embedding of document using OpenAI service for advanced AI applications like Retrieval Augmented Generation (RAG), semantic search, and document clustering.
 
 ```bash
-docwire --openai-embed data_processing_definition.doc
+df0 --openai-embed data_processing_definition.doc
 ```
 
-Happy Document Processing with DocWire CLI!
+Happy Document Processing with DF-0 CLI!
 
 <a name="license"></a>
 ## License
@@ -1210,9 +1194,9 @@ Product is double licensed:
 - It can be used in open source projects under the terms of the GNU Affero General Public License, version 3
 - It can be used in commercial projects under the terms of commercial license agreement
 
-Please contact SILVERCODERS (http://silvercoders.com) for a commercial license for DocWire SDK.
+Please contact DF-0 Team for a commercial license for DF-0.
 
-In addition DocWire SDK incorporates code that falls under licenses separate from the GNU Affero General Public License or the DocWire Commercial License;
+In addition DF-0 incorporates code that falls under licenses separate from the GNU Affero General Public License or the DF-0 Commercial License;
 instead, it operates under specific opensource licenses granted by the original authors.
 Details are described in "3rdparty components used" documentation chapter.
 
@@ -1220,17 +1204,3 @@ Please keep in mind that any attempt to circumvent the terms of the GNU Affero G
 client/server protocols, etc. is illegal. You must purchase a commercial license if your program, which is distributed under a license
 other than the GNU Affero General Public License version 3, directly or indirectly calls any portion of this code.
 Simply stop using the product if you disagree with this viewpoint.
-
-<a name="authors"></a>
-## Authors
-
-- [Silvercoders Ltd](https://silvercoders.com)
-- [DocWire LLC](https://docwire.io)
-
-<a name="external-links"></a>
-## External links
-
-- [Project homepage - DocWire](https://docwire.io)
-- [SourceForge project page](https://sourceforge.net/projects/doctotext)
-- [LinkedIn page](https://www.linkedin.com/company/docwire-it-services-consulting)
-- [Project homepage - Silvercoders](https://silvercoders.com/en/products/doctotext)

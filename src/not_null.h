@@ -1,23 +1,21 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_NOT_NULL_H
-#define DOCWIRE_NOT_NULL_H
+#ifndef DF0_NOT_NULL_H
+#define DF0_NOT_NULL_H
 
 #include "safety_policy.h"
 #include "enforce.h"
 #include <utility>
 #include <type_traits>
 
-namespace docwire
+namespace df0
 {
 
 /// A tag to indicate that a pointer is guaranteed to be non-null, bypassing the runtime check in not_null's constructor.
@@ -104,6 +102,6 @@ template <typename Ptr>
     return not_null<std::remove_cvref_t<Ptr>>(std::forward<Ptr>(ptr), guaranteed);
 }
 
-} // namespace docwire
+} // namespace df0
 
-#endif // DOCWIRE_NOT_NULL_H
+#endif // DF0_NOT_NULL_H

@@ -1,21 +1,19 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_ERROR_TAGS_H
-#define DOCWIRE_ERROR_TAGS_H
+#ifndef DF0_ERROR_TAGS_H
+#define DF0_ERROR_TAGS_H
 
 #include "core_export.h"
 #include <string_view>
 
-namespace docwire::errors
+namespace df0::errors
 {
 
 /**
@@ -135,6 +133,6 @@ struct file_encrypted
 	static constexpr std::string_view string() { return "file encrypted error tag"; }
 };
 
-} // namespace docwire::errors
+} // namespace df0::errors
 
 #endif

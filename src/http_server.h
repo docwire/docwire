@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_HTTP_SERVER_H
-#define DOCWIRE_HTTP_SERVER_H
+#ifndef DF0_HTTP_SERVER_H
+#define DF0_HTTP_SERVER_H
 
 #include <concepts>
 
@@ -37,7 +35,7 @@
 #include <variant>
 #include <vector>
 
-namespace docwire::http
+namespace df0::http
 {
 
 struct address { std::string v; };
@@ -153,7 +151,7 @@ public:
         }
         catch (const std::exception&)
         {
-            std::throw_with_nested(DOCWIRE_MAKE_ERROR("HTTP server failed to start"));
+            std::throw_with_nested(DF0_MAKE_ERROR("HTTP server failed to start"));
         }
     }
 
@@ -202,18 +200,18 @@ private:
         (register_route(routes), ...);
     }
 
-    static ::docwire::detail::http_listener::options make_options(
+    static ::df0::detail::http_listener::options make_options(
         address addr, port port_v, std::optional<certificate_info> cert,
         thread_num thread_count, error_handler handler, body_limit limit)
     {
-        ::docwire::detail::http_listener::options opts;
+        ::df0::detail::http_listener::options opts;
         opts.address = std::move(addr.v);
         opts.port = port_v.v;
         opts.thread_num = thread_count.v;
         opts.body_limit = limit.v;
         opts.error_handler = std::move(handler.v);
         if (cert)
-            opts.certificate.emplace(::docwire::detail::ssl_certificate::pem{
+            opts.certificate.emplace(::df0::detail::ssl_certificate::pem{
                 std::move(cert->key), std::move(cert->cert)});
         return opts;
     }
@@ -239,7 +237,7 @@ private:
     }
 
     template <typename Factory>
-    static ::docwire::detail::http_route_handler make_handler(Factory factory)
+    static ::df0::detail::http_route_handler make_handler(Factory factory)
     {
         using pipeline_type = std::decay_t<std::invoke_result_t<Factory>>;
 
@@ -251,8 +249,8 @@ private:
         auto state = std::make_shared<route_cache_state>(std::move(factory));
 
         return [state](
-            const ::docwire::detail::http_request& request,
-            ::docwire::detail::http_response& response)
+            const ::df0::detail::http_request& request,
+            ::df0::detail::http_response& response)
         {
             // Each route registration owns a distinct `route_cache_state`.
             // The thread-local cache is keyed by that object, not by the
@@ -284,7 +282,7 @@ private:
 
             if (response_messages->empty())
             {
-                response.status = ::docwire::detail::http_status_code::internal_server_error;
+                response.status = ::df0::detail::http_status_code::internal_server_error;
                 response.content = "Error: The processing pipeline did not produce any output message.";
                 return;
             }
@@ -293,7 +291,7 @@ private:
             if (last_message->is<data_source>())
             {
                 const auto& response_data = last_message->get<data_source>();
-                response.status = ::docwire::detail::http_status_code::ok;
+                response.status = ::df0::detail::http_status_code::ok;
                 response.content = response_data.string();
                 if (auto content_type = response_data.highest_confidence_mime_type())
                     response.content_type = content_type->v;
@@ -301,23 +299,23 @@ private:
             else if (last_message->is<std::exception_ptr>())
             {
                 response.error = last_message->get<std::exception_ptr>();
-                response.status = ::docwire::detail::http_status_code::internal_server_error;
+                response.status = ::df0::detail::http_status_code::internal_server_error;
                 response.content = "Internal Server Error";
             }
             else
             {
-                response.status = ::docwire::detail::http_status_code::internal_server_error;
+                response.status = ::df0::detail::http_status_code::internal_server_error;
                 response.content = "Error: The processing pipeline produced an unsupported message type as output.";
             }
         };
     }
 
-    ::docwire::detail::http_listener m_listener;
+    ::df0::detail::http_listener m_listener;
 };
 
 namespace detail
 {
-DOCWIRE_HTTP_EXPORT certificate_info generate_self_signed_cert_impl(
+DF0_HTTP_EXPORT certificate_info generate_self_signed_cert_impl(
     const std::string& common_name,
     const std::string& country,
     const std::string& organization);
@@ -360,6 +358,6 @@ certificate_info generate_self_signed_cert(
         audit::auditor_ref<stateless_auditor_type>{});
 }
 
-} // namespace docwire::http
+} // namespace df0::http
 
-#endif //DOCWIRE_HTTP_SERVER_H
+#endif //DF0_HTTP_SERVER_H

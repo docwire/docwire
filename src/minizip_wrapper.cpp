@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include "minizip_wrapper.h"
 
@@ -18,7 +16,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace docwire::detail::minizip
+namespace df0::detail::minizip
 {
 
 namespace
@@ -112,7 +110,7 @@ void clear_directory(state& st)
 
 } // anonymous namespace
 
-DOCWIRE_CORE_EXPORT void open(state& st, std::span<const std::byte> source)
+DF0_CORE_EXPORT void open(state& st, std::span<const std::byte> source)
 {
     st.source = source;
     auto* buffer = new zipped_buffer{source, 0};
@@ -132,7 +130,7 @@ DOCWIRE_CORE_EXPORT void open(state& st, std::span<const std::byte> source)
     throw_if(st.archive == 0, "Could not open zip archive");
 }
 
-DOCWIRE_CORE_EXPORT void close(state& st) noexcept
+DF0_CORE_EXPORT void close(state& st) noexcept
 {
     if (st.archive != 0)
     {
@@ -148,13 +146,13 @@ DOCWIRE_CORE_EXPORT void close(state& st) noexcept
     st.opened_for_chunks = false;
 }
 
-DOCWIRE_CORE_EXPORT bool exists(state& st, const std::string& file_name)
+DF0_CORE_EXPORT bool exists(state& st, const std::string& file_name)
 {
     unzFile archive = reinterpret_cast<unzFile>(st.archive);
     return unzLocateFile(archive, file_name.c_str(), CASESENSITIVITY) == UNZ_OK;
 }
 
-DOCWIRE_CORE_EXPORT bool read(state& st, const std::string& file_name, std::string* contents, int num_of_chars)
+DF0_CORE_EXPORT bool read(state& st, const std::string& file_name, std::string* contents, int num_of_chars)
 {
     unzFile archive = reinterpret_cast<unzFile>(st.archive);
     int res;
@@ -193,7 +191,7 @@ DOCWIRE_CORE_EXPORT bool read(state& st, const std::string& file_name, std::stri
     return true;
 }
 
-DOCWIRE_CORE_EXPORT bool get_file_size(state& st, const std::string& file_name, unsigned long& file_size)
+DF0_CORE_EXPORT bool get_file_size(state& st, const std::string& file_name, unsigned long& file_size)
 {
     unzFile archive = reinterpret_cast<unzFile>(st.archive);
     int res;
@@ -216,7 +214,7 @@ DOCWIRE_CORE_EXPORT bool get_file_size(state& st, const std::string& file_name, 
     return true;
 }
 
-DOCWIRE_CORE_EXPORT bool read_chunk(state& st, const std::string& file_name, char* contents, int num_of_chars, int& readed, bool add_null_terminator)
+DF0_CORE_EXPORT bool read_chunk(state& st, const std::string& file_name, char* contents, int num_of_chars, int& readed, bool add_null_terminator)
 {
     if (num_of_chars == 0)
     {
@@ -264,7 +262,7 @@ DOCWIRE_CORE_EXPORT bool read_chunk(state& st, const std::string& file_name, cha
     return true;
 }
 
-DOCWIRE_CORE_EXPORT bool read_chunk(state& st, const std::string& file_name, std::string* contents, int num_of_chars)
+DF0_CORE_EXPORT bool read_chunk(state& st, const std::string& file_name, std::string* contents, int num_of_chars)
 {
     std::vector<char> vcontents(num_of_chars + 1);
     int readed;
@@ -277,12 +275,12 @@ DOCWIRE_CORE_EXPORT bool read_chunk(state& st, const std::string& file_name, std
     return true;
 }
 
-DOCWIRE_CORE_EXPORT void close_reading_file_for_chunks(state& st)
+DF0_CORE_EXPORT void close_reading_file_for_chunks(state& st)
 {
     st.opened_for_chunks = false;
 }
 
-DOCWIRE_CORE_EXPORT bool load_directory(state& st)
+DF0_CORE_EXPORT bool load_directory(state& st)
 {
     unzFile archive = reinterpret_cast<unzFile>(st.archive);
     clear_directory(st);
@@ -309,4 +307,4 @@ DOCWIRE_CORE_EXPORT bool load_directory(state& st)
     return true;
 }
 
-} // namespace docwire::detail::minizip
+} // namespace df0::detail::minizip

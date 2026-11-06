@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include "html_parser.h"
 
@@ -41,7 +39,7 @@
 #include "document_elements.h"
 #include "message_counters.h"
 
-namespace docwire
+namespace df0
 {
 
 namespace
@@ -598,34 +596,34 @@ void pimpl_impl<html_parser<auditor_type>>::process_text(const lxb_dom_node_t* n
     std::string text((const char*)data);
 	if (m_context_stack.top().in_style)
 	{
-		docwire::audit::scope style_audit_scope{auditor(), audit::no_context};
+		df0::audit::scope style_audit_scope{auditor(), audit::no_context};
 		m_context_stack.top().style_text += text;
-		docwire::audit::entry(auditor(), audit::no_context);
+		df0::audit::entry(auditor(), audit::no_context);
 		return;
 	}
 	// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace#what_is_whitespace
 	// Convert all whitespaces into spaces and reduce all adjacent spaces into a single space
 	{
-		docwire::audit::scope regex_audit_scope{auditor(), audit::no_context};
+		df0::audit::scope regex_audit_scope{auditor(), audit::no_context};
 		static std::mutex whitespaces_regex_mutex;
 		std::lock_guard<std::mutex> whitespaces_regex_mutex_lock(whitespaces_regex_mutex);
 		static const std::regex whitespaces_regex(R"(\s+)");
 		text = std::regex_replace(text, whitespaces_regex, " ");
 	}
-	docwire::audit::entry(auditor(), [&]{ return "text"_v = text; });
+	df0::audit::entry(auditor(), [&]{ return "text"_v = text; });
 	bool last_char_was_space = isspace((unsigned char)m_context_stack.top().last_char_in_inline_formatting_context);
-	docwire::audit::entry(auditor(), [&]{ return "last_char_was_space"_v = last_char_was_space; });
+	df0::audit::entry(auditor(), [&]{ return "last_char_was_space"_v = last_char_was_space; });
 	// Reduce whitespaces between text nodes (end of previous and beginning of current.
 	// Remove whitespaces from beginning of inline formatting context.
 	if (last_char_was_space || m_context_stack.top().last_char_in_inline_formatting_context == '\0')
 	{
-		docwire::audit::scope trim_audit_scope{auditor(), audit::no_context};
+		df0::audit::scope trim_audit_scope{auditor(), audit::no_context};
 		boost::trim_left(text);
-		docwire::audit::entry(auditor(), [&]{ return "text"_v = text; });
+		df0::audit::entry(auditor(), [&]{ return "text"_v = text; });
 	}
 	if (!text.empty())
 	{
-		docwire::audit::scope buffer_audit_scope{auditor(), audit::no_context};
+		df0::audit::scope buffer_audit_scope{auditor(), audit::no_context};
 		m_context_stack.top().last_char_in_inline_formatting_context = text.back();
 		// buffer text because whitespaces from end of inline formatting context should be removed.
 		m_context_stack.top().buffered_text += text;
@@ -940,7 +938,7 @@ void html_parser<auditor_type>::skipCharsetDecoding()
 	impl().m_skip_decoding = true;
 }
 
-template class DOCWIRE_HTML_EXPORT html_parser<docwire::audit::null_auditor>;
-template class DOCWIRE_HTML_EXPORT html_parser<docwire::audit::json_stream_auditor>;
+template class DF0_HTML_EXPORT html_parser<df0::audit::null_auditor>;
+template class DF0_HTML_EXPORT html_parser<df0::audit::json_stream_auditor>;
 
-} // namespace docwire
+} // namespace df0

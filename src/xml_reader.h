@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_XML_READER_H
-#define DOCWIRE_XML_READER_H
+#ifndef DF0_XML_READER_H
+#define DF0_XML_READER_H
 
 #include "safety_policy.h"
 #include "pimpl.h"
@@ -18,7 +16,7 @@
 #include "ranged.h"
 #include "xml_export.h"
 
-namespace docwire::xml
+namespace df0::xml
 {
 /**
  * @brief Options for handling blank nodes in the XML reader.
@@ -60,7 +58,7 @@ enum class node_type
  * @sa @ref xml_parsing_example.cpp "XML parsing example"
  */
 template <safety_policy safety_level = default_safety_level>
-class DOCWIRE_XML_EXPORT reader : public with_pimpl<reader<safety_level>>
+class DF0_XML_EXPORT reader : public with_pimpl<reader<safety_level>>
 {
 	using with_pimpl<reader<safety_level>>::impl;
 public:
@@ -106,7 +104,7 @@ public:
 	bool move_to_next_attribute() const;
 	/**
 	 * @brief Moves the reader back to the element containing the attributes.
-	 * @throws docwire::error In strict mode, throws if the operation fails (e.g., reader is not positioned on an attribute).
+	 * @throws df0::error In strict mode, throws if the operation fails (e.g., reader is not positioned on an attribute).
 	 */
 	void move_to_element() const noexcept(safety_level == relaxed);
 
@@ -121,4 +119,4 @@ public:
 	node_type type() const;
 };
 }
-#endif // DOCWIRE_XML_READER_H
+#endif // DF0_XML_READER_H

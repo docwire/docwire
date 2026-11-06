@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_PIPELINE_ELEMENT_BASE_H
-#define DOCWIRE_PIPELINE_ELEMENT_BASE_H
+#ifndef DF0_PIPELINE_ELEMENT_BASE_H
+#define DF0_PIPELINE_ELEMENT_BASE_H
 
 #include "../message.h"
 #include "../ref_or_owned.h"
@@ -20,7 +18,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire
+namespace df0
 {
 
 namespace pipeline
@@ -271,4 +269,4 @@ inline constexpr role role_v = role_of<T>();
 } // namespace pipeline
 
 }
-#endif //DOCWIRE_PIPELINE_ELEMENT_BASE_H
+#endif //DF0_PIPELINE_ELEMENT_BASE_H

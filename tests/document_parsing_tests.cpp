@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include <boost/algorithm/string.hpp>
 #include <boost/config.hpp>
@@ -41,7 +39,7 @@
 #include "pipeline/function_transformer.hpp"
 #include "pipeline/input_element.hpp"
 
-using namespace docwire;
+using namespace df0;
 
 std::vector<std::string> generate_list_for_basic_tests() {
     std::vector<std::string> files;
@@ -231,7 +229,7 @@ INSTANTIATE_TEST_SUITE_P(
     });
 
 class callback_test : public ::testing::TestWithParam<
-    std::tuple<const char*, const char*, docwire::filter_by_mail_min_creation_time>>
+    std::tuple<const char*, const char*, df0::filter_by_mail_min_creation_time>>
 {
 };
 

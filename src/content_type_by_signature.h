@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_CONTENT_TYPE_BY_SIGNATURE_H
-#define DOCWIRE_CONTENT_TYPE_BY_SIGNATURE_H
+#ifndef DF0_CONTENT_TYPE_BY_SIGNATURE_H
+#define DF0_CONTENT_TYPE_BY_SIGNATURE_H
 
 #include "pipeline/element_base.hpp"
 #include "content_type_export.h"
@@ -22,7 +20,7 @@
 #include "ref_or_owned.h"
 
 /**
- * @namespace docwire::content_type::by_signature
+ * @namespace df0::content_type::by_signature
  * @brief Provides content type detection based on file signatures (magic bytes).
  * 
  * This module wraps `libmagic`. 
@@ -37,7 +35,7 @@
  * validate RIFF containers. It will often return `application/zip` or `application/octet-stream` in 
  * these cases. Downstream heuristic detectors are required to resolve these generic types.
  */
-namespace docwire::content_type::by_signature
+namespace df0::content_type::by_signature
 {
 
 struct allow_multiple
@@ -56,11 +54,11 @@ struct allow_multiple
  * @see content_type::by_signature::detector
  * @see content_type::by_signature::detect
  */
-class DOCWIRE_CONTENT_TYPE_EXPORT database : public with_pimpl<database>
+class DF0_CONTENT_TYPE_EXPORT database : public with_pimpl<database>
 {
 public:
     explicit database();
-    friend DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& database_to_use, allow_multiple allow_multiple);
+    friend DF0_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& database_to_use, allow_multiple allow_multiple);
 };
 
 /**
@@ -79,7 +77,7 @@ public:
 * @see content_type::by_signature::database
 * @see content_type::by_signature::detector
 */
-DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& database_to_use = database{}, allow_multiple allow_multiple = {false});
+DF0_CONTENT_TYPE_EXPORT void detect(data_source& data, const database& database_to_use = database{}, allow_multiple allow_multiple = {false});
 
 /**
 * @brief Detector chain element
@@ -127,7 +125,7 @@ public:
         }
         catch (const std::exception& e)
         {
-            emit_message(make_nested_ptr(std::current_exception(), DOCWIRE_MAKE_ERROR("Content type detection by signature failed")));
+            emit_message(make_nested_ptr(std::current_exception(), DF0_MAKE_ERROR("Content type detection by signature failed")));
         }
         return emit_message(std::move(msg));
     }
@@ -137,6 +135,6 @@ private:
     allow_multiple m_allow_multiple;
 };
 
-} // namespace docwire::content_type::by_signature
+} // namespace df0::content_type::by_signature
 
-#endif // DOCWIRE_CONTENT_TYPE_BY_SIGNATURE_H
+#endif // DF0_CONTENT_TYPE_BY_SIGNATURE_H

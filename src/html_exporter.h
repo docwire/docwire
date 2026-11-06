@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_HTML_EXPORTER_H
-#define DOCWIRE_HTML_EXPORTER_H
+#ifndef DF0_HTML_EXPORTER_H
+#define DF0_HTML_EXPORTER_H
 
 #include "pipeline/element_base.hpp"
 #include "html_export.h"
@@ -19,14 +17,14 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 /**
  * @brief Exports data to HTML format.
  */
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_HTML_EXPORT html_exporter
+class DF0_HTML_EXPORT html_exporter
     : public pipeline::transformer_element<html_exporter<auditor_type>>,
       public with_pimpl<html_exporter<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -59,6 +57,6 @@ private:
 // Deduction guide for CTAD
 html_exporter() -> html_exporter<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
-#endif //DOCWIRE_HTML_EXPORTER_H
+#endif //DF0_HTML_EXPORTER_H

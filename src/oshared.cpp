@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include "oshared.h"
 
@@ -24,7 +22,7 @@
 #include "detail/thread_safe_ole_stream_reader.h"
 #include "detail/thread_safe_ole_storage.h"
 
-namespace docwire
+namespace df0
 {
 
 using namespace wvWare;
@@ -459,19 +457,19 @@ template std::string get_codepage_from_document_summary_info<audit::null_auditor
     thread_safe_ole_storage&,
     audit::auditor_ref<audit::null_auditor>);
 
-template void parse_oshared_summary_info<docwire::audit::json_stream_auditor>(
+template void parse_oshared_summary_info<df0::audit::json_stream_auditor>(
     thread_safe_ole_storage&,
     attributes::metadata&,
     const std::function<void(std::exception_ptr)>&,
-    audit::auditor_ref<docwire::audit::json_stream_auditor>);
+    audit::auditor_ref<df0::audit::json_stream_auditor>);
 
-template void parse_oshared_document_summary_info<docwire::audit::json_stream_auditor>(
+template void parse_oshared_document_summary_info<df0::audit::json_stream_auditor>(
     thread_safe_ole_storage&,
     int&,
-    audit::auditor_ref<docwire::audit::json_stream_auditor>);
+    audit::auditor_ref<df0::audit::json_stream_auditor>);
 
-template std::string get_codepage_from_document_summary_info<docwire::audit::json_stream_auditor>(
+template std::string get_codepage_from_document_summary_info<df0::audit::json_stream_auditor>(
     thread_safe_ole_storage&,
-    audit::auditor_ref<docwire::audit::json_stream_auditor>);
+    audit::auditor_ref<df0::audit::json_stream_auditor>);
 
-} // namespace docwire
+} // namespace df0

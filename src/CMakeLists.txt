@@ -1,11 +1,11 @@
 set(CMAKE_INSTALL_RPATH .)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-add_compile_definitions(DOCWIRE_ENABLE_SHORT_MACRO_NAMES)
+add_compile_definitions(DF0_ENABLE_SHORT_MACRO_NAMES)
 
 add_subdirectory(wv2)
 
-include(docwire_resources.cmake)
+include(df0_resources.cmake)
 
 include(core.cmake)
 include(ole_utils.cmake)
@@ -26,15 +26,15 @@ include(mail.cmake)
 include(archives.cmake)
 include(ai.cmake)
 
-if(DOCWIRE_CT2)
+if(DF0_CT2)
     include(ai_ct2.cmake)
 endif()
 
-if(DOCWIRE_LLAMA)
+if(DF0_LLAMA)
     include(ai_llama.cmake)
 endif()
 
-if(DOCWIRE_CT2 OR DOCWIRE_LLAMA)
+if(DF0_CT2 OR DF0_LLAMA)
     include(local_ai.cmake)
 endif()
 
@@ -46,35 +46,35 @@ include(openai.cmake)
 include(cli.cmake)
 
 file(GLOB HEADERS "*.h" "*.hpp")
-install(FILES ${HEADERS} DESTINATION include/docwire)
+install(FILES ${HEADERS} DESTINATION include/df0)
 
 file(GLOB PIPELINE_HEADERS "pipeline/*.hpp")
-install(FILES ${PIPELINE_HEADERS} DESTINATION include/docwire/pipeline)
+install(FILES ${PIPELINE_HEADERS} DESTINATION include/df0/pipeline)
 
 file(GLOB PLAIN_TEXT_HEADERS "plain_text/*.h" "plain_text/*.hpp")
-install(FILES ${PLAIN_TEXT_HEADERS} DESTINATION include/docwire/plain_text)
+install(FILES ${PLAIN_TEXT_HEADERS} DESTINATION include/df0/plain_text)
 
 file(GLOB AUDIT_HEADERS "audit/*.hpp")
-install(FILES ${AUDIT_HEADERS} DESTINATION include/docwire/audit)
+install(FILES ${AUDIT_HEADERS} DESTINATION include/df0/audit)
 
 file(GLOB AUDIT_DETAIL_HEADERS "audit/detail/*.hpp")
-install(FILES ${AUDIT_DETAIL_HEADERS} DESTINATION include/docwire/audit/detail)
+install(FILES ${AUDIT_DETAIL_HEADERS} DESTINATION include/df0/audit/detail)
 
 file(GLOB AUDIT_SERIALIZE_HEADERS "audit/serialize/*.hpp")
-install(FILES ${AUDIT_SERIALIZE_HEADERS} DESTINATION include/docwire/audit/serialize)
+install(FILES ${AUDIT_SERIALIZE_HEADERS} DESTINATION include/df0/audit/serialize)
 
 file(GLOB AUDIT_SINK_HEADERS "audit/sink/*.hpp")
-install(FILES ${AUDIT_SINK_HEADERS} DESTINATION include/docwire/audit/sink)
+install(FILES ${AUDIT_SINK_HEADERS} DESTINATION include/df0/audit/sink)
 
 include(GNUInstallDirs)
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
-	docwire-config.cmake.in
-	${CMAKE_CURRENT_BINARY_DIR}/docwire-config.cmake
-	INSTALL_DESTINATION lib/cmake/docwire
+	df0-config.cmake.in
+	${CMAKE_CURRENT_BINARY_DIR}/df0-config.cmake
+	INSTALL_DESTINATION lib/cmake/df0
 	PATH_VARS CMAKE_INSTALL_DATADIR
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/docwire-config.cmake DESTINATION lib/cmake/docwire)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/docwire_resources.cmake DESTINATION lib/cmake/docwire)
-install(EXPORT docwire_targets FILE docwire-targets.cmake DESTINATION lib/cmake/docwire)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/df0-config.cmake DESTINATION lib/cmake/df0)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/df0_resources.cmake DESTINATION lib/cmake/df0)
+install(EXPORT df0_targets FILE df0-targets.cmake DESTINATION lib/cmake/df0)

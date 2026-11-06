@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_AI_TOKENIZER_H
-#define DOCWIRE_AI_TOKENIZER_H
+#ifndef DF0_AI_TOKENIZER_H
+#define DF0_AI_TOKENIZER_H
 
 #include "ai_ct2_export.h"
 #include "pimpl.h"
@@ -21,11 +19,11 @@
 #include <string>
 #include <vector>
 
-namespace docwire::ai::ct2
+namespace df0::ai::ct2
 {
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_AI_CT2_EXPORT tokenizer
+class DF0_AI_CT2_EXPORT tokenizer
     : public with_pimpl<tokenizer<auditor_type>>,
       private audit::with_auditor<auditor_type>
 {
@@ -61,6 +59,6 @@ private:
 // Deduction guide for CTAD
 tokenizer(const std::filesystem::path&) -> tokenizer<audit::null_auditor>;
 
-} // namespace docwire::ai::ct2
+} // namespace df0::ai::ct2
 
-#endif // DOCWIRE_AI_TOKENIZER_H
+#endif // DF0_AI_TOKENIZER_H

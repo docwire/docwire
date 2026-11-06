@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_CONTENT_TYPE_BY_FILE_EXTENSION_H
-#define DOCWIRE_CONTENT_TYPE_BY_FILE_EXTENSION_H
+#ifndef DF0_CONTENT_TYPE_BY_FILE_EXTENSION_H
+#define DF0_CONTENT_TYPE_BY_FILE_EXTENSION_H
 
 #include "pipeline/element_base.hpp"
 #include "content_type_export.h"
@@ -20,7 +18,7 @@
 /**
  * Provides content type detection based on file extension
  */
-namespace docwire::content_type::by_file_extension
+namespace df0::content_type::by_file_extension
 {
 
 /**
@@ -33,7 +31,7 @@ namespace docwire::content_type::by_file_extension
 * @see content_type::detector
 * @see content_type::by_file_extension::detector
 */
-DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
+DF0_CONTENT_TYPE_EXPORT void detect(data_source& data);
 
 /**
 * @brief Converts a mime type to a file extension.
@@ -43,7 +41,7 @@ DOCWIRE_CONTENT_TYPE_EXPORT void detect(data_source& data);
 *
 * @see file_extension_to_mime_type
 */
-DOCWIRE_CONTENT_TYPE_EXPORT std::optional<file_extension> to_extension(const mime_type& mt);
+DF0_CONTENT_TYPE_EXPORT std::optional<file_extension> to_extension(const mime_type& mt);
 
 /**
 * @brief Detector chain element
@@ -73,6 +71,6 @@ public:
     }
 };
 
-} // namespace docwire::content_type::by_file_extension
+} // namespace df0::content_type::by_file_extension
 
-#endif // DOCWIRE_CONTENT_TYPE_BY_FILE_EXTENSION_H
+#endif // DF0_CONTENT_TYPE_BY_FILE_EXTENSION_H

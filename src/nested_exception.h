@@ -1,20 +1,18 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_NESTED_EXCEPTION_H
-#define DOCWIRE_NESTED_EXCEPTION_H
+#ifndef DF0_NESTED_EXCEPTION_H
+#define DF0_NESTED_EXCEPTION_H
 
 #include <exception>
 
-namespace docwire::errors
+namespace df0::errors
 {
 
 /**
@@ -147,6 +145,6 @@ std::exception_ptr make_nested_ptr(Inner&& inner, Outer&& outer, Rest&&... rest)
 	return std::make_exception_ptr(make_nested(std::forward<Inner>(inner), std::forward<Outer>(outer), std::forward<Rest>(rest)...));
 }
 
-} // namespace docwire::errors
+} // namespace df0::errors
 
 #endif

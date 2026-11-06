@@ -1,4 +1,13 @@
-#include "docwire.h"
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
+
+#include "df0.hpp"
 #include "plain_text_exporter.h"
 #include <iostream>
 #include <vector>
@@ -7,7 +16,7 @@
 
 int main(int argc, char* argv[])
 {
-  using namespace docwire;
+  using namespace df0;
 
   try
   {
@@ -21,21 +30,21 @@ int main(int argc, char* argv[])
 
     // 2. Create an embedding for a similar query using the query prefix
     std::vector<message_ptr> similar_query_msgs;
-    docwire::data_source{std::string{"What is data processing?"}, mime_type{"text/plain"}, confidence::highest} | ai::local::ct2::query::embedder{} | similar_query_msgs;
+    df0::data_source{std::string{"What is data processing?"}, mime_type{"text/plain"}, confidence::highest} | ai::local::ct2::query::embedder{} | similar_query_msgs;
     ensure(similar_query_msgs.size()) == 1;
     ensure(similar_query_msgs[0]->is<ai::embedding>()) == true;
     auto similar_query_embedding = similar_query_msgs[0]->get<ai::embedding>();
 
     // 3. Create an embedding for a partially related query
     std::vector<message_ptr> partial_query_msgs;
-    docwire::data_source{std::string{"How can data analysis improve business efficiency?"}, mime_type{"text/plain"}, confidence::highest} | ai::local::ct2::query::embedder{} | partial_query_msgs;
+    df0::data_source{std::string{"How can data analysis improve business efficiency?"}, mime_type{"text/plain"}, confidence::highest} | ai::local::ct2::query::embedder{} | partial_query_msgs;
     ensure(partial_query_msgs.size()) == 1;
     ensure(partial_query_msgs[0]->is<ai::embedding>()) == true;
     auto partial_query_embedding = partial_query_msgs[0]->get<ai::embedding>();
 
     // 4. Create an embedding for a dissimilar query
     std::vector<message_ptr> dissimilar_query_msgs;
-    docwire::data_source{std::string{"What is the best C++ IDE?"}, mime_type{"text/plain"}, confidence::highest} | ai::local::ct2::query::embedder{} | dissimilar_query_msgs;
+    df0::data_source{std::string{"What is the best C++ IDE?"}, mime_type{"text/plain"}, confidence::highest} | ai::local::ct2::query::embedder{} | dissimilar_query_msgs;
     ensure(dissimilar_query_msgs.size()) == 1;
     ensure(dissimilar_query_msgs[0]->is<ai::embedding>()) == true;
     auto dissimilar_query_embedding = dissimilar_query_msgs[0]->get<ai::embedding>();

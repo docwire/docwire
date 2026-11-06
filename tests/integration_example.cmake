@@ -4,25 +4,25 @@ project(integration_example LANGUAGES CXX)
 
 add_executable(integration_example integration_example.cpp)
 
-# Find the DocWire SDK package.
+# Find the DF-0 package.
 # This requires CMAKE_TOOLCHAIN_FILE to be set (e.g. for vcpkg) or CMAKE_PREFIX_PATH to point to the installation.
-find_package(docwire CONFIG REQUIRED)
+find_package(df0 CONFIG REQUIRED)
 
-# DocWire SDK is designed to be used as a shared library (DLL/SO/DYLIB).
+# DF-0 is designed to be used as a shared library (DLL/SO/DYLIB).
 # Static linking is not supported due to the complexity of dependencies and resource management.
-# This check verifies that the found 'docwire_core' target is a shared library.
-get_target_property(DOCWIRE_CORE_TYPE docwire_core TYPE)
-if(NOT DOCWIRE_CORE_TYPE STREQUAL "SHARED_LIBRARY")
-    message(FATAL_ERROR "DocWire SDK requires dynamic linking, but the found 'docwire_core' target is not a shared library. Please ensure you are using a dynamic build configuration.")
+# This check verifies that the found 'df0_core' target is a shared library.
+get_target_property(DF0_CORE_TYPE df0_core TYPE)
+if(NOT DF0_CORE_TYPE STREQUAL "SHARED_LIBRARY")
+    message(FATAL_ERROR "DF-0 requires dynamic linking, but the found 'df0_core' target is not a shared library. Please ensure you are using a dynamic build configuration.")
 endif()
 
-# Link against the specific DocWire libraries your application needs.
-# docwire_core is always required. Other modules are optional based on usage.
+# Link against the specific DF-0 libraries your application needs.
+# df0_core is always required. Other modules are optional based on usage.
 target_link_libraries(integration_example PRIVATE
-    docwire_core
-    docwire_content_type
-    docwire_office_formats
-    docwire_http
+    df0_core
+    df0_content_type
+    df0_office_formats
+    df0_http
 )
 
 include(GNUInstallDirs)
@@ -38,14 +38,14 @@ elseif(APPLE)
 endif()
 
 # --- Build Tree Configuration ---
-# This function ensures that DocWire resources (like OCR models, dictionaries, etc.)
+# This function ensures that DF-0 resources (like OCR models, dictionaries, etc.)
 # are accessible to your application when running directly from the build directory.
 # It creates .path files that point to the actual location of resources in the vcpkg installed tree.
-docwire_deploy_resources(TARGETS integration_example)
+df0_deploy_resources(TARGETS integration_example)
 
 # --- Installation Configuration ---
 # The following section configures 'cmake --install' to create a standalone distribution
-# of your application, including all necessary DocWire runtime dependencies.
+# of your application, including all necessary DF-0 runtime dependencies.
 
 # 1. Install the application executable and its runtime dependencies.
 install(TARGETS integration_example
@@ -75,7 +75,7 @@ install(TARGETS integration_example
     FRAMEWORK DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )
 
-# 3. Install DocWire data resources.
+# 3. Install DF-0 data resources.
 # This function installs the necessary data files (e.g., tessdata for OCR, magic database)
 # into the appropriate 'share' directory in your installation prefix.
-docwire_install_resources(TARGETS integration_example)
+df0_install_resources(TARGETS integration_example)

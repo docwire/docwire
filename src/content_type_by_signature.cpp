@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include "content_type_by_signature.h"
 
@@ -20,7 +18,7 @@
 #include "resource_path.h"
 #include "throw_if.h"
 
-namespace docwire
+namespace df0
 {
 
 template<>
@@ -47,9 +45,9 @@ struct pimpl_impl<content_type::by_signature::database> : public pimpl_impl_base
     size_t bytes_max;
 };
 
-} // namespace docwire
+} // namespace df0
 
-namespace docwire::content_type::by_signature
+namespace df0::content_type::by_signature
 {
 
 database::database() = default;
@@ -82,4 +80,4 @@ void detect(data_source& data, const database& database_to_use, allow_multiple a
     }
 }
 
-} // namespace docwire::content_type::by_signature
+} // namespace df0::content_type::by_signature

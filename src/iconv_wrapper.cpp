@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include "iconv_wrapper.h"
 
@@ -26,7 +24,7 @@
 #undef close
 #endif
 
-namespace docwire::detail::iconv_wrapper
+namespace df0::detail::iconv_wrapper
 {
 
 namespace
@@ -34,7 +32,7 @@ namespace
 std::mutex iconv_open_mutex;
 } // namespace
 
-DOCWIRE_CORE_EXPORT void open(state& st)
+DF0_CORE_EXPORT void open(state& st)
 {
     std::lock_guard<std::mutex> lock(iconv_open_mutex);
     iconv_t descriptor = iconv_open(st.to.c_str(), st.from.c_str());
@@ -42,7 +40,7 @@ DOCWIRE_CORE_EXPORT void open(state& st)
     st.descriptor = reinterpret_cast<std::uintptr_t>(descriptor);
 }
 
-DOCWIRE_CORE_EXPORT void close(state& st) noexcept
+DF0_CORE_EXPORT void close(state& st) noexcept
 {
     if (st.descriptor == 0)
         return;
@@ -52,7 +50,7 @@ DOCWIRE_CORE_EXPORT void close(state& st) noexcept
     st.descriptor = 0;
 }
 
-DOCWIRE_CORE_EXPORT std::string convert(state& st, std::string_view input)
+DF0_CORE_EXPORT std::string convert(state& st, std::string_view input)
 {
     if (st.descriptor == 0)
         throw make_error("Cannot convert: iconv descriptor is not open");
@@ -96,4 +94,4 @@ DOCWIRE_CORE_EXPORT std::string convert(state& st, std::string_view input)
     return output;
 }
 
-} // namespace docwire::detail::iconv_wrapper
+} // namespace df0::detail::iconv_wrapper

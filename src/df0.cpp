@@ -1,27 +1,25 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
-#include "ai_runner.h"
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
+#include "ai_runner.h"
 #include "model_chain_element.h"
 #include "model_inference_config.h"
-#ifdef DOCWIRE_CT2
+#ifdef DF0_CT2
 #include "ct2_runner.h"
 #include "local_ai_ct2_embed.h"
 #include "local_ai_ct2_runner_factory.h"
 #endif
-#ifdef DOCWIRE_LLAMA
+#ifdef DF0_LLAMA
 #include "llama_runner.h"
 #include "local_ai_llama_runner_factory.h"
 #endif
-#ifdef DOCWIRE_LOCAL_AI
+#ifdef DF0_LOCAL_AI
 #include "local_ai_task.h"
 #endif
 #include "ai_elements.h"
@@ -68,14 +66,16 @@
 #include <set>
 #include <variant>
 
-using namespace docwire;
+using namespace df0;
 
 static void readme()
 {
   // warning TODO: Generate readme string literal automatically.
   std::cout <<
-	"DocWire SDK: Deterministic, auditable, and secure data processing in C++20.\n"
-	"On-premise by default. No compromises on computational speed.\n";
+	"DF-0: Data processing Framework with Zero-overhead\n"
+	"\n"
+	"Copyright (c) DF-0 Team, project website https://github.com/df0/df0\n"
+	"SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial\n";
 }
 
 static void version()
@@ -84,13 +84,13 @@ static void version()
   std::cout << std::endl << "Version: " << VERSION << std::endl;
 }
 
-namespace docwire
+namespace df0
 {
 	using magic_enum::istream_operators::operator>>;
 	using magic_enum::ostream_operators::operator<<;
 }
 
-namespace docwire::openai
+namespace df0::openai
 {
 	using magic_enum::istream_operators::operator>>;
 	using magic_enum::ostream_operators::operator<<;
@@ -114,7 +114,7 @@ std::string enum_names_str()
 	}
 	return names_str;
 }
-#ifdef DOCWIRE_LOCAL_AI
+#ifdef DF0_LOCAL_AI
 template<typename auditor_type>
 static std::shared_ptr<ai::ai_runner>
 create_local_runner(
@@ -126,7 +126,7 @@ create_local_runner(
         std::string model_path = vm["local-ai-model"].as<std::string>();
         if (model_path.ends_with(".gguf"))
         {
-            #ifdef DOCWIRE_LLAMA
+            #ifdef DF0_LLAMA
                 ai::model_inference_config config;
                 config.model_path = model_path;
                 config.n_ctx = ai::context_size{4096};
@@ -138,7 +138,7 @@ create_local_runner(
                 throw std::runtime_error("GGUF model support requires the local-ai-llama feature");
             #endif
         }
-        #ifdef DOCWIRE_CT2
+        #ifdef DF0_CT2
             return std::make_shared<ai::ct2::ct2_runner<auditor_type>>(
                 model_path,
                 auditor);
@@ -147,11 +147,11 @@ create_local_runner(
         #endif
     }
 
-    #ifdef DOCWIRE_CT2
+    #ifdef DF0_CT2
         return ai::local::ct2::make_default_runner(auditor);
-    #elif defined(DOCWIRE_LLAMA) && defined(DOCWIRE_GRANITE)
+    #elif defined(DF0_LLAMA) && defined(DF0_GRANITE)
         return ai::local::llama::make_default_runner(auditor);
-    #elif defined(DOCWIRE_LLAMA)
+    #elif defined(DF0_LLAMA)
         throw std::runtime_error(
             "No default local AI model available for this build. "
             "Specify --local-ai-model, or rebuild with the local-ai-model-granite "
@@ -162,7 +162,7 @@ create_local_runner(
             "which can be coupled with local-ai-model-granite feature.");
     #endif
 }
-#endif // DOCWIRE_LOCAL_AI
+#endif // DF0_LOCAL_AI
 
 namespace
 {
@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("help", "display help message")
-		("version", "display DocWire version")
+		("version", "display DF-0 version")
 		("input-file", po::value<std::string>()->required(), "path to file to process")
 		("output_type", po::value<output_type>()->default_value(output_type::plain_text), enum_names_str<output_type>().c_str())
 		("http-post", po::value<std::string>(), "url to process data via http post")
@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
 	if (vm.count("help"))
 	{
 		readme();
-		std::cout << std::endl << "Usage: docwire [options] file_name" << std::endl << std::endl << desc << std::endl;
+		std::cout << std::endl << "Usage: df0 [options] file_name" << std::endl << std::endl << desc << std::endl;
 		return 0;
 	}
 
@@ -307,12 +307,12 @@ int main(int argc, char* argv[])
 		return data_source{std::filesystem::path{file_name}};
 	}();
 
-	#ifndef DOCWIRE_CT2
+	#ifndef DF0_CT2
 	if (vm.count("local-ai-prompt") || vm.count("local-ai-ct2-embed"))
 	{
 		std::cerr << "Error: Local AI features requested, but this build does not include "
-		             "DOCWIRE_CT2 support.\n"
-		             "Rebuild with DOCWIRE_CT2 enabled to use --local-ai-prompt or "
+		             "DF0_CT2 support.\n"
+		             "Rebuild with DF0_CT2 enabled to use --local-ai-prompt or "
 		             "--local-ai-ct2-embed." << std::endl;
 		return 1;
 	}
@@ -325,7 +325,7 @@ int main(int argc, char* argv[])
 
 	if (audit_enabled)
 	{
-		docwire::ref_or_owned<std::ostream> audit_stream{std::clog};
+		df0::ref_or_owned<std::ostream> audit_stream{std::clog};
 		std::unique_ptr<std::ofstream> log_file;
 
 		if (vm.count("log_file"))
@@ -336,7 +336,7 @@ int main(int argc, char* argv[])
 				std::cerr << "Error: Unable to open log file: " << vm["log_file"].as<std::string>() << std::endl;
 				return 1;
 			}
-			audit_stream = docwire::ref_or_owned<std::ostream>{std::move(*log_file)};
+			audit_stream = df0::ref_or_owned<std::ostream>{std::move(*log_file)};
 		}
 
 		const std::string filter_spec =
@@ -346,7 +346,7 @@ int main(int argc, char* argv[])
 					? "*"
 					: "";
 
-		docwire::audit::json_stream_auditor auditor{
+		df0::audit::json_stream_auditor auditor{
 			filter_spec,
 			std::move(audit_stream)
 		};
@@ -354,14 +354,14 @@ int main(int argc, char* argv[])
 		return run_with_auditor(
 			vm,
 			std::move(data),
-			docwire::audit::auditor_ref<docwire::audit::json_stream_auditor>{auditor});
+			df0::audit::auditor_ref<df0::audit::json_stream_auditor>{auditor});
 	}
 
-	docwire::audit::null_auditor auditor;
+	df0::audit::null_auditor auditor;
 	return run_with_auditor(
 		vm,
 		std::move(data),
-		docwire::audit::auditor_ref<docwire::audit::null_auditor>{auditor});
+		df0::audit::auditor_ref<df0::audit::null_auditor>{auditor});
 }
 
 template<typename auditor_type>
@@ -474,7 +474,7 @@ int run_with_auditor(
 				vm["openai-image-detail"].as<openai::image_detail>(),
 				auditor);
 		})
-#ifdef DOCWIRE_LOCAL_AI
+#ifdef DF0_LOCAL_AI
 		| maybe(vm.count("local-ai-prompt"), [&] {
 			auto runner = create_local_runner(
 				vm,
@@ -483,7 +483,7 @@ int run_with_auditor(
 				vm["local-ai-prompt"].as<std::string>(), runner);
 		})
 #endif
-#ifdef DOCWIRE_CT2
+#ifdef DF0_CT2
 		| maybe(vm.count("local-ai-ct2-embed") &&
 			vm["local-ai-ct2-embed"].as<embed_prefix_type>() == embed_prefix_type::query, [&] {
 			return ai::local::ct2::query::embedder<configured_auditor>{
@@ -625,7 +625,7 @@ int run_with_auditor(
 			content_type::detector{}
 			| archives_parser<configured_auditor>{
 				auditor}
-			| office_formats_parser<docwire::safety_policy::strict, configured_auditor>{
+			| office_formats_parser<df0::safety_policy::strict, configured_auditor>{
 				auditor}
 			| mail_parser<configured_auditor>{
 				auditor}

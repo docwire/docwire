@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_STRINGIFICATION_H
-#define DOCWIRE_STRINGIFICATION_H
+#ifndef DF0_STRINGIFICATION_H
+#define DF0_STRINGIFICATION_H
 
 #include "concepts_misc.h"
 #include "concepts_stream.h"
@@ -22,7 +20,7 @@
 #include <sstream>
 #include <type_traits>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -65,9 +63,9 @@ struct stringifier<T>
 /**
  * @brief Default stringifier for types not covered by more specific specializations.
  *
- * This fallback uses the generic `docwire::serialization` mechanism:
- * 1. Serializes the object to a `docwire::serialization::value`.
- * 2. Converts that `docwire::serialization::value` to a human-readable string.
+ * This fallback uses the generic `df0::serialization` mechanism:
+ * 1. Serializes the object to a `df0::serialization::value`.
+ * 2. Converts that `df0::serialization::value` to a human-readable string.
  *
  * This ensures that any type that can be serialized can also be stringified in a default way,
  * providing a consistent fallback for complex types.
@@ -109,7 +107,7 @@ struct stringifier<std::pair<T1, T2>>
 };
 
 /**
- * @brief Specialization for `docwire::named::value`, providing a "name: value" string representation.
+ * @brief Specialization for `df0::named::value`, providing a "name: value" string representation.
  */
 template <typename T>
 struct stringifier<named::value<T>>
@@ -195,6 +193,6 @@ struct stringifier<serialization::value>
 	}
 };
 
-} // namespace docwire
+} // namespace df0
 
 #endif

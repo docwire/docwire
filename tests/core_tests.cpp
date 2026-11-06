@@ -1,13 +1,11 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
 #include "convert_chrono.h" // IWYU pragma: keep
 #include "ensure.h"
@@ -27,7 +25,7 @@
 #include <functional>
 #include <chrono>
 
-using namespace docwire;
+using namespace df0;
 
 TEST(unique_identifier, generation_uniqueness_copying_and_hashing)
 {
@@ -60,7 +58,7 @@ TEST(lru_cache, storing_and_retrieving_values)
 
 TEST(Convert, Chrono)
 {
-    using namespace docwire::serialization;
+    using namespace df0::serialization;
 
     // Test std::chrono::sys_seconds
     using namespace std::chrono;
@@ -130,10 +128,10 @@ TEST(NotNull, SmartPointers)
 TEST(NotNull, ThrowsOnNull)
 {
     int* null_ptr = nullptr;
-    EXPECT_THROW((not_null<int*, strict>(null_ptr)), docwire::errors::base);
+    EXPECT_THROW((not_null<int*, strict>(null_ptr)), df0::errors::base);
 
     std::shared_ptr<int> null_sp;
-    EXPECT_THROW((not_null<std::shared_ptr<int>, strict>(null_sp)), docwire::errors::base);
+    EXPECT_THROW((not_null<std::shared_ptr<int>, strict>(null_sp)), df0::errors::base);
 }
 
 TEST(NotNull, AssumeNotNull)
@@ -160,13 +158,13 @@ TEST(Ensure, CorrectUsage)
 TEST(Ensure, ThrowsOnFailure)
 {
     // Test failing comparisons
-    ASSERT_THROW(ensure(5) == 6, docwire::errors::base);
-    ASSERT_THROW(ensure(5) != 5, docwire::errors::base);
-    ASSERT_THROW(ensure(5) > 6, docwire::errors::base);
-    ASSERT_THROW(ensure(6) < 5, docwire::errors::base);
-    ASSERT_THROW(ensure(5) >= 6, docwire::errors::base);
-    ASSERT_THROW(ensure(6) <= 5, docwire::errors::base);
-    ASSERT_THROW(ensure(std::string("hello world")).contains("galaxy"), docwire::errors::base);
+    ASSERT_THROW(ensure(5) == 6, df0::errors::base);
+    ASSERT_THROW(ensure(5) != 5, df0::errors::base);
+    ASSERT_THROW(ensure(5) > 6, df0::errors::base);
+    ASSERT_THROW(ensure(6) < 5, df0::errors::base);
+    ASSERT_THROW(ensure(5) >= 6, df0::errors::base);
+    ASSERT_THROW(ensure(6) <= 5, df0::errors::base);
+    ASSERT_THROW(ensure(std::string("hello world")).contains("galaxy"), df0::errors::base);
 }
 
 TEST(Ensure, ThrowsWithCorrectContext)
@@ -180,7 +178,7 @@ TEST(Ensure, ThrowsWithCorrectContext)
     }
     catch (const errors::base& e)
     {
-        std::string msg = docwire::errors::diagnostic_message(e);
+        std::string msg = df0::errors::diagnostic_message(e);
         EXPECT_THAT(msg, testing::HasSubstr("!(m_value == other)"));
         EXPECT_THAT(msg, testing::HasSubstr("m_value: 42"));
         EXPECT_THAT(msg, testing::HasSubstr("other: 100"));

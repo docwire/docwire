@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_LOCAL_AI_EMBED_H
-#define DOCWIRE_LOCAL_AI_EMBED_H
+#ifndef DF0_LOCAL_AI_EMBED_H
+#define DF0_LOCAL_AI_EMBED_H
 
 #include "ai_embed.h"
 #include "local_ai_export.h"
@@ -18,7 +16,7 @@
 #include "audit/core.hpp"
 #include <concepts>
 
-namespace docwire::ai::local::passage
+namespace df0::ai::local::passage
 {
 
 /**
@@ -27,9 +25,9 @@ namespace docwire::ai::local::passage
  * is applied automatically. No model-specific knowledge required at the call site.
  */
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_LOCAL_AI_EXPORT embedder
-    : public docwire::pipeline::transformer_element<embedder<auditor_type>>
-    , public docwire::ai::embed<auditor_type>
+class DF0_LOCAL_AI_EXPORT embedder
+    : public df0::pipeline::transformer_element<embedder<auditor_type>>
+    , public df0::ai::embed<auditor_type>
 {
   public:
     /**
@@ -51,9 +49,9 @@ class DOCWIRE_LOCAL_AI_EXPORT embedder
 // Deduction guide for CTAD
 embedder() -> embedder<audit::null_auditor>;
 
-} // namespace docwire::ai::local::passage
+} // namespace df0::ai::local::passage
 
-namespace docwire::ai::local::query
+namespace df0::ai::local::query
 {
 /**
  * @brief Embeds a search query (search input) using the local AI model's default query prefix.
@@ -63,9 +61,9 @@ namespace docwire::ai::local::query
 
  */
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_LOCAL_AI_EXPORT embedder
-    : public docwire::pipeline::transformer_element<embedder<auditor_type>>
-    , public docwire::ai::embed<auditor_type>
+class DF0_LOCAL_AI_EXPORT embedder
+    : public df0::pipeline::transformer_element<embedder<auditor_type>>
+    , public df0::ai::embed<auditor_type>
 {
   public:
     /**
@@ -87,6 +85,6 @@ class DOCWIRE_LOCAL_AI_EXPORT embedder
 // Deduction guide for CTAD
 embedder() -> embedder<audit::null_auditor>;
 
-} // namespace docwire::ai::local::query
+} // namespace df0::ai::local::query
 
-#endif // DOCWIRE_LOCAL_AI_EMBED_H
+#endif // DF0_LOCAL_AI_EMBED_H

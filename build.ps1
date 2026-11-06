@@ -43,7 +43,7 @@ if ($env:BINARY_CACHE_GITHUB_TOKEN)
     Write-Host "Configuring GitHub packages binary cache."
     $NUGET = & "vcpkg\vcpkg" fetch nuget | select -last 1
     Write-Host "Using NuGet: $NUGET"
-    $BINARY_CACHE_GITHUB_OWNERS = $env:BINARY_CACHE_GITHUB_OWNERS ?? "docwire"
+    $BINARY_CACHE_GITHUB_OWNERS = $env:BINARY_CACHE_GITHUB_OWNERS ?? "df0"
     foreach ($OWNER in $BINARY_CACHE_GITHUB_OWNERS.Split(" "))
     {
         $SOURCE_URL = "https://nuget.pkg.github.com/$OWNER/index.json"
@@ -55,7 +55,7 @@ if ($env:BINARY_CACHE_GITHUB_TOKEN)
         $ErrorActionPreference = "Continue"
         try
         {
-            $nugetSearchOutput = & "$NUGET" search docwire -Source $SOURCE_NAME -NonInteractive 2>&1
+            $nugetSearchOutput = & "$NUGET" search df0 -Source $SOURCE_NAME -NonInteractive 2>&1
         }
         finally
         {
@@ -86,13 +86,13 @@ $VCPKG_TRIPLET="x64-windows"
 if ($env:DEBUG -eq "1")
 {
     $env:CMAKE_MESSAGE_LOG_LEVEL = "VERBOSE"
-    $env:DOCWIRE_TESTS_CONSOLE_LOGGING = "1"
+    $env:DF0_TESTS_CONSOLE_LOGGING = "1"
     $VCPKG_DEBUG_OPTION = "--debug"
 }
 
-Get-Date | Out-File -FilePath ports\docwire\disable_binary_cache.tmp
+Get-Date | Out-File -FilePath ports\df0\disable_binary_cache.tmp
 $Env:SOURCE_PATH = "$PWD"
-$Env:VCPKG_KEEP_ENV_VARS = "SOURCE_PATH;CMAKE_MESSAGE_LOG_LEVEL;DOCWIRE_TESTS_CONSOLE_LOGGING;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS"
+$Env:VCPKG_KEEP_ENV_VARS = "SOURCE_PATH;CMAKE_MESSAGE_LOG_LEVEL;DF0_TESTS_CONSOLE_LOGGING;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS"
 if ($Env:OPENAI_API_KEY -ne $null -and $env:OPENAI_API_KEY -ne "") {
     Write-Host "DEBUG: OPENAI_API_KEY exists and is not empty."
 } elseif ($env:OPENAI_API_KEY -eq "") {
@@ -101,7 +101,7 @@ if ($Env:OPENAI_API_KEY -ne $null -and $env:OPENAI_API_KEY -ne "") {
     Write-Host "DEBUG: OPENAI_API_KEY does not exist."
 }
 Invoke-ExternalCommand {
-    vcpkg\vcpkg --overlay-ports=ports install ${VCPKG_DEBUG_OPTION} docwire${env:FEATURES}:${VCPKG_TRIPLET}
+    vcpkg\vcpkg --overlay-ports=ports install ${VCPKG_DEBUG_OPTION} df0${env:FEATURES}:${VCPKG_TRIPLET}
 }
 
 Write-Host "Done."

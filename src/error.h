@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_ERROR_H
-#define DOCWIRE_ERROR_H
+#ifndef DF0_ERROR_H
+#define DF0_ERROR_H
 
 #include "core_export.h"
 #include "diagnostic_context.h" // IWYU pragma: keep
@@ -26,10 +24,10 @@
  * @brief Provides features for reporting and handling errors with context data using nested exceptions.
  * @see @ref handling_errors_and_warnings.cpp "handling errors and warnings example"
  */
-namespace docwire::errors
+namespace df0::errors
 {
-#ifdef DOCWIRE_ENABLE_SHORT_MACRO_NAMES
-	#define current_location DOCWIRE_CURRENT_LOCATION
+#ifdef DF0_ENABLE_SHORT_MACRO_NAMES
+	#define current_location DF0_CURRENT_LOCATION
 #endif
 
 /**
@@ -56,7 +54,7 @@ namespace docwire::errors
  * @code
  * try {
  * 	// SDK code that may throw an error
- * } catch (const docwire::errors::base& e) {
+ * } catch (const df0::errors::base& e) {
  *  std::cerr << "Exception type: " << e.what() << std::endl;
  *  // Manually inspect context items:
  *  for (size_t i = 0; i < e.context_count(); ++i) {
@@ -72,7 +70,7 @@ namespace docwire::errors
  * @see errors::diagnostic_message
  * @see @ref handling_errors_and_warnings.cpp "handling errors and warnings example"
  */
-struct DOCWIRE_CORE_EXPORT base : public std::exception
+struct DF0_CORE_EXPORT base : public std::exception
 {
 	/// @brief The source location where the exception was thrown.
 	source_location location;
@@ -124,17 +122,17 @@ struct DOCWIRE_CORE_EXPORT base : public std::exception
 	const char* what() const noexcept override;
 };
 
-} // namespace docwire::errors
+} // namespace df0::errors
 
-namespace docwire::errors
+namespace df0::errors
 {
 std::string diagnostic_message(const std::exception& e);
 std::string diagnostic_message(std::exception_ptr eptr);
-} // namespace docwire::errors
+} // namespace df0::errors
 
 #include "stringification.h"
 
-namespace docwire::errors
+namespace df0::errors
 {
 
 /**
@@ -246,6 +244,6 @@ public:
 	}
 };
 
-} // namespace docwire::errors
+} // namespace df0::errors
 
 #endif

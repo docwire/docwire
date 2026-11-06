@@ -1,6 +1,6 @@
-add_library(docwire_ole_utils STATIC
+add_library(df0_ole_utils STATIC
     oshared.cpp)
 
-target_link_libraries(docwire_ole_utils
-    PUBLIC docwire_wv2
-    PRIVATE docwire_core)
+target_link_libraries(df0_ole_utils
+    PUBLIC df0_wv2
+    PRIVATE df0_core)

@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_TXT_PARSER_H
-#define DOCWIRE_TXT_PARSER_H
+#ifndef DF0_TXT_PARSER_H
+#define DF0_TXT_PARSER_H
 
 #include "pipeline/element_base.hpp"
 #include "plain_text_export.h"
@@ -19,14 +17,14 @@
 #include "audit/with_auditor.hpp"
 #include <concepts>
 
-namespace docwire
+namespace df0
 {
 
 struct parse_paragraphs { bool v; };
 struct parse_lines { bool v; };
 
 template<typename auditor_type = audit::null_auditor>
-class DOCWIRE_PLAIN_TEXT_EXPORT txt_parser
+class DF0_PLAIN_TEXT_EXPORT txt_parser
     : public pipeline::transformer_element<txt_parser<auditor_type>>,
       public with_pimpl<txt_parser<auditor_type>>,
       private audit::with_auditor<auditor_type>
@@ -85,6 +83,6 @@ txt_parser() -> txt_parser<audit::null_auditor>;
 txt_parser(parse_paragraphs) -> txt_parser<audit::null_auditor>;
 txt_parser(parse_paragraphs, parse_lines) -> txt_parser<audit::null_auditor>;
 
-} // namespace docwire
+} // namespace df0
 
 #endif

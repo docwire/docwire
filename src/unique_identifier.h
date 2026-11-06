@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_UNIQUE_IDENTIFIER_H
-#define DOCWIRE_UNIQUE_IDENTIFIER_H
+#ifndef DF0_UNIQUE_IDENTIFIER_H
+#define DF0_UNIQUE_IDENTIFIER_H
 
 #include "core_export.h"
 #include <cstddef>
@@ -18,7 +16,7 @@
 #include <compare>
 #include <functional>
 
-namespace docwire
+namespace df0
 {
 
 /**
@@ -62,15 +60,15 @@ private:
 	friend struct std::hash<unique_identifier>;
 };
 
-} // namespace docwire
+} // namespace df0
 
 namespace std {
 template<>
-struct hash<docwire::unique_identifier> {
-	size_t operator()(const docwire::unique_identifier& id) const {
+struct hash<df0::unique_identifier> {
+	size_t operator()(const df0::unique_identifier& id) const {
 		return std::hash<size_t>{}(id.m_id);
 	}
 };
 } // namespace std
 
-#endif // DOCWIRE_UNIQUE_IDENTIFIER_H
+#endif // DF0_UNIQUE_IDENTIFIER_H

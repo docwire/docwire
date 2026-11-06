@@ -1,16 +1,14 @@
-/*********************************************************************************************************************************************/
-/*  DocWire SDK: Award-winning modern data processing in C++20. SourceForge Community Choice & Microsoft support. AI-driven processing.      */
-/*  Supports nearly 100 data formats, including email boxes and OCR. Boost efficiency in text extraction, web data extraction, data mining,  */
-/*  document analysis. Offline processing possible for security and confidentiality                                                          */
-/*                                                                                                                                           */
-/*  Copyright (c) SILVERCODERS Ltd, http://silvercoders.com                                                                                  */
-/*  Project homepage: https://github.com/docwire/docwire                                                                                     */
-/*                                                                                                                                           */
-/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DocWire-Commercial                                                                  */
-/*********************************************************************************************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/*  DF-0: Data processing Framework with Zero-overhead                    */
+/*                                                                        */
+/*  Copyright (c) DF-0 Team, project website https://github.com/df0/df0   */
+/*  SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-DF0-Commercial   */
+/*                                                                        */
+/**************************************************************************/
 
-#ifndef DOCWIRE_AUDIT_FILTER_HPP
-#define DOCWIRE_AUDIT_FILTER_HPP
+#ifndef DF0_AUDIT_FILTER_HPP
+#define DF0_AUDIT_FILTER_HPP
 
 #include "detail/chaining.hpp"
 #include "detail/filter_rules.hpp"
@@ -23,7 +21,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace docwire::audit::filter
+namespace df0::audit::filter
 {
 
 template<typename Next = void>
@@ -90,6 +88,6 @@ private:
 
 by_spec(std::string) -> by_spec<void>;
 
-} // namespace docwire::audit::filter
+} // namespace df0::audit::filter
 
 #endif
